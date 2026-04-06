@@ -12,34 +12,41 @@ interface Props {
 
 export default function LandingPage({ breeds, featuredDogs }: Props) {
   const [darkMode, setDarkMode] = useState(true)
-
-  // Get unique breed thumbnails
   const breedThumbs = featuredDogs.slice(0, 5)
 
   return (
     <div className="min-h-screen bg-[#0a0f1a] text-white relative overflow-hidden">
-      {/* Constellation background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <svg className="absolute inset-0 w-full h-full opacity-[0.08]" xmlns="http://www.w3.org/2000/svg">
-          {/* Dots */}
-          {Array.from({ length: 40 }, (_, i) => (
-            <circle key={i} cx={`${(i * 37 + 13) % 100}%`} cy={`${(i * 23 + 7) % 100}%`} r="1.5" fill="#D74709" opacity={0.3 + (i % 5) * 0.15} />
-          ))}
-          {/* Lines connecting some dots like a pedigree tree */}
-          <line x1="30%" y1="20%" x2="50%" y2="35%" stroke="#D74709" strokeWidth="0.5" opacity="0.15" />
-          <line x1="70%" y1="20%" x2="50%" y2="35%" stroke="#D74709" strokeWidth="0.5" opacity="0.15" />
-          <line x1="50%" y1="35%" x2="50%" y2="55%" stroke="#D74709" strokeWidth="0.5" opacity="0.15" />
-          <line x1="20%" y1="10%" x2="30%" y2="20%" stroke="#D74709" strokeWidth="0.5" opacity="0.12" />
-          <line x1="40%" y1="10%" x2="30%" y2="20%" stroke="#D74709" strokeWidth="0.5" opacity="0.12" />
-          <line x1="60%" y1="10%" x2="70%" y2="20%" stroke="#D74709" strokeWidth="0.5" opacity="0.12" />
-          <line x1="80%" y1="10%" x2="70%" y2="20%" stroke="#D74709" strokeWidth="0.5" opacity="0.12" />
-          <line x1="35%" y1="60%" x2="50%" y2="55%" stroke="#D74709" strokeWidth="0.5" opacity="0.1" />
-          <line x1="65%" y1="60%" x2="50%" y2="55%" stroke="#D74709" strokeWidth="0.5" opacity="0.1" />
-          <line x1="15%" y1="75%" x2="35%" y2="60%" stroke="#D74709" strokeWidth="0.5" opacity="0.08" />
-          <line x1="85%" y1="75%" x2="65%" y2="60%" stroke="#D74709" strokeWidth="0.5" opacity="0.08" />
-        </svg>
-        {/* Gradient overlay at edges */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#D74709]/5 via-transparent to-[#D74709]/3" />
+      {/* Animated nebula background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Nebula orbs */}
+        <div className="absolute w-[800px] h-[800px] rounded-full opacity-[0.07] blur-[120px] animate-[nebula1_20s_ease-in-out_infinite]"
+          style={{ background: 'radial-gradient(circle, #D74709 0%, transparent 70%)', top: '-20%', left: '-10%' }} />
+        <div className="absolute w-[600px] h-[600px] rounded-full opacity-[0.05] blur-[100px] animate-[nebula2_25s_ease-in-out_infinite]"
+          style={{ background: 'radial-gradient(circle, #1a56db 0%, transparent 70%)', top: '30%', right: '-15%' }} />
+        <div className="absolute w-[700px] h-[700px] rounded-full opacity-[0.04] blur-[130px] animate-[nebula3_30s_ease-in-out_infinite]"
+          style={{ background: 'radial-gradient(circle, #8B5CF6 0%, transparent 70%)', bottom: '-20%', left: '20%' }} />
+        <div className="absolute w-[500px] h-[500px] rounded-full opacity-[0.06] blur-[90px] animate-[nebula4_22s_ease-in-out_infinite]"
+          style={{ background: 'radial-gradient(circle, #D74709 0%, transparent 70%)', top: '50%', left: '50%' }} />
+
+        {/* Floating particles */}
+        {Array.from({ length: 30 }, (_, i) => (
+          <div key={i}
+            className="absolute rounded-full bg-white animate-[float_var(--dur)_ease-in-out_infinite]"
+            style={{
+              width: `${1 + (i % 3)}px`,
+              height: `${1 + (i % 3)}px`,
+              left: `${(i * 37 + 13) % 100}%`,
+              top: `${(i * 23 + 7) % 100}%`,
+              opacity: 0.1 + (i % 5) * 0.08,
+              '--dur': `${8 + (i % 7) * 3}s`,
+              animationDelay: `${i * 0.5}s`,
+            } as any}
+          />
+        ))}
+
+        {/* Subtle grid overlay */}
+        <div className="absolute inset-0 opacity-[0.015]"
+          style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
       </div>
 
       {/* Header */}
@@ -65,12 +72,11 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
 
       {/* Hero */}
       <main className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-70px)] px-4">
-        {/* Search bar */}
         <div className="w-full max-w-2xl">
           <SearchBar />
         </div>
 
-        {/* Featured dogs / breed thumbnails */}
+        {/* Featured dogs */}
         <div className="flex items-center gap-3 mt-6">
           {breedThumbs.map(dog => (
             <Link key={dog.id} href={`/dogs/${dog.id}`}
@@ -89,6 +95,33 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
           )}
         </div>
       </main>
+
+      {/* Keyframes as inline style */}
+      <style jsx>{`
+        @keyframes nebula1 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(100px, 50px) scale(1.1); }
+          66% { transform: translate(-50px, 100px) scale(0.9); }
+        }
+        @keyframes nebula2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(-80px, 60px) scale(1.15); }
+          66% { transform: translate(60px, -40px) scale(0.85); }
+        }
+        @keyframes nebula3 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(70px, -80px) scale(1.1); }
+          66% { transform: translate(-100px, 30px) scale(0.95); }
+        }
+        @keyframes nebula4 {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.06; }
+          50% { transform: translate(-60px, 40px) scale(1.2); opacity: 0.03; }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-20px); }
+        }
+      `}</style>
     </div>
   )
 }
