@@ -105,13 +105,11 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
           </div>
         )}
 
-        {/* Pedigree */}
+        {/* Pedigree — free flowing, no box */}
         {pedigree && pedigree.length > 1 && (
           <div className="mb-8">
             <h2 className="text-lg font-bold mb-4">Pedigri</h2>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6 overflow-x-auto relative">
-              <PedigreeTree data={pedigree} rootId={id} />
-            </div>
+            <PedigreeTree data={pedigree} rootId={id} />
           </div>
         )}
 

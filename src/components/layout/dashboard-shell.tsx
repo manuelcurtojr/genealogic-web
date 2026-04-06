@@ -53,7 +53,7 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
   const avatarBg = darkMode ? 'border-white/10' : 'border-gray-200'
 
   return (
-    <div className={`min-h-screen ${shellBg} transition-colors duration-300`}>
+    <div className={`min-h-screen ${shellBg} transition-colors duration-300`} style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}>
       <Sidebar
         user={user}
         kennel={kennel}
