@@ -40,9 +40,18 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
   const [activeSection, setActiveSection] = useState('resumen')
 
   const stats = useMemo(() => {
-    const allStages = pipelines.flatMap((p: any) => (p.stages || []).map((s: any) => ({ ...s, pipelineName: p.name })))
+    // Flatten all stages from all pipelines
+    const allStages: any[] = []
+    pipelines.forEach((p: any) => {
+      const stages = Array.isArray(p.stages) ? p.stages : []
+      stages.forEach((s: any) => allStages.push({ ...s, pipelineName: p.name }))
+    })
+
     const wonStageIds = new Set(allStages.filter((s: any) => WON.test(s.name)).map((s: any) => s.id))
     const lostStageIds = new Set(allStages.filter((s: any) => LOST.test(s.name)).map((s: any) => s.id))
+
+    // Debug: log for troubleshooting
+    console.log('Analytics:', { totalDeals: deals.length, stages: allStages.length, wonIds: wonStageIds.size, lostIds: lostStageIds.size, totalValue: deals.reduce((s: number, d: any) => s + (Number(d.value) || 0), 0) })
 
     const wonDeals = deals.filter((d: any) => wonStageIds.has(d.stage_id))
     const lostDeals = deals.filter((d: any) => lostStageIds.has(d.stage_id))
@@ -152,7 +161,10 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
       totalDeals: deals.length,
       topLosses, dealsByStage, monthlyDeals, countryData, breedPie,
       males, females, littersChart, topReproducers,
-      reproductors: kennelDogs.filter((d: any) => d.is_reproductive).length,
+      reproductors: Math.max(
+        kennelDogs.filter((d: any) => d.is_reproductive).length,
+        dogs.filter((d: any) => d.is_reproductive).length
+      ),
       totalKennelDogs: kennelDogs.length, transferred,
       retained: kennelDogs.filter((d: any) => d.owner_id === userId).length,
       withPedigree, avgAge,
