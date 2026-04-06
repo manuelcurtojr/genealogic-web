@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
 import Modal from '@/components/ui/modal'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
+import SearchableSelect from '@/components/ui/searchable-select'
 
 const EVENT_TYPES = [
   { value: 'breeding', label: 'Cria', color: '#9b59b6' },
@@ -31,6 +32,29 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
 
+  // Entity options for linking
+  const [dogs, setDogs] = useState<{ value: string; label: string }[]>([])
+  const [litters, setLitters] = useState<{ value: string; label: string }[]>([])
+  const [contacts, setContacts] = useState<{ value: string; label: string }[]>([])
+  const [deals, setDeals] = useState<{ value: string; label: string }[]>([])
+
+  useEffect(() => {
+    async function loadEntities() {
+      const supabase = createClient()
+      const [d, l, c, dl] = await Promise.all([
+        supabase.from('dogs').select('id, name').eq('owner_id', userId).order('name'),
+        supabase.from('litters').select('id, breed:breeds(name)').eq('owner_id', userId),
+        supabase.from('contacts').select('id, name').eq('owner_id', userId).order('name'),
+        supabase.from('deals').select('id, title').eq('owner_id', userId).order('title'),
+      ])
+      setDogs((d.data || []).map((x: any) => ({ value: x.id, label: x.name })))
+      setLitters((l.data || []).map((x: any) => ({ value: x.id, label: `Camada ${x.breed?.name || ''}` })))
+      setContacts((c.data || []).map((x: any) => ({ value: x.id, label: x.name })))
+      setDeals((dl.data || []).map((x: any) => ({ value: x.id, label: x.title })))
+    }
+    if (open && userId) loadEntities()
+  }, [open, userId])
+
   const [form, setForm] = useState(() => ({
     title: initialData?.title || '',
     event_type: initialData?.event_type || 'other',
@@ -40,6 +64,10 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
     color: initialData?.color || EVENT_TYPES.find(t => t.value === (initialData?.event_type || 'other'))?.color || '#95a5a6',
     notes: initialData?.notes || '',
     is_completed: initialData?.is_completed ?? false,
+    dog_id: initialData?.dog_id || '',
+    litter_id: initialData?.litter_id || '',
+    contact_id: initialData?.contact_id || '',
+    deal_id: initialData?.deal_id || '',
   }))
 
   const set = (field: string, value: any) => setForm(prev => ({ ...prev, [field]: value }))
@@ -66,6 +94,10 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
       color: form.color,
       notes: form.notes || null,
       is_completed: form.is_completed,
+      dog_id: form.dog_id || null,
+      litter_id: form.litter_id || null,
+      contact_id: form.contact_id || null,
+      deal_id: form.deal_id || null,
     }
 
     if (isEdit) {
@@ -175,6 +207,25 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
               className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition resize-none"
               placeholder="Notas adicionales..."
             />
+          </div>
+
+          {/* Entity linking */}
+          <div>
+            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-2 block">Vincular a (opcional)</label>
+            <div className="grid grid-cols-2 gap-2">
+              {dogs.length > 0 && (
+                <SearchableSelect options={dogs} value={form.dog_id} onChange={v => set('dog_id', v)} placeholder="Perro..." label="Perro" />
+              )}
+              {litters.length > 0 && (
+                <SearchableSelect options={litters} value={form.litter_id} onChange={v => set('litter_id', v)} placeholder="Camada..." label="Camada" />
+              )}
+              {contacts.length > 0 && (
+                <SearchableSelect options={contacts} value={form.contact_id} onChange={v => set('contact_id', v)} placeholder="Contacto..." label="Contacto" />
+              )}
+              {deals.length > 0 && (
+                <SearchableSelect options={deals} value={form.deal_id} onChange={v => set('deal_id', v)} placeholder="Negocio..." label="Negocio" />
+              )}
+            </div>
           </div>
 
           {/* Completed (edit only) */}

@@ -22,6 +22,7 @@ export const NAV_ITEMS = [
   { label: 'Mis Perros', href: '/dogs', icon: 'Dog' },
   { label: 'Camadas', href: '/litters', icon: 'Baby' },
   { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
+  { label: 'Planificador', href: '/planner', icon: 'GitCompareArrows' },
   { label: 'Importar', href: '/import', icon: 'FileInput' },
   { label: 'Favoritos', href: '/favorites', icon: 'Heart' },
 ] as const

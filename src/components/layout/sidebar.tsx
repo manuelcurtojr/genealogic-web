@@ -2,13 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogOut, PawPrint, LayoutDashboard, X } from 'lucide-react'
+import { Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogOut, PawPrint, LayoutDashboard, X, GitCompareArrows } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { NAV_ITEMS, PRO_NAV_ITEMS, BRAND } from '@/lib/constants'
 
 const iconMap: Record<string, React.ElementType> = {
-  Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LayoutDashboard,
+  Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LayoutDashboard, GitCompareArrows,
 }
 
 interface SidebarProps {
