@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { ZoomIn, ZoomOut, Dna, ChevronDown } from 'lucide-react'
+import { ZoomIn, ZoomOut, Dna, Search, ArrowLeftRight, GitBranch } from 'lucide-react'
 import { calculateCOI, getCOILevel, getCOIInterpretation } from './coi-calculator'
 
 interface PedigreeNode {
@@ -48,11 +48,12 @@ export default function PedigreeTree({ data, rootId }: Props) {
   }
   const coiStyle = coiColors[coiLevel]
 
+  const [showCoi, setShowCoi] = useState(false)
+
   return (
-    <div>
-      {/* Controls bar */}
+    <div className="relative">
+      {/* COI Badge — top left */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
-        {/* COI Badge */}
         {(root.father_id && root.mother_id) && (
           <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${coiStyle.bg} ${coiStyle.border}`}>
             <Dna className={`w-4 h-4 ${coiStyle.text}`} />
@@ -62,7 +63,7 @@ export default function PedigreeTree({ data, rootId }: Props) {
 
         <div className="flex-1" />
 
-        {/* Generation filter */}
+        {/* Generation filter — top right */}
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-white/40">Generaciones:</span>
           <div className="flex bg-white/5 rounded-lg border border-white/10 overflow-hidden">
@@ -80,27 +81,22 @@ export default function PedigreeTree({ data, rootId }: Props) {
           </div>
         </div>
 
-        {/* Zoom controls */}
+        {/* Zoom */}
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => setZoom(z => Math.max(60, z - 10))}
-            className="p-1.5 text-white/30 hover:text-white/60 transition"
-          >
+          <button onClick={() => setZoom(z => Math.max(60, z - 10))} className="p-1.5 text-white/30 hover:text-white/60 transition">
             <ZoomOut className="w-4 h-4" />
           </button>
           <span className="text-xs text-white/40 w-8 text-center">{zoom}%</span>
-          <button
-            onClick={() => setZoom(z => Math.min(120, z + 10))}
-            className="p-1.5 text-white/30 hover:text-white/60 transition"
-          >
+          <button onClick={() => setZoom(z => Math.min(120, z + 10))} className="p-1.5 text-white/30 hover:text-white/60 transition">
             <ZoomIn className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* COI interpretation */}
-      {coi > 0 && (
-        <div className={`text-xs ${coiStyle.text} mb-4 px-1`}>
+      {showCoi && coi > 0 && (
+        <div className={`text-xs ${coiStyle.text} mb-4 px-1 bg-white/5 border ${coiStyle.border} rounded-lg p-3`}>
+          <p className="font-semibold mb-1">COI: {coi}%</p>
           {coiText}
         </div>
       )}
@@ -113,6 +109,37 @@ export default function PedigreeTree({ data, rootId }: Props) {
         <div className="flex items-center min-w-max">
           <TreeNode node={root} nodeMap={nodeMap} gen={0} maxGen={maxGen} />
         </div>
+      </div>
+
+      {/* 4 Floating control buttons — bottom left like WP */}
+      <div className="flex items-center gap-2 mt-4">
+        <button
+          onClick={() => setZoom(z => z === 100 ? 80 : 100)}
+          className="w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition"
+          title="Zoom"
+        >
+          <Search className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => setMaxGen(g => g >= 5 ? 3 : g + 1)}
+          className="w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition font-bold text-xs"
+          title="Generaciones"
+        >
+          x{maxGen}
+        </button>
+        <button
+          className="w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition"
+          title="Cambiar direccion del arbol"
+        >
+          <ArrowLeftRight className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => setShowCoi(!showCoi)}
+          className={`w-10 h-10 rounded-full border flex items-center justify-center transition ${showCoi ? 'bg-[#D74709]/15 border-[#D74709]/30 text-[#D74709]' : 'bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10'}`}
+          title="Endogamia / COI"
+        >
+          <GitBranch className="w-4 h-4" />
+        </button>
       </div>
     </div>
   )

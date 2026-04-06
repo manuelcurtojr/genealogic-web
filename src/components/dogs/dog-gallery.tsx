@@ -23,25 +23,38 @@ export default function DogGallery({ thumbnail_url, name, sex }: DogGalleryProps
 
   return (
     <>
-      <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+      {/* Full-width gallery area */}
+      <div className="relative w-full h-[350px] lg:h-[420px] bg-white/[0.03] overflow-hidden">
         {thumbnail_url ? (
           <img
             src={thumbnail_url}
             alt={name}
-            className="w-full aspect-square object-cover cursor-pointer hover:opacity-90 transition"
+            className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition"
             onClick={() => setLightboxOpen(true)}
           />
         ) : (
-          <div className="w-full aspect-square flex items-center justify-center text-white/15 text-6xl">
-            {sex === 'male' ? '♂' : '♀'}
+          <div className="w-full h-full flex items-center justify-center">
+            <img src="/icon.svg" alt="" className="w-24 h-24 opacity-10" />
           </div>
+        )}
+
+        {/* Carousel arrows (visual, for future multi-photo) */}
+        {thumbnail_url && (
+          <>
+            <button className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 transition">
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 transition">
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </>
         )}
       </div>
 
       {/* Lightbox */}
       {lightboxOpen && thumbnail_url && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+          className="fixed inset-0 z-[80] bg-black/90 flex items-center justify-center"
           onClick={() => setLightboxOpen(false)}
         >
           <button
