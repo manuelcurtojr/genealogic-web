@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react'
 import Modal from '@/components/ui/modal'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
 import SearchableSelect from '@/components/ui/searchable-select'
+import DealActivity from './deal-activity'
 
 interface DealFormProps {
   open: boolean
@@ -140,6 +141,13 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
             </div>
           </div>
         </form>
+
+        {/* Activity timeline (edit mode only) */}
+        {isEdit && initialData?.id && (
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <DealActivity dealId={initialData.id} userId={userId} />
+          </div>
+        )}
       </Modal>
 
       <ConfirmDialog
