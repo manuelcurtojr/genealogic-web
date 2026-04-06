@@ -58,6 +58,12 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
 
   return (
     <>
+      {/* Title */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Mis Perros</h1>
+        <p className="text-white/50 text-sm mt-1">{dogs.length} perros registrados</p>
+      </div>
+
       {/* Filter bar */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="relative flex-1 min-w-[200px]">
