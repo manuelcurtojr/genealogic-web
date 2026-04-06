@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { User, Mail, Shield, Loader2, Check, Lock } from 'lucide-react'
+import AvatarUpload from '@/components/settings/avatar-upload'
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<any>(null)
@@ -95,9 +96,12 @@ export default function SettingsPage() {
         </div>
 
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-16 h-16 rounded-full bg-[#D74709]/20 flex items-center justify-center text-[#D74709] text-xl font-bold">
-            {(profile?.display_name || '?')[0].toUpperCase()}
-          </div>
+          <AvatarUpload
+            userId={profile?.id}
+            currentUrl={profile?.avatar_url}
+            displayName={profile?.display_name || ''}
+            onUploaded={(url) => setProfile((prev: any) => ({ ...prev, avatar_url: url }))}
+          />
           <div>
             {editing ? (
               <div className="flex items-center gap-2">
