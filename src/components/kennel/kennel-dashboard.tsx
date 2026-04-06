@@ -6,11 +6,12 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Edit, Globe, Calendar, Dog, Camera, Search, Grid3X3, List, Eye, EyeOff,
-  Loader2, ExternalLink, MessageCircle, Settings, Baby, Heart, ArrowRightLeft, Tag
+  Loader2, ExternalLink, MessageCircle, Settings, Baby, Heart, ArrowRightLeft, Tag, FileText
 } from 'lucide-react'
 import KennelEditPanel from './kennel-edit-panel'
 import TransferPanel from './transfer-panel'
 import SalePanel from './sale-panel'
+import FormBuilder from './form-builder'
 
 interface Props {
   kennel: any
@@ -25,6 +26,7 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
   const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showEdit, setShowEdit] = useState(false)
+  const [showFormBuilder, setShowFormBuilder] = useState(false)
   const [transferDog, setTransferDog] = useState<any>(null)
   const [saleDog, setSaleDog] = useState<any>(null)
   const [uploading, setUploading] = useState(false)
@@ -184,6 +186,10 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
           <Link href="/litters" className="text-xs text-white/50 hover:text-[#D74709] flex items-center gap-1.5 transition">
             <Baby className="w-3.5 h-3.5" /> Mis camadas
           </Link>
+          <span className="text-white/10">|</span>
+          <button onClick={() => setShowFormBuilder(true)} className="text-xs text-white/50 hover:text-[#D74709] flex items-center gap-1.5 transition">
+            <FileText className="w-3.5 h-3.5" /> Formularios
+          </button>
         </div>
       </div>
 
@@ -244,6 +250,9 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
 
       {/* Edit panel */}
       <KennelEditPanel open={showEdit} onClose={() => setShowEdit(false)} kennel={kennel} />
+
+      {/* Form builder */}
+      <FormBuilder open={showFormBuilder} onClose={() => setShowFormBuilder(false)} kennelId={kennel.id} userId={userId} />
 
       {/* Sale panel */}
       <SalePanel open={!!saleDog} onClose={() => setSaleDog(null)} dog={saleDog} />
