@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Search, Sun, Moon } from 'lucide-react'
+import { Sun, Moon } from 'lucide-react'
+import SearchBar from '@/components/layout/search-bar'
 
 interface Props {
   breeds: { id: string; name: string }[]
@@ -11,16 +11,7 @@ interface Props {
 }
 
 export default function LandingPage({ breeds, featuredDogs }: Props) {
-  const router = useRouter()
-  const [search, setSearch] = useState('')
   const [darkMode, setDarkMode] = useState(true)
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    if (search.trim()) {
-      router.push(`/search?q=${encodeURIComponent(search.trim())}`)
-    }
-  }
 
   // Get unique breed thumbnails
   const breedThumbs = featuredDogs.slice(0, 5)
@@ -75,23 +66,9 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
       {/* Hero */}
       <main className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-70px)] px-4">
         {/* Search bar */}
-        <form onSubmit={handleSearch} className="w-full max-w-2xl">
-          <div className="flex items-center bg-white/[0.06] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-sm hover:border-white/20 transition">
-            <div className="flex-1 flex items-center px-5">
-              <Search className="w-5 h-5 text-white/30 mr-3 flex-shrink-0" />
-              <input
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar perros, razas o criaderos..."
-                className="w-full bg-transparent py-4 text-white placeholder:text-white/30 focus:outline-none text-base"
-              />
-            </div>
-            <button type="submit" className="px-8 py-4 text-sm font-semibold text-white/60 hover:text-white transition border-l border-white/10 hover:bg-white/5">
-              Buscar
-            </button>
-          </div>
-        </form>
+        <div className="w-full max-w-2xl">
+          <SearchBar />
+        </div>
 
         {/* Featured dogs / breed thumbnails */}
         <div className="flex items-center gap-3 mt-6">
