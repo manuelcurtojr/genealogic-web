@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
-import Modal from '@/components/ui/modal'
+import { Loader2, X, Trash2 } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
 import SearchableSelect from '@/components/ui/searchable-select'
 
@@ -32,7 +31,6 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
 
-  // Entity options for linking
   const [dogs, setDogs] = useState<{ value: string; label: string }[]>([])
   const [litters, setLitters] = useState<{ value: string; label: string }[]>([])
   const [contacts, setContacts] = useState<{ value: string; label: string }[]>([])
@@ -78,8 +76,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
     if (found) set('color', found.color)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     if (!form.title.trim()) return
     setLoading(true)
     setError('')
@@ -123,18 +120,41 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
     onClose()
   }
 
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [open, onClose])
+
   return (
     <>
-      <Modal open={open} onClose={onClose} title={isEdit ? 'Editar evento' : 'Nuevo evento'} maxWidth="max-w-md">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Backdrop */}
+      <div
+        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={onClose}
+      />
+
+      {/* Slide panel */}
+      <div className={`fixed top-0 right-0 h-full w-full max-w-lg z-50 bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+        {/* Fixed header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 flex-shrink-0">
+          <h2 className="text-lg font-semibold">{isEdit ? 'Editar evento' : 'Nuevo evento'}</h2>
+          <button onClick={onClose} className="text-white/40 hover:text-white transition">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
           {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
           {/* Title */}
           <div>
-            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Titulo *</label>
+            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Titulo *</label>
             <input
-              type="text" value={form.title} onChange={(e) => set('title', e.target.value)} required autoFocus
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition"
+              type="text" value={form.title} onChange={(e) => set('title', e.target.value)} autoFocus
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition"
               placeholder="Ej: Visita al veterinario"
             />
           </div>
@@ -160,7 +180,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
           {/* Date */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Inicio</label>
+              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Inicio</label>
               <input
                 type={form.all_day ? 'date' : 'datetime-local'} value={form.all_day ? form.start_date?.slice(0, 10) : form.start_date}
                 onChange={(e) => set('start_date', e.target.value)}
@@ -168,7 +188,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Fin (opcional)</label>
+              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Fin (opcional)</label>
               <input
                 type={form.all_day ? 'date' : 'datetime-local'} value={form.all_day ? form.end_date?.slice(0, 10) : form.end_date}
                 onChange={(e) => set('end_date', e.target.value)}
@@ -181,8 +201,8 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
           <div className="flex items-center justify-between">
             <span className="text-sm text-white/70">Todo el dia</span>
             <button type="button" onClick={() => set('all_day', !form.all_day)}
-              className={`w-11 h-6 rounded-full transition-colors relative ${form.all_day ? 'bg-[#D74709]' : 'bg-white/20'}`}>
-              <div className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all ${form.all_day ? 'left-[22px]' : 'left-0.5'}`} />
+              className={`w-10 h-5 rounded-full transition relative ${form.all_day ? 'bg-[#D74709]' : 'bg-white/20'}`}>
+              <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition ${form.all_day ? 'left-[22px]' : 'left-0.5'}`} />
             </button>
           </div>
 
@@ -201,10 +221,10 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
 
           {/* Notes */}
           <div>
-            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Notas</label>
+            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Notas</label>
             <textarea
               value={form.notes} onChange={(e) => set('notes', e.target.value)} rows={3}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition resize-none"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition resize-none"
               placeholder="Notas adicionales..."
             />
           </div>
@@ -233,39 +253,40 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
             <div className="flex items-center justify-between">
               <span className="text-sm text-white/70">Completado</span>
               <button type="button" onClick={() => set('is_completed', !form.is_completed)}
-                className={`w-11 h-6 rounded-full transition-colors relative ${form.is_completed ? 'bg-green-500' : 'bg-white/20'}`}>
-                <div className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all ${form.is_completed ? 'left-[22px]' : 'left-0.5'}`} />
+                className={`w-10 h-5 rounded-full transition relative ${form.is_completed ? 'bg-green-500' : 'bg-white/20'}`}>
+                <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition ${form.is_completed ? 'left-[22px]' : 'left-0.5'}`} />
               </button>
             </div>
           )}
+        </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-2">
-            {isEdit ? (
-              <button type="button" onClick={() => setShowDelete(true)} className="text-sm text-red-400 hover:text-red-300 transition">
-                Eliminar evento
-              </button>
-            ) : <div />}
-            <div className="flex gap-2">
-              <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/15 text-white transition">
-                Cancelar
-              </button>
-              <button type="submit" disabled={loading || !form.title.trim()}
-                className="px-4 py-2 rounded-lg text-sm font-semibold bg-[#D74709] hover:bg-[#c03d07] text-white transition disabled:opacity-50 flex items-center gap-2">
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {isEdit ? 'Guardar' : 'Crear'}
-              </button>
-            </div>
+        {/* Fixed footer */}
+        <div className="flex items-center justify-between px-6 py-4 border-t border-white/10 flex-shrink-0">
+          {isEdit ? (
+            <button type="button" onClick={() => setShowDelete(true)} className="text-sm text-red-400 hover:text-red-300 transition flex items-center gap-1.5">
+              <Trash2 className="w-4 h-4" />
+              Eliminar
+            </button>
+          ) : <div />}
+          <div className="flex gap-2">
+            <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">
+              Cancelar
+            </button>
+            <button onClick={handleSubmit} disabled={loading || !form.title.trim()}
+              className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isEdit ? 'Guardar' : 'Crear evento'}
+            </button>
           </div>
-        </form>
-      </Modal>
+        </div>
+      </div>
 
       <ConfirmDialog
         open={showDelete}
         onConfirm={handleDelete}
         onCancel={() => setShowDelete(false)}
         title="Eliminar evento"
-        message="¿Estas seguro de que quieres eliminar este evento?"
+        message="Este evento se eliminara permanentemente."
         confirmLabel="Eliminar"
         destructive
         loading={deleting}
