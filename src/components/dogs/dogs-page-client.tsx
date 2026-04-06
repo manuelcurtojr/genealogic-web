@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Grid3X3, List, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Grid3X3, List, ChevronLeft, ChevronRight, Search, Plus, Eye, Edit, GitBranch, Mars, Venus } from 'lucide-react'
 import DogCard from './dog-card'
-import DogFilters from './dog-filters'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 
@@ -35,7 +34,12 @@ export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }:
   const [page, setPage] = useState(0)
 
   const filtered = dogs.filter((dog) => {
-    if (search && !dog.name.toLowerCase().includes(search.toLowerCase())) return false
+    const q = search.toLowerCase()
+    if (q) {
+      const breedName = (Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name) || ''
+      const colorName = (Array.isArray(dog.color) ? dog.color[0]?.name : dog.color?.name) || ''
+      if (!dog.name.toLowerCase().includes(q) && !breedName.toLowerCase().includes(q) && !colorName.toLowerCase().includes(q)) return false
+    }
     if (sexFilter && dog.sex !== sexFilter) return false
     if (breedFilter && dog.breed_id !== breedFilter) return false
     return true
@@ -44,36 +48,72 @@ export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }:
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
-  // Reset page when filters change
   const handleSearchChange = (v: string) => { setSearch(v); setPage(0) }
   const handleSexChange = (v: string) => { setSexFilter(v); setPage(0) }
   const handleBreedChange = (v: string) => { setBreedFilter(v); setPage(0) }
 
+  const sexOptions = [
+    { value: '', label: 'Todos' },
+    { value: 'male', label: 'Machos' },
+    { value: 'female', label: 'Hembras' },
+  ]
+
   return (
     <>
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex-1">
-          <DogFilters
-            search={search}
-            onSearchChange={handleSearchChange}
-            sexFilter={sexFilter}
-            onSexChange={handleSexChange}
-            breedFilter={breedFilter}
-            onBreedChange={handleBreedChange}
-            breeds={breeds}
+      {/* Filter bar — WP style */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        {/* Search — full width */}
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <input
+            type="text"
+            placeholder="Buscar por nombre, raza, color..."
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition"
           />
         </div>
-        {/* View mode toggle */}
-        <div className="flex bg-white/5 rounded-lg border border-white/10 overflow-hidden">
+
+        {/* Sex filter */}
+        <div className="flex rounded-lg border border-white/10 overflow-hidden">
+          {sexOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => handleSexChange(opt.value)}
+              className={`px-3 py-2 text-xs font-medium transition ${
+                sexFilter === opt.value
+                  ? 'bg-[#D74709] text-white'
+                  : 'bg-white/5 text-white/50 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Breed filter */}
+        <select
+          value={breedFilter}
+          onChange={(e) => handleBreedChange(e.target.value)}
+          className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-[160px]"
+        >
+          <option value="">Todas las razas</option>
+          {breeds.map((b) => (
+            <option key={b.id} value={b.id}>{b.name}</option>
+          ))}
+        </select>
+
+        {/* View toggle */}
+        <div className="flex rounded-lg border border-white/10 overflow-hidden">
           <button
             onClick={() => setViewMode('grid')}
-            className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'text-white/30 hover:text-white/50'}`}
+            className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}
           >
             <Grid3X3 className="w-4 h-4" />
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'text-white/30 hover:text-white/50'}`}
+            className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}
           >
             <List className="w-4 h-4" />
           </button>
@@ -83,17 +123,22 @@ export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }:
       {/* Count */}
       <p className="text-xs text-white/30 mb-3">{filtered.length} perro{filtered.length !== 1 ? 's' : ''}</p>
 
-      {filtered.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-white/40 text-lg">
-            {dogs.length === 0 ? 'No tienes perros registrados' : 'No se encontraron perros'}
-          </p>
-          <p className="text-white/25 text-sm mt-2">
-            {dogs.length === 0 ? 'Anade tu primer perro para empezar' : 'Prueba con otros filtros'}
-          </p>
-        </div>
-      ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {/* Grid view */}
+      {viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Add new dog card — first position */}
+          <Link
+            href="/dogs/new"
+            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[320px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group"
+          >
+            <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
+              <Plus className="w-6 h-6 text-white/30 group-hover:text-[#D74709] transition" />
+            </div>
+            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Anadir nuevo</p>
+            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">perro</p>
+          </Link>
+
+          {/* Dog cards */}
           {paged.map((dog) => (
             <DogCard
               key={dog.id}
@@ -104,9 +149,12 @@ export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }:
           ))}
         </div>
       ) : (
+        /* List view */
         <div className="space-y-1">
           {paged.map((dog) => {
             const borderColor = dog.sex === 'male' ? BRAND.male : BRAND.female
+            const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
+            const SexIcon = dog.sex === 'male' ? Mars : Venus
             return (
               <Link
                 key={dog.id}
@@ -123,11 +171,22 @@ export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }:
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">{dog.name}</p>
-                  <p className="text-xs text-white/40 truncate">{dog.breed?.name || '—'}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-semibold text-white truncate">{dog.name}</p>
+                    <SexIcon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: borderColor }} />
+                  </div>
+                  <p className="text-xs text-white/40 truncate">{breedName || '—'}</p>
                 </div>
-                <div className="text-xs text-white/30">
-                  {dog.birth_date ? new Date(dog.birth_date).toLocaleDateString('es-ES', { year: 'numeric', month: 'short' }) : '—'}
+                <div className="text-xs text-white/30 hidden sm:block">
+                  {dog.birth_date ? new Date(dog.birth_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition" title="Ver">
+                    <Eye className="w-3.5 h-3.5" />
+                  </div>
+                  <Link href={`/dogs/${dog.id}/edit`} className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition" title="Editar" onClick={e => e.stopPropagation()}>
+                    <Edit className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
               </Link>
             )
@@ -145,17 +204,25 @@ export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }:
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setPage(i)}
-              className={`w-8 h-8 rounded-lg text-sm transition ${
-                page === i ? 'bg-[#D74709] text-white' : 'text-white/40 hover:bg-white/10'
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+          {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+            let pageNum = i
+            if (totalPages > 7) {
+              if (page < 4) pageNum = i
+              else if (page > totalPages - 4) pageNum = totalPages - 7 + i
+              else pageNum = page - 3 + i
+            }
+            return (
+              <button
+                key={pageNum}
+                onClick={() => setPage(pageNum)}
+                className={`w-8 h-8 rounded-lg text-sm transition ${
+                  page === pageNum ? 'bg-[#D74709] text-white' : 'text-white/40 hover:bg-white/10'
+                }`}
+              >
+                {pageNum + 1}
+              </button>
+            )
+          })}
           <button
             onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
             disabled={page === totalPages - 1}

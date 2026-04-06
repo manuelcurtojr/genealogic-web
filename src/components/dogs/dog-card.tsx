@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Heart } from 'lucide-react'
+import { Heart, Eye, Edit, GitBranch, ArrowRightLeft, Mars, Venus } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
@@ -24,7 +24,9 @@ export default function DogCard({ dog, isFavorited = false, userId }: DogCardPro
   const [favorited, setFavorited] = useState(isFavorited)
 
   const sexBorder = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
-  const sexLabel = dog.sex === 'male' ? '♂' : dog.sex === 'female' ? '♀' : ''
+  const SexIcon = dog.sex === 'male' ? Mars : Venus
+  const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
+  const colorName = Array.isArray(dog.color) ? dog.color[0]?.name : dog.color?.name
 
   const toggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -41,30 +43,30 @@ export default function DogCard({ dog, isFavorited = false, userId }: DogCardPro
   }
 
   return (
-    <Link
-      href={`/dogs/${dog.id}`}
-      className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-[#D74709]/50 hover:bg-white/[0.07] transition group block"
-    >
+    <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition group">
       {/* Photo area */}
-      <div className="relative aspect-square bg-white/5">
+      <div className="relative aspect-[4/3] bg-white/[0.03]">
         {dog.thumbnail_url ? (
-          <img
-            src={dog.thumbnail_url}
-            alt={dog.name}
-            className="w-full h-full object-cover"
-          />
+          <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-white/10 text-6xl font-light">
-            {sexLabel}
+          <div className="w-full h-full flex items-center justify-center">
+            <img src="/icon.svg" alt="" className="w-16 h-16 opacity-10" />
           </div>
         )}
-        {/* Sex indicator bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: sexBorder }} />
+
+        {/* Breed badge top-right */}
+        {breedName && (
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm rounded-full px-2.5 py-1">
+            <img src="/icon.svg" alt="" className="w-4 h-4" />
+            <span className="text-[11px] text-white font-medium">{breedName}</span>
+          </div>
+        )}
+
         {/* Favorite button */}
         {userId && (
           <button
             onClick={toggleFavorite}
-            className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition"
+            className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition"
           >
             <Heart
               className="w-4 h-4"
@@ -73,26 +75,66 @@ export default function DogCard({ dog, isFavorited = false, userId }: DogCardPro
             />
           </button>
         )}
+
+        {/* Sex indicator bar at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: sexBorder }} />
       </div>
 
       {/* Content */}
-      <div className="p-3">
-        <h3 className="font-semibold text-sm text-white group-hover:text-[#D74709] transition truncate">
+      <div className="p-4 text-center">
+        {/* Name + Sex icon */}
+        <h3 className="font-semibold text-base text-white flex items-center justify-center gap-1.5">
           {dog.name}
+          <SexIcon className="w-4 h-4 flex-shrink-0" style={{ color: sexBorder }} />
         </h3>
-        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-          {dog.breed && (
-            <span className="text-[11px] bg-white/10 text-white/60 rounded-full px-2 py-0.5 truncate">
-              {Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed.name}
+
+        {/* Color */}
+        {colorName && (
+          <p className="text-xs text-white/40 mt-1.5">
+            Color: <span className="text-white/60">{colorName}</span>
+          </p>
+        )}
+
+        {/* Birth date */}
+        {dog.birth_date && (
+          <p className="text-xs text-white/40 mt-0.5">
+            Nacimiento: <span className="text-white/60">
+              {new Date(dog.birth_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
             </span>
-          )}
-          {dog.color && (
-            <span className="text-[11px] bg-white/5 text-white/40 rounded-full px-2 py-0.5 truncate">
-              {Array.isArray(dog.color) ? dog.color[0]?.name : dog.color.name}
-            </span>
-          )}
+          </p>
+        )}
+
+        {/* Action buttons */}
+        <div className="flex items-center justify-center gap-2 mt-4 pt-3 border-t border-white/5">
+          <Link
+            href={`/dogs/${dog.id}`}
+            className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white transition"
+            title="Ver perfil"
+          >
+            <Eye className="w-4 h-4" />
+          </Link>
+          <Link
+            href={`/dogs/${dog.id}/edit`}
+            className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white transition"
+            title="Editar"
+          >
+            <Edit className="w-4 h-4" />
+          </Link>
+          <Link
+            href={`/dogs/${dog.id}`}
+            className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white transition"
+            title="Pedigri"
+          >
+            <GitBranch className="w-4 h-4" />
+          </Link>
+          <button
+            className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white transition"
+            title="Transferir"
+          >
+            <ArrowRightLeft className="w-4 h-4" />
+          </button>
         </div>
       </div>
-    </Link>
+    </div>
   )
 }
