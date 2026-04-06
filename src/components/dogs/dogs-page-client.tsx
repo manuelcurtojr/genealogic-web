@@ -21,18 +21,19 @@ interface Dog {
 interface DogsPageClientProps {
   dogs: Dog[]
   breeds: { id: string; name: string }[]
-  colors: { id: string; name: string }[]
-  kennels: { id: string; name: string }[]
-  maleDogs: { id: string; name: string }[]
-  femaleDogs: { id: string; name: string }[]
   userId: string
 }
 
 const PAGE_SIZE = 24
 
-export default function DogsPageClient({ dogs, breeds, colors, kennels, maleDogs, femaleDogs, userId }: DogsPageClientProps) {
+export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientProps) {
   const [search, setSearch] = useState('')
-  const [showAddPanel, setShowAddPanel] = useState(false)
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [editDogId, setEditDogId] = useState<string | null>(null)
+
+  const openAdd = () => { setEditDogId(null); setPanelOpen(true) }
+  const openEdit = (dogId: string) => { setEditDogId(dogId); setPanelOpen(true) }
+  const closePanel = () => { setPanelOpen(false); setEditDogId(null) }
   const [sexFilter, setSexFilter] = useState('')
   const [breedFilter, setBreedFilter] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -118,7 +119,7 @@ export default function DogsPageClient({ dogs, breeds, colors, kennels, maleDogs
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {/* Add new dog card */}
           <button
-            onClick={() => setShowAddPanel(true)}
+            onClick={openAdd}
             className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[320px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer"
           >
             <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
@@ -129,7 +130,7 @@ export default function DogsPageClient({ dogs, breeds, colors, kennels, maleDogs
           </button>
 
           {paged.map((dog) => (
-            <DogCard key={dog.id} dog={dog} />
+            <DogCard key={dog.id} dog={dog} onEdit={() => openEdit(dog.id)} />
           ))}
         </div>
       ) : (
@@ -216,15 +217,11 @@ export default function DogsPageClient({ dogs, breeds, colors, kennels, maleDogs
         </div>
       )}
 
-      {/* Add dog slide panel */}
+      {/* Dog form slide panel (add + edit) */}
       <DogFormPanel
-        open={showAddPanel}
-        onClose={() => setShowAddPanel(false)}
-        breeds={breeds}
-        colors={colors}
-        kennels={kennels}
-        maleDogs={maleDogs}
-        femaleDogs={femaleDogs}
+        open={panelOpen}
+        onClose={closePanel}
+        editDogId={editDogId}
         userId={userId}
       />
     </>
