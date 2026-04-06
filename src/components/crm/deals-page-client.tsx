@@ -50,7 +50,6 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
   const [showForm, setShowForm] = useState(false)
   const [editingDeal, setEditingDeal] = useState<any>(null)
   const [dragOverStageId, setDragOverStageId] = useState<string | null>(null)
-  const [showPipelineMenu, setShowPipelineMenu] = useState(false)
   const [showNewPipeline, setShowNewPipeline] = useState(false)
   const [showDashboard, setShowDashboard] = useState(false)
   const [newPipelineName, setNewPipelineName] = useState('')
@@ -279,29 +278,12 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
               </span>
             </button>
           ))}
-          <div className="relative">
-            <button
-              onClick={() => setShowPipelineMenu(!showPipelineMenu)}
-              className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white/60 hover:bg-white/10 transition"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-            {showPipelineMenu && (
-              <>
-                <div className="fixed inset-0 z-30" onClick={() => setShowPipelineMenu(false)} />
-                <div className="absolute z-40 top-full mt-1 left-0 w-56 bg-gray-800 border border-white/10 rounded-lg shadow-xl overflow-hidden">
-                  <button onClick={() => { setShowNewPipeline(true); setShowPipelineMenu(false) }} className="w-full text-left px-4 py-2.5 text-sm text-white/70 hover:bg-white/5 flex items-center gap-2">
-                    <Plus className="w-4 h-4" /> Crear pipeline
-                  </button>
-                  {pipelines.length > 1 && activePipeline && (
-                    <button onClick={() => { deletePipeline(activePipelineId); setShowPipelineMenu(false) }} className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2 border-t border-white/5">
-                      <Trash2 className="w-4 h-4" /> Eliminar &quot;{activePipeline.name}&quot;
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
+          <button
+            onClick={() => setShowNewPipeline(true)}
+            className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white/60 hover:bg-white/10 transition"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -341,6 +323,23 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
             })()}
             <p className="text-[11px] text-white/25 pt-1">Escribe &quot;Ventas&quot; o &quot;Seguimiento&quot; para usar etapas predefinidas.</p>
           </div>
+
+          {/* Existing pipelines management */}
+          {pipelines.length > 0 && (
+            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 space-y-2">
+              <p className="text-xs font-semibold text-white/50 mb-2">Pipelines existentes</p>
+              {pipelines.map((p: any) => (
+                <div key={p.id} className="flex items-center justify-between py-1.5">
+                  <span className="text-sm text-white/60">{p.name} ({deals.filter((d: any) => d.pipeline_id === p.id).length})</span>
+                  {pipelines.length > 1 && (
+                    <button onClick={() => { deletePipeline(p.id); setShowNewPipeline(false) }} className="text-xs text-red-400/60 hover:text-red-400 transition">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/10 flex-shrink-0">
           <button onClick={() => setShowNewPipeline(false)} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">Cancelar</button>
