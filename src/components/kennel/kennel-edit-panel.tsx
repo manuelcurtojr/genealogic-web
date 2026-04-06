@@ -16,17 +16,22 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [allBreeds, setAllBreeds] = useState<{ id: string; name: string }[]>([])
 
   const [form, setForm] = useState({
     name: '', description: '', foundation_date: '', website: '',
     social_instagram: '', social_facebook: '', social_tiktok: '', social_youtube: '',
     whatsapp_phone: '', whatsapp_text: '', whatsapp_enabled: false,
     affix_format: 'suffix_de' as AffixFormat,
+    breed_ids: [] as string[],
   })
 
   useEffect(() => {
     if (!open || !kennel) return
     setError('')
+    // Fetch breeds
+    const supabase = createClient()
+    supabase.from('breeds').select('id, name').order('name').then(({ data }) => setAllBreeds(data || []))
     setForm({
       name: kennel.name || '',
       description: kennel.description || '',
@@ -40,6 +45,7 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
       whatsapp_text: kennel.whatsapp_text || '',
       whatsapp_enabled: kennel.whatsapp_enabled || false,
       affix_format: kennel.affix_format || 'suffix_de',
+      breed_ids: kennel.breed_ids || [],
     })
   }, [open, kennel])
 
@@ -71,6 +77,7 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
       whatsapp_text: form.whatsapp_text || null,
       whatsapp_enabled: form.whatsapp_enabled,
       affix_format: form.affix_format,
+      breed_ids: form.breed_ids,
     }).eq('id', kennel.id)
 
     setSaving(false)
@@ -129,6 +136,23 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
                   </span>
                 </button>
               ))}
+            </div>
+          </Sec>
+
+          {/* Breeds */}
+          <Sec title="Razas que crias">
+            <p className="text-[11px] text-white/30 -mt-1 mb-2">Selecciona las razas que apareceran en tu formulario de contacto</p>
+            <div className="flex flex-wrap gap-1.5">
+              {allBreeds.map(b => {
+                const selected = form.breed_ids.includes(b.id)
+                return (
+                  <button key={b.id} type="button"
+                    onClick={() => set('breed_ids', selected ? form.breed_ids.filter((id: string) => id !== b.id) : [...form.breed_ids, b.id])}
+                    className={`text-xs px-2.5 py-1 rounded-full border transition ${selected ? 'border-[#D74709] bg-[#D74709]/10 text-[#D74709]' : 'border-white/10 bg-white/[0.02] text-white/40 hover:border-white/20'}`}>
+                    {b.name}
+                  </button>
+                )
+              })}
             </div>
           </Sec>
 
