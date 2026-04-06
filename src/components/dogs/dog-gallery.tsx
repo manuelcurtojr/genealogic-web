@@ -19,22 +19,19 @@ export default function DogGallery({ thumbnail_url, name, sex }: DogGalleryProps
     return () => document.removeEventListener('keydown', handler)
   }, [lightboxOpen])
 
-  // WP style: photos flush top/sides, displayed as squares side by side
   return (
     <>
-      <div className="relative w-full overflow-hidden bg-black/20" style={{ height: 'min(50vh, 400px)' }}>
+      {/* Square crop gallery — flush edges, aspect-square on image */}
+      <div className="relative w-full overflow-hidden bg-black/30" style={{ height: 'min(45vh, 380px)' }}>
         {thumbnail_url ? (
-          <div className="flex h-full">
-            <img src={thumbnail_url} alt={name}
-              className="h-full w-auto object-cover cursor-pointer hover:opacity-95 transition"
-              onClick={() => setLightboxOpen(true)} />
-          </div>
+          <img src={thumbnail_url} alt={name}
+            className="h-full aspect-square object-cover cursor-pointer hover:opacity-95 transition"
+            onClick={() => setLightboxOpen(true)} />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <img src="/icon.svg" alt="" className="w-20 h-20 opacity-10" />
           </div>
         )}
-
         {thumbnail_url && (
           <>
             <button className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-black/60 transition">

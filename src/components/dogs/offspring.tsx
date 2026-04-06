@@ -58,16 +58,16 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
       <h3 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-4">
         {offspring.length} descendiente{offspring.length !== 1 ? 's' : ''}
       </h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className="flex gap-3 overflow-x-auto pb-2">
         {offspring.map(dog => {
           const borderColor = dog.sex === 'male' ? BRAND.male : BRAND.female
           return (
             <Link
               key={dog.id}
               href={`/dogs/${dog.id}`}
-              className="bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:bg-white/10 transition"
+              className="w-[140px] flex-shrink-0 bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:bg-white/10 transition"
             >
-              <div className="relative aspect-square bg-white/5">
+              <div className="relative w-[140px] h-[140px] bg-white/5">
                 {dog.thumbnail_url ? (
                   <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
                 ) : (
