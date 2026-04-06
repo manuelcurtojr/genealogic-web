@@ -2,8 +2,9 @@
 
 import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, GripVertical, HandCoins, ChevronDown, Settings, Trash2, X, Loader2 } from 'lucide-react'
+import { Plus, GripVertical, HandCoins, ChevronDown, Settings, Trash2, X, Loader2, BarChart3 } from 'lucide-react'
 import PipelineSummary from './pipeline-summary'
+import CrmDashboard from './crm-dashboard'
 import DealForm from './deal-form'
 
 interface DealsPageClientProps {
@@ -22,6 +23,7 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
   const [dragOverStageId, setDragOverStageId] = useState<string | null>(null)
   const [showPipelineMenu, setShowPipelineMenu] = useState(false)
   const [showNewPipeline, setShowNewPipeline] = useState(false)
+  const [showDashboard, setShowDashboard] = useState(false)
   const [newPipelineName, setNewPipelineName] = useState('')
   const [creating, setCreating] = useState(false)
 
@@ -136,9 +138,17 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
           <h1 className="text-2xl font-bold">Negocios</h1>
           <p className="text-white/50 text-sm mt-1">{pipelineDeals.length} negocios en este pipeline</p>
         </div>
-        <button onClick={handleNewDeal} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition">
-          <Plus className="w-4 h-4" /> Nuevo negocio
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowDashboard(!showDashboard)}
+            className={`px-4 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition border ${showDashboard ? 'bg-[#D74709]/15 text-[#D74709] border-[#D74709]/30' : 'bg-white/5 text-white/50 border-white/10 hover:bg-white/10'}`}
+          >
+            <BarChart3 className="w-4 h-4" /> Dashboard
+          </button>
+          <button onClick={handleNewDeal} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition">
+            <Plus className="w-4 h-4" /> Nuevo negocio
+          </button>
+        </div>
       </div>
 
       {/* Pipeline tabs */}
@@ -227,8 +237,12 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
         </>
       )}
 
-      {/* Pipeline summary */}
-      <PipelineSummary deals={dealsWithStageName} wonStageNames={wonStageNames} lostStageNames={lostStageNames} />
+      {/* Dashboard or Pipeline summary */}
+      {showDashboard ? (
+        <CrmDashboard deals={dealsWithStageName} stages={sortedStages} wonStageNames={wonStageNames} lostStageNames={lostStageNames} />
+      ) : (
+        <PipelineSummary deals={dealsWithStageName} wonStageNames={wonStageNames} lostStageNames={lostStageNames} />
+      )}
 
       {/* Kanban board */}
       {sortedStages.length === 0 ? (
