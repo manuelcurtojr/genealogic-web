@@ -7,16 +7,14 @@ import { BRAND } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
+import LitterFormPanel from './litter-form-panel'
 
 interface Litter {
   id: string
   birth_date: string | null
-  mating_date: string | null
   puppy_count: number | null
   is_public: boolean
   status: string
-  number_of_males: number | null
-  number_of_females: number | null
   breed: any
   father: any
   mother: any
@@ -32,7 +30,13 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
   const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [editLitterId, setEditLitterId] = useState<string | null>(null)
   const router = useRouter()
+
+  const openAdd = () => { setEditLitterId(null); setPanelOpen(true) }
+  const openEdit = (id: string) => { setEditLitterId(id); setPanelOpen(true) }
+  const closePanel = () => { setPanelOpen(false); setEditLitterId(null) }
 
   const filtered = litters.filter(l => {
     if (!search) return true
@@ -58,9 +62,8 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
   }
 
   function getLitterId(litter: Litter) {
-    const d = litter.mating_date || litter.birth_date
-    if (!d) return `#${litter.id.slice(0, 6)}`
-    const date = new Date(d)
+    if (!litter.birth_date) return `#${litter.id.slice(0, 6)}`
+    const date = new Date(litter.birth_date)
     return `#${String(date.getDate()).padStart(2, '0')}${String(date.getMonth() + 1).padStart(2, '0')}${date.getFullYear()}`
   }
 
@@ -98,13 +101,13 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Add card */}
-          <Link href="/litters/new"
-            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[380px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group">
+          <button onClick={openAdd}
+            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[380px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer">
             <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
               <Plus className="w-6 h-6 text-white/30 group-hover:text-[#D74709] transition" />
             </div>
             <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Anadir nueva camada</p>
-          </Link>
+          </button>
 
           {filtered.map(litter => {
             const father = litter.father as any
@@ -119,9 +122,9 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
                   <button onClick={() => setDeleteId(litter.id)} className="w-8 h-8 rounded-full bg-white/5 hover:bg-red-500/20 flex items-center justify-center text-white/30 hover:text-red-400 transition" title="Eliminar">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
-                  <Link href={`/litters/${litter.id}/edit`} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition" title="Editar">
+                  <button onClick={() => openEdit(litter.id)} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition" title="Editar">
                     <Edit className="w-3.5 h-3.5" />
-                  </Link>
+                  </button>
                   <Link href={`/litters/${litter.id}`} className="w-8 h-8 rounded-full bg-[#D74709] hover:bg-[#c03d07] flex items-center justify-center text-white transition" title="Ver">
                     <Eye className="w-3.5 h-3.5" />
                   </Link>
@@ -173,17 +176,12 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
                 <div className="px-4 pt-3 pb-2 text-center space-y-0.5">
                   <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Padre:</span> {father?.name || '—'}</p>
                   <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Madre:</span> {mother?.name || '—'}</p>
-                  {litter.mating_date && (
-                    <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Cruce:</span> {litter.mating_date}</p>
-                  )}
                   {litter.birth_date && (
                     <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Nacimiento:</span> {new Date(litter.birth_date).toLocaleDateString('es-ES')}</p>
                   )}
-                  <p className="text-xs text-white/50">
-                    <span className="font-semibold text-white/70">M:</span> {litter.number_of_males ?? '—'}
-                    {' | '}
-                    <span className="font-semibold text-white/70">H:</span> {litter.number_of_females ?? '—'}
-                  </p>
+                  {litter.puppy_count != null && litter.puppy_count > 0 && (
+                    <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Cachorros:</span> {litter.puppy_count}</p>
+                  )}
                 </div>
 
                 {/* Status badge */}
@@ -235,6 +233,14 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
           })}
         </div>
       )}
+
+      {/* Litter form panel */}
+      <LitterFormPanel
+        open={panelOpen}
+        onClose={closePanel}
+        editLitterId={editLitterId}
+        userId={userId}
+      />
 
       <ConfirmDialog
         open={!!deleteId}
