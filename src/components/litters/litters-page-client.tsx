@@ -13,6 +13,7 @@ import DogFormPanel from '@/components/dogs/dog-form-panel'
 interface Litter {
   id: string
   birth_date: string | null
+  mating_date: string | null
   puppy_count: number | null
   is_public: boolean
   status: string
@@ -106,7 +107,7 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
       <p className="text-xs text-white/30 mb-3">{filtered.length} camada{filtered.length !== 1 ? 's' : ''}</p>
 
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <button onClick={openAdd}
             className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[340px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer">
             <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
@@ -179,6 +180,9 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
 
                 {/* Details */}
                 <div className="px-4 pt-3 pb-2 text-center space-y-0.5">
+                  {litter.mating_date && (
+                    <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Cruce:</span> {new Date(litter.mating_date).toLocaleDateString('es-ES')}</p>
+                  )}
                   {litter.birth_date && (
                     <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Nacimiento:</span> {new Date(litter.birth_date).toLocaleDateString('es-ES')}</p>
                   )}
