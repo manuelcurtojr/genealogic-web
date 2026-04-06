@@ -1,6 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
-import { Plus } from 'lucide-react'
 import DogsPageClient from '@/components/dogs/dogs-page-client'
 
 export default async function DogsPage() {
@@ -33,20 +31,6 @@ export default async function DogsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Mis Perros</h1>
-          <p className="text-white/50 text-sm mt-1">{dogs.length} perros registrados</p>
-        </div>
-        <Link
-          href="/dogs/new"
-          className="bg-[#D74709] hover:bg-[#c03d07] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition"
-        >
-          <Plus className="w-4 h-4" />
-          Anadir perro
-        </Link>
-      </div>
-
       <DogsPageClient
         dogs={dogs}
         breeds={breeds}

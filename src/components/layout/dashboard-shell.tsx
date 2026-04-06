@@ -91,11 +91,8 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
       </div>
 
       {/* Main content */}
-      <main
-        className="p-4 pt-18 lg:p-8 lg:pt-22 transition-all duration-300"
-        style={{ marginLeft: typeof window !== 'undefined' ? undefined : sidebarWidth }}
-      >
-        <div className={`transition-all duration-300 ${collapsed ? 'lg:ml-[68px]' : 'lg:ml-64'}`}>
+      <main className="p-4 pt-18 lg:pt-[74px] transition-all duration-300">
+        <div className={`transition-all duration-300 ${collapsed ? 'lg:ml-[68px]' : 'lg:ml-64'} lg:px-[30px] lg:py-[30px]`}>
           {children}
         </div>
       </main>

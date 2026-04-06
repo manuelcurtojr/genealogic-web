@@ -1,10 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { Heart, Eye, Edit, GitBranch, ArrowRightLeft, Mars, Venus } from 'lucide-react'
+import { Eye, Edit, GitBranch, ArrowRightLeft, Mars, Venus } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
-import { useState } from 'react'
 
 interface DogCardProps {
   dog: {
@@ -16,31 +15,14 @@ interface DogCardProps {
     breed: any
     color: any
   }
-  isFavorited?: boolean
   userId?: string
 }
 
-export default function DogCard({ dog, isFavorited = false, userId }: DogCardProps) {
-  const [favorited, setFavorited] = useState(isFavorited)
-
+export default function DogCard({ dog, userId }: DogCardProps) {
   const sexBorder = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
   const SexIcon = dog.sex === 'male' ? Mars : Venus
   const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
   const colorName = Array.isArray(dog.color) ? dog.color[0]?.name : dog.color?.name
-
-  const toggleFavorite = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (!userId) return
-
-    const supabase = createClient()
-    if (favorited) {
-      await supabase.from('favorites').delete().eq('user_id', userId).eq('dog_id', dog.id)
-    } else {
-      await supabase.from('favorites').insert({ user_id: userId, dog_id: dog.id })
-    }
-    setFavorited(!favorited)
-  }
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition group">
@@ -60,20 +42,6 @@ export default function DogCard({ dog, isFavorited = false, userId }: DogCardPro
             <img src="/icon.svg" alt="" className="w-4 h-4" />
             <span className="text-[11px] text-white font-medium">{breedName}</span>
           </div>
-        )}
-
-        {/* Favorite button */}
-        {userId && (
-          <button
-            onClick={toggleFavorite}
-            className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition"
-          >
-            <Heart
-              className="w-4 h-4"
-              fill={favorited ? BRAND.danger : 'none'}
-              color={favorited ? BRAND.danger : 'white'}
-            />
-          </button>
         )}
 
         {/* Sex indicator bar at bottom */}

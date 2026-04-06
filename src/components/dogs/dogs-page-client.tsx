@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Grid3X3, List, ChevronLeft, ChevronRight, Search, Plus, Eye, Edit, GitBranch, Mars, Venus } from 'lucide-react'
+import { Grid3X3, List, ChevronLeft, ChevronRight, Search, Plus, Eye, Edit, GitBranch, Mars, Venus, ArrowRightLeft } from 'lucide-react'
 import DogCard from './dog-card'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
@@ -49,20 +49,11 @@ export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }:
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   const handleSearchChange = (v: string) => { setSearch(v); setPage(0) }
-  const handleSexChange = (v: string) => { setSexFilter(v); setPage(0) }
-  const handleBreedChange = (v: string) => { setBreedFilter(v); setPage(0) }
-
-  const sexOptions = [
-    { value: '', label: 'Todos' },
-    { value: 'male', label: 'Machos' },
-    { value: 'female', label: 'Hembras' },
-  ]
 
   return (
     <>
-      {/* Filter bar — WP style */}
+      {/* Filter bar */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
-        {/* Search — full width */}
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
           <input
@@ -74,27 +65,21 @@ export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }:
           />
         </div>
 
-        {/* Sex filter */}
-        <div className="flex rounded-lg border border-white/10 overflow-hidden">
-          {sexOptions.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => handleSexChange(opt.value)}
-              className={`px-3 py-2 text-xs font-medium transition ${
-                sexFilter === opt.value
-                  ? 'bg-[#D74709] text-white'
-                  : 'bg-white/5 text-white/50 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        {/* Sex filter — dropdown */}
+        <select
+          value={sexFilter}
+          onChange={(e) => { setSexFilter(e.target.value); setPage(0) }}
+          className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-[130px]"
+        >
+          <option value="">Todos los sexos</option>
+          <option value="male">Machos</option>
+          <option value="female">Hembras</option>
+        </select>
 
         {/* Breed filter */}
         <select
           value={breedFilter}
-          onChange={(e) => handleBreedChange(e.target.value)}
+          onChange={(e) => { setBreedFilter(e.target.value); setPage(0) }}
           className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-[160px]"
         >
           <option value="">Todas las razas</option>
@@ -125,8 +110,8 @@ export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }:
 
       {/* Grid view */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Add new dog card — first position */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {/* Add new dog card */}
           <Link
             href="/dogs/new"
             className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[320px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group"
@@ -138,18 +123,11 @@ export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }:
             <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">perro</p>
           </Link>
 
-          {/* Dog cards */}
           {paged.map((dog) => (
-            <DogCard
-              key={dog.id}
-              dog={dog}
-              isFavorited={favoriteDogIds.includes(dog.id)}
-              userId={userId}
-            />
+            <DogCard key={dog.id} dog={dog} userId={userId} />
           ))}
         </div>
       ) : (
-        /* List view */
         <div className="space-y-1">
           {paged.map((dog) => {
             const borderColor = dog.sex === 'male' ? BRAND.male : BRAND.female
@@ -181,10 +159,10 @@ export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }:
                   {dog.birth_date ? new Date(dog.birth_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition" title="Ver">
+                  <div className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition">
                     <Eye className="w-3.5 h-3.5" />
                   </div>
-                  <Link href={`/dogs/${dog.id}/edit`} className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition" title="Editar" onClick={e => e.stopPropagation()}>
+                  <Link href={`/dogs/${dog.id}/edit`} className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition" onClick={e => e.stopPropagation()}>
                     <Edit className="w-3.5 h-3.5" />
                   </Link>
                 </div>
