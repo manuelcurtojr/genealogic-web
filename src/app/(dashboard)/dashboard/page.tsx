@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { Dog, Baby, Users, HandCoins, Shield, PawPrint } from 'lucide-react'
+import { Dog, Baby, Users, HandCoins, PawPrint } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import StatCard from '@/components/dashboard/stat-card'
 import Achievements from '@/components/dashboard/achievements'
+import GenesCard from '@/components/dashboard/genes-card'
 import { evaluateAchievements, type EvalData } from '@/lib/achievements'
 import Link from 'next/link'
 
@@ -107,16 +108,8 @@ export default async function DashboardPage() {
       </div>
 
       {/* Genes balance */}
-      <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-            <Shield className="w-5 h-5 text-purple-400" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold">{profile?.genes?.toLocaleString() || 0} Genes</p>
-            <p className="text-xs text-white/40">Tu saldo de genes</p>
-          </div>
-        </div>
+      <div className="mb-8">
+        <GenesCard balance={profile?.genes || 0} userId={user.id} />
       </div>
 
       {/* Achievements */}
