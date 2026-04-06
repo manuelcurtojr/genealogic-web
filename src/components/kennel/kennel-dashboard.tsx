@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Edit, Globe, Calendar, Dog, Camera, Search, Grid3X3, List, Eye, EyeOff,
-  Loader2, ExternalLink, MessageCircle, Settings, Baby, Heart, ArrowRightLeft
+  Loader2, ExternalLink, MessageCircle, Settings, Baby, Heart, ArrowRightLeft, Tag
 } from 'lucide-react'
 import KennelEditPanel from './kennel-edit-panel'
 import TransferPanel from './transfer-panel'
+import SalePanel from './sale-panel'
 
 interface Props {
   kennel: any
@@ -25,6 +26,7 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showEdit, setShowEdit] = useState(false)
   const [transferDog, setTransferDog] = useState<any>(null)
+  const [saleDog, setSaleDog] = useState<any>(null)
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -229,19 +231,22 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((dog: any) => (
-            <DogCard key={dog.id} dog={dog} userId={userId} onToggle={toggleField} onTransfer={d => setTransferDog(d)} />
+            <DogCard key={dog.id} dog={dog} userId={userId} onToggle={toggleField} onTransfer={d => setTransferDog(d)} onSale={d => setSaleDog(d)} />
           ))}
         </div>
       ) : (
         <div className="space-y-2">
           {filtered.map((dog: any) => (
-            <DogRow key={dog.id} dog={dog} userId={userId} onToggle={toggleField} onTransfer={d => setTransferDog(d)} />
+            <DogRow key={dog.id} dog={dog} userId={userId} onToggle={toggleField} onTransfer={d => setTransferDog(d)} onSale={d => setSaleDog(d)} />
           ))}
         </div>
       )}
 
       {/* Edit panel */}
       <KennelEditPanel open={showEdit} onClose={() => setShowEdit(false)} kennel={kennel} />
+
+      {/* Sale panel */}
+      <SalePanel open={!!saleDog} onClose={() => setSaleDog(null)} dog={saleDog} />
 
       {/* Transfer panel */}
       <TransferPanel
@@ -254,7 +259,7 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
   )
 }
 
-function DogCard({ dog, userId, onToggle, onTransfer }: { dog: any; userId: string; onToggle: (id: string, field: string, current: boolean) => void; onTransfer: (dog: any) => void }) {
+function DogCard({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; userId: string; onToggle: (id: string, field: string, current: boolean) => void; onTransfer: (dog: any) => void; onSale: (dog: any) => void }) {
   const sexColor = dog.sex === 'male' ? '#017DFA' : '#e84393'
   const sexIcon = dog.sex === 'male' ? '♂' : '♀'
   const isOwner = dog.owner_id === userId
@@ -293,10 +298,17 @@ function DogCard({ dog, userId, onToggle, onTransfer }: { dog: any; userId: stri
             <Heart className="w-3 h-3" /> Reproductor
           </button>
           {isOwner && (
+            <button onClick={() => onSale({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
+              className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.is_for_sale ? 'bg-[#D74709]/10 text-[#D74709]' : 'bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709]'}`}
+              title={dog.is_for_sale ? 'Editar anuncio' : 'Poner en venta'}>
+              <Tag className="w-3 h-3" /> {dog.is_for_sale ? 'En venta' : 'Vender'}
+            </button>
+          )}
+          {isOwner && (
             <button onClick={() => onTransfer({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
               className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709] transition ml-auto"
               title="Transferir a otro propietario">
-              <ArrowRightLeft className="w-3 h-3" /> Transferir
+              <ArrowRightLeft className="w-3 h-3" />
             </button>
           )}
         </div>
@@ -305,7 +317,7 @@ function DogCard({ dog, userId, onToggle, onTransfer }: { dog: any; userId: stri
   )
 }
 
-function DogRow({ dog, userId, onToggle, onTransfer }: { dog: any; userId: string; onToggle: (id: string, field: string, current: boolean) => void; onTransfer: (dog: any) => void }) {
+function DogRow({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; userId: string; onToggle: (id: string, field: string, current: boolean) => void; onTransfer: (dog: any) => void; onSale: (dog: any) => void }) {
   const sexColor = dog.sex === 'male' ? '#017DFA' : '#e84393'
   const isOwner = dog.owner_id === userId
   return (
@@ -330,6 +342,12 @@ function DogRow({ dog, userId, onToggle, onTransfer }: { dog: any; userId: strin
         className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition flex-shrink-0 ${dog.is_reproductive ? 'bg-pink-500/10 text-pink-400' : 'bg-white/5 text-white/30'}`}>
         <Heart className="w-3.5 h-3.5" />
       </button>
+      {isOwner && (
+        <button onClick={() => onSale({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
+          className={`px-2 py-1.5 rounded-lg text-[11px] font-semibold transition flex-shrink-0 ${dog.is_for_sale ? 'bg-[#D74709]/10 text-[#D74709]' : 'text-white/20 hover:text-[#D74709]'}`}>
+          <Tag className="w-3.5 h-3.5" />
+        </button>
+      )}
       {isOwner && (
         <button onClick={() => onTransfer({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
           className="text-white/20 hover:text-[#D74709] transition flex-shrink-0">
