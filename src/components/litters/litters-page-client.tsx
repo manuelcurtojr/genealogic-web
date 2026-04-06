@@ -1,0 +1,250 @@
+'use client'
+
+import { useState } from 'react'
+import { Search, Plus, Grid3X3, List, Trash2, Edit, Eye, EyeOff, Calendar, Baby, Lock, Globe } from 'lucide-react'
+import Link from 'next/link'
+import { BRAND } from '@/lib/constants'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import ConfirmDialog from '@/components/ui/confirm-dialog'
+
+interface Litter {
+  id: string
+  birth_date: string | null
+  mating_date: string | null
+  puppy_count: number | null
+  is_public: boolean
+  status: string
+  number_of_males: number | null
+  number_of_females: number | null
+  breed: any
+  father: any
+  mother: any
+}
+
+const statusConfig: Record<string, { label: string; color: string }> = {
+  confirmed: { label: 'Confirmada', color: BRAND.success },
+  pending: { label: 'Pendiente', color: BRAND.warning },
+  planned: { label: 'Planificada', color: BRAND.info },
+}
+
+export default function LittersPageClient({ litters, userId }: { litters: Litter[]; userId: string }) {
+  const [search, setSearch] = useState('')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const router = useRouter()
+
+  const filtered = litters.filter(l => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    const fName = (l.father as any)?.name?.toLowerCase() || ''
+    const mName = (l.mother as any)?.name?.toLowerCase() || ''
+    const breedName = (Array.isArray(l.breed) ? l.breed[0]?.name : l.breed?.name)?.toLowerCase() || ''
+    return fName.includes(q) || mName.includes(q) || breedName.includes(q)
+  })
+
+  async function handleDelete() {
+    if (!deleteId) return
+    const supabase = createClient()
+    await supabase.from('litters').delete().eq('id', deleteId)
+    setDeleteId(null)
+    router.refresh()
+  }
+
+  async function toggleVisibility(litter: Litter) {
+    const supabase = createClient()
+    await supabase.from('litters').update({ is_public: !litter.is_public }).eq('id', litter.id)
+    router.refresh()
+  }
+
+  function getLitterId(litter: Litter) {
+    const d = litter.mating_date || litter.birth_date
+    if (!d) return `#${litter.id.slice(0, 6)}`
+    const date = new Date(d)
+    return `#${String(date.getDate()).padStart(2, '0')}${String(date.getMonth() + 1).padStart(2, '0')}${date.getFullYear()}`
+  }
+
+  return (
+    <>
+      {/* Title */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Camadas</h1>
+        <p className="text-white/50 text-sm mt-1">{litters.length} camadas</p>
+      </div>
+
+      {/* Filter bar */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <input
+            value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar por padre, madre o raza..."
+            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition"
+          />
+        </div>
+        <div className="flex rounded-lg border border-white/10 overflow-hidden">
+          <button onClick={() => setViewMode('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}>
+            <Grid3X3 className="w-4 h-4" />
+          </button>
+          <button onClick={() => setViewMode('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}>
+            <List className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <p className="text-xs text-white/30 mb-3">{filtered.length} camada{filtered.length !== 1 ? 's' : ''}</p>
+
+      {/* Grid */}
+      {viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Add card */}
+          <Link href="/litters/new"
+            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[380px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group">
+            <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
+              <Plus className="w-6 h-6 text-white/30 group-hover:text-[#D74709] transition" />
+            </div>
+            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Anadir nueva camada</p>
+          </Link>
+
+          {filtered.map(litter => {
+            const father = litter.father as any
+            const mother = litter.mother as any
+            const breed = Array.isArray(litter.breed) ? litter.breed[0] : litter.breed
+            const status = statusConfig[litter.status] || statusConfig.pending
+
+            return (
+              <div key={litter.id} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition">
+                {/* Action buttons top-right */}
+                <div className="flex items-center justify-end gap-1 px-3 pt-3">
+                  <button onClick={() => setDeleteId(litter.id)} className="w-8 h-8 rounded-full bg-white/5 hover:bg-red-500/20 flex items-center justify-center text-white/30 hover:text-red-400 transition" title="Eliminar">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                  <Link href={`/litters/${litter.id}/edit`} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition" title="Editar">
+                    <Edit className="w-3.5 h-3.5" />
+                  </Link>
+                  <Link href={`/litters/${litter.id}`} className="w-8 h-8 rounded-full bg-[#D74709] hover:bg-[#c03d07] flex items-center justify-center text-white transition" title="Ver">
+                    <Eye className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+
+                {/* Litter ID */}
+                <div className="text-center mt-1">
+                  <span className="text-lg font-bold text-white">{getLitterId(litter)}</span>
+                </div>
+
+                {/* Parent photos circular */}
+                <div className="flex items-center justify-center gap-3 mt-3 px-4">
+                  <div className="w-12 h-12 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.male }}>
+                    {father?.thumbnail_url ? (
+                      <img src={father.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/20 text-lg">♂</div>
+                    )}
+                  </div>
+                  <span className="text-white/30 font-bold text-sm">x</span>
+                  <div className="w-12 h-12 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.female }}>
+                    {mother?.thumbnail_url ? (
+                      <img src={mother.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/20 text-lg">♀</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Breed badge */}
+                {breed?.name && (
+                  <div className="flex justify-center mt-3">
+                    <div className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-2.5 py-1">
+                      <img src="/icon.svg" alt="" className="w-4 h-4" />
+                      <span className="text-xs text-white/60">{breed.name}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Visibility toggle */}
+                <div className="flex justify-center mt-2">
+                  <button onClick={() => toggleVisibility(litter)} className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full transition ${litter.is_public ? 'text-green-400 bg-green-500/10' : 'text-white/40 bg-white/5'}`}>
+                    {litter.is_public ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                    {litter.is_public ? 'Publica' : 'Privada'}
+                  </button>
+                </div>
+
+                {/* Details */}
+                <div className="px-4 pt-3 pb-2 text-center space-y-0.5">
+                  <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Padre:</span> {father?.name || '—'}</p>
+                  <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Madre:</span> {mother?.name || '—'}</p>
+                  {litter.mating_date && (
+                    <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Cruce:</span> {litter.mating_date}</p>
+                  )}
+                  {litter.birth_date && (
+                    <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Nacimiento:</span> {new Date(litter.birth_date).toLocaleDateString('es-ES')}</p>
+                  )}
+                  <p className="text-xs text-white/50">
+                    <span className="font-semibold text-white/70">M:</span> {litter.number_of_males ?? '—'}
+                    {' | '}
+                    <span className="font-semibold text-white/70">H:</span> {litter.number_of_females ?? '—'}
+                  </p>
+                </div>
+
+                {/* Status badge */}
+                <div className="flex justify-center pb-3">
+                  <span className="text-[11px] font-medium rounded-full px-2.5 py-0.5" style={{ backgroundColor: status.color + '20', color: status.color }}>
+                    {status.label}
+                  </span>
+                </div>
+
+                {/* Add puppy button */}
+                <div className="border-t border-white/5 flex justify-center py-2">
+                  <button className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#D74709]/10 flex items-center justify-center text-white/30 hover:text-[#D74709] transition" title="Anadir cachorro">
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        /* List view */
+        <div className="space-y-1">
+          {filtered.map(litter => {
+            const father = litter.father as any
+            const mother = litter.mother as any
+            const status = statusConfig[litter.status] || statusConfig.pending
+            return (
+              <Link key={litter.id} href={`/litters/${litter.id}`}
+                className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-lg px-4 py-3 hover:bg-white/10 transition">
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.male }}>
+                    {father?.thumbnail_url ? <img src={father.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/20 text-xs">♂</div>}
+                  </div>
+                  <span className="text-white/30 text-xs">x</span>
+                  <div className="w-8 h-8 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.female }}>
+                    {mother?.thumbnail_url ? <img src={mother.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/20 text-xs">♀</div>}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{father?.name || '?'} x {mother?.name || '?'}</p>
+                  <p className="text-xs text-white/40">{litter.birth_date ? new Date(litter.birth_date).toLocaleDateString('es-ES') : '—'}</p>
+                </div>
+                <span className="text-[11px] font-medium rounded-full px-2 py-0.5 hidden sm:inline" style={{ backgroundColor: status.color + '20', color: status.color }}>
+                  {status.label}
+                </span>
+                <span className="text-xs text-white/30">{litter.puppy_count || 0} cachorros</span>
+              </Link>
+            )
+          })}
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onCancel={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Eliminar camada"
+        message="Esta camada se eliminara permanentemente."
+        confirmLabel="Eliminar"
+        destructive
+      />
+    </>
+  )
+}
