@@ -14,11 +14,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .eq('id', user.id)
     .single()
 
-  const { data: kennel } = await supabase
+  const { data: kennelArr } = await supabase
     .from('kennels')
     .select('name, logo_url')
     .eq('owner_id', user.id)
-    .single()
+    .limit(1)
+  const kennel = kennelArr?.[0] || null
 
   return (
     <DashboardShell user={profile} kennel={kennel}>

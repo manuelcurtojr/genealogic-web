@@ -8,11 +8,13 @@ export default async function KennelPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: kennel } = await supabase
+  const { data: kennels } = await supabase
     .from('kennels')
     .select('*')
     .eq('owner_id', user.id)
-    .single()
+    .order('created_at')
+    .limit(1)
+  const kennel = kennels?.[0] || null
 
   if (!kennel) {
     return <KennelEmpty userId={user.id} />

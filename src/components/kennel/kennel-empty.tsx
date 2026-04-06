@@ -30,6 +30,15 @@ export default function KennelEmpty({ userId }: Props) {
     setError('')
 
     const supabase = createClient()
+
+    // Check if kennel already exists (prevent duplicates)
+    const { data: existing } = await supabase.from('kennels').select('id').eq('owner_id', userId).limit(1)
+    if (existing && existing.length > 0) {
+      // Already has a kennel, just refresh
+      router.refresh()
+      return
+    }
+
     const { error: err } = await supabase.from('kennels').insert({
       owner_id: userId,
       name: form.name.trim(),
