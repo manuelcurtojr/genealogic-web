@@ -124,85 +124,59 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
             const hasPuppies = litter.puppy_count && litter.puppy_count > 0
 
             return (
-              <div key={litter.id} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition">
-                {/* Actions */}
-                <div className="flex items-center justify-end gap-1 px-3 pt-3">
-                  {!hasPuppies && (
-                    <button onClick={() => { setDeleteError(''); setDeleteId(litter.id) }} className="w-8 h-8 rounded-full bg-white/5 hover:bg-red-500/20 flex items-center justify-center text-white/30 hover:text-red-400 transition" title="Eliminar">
-                      <Trash2 className="w-3.5 h-3.5" />
+              <div key={litter.id} className="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition group">
+                {/* Split parent photos */}
+                <div className="relative flex h-32 bg-white/5">
+                  <div className="flex-1 relative overflow-hidden">
+                    {father?.thumbnail_url ? <img src={father.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-blue-400/30 text-2xl">♂</div>}
+                    <div className="absolute bottom-1.5 left-1.5 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-1.5 py-0.5 rounded">{father?.name || '?'}</div>
+                  </div>
+                  <div className="w-px bg-white/10" />
+                  <div className="flex-1 relative overflow-hidden">
+                    {mother?.thumbnail_url ? <img src={mother.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-pink-400/30 text-2xl">♀</div>}
+                    <div className="absolute bottom-1.5 right-1.5 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-1.5 py-0.5 rounded">{mother?.name || '?'}</div>
+                  </div>
+                  {/* Status badge on photo */}
+                  <div className="absolute top-2 right-2">
+                    <span className="text-[10px] font-semibold rounded-full px-2 py-0.5" style={{ backgroundColor: status.color + '30', color: status.color, backdropFilter: 'blur(4px)' }}>
+                      {status.label}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div className="p-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {breed?.name && <span className="text-[10px] text-white/50 bg-white/5 rounded-full px-2 py-0.5">{breed.name}</span>}
+                    <button onClick={() => toggleVisibility(litter)} className={`text-[10px] font-semibold px-2 py-0.5 rounded-full transition ${litter.is_public ? 'text-green-400 bg-green-500/10' : 'text-white/30 bg-white/5'}`}>
+                      {litter.is_public ? <Globe className="w-3 h-3 inline mr-0.5" /> : <Lock className="w-3 h-3 inline mr-0.5" />}
+                      {litter.is_public ? 'Publica' : 'Privada'}
                     </button>
-                  )}
-                  <button onClick={() => openEdit(litter.id)} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition" title="Editar">
-                    <Edit className="w-3.5 h-3.5" />
-                  </button>
-                  <Link href={`/litters/${litter.id}`} className="w-8 h-8 rounded-full bg-[#D74709] hover:bg-[#c03d07] flex items-center justify-center text-white transition" title="Ver">
-                    <Eye className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
+                  </div>
 
-                {/* Title: Father x Mother */}
-                <div className="text-center mt-1 px-3">
-                  <span className="text-base font-bold text-white">{father?.name || '?'} x {mother?.name || '?'}</span>
-                </div>
+                  <div className="flex items-center gap-3 mt-2 text-[11px] text-white/40">
+                    {litter.birth_date && <span>{new Date(litter.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
+                    {litter.mating_date && !litter.birth_date && <span>Cruce: {new Date(litter.mating_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</span>}
+                    {hasPuppies && <span>{litter.puppy_count} cachorros</span>}
+                  </div>
 
-                {/* Parent photos */}
-                <div className="flex items-center justify-center gap-3 mt-3 px-4">
-                  <div className="w-12 h-12 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.male }}>
-                    {father?.thumbnail_url ? (
-                      <img src={father.thumbnail_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-6 h-6 opacity-20" /></div>
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-white/5">
+                    <Link href={`/litters/${litter.id}`} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition">
+                      <Eye className="w-3 h-3" /> Ver
+                    </Link>
+                    <button onClick={() => openEdit(litter.id)} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition">
+                      <Edit className="w-3 h-3" /> Editar
+                    </button>
+                    <button onClick={() => openAddPuppy(litter)} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition ml-auto" title="Anadir cachorro">
+                      <Plus className="w-3 h-3" />
+                    </button>
+                    {!hasPuppies && (
+                      <button onClick={() => { setDeleteError(''); setDeleteId(litter.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-red-400/50 hover:bg-red-500/10 hover:text-red-400 transition">
+                        <Trash2 className="w-3 h-3" />
+                      </button>
                     )}
                   </div>
-                  <span className="text-white/30 font-bold text-sm">x</span>
-                  <div className="w-12 h-12 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.female }}>
-                    {mother?.thumbnail_url ? (
-                      <img src={mother.thumbnail_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-6 h-6 opacity-20" /></div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Breed + Visibility */}
-                <div className="flex items-center justify-center gap-2 mt-3 flex-wrap px-3">
-                  {breed?.name && (
-                    <div className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-2.5 py-1">
-                      <img src="/icon.svg" alt="" className="w-3.5 h-3.5" />
-                      <span className="text-[11px] text-white/60">{breed.name}</span>
-                    </div>
-                  )}
-                  <button onClick={() => toggleVisibility(litter)} className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full transition ${litter.is_public ? 'text-green-400 bg-green-500/10' : 'text-white/40 bg-white/5'}`}>
-                    {litter.is_public ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-                    {litter.is_public ? 'Publica' : 'Privada'}
-                  </button>
-                </div>
-
-                {/* Details */}
-                <div className="px-4 pt-3 pb-2 text-center space-y-0.5">
-                  {litter.mating_date && (
-                    <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Cruce:</span> {new Date(litter.mating_date).toLocaleDateString('es-ES')}</p>
-                  )}
-                  {litter.birth_date && (
-                    <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Nacimiento:</span> {new Date(litter.birth_date).toLocaleDateString('es-ES')}</p>
-                  )}
-                  {hasPuppies && (
-                    <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Cachorros:</span> {litter.puppy_count}</p>
-                  )}
-                </div>
-
-                {/* Status */}
-                <div className="flex justify-center pb-3">
-                  <span className="text-[11px] font-medium rounded-full px-2.5 py-0.5" style={{ backgroundColor: status.color + '20', color: status.color }}>
-                    {status.label}
-                  </span>
-                </div>
-
-                {/* Add puppy */}
-                <div className="border-t border-white/5 flex justify-center py-2">
-                  <button onClick={() => openAddPuppy(litter)} className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#D74709]/10 flex items-center justify-center text-white/30 hover:text-[#D74709] transition" title="Anadir cachorro a esta camada">
-                    <Plus className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
             )
