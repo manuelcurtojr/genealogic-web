@@ -39,8 +39,8 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="-mx-[30px] -mt-[30px]">
-      {/* Gallery — full width, edge-to-edge */}
-      <div className="relative">
+      {/* Gallery — flush to header and sidebar */}
+      <div className="relative bg-white/[0.03]">
         <DogGallery thumbnail_url={dog.thumbnail_url} name={dog.name} sex={dog.sex} />
 
         {/* Floating buttons over gallery */}
@@ -105,10 +105,10 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
           </div>
         )}
 
-        {/* Pedigree — free flowing, no box */}
+        {/* Pedigree */}
         {pedigree && pedigree.length > 1 && (
           <div className="mb-8">
-            <h2 className="text-lg font-bold mb-4">Pedigri</h2>
+            <h2 className="text-lg font-bold mb-6">Pedigri</h2>
             <PedigreeTree data={pedigree} rootId={id} />
           </div>
         )}
