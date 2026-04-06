@@ -117,11 +117,11 @@ export default function LittersPageClient({ litters, userId, userKennelId }: { l
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <button onClick={openAdd}
-            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[340px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer">
+            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer aspect-[4/5]">
             <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
               <Plus className="w-6 h-6 text-white/30 group-hover:text-[#D74709] transition" />
             </div>
-            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Anadir nueva camada</p>
+            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Anadir camada</p>
           </button>
 
           {filtered.map(litter => {
@@ -176,11 +176,8 @@ export default function LittersPageClient({ litters, userId, userKennelId }: { l
                     <button onClick={() => openEdit(litter.id)} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition">
                       <Edit className="w-3 h-3" /> Editar
                     </button>
-                    <button onClick={() => openAddPuppy(litter)} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition ml-auto" title="Anadir cachorro">
-                      <Plus className="w-3 h-3" />
-                    </button>
                     {!hasPuppies && (
-                      <button onClick={() => { setDeleteError(''); setDeleteId(litter.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-red-400/50 hover:bg-red-500/10 hover:text-red-400 transition">
+                      <button onClick={() => { setDeleteError(''); setDeleteId(litter.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-red-400/50 hover:bg-red-500/10 hover:text-red-400 transition ml-auto">
                         <Trash2 className="w-3 h-3" />
                       </button>
                     )}
@@ -220,7 +217,21 @@ export default function LittersPageClient({ litters, userId, userKennelId }: { l
       )}
 
       {/* Litter form panel */}
-      <LitterFormPanel open={panelOpen} onClose={closePanel} editLitterId={editLitterId} userId={userId} />
+      <LitterFormPanel
+        open={panelOpen}
+        onClose={closePanel}
+        editLitterId={editLitterId}
+        userId={userId}
+        onAddPuppy={(litterId, breedId, fatherId, motherId) => {
+          closePanel()
+          setAddPuppyLitterId(litterId)
+          setAddPuppyBreedId(breedId)
+          setAddPuppyFatherId(fatherId)
+          setAddPuppyMotherId(motherId)
+          setAddPuppyKennelId(userKennelId || null)
+          setDogPanelOpen(true)
+        }}
+      />
 
       {/* Dog form panel for adding puppy to litter */}
       <DogFormPanel

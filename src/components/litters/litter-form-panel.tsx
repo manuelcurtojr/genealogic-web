@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, Lock, Calendar, Heart, PawPrint } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, Lock, Calendar, Heart, PawPrint, Plus, Dog } from 'lucide-react'
+import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 
 interface LitterFormPanelProps {
@@ -11,6 +12,7 @@ interface LitterFormPanelProps {
   onClose: () => void
   editLitterId?: string | null
   userId: string
+  onAddPuppy?: (litterId: string, breedId: string | null, fatherId: string | null, motherId: string | null) => void
 }
 
 const STATUSES = [
@@ -19,7 +21,7 @@ const STATUSES = [
   { value: 'born', label: 'Ya han nacido!', desc: 'Tengo la fecha y el numero de crias.', icon: PawPrint, color: '#27ae60' },
 ]
 
-export default function LitterFormPanel({ open, onClose, editLitterId, userId }: LitterFormPanelProps) {
+export default function LitterFormPanel({ open, onClose, editLitterId, userId, onAddPuppy }: LitterFormPanelProps) {
   const router = useRouter()
   const isEdit = !!editLitterId
   const [loading, setLoading] = useState(false)
@@ -29,6 +31,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId }:
   const [breeds, setBreeds] = useState<any[]>([])
   const [maleDogs, setMaleDogs] = useState<any[]>([])
   const [femaleDogs, setFemaleDogs] = useState<any[]>([])
+  const [puppies, setPuppies] = useState<any[]>([])
 
   const [form, setForm] = useState({
     father_id: '', mother_id: '', breed_id: '', birth_date: '', mating_date: '',
@@ -52,7 +55,12 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId }:
       setFemaleDogs(fRes.data || [])
 
       if (editLitterId) {
-        const { data: litter } = await supabase.from('litters').select('*').eq('id', editLitterId).single()
+        const [litterRes, puppiesRes] = await Promise.all([
+          supabase.from('litters').select('*').eq('id', editLitterId).single(),
+          supabase.from('dogs').select('id, name, sex, thumbnail_url, breed:breeds(name)').eq('father_id', editLitterId).order('name'),
+        ])
+        // Puppies: dogs whose father_id or mother_id matches the litter parents
+        const litter = litterRes.data
         if (litter) {
           setForm({
             father_id: litter.father_id || '', mother_id: litter.mother_id || '',
@@ -61,8 +69,20 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId }:
             puppy_count: litter.puppy_count?.toString() || '', status: litter.status || 'planned',
             is_public: litter.is_public ?? true,
           })
+          // Fetch actual puppies (dogs with same father AND mother as the litter)
+          if (litter.father_id && litter.mother_id) {
+            const { data: pups } = await supabase.from('dogs')
+              .select('id, name, sex, thumbnail_url')
+              .eq('father_id', litter.father_id)
+              .eq('mother_id', litter.mother_id)
+              .order('name')
+            setPuppies(pups || [])
+          } else {
+            setPuppies([])
+          }
         }
       } else {
+        setPuppies([])
         setForm({ father_id: '', mother_id: '', breed_id: '', birth_date: '', mating_date: '', puppy_count: '', status: 'planned', is_public: true })
       }
       setDataLoading(false)
@@ -244,6 +264,43 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId }:
                 <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition ${form.is_public ? 'left-[22px]' : 'left-0.5'}`} />
               </button>
             </div>
+
+            {/* Puppies section (edit mode only) */}
+            {isEdit && (
+              <div>
+                <h3 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">
+                  Cachorros {puppies.length > 0 && <span className="text-white/20">({puppies.length})</span>}
+                </h3>
+                {puppies.length > 0 ? (
+                  <div className="space-y-1.5 mb-3">
+                    {puppies.map((pup: any) => {
+                      const sexColor = pup.sex === 'male' ? '#017DFA' : '#e84393'
+                      return (
+                        <Link key={pup.id} href={`/dogs/${pup.id}`}
+                          className="flex items-center gap-2.5 bg-white/[0.03] border border-white/5 rounded-lg px-3 py-2 hover:border-white/15 transition">
+                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/5 flex-shrink-0 border" style={{ borderColor: sexColor }}>
+                            {pup.thumbnail_url ? <img src={pup.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-4 h-4 text-white/15" /></div>}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold truncate">{pup.name}</p>
+                          </div>
+                          <span className="text-[10px]" style={{ color: sexColor }}>{pup.sex === 'male' ? '♂' : '♀'}</span>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-white/25 mb-3">No hay cachorros asignados a esta camada</p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onAddPuppy?.(editLitterId!, form.breed_id || null, form.father_id || null, form.mother_id || null)}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-white/10 text-xs text-white/40 hover:text-[#D74709] hover:border-[#D74709]/30 transition"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Anadir cachorro
+                </button>
+              </div>
+            )}
           </div>
         )}
 
