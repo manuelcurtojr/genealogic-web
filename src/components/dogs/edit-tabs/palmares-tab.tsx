@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Trophy, Plus, Pencil, Trash2, X, Loader2 } from 'lucide-react'
+import { Trophy, Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff, FileText } from 'lucide-react'
+import FileGallery from './file-gallery'
 
 const AWARD_TYPES = [
   { key: 'CAC', label: 'CAC', color: '#f39c12' },
@@ -20,7 +21,7 @@ export default function PalmaresTab({ dogId, userId }: { dogId: string; userId: 
   const [showForm, setShowForm] = useState(false)
   const [editAward, setEditAward] = useState<any>(null)
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ award_type: 'CAC', event_name: '', date: new Date().toISOString().split('T')[0], judge: '', notes: '' })
+  const [form, setForm] = useState({ award_type: 'CAC', event_name: '', date: new Date().toISOString().split('T')[0], judge: '', notes: '', is_public: false, files: [] as string[] })
   const supabase = createClient()
 
   async function load() { const { data } = await supabase.from('awards').select('*').eq('dog_id', dogId).order('date', { ascending: false }); setAwards(data || []) }
@@ -29,12 +30,14 @@ export default function PalmaresTab({ dogId, userId }: { dogId: string; userId: 
   const counts = AWARD_TYPES.map(t => ({ ...t, count: awards.filter(a => a.award_type === t.key).length }))
   const filtered = filter === 'all' ? awards : awards.filter(a => a.award_type === filter)
 
-  function openAdd() { setEditAward(null); setForm({ award_type: 'CAC', event_name: '', date: new Date().toISOString().split('T')[0], judge: '', notes: '' }); setShowForm(true) }
-  function openEdit(a: any) { setEditAward(a); setForm({ award_type: a.award_type, event_name: a.event_name, date: a.date, judge: a.judge || '', notes: a.notes || '' }); setShowForm(true) }
+  function parseFiles(fileUrl: string | null): string[] { try { return fileUrl ? JSON.parse(fileUrl) : [] } catch { return fileUrl ? [fileUrl] : [] } }
+
+  function openAdd() { setEditAward(null); setForm({ award_type: 'CAC', event_name: '', date: new Date().toISOString().split('T')[0], judge: '', notes: '', is_public: false, files: [] }); setShowForm(true) }
+  function openEdit(a: any) { setEditAward(a); setForm({ award_type: a.award_type, event_name: a.event_name, date: a.date, judge: a.judge || '', notes: a.notes || '', is_public: a.is_public ?? false, files: parseFiles(a.file_url) }); setShowForm(true) }
 
   async function handleSave() {
     if (!form.event_name.trim()) return; setSaving(true)
-    const payload = { dog_id: dogId, owner_id: userId, award_type: form.award_type, event_name: form.event_name.trim(), date: form.date, judge: form.judge.trim() || null, notes: form.notes.trim() || null, is_public: false }
+    const payload = { dog_id: dogId, owner_id: userId, award_type: form.award_type, event_name: form.event_name.trim(), date: form.date, judge: form.judge.trim() || null, notes: form.notes.trim() || null, is_public: form.is_public, file_url: form.files.length > 0 ? JSON.stringify(form.files) : null }
     if (editAward) await supabase.from('awards').update(payload).eq('id', editAward.id)
     else await supabase.from('awards').insert(payload)
     setSaving(false); setShowForm(false); load()
@@ -69,6 +72,21 @@ export default function PalmaresTab({ dogId, userId }: { dogId: string; userId: 
             <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none" />
             <input value={form.judge} onChange={e => setForm(p => ({ ...p, judge: e.target.value }))} placeholder="Juez" className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none" />
           </div>
+          {/* Files */}
+          <div>
+            <p className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1">Certificados / Fotos</p>
+            <FileGallery files={form.files} onChange={f => setForm(p => ({ ...p, files: f }))} folder={`awards/${dogId}`} />
+          </div>
+
+          {/* Visibility */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-white/50">Visible en perfil</span>
+            <button type="button" onClick={() => setForm(p => ({ ...p, is_public: !p.is_public }))}
+              className={`w-9 h-5 rounded-full transition relative ${form.is_public ? 'bg-[#D74709]' : 'bg-white/20'}`}>
+              <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition ${form.is_public ? 'left-[18px]' : 'left-0.5'}`} />
+            </button>
+          </div>
+
           <div className="flex justify-end gap-2">
             <button onClick={() => setShowForm(false)} className="px-3 py-1.5 text-xs text-white/50">Cancelar</button>
             <button onClick={handleSave} disabled={saving || !form.event_name.trim()} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition disabled:opacity-50 flex items-center gap-1">
@@ -85,8 +103,23 @@ export default function PalmaresTab({ dogId, userId }: { dogId: string; userId: 
         return (
           <div key={a.id} className="bg-white/5 border border-white/10 rounded-lg p-3 flex items-start gap-3 group">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: type.color + '20' }}><Trophy className="w-4 h-4" style={{ color: type.color }} /></div>
-            <div className="flex-1 min-w-0"><p className="text-sm font-semibold text-white">{a.event_name}</p><p className="text-xs text-white/40">{type.label} · {new Date(a.date).toLocaleDateString('es-ES')}{a.judge && ` · ${a.judge}`}</p></div>
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white">{a.event_name}</p>
+              <p className="text-xs text-white/40">{type.label} · {new Date(a.date).toLocaleDateString('es-ES')}{a.judge && ` · ${a.judge}`}</p>
+              {a.file_url && (() => { const ff = parseFiles(a.file_url); return ff.length > 0 ? (
+                <div className="flex gap-1.5 mt-1.5">
+                  {ff.map((u: string, i: number) => /\.(jpg|jpeg|png|gif|webp)/i.test(u) ? (
+                    <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded overflow-hidden"><img src={u} alt="" className="w-full h-full object-cover" /></a>
+                  ) : (
+                    <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded bg-white/5 flex items-center justify-center hover:bg-white/10"><FileText className="w-3.5 h-3.5 text-[#D74709]" /></a>
+                  ))}
+                </div>
+              ) : null })()}
+            </div>
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition items-center">
+              <button onClick={async () => { await supabase.from('awards').update({ is_public: !a.is_public }).eq('id', a.id); load() }} className="p-1 text-white/30 hover:text-white" title={a.is_public ? 'Ocultar' : 'Mostrar'}>
+                {a.is_public ? <Eye className="w-3.5 h-3.5 text-green-400" /> : <EyeOff className="w-3.5 h-3.5" />}
+              </button>
               <button onClick={() => openEdit(a)} className="p-1 text-white/30 hover:text-white"><Pencil className="w-3.5 h-3.5" /></button>
               <button onClick={() => handleDelete(a.id)} className="p-1 text-white/30 hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
             </div>

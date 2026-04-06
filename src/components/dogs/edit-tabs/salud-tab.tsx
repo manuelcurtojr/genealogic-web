@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Stethoscope, Syringe, Bug, Pill, FlaskConical, Scissors, Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Stethoscope, Syringe, Bug, Pill, FlaskConical, Scissors, Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff, FileText, Image } from 'lucide-react'
+import FileGallery from './file-gallery'
 
 const VET_TYPES = [
   { key: 'vaccine', label: 'Vacuna', icon: Syringe, color: '#3498db' },
@@ -18,7 +19,7 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
   const [showForm, setShowForm] = useState(false)
   const [editRecord, setEditRecord] = useState<any>(null)
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ type: 'vaccine', title: '', date: new Date().toISOString().split('T')[0], notes: '', is_public: false })
+  const [form, setForm] = useState({ type: 'vaccine', title: '', date: new Date().toISOString().split('T')[0], notes: '', is_public: false, files: [] as string[] })
   const supabase = createClient()
 
   async function load() {
@@ -30,12 +31,14 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
   const counts = VET_TYPES.map(t => ({ ...t, count: records.filter(r => r.type === t.key).length }))
   const filtered = filter === 'all' ? records : records.filter(r => r.type === filter)
 
-  function openAdd() { setEditRecord(null); setForm({ type: 'vaccine', title: '', date: new Date().toISOString().split('T')[0], notes: '', is_public: false }); setShowForm(true) }
-  function openEdit(r: any) { setEditRecord(r); setForm({ type: r.type, title: r.title, date: r.date, notes: r.notes || '', is_public: r.is_public ?? false }); setShowForm(true) }
+  function parseFiles(fileUrl: string | null): string[] { try { return fileUrl ? JSON.parse(fileUrl) : [] } catch { return fileUrl ? [fileUrl] : [] } }
+
+  function openAdd() { setEditRecord(null); setForm({ type: 'vaccine', title: '', date: new Date().toISOString().split('T')[0], notes: '', is_public: false, files: [] }); setShowForm(true) }
+  function openEdit(r: any) { setEditRecord(r); setForm({ type: r.type, title: r.title, date: r.date, notes: r.notes || '', is_public: r.is_public ?? false, files: parseFiles(r.file_url) }); setShowForm(true) }
 
   async function handleSave() {
     if (!form.title.trim()) return; setSaving(true)
-    const payload = { dog_id: dogId, owner_id: userId, type: form.type, title: form.title.trim(), date: form.date, notes: form.notes.trim() || null, is_public: form.is_public }
+    const payload = { dog_id: dogId, owner_id: userId, type: form.type, title: form.title.trim(), date: form.date, notes: form.notes.trim() || null, is_public: form.is_public, file_url: form.files.length > 0 ? JSON.stringify(form.files) : null }
     if (editRecord) await supabase.from('vet_records').update(payload).eq('id', editRecord.id)
     else await supabase.from('vet_records').insert(payload)
     setSaving(false); setShowForm(false); load()
@@ -81,6 +84,12 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
             <div />
           </div>
           <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Notas" rows={2} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none resize-none" />
+          {/* Files */}
+          <div>
+            <p className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1">Archivos / Fotos</p>
+            <FileGallery files={form.files} onChange={f => setForm(p => ({ ...p, files: f }))} folder={`vet/${dogId}`} />
+          </div>
+
           {/* Public toggle */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-white/50">Visible en perfil</span>
@@ -110,6 +119,15 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
               <p className="text-sm font-semibold text-white">{r.title}</p>
               <p className="text-xs text-white/40">{new Date(r.date).toLocaleDateString('es-ES')}</p>
               {r.notes && <p className="text-xs text-white/30 mt-0.5">{r.notes}</p>}
+              {r.file_url && (() => { const ff = parseFiles(r.file_url); return ff.length > 0 ? (
+                <div className="flex gap-1.5 mt-1.5">
+                  {ff.map((u: string, i: number) => /\.(jpg|jpeg|png|gif|webp)/i.test(u) ? (
+                    <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded overflow-hidden"><img src={u} alt="" className="w-full h-full object-cover" /></a>
+                  ) : (
+                    <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded bg-white/5 flex items-center justify-center hover:bg-white/10"><FileText className="w-3.5 h-3.5 text-[#D74709]" /></a>
+                  ))}
+                </div>
+              ) : null })()}
             </div>
             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition items-center">
               <button onClick={() => togglePublic(r)} className="p-1 text-white/30 hover:text-white" title={r.is_public ? 'Ocultar del perfil' : 'Mostrar en perfil'}>
