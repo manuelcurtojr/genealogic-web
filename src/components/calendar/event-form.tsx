@@ -45,7 +45,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
         supabase.from('contacts').select('id, name').eq('owner_id', userId).order('name'),
         supabase.from('deals').select('id, title').eq('owner_id', userId).order('title'),
       ])
-      setDogs((d.data || []).map((x: any) => ({ value: x.id, label: x.name })))
+      setDogs((d.data || []).map((x: any) => ({ value: x.id, label: x.name, image: null })))
       setLitters((l.data || []).map((x: any) => ({ value: x.id, label: `Camada ${x.breed?.name || ''}` })))
       setContacts((c.data || []).map((x: any) => ({ value: x.id, label: x.name })))
       setDeals((dl.data || []).map((x: any) => ({ value: x.id, label: x.title })))
@@ -131,12 +131,12 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
       />
 
       {/* Slide panel */}
-      <div className={`fixed top-0 right-0 h-full w-full max-w-lg z-50 bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full max-w-lg z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Fixed header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 flex-shrink-0">
           <h2 className="text-lg font-semibold">{isEdit ? 'Editar evento' : 'Nuevo evento'}</h2>
