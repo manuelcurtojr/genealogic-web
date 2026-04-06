@@ -12,8 +12,7 @@ export default async function DealsPage() {
       .from('pipelines')
       .select('id, name, stages:pipeline_stages(id, name, position, color)')
       .eq('owner_id', user.id)
-      .limit(1)
-      .single(),
+      .order('created_at'),
     supabase
       .from('deals')
       .select('id, title, value, currency, contact_id, stage_id, pipeline_id, lost_reason, contact:contacts(id, name)')
@@ -26,17 +25,16 @@ export default async function DealsPage() {
       .order('name'),
   ])
 
-  const pipeline = pipelinesRes.data
-  const stages = pipeline?.stages
-    ? [...(pipeline.stages as any[])].sort((a: any, b: any) => a.position - b.position)
-    : []
+  const pipelines = (pipelinesRes.data || []).map((p: any) => ({
+    ...p,
+    stages: p.stages ? [...p.stages].sort((a: any, b: any) => a.position - b.position) : [],
+  }))
 
   return (
     <DealsPageClient
       initialDeals={dealsRes.data || []}
-      stages={stages}
+      pipelines={pipelines}
       contacts={contactsRes.data || []}
-      pipelineId={pipeline?.id || ''}
       userId={user.id}
     />
   )
