@@ -62,7 +62,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
             {(collapsed && !mobileOpen) ? (
               <img src="/icon.svg" alt="Genealogic" className="h-7 w-auto" />
             ) : (
-              <img src="/logo.svg" alt="Genealogic" className="h-5 w-auto" />
+              <><img src="/logo.svg" alt="Genealogic" className="logo-dark h-5 w-auto" /><img src="/logo-dark.svg" alt="Genealogic" className="logo-light h-5 w-auto" /></>
             )}
           </Link>
         </div>

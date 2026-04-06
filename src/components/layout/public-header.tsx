@@ -36,7 +36,7 @@ export default function PublicHeader() {
       style={{ backgroundColor: darkMode ? '#0a0a0a' : '#f8fafc', borderBottom: `1px solid ${borderColor}` }}
     >
       <a href="/" className="flex-shrink-0">
-        <img src={darkMode ? '/logo.svg' : '/logo.svg'} alt="Genealogic" className="h-6" />
+        <><img src="/logo.svg" alt="Genealogic" className="logo-dark h-6" /><img src="/logo-dark.svg" alt="Genealogic" className="logo-light h-6" /></>
       </a>
 
       <div className="flex-1">

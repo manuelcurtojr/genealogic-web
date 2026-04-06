@@ -11,7 +11,7 @@ interface Props { data:PN[];rootId:string }
 function countOcc(nId:string|null,nm:Map<string,PN>,mx:number,g:number,c:Map<string,number>){if(!nId||g>mx)return;const n=nm.get(nId);if(!n)return;c.set(nId,(c.get(nId)||0)+1);countOcc(n.father_id,nm,mx,g+1,c);countOcc(n.mother_id,nm,mx,g+1,c)}
 const RC=['','','#3498db','#27ae60','#f39c12','#e74c3c','#9b59b6','#e84393']
 const CW=200,CH=64,PH=56
-const L='rgba(255,255,255,0.12)'
+const L='var(--pedigree-line, rgba(255,255,255,0.12))'
 
 export default function PedigreeTree({data,rootId}:Props){
   const[maxGen,setMaxGen]=useState(4)
