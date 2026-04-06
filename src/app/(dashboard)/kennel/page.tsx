@@ -28,7 +28,7 @@ export default async function KennelPage() {
 
   const { data: litters } = await supabase
     .from('litters')
-    .select('id, name, status')
+    .select('id, status, is_public')
     .eq('owner_id', user.id)
     .order('created_at', { ascending: false })
 

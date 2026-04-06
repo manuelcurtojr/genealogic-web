@@ -24,10 +24,10 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
     .eq('show_in_kennel', true)
     .order('name')
 
-  // Fetch public litters
+  // Fetch public litters with parents and breed
   const { data: allLitters } = await supabase
     .from('litters')
-    .select('id, name, status, breed:breeds(name)')
+    .select('id, status, birth_date, mating_date, breed:breeds(name), father:dogs!litters_father_id_fkey(id, name, thumbnail_url), mother:dogs!litters_mother_id_fkey(id, name, thumbnail_url)')
     .eq('owner_id', kennel.owner_id)
     .eq('is_public', true)
     .order('created_at', { ascending: false })
@@ -95,20 +95,41 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
             <span className="text-xs text-white/30 bg-white/5 rounded-full px-2 py-0.5">{litters.length}</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {litters.map((litter: any) => (
-              <Link key={litter.id} href={`/litters/${litter.id}`}
-                className="bg-white/[0.04] border border-white/10 rounded-xl p-4 hover:border-purple-400/30 transition">
-                <p className="text-sm font-semibold truncate">{litter.name || 'Camada'}</p>
-                {litter.breed?.name && <p className="text-xs text-white/40 mt-1">{litter.breed.name}</p>}
-                <span className={`inline-block mt-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                  litter.status === 'born' ? 'bg-green-500/10 text-green-400' :
-                  litter.status === 'mated' ? 'bg-purple-500/10 text-purple-400' :
-                  'bg-blue-500/10 text-blue-400'
-                }`}>
-                  {litter.status === 'born' ? 'Nacida' : litter.status === 'mated' ? 'Cubricion' : 'Planificada'}
-                </span>
-              </Link>
-            ))}
+            {litters.map((litter: any) => {
+              const father = litter.father
+              const mother = litter.mother
+              const breedName = litter.breed?.name
+              const title = father && mother ? `${father.name} x ${mother.name}` : father?.name || mother?.name || 'Camada'
+              return (
+                <Link key={litter.id} href={`/litters/${litter.id}`}
+                  className="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden hover:border-purple-400/30 transition">
+                  {/* Parent photos */}
+                  <div className="flex h-24 bg-white/5">
+                    <div className="flex-1 relative">
+                      {father?.thumbnail_url ? <img src={father.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-blue-400/30 text-lg">♂</div>}
+                    </div>
+                    <div className="w-px bg-white/10" />
+                    <div className="flex-1 relative">
+                      {mother?.thumbnail_url ? <img src={mother.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-pink-400/30 text-lg">♀</div>}
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <p className="text-xs font-semibold truncate">{title}</p>
+                    {breedName && <p className="text-[10px] text-white/40 mt-0.5">{breedName}</p>}
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                        litter.status === 'born' || litter.status === 'confirmed' ? 'bg-green-500/10 text-green-400' :
+                        litter.status === 'mated' ? 'bg-purple-500/10 text-purple-400' :
+                        'bg-blue-500/10 text-blue-400'
+                      }`}>
+                        {litter.status === 'born' || litter.status === 'confirmed' ? 'Nacida' : litter.status === 'mated' ? 'Cubricion' : 'Planificada'}
+                      </span>
+                      {litter.birth_date && <span className="text-[10px] text-white/25">{new Date(litter.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         </section>
       )}
