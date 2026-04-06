@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Shield, Lock } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Shield, Lock, Globe } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { formatDogName, type AffixFormat } from '@/lib/affix'
 import GalleryTab from './edit-tabs/gallery-tab'
@@ -11,6 +11,7 @@ import SaludTab from './edit-tabs/salud-tab'
 import PalmaresTab from './edit-tabs/palmares-tab'
 import HistorialTab from './edit-tabs/historial-tab'
 import PedigreePdfTab from './edit-tabs/pedigree-pdf-tab'
+import ImportPedigreeTab from './import-pedigree-tab'
 
 interface DogFormPanelProps {
   open: boolean; onClose: () => void; onSaved?: () => void; editDogId?: string | null; userId: string; defaultLitterId?: string | null; defaultBreedId?: string | null; defaultFatherId?: string | null; defaultMotherId?: string | null; defaultKennelId?: string | null; defaultKennelName?: string | null; defaultAffixFormat?: string | null
@@ -32,6 +33,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   const router = useRouter()
   const isEdit = !!editDogId
   const [activeTab, setActiveTab] = useState<TabKey>('datos')
+  const [createMode, setCreateMode] = useState<'manual' | 'import'>('manual')
   const [loading, setLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
   const [error, setError] = useState('')
@@ -57,7 +59,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
 
   useEffect(() => {
     if (!open) return
-    setActiveTab('datos'); setDataLoading(true); setError('')
+    setActiveTab('datos'); setCreateMode('manual'); setDataLoading(true); setError('')
     const supabase = createClient()
     async function load() {
       const [bRes, cRes, kRes, mRes, fRes] = await Promise.all([
@@ -145,6 +147,20 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           <button onClick={onClose} className="text-white/40 hover:text-white transition"><X className="w-5 h-5"/></button>
         </div>
 
+        {/* Create mode toggle (Manual / Import) — only for new dogs, not from litter */}
+        {!isEdit && !isFromLitter && (
+          <div className="flex border-b border-white/10 px-4 flex-shrink-0">
+            <button onClick={() => setCreateMode('manual')}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'manual' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40 hover:text-white/60'}`}>
+              <Dog className="w-3.5 h-3.5" /> Manual
+            </button>
+            <button onClick={() => setCreateMode('import')}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'import' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40 hover:text-white/60'}`}>
+              <Globe className="w-3.5 h-3.5" /> Importar pedigree
+            </button>
+          </div>
+        )}
+
         {/* Tabs — only show all tabs in edit mode */}
         {isEdit && (
           <div className="flex border-b border-white/10 px-4 overflow-x-auto flex-shrink-0">
@@ -160,8 +176,12 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           </div>
         )}
 
-        {/* Content */}
-        {dataLoading ? (
+        {/* Import mode */}
+        {!isEdit && !isFromLitter && createMode === 'import' ? (
+          <div className="flex-1 overflow-y-auto px-6 py-5">
+            <ImportPedigreeTab userId={userId} kennelId={defaultKennelId || undefined} onImported={() => { onClose(); onSaved?.(); router.refresh() }} />
+          </div>
+        ) : dataLoading ? (
           <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-white/30"/></div>
         ) : (
           <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -279,8 +299,8 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           </div>
         )}
 
-        {/* Footer — only show save button on Datos tab */}
-        {activeTab === 'datos' && (
+        {/* Footer — only show save button on Datos tab, not in import mode */}
+        {activeTab === 'datos' && createMode === 'manual' && (
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/10 flex-shrink-0">
             <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">Cancelar</button>
             <button onClick={handleSubmit} disabled={loading||!form.name.trim()||dataLoading}

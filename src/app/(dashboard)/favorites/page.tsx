@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Heart, Dog, GitBranch } from 'lucide-react'
+import { Heart, Dog } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import FavoriteButton from '@/components/dogs/favorite-button'
 
@@ -80,11 +80,8 @@ export default async function FavoritesPage() {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/5">
-                    <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition">
+                    <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition">
                       Ver perfil
-                    </Link>
-                    <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition ml-auto">
-                      <GitBranch className="w-3 h-3" /> Pedigri
                     </Link>
                   </div>
                 </div>
