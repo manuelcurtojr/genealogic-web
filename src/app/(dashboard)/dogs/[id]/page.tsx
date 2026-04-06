@@ -39,17 +39,21 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   const colorName = (dog.color as any)?.name
   const kennel = dog.kennel as any
 
-  // Fetch gallery photos + pedigree
-  const [photosRes, pedigreeRes] = await Promise.all([
-    supabase.from('dog_photos').select('id, url, position').eq('dog_id', id).order('position'),
-    supabase.rpc('get_pedigree', { dog_uuid: id, max_gen: 5 }),
-  ])
-  const galleryPhotos = (photosRes.data || []).map((p: any) => p.url)
+  // Fetch gallery photos + pedigree (may fail for unauthenticated users due to RLS)
+  let galleryPhotos: string[] = []
+  let pedigree: any[] | null = null
+  try {
+    const [photosRes, pedigreeRes] = await Promise.all([
+      supabase.from('dog_photos').select('id, url, position').eq('dog_id', id).order('position'),
+      supabase.rpc('get_pedigree', { dog_uuid: id, max_gen: 5 }),
+    ])
+    galleryPhotos = (photosRes.data || []).map((p: any) => p.url)
+    pedigree = pedigreeRes.data
+  } catch {}
   // Include thumbnail_url as first photo if not already in gallery
   if (dog.thumbnail_url && !galleryPhotos.includes(dog.thumbnail_url)) {
     galleryPhotos.unshift(dog.thumbnail_url)
   }
-  const pedigree = pedigreeRes.data
 
   return (
     <div>

@@ -28,7 +28,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
   const handleLogout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/login')
+    window.location.href = '/login'
   }
 
   const handleNav = () => {
