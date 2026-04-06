@@ -40,7 +40,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   const SexIcon = dog.sex === 'male' ? Mars : Venus
 
   // Fetch pedigree
-  const { data: pedigree } = await supabase.rpc('get_pedigree', { dog_uuid: id, max_gen: 4 })
+  const { data: pedigree } = await supabase.rpc('get_pedigree', { dog_uuid: id, max_gen: 5 })
 
   return (
     <div>

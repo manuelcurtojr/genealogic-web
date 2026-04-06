@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Menu, PawPrint } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import Sidebar from './sidebar'
+import SearchBar from './search-bar'
 
 interface DashboardShellProps {
   user: { display_name: string; email: string; role: string; avatar_url: string | null } | null
@@ -32,8 +33,18 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
         </div>
       </div>
 
+      {/* Desktop header with search */}
+      <div className="hidden lg:flex fixed top-0 left-64 right-0 h-14 bg-gray-950/80 backdrop-blur-sm border-b border-white/5 items-center px-8 z-20">
+        <SearchBar />
+        <div className="ml-auto flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-[#D74709]/20 flex items-center justify-center text-[#D74709] text-xs font-bold">
+            {(user?.display_name || '?')[0].toUpperCase()}
+          </div>
+        </div>
+      </div>
+
       {/* Main content */}
-      <main className="lg:ml-64 p-4 pt-18 lg:p-8 lg:pt-8">
+      <main className="lg:ml-64 p-4 pt-18 lg:p-8 lg:pt-22">
         {children}
       </main>
     </div>
