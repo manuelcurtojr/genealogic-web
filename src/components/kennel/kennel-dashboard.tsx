@@ -8,6 +8,7 @@ import {
   Edit, Globe, Calendar, Dog, Camera, Search, Grid3X3, List, Eye, EyeOff,
   Loader2, ExternalLink, MessageCircle, Settings, Baby
 } from 'lucide-react'
+import KennelEditPanel from './kennel-edit-panel'
 
 interface Props {
   kennel: any
@@ -21,6 +22,7 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
   const [dogs, setDogs] = useState(initialDogs)
   const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [showEdit, setShowEdit] = useState(false)
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -100,9 +102,9 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl font-bold truncate">{kennel.name}</h1>
-              <Link href="/kennel/edit" className="text-white/40 hover:text-[#D74709] transition" title="Editar criadero">
+              <button onClick={() => setShowEdit(true)} className="text-white/40 hover:text-[#D74709] transition" title="Editar criadero">
                 <Settings className="w-5 h-5" />
-              </Link>
+              </button>
             </div>
             {kennel.description && <p className="text-sm text-white/50 line-clamp-2 mb-2">{kennel.description}</p>}
             <div className="flex flex-wrap gap-4">
@@ -158,9 +160,9 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
 
         {/* Quick actions */}
         <div className="px-6 py-3 bg-white/[0.03] border-t border-white/5 flex items-center gap-3">
-          <Link href="/kennel/edit" className="text-xs text-white/50 hover:text-[#D74709] flex items-center gap-1.5 transition">
+          <button onClick={() => setShowEdit(true)} className="text-xs text-white/50 hover:text-[#D74709] flex items-center gap-1.5 transition">
             <Edit className="w-3.5 h-3.5" /> Editar perfil
-          </Link>
+          </button>
           <span className="text-white/10">|</span>
           <Link href={`/kennels/${kennel.id}`} className="text-xs text-white/50 hover:text-[#D74709] flex items-center gap-1.5 transition">
             <ExternalLink className="w-3.5 h-3.5" /> Ver perfil publico
@@ -230,6 +232,9 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
           ))}
         </div>
       )}
+
+      {/* Edit panel */}
+      <KennelEditPanel open={showEdit} onClose={() => setShowEdit(false)} kennel={kennel} />
     </div>
   )
 }
