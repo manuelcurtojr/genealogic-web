@@ -1,25 +1,33 @@
 import { createClient } from '@/lib/supabase/server'
-import DogForm from '@/components/dogs/dog-form'
+import { notFound, redirect } from 'next/navigation'
+import LitterForm from '@/components/litters/litter-form'
 
-export default async function NewDogPage() {
+export default async function EditLitterPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) return null
+  if (!user) redirect('/login')
 
-  const [breedsRes, colorsRes, kennelsRes, maleDogsRes, femaleDogsRes] = await Promise.all([
+  const { data: litter } = await supabase
+    .from('litters')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (!litter) notFound()
+  if (litter.owner_id !== user.id) redirect('/litters')
+
+  const [breedsRes, maleDogsRes, femaleDogsRes] = await Promise.all([
     supabase.from('breeds').select('id, name').order('name'),
-    supabase.from('colors').select('id, name').order('name'),
-    supabase.from('kennels').select('id, name').eq('owner_id', user.id).order('name'),
     supabase.from('dogs').select('id, name').eq('owner_id', user.id).eq('sex', 'male').order('name'),
     supabase.from('dogs').select('id, name').eq('owner_id', user.id).eq('sex', 'female').order('name'),
   ])
 
   return (
-    <DogForm
+    <LitterForm
+      initialData={litter}
       breeds={breedsRes.data || []}
-      colors={colorsRes.data || []}
-      kennels={kennelsRes.data || []}
       maleDogs={maleDogsRes.data || []}
       femaleDogs={femaleDogsRes.data || []}
       userId={user.id}

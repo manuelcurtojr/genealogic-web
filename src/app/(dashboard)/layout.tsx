@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Sidebar from '@/components/layout/sidebar'
+import DashboardShell from '@/components/layout/dashboard-shell'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -21,11 +21,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .single()
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <Sidebar user={profile} kennel={kennel} />
-      <main className="ml-64 p-8">
-        {children}
-      </main>
-    </div>
+    <DashboardShell user={profile} kennel={kennel}>
+      {children}
+    </DashboardShell>
   )
 }

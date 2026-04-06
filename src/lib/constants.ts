@@ -18,6 +18,7 @@ export const ROLES = {
 } as const
 
 export const NAV_ITEMS = [
+  { label: 'Escritorio', href: '/dashboard', icon: 'LayoutDashboard' },
   { label: 'Mis Perros', href: '/dogs', icon: 'Dog' },
   { label: 'Camadas', href: '/litters', icon: 'Baby' },
   { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
