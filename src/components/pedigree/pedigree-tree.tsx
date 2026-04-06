@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { Search, ArrowLeftRight, GitBranch, ChevronLeft, ChevronRight, Dna, CheckCircle } from 'lucide-react'
 import { calculateCOI, getCOILevel, getCOIInterpretation } from './coi-calculator'
@@ -10,8 +10,8 @@ interface Props { data:PN[];rootId:string }
 
 function countOcc(nId:string|null,nm:Map<string,PN>,mx:number,g:number,c:Map<string,number>){if(!nId||g>mx)return;const n=nm.get(nId);if(!n)return;c.set(nId,(c.get(nId)||0)+1);countOcc(n.father_id,nm,mx,g+1,c);countOcc(n.mother_id,nm,mx,g+1,c)}
 const RC=['','','#3498db','#27ae60','#f39c12','#e74c3c','#9b59b6','#e84393']
-const CW=200,CH=64,PH=56 // card width, card height, photo width
-const LINE='rgba(255,255,255,0.12)'
+const CW=200,CH=64,PH=56
+const L='rgba(255,255,255,0.12)'
 
 export default function PedigreeTree({data,rootId}:Props){
   const[maxGen,setMaxGen]=useState(4)
@@ -49,7 +49,7 @@ export default function PedigreeTree({data,rootId}:Props){
         </div>
       </div>
       {/* Buttons */}
-      <div className="fixed bottom-[30px] z-30 flex items-center gap-2" style={{left:'calc(var(--sidebar-width, 256px) + 30px)'}}>
+      <div className="fixed bottom-[30px] z-30 flex items-center gap-2" style={{left:'calc(var(--sidebar-width,256px) + 30px)'}}>
         <div className="relative"><button onClick={e=>{e.stopPropagation();setZoomMenu(!zoomMenu);setGenMenu(false)}} className="w-11 h-11 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-white/60 shadow-lg hover:border-white/30 transition"><Search className="w-4 h-4"/></button>{zoomMenu&&<div className="absolute bottom-14 left-0 bg-gray-800 border border-white/10 rounded-lg shadow-xl overflow-hidden" onClick={e=>e.stopPropagation()}>{[150,130,110,100,90,80,70,60,50].map(z=><button key={z} onClick={()=>{setZoom(z);setZoomMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${zoom===z?'bg-[#D74709] text-white':'text-white/60 hover:bg-white/10'}`}>{z}%</button>)}</div>}</div>
         <div className="relative"><button onClick={e=>{e.stopPropagation();setGenMenu(!genMenu);setZoomMenu(false)}} className="w-11 h-11 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-white/60 shadow-lg hover:border-white/30 font-bold text-xs transition">x{maxGen}</button>{genMenu&&<div className="absolute bottom-14 left-0 bg-gray-800 border border-white/10 rounded-lg shadow-xl overflow-hidden" onClick={e=>e.stopPropagation()}>{[10,9,8,7,6,5,4,3].map(g=><button key={g} onClick={()=>{setMaxGen(g);setGenMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${maxGen===g?'bg-[#D74709] text-white':'text-white/60 hover:bg-white/10'}`}>x{g}</button>)}</div>}</div>
         <button onClick={()=>setVert(!vert)} className={`w-11 h-11 rounded-full border flex items-center justify-center shadow-lg transition ${vert?'bg-[#D74709] border-[#D74709] text-white':'bg-gray-900 border-white/10 text-white/60 hover:border-white/30'}`}><ArrowLeftRight className="w-4 h-4"/></button>
@@ -76,80 +76,104 @@ function Card({n,isRoot,si,rc}:{n:PN;isRoot?:boolean;si:boolean;rc:Map<string,nu
   )
 }
 
-/* --- HORIZONTAL TREE with proper connectors --- */
+/* HORIZONTAL: Use a measured approach - render children, then draw SVG connectors */
 function HN({n,nm,g,mx,isRoot,si,rc}:{n:PN;nm:Map<string,PN>;g:number;mx:number;isRoot?:boolean;si:boolean;rc:Map<string,number>}){
-  if(g>=mx) return <Card n={n} isRoot={isRoot} si={si} rc={rc}/>
+  if(g>=mx)return<Card n={n} isRoot={isRoot} si={si} rc={rc}/>
   const f=n.father_id?nm.get(n.father_id):null,m=n.mother_id?nm.get(n.mother_id):null
-  if(!(f||m)||g>=mx-1) return <Card n={n} isRoot={isRoot} si={si} rc={rc}/>
+  if(!(f||m)||g>=mx-1)return<Card n={n} isRoot={isRoot} si={si} rc={rc}/>
 
-  // Render: [card] --h_line-- |vertical| --h_line-- [father]
-  //                                     --h_line-- [mother]
-  const hGap=50,branchW=20,vGap=30 // min 30px between boxes
+  const wrapRef=useRef<HTMLDivElement>(null)
+  const fRef=useRef<HTMLDivElement>(null)
+  const mRef=useRef<HTMLDivElement>(null)
+  const[lines,setLines]=useState<{x1:number;y1:number;x2:number;y2:number}[]>([])
+  const hGap=50
+
+  useEffect(()=>{
+    if(!wrapRef.current||!fRef.current||!mRef.current)return
+    const wr=wrapRef.current.getBoundingClientRect()
+    const fr=fRef.current.getBoundingClientRect()
+    const mr=mRef.current.getBoundingClientRect()
+    // Card right edge midpoint
+    const cx=CW,cy=CH/2
+    // Fork point
+    const forkX=CW+hGap/2
+    // Father midpoint
+    const fMidY=fr.top-wr.top+fr.height/2
+    // Mother midpoint
+    const mMidY=mr.top-wr.top+mr.height/2
+    // Card center Y
+    const cardMidY=(fMidY+mMidY)/2
+
+    setLines([
+      // Horizontal from card to fork
+      {x1:CW,y1:cardMidY,x2:CW+hGap,y2:cardMidY},
+      // Vertical from father to mother
+      {x1:CW+hGap,y1:fMidY,x2:CW+hGap,y2:mMidY},
+      // Horizontal stub to father
+      {x1:CW+hGap,y1:fMidY,x2:CW+hGap+20,y2:fMidY},
+      // Horizontal stub to mother
+      {x1:CW+hGap,y1:mMidY,x2:CW+hGap+20,y2:mMidY},
+    ])
+  })
 
   return(
-    <div className="flex items-center" style={{gap:0}}>
-      {/* This node */}
-      <Card n={n} isRoot={isRoot} si={si} rc={rc}/>
-      {/* Horizontal line from card to fork */}
-      <div style={{width:hGap,height:1,background:LINE,flexShrink:0}}/>
-      {/* Fork: vertical line + two branches */}
-      <div className="flex flex-col" style={{gap:vGap}}>
-        {/* Father branch */}
-        <div className="flex items-center">
-          <div style={{position:'relative'}}>
-            {/* Vertical line: from center down to gap center */}
-            <div style={{position:'absolute',left:0,top:'50%',width:1,height:`calc(50% + ${vGap/2}px)`,background:LINE}}/>
-            {/* Horizontal branch to child */}
-            <div style={{width:branchW,height:1,background:LINE}}/>
-          </div>
-          {f?<HN n={f} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<Empty sex="male"/>}
-        </div>
-        {/* Mother branch */}
-        <div className="flex items-center">
-          <div style={{position:'relative'}}>
-            {/* Vertical line: from gap center up to center */}
-            <div style={{position:'absolute',left:0,bottom:'50%',width:1,height:`calc(50% + ${vGap/2}px)`,background:LINE}}/>
-            <div style={{width:branchW,height:1,background:LINE}}/>
-          </div>
-          {m?<HN n={m} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<Empty sex="female"/>}
-        </div>
+    <div ref={wrapRef} className="relative flex items-center">
+      {/* This card — positioned to center vertically */}
+      <div className="absolute" style={{left:0,top:'50%',transform:'translateY(-50%)'}}>
+        <Card n={n} isRoot={isRoot} si={si} rc={rc}/>
+      </div>
+      {/* SVG connectors */}
+      <svg className="absolute inset-0 pointer-events-none" style={{overflow:'visible'}}>
+        {lines.map((l,i)=><line key={i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke={L} strokeWidth={1}/>)}
+      </svg>
+      {/* Children column */}
+      <div style={{marginLeft:CW+hGap+20,display:'flex',flexDirection:'column',gap:30}}>
+        <div ref={fRef}>{f?<HN n={f} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<Empty sex="male"/>}</div>
+        <div ref={mRef}>{m?<HN n={m} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<Empty sex="female"/>}</div>
       </div>
     </div>
   )
 }
 
-/* --- VERTICAL TREE with proper connectors --- */
+/* VERTICAL */
 function VN({n,nm,g,mx,isRoot,si,rc}:{n:PN;nm:Map<string,PN>;g:number;mx:number;isRoot?:boolean;si:boolean;rc:Map<string,number>}){
-  if(g>=mx) return <div className="flex justify-center"><Card n={n} isRoot={isRoot} si={si} rc={rc}/></div>
+  if(g>=mx)return<div className="flex justify-center"><Card n={n} isRoot={isRoot} si={si} rc={rc}/></div>
   const f=n.father_id?nm.get(n.father_id):null,m=n.mother_id?nm.get(n.mother_id):null
-  if(!(f||m)||g>=mx-1) return <div className="flex justify-center"><Card n={n} isRoot={isRoot} si={si} rc={rc}/></div>
+  if(!(f||m)||g>=mx-1)return<div className="flex justify-center"><Card n={n} isRoot={isRoot} si={si} rc={rc}/></div>
 
-  const vLine=40,hGap=40
+  const wrapRef=useRef<HTMLDivElement>(null)
+  const fRef=useRef<HTMLDivElement>(null)
+  const mRef=useRef<HTMLDivElement>(null)
+  const[lines,setLines]=useState<{x1:number;y1:number;x2:number;y2:number}[]>([])
+
+  useEffect(()=>{
+    if(!wrapRef.current||!fRef.current||!mRef.current)return
+    const wr=wrapRef.current.getBoundingClientRect()
+    const fr=fRef.current.getBoundingClientRect()
+    const mr=mRef.current.getBoundingClientRect()
+    const cardCX=wr.width/2
+    const forkY=CH+20
+    const fCX=fr.left-wr.left+fr.width/2
+    const mCX=mr.left-wr.left+mr.width/2
+    const childrenTop=fr.top-wr.top
+
+    setLines([
+      {x1:cardCX,y1:CH,x2:cardCX,y2:forkY},
+      {x1:fCX,y1:forkY,x2:mCX,y2:forkY},
+      {x1:fCX,y1:forkY,x2:fCX,y2:childrenTop},
+      {x1:mCX,y1:forkY,x2:mCX,y2:childrenTop},
+    ])
+  })
 
   return(
-    <div className="flex flex-col items-center">
+    <div ref={wrapRef} className="relative flex flex-col items-center">
       <Card n={n} isRoot={isRoot} si={si} rc={rc}/>
-      {/* Vertical line down */}
-      <div style={{width:1,height:vLine,background:LINE}}/>
-      {/* Horizontal bar connecting children */}
-      <div className="flex" style={{gap:hGap}}>
-        <div className="flex flex-col items-center">
-          {/* Top connector */}
-          <div className="flex">
-            <div style={{width:'50%',borderTop:`1px solid ${LINE}`,height:0}}/>
-            <div style={{width:'50%'}}/>
-          </div>
-          <div style={{width:1,height:15,background:LINE}}/>
-          {f?<VN n={f} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<Empty sex="male"/>}
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="flex">
-            <div style={{width:'50%'}}/>
-            <div style={{width:'50%',borderTop:`1px solid ${LINE}`,height:0}}/>
-          </div>
-          <div style={{width:1,height:15,background:LINE}}/>
-          {m?<VN n={m} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<Empty sex="female"/>}
-        </div>
+      <svg className="absolute inset-0 pointer-events-none" style={{overflow:'visible'}}>
+        {lines.map((l,i)=><line key={i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke={L} strokeWidth={1}/>)}
+      </svg>
+      <div className="flex gap-10" style={{marginTop:40}}>
+        <div ref={fRef}>{f?<VN n={f} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<div className="flex justify-center"><Empty sex="male"/></div>}</div>
+        <div ref={mRef}>{m?<VN n={m} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<div className="flex justify-center"><Empty sex="female"/></div>}</div>
       </div>
     </div>
   )
@@ -157,5 +181,5 @@ function VN({n,nm,g,mx,isRoot,si,rc}:{n:PN;nm:Map<string,PN>;g:number;mx:number;
 
 function Empty({sex}:{sex:string}){
   const bc=sex==='female'?'border-pink-400/30':'border-blue-400/30'
-  return <div className={`w-9 h-9 rounded-full border-2 border-dashed ${bc} flex items-center justify-center text-white/20 text-xs`}>?</div>
+  return<div className={`w-9 h-9 rounded-full border-2 border-dashed ${bc} flex items-center justify-center text-white/20 text-xs`}>?</div>
 }
