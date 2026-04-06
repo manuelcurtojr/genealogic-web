@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { Eye, Edit, GitBranch, ArrowRightLeft, Mars, Venus } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
-import { createClient } from '@/lib/supabase/client'
 
 interface DogCardProps {
   dog: {
@@ -14,15 +13,16 @@ interface DogCardProps {
     thumbnail_url: string | null
     breed: any
     color: any
+    kennel?: any
   }
-  userId?: string
 }
 
-export default function DogCard({ dog, userId }: DogCardProps) {
+export default function DogCard({ dog }: DogCardProps) {
   const sexBorder = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
   const SexIcon = dog.sex === 'male' ? Mars : Venus
   const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
   const colorName = Array.isArray(dog.color) ? dog.color[0]?.name : dog.color?.name
+  const kennel = Array.isArray(dog.kennel) ? dog.kennel[0] : dog.kennel
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition group">
@@ -70,6 +70,22 @@ export default function DogCard({ dog, userId }: DogCardProps) {
               {new Date(dog.birth_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
             </span>
           </p>
+        )}
+
+        {/* Kennel / Owner badge */}
+        {kennel?.name && (
+          <div className="flex items-center justify-center mt-3">
+            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1.5">
+              {kennel.logo_url ? (
+                <img src={kennel.logo_url} alt="" className="w-5 h-5 rounded-full object-cover" />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-[#D74709]/20 flex items-center justify-center">
+                  <img src="/icon.svg" alt="" className="w-3 h-3" />
+                </div>
+              )}
+              <span className="text-xs text-white/70 font-medium">{kennel.name}</span>
+            </div>
+          </div>
         )}
 
         {/* Action buttons */}

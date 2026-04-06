@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Menu, Bell } from 'lucide-react'
+import { Menu, Bell, Sun, Moon } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import Sidebar from './sidebar'
 import SearchBar from './search-bar'
@@ -22,10 +22,34 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
     if (saved === 'true') setCollapsed(true)
   }, [])
 
+  const [darkMode, setDarkMode] = useState(true)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('theme')
+    if (saved === 'light') {
+      setDarkMode(false)
+      document.documentElement.classList.remove('dark')
+      document.documentElement.classList.add('light')
+    }
+  }, [])
+
   const toggleCollapse = () => {
     const next = !collapsed
     setCollapsed(next)
     localStorage.setItem('sidebar-collapsed', String(next))
+  }
+
+  const toggleTheme = () => {
+    const next = !darkMode
+    setDarkMode(next)
+    localStorage.setItem('theme', next ? 'dark' : 'light')
+    if (next) {
+      document.documentElement.classList.remove('light')
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      document.documentElement.classList.add('light')
+    }
   }
 
   const sidebarWidth = collapsed ? 68 : 256
@@ -48,8 +72,11 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
         </button>
         <img src="/icon.svg" alt="Genealogic" className="h-6 w-auto" />
         <div className="ml-auto flex items-center gap-2">
+          <button onClick={toggleTheme} className="w-8 h-8 rounded-full flex items-center justify-center text-white/40 hover:text-white transition">
+            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
           <button className="w-8 h-8 rounded-full flex items-center justify-center text-white/40 hover:text-white transition">
-            <Bell className="w-4.5 h-4.5" />
+            <Bell className="w-4 h-4" />
           </button>
           <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white/10">
             {user?.avatar_url ? (
@@ -73,8 +100,11 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
           <SearchBar />
         </div>
 
-        {/* Bell + Avatar */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        {/* Theme + Bell + Avatar */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button onClick={toggleTheme} className="w-9 h-9 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition" title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
+            {darkMode ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+          </button>
           <button className="w-9 h-9 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition relative">
             <Bell className="w-[18px] h-[18px]" />
           </button>

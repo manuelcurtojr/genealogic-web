@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Grid3X3, List, ChevronLeft, ChevronRight, Search, Plus, Eye, Edit, GitBranch, Mars, Venus, ArrowRightLeft } from 'lucide-react'
 import DogCard from './dog-card'
+import DogFormPanel from './dog-form-panel'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 
@@ -20,14 +21,18 @@ interface Dog {
 interface DogsPageClientProps {
   dogs: Dog[]
   breeds: { id: string; name: string }[]
-  favoriteDogIds: string[]
+  colors: { id: string; name: string }[]
+  kennels: { id: string; name: string }[]
+  maleDogs: { id: string; name: string }[]
+  femaleDogs: { id: string; name: string }[]
   userId: string
 }
 
 const PAGE_SIZE = 24
 
-export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }: DogsPageClientProps) {
+export default function DogsPageClient({ dogs, breeds, colors, kennels, maleDogs, femaleDogs, userId }: DogsPageClientProps) {
   const [search, setSearch] = useState('')
+  const [showAddPanel, setShowAddPanel] = useState(false)
   const [sexFilter, setSexFilter] = useState('')
   const [breedFilter, setBreedFilter] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -112,19 +117,19 @@ export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }:
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {/* Add new dog card */}
-          <Link
-            href="/dogs/new"
-            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[320px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group"
+          <button
+            onClick={() => setShowAddPanel(true)}
+            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[320px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer"
           >
             <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
               <Plus className="w-6 h-6 text-white/30 group-hover:text-[#D74709] transition" />
             </div>
             <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Anadir nuevo</p>
             <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">perro</p>
-          </Link>
+          </button>
 
           {paged.map((dog) => (
-            <DogCard key={dog.id} dog={dog} userId={userId} />
+            <DogCard key={dog.id} dog={dog} />
           ))}
         </div>
       ) : (
@@ -210,6 +215,18 @@ export default function DogsPageClient({ dogs, breeds, favoriteDogIds, userId }:
           </button>
         </div>
       )}
+
+      {/* Add dog slide panel */}
+      <DogFormPanel
+        open={showAddPanel}
+        onClose={() => setShowAddPanel(false)}
+        breeds={breeds}
+        colors={colors}
+        kennels={kennels}
+        maleDogs={maleDogs}
+        femaleDogs={femaleDogs}
+        userId={userId}
+      />
     </>
   )
 }
