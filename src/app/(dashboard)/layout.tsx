@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import DashboardShell from '@/components/layout/dashboard-shell'
+import PublicHeader from '@/components/layout/public-header'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -8,28 +9,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // For unauthenticated users (public pages like dog detail, kennel profile)
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white">
-        <header className="sticky top-0 z-50 flex items-center gap-4 px-6 py-2.5 border-b border-white/10 bg-[#0a0a0a]/95 backdrop-blur-sm">
-          <a href="/" className="flex-shrink-0">
-            <img src="/logo.svg" alt="Genealogic" className="h-6" />
-          </a>
-          <div className="flex-1 max-w-xl mx-auto">
-            <a href="/" className="block w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white/30 hover:border-white/20 transition">
-              Buscar perros, razas o criaderos...
-            </a>
-          </div>
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <a href="/login" className="px-4 py-2 rounded-lg border border-white/20 text-sm font-medium text-white/80 hover:bg-white/5 transition">
-              Iniciar sesion
-            </a>
-            <a href="/register" className="px-4 py-2 rounded-lg bg-[#D74709] hover:bg-[#c03d07] text-sm font-semibold text-white transition">
-              Registrarse
-            </a>
-          </div>
-        </header>
-        <main>
-          {children}
-        </main>
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+        <PublicHeader />
+        <main>{children}</main>
       </div>
     )
   }
