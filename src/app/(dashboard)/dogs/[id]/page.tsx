@@ -1,11 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Edit, Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette, Heart } from 'lucide-react'
+import { ArrowLeft, Edit, Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import DogGallery from '@/components/dogs/dog-gallery'
 import DogTabs from '@/components/dogs/dog-tabs'
+import FavoriteButton from '@/components/dogs/favorite-button'
 
 export default async function DogDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -26,6 +27,10 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   ])
   const father = fatherRes.data
   const mother = motherRes.data
+
+  // Check if favorited
+  const { data: favData } = user ? await supabase.from('favorites').select('id').eq('dog_id', id).eq('user_id', user.id).limit(1) : { data: null }
+  const isFavorited = (favData?.length || 0) > 0
 
   const isOwner = user?.id === dog.owner_id
   const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
@@ -59,9 +64,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
               <Edit className="w-4 h-4" /> Editar perro
             </Link>
           )}
-          <button className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 border border-white/20 flex items-center justify-center text-white transition">
-            <Heart className="w-5 h-5" />
-          </button>
+          <FavoriteButton dogId={id} initialFavorited={isFavorited} />
         </div>
 
         <Link href="/dogs" className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition">

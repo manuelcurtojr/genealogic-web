@@ -10,7 +10,7 @@ export default async function FavoritesPage() {
     .from('favorites')
     .select(`
       dog_id,
-      dog:dogs(id, name, sex, registration, breed:breeds(name), photos:dog_photos(url))
+      dog:dogs(id, name, sex, thumbnail_url, breed:breeds(name))
     `)
     .eq('user_id', user!.id)
     .order('created_at', { ascending: false })
@@ -33,7 +33,7 @@ export default async function FavoritesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {dogs.map((dog: any) => {
-            const photo = dog.photos?.[0]?.url
+            const photo = dog.thumbnail_url
             const sexColor = dog.sex === 'male' ? 'border-blue-400' : 'border-pink-400'
             return (
               <Link key={dog.id} href={`/dogs/${dog.id}`}
