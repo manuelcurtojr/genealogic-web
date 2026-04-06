@@ -41,7 +41,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/import') ||
     request.nextUrl.pathname.startsWith('/favorites') ||
     request.nextUrl.pathname.startsWith('/planner') ||
-    request.nextUrl.pathname.startsWith('/settings')
+    request.nextUrl.pathname.startsWith('/settings') ||
+    request.nextUrl.pathname.startsWith('/analytics')
   )
 
   if (isProtectedRoute && !user) {

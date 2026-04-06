@@ -26,6 +26,7 @@ export const NAV_ITEMS = [
   { label: 'Importar', href: '/import', icon: 'FileInput' },
   { label: 'Favoritos', href: '/favorites', icon: 'Heart' },
   { label: 'Mi Criadero', href: '/kennel', icon: 'Store' },
+  { label: 'Analiticas', href: '/analytics', icon: 'BarChart3' },
 ] as const
 
 export const PRO_NAV_ITEMS = [
