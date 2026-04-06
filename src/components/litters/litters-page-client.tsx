@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Plus, Grid3X3, List, Trash2, Edit, Eye, EyeOff, Calendar, Baby, Lock, Globe } from 'lucide-react'
+import { Search, Plus, Grid3X3, List, Trash2, Edit, Eye, Calendar, Baby, Lock, Globe } from 'lucide-react'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
 import LitterFormPanel from './litter-form-panel'
+import DogFormPanel from '@/components/dogs/dog-form-panel'
 
 interface Litter {
   id: string
@@ -20,23 +21,38 @@ interface Litter {
   mother: any
 }
 
-const statusConfig: Record<string, { label: string; color: string }> = {
-  confirmed: { label: 'Confirmada', color: BRAND.success },
-  pending: { label: 'Pendiente', color: BRAND.warning },
-  planned: { label: 'Planificada', color: BRAND.info },
+const statusConfig: Record<string, { label: string; color: string; icon: string }> = {
+  planned: { label: 'Planificada', color: '#3498db', icon: '📅' },
+  mated: { label: 'Cubricion', color: '#f39c12', icon: '💛' },
+  born: { label: 'Parto', color: '#27ae60', icon: '🐾' },
+  // Legacy support
+  confirmed: { label: 'Parto', color: '#27ae60', icon: '🐾' },
+  pending: { label: 'Cubricion', color: '#f39c12', icon: '💛' },
 }
 
 export default function LittersPageClient({ litters, userId }: { litters: Litter[]; userId: string }) {
   const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState('')
   const [panelOpen, setPanelOpen] = useState(false)
   const [editLitterId, setEditLitterId] = useState<string | null>(null)
+  // Dog panel for adding puppy to specific litter
+  const [dogPanelOpen, setDogPanelOpen] = useState(false)
+  const [addPuppyLitterId, setAddPuppyLitterId] = useState<string | null>(null)
+  const [addPuppyBreedId, setAddPuppyBreedId] = useState<string | null>(null)
   const router = useRouter()
 
   const openAdd = () => { setEditLitterId(null); setPanelOpen(true) }
   const openEdit = (id: string) => { setEditLitterId(id); setPanelOpen(true) }
   const closePanel = () => { setPanelOpen(false); setEditLitterId(null) }
+
+  const openAddPuppy = (litter: Litter) => {
+    const breed = Array.isArray(litter.breed) ? litter.breed[0] : litter.breed
+    setAddPuppyLitterId(litter.id)
+    setAddPuppyBreedId(breed?.id || null)
+    setDogPanelOpen(true)
+  }
 
   const filtered = litters.filter(l => {
     if (!search) return true
@@ -49,8 +65,15 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
 
   async function handleDelete() {
     if (!deleteId) return
+    setDeleteError('')
+    const litter = litters.find(l => l.id === deleteId)
+    if (litter && litter.puppy_count && litter.puppy_count > 0) {
+      setDeleteError('No se puede eliminar una camada con cachorros asignados.')
+      return
+    }
     const supabase = createClient()
-    await supabase.from('litters').delete().eq('id', deleteId)
+    const { error } = await supabase.from('litters').delete().eq('id', deleteId)
+    if (error) { setDeleteError(error.message); return }
     setDeleteId(null)
     router.refresh()
   }
@@ -61,48 +84,31 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
     router.refresh()
   }
 
-  function getLitterId(litter: Litter) {
-    if (!litter.birth_date) return `#${litter.id.slice(0, 6)}`
-    const date = new Date(litter.birth_date)
-    return `#${String(date.getDate()).padStart(2, '0')}${String(date.getMonth() + 1).padStart(2, '0')}${date.getFullYear()}`
-  }
-
   return (
     <>
-      {/* Title */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Camadas</h1>
         <p className="text-white/50 text-sm mt-1">{litters.length} camadas</p>
       </div>
 
-      {/* Filter bar */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-          <input
-            value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar por padre, madre o raza..."
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition"
-          />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por padre, madre o raza..."
+            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
         </div>
         <div className="flex rounded-lg border border-white/10 overflow-hidden">
-          <button onClick={() => setViewMode('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}>
-            <Grid3X3 className="w-4 h-4" />
-          </button>
-          <button onClick={() => setViewMode('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}>
-            <List className="w-4 h-4" />
-          </button>
+          <button onClick={() => setViewMode('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}><Grid3X3 className="w-4 h-4" /></button>
+          <button onClick={() => setViewMode('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}><List className="w-4 h-4" /></button>
         </div>
       </div>
 
       <p className="text-xs text-white/30 mb-3">{filtered.length} camada{filtered.length !== 1 ? 's' : ''}</p>
 
-      {/* Grid */}
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Add card */}
           <button onClick={openAdd}
-            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[380px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer">
+            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[340px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer">
             <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
               <Plus className="w-6 h-6 text-white/30 group-hover:text-[#D74709] transition" />
             </div>
@@ -113,15 +119,18 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
             const father = litter.father as any
             const mother = litter.mother as any
             const breed = Array.isArray(litter.breed) ? litter.breed[0] : litter.breed
-            const status = statusConfig[litter.status] || statusConfig.pending
+            const status = statusConfig[litter.status] || statusConfig.planned
+            const hasPuppies = litter.puppy_count && litter.puppy_count > 0
 
             return (
               <div key={litter.id} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition">
-                {/* Action buttons top-right */}
+                {/* Actions */}
                 <div className="flex items-center justify-end gap-1 px-3 pt-3">
-                  <button onClick={() => setDeleteId(litter.id)} className="w-8 h-8 rounded-full bg-white/5 hover:bg-red-500/20 flex items-center justify-center text-white/30 hover:text-red-400 transition" title="Eliminar">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {!hasPuppies && (
+                    <button onClick={() => { setDeleteError(''); setDeleteId(litter.id) }} className="w-8 h-8 rounded-full bg-white/5 hover:bg-red-500/20 flex items-center justify-center text-white/30 hover:text-red-400 transition" title="Eliminar">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   <button onClick={() => openEdit(litter.id)} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition" title="Editar">
                     <Edit className="w-3.5 h-3.5" />
                   </button>
@@ -130,18 +139,18 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
                   </Link>
                 </div>
 
-                {/* Litter ID */}
-                <div className="text-center mt-1">
-                  <span className="text-lg font-bold text-white">{getLitterId(litter)}</span>
+                {/* Title: Father x Mother */}
+                <div className="text-center mt-1 px-3">
+                  <span className="text-base font-bold text-white">{father?.name || '?'} x {mother?.name || '?'}</span>
                 </div>
 
-                {/* Parent photos circular */}
+                {/* Parent photos */}
                 <div className="flex items-center justify-center gap-3 mt-3 px-4">
                   <div className="w-12 h-12 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.male }}>
                     {father?.thumbnail_url ? (
                       <img src={father.thumbnail_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/20 text-lg">♂</div>
+                      <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-6 h-6 opacity-20" /></div>
                     )}
                   </div>
                   <span className="text-white/30 font-bold text-sm">x</span>
@@ -149,24 +158,20 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
                     {mother?.thumbnail_url ? (
                       <img src={mother.thumbnail_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/20 text-lg">♀</div>
+                      <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-6 h-6 opacity-20" /></div>
                     )}
                   </div>
                 </div>
 
-                {/* Breed badge */}
-                {breed?.name && (
-                  <div className="flex justify-center mt-3">
+                {/* Breed + Visibility */}
+                <div className="flex items-center justify-center gap-2 mt-3 flex-wrap px-3">
+                  {breed?.name && (
                     <div className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-2.5 py-1">
-                      <img src="/icon.svg" alt="" className="w-4 h-4" />
-                      <span className="text-xs text-white/60">{breed.name}</span>
+                      <img src="/icon.svg" alt="" className="w-3.5 h-3.5" />
+                      <span className="text-[11px] text-white/60">{breed.name}</span>
                     </div>
-                  </div>
-                )}
-
-                {/* Visibility toggle */}
-                <div className="flex justify-center mt-2">
-                  <button onClick={() => toggleVisibility(litter)} className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full transition ${litter.is_public ? 'text-green-400 bg-green-500/10' : 'text-white/40 bg-white/5'}`}>
+                  )}
+                  <button onClick={() => toggleVisibility(litter)} className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full transition ${litter.is_public ? 'text-green-400 bg-green-500/10' : 'text-white/40 bg-white/5'}`}>
                     {litter.is_public ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
                     {litter.is_public ? 'Publica' : 'Privada'}
                   </button>
@@ -174,26 +179,24 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
 
                 {/* Details */}
                 <div className="px-4 pt-3 pb-2 text-center space-y-0.5">
-                  <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Padre:</span> {father?.name || '—'}</p>
-                  <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Madre:</span> {mother?.name || '—'}</p>
                   {litter.birth_date && (
                     <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Nacimiento:</span> {new Date(litter.birth_date).toLocaleDateString('es-ES')}</p>
                   )}
-                  {litter.puppy_count != null && litter.puppy_count > 0 && (
+                  {hasPuppies && (
                     <p className="text-xs text-white/50"><span className="font-semibold text-white/70">Cachorros:</span> {litter.puppy_count}</p>
                   )}
                 </div>
 
-                {/* Status badge */}
+                {/* Status */}
                 <div className="flex justify-center pb-3">
                   <span className="text-[11px] font-medium rounded-full px-2.5 py-0.5" style={{ backgroundColor: status.color + '20', color: status.color }}>
                     {status.label}
                   </span>
                 </div>
 
-                {/* Add puppy button */}
+                {/* Add puppy */}
                 <div className="border-t border-white/5 flex justify-center py-2">
-                  <button className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#D74709]/10 flex items-center justify-center text-white/30 hover:text-[#D74709] transition" title="Anadir cachorro">
+                  <button onClick={() => openAddPuppy(litter)} className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#D74709]/10 flex items-center justify-center text-white/30 hover:text-[#D74709] transition" title="Anadir cachorro a esta camada">
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
@@ -202,32 +205,28 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
           })}
         </div>
       ) : (
-        /* List view */
         <div className="space-y-1">
           {filtered.map(litter => {
             const father = litter.father as any
             const mother = litter.mother as any
-            const status = statusConfig[litter.status] || statusConfig.pending
+            const status = statusConfig[litter.status] || statusConfig.planned
             return (
               <Link key={litter.id} href={`/litters/${litter.id}`}
                 className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-lg px-4 py-3 hover:bg-white/10 transition">
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   <div className="w-8 h-8 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.male }}>
-                    {father?.thumbnail_url ? <img src={father.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/20 text-xs">♂</div>}
+                    {father?.thumbnail_url ? <img src={father.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-4 h-4 opacity-20" /></div>}
                   </div>
                   <span className="text-white/30 text-xs">x</span>
                   <div className="w-8 h-8 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.female }}>
-                    {mother?.thumbnail_url ? <img src={mother.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/20 text-xs">♀</div>}
+                    {mother?.thumbnail_url ? <img src={mother.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-4 h-4 opacity-20" /></div>}
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white truncate">{father?.name || '?'} x {mother?.name || '?'}</p>
                   <p className="text-xs text-white/40">{litter.birth_date ? new Date(litter.birth_date).toLocaleDateString('es-ES') : '—'}</p>
                 </div>
-                <span className="text-[11px] font-medium rounded-full px-2 py-0.5 hidden sm:inline" style={{ backgroundColor: status.color + '20', color: status.color }}>
-                  {status.label}
-                </span>
-                <span className="text-xs text-white/30">{litter.puppy_count || 0} cachorros</span>
+                <span className="text-[11px] font-medium rounded-full px-2 py-0.5 hidden sm:inline" style={{ backgroundColor: status.color + '20', color: status.color }}>{status.label}</span>
               </Link>
             )
           })}
@@ -235,19 +234,24 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
       )}
 
       {/* Litter form panel */}
-      <LitterFormPanel
-        open={panelOpen}
-        onClose={closePanel}
-        editLitterId={editLitterId}
+      <LitterFormPanel open={panelOpen} onClose={closePanel} editLitterId={editLitterId} userId={userId} />
+
+      {/* Dog form panel for adding puppy to litter */}
+      <DogFormPanel
+        open={dogPanelOpen}
+        onClose={() => { setDogPanelOpen(false); setAddPuppyLitterId(null) }}
+        editDogId={null}
         userId={userId}
+        defaultLitterId={addPuppyLitterId}
+        defaultBreedId={addPuppyBreedId}
       />
 
       <ConfirmDialog
         open={!!deleteId}
-        onCancel={() => setDeleteId(null)}
+        onCancel={() => { setDeleteId(null); setDeleteError('') }}
         onConfirm={handleDelete}
         title="Eliminar camada"
-        message="Esta camada se eliminara permanentemente."
+        message={deleteError || "Esta camada se eliminara permanentemente."}
         confirmLabel="Eliminar"
         destructive
       />

@@ -12,9 +12,11 @@ interface DogFormPanelProps {
   onSaved?: () => void
   editDogId?: string | null
   userId: string
+  defaultLitterId?: string | null
+  defaultBreedId?: string | null
 }
 
-export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId }: DogFormPanelProps) {
+export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId, defaultLitterId, defaultBreedId }: DogFormPanelProps) {
   const router = useRouter()
   const isEdit = !!editDogId
   const [loading, setLoading] = useState(false)
@@ -82,7 +84,10 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           }
         }
       } else {
-        setForm({ name: '', sex: 'male', birth_date: '', registration: '', microchip: '', weight: '', height: '', breed_id: '', color_id: '', kennel_id: '', father_id: '', mother_id: '', is_public: true })
+        setForm({ name: '', sex: 'male', birth_date: '', registration: '', microchip: '', weight: '', height: '', breed_id: defaultBreedId || '', color_id: '', kennel_id: '', father_id: '', mother_id: '', is_public: true })
+        if (defaultBreedId) {
+          filterByBreed(defaultBreedId, colorsRes.data || [], malesRes.data || [], femalesRes.data || [])
+        }
       }
 
       setDataLoading(false)
@@ -171,7 +176,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       <div className={`fixed top-0 right-0 h-full w-full max-w-lg z-50 bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Fixed header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 flex-shrink-0">
-          <h2 className="text-lg font-semibold">{isEdit ? 'Editar perro' : 'Anadir perro'}</h2>
+          <h2 className="text-lg font-semibold">{isEdit ? 'Editar perro' : defaultLitterId ? 'Anadir cachorro' : 'Anadir perro'}</h2>
           <button onClick={onClose} className="text-white/40 hover:text-white transition">
             <X className="w-5 h-5" />
           </button>

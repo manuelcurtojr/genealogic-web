@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, Lock } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 
 interface LitterFormPanelProps {
@@ -26,7 +26,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId }:
 
   const [form, setForm] = useState({
     father_id: '', mother_id: '', breed_id: '', birth_date: '',
-    puppy_count: '', status: 'pending', is_public: true,
+    puppy_count: '', status: 'planned', is_public: true,
   })
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId }:
           })
         }
       } else {
-        setForm({ father_id: '', mother_id: '', breed_id: '', birth_date: '', puppy_count: '', status: 'pending', is_public: true })
+        setForm({ father_id: '', mother_id: '', breed_id: '', birth_date: '', puppy_count: '', status: 'planned', is_public: true })
       }
       setDataLoading(false)
     }
@@ -126,25 +126,22 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId }:
               />
             </div>
 
-            {/* Parents */}
+            {/* Parents — locked in edit mode */}
             <div>
-              <h3 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">Padres</h3>
-              <div className="space-y-3">
-                <DogSelect
-                  label="Padre"
-                  dogs={form.breed_id ? maleDogs.filter(d => d.breed_id === form.breed_id) : maleDogs}
-                  value={form.father_id}
-                  onChange={v => set('father_id', v)}
-                  sex="male"
-                />
-                <DogSelect
-                  label="Madre"
-                  dogs={form.breed_id ? femaleDogs.filter(d => d.breed_id === form.breed_id) : femaleDogs}
-                  value={form.mother_id}
-                  onChange={v => set('mother_id', v)}
-                  sex="female"
-                />
-              </div>
+              <h3 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">
+                Padres {isEdit && <span className="text-white/20 normal-case">(no editables)</span>}
+              </h3>
+              {isEdit ? (
+                <div className="space-y-2">
+                  <LockedField label="Padre" dogs={maleDogs} value={form.father_id} sex="male" />
+                  <LockedField label="Madre" dogs={femaleDogs} value={form.mother_id} sex="female" />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <DogSelect label="Padre" dogs={form.breed_id ? maleDogs.filter(d => d.breed_id === form.breed_id) : maleDogs} value={form.father_id} onChange={v => set('father_id', v)} sex="male" />
+                  <DogSelect label="Madre" dogs={form.breed_id ? femaleDogs.filter(d => d.breed_id === form.breed_id) : femaleDogs} value={form.mother_id} onChange={v => set('mother_id', v)} sex="female" />
+                </div>
+              )}
             </div>
 
             {/* Details */}
@@ -169,9 +166,9 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId }:
               <h3 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">Estado</h3>
               <div className="flex gap-2">
                 {[
-                  { value: 'pending', label: 'Pendiente', color: '#f39c12' },
-                  { value: 'confirmed', label: 'Confirmada', color: '#27ae60' },
                   { value: 'planned', label: 'Planificada', color: '#3498db' },
+                  { value: 'mated', label: 'Cubricion', color: '#f39c12' },
+                  { value: 'born', label: 'Parto', color: '#27ae60' },
                 ].map(s => (
                   <button key={s.value} type="button" onClick={() => set('status', s.value)}
                     className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border transition ${
@@ -209,6 +206,30 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId }:
         </div>
       </div>
     </>
+  )
+}
+
+/* --- Locked field (read-only parent display in edit mode) --- */
+function LockedField({ label, dogs, value, sex }: { label: string; dogs: any[]; value: string; sex: string }) {
+  const dog = dogs.find(d => d.id === value)
+  const sexColor = sex === 'male' ? BRAND.male : BRAND.female
+  return (
+    <div>
+      <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">{label}</label>
+      <div className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 opacity-60 cursor-not-allowed">
+        {dog ? (
+          <>
+            <div className="w-6 h-6 rounded-full border-2 overflow-hidden flex-shrink-0 bg-white/5" style={{ borderColor: sexColor }}>
+              {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/20 text-[10px]">{sex === 'male' ? '♂' : '♀'}</div>}
+            </div>
+            <span className="text-white truncate">{dog.name}</span>
+          </>
+        ) : (
+          <span className="text-white/30">No asignado</span>
+        )}
+        <Lock className="w-3.5 h-3.5 text-white/20 ml-auto flex-shrink-0" />
+      </div>
+    </div>
   )
 }
 
