@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Shield, Download, AlertTriangle } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Shield } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import GalleryTab from './edit-tabs/gallery-tab'
 import SaludTab from './edit-tabs/salud-tab'
 import PalmaresTab from './edit-tabs/palmares-tab'
 import HistorialTab from './edit-tabs/historial-tab'
+import PedigreePdfTab from './edit-tabs/pedigree-pdf-tab'
 
 interface DogFormPanelProps {
   open: boolean; onClose: () => void; onSaved?: () => void; editDogId?: string | null; userId: string; defaultLitterId?: string | null; defaultBreedId?: string | null
@@ -213,21 +214,8 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
 
             {/* TAB: PEDIGREE PDF */}
-            {activeTab === 'pedigree-pdf' && (
-              <div className="space-y-5 text-center">
-                <div className="text-[#D74709] mx-auto w-16 h-16 rounded-2xl bg-[#D74709]/10 flex items-center justify-center"><FileText className="w-8 h-8"/></div>
-                <div>
-                  <h3 className="text-xl font-bold">Exportar Pedigree en PDF</h3>
-                  <p className="text-sm text-white/50 mt-2">Genera un documento PDF con la genealogia digital de <strong className="text-white">{form.name||'este perro'}</strong>, incluyendo los datos del perro, propietario y arbol genealogico de 4 generaciones.</p>
-                </div>
-                <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 flex items-start gap-2 text-left">
-                  <AlertTriangle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0"/>
-                  <p className="text-xs text-orange-400">Este PDF es una version digital de la genealogia registrada en Genealogic. No es un pedigri oficial emitido por un club canofilo (FCI, AKC, KC, RSCE, etc.).</p>
-                </div>
-                <button className="inline-flex items-center gap-2 bg-[#D74709]/10 border border-[#D74709]/30 text-[#D74709] font-semibold px-6 py-3 rounded-lg hover:bg-[#D74709]/20 transition">
-                  <Download className="w-5 h-5"/> Descargar Pedigree PDF
-                </button>
-              </div>
+            {activeTab === 'pedigree-pdf' && editDogId && (
+              <PedigreePdfTab dogId={editDogId} dogName={form.name} userId={userId} />
             )}
 
             {/* TAB: HISTORIAL */}
