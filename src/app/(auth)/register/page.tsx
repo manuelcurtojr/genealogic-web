@@ -39,7 +39,7 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <PawPrint className="w-12 h-12 text-[#D74709] mx-auto mb-3" />
+          <img src="/logo.svg" alt="Genealogic" className="h-8 mx-auto mb-3" />
           <h1 className="text-2xl font-bold text-white">Genealogic</h1>
           <p className="text-white/50 text-sm mt-1">Crea tu cuenta</p>
         </div>
