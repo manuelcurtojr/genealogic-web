@@ -52,24 +52,28 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   const pedigree = pedigreeRes.data
 
   return (
-    <div className="-mx-[30px] -mt-[30px]">
-      {/* Gallery — flush to header and sidebar, square crop */}
+    <div>
+      {/* Gallery — full width */}
       <div className="relative">
         <DogGallery photos={galleryPhotos} name={dog.name} sex={dog.sex} />
 
-        <div className="absolute top-4 right-4 flex items-center gap-2">
-          {isOwner && (
-            <Link href={`/dogs/${id}/edit`}
-              className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition border border-white/20">
-              <Edit className="w-4 h-4" /> Editar perro
-            </Link>
-          )}
+        {/* Favorite button top-right */}
+        <div className="absolute top-4 right-4">
           <FavoriteButton dogId={id} initialFavorited={isFavorited} />
         </div>
 
+        {/* Back button top-left */}
         <Link href="/dogs" className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition">
           <ArrowLeft className="w-5 h-5" />
         </Link>
+
+        {/* Edit button — only for owner */}
+        {isOwner && (
+          <Link href={`/dogs/${id}/edit`}
+            className="absolute top-4 right-16 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition border border-white/20">
+            <Edit className="w-4 h-4" /> Editar
+          </Link>
+        )}
       </div>
 
       {/* Content */}
