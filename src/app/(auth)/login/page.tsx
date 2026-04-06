@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { PawPrint, Mail, Lock, Loader2 } from 'lucide-react'
+import { Mail, Lock, Loader2, ArrowLeft } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -33,12 +33,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 relative">
+      <Link href="/" className="absolute top-6 left-6 w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white transition">
+        <ArrowLeft className="w-5 h-5" />
+      </Link>
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <img src="/logo.svg" alt="Genealogic" className="h-8 mx-auto mb-3" />
-          <h1 className="text-2xl font-bold text-white">Genealogic</h1>
-          <p className="text-white/50 text-sm mt-1">Inicia sesion en tu cuenta</p>
+          <img src="/logo.svg" alt="Genealogic" className="h-10 mx-auto mb-2" />
+          <p className="text-white/50 text-sm">Inicia sesion en tu cuenta</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
