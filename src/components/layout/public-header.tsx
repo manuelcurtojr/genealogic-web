@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { Sun, Moon } from 'lucide-react'
 import SearchBar from './search-bar'
 
@@ -25,10 +24,19 @@ export default function PublicHeader() {
     document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light')
   }
 
+  const borderColor = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+  const iconColor = darkMode ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-gray-800'
+  const loginStyle = darkMode
+    ? 'border-white/20 text-white/80 hover:bg-white/5'
+    : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+
   return (
-    <header className="sticky top-0 z-50 flex items-center gap-3 px-4 py-2 border-b border-white/10 bg-[var(--background)]/95 backdrop-blur-sm">
+    <header
+      className="sticky top-0 z-50 flex items-center gap-3 px-4 py-2"
+      style={{ backgroundColor: darkMode ? '#0a0a0a' : '#f8fafc', borderBottom: `1px solid ${borderColor}` }}
+    >
       <a href="/" className="flex-shrink-0">
-        <img src="/logo.svg" alt="Genealogic" className="h-6" />
+        <img src={darkMode ? '/logo.svg' : '/logo.svg'} alt="Genealogic" className="h-6" />
       </a>
 
       <div className="flex-1">
@@ -36,11 +44,11 @@ export default function PublicHeader() {
       </div>
 
       <button onClick={toggleTheme}
-        className="w-9 h-9 rounded-full flex items-center justify-center text-yellow-400 hover:bg-white/5 transition flex-shrink-0">
+        className={`w-9 h-9 rounded-full flex items-center justify-center transition flex-shrink-0 ${darkMode ? 'text-yellow-400 hover:bg-white/5' : 'text-yellow-500 hover:bg-gray-100'}`}>
         {darkMode ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
       </button>
 
-      <a href="/login" className="px-4 py-2 rounded-lg border border-white/20 text-sm font-medium hover:bg-white/5 transition flex-shrink-0">
+      <a href="/login" className={`px-4 py-2 rounded-lg border text-sm font-medium transition flex-shrink-0 ${loginStyle}`}>
         Iniciar sesion
       </a>
       <a href="/register" className="px-4 py-2 rounded-lg bg-[#D74709] hover:bg-[#c03d07] text-sm font-semibold text-white transition flex-shrink-0">
