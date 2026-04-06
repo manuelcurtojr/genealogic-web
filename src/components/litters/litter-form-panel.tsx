@@ -172,7 +172,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId }:
               )}
             </div>
 
-            {/* Status — 3 cards like WP */}
+            {/* Status — 3 cards with inline fields */}
             <div>
               <h3 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">Estado actual</h3>
               <div className="space-y-2">
@@ -180,50 +180,58 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId }:
                   const Icon = s.icon
                   const active = form.status === s.value
                   return (
-                    <button key={s.value} type="button" onClick={() => set('status', s.value)}
-                      className={`w-full text-left flex items-center gap-3 p-3 rounded-lg border transition ${
-                        active ? 'border-[#D74709] bg-[#D74709]/5' : 'border-white/10 bg-white/[0.02] hover:bg-white/5'
-                      }`}>
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? 'bg-[#D74709]/15' : 'bg-white/5'}`}>
-                        <Icon className="w-5 h-5" style={{ color: active ? '#D74709' : s.color }} />
-                      </div>
-                      <div>
-                        <p className={`text-sm font-semibold ${active ? 'text-[#D74709]' : 'text-white/70'}`}>{s.label}</p>
-                        <p className="text-xs text-white/40">{s.desc}</p>
-                      </div>
-                    </button>
+                    <div key={s.value}>
+                      <button type="button" onClick={() => set('status', s.value)}
+                        className={`w-full text-left flex items-center gap-3 p-3 rounded-lg border transition ${
+                          active ? 'border-[#D74709] bg-[#D74709]/5' : 'border-white/10 bg-white/[0.02] hover:bg-white/5'
+                        }`}>
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? 'bg-[#D74709]/15' : 'bg-white/5'}`}>
+                          <Icon className="w-5 h-5" style={{ color: active ? '#D74709' : s.color }} />
+                        </div>
+                        <div>
+                          <p className={`text-sm font-semibold ${active ? 'text-[#D74709]' : 'text-white/70'}`}>{s.label}</p>
+                          <p className="text-xs text-white/40">{s.desc}</p>
+                        </div>
+                      </button>
+
+                      {/* Mated fields — inline below its card */}
+                      {active && s.value === 'mated' && (
+                        <div className="mt-2 ml-4 pl-4 border-l-2 border-[#D74709]/30 space-y-3 pb-1">
+                          <div>
+                            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Fecha del cruce</label>
+                            <input type="date" value={form.mating_date} onChange={e => set('mating_date', e.target.value)}
+                              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Born fields — inline below its card */}
+                      {active && s.value === 'born' && (
+                        <div className="mt-2 ml-4 pl-4 border-l-2 border-[#D74709]/30 space-y-3 pb-1">
+                          <div>
+                            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Fecha del cruce</label>
+                            <input type="date" value={form.mating_date} onChange={e => set('mating_date', e.target.value)}
+                              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Nacimiento</label>
+                              <input type="date" value={form.birth_date} onChange={e => set('birth_date', e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
+                            </div>
+                            <div>
+                              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Cachorros</label>
+                              <input type="number" min="0" value={form.puppy_count} onChange={e => set('puppy_count', e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )
                 })}
               </div>
             </div>
-
-            {/* Conditional date fields based on status */}
-            {(form.status === 'mated' || form.status === 'born') && (
-              <div>
-                <h3 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-3">Fechas</h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Fecha del cruce</label>
-                    <input type="date" value={form.mating_date} onChange={e => set('mating_date', e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
-                  </div>
-                  {form.status === 'born' && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Nacimiento</label>
-                        <input type="date" value={form.birth_date} onChange={e => set('birth_date', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Cachorros</label>
-                        <input type="number" min="0" value={form.puppy_count} onChange={e => set('puppy_count', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* Visibility */}
             <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg p-3">
