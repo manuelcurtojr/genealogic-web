@@ -3,8 +3,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Shield, Syringe, Bug, Pill, FlaskConical, Scissors, Plus, Pencil, Trash2, Download, AlertTriangle, CheckCircle } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Shield, Download, AlertTriangle } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
+import GalleryTab from './edit-tabs/gallery-tab'
+import SaludTab from './edit-tabs/salud-tab'
+import PalmaresTab from './edit-tabs/palmares-tab'
+import HistorialTab from './edit-tabs/historial-tab'
 
 interface DogFormPanelProps {
   open: boolean; onClose: () => void; onSaved?: () => void; editDogId?: string | null; userId: string; defaultLitterId?: string | null; defaultBreedId?: string | null
@@ -21,23 +25,6 @@ const TABS = [
 
 type TabKey = typeof TABS[number]['key']
 
-const VET_TYPES = [
-  { key: 'vaccine', label: 'Vacuna', icon: Syringe, color: '#3498db' },
-  { key: 'deworming', label: 'Desparasitacion', icon: Bug, color: '#27ae60' },
-  { key: 'treatment', label: 'Tratamiento', icon: Pill, color: '#f39c12' },
-  { key: 'test', label: 'Prueba medica', icon: FlaskConical, color: '#9b59b6' },
-  { key: 'surgery', label: 'Cirugia', icon: Scissors, color: '#e74c3c' },
-]
-
-const AWARD_TYPES = [
-  { key: 'CAC', label: 'CAC', color: '#f39c12' },
-  { key: 'CACIB', label: 'CACIB', color: '#f39c12' },
-  { key: 'BOB', label: 'BOB', color: '#3498db' },
-  { key: 'BOS', label: 'BOS', color: '#e84393' },
-  { key: 'BOG', label: 'BOG', color: '#27ae60' },
-  { key: 'BIS', label: 'BIS', color: '#f1c40f' },
-  { key: 'other', label: 'Otro', color: '#95a5a6' },
-]
 
 export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId, defaultLitterId, defaultBreedId }: DogFormPanelProps) {
   const router = useRouter()
@@ -57,11 +44,8 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   const [allMaleDogs, setAllMaleDogs] = useState<any[]>([])
   const [allFemaleDogs, setAllFemaleDogs] = useState<any[]>([])
 
-  // Vet records + awards for tabs
-  const [vetRecords, setVetRecords] = useState<any[]>([])
-  const [awards, setAwards] = useState<any[]>([])
-  const [vetFilter, setVetFilter] = useState('all')
-  const [awardFilter, setAwardFilter] = useState('all')
+  // Store original form for change tracking
+  const [originalForm, setOriginalForm] = useState<any>(null)
 
   const [form, setForm] = useState({
     name: '', sex: 'male', birth_date: '', registration: '', microchip: '',
@@ -90,18 +74,13 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         if (dog) {
           setForm({ name: dog.name||'', sex: dog.sex||'male', birth_date: dog.birth_date||'', registration: dog.registration||'', microchip: dog.microchip||'', weight: dog.weight?.toString()||'', height: dog.height?.toString()||'', breed_id: dog.breed_id||'', color_id: dog.color_id||'', kennel_id: dog.kennel_id||'', father_id: dog.father_id||'', mother_id: dog.mother_id||'', is_public: dog.is_public??true })
           if (dog.breed_id) filterByBreed(dog.breed_id, cRes.data||[], mRes.data||[], fRes.data||[])
+          setOriginalForm({ name: dog.name||'', sex: dog.sex||'male', birth_date: dog.birth_date||'', registration: dog.registration||'', microchip: dog.microchip||'', weight: dog.weight?.toString()||'', height: dog.height?.toString()||'', breed_id: dog.breed_id||'', color_id: dog.color_id||'', kennel_id: dog.kennel_id||'', father_id: dog.father_id||'', mother_id: dog.mother_id||'', is_public: dog.is_public??true })
         }
-        // Load vet records and awards
-        const [vRes, aRes] = await Promise.all([
-          supabase.from('vet_records').select('*').eq('dog_id', editDogId).order('date', { ascending: false }),
-          supabase.from('awards').select('*').eq('dog_id', editDogId).order('date', { ascending: false }),
-        ])
-        setVetRecords(vRes.data||[]); setAwards(aRes.data||[])
       } else {
         const breedId = defaultBreedId||''
         setForm({ name:'',sex:'male',birth_date:'',registration:'',microchip:'',weight:'',height:'',breed_id:breedId,color_id:'',kennel_id:'',father_id:'',mother_id:'',is_public:true })
         if (breedId) filterByBreed(breedId, cRes.data||[], mRes.data||[], fRes.data||[])
-        setVetRecords([]); setAwards([])
+        setOriginalForm(null)
       }
       setDataLoading(false)
     }
@@ -124,25 +103,32 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     if (!form.name.trim()) return; setLoading(true); setError('')
     const supabase = createClient()
     const payload = { name:form.name.trim(),sex:form.sex,birth_date:form.birth_date||null,registration:form.registration||null,microchip:form.microchip||null,weight:form.weight?parseFloat(form.weight):null,height:form.height?parseFloat(form.height):null,breed_id:form.breed_id||null,color_id:form.color_id||null,kennel_id:form.kennel_id||null,father_id:form.father_id||null,mother_id:form.mother_id||null,is_public:form.is_public }
-    if (isEdit) { const{error:err}=await supabase.from('dogs').update(payload).eq('id',editDogId!); setLoading(false); if(err){setError(err.message);return} }
+    if (isEdit) {
+      const{error:err}=await supabase.from('dogs').update(payload).eq('id',editDogId!); setLoading(false); if(err){setError(err.message);return}
+      // Track changes
+      if (originalForm) {
+        const changes: { field_name: string; old_value: string | null; new_value: string | null }[] = []
+        const fields = ['name','sex','birth_date','registration','microchip','weight','height','breed_id','color_id','kennel_id','father_id','mother_id','is_public']
+        for (const f of fields) {
+          const ov = String(originalForm[f] || ''), nv = String((form as any)[f] || '')
+          if (ov !== nv) changes.push({ field_name: f, old_value: ov || null, new_value: nv || null })
+        }
+        if (changes.length > 0) {
+          await supabase.from('dog_changes').insert(changes.map(c => ({ ...c, dog_id: editDogId!, user_id: userId })))
+        }
+      }
+    }
     else { const{error:err}=await supabase.from('dogs').insert({...payload,owner_id:userId}); setLoading(false); if(err){setError(err.message);return} }
     onClose(); if(onSaved)onSaved(); router.refresh()
   }
 
   const selBreed=breeds.find(b=>b.id===form.breed_id),selFather=allMaleDogs.find(d=>d.id===form.father_id),selMother=allFemaleDogs.find(d=>d.id===form.mother_id),selKennel=kennels.find(k=>k.id===form.kennel_id)
 
-  // Vet record counts per type
-  const vetCounts = VET_TYPES.map(t => ({ ...t, count: vetRecords.filter(r => r.record_type === t.key).length }))
-  const filteredVet = vetFilter === 'all' ? vetRecords : vetRecords.filter(r => r.record_type === vetFilter)
-
-  // Award counts per type
-  const awardCounts = AWARD_TYPES.map(t => ({ ...t, count: awards.filter(a => a.award_type === t.key).length }))
-  const filteredAwards = awardFilter === 'all' ? awards : awards.filter(a => a.award_type === awardFilter)
 
   return (
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open?'opacity-100':'opacity-0 pointer-events-none'}`} onClick={onClose}/>
-      <div className={`fixed top-0 right-0 h-full w-full max-w-xl z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open?'translate-x-0':'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full max-w-2xl z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open?'translate-x-0':'translate-x-full'}`}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
           <h2 className="text-lg font-semibold">{isEdit?'Editar perro':defaultLitterId?'Anadir cachorro':'Anadir perro'}</h2>
@@ -206,11 +192,9 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                   </div>
                 </Sec>
                 <Sec icon={ImageIcon} title="Galeria">
-                  <div className="border-2 border-dashed border-white/10 rounded-lg p-6 text-center">
-                    <ImageIcon className="w-8 h-8 text-white/20 mx-auto mb-2"/>
-                    <p className="text-xs text-white/30">Arrastra fotos aqui o haz clic para subir</p>
-                    <p className="text-[10px] text-white/20 mt-1">Proximamente</p>
-                  </div>
+                  {editDogId ? <GalleryTab dogId={editDogId} userId={userId} /> : (
+                    <p className="text-xs text-white/30 text-center py-4">Guarda el perro primero para subir fotos</p>
+                  )}
                 </Sec>
                 <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg p-3">
                   <div className="flex items-center gap-2">
@@ -223,65 +207,10 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             )}
 
             {/* TAB: SALUD */}
-            {activeTab === 'salud' && (
-              <div className="space-y-4">
-                {/* Type summary cards */}
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {vetCounts.map(t => {
-                    const Icon = t.icon
-                    return <div key={t.key} className="flex-shrink-0 bg-white/5 border border-white/10 rounded-lg px-3 py-2 min-w-[120px]">
-                      <div className="flex items-center gap-2"><Icon className="w-4 h-4" style={{color:t.color}}/><span className="text-xs font-semibold">{t.label}</span></div>
-                      <p className="text-[11px] text-white/40 mt-0.5">{t.count} registros</p>
-                    </div>
-                  })}
-                </div>
-                {/* Filter buttons */}
-                <div className="flex gap-1.5 flex-wrap">
-                  <button onClick={()=>setVetFilter('all')} className={`px-3 py-1 rounded-full text-xs font-medium transition ${vetFilter==='all'?'bg-[#D74709] text-white':'bg-white/5 text-white/50 hover:bg-white/10'}`}>Todos</button>
-                  {VET_TYPES.map(t=><button key={t.key} onClick={()=>setVetFilter(t.key)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${vetFilter===t.key?'text-white':'bg-white/5 text-white/50 hover:bg-white/10'}`} style={vetFilter===t.key?{backgroundColor:t.color}:undefined}>{t.label}</button>)}
-                </div>
-                {/* Add button */}
-                <button className="flex items-center gap-1.5 text-sm text-[#D74709] hover:text-[#c03d07] transition font-medium">
-                  <Plus className="w-4 h-4"/> Anadir registro
-                </button>
-                {/* Records list */}
-                {filteredVet.length === 0 ? (
-                  <div className="text-center py-10 text-white/30"><Stethoscope className="w-10 h-10 mx-auto mb-3 opacity-30"/><p className="text-sm">Aun no hay registros veterinarios. Anade el primero!</p></div>
-                ) : filteredVet.map(r => {
-                  const type = VET_TYPES.find(t=>t.key===r.record_type)||VET_TYPES[0]; const Icon=type.icon
-                  return <div key={r.id} className="bg-white/5 border border-white/10 rounded-lg p-3 flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{backgroundColor:type.color+'20'}}><Icon className="w-4 h-4" style={{color:type.color}}/></div>
-                    <div className="flex-1 min-w-0"><p className="text-sm font-semibold text-white">{r.name}</p><p className="text-xs text-white/40">{new Date(r.date).toLocaleDateString('es-ES')}{r.vet_name&&` · ${r.vet_name}`}</p></div>
-                  </div>
-                })}
-              </div>
-            )}
+            {activeTab === 'salud' && editDogId && <SaludTab dogId={editDogId} userId={userId} />}
 
             {/* TAB: PALMARES */}
-            {activeTab === 'palmares' && (
-              <div className="space-y-4">
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {awardCounts.map(t => <div key={t.key} className="flex-shrink-0 bg-white/5 border border-white/10 rounded-lg px-3 py-2 min-w-[90px]">
-                    <span className="text-xs font-bold" style={{color:t.color}}>{t.label}</span>
-                    <p className="text-[11px] text-white/40">{t.count} titulos</p>
-                  </div>)}
-                </div>
-                <div className="flex gap-1.5 flex-wrap">
-                  <button onClick={()=>setAwardFilter('all')} className={`px-3 py-1 rounded-full text-xs font-medium transition ${awardFilter==='all'?'bg-[#D74709] text-white':'bg-white/5 text-white/50 hover:bg-white/10'}`}>Todos</button>
-                  {AWARD_TYPES.map(t=><button key={t.key} onClick={()=>setAwardFilter(t.key)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${awardFilter===t.key?'text-white':'bg-white/5 text-white/50 hover:bg-white/10'}`} style={awardFilter===t.key?{backgroundColor:t.color}:undefined}>{t.label}</button>)}
-                </div>
-                <button className="flex items-center gap-1.5 text-sm text-[#D74709] hover:text-[#c03d07] transition font-medium"><Plus className="w-4 h-4"/> Anadir titulo</button>
-                {filteredAwards.length === 0 ? (
-                  <div className="text-center py-10 text-white/30"><Trophy className="w-10 h-10 mx-auto mb-3 opacity-30"/><p className="text-sm">Aun no hay titulos registrados. Anade el primer premio!</p></div>
-                ) : filteredAwards.map(a => {
-                  const type = AWARD_TYPES.find(t=>t.key===a.award_type)||AWARD_TYPES[6]
-                  return <div key={a.id} className="bg-white/5 border border-white/10 rounded-lg p-3 flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{backgroundColor:type.color+'20'}}><Trophy className="w-4 h-4" style={{color:type.color}}/></div>
-                    <div className="flex-1 min-w-0"><p className="text-sm font-semibold text-white">{a.event_name}</p><p className="text-xs text-white/40">{type.label} · {new Date(a.date).toLocaleDateString('es-ES')}{a.judge&&` · Juez: ${a.judge}`}</p></div>
-                  </div>
-                })}
-              </div>
-            )}
+            {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
 
             {/* TAB: PEDIGREE PDF */}
             {activeTab === 'pedigree-pdf' && (
@@ -302,16 +231,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             )}
 
             {/* TAB: HISTORIAL */}
-            {activeTab === 'historial' && (
-              <div className="space-y-4">
-                <Sec icon={History} title="Historial de cambios">
-                  <div className="text-center py-10 text-white/30">
-                    <History className="w-10 h-10 mx-auto mb-3 opacity-30"/>
-                    <p className="text-sm">No hay cambios registrados para este perro.</p>
-                  </div>
-                </Sec>
-              </div>
-            )}
+            {activeTab === 'historial' && editDogId && <HistorialTab dogId={editDogId} />}
 
             {/* TAB: VERIFICACION */}
             {activeTab === 'verificacion' && (
