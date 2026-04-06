@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Globe, ExternalLink, MessageCircle } from 'lucide-react'
+import { AFFIX_FORMATS, getAffixPreview, type AffixFormat } from '@/lib/affix'
 
 interface Props {
   open: boolean
@@ -20,6 +21,7 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
     name: '', description: '', foundation_date: '', website: '',
     social_instagram: '', social_facebook: '', social_tiktok: '', social_youtube: '',
     whatsapp_phone: '', whatsapp_text: '', whatsapp_enabled: false,
+    affix_format: 'suffix_de' as AffixFormat,
   })
 
   useEffect(() => {
@@ -37,6 +39,7 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
       whatsapp_phone: kennel.whatsapp_phone || '',
       whatsapp_text: kennel.whatsapp_text || '',
       whatsapp_enabled: kennel.whatsapp_enabled || false,
+      affix_format: kennel.affix_format || 'suffix_de',
     })
   }, [open, kennel])
 
@@ -67,6 +70,7 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
       whatsapp_phone: form.whatsapp_phone || null,
       whatsapp_text: form.whatsapp_text || null,
       whatsapp_enabled: form.whatsapp_enabled,
+      affix_format: form.affix_format,
     }).eq('id', kennel.id)
 
     setSaving(false)
@@ -101,6 +105,30 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
             <div className="grid grid-cols-2 gap-3">
               <Field label="Fecha de fundacion" value={form.foundation_date} onChange={v => set('foundation_date', v)} type="date" />
               <Field label="Sitio web" value={form.website} onChange={v => set('website', v)} placeholder="https://..." />
+            </div>
+          </Sec>
+
+          {/* Affix format */}
+          <Sec title="Formato del nombre (afijo)">
+            <p className="text-[11px] text-white/30 -mt-1 mb-2">Define como se formara el nombre de los cachorros de tu criadero</p>
+            <div className="space-y-1.5">
+              {AFFIX_FORMATS.map(f => (
+                <button
+                  key={f.value}
+                  type="button"
+                  onClick={() => set('affix_format', f.value)}
+                  className={`w-full text-left px-3 py-2 rounded-lg border transition flex items-center justify-between ${
+                    form.affix_format === f.value
+                      ? 'border-[#D74709] bg-[#D74709]/5'
+                      : 'border-white/5 bg-white/[0.02] hover:bg-white/5'
+                  }`}
+                >
+                  <span className="text-xs text-white/50">{f.label}</span>
+                  <span className={`text-xs font-semibold ${form.affix_format === f.value ? 'text-[#D74709]' : 'text-white/30'}`}>
+                    {getAffixPreview(f.value, form.name)}
+                  </span>
+                </button>
+              ))}
             </div>
           </Sec>
 

@@ -31,7 +31,7 @@ const statusConfig: Record<string, { label: string; color: string; icon: string 
   pending: { label: 'Cubricion', color: '#f39c12', icon: '💛' },
 }
 
-export default function LittersPageClient({ litters, userId, userKennelId }: { litters: Litter[]; userId: string; userKennelId?: string | null }) {
+export default function LittersPageClient({ litters, userId, userKennelId, userKennelName, userAffixFormat }: { litters: Litter[]; userId: string; userKennelId?: string | null; userKennelName?: string | null; userAffixFormat?: string | null }) {
   const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -244,6 +244,8 @@ export default function LittersPageClient({ litters, userId, userKennelId }: { l
         defaultFatherId={addPuppyFatherId}
         defaultMotherId={addPuppyMotherId}
         defaultKennelId={addPuppyKennelId}
+        defaultKennelName={userKennelName}
+        defaultAffixFormat={userAffixFormat}
       />
 
       <ConfirmDialog

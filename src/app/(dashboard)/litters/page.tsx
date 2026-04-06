@@ -19,16 +19,22 @@ export default async function LittersPage() {
       .order('created_at', { ascending: false }),
     supabase
       .from('kennels')
-      .select('id')
+      .select('id, name, affix_format')
       .eq('owner_id', user.id)
       .limit(1),
   ])
 
-  const userKennelId = kennelRes.data?.[0]?.id || null
+  const userKennel = kennelRes.data?.[0] || null
 
   return (
     <div>
-      <LittersPageClient litters={littersRes.data || []} userId={user.id} userKennelId={userKennelId} />
+      <LittersPageClient
+        litters={littersRes.data || []}
+        userId={user.id}
+        userKennelId={userKennel?.id}
+        userKennelName={userKennel?.name}
+        userAffixFormat={userKennel?.affix_format}
+      />
     </div>
   )
 }

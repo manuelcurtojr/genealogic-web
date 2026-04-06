@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Shield } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Shield, Lock } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
+import { formatDogName, type AffixFormat } from '@/lib/affix'
 import GalleryTab from './edit-tabs/gallery-tab'
 import SaludTab from './edit-tabs/salud-tab'
 import PalmaresTab from './edit-tabs/palmares-tab'
@@ -12,7 +13,7 @@ import HistorialTab from './edit-tabs/historial-tab'
 import PedigreePdfTab from './edit-tabs/pedigree-pdf-tab'
 
 interface DogFormPanelProps {
-  open: boolean; onClose: () => void; onSaved?: () => void; editDogId?: string | null; userId: string; defaultLitterId?: string | null; defaultBreedId?: string | null; defaultFatherId?: string | null; defaultMotherId?: string | null; defaultKennelId?: string | null
+  open: boolean; onClose: () => void; onSaved?: () => void; editDogId?: string | null; userId: string; defaultLitterId?: string | null; defaultBreedId?: string | null; defaultFatherId?: string | null; defaultMotherId?: string | null; defaultKennelId?: string | null; defaultKennelName?: string | null; defaultAffixFormat?: string | null
 }
 
 const TABS = [
@@ -27,7 +28,7 @@ const TABS = [
 type TabKey = typeof TABS[number]['key']
 
 
-export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId, defaultLitterId, defaultBreedId, defaultFatherId, defaultMotherId, defaultKennelId }: DogFormPanelProps) {
+export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId, defaultLitterId, defaultBreedId, defaultFatherId, defaultMotherId, defaultKennelId, defaultKennelName, defaultAffixFormat }: DogFormPanelProps) {
   const router = useRouter()
   const isEdit = !!editDogId
   const [activeTab, setActiveTab] = useState<TabKey>('datos')
@@ -103,10 +104,15 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     setForm(prev => { const next = { ...prev, [field]: value }; if (field === 'breed_id') { filterByBreed(value); next.color_id=''; next.father_id=''; next.mother_id='' }; return next })
   }
 
+  const isFromLitter = !isEdit && !!defaultLitterId
+  const kennelAffix = defaultKennelName && defaultAffixFormat
+
   const handleSubmit = async () => {
     if (!form.name.trim()) return; setLoading(true); setError('')
     const supabase = createClient()
-    const payload = { name:form.name.trim(),sex:form.sex,birth_date:form.birth_date||null,registration:form.registration||null,microchip:form.microchip||null,weight:form.weight?parseFloat(form.weight):null,height:form.height?parseFloat(form.height):null,breed_id:form.breed_id||null,color_id:form.color_id||null,kennel_id:form.kennel_id||null,father_id:form.father_id||null,mother_id:form.mother_id||null,is_public:form.is_public }
+    // Auto-format name with kennel affix when adding from litter
+    const finalName = kennelAffix ? formatDogName(form.name.trim(), defaultKennelName!, defaultAffixFormat as AffixFormat) : form.name.trim()
+    const payload = { name:finalName,sex:form.sex,birth_date:form.birth_date||null,registration:form.registration||null,microchip:form.microchip||null,weight:form.weight?parseFloat(form.weight):null,height:form.height?parseFloat(form.height):null,breed_id:form.breed_id||null,color_id:form.color_id||null,kennel_id:form.kennel_id||null,father_id:form.father_id||null,mother_id:form.mother_id||null,is_public:form.is_public,breeder_id:isFromLitter?userId:undefined }
     if (isEdit) {
       const{error:err}=await supabase.from('dogs').update(payload).eq('id',editDogId!); setLoading(false); if(err){setError(err.message);return}
       // Track changes
@@ -166,7 +172,12 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
               <div className="space-y-6">
                 <Sec icon={CreditCard} title="Identidad">
                   <div className="grid grid-cols-2 gap-3">
-                    <Field label="Nombre *" value={form.name} onChange={v=>set('name',v)}/>
+                    <div>
+                      <Field label={isFromLitter && kennelAffix ? 'Nombre del cachorro *' : 'Nombre *'} value={form.name} onChange={v=>set('name',v)} placeholder={isFromLitter && kennelAffix ? 'Solo el nombre (sin afijo)' : ''}/>
+                      {isFromLitter && kennelAffix && form.name.trim() && (
+                        <p className="text-[10px] text-[#D74709] mt-1 font-medium">{formatDogName(form.name.trim(), defaultKennelName!, defaultAffixFormat as AffixFormat)}</p>
+                      )}
+                    </div>
                     <div>
                       <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Sexo *</label>
                       <div className="flex gap-2">
@@ -180,14 +191,30 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                   </div>
                   <Field label="Registro" value={form.registration} onChange={v=>set('registration',v)} placeholder="UKC, FCI, etc."/>
                 </Sec>
-                <Sec icon={GitBranch} title="Genealogia">
-                  <div className="flex gap-2 overflow-x-auto pb-1">
-                    <GCard label="RAZA" name={selBreed?.name} onClear={()=>set('breed_id','')} selector={<ISearch items={breeds.map(b=>({id:b.id,name:b.name,image:null}))} value={form.breed_id} onChange={v=>set('breed_id',v)} placeholder="Buscar raza..."/>}/>
-                    <GCard label="PADRE" name={selFather?.name} image={selFather?.thumbnail_url} sexColor={BRAND.male} onClear={()=>set('father_id','')} disabled={!form.breed_id} selector={<ISearch items={maleDogs.filter(d=>d.id!==editDogId).map(d=>({id:d.id,name:d.name,image:d.thumbnail_url}))} value={form.father_id} onChange={v=>set('father_id',v)} placeholder="Buscar padre..." sexColor={BRAND.male}/>}/>
-                    <GCard label="MADRE" name={selMother?.name} image={selMother?.thumbnail_url} sexColor={BRAND.female} onClear={()=>set('mother_id','')} disabled={!form.breed_id} selector={<ISearch items={femaleDogs.filter(d=>d.id!==editDogId).map(d=>({id:d.id,name:d.name,image:d.thumbnail_url}))} value={form.mother_id} onChange={v=>set('mother_id',v)} placeholder="Buscar madre..." sexColor={BRAND.female}/>}/>
-                    <GCard label="CRIADERO" name={selKennel?.name} image={selKennel?.logo_url} onClear={()=>set('kennel_id','')} selector={<ISearch items={kennels.map(k=>({id:k.id,name:k.name,image:k.logo_url}))} value={form.kennel_id} onChange={v=>set('kennel_id',v)} placeholder="Buscar criadero..."/>}/>
-                  </div>
-                  {form.breed_id && <InlineSearch label="Color" items={colors.map(c=>({id:c.id,name:c.name,image:null}))} value={form.color_id} onChange={v=>set('color_id',v)} placeholder="Buscar color..."/>}
+                <Sec icon={GitBranch} title={isFromLitter ? 'Genealogia (de la camada)' : 'Genealogia'}>
+                  {isFromLitter ? (
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <LockedGCard label="RAZA" name={selBreed?.name} />
+                        <LockedGCard label="CRIADERO" name={selKennel?.name} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <LockedGCard label="PADRE" name={selFather?.name} sexColor={BRAND.male} />
+                        <LockedGCard label="MADRE" name={selMother?.name} sexColor={BRAND.female} />
+                      </div>
+                      {form.breed_id && <InlineSearch label="Color" items={colors.map(c=>({id:c.id,name:c.name,image:null}))} value={form.color_id} onChange={v=>set('color_id',v)} placeholder="Buscar color..."/>}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex gap-2 overflow-x-auto pb-1">
+                        <GCard label="RAZA" name={selBreed?.name} onClear={()=>set('breed_id','')} selector={<ISearch items={breeds.map(b=>({id:b.id,name:b.name,image:null}))} value={form.breed_id} onChange={v=>set('breed_id',v)} placeholder="Buscar raza..."/>}/>
+                        <GCard label="PADRE" name={selFather?.name} image={selFather?.thumbnail_url} sexColor={BRAND.male} onClear={()=>set('father_id','')} disabled={!form.breed_id} selector={<ISearch items={maleDogs.filter(d=>d.id!==editDogId).map(d=>({id:d.id,name:d.name,image:d.thumbnail_url}))} value={form.father_id} onChange={v=>set('father_id',v)} placeholder="Buscar padre..." sexColor={BRAND.male}/>}/>
+                        <GCard label="MADRE" name={selMother?.name} image={selMother?.thumbnail_url} sexColor={BRAND.female} onClear={()=>set('mother_id','')} disabled={!form.breed_id} selector={<ISearch items={femaleDogs.filter(d=>d.id!==editDogId).map(d=>({id:d.id,name:d.name,image:d.thumbnail_url}))} value={form.mother_id} onChange={v=>set('mother_id',v)} placeholder="Buscar madre..." sexColor={BRAND.female}/>}/>
+                        <GCard label="CRIADERO" name={selKennel?.name} image={selKennel?.logo_url} onClear={()=>set('kennel_id','')} selector={<ISearch items={kennels.map(k=>({id:k.id,name:k.name,image:k.logo_url}))} value={form.kennel_id} onChange={v=>set('kennel_id',v)} placeholder="Buscar criadero..."/>}/>
+                      </div>
+                      {form.breed_id && <InlineSearch label="Color" items={colors.map(c=>({id:c.id,name:c.name,image:null}))} value={form.color_id} onChange={v=>set('color_id',v)} placeholder="Buscar color..."/>}
+                    </>
+                  )}
                 </Sec>
                 <Sec icon={Weight} title="Medidas">
                   <div className="grid grid-cols-2 gap-3">
@@ -294,5 +321,12 @@ function InlineSearch({label,items,value,onChange,placeholder}:{label:string;ite
   return <div ref={ref} className="relative"><label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">{label}</label>
     <div onClick={()=>setOpen(!open)} className={`w-full bg-white/5 border rounded-lg px-3 py-2 text-sm flex items-center gap-2 cursor-pointer transition hover:border-white/20 ${open?'border-[#D74709]':'border-white/10'}`}><span className={sel?'text-white':'text-white/30'}>{sel?.name||placeholder}</span><div className="ml-auto flex items-center gap-1">{value&&<span onClick={e=>{e.stopPropagation();onChange('');setOpen(false)}} className="text-white/30 hover:text-white/60"><X className="w-3 h-3"/></span>}<ChevronDown className={`w-3.5 h-3.5 text-white/30 transition ${open?'rotate-180':''}`}/></div></div>
     {open&&<div className="absolute z-[80] mt-1 w-full bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-48 flex flex-col"><ISearch items={items} value={value} onChange={v=>{onChange(v);setOpen(false)}} placeholder={placeholder}/></div>}
+  </div>
+}
+function LockedGCard({label,name,sexColor}:{label:string;name?:string;sexColor?:string}){
+  return <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 flex items-center gap-2 opacity-60">
+    {sexColor && <div className="w-2 h-full rounded-full flex-shrink-0" style={{backgroundColor:sexColor}}/>}
+    <div className="min-w-0 flex-1"><p className="text-[11px] font-bold text-white truncate">{name||'—'}</p><p className="text-[9px] text-white/30 uppercase">{label}</p></div>
+    <Lock className="w-3 h-3 text-white/20 flex-shrink-0"/>
   </div>
 }
