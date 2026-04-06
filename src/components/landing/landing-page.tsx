@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { Sun, Moon } from 'lucide-react'
 import SearchBar from '@/components/layout/search-bar'
+import Particles, { initParticlesEngine } from '@tsparticles/react'
+import { loadSlim } from '@tsparticles/slim'
 
 interface Props {
   breeds: { id: string; name: string }[]
@@ -12,42 +14,80 @@ interface Props {
 
 export default function LandingPage({ breeds, featuredDogs }: Props) {
   const [darkMode, setDarkMode] = useState(true)
+  const [particlesReady, setParticlesReady] = useState(false)
   const breedThumbs = featuredDogs.slice(0, 5)
+
+  useEffect(() => {
+    initParticlesEngine(async (engine) => {
+      await loadSlim(engine)
+    }).then(() => setParticlesReady(true))
+  }, [])
+
+  const particlesOptions = useMemo(() => ({
+    fullScreen: false,
+    background: { color: { value: 'transparent' } },
+    fpsLimit: 60,
+    particles: {
+      number: { value: 80, density: { enable: true, width: 1920, height: 1080 } },
+      color: { value: ['#D74709', '#ffffff', '#1a56db', '#8B5CF6'] },
+      shape: { type: 'circle' },
+      opacity: {
+        value: { min: 0.1, max: 0.5 },
+        animation: { enable: true, speed: 0.5, startValue: 'random', sync: false },
+      },
+      size: {
+        value: { min: 0.5, max: 2.5 },
+        animation: { enable: true, speed: 1, startValue: 'random', sync: false },
+      },
+      move: {
+        enable: true,
+        speed: { min: 0.2, max: 0.8 },
+        direction: 'none' as const,
+        random: true,
+        straight: false,
+        outModes: { default: 'out' as const },
+      },
+      links: {
+        enable: true,
+        distance: 150,
+        color: '#D74709',
+        opacity: 0.06,
+        width: 0.5,
+      },
+      twinkle: {
+        particles: { enable: true, frequency: 0.03, opacity: 0.8, color: { value: '#D74709' } },
+      },
+    },
+    interactivity: {
+      events: {
+        onHover: { enable: true, mode: 'grab' },
+      },
+      modes: {
+        grab: { distance: 200, links: { opacity: 0.15, color: '#D74709' } },
+      },
+    },
+    detectRetina: true,
+  }), [])
 
   return (
     <div className="min-h-screen bg-[#0a0f1a] text-white relative overflow-hidden">
-      {/* Animated nebula background */}
+      {/* Nebula gradient orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Nebula orbs */}
-        <div className="absolute w-[800px] h-[800px] rounded-full opacity-[0.07] blur-[120px] animate-[nebula1_20s_ease-in-out_infinite]"
-          style={{ background: 'radial-gradient(circle, #D74709 0%, transparent 70%)', top: '-20%', left: '-10%' }} />
-        <div className="absolute w-[600px] h-[600px] rounded-full opacity-[0.05] blur-[100px] animate-[nebula2_25s_ease-in-out_infinite]"
-          style={{ background: 'radial-gradient(circle, #1a56db 0%, transparent 70%)', top: '30%', right: '-15%' }} />
-        <div className="absolute w-[700px] h-[700px] rounded-full opacity-[0.04] blur-[130px] animate-[nebula3_30s_ease-in-out_infinite]"
-          style={{ background: 'radial-gradient(circle, #8B5CF6 0%, transparent 70%)', bottom: '-20%', left: '20%' }} />
-        <div className="absolute w-[500px] h-[500px] rounded-full opacity-[0.06] blur-[90px] animate-[nebula4_22s_ease-in-out_infinite]"
-          style={{ background: 'radial-gradient(circle, #D74709 0%, transparent 70%)', top: '50%', left: '50%' }} />
-
-        {/* Floating particles */}
-        {Array.from({ length: 30 }, (_, i) => (
-          <div key={i}
-            className="absolute rounded-full bg-white animate-[float_var(--dur)_ease-in-out_infinite]"
-            style={{
-              width: `${1 + (i % 3)}px`,
-              height: `${1 + (i % 3)}px`,
-              left: `${(i * 37 + 13) % 100}%`,
-              top: `${(i * 23 + 7) % 100}%`,
-              opacity: 0.1 + (i % 5) * 0.08,
-              '--dur': `${8 + (i % 7) * 3}s`,
-              animationDelay: `${i * 0.5}s`,
-            } as any}
-          />
-        ))}
-
-        {/* Subtle grid overlay */}
-        <div className="absolute inset-0 opacity-[0.015]"
-          style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+        <div className="absolute w-[600px] h-[600px] rounded-full opacity-[0.08] blur-[120px]"
+          style={{ background: 'radial-gradient(circle, #D74709, transparent 70%)', top: '-10%', left: '10%', animation: 'drift1 25s ease-in-out infinite' }} />
+        <div className="absolute w-[500px] h-[500px] rounded-full opacity-[0.05] blur-[100px]"
+          style={{ background: 'radial-gradient(circle, #1a56db, transparent 70%)', top: '40%', right: '-5%', animation: 'drift2 30s ease-in-out infinite' }} />
+        <div className="absolute w-[550px] h-[550px] rounded-full opacity-[0.04] blur-[110px]"
+          style={{ background: 'radial-gradient(circle, #8B5CF6, transparent 70%)', bottom: '-15%', left: '30%', animation: 'drift3 35s ease-in-out infinite' }} />
       </div>
+
+      {/* Particles */}
+      {particlesReady && (
+        <Particles
+          className="absolute inset-0 pointer-events-auto"
+          options={particlesOptions as any}
+        />
+      )}
 
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-white/5">
@@ -96,30 +136,21 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
         </div>
       </main>
 
-      {/* Keyframes as inline style */}
       <style jsx>{`
-        @keyframes nebula1 {
+        @keyframes drift1 {
           0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(100px, 50px) scale(1.1); }
-          66% { transform: translate(-50px, 100px) scale(0.9); }
+          33% { transform: translate(80px, 40px) scale(1.1); }
+          66% { transform: translate(-40px, 80px) scale(0.9); }
         }
-        @keyframes nebula2 {
+        @keyframes drift2 {
           0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(-80px, 60px) scale(1.15); }
-          66% { transform: translate(60px, -40px) scale(0.85); }
+          33% { transform: translate(-60px, 50px) scale(1.15); }
+          66% { transform: translate(50px, -30px) scale(0.85); }
         }
-        @keyframes nebula3 {
+        @keyframes drift3 {
           0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(70px, -80px) scale(1.1); }
-          66% { transform: translate(-100px, 30px) scale(0.95); }
-        }
-        @keyframes nebula4 {
-          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.06; }
-          50% { transform: translate(-60px, 40px) scale(1.2); opacity: 0.03; }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-20px); }
+          33% { transform: translate(50px, -60px) scale(1.1); }
+          66% { transform: translate(-80px, 20px) scale(0.95); }
         }
       `}</style>
     </div>
