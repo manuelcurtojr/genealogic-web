@@ -34,13 +34,23 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   const colorName = (dog.color as any)?.name
   const kennel = dog.kennel as any
 
-  const { data: pedigree } = await supabase.rpc('get_pedigree', { dog_uuid: id, max_gen: 5 })
+  // Fetch gallery photos + pedigree
+  const [photosRes, pedigreeRes] = await Promise.all([
+    supabase.from('dog_photos').select('id, url, position').eq('dog_id', id).order('position'),
+    supabase.rpc('get_pedigree', { dog_uuid: id, max_gen: 5 }),
+  ])
+  const galleryPhotos = (photosRes.data || []).map((p: any) => p.url)
+  // Include thumbnail_url as first photo if not already in gallery
+  if (dog.thumbnail_url && !galleryPhotos.includes(dog.thumbnail_url)) {
+    galleryPhotos.unshift(dog.thumbnail_url)
+  }
+  const pedigree = pedigreeRes.data
 
   return (
     <div className="-mx-[30px] -mt-[30px]">
       {/* Gallery — flush to header and sidebar, square crop */}
       <div className="relative">
-        <DogGallery thumbnail_url={dog.thumbnail_url} name={dog.name} sex={dog.sex} />
+        <DogGallery photos={galleryPhotos} name={dog.name} sex={dog.sex} />
 
         <div className="absolute top-4 right-4 flex items-center gap-2">
           {isOwner && (

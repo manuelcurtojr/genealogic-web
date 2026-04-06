@@ -35,6 +35,11 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
         dog_id: dogId, url: publicUrl, storage_path: path,
         position: photos.length + i,
       })
+
+      // Set first photo as thumbnail if dog doesn't have one
+      if (photos.length === 0 && i === 0) {
+        await supabase.from('dogs').update({ thumbnail_url: publicUrl }).eq('id', dogId)
+      }
     }
     setUploading(false)
     loadPhotos()
