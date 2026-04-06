@@ -2,10 +2,11 @@
 
 import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, GripVertical, HandCoins, Trash2, X, Loader2, BarChart3, Trophy, XCircle, Copy } from 'lucide-react'
+import { Plus, GripVertical, HandCoins, Trash2, X, Loader2, BarChart3, Trophy, XCircle, Copy, Settings } from 'lucide-react'
 import PipelineSummary from './pipeline-summary'
 import CrmDashboard from './crm-dashboard'
 import DealForm from './deal-form'
+import PipelineManager from './pipeline-manager'
 
 interface DealsPageClientProps {
   initialDeals: any[]
@@ -17,32 +18,6 @@ interface DealsPageClientProps {
 const WON_PATTERNS = /ganad|entregad/i
 const LOST_PATTERNS = /perdid|cancelad/i
 
-const DEFAULT_PIPELINES = [
-  {
-    name: 'Ventas',
-    stages: [
-      { name: 'Contacto nuevo', position: 0, color: '#3B82F6' },
-      { name: 'Primer mensaje enviado', position: 1, color: '#06B6D4' },
-      { name: 'Informacion recibida', position: 2, color: '#8B5CF6' },
-      { name: 'Oferta enviada', position: 3, color: '#F59E0B' },
-      { name: 'Seguimiento', position: 4, color: '#14B8A6' },
-      { name: 'Venta ganada', position: 98, color: '#10B981' },
-      { name: 'Venta perdida', position: 99, color: '#EF4444' },
-    ],
-  },
-  {
-    name: 'Seguimiento',
-    stages: [
-      { name: 'Reserva en firme', position: 0, color: '#3B82F6' },
-      { name: 'Esperando camada', position: 1, color: '#8B5CF6' },
-      { name: 'Cachorro asignado', position: 2, color: '#F59E0B' },
-      { name: 'Pendiente de envio', position: 3, color: '#06B6D4' },
-      { name: 'Perro entregado', position: 98, color: '#10B981' },
-      { name: 'Reserva cancelada', position: 99, color: '#EF4444' },
-    ],
-  },
-]
-
 export default function DealsPageClient({ initialDeals, pipelines: initialPipelines, contacts, userId }: DealsPageClientProps) {
   const [deals, setDeals] = useState(initialDeals)
   const [pipelines, setPipelines] = useState(initialPipelines)
@@ -50,10 +25,8 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
   const [showForm, setShowForm] = useState(false)
   const [editingDeal, setEditingDeal] = useState<any>(null)
   const [dragOverStageId, setDragOverStageId] = useState<string | null>(null)
-  const [showNewPipeline, setShowNewPipeline] = useState(false)
+  const [showPipelineManager, setShowPipelineManager] = useState(false)
   const [showDashboard, setShowDashboard] = useState(false)
-  const [newPipelineName, setNewPipelineName] = useState('')
-  const [creating, setCreating] = useState(false)
 
   // Won/Lost modals
   const [wonModal, setWonModal] = useState<{ dealId: string; dealTitle: string } | null>(null)
@@ -183,57 +156,24 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
   const handleNewDeal = () => { setEditingDeal(null); setShowForm(true) }
   const handleEditDeal = (deal: any) => { setEditingDeal(deal); setShowForm(true) }
 
-  async function createPipeline(customName?: string) {
-    const name = customName || newPipelineName.trim()
-    if (!name) return
-    setCreating(true)
+  const refreshPipelines = useCallback(async () => {
     const supabase = createClient()
-
-    const { data: newPipeline, error } = await supabase
+    const { data } = await supabase
       .from('pipelines')
-      .insert({ name, owner_id: userId })
-      .select('id, name')
-      .single()
-
-    if (error || !newPipeline) { setCreating(false); return }
-
-    // Find matching default stages
-    const defaultDef = DEFAULT_PIPELINES.find(dp => dp.name.toLowerCase() === name.toLowerCase())
-    const stageDefs = defaultDef?.stages || [
-      { name: 'Nuevo', position: 0, color: '#3B82F6' },
-      { name: 'En progreso', position: 1, color: '#F59E0B' },
-      { name: 'Ganado', position: 98, color: '#10B981' },
-      { name: 'Perdido', position: 99, color: '#EF4444' },
-    ]
-
-    const { data: createdStages } = await supabase
-      .from('pipeline_stages')
-      .insert(stageDefs.map(s => ({ ...s, pipeline_id: newPipeline.id })))
-      .select('id, name, position, color')
-
-    const fullPipeline = { ...newPipeline, stages: (createdStages || []).sort((a, b) => a.position - b.position) }
-    setPipelines((prev: any) => [...prev, fullPipeline])
-    setActivePipelineId(newPipeline.id)
-    setNewPipelineName('')
-    setShowNewPipeline(false)
-    setCreating(false)
-  }
-
-  async function deletePipeline(pipelineId: string) {
-    if (!confirm('Eliminar este pipeline y todos sus negocios?')) return
-    const supabase = createClient()
-    await supabase.from('deals').delete().eq('pipeline_id', pipelineId)
-    await supabase.from('pipeline_stages').delete().eq('pipeline_id', pipelineId)
-    await supabase.from('pipelines').delete().eq('id', pipelineId)
-    setPipelines((prev: any) => prev.filter((p: any) => p.id !== pipelineId))
-    setDeals((prev: any) => prev.filter((d: any) => d.pipeline_id !== pipelineId))
-    if (activePipelineId === pipelineId) {
-      const remaining = pipelines.filter((p: any) => p.id !== pipelineId)
-      setActivePipelineId(remaining[0]?.id || '')
+      .select('id, name, stages:pipeline_stages(id, name, position, color)')
+      .eq('owner_id', userId)
+      .order('created_at')
+    const updated = (data || []).map((p: any) => ({
+      ...p,
+      stages: p.stages ? [...p.stages].sort((a: any, b: any) => a.position - b.position) : [],
+    }))
+    setPipelines(updated)
+    if (updated.length > 0 && !updated.find((p: any) => p.id === activePipelineId)) {
+      setActivePipelineId(updated[0].id)
     }
-  }
+    await fetchDeals()
+  }, [userId, activePipelineId, fetchDeals])
 
-  // Check if we need to show "Create default pipelines" button
   const hasNoPipelines = pipelines.length === 0
 
   const wonStageNames = sortedStages.filter((s: any) => isWonStage(s.name)).map((s: any) => s.name)
@@ -279,77 +219,24 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
             </button>
           ))}
           <button
-            onClick={() => setShowNewPipeline(true)}
+            onClick={() => setShowPipelineManager(true)}
             className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white/60 hover:bg-white/10 transition"
+            title="Gestionar pipelines"
           >
-            <Plus className="w-4 h-4" />
+            <Settings className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* New pipeline slide panel */}
-      <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${showNewPipeline ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setShowNewPipeline(false)} />
-      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${showNewPipeline ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
-          <h2 className="text-lg font-semibold">Nuevo Pipeline</h2>
-          <button onClick={() => setShowNewPipeline(false)} className="text-white/40 hover:text-white transition"><X className="w-5 h-5" /></button>
-        </div>
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-          <div>
-            <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Nombre del pipeline</label>
-            <input type="text" value={newPipelineName} onChange={e => setNewPipelineName(e.target.value)}
-              placeholder="Ej: Ventas, Seguimiento, Montas..."
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition"
-              autoFocus onKeyDown={e => e.key === 'Enter' && createPipeline()} />
-          </div>
-
-          <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 space-y-3">
-            <p className="text-xs font-semibold text-white/50">Etapas que se crearan:</p>
-            {(() => {
-              const match = DEFAULT_PIPELINES.find(dp => dp.name.toLowerCase() === newPipelineName.trim().toLowerCase())
-              const stagesToShow = match?.stages || [
-                { name: 'Nuevo', position: 0, color: '#3B82F6' },
-                { name: 'En progreso', position: 1, color: '#F59E0B' },
-                { name: 'Ganado', position: 98, color: '#10B981' },
-                { name: 'Perdido', position: 99, color: '#EF4444' },
-              ]
-              return stagesToShow.map((s, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: s.color }} />
-                  <span className="text-sm text-white/60">{s.name}</span>
-                  {s.position >= 98 && <span className="text-[10px] text-white/25 ml-auto">{s.position === 98 ? 'Ganado' : 'Perdido'}</span>}
-                </div>
-              ))
-            })()}
-            <p className="text-[11px] text-white/25 pt-1">Escribe &quot;Ventas&quot; o &quot;Seguimiento&quot; para usar etapas predefinidas.</p>
-          </div>
-
-          {/* Existing pipelines management */}
-          {pipelines.length > 0 && (
-            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 space-y-2">
-              <p className="text-xs font-semibold text-white/50 mb-2">Pipelines existentes</p>
-              {pipelines.map((p: any) => (
-                <div key={p.id} className="flex items-center justify-between py-1.5">
-                  <span className="text-sm text-white/60">{p.name} ({deals.filter((d: any) => d.pipeline_id === p.id).length})</span>
-                  {pipelines.length > 1 && (
-                    <button onClick={() => { deletePipeline(p.id); setShowNewPipeline(false) }} className="text-xs text-red-400/60 hover:text-red-400 transition">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/10 flex-shrink-0">
-          <button onClick={() => setShowNewPipeline(false)} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">Cancelar</button>
-          <button onClick={() => createPipeline()} disabled={creating || !newPipelineName.trim()}
-            className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
-            {creating && <Loader2 className="w-4 h-4 animate-spin" />}
-            {creating ? 'Creando...' : 'Crear pipeline'}
-          </button>
-        </div>
-      </div>
+      {/* Pipeline Manager */}
+      <PipelineManager
+        open={showPipelineManager}
+        onClose={() => setShowPipelineManager(false)}
+        pipelines={pipelines}
+        deals={deals}
+        userId={userId}
+        onPipelinesChanged={refreshPipelines}
+      />
 
       {/* Dashboard or Pipeline summary */}
       {showDashboard ? (
@@ -365,18 +252,10 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
           <p className="text-white/40 text-lg mb-2">No tienes pipelines configurados</p>
           <p className="text-sm text-white/30 mb-6">Crea los pipelines por defecto de Genealogic: Ventas y Seguimiento</p>
           <button
-            onClick={async () => {
-              setCreating(true)
-              for (const def of DEFAULT_PIPELINES) {
-                await createPipeline(def.name)
-              }
-              setCreating(false)
-            }}
-            disabled={creating}
-            className="bg-[#D74709] hover:bg-[#c03d07] text-white px-6 py-3 rounded-lg text-sm font-semibold transition disabled:opacity-50 inline-flex items-center gap-2"
+            onClick={() => setShowPipelineManager(true)}
+            className="bg-[#D74709] hover:bg-[#c03d07] text-white px-6 py-3 rounded-lg text-sm font-semibold transition inline-flex items-center gap-2"
           >
-            {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-            Crear Ventas + Seguimiento
+            <Plus className="w-4 h-4" /> Crear pipeline
           </button>
         </div>
       ) : sortedStages.length === 0 ? (
