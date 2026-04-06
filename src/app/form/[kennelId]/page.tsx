@@ -23,7 +23,7 @@ export default function PublicFormPage() {
   const [data, setData] = useState({
     first_name: '', last_name: '', email: '', phone: '',
     country_code: '', country_name: '', city: '',
-    breed_interest: '', dog_description: '',
+    breed_interests: [] as string[], dog_description: '',
   })
   const [customData, setCustomData] = useState<Record<string, string>>({})
 
@@ -96,7 +96,7 @@ export default function PublicFormPage() {
       const submitData = {
         ...data,
         country: data.country_name,
-        breed_interest_name: breeds.find(b => b.id === data.breed_interest)?.name || '',
+        breed_interest_names: data.breed_interests.map(id => breeds.find(b => b.id === id)?.name || '').filter(Boolean).join(', '),
       }
       const res = await fetch('/api/form-submit', {
         method: 'POST',
@@ -215,14 +215,18 @@ export default function PublicFormPage() {
           {/* Breed interest */}
           {breeds.length > 0 && (
             <div>
-              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Raza que te interesa</label>
+              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Razas que te interesan</label>
               <div className="flex flex-wrap gap-1.5">
-                {breeds.map(b => (
-                  <button key={b.id} type="button" onClick={() => setField('breed_interest', data.breed_interest === b.id ? '' : b.id)}
-                    className={`text-xs px-3 py-1.5 rounded-full border transition ${data.breed_interest === b.id ? 'border-[#D74709] bg-[#D74709]/10 text-[#D74709]' : 'border-white/10 bg-white/[0.03] text-white/50 hover:border-white/20'}`}>
-                    {b.name}
-                  </button>
-                ))}
+                {breeds.map(b => {
+                  const selected = data.breed_interests.includes(b.id)
+                  return (
+                    <button key={b.id} type="button"
+                      onClick={() => setData(prev => ({ ...prev, breed_interests: selected ? prev.breed_interests.filter(id => id !== b.id) : [...prev.breed_interests, b.id] }))}
+                      className={`text-xs px-3 py-1.5 rounded-full border transition ${selected ? 'border-[#D74709] bg-[#D74709]/10 text-[#D74709]' : 'border-white/10 bg-white/[0.03] text-white/50 hover:border-white/20'}`}>
+                      {b.name}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}

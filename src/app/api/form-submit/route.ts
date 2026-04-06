@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
       lines.push(`📧 ${formData.email}`)
       if (formData.phone) lines.push(`📱 ${formData.phone}`)
       if (formData.country || formData.city) lines.push(`📍 ${[formData.city, formData.country].filter(Boolean).join(', ')}`)
+      if (formData.breed_interest_names) lines.push(`🏷️ Razas: ${formData.breed_interest_names}`)
       if (formData.dog_description) lines.push(`🐕 ${formData.dog_description}`)
       // Custom fields
       if (customData && Object.keys(customData).length > 0) {
