@@ -12,7 +12,7 @@ import HistorialTab from './edit-tabs/historial-tab'
 import PedigreePdfTab from './edit-tabs/pedigree-pdf-tab'
 
 interface DogFormPanelProps {
-  open: boolean; onClose: () => void; onSaved?: () => void; editDogId?: string | null; userId: string; defaultLitterId?: string | null; defaultBreedId?: string | null
+  open: boolean; onClose: () => void; onSaved?: () => void; editDogId?: string | null; userId: string; defaultLitterId?: string | null; defaultBreedId?: string | null; defaultFatherId?: string | null; defaultMotherId?: string | null; defaultKennelId?: string | null
 }
 
 const TABS = [
@@ -27,7 +27,7 @@ const TABS = [
 type TabKey = typeof TABS[number]['key']
 
 
-export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId, defaultLitterId, defaultBreedId }: DogFormPanelProps) {
+export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId, defaultLitterId, defaultBreedId, defaultFatherId, defaultMotherId, defaultKennelId }: DogFormPanelProps) {
   const router = useRouter()
   const isEdit = !!editDogId
   const [activeTab, setActiveTab] = useState<TabKey>('datos')
@@ -79,7 +79,10 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         }
       } else {
         const breedId = defaultBreedId||''
-        setForm({ name:'',sex:'male',birth_date:'',registration:'',microchip:'',weight:'',height:'',breed_id:breedId,color_id:'',kennel_id:'',father_id:'',mother_id:'',is_public:true })
+        const fatherId = defaultFatherId||''
+        const motherId = defaultMotherId||''
+        const kennelId = defaultKennelId||''
+        setForm({ name:'',sex:'male',birth_date:'',registration:'',microchip:'',weight:'',height:'',breed_id:breedId,color_id:'',kennel_id:kennelId,father_id:fatherId,mother_id:motherId,is_public:true })
         if (breedId) filterByBreed(breedId, cRes.data||[], mRes.data||[], fRes.data||[])
         setOriginalForm(null)
       }

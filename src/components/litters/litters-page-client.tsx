@@ -31,7 +31,7 @@ const statusConfig: Record<string, { label: string; color: string; icon: string 
   pending: { label: 'Cubricion', color: '#f39c12', icon: '💛' },
 }
 
-export default function LittersPageClient({ litters, userId }: { litters: Litter[]; userId: string }) {
+export default function LittersPageClient({ litters, userId, userKennelId }: { litters: Litter[]; userId: string; userKennelId?: string | null }) {
   const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -42,6 +42,9 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
   const [dogPanelOpen, setDogPanelOpen] = useState(false)
   const [addPuppyLitterId, setAddPuppyLitterId] = useState<string | null>(null)
   const [addPuppyBreedId, setAddPuppyBreedId] = useState<string | null>(null)
+  const [addPuppyFatherId, setAddPuppyFatherId] = useState<string | null>(null)
+  const [addPuppyMotherId, setAddPuppyMotherId] = useState<string | null>(null)
+  const [addPuppyKennelId, setAddPuppyKennelId] = useState<string | null>(null)
   const router = useRouter()
 
   const openAdd = () => { setEditLitterId(null); setPanelOpen(true) }
@@ -50,8 +53,13 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
 
   const openAddPuppy = (litter: Litter) => {
     const breed = Array.isArray(litter.breed) ? litter.breed[0] : litter.breed
+    const father = litter.father as any
+    const mother = litter.mother as any
     setAddPuppyLitterId(litter.id)
     setAddPuppyBreedId(breed?.id || null)
+    setAddPuppyFatherId(father?.id || null)
+    setAddPuppyMotherId(mother?.id || null)
+    setAddPuppyKennelId((litter as any).kennel_id || userKennelId || null)
     setDogPanelOpen(true)
   }
 
@@ -217,11 +225,14 @@ export default function LittersPageClient({ litters, userId }: { litters: Litter
       {/* Dog form panel for adding puppy to litter */}
       <DogFormPanel
         open={dogPanelOpen}
-        onClose={() => { setDogPanelOpen(false); setAddPuppyLitterId(null) }}
+        onClose={() => { setDogPanelOpen(false); setAddPuppyLitterId(null); setAddPuppyFatherId(null); setAddPuppyMotherId(null); setAddPuppyKennelId(null) }}
         editDogId={null}
         userId={userId}
         defaultLitterId={addPuppyLitterId}
         defaultBreedId={addPuppyBreedId}
+        defaultFatherId={addPuppyFatherId}
+        defaultMotherId={addPuppyMotherId}
+        defaultKennelId={addPuppyKennelId}
       />
 
       <ConfirmDialog
