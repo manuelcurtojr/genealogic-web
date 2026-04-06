@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Edit, Globe, Calendar, Dog, Camera, Search, Grid3X3, List, Eye, EyeOff,
-  Loader2, ExternalLink, MessageCircle, Settings, Baby
+  Loader2, ExternalLink, MessageCircle, Settings, Baby, Heart, ArrowRightLeft
 } from 'lucide-react'
 import KennelEditPanel from './kennel-edit-panel'
+import TransferPanel from './transfer-panel'
 
 interface Props {
   kennel: any
@@ -23,6 +24,7 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
   const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showEdit, setShowEdit] = useState(false)
+  const [transferDog, setTransferDog] = useState<any>(null)
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -32,7 +34,8 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
 
   const stats = {
     total: dogs.length,
-    public: dogs.filter((d: any) => d.is_public).length,
+    visible: dogs.filter((d: any) => d.show_in_kennel !== false).length,
+    reproductive: dogs.filter((d: any) => d.is_reproductive).length,
     litters: litters.length,
   }
 
@@ -70,11 +73,11 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
     e.target.value = ''
   }
 
-  async function toggleDogVisibility(dogId: string, current: boolean) {
+  async function toggleField(dogId: string, field: string, current: boolean) {
     const supabase = createClient()
     const newVal = !current
-    await supabase.from('dogs').update({ is_public: newVal }).eq('id', dogId)
-    setDogs(prev => prev.map((d: any) => d.id === dogId ? { ...d, is_public: newVal } : d))
+    await supabase.from('dogs').update({ [field]: newVal }).eq('id', dogId)
+    setDogs(prev => prev.map((d: any) => d.id === dogId ? { ...d, [field]: newVal } : d))
   }
 
   return (
@@ -148,8 +151,12 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
               <p className="text-[10px] text-white/40 uppercase">Perros</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-400">{stats.public}</p>
-              <p className="text-[10px] text-white/40 uppercase">Publicos</p>
+              <p className="text-2xl font-bold text-green-400">{stats.visible}</p>
+              <p className="text-[10px] text-white/40 uppercase">Visibles</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-pink-400">{stats.reproductive}</p>
+              <p className="text-[10px] text-white/40 uppercase">Reproductores</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-purple-400">{stats.litters}</p>
@@ -222,48 +229,48 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((dog: any) => (
-            <DogCard key={dog.id} dog={dog} onToggleVisibility={toggleDogVisibility} />
+            <DogCard key={dog.id} dog={dog} userId={userId} onToggle={toggleField} onTransfer={d => setTransferDog(d)} />
           ))}
         </div>
       ) : (
         <div className="space-y-2">
           {filtered.map((dog: any) => (
-            <DogRow key={dog.id} dog={dog} onToggleVisibility={toggleDogVisibility} />
+            <DogRow key={dog.id} dog={dog} userId={userId} onToggle={toggleField} onTransfer={d => setTransferDog(d)} />
           ))}
         </div>
       )}
 
       {/* Edit panel */}
       <KennelEditPanel open={showEdit} onClose={() => setShowEdit(false)} kennel={kennel} />
+
+      {/* Transfer panel */}
+      <TransferPanel
+        open={!!transferDog}
+        onClose={() => setTransferDog(null)}
+        dog={transferDog}
+        kennelName={kennel.name}
+      />
     </div>
   )
 }
 
-function DogCard({ dog, onToggleVisibility }: { dog: any; onToggleVisibility: (id: string, current: boolean) => void }) {
+function DogCard({ dog, userId, onToggle, onTransfer }: { dog: any; userId: string; onToggle: (id: string, field: string, current: boolean) => void; onTransfer: (dog: any) => void }) {
   const sexColor = dog.sex === 'male' ? '#017DFA' : '#e84393'
   const sexIcon = dog.sex === 'male' ? '♂' : '♀'
+  const isOwner = dog.owner_id === userId
+  const isTransferred = !isOwner
   return (
     <div className="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden hover:border-[#D74709]/30 transition group">
-      {/* Photo */}
       <Link href={`/dogs/${dog.id}`} className="block relative aspect-[4/3] bg-white/5">
         {dog.thumbnail_url ? (
           <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Dog className="w-12 h-12 text-white/10" />
-          </div>
+          <div className="w-full h-full flex items-center justify-center"><Dog className="w-12 h-12 text-white/10" /></div>
         )}
-        {/* Breed badge */}
-        {dog.breed?.name && (
-          <span className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-            {dog.breed.name}
-          </span>
-        )}
-        {/* Sex indicator */}
+        {dog.breed?.name && <span className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-2 py-0.5 rounded-full">{dog.breed.name}</span>}
+        {isTransferred && <span className="absolute top-2 left-2 bg-purple-500/80 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">Transferido</span>}
         <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: sexColor }} />
       </Link>
-
-      {/* Info */}
       <div className="p-3">
         <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1.5 group-hover:text-[#D74709] transition">
           <span className="text-sm font-semibold truncate">{dog.name}</span>
@@ -273,66 +280,62 @@ function DogCard({ dog, onToggleVisibility }: { dog: any; onToggleVisibility: (i
           {dog.birth_date && <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
           {dog.color?.name && <span>{dog.color.name}</span>}
         </div>
-
-        {/* Controls */}
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/5">
-          <button
-            onClick={() => onToggleVisibility(dog.id, dog.is_public)}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${
-              dog.is_public
-                ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
-                : 'bg-white/5 text-white/30 hover:bg-white/10'
-            }`}
-            title={dog.is_public ? 'Visible publicamente' : 'Oculto'}
-          >
-            {dog.is_public ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-            {dog.is_public ? 'Publico' : 'Oculto'}
+        <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-white/5 flex-wrap">
+          <button onClick={() => onToggle(dog.id, 'show_in_kennel', dog.show_in_kennel !== false)}
+            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.show_in_kennel !== false ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20' : 'bg-white/5 text-white/30 hover:bg-white/10'}`}
+            title={dog.show_in_kennel !== false ? 'Visible en perfil publico' : 'Oculto del perfil publico'}>
+            {dog.show_in_kennel !== false ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+            Visible
           </button>
-          <Link
-            href={`/dogs/${dog.id}`}
-            className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/50 transition ml-auto"
-          >
-            <Edit className="w-3 h-3" /> Editar
-          </Link>
+          <button onClick={() => onToggle(dog.id, 'is_reproductive', !!dog.is_reproductive)}
+            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.is_reproductive ? 'bg-pink-500/10 text-pink-400 hover:bg-pink-500/20' : 'bg-white/5 text-white/30 hover:bg-white/10'}`}
+            title={dog.is_reproductive ? 'Reproductor' : 'No reproductor'}>
+            <Heart className="w-3 h-3" /> Reproductor
+          </button>
+          {isOwner && (
+            <button onClick={() => onTransfer({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
+              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709] transition ml-auto"
+              title="Transferir a otro propietario">
+              <ArrowRightLeft className="w-3 h-3" /> Transferir
+            </button>
+          )}
         </div>
       </div>
     </div>
   )
 }
 
-function DogRow({ dog, onToggleVisibility }: { dog: any; onToggleVisibility: (id: string, current: boolean) => void }) {
+function DogRow({ dog, userId, onToggle, onTransfer }: { dog: any; userId: string; onToggle: (id: string, field: string, current: boolean) => void; onTransfer: (dog: any) => void }) {
   const sexColor = dog.sex === 'male' ? '#017DFA' : '#e84393'
+  const isOwner = dog.owner_id === userId
   return (
-    <div className="bg-white/[0.04] border border-white/10 rounded-lg px-4 py-3 flex items-center gap-4 hover:border-[#D74709]/30 transition">
+    <div className="bg-white/[0.04] border border-white/10 rounded-lg px-4 py-3 flex items-center gap-3 hover:border-[#D74709]/30 transition">
       <Link href={`/dogs/${dog.id}`} className="flex-shrink-0">
         <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/5 border-2" style={{ borderColor: sexColor }}>
-          {dog.thumbnail_url ? (
-            <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center"><Dog className="w-5 h-5 text-white/15" /></div>
-          )}
+          {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-5 h-5 text-white/15" /></div>}
         </div>
       </Link>
       <Link href={`/dogs/${dog.id}`} className="flex-1 min-w-0">
-        <p className="text-sm font-semibold truncate hover:text-[#D74709] transition">{dog.name}</p>
-        <p className="text-[11px] text-white/35 truncate">
-          {dog.breed?.name}{dog.color?.name ? ` · ${dog.color.name}` : ''}{dog.birth_date ? ` · ${new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-semibold truncate hover:text-[#D74709] transition">{dog.name}</p>
+          {!isOwner && <span className="text-[9px] font-bold text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">Transferido</span>}
+        </div>
+        <p className="text-[11px] text-white/35 truncate">{dog.breed?.name}{dog.color?.name ? ` · ${dog.color.name}` : ''}</p>
       </Link>
-      <button
-        onClick={() => onToggleVisibility(dog.id, dog.is_public)}
-        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition flex-shrink-0 ${
-          dog.is_public
-            ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
-            : 'bg-white/5 text-white/30 hover:bg-white/10'
-        }`}
-      >
-        {dog.is_public ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-        {dog.is_public ? 'Publico' : 'Oculto'}
+      <button onClick={() => onToggle(dog.id, 'show_in_kennel', dog.show_in_kennel !== false)}
+        className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition flex-shrink-0 ${dog.show_in_kennel !== false ? 'bg-green-500/10 text-green-400' : 'bg-white/5 text-white/30'}`}>
+        {dog.show_in_kennel !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
       </button>
-      <Link href={`/dogs/${dog.id}`} className="text-white/30 hover:text-[#D74709] transition flex-shrink-0">
-        <Edit className="w-4 h-4" />
-      </Link>
+      <button onClick={() => onToggle(dog.id, 'is_reproductive', !!dog.is_reproductive)}
+        className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition flex-shrink-0 ${dog.is_reproductive ? 'bg-pink-500/10 text-pink-400' : 'bg-white/5 text-white/30'}`}>
+        <Heart className="w-3.5 h-3.5" />
+      </button>
+      {isOwner && (
+        <button onClick={() => onTransfer({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
+          className="text-white/20 hover:text-[#D74709] transition flex-shrink-0">
+          <ArrowRightLeft className="w-4 h-4" />
+        </button>
+      )}
     </div>
   )
 }

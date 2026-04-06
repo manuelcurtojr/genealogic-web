@@ -22,7 +22,7 @@ export default async function KennelPage() {
 
   const { data: dogs } = await supabase
     .from('dogs')
-    .select('id, name, sex, thumbnail_url, is_public, breed:breeds(name), birth_date, color:colors(name)')
+    .select('id, name, sex, thumbnail_url, is_public, is_reproductive, show_in_kennel, owner_id, breeder_id, breed:breeds(name), birth_date, color:colors(name)')
     .eq('kennel_id', kennel.id)
     .order('name')
 

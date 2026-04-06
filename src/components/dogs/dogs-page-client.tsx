@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Grid3X3, List, ChevronLeft, ChevronRight, Search, Plus, Eye, Edit, GitBranch, Mars, Venus, ArrowRightLeft } from 'lucide-react'
 import DogCard from './dog-card'
 import DogFormPanel from './dog-form-panel'
+import TransferPanel from '../kennel/transfer-panel'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 
@@ -30,6 +31,8 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
   const [search, setSearch] = useState('')
   const [panelOpen, setPanelOpen] = useState(false)
   const [editDogId, setEditDogId] = useState<string | null>(null)
+
+  const [transferDog, setTransferDog] = useState<any>(null)
 
   const openAdd = () => { setEditDogId(null); setPanelOpen(true) }
   const openEdit = (dogId: string) => { setEditDogId(dogId); setPanelOpen(true) }
@@ -136,7 +139,7 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
           </button>
 
           {paged.map((dog) => (
-            <DogCard key={dog.id} dog={dog} onEdit={() => openEdit(dog.id)} />
+            <DogCard key={dog.id} dog={dog} onEdit={() => openEdit(dog.id)} onTransfer={() => setTransferDog({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name })} />
           ))}
         </div>
       ) : (
@@ -229,6 +232,13 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
         onClose={closePanel}
         editDogId={editDogId}
         userId={userId}
+      />
+
+      {/* Transfer panel */}
+      <TransferPanel
+        open={!!transferDog}
+        onClose={() => setTransferDog(null)}
+        dog={transferDog}
       />
     </>
   )

@@ -16,9 +16,10 @@ interface DogCardProps {
     kennel?: any
   }
   onEdit?: () => void
+  onTransfer?: () => void
 }
 
-export default function DogCard({ dog, onEdit }: DogCardProps) {
+export default function DogCard({ dog, onEdit, onTransfer }: DogCardProps) {
   const sexBorder = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
   const SexIcon = dog.sex === 'male' ? Mars : Venus
   const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
@@ -113,7 +114,8 @@ export default function DogCard({ dog, onEdit }: DogCardProps) {
             <GitBranch className="w-4 h-4" />
           </Link>
           <button
-            className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white transition"
+            onClick={onTransfer}
+            className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-[#D74709] transition"
             title="Transferir"
           >
             <ArrowRightLeft className="w-4 h-4" />
