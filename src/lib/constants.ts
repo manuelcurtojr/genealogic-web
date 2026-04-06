@@ -25,6 +25,7 @@ export const NAV_ITEMS = [
   { label: 'Planificador', href: '/planner', icon: 'GitCompareArrows' },
   { label: 'Importar', href: '/import', icon: 'FileInput' },
   { label: 'Favoritos', href: '/favorites', icon: 'Heart' },
+  { label: 'Mi Criadero', href: '/kennel', icon: 'Store' },
 ] as const
 
 export const PRO_NAV_ITEMS = [
