@@ -305,35 +305,52 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
         </div>
       )}
 
-      {/* New pipeline modal */}
-      {showNewPipeline && (
-        <>
-          <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm" onClick={() => setShowNewPipeline(false)} />
-          <div className="fixed z-[101] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] max-w-[90vw] bg-gray-900 border border-white/10 rounded-2xl shadow-2xl">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
-              <h3 className="text-sm font-semibold">Nuevo Pipeline</h3>
-              <button onClick={() => setShowNewPipeline(false)} className="text-white/30 hover:text-white"><X className="w-5 h-5" /></button>
-            </div>
-            <div className="p-5 space-y-4">
-              <div>
-                <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Nombre</label>
-                <input type="text" value={newPipelineName} onChange={e => setNewPipelineName(e.target.value)}
-                  placeholder="Ej: Ventas, Seguimiento, Montas..."
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none"
-                  autoFocus onKeyDown={e => e.key === 'Enter' && createPipeline()} />
-              </div>
-              <p className="text-[11px] text-white/30">Si el nombre es &quot;Ventas&quot; o &quot;Seguimiento&quot; se crearan las etapas predefinidas.</p>
-              <div className="flex gap-2">
-                <button onClick={() => setShowNewPipeline(false)} className="flex-1 py-2.5 rounded-lg text-sm text-white/50 bg-white/5 hover:bg-white/10 transition">Cancelar</button>
-                <button onClick={() => createPipeline()} disabled={creating || !newPipelineName.trim()} className="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-[#D74709] hover:bg-[#c03d07] text-white transition disabled:opacity-50 flex items-center justify-center gap-2">
-                  {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  {creating ? 'Creando...' : 'Crear'}
-                </button>
-              </div>
-            </div>
+      {/* New pipeline slide panel */}
+      <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${showNewPipeline ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setShowNewPipeline(false)} />
+      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${showNewPipeline ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+          <h2 className="text-lg font-semibold">Nuevo Pipeline</h2>
+          <button onClick={() => setShowNewPipeline(false)} className="text-white/40 hover:text-white transition"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          <div>
+            <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Nombre del pipeline</label>
+            <input type="text" value={newPipelineName} onChange={e => setNewPipelineName(e.target.value)}
+              placeholder="Ej: Ventas, Seguimiento, Montas..."
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition"
+              autoFocus onKeyDown={e => e.key === 'Enter' && createPipeline()} />
           </div>
-        </>
-      )}
+
+          <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 space-y-3">
+            <p className="text-xs font-semibold text-white/50">Etapas que se crearan:</p>
+            {(() => {
+              const match = DEFAULT_PIPELINES.find(dp => dp.name.toLowerCase() === newPipelineName.trim().toLowerCase())
+              const stagesToShow = match?.stages || [
+                { name: 'Nuevo', position: 0, color: '#3B82F6' },
+                { name: 'En progreso', position: 1, color: '#F59E0B' },
+                { name: 'Ganado', position: 98, color: '#10B981' },
+                { name: 'Perdido', position: 99, color: '#EF4444' },
+              ]
+              return stagesToShow.map((s, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: s.color }} />
+                  <span className="text-sm text-white/60">{s.name}</span>
+                  {s.position >= 98 && <span className="text-[10px] text-white/25 ml-auto">{s.position === 98 ? 'Ganado' : 'Perdido'}</span>}
+                </div>
+              ))
+            })()}
+            <p className="text-[11px] text-white/25 pt-1">Escribe &quot;Ventas&quot; o &quot;Seguimiento&quot; para usar etapas predefinidas.</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/10 flex-shrink-0">
+          <button onClick={() => setShowNewPipeline(false)} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">Cancelar</button>
+          <button onClick={() => createPipeline()} disabled={creating || !newPipelineName.trim()}
+            className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+            {creating && <Loader2 className="w-4 h-4 animate-spin" />}
+            {creating ? 'Creando...' : 'Crear pipeline'}
+          </button>
+        </div>
+      </div>
 
       {/* Dashboard or Pipeline summary */}
       {showDashboard ? (
