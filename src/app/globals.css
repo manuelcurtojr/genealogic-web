@@ -9,7 +9,7 @@
 }
 
 :root {
-  --background: #0a0a0a;
+  --background: #0a0f1a;
   --foreground: #ededed;
 }
 
@@ -19,7 +19,7 @@
 }
 
 [data-theme="dark"] {
-  --background: #0a0a0a;
+  --background: #0a0f1a;
   --foreground: #ededed;
 }
 

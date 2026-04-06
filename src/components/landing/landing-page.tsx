@@ -17,7 +17,7 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
   const breedThumbs = featuredDogs.slice(0, 5)
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white relative overflow-hidden">
+    <div className="min-h-screen bg-[#0a0f1a] text-white relative overflow-hidden">
       {/* Constellation background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <svg className="absolute inset-0 w-full h-full opacity-[0.08]" xmlns="http://www.w3.org/2000/svg">

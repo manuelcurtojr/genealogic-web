@@ -33,7 +33,7 @@ export default function PublicHeader() {
   return (
     <header
       className="sticky top-0 z-50 flex items-center gap-3 px-4 py-2"
-      style={{ backgroundColor: darkMode ? '#0a0a0a' : '#f8fafc', borderBottom: `1px solid ${borderColor}` }}
+      style={{ backgroundColor: darkMode ? '#0a0f1a' : '#f8fafc', borderBottom: `1px solid ${borderColor}` }}
     >
       <a href="/" className="flex-shrink-0">
         <img src={darkMode ? '/logo.svg' : '/logo.svg'} alt="Genealogic" className="h-6" />
