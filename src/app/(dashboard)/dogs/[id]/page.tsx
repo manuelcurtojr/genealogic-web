@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Edit, Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Home, Trash2, Palette } from 'lucide-react'
+import { ArrowLeft, Edit, Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Home, Trash2, Palette, Heart } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import DogGallery from '@/components/dogs/dog-gallery'
@@ -44,8 +44,8 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         <DogGallery thumbnail_url={dog.thumbnail_url} name={dog.name} sex={dog.sex} />
 
         {/* Floating buttons over gallery */}
-        {isOwner && (
-          <div className="absolute top-4 right-4 flex items-center gap-2">
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          {isOwner && (
             <Link
               href={`/dogs/${id}/edit`}
               className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition border border-white/20"
@@ -53,8 +53,11 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
               <Edit className="w-4 h-4" />
               Editar perro
             </Link>
-          </div>
-        )}
+          )}
+          <button className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 border border-white/20 flex items-center justify-center text-white transition">
+            <Heart className="w-5 h-5" />
+          </button>
+        </div>
 
         {/* Back button */}
         <Link href="/dogs" className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition">

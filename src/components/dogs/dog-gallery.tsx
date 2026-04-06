@@ -19,17 +19,16 @@ export default function DogGallery({ thumbnail_url, name, sex }: DogGalleryProps
     return () => document.removeEventListener('keydown', handler)
   }, [lightboxOpen])
 
+  // WP style: photos flush top/sides, displayed as squares side by side
   return (
     <>
-      {/* Gallery — flush to header and sidebar, responsive height */}
-      <div className="relative w-full h-[40vh] lg:h-[45vh] bg-white/[0.03] overflow-hidden">
+      <div className="relative w-full overflow-hidden bg-black/20" style={{ height: 'min(50vh, 400px)' }}>
         {thumbnail_url ? (
-          <img
-            src={thumbnail_url}
-            alt={name}
-            className="w-full h-full object-cover object-left cursor-pointer hover:opacity-95 transition"
-            onClick={() => setLightboxOpen(true)}
-          />
+          <div className="flex h-full">
+            <img src={thumbnail_url} alt={name}
+              className="h-full w-auto object-cover cursor-pointer hover:opacity-95 transition"
+              onClick={() => setLightboxOpen(true)} />
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <img src="/icon.svg" alt="" className="w-20 h-20 opacity-10" />
@@ -38,10 +37,10 @@ export default function DogGallery({ thumbnail_url, name, sex }: DogGalleryProps
 
         {thumbnail_url && (
           <>
-            <button className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 transition">
+            <button className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-black/60 transition">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 transition">
+            <button className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-black/60 transition">
               <ChevronRight className="w-5 h-5" />
             </button>
           </>
