@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import Lightbox from '@/components/ui/lightbox'
 
 interface DogGalleryProps {
   photos: string[]
@@ -15,17 +16,6 @@ export default function DogGallery({ photos, name, sex }: DogGalleryProps) {
   const hasPhotos = photos.length > 0
   const visible = 4
   const maxOffset = Math.max(0, photos.length - visible)
-
-  useEffect(() => {
-    if (lightboxIdx === null) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setLightboxIdx(null)
-      if (e.key === 'ArrowLeft') setLightboxIdx(i => i !== null ? (i <= 0 ? photos.length - 1 : i - 1) : null)
-      if (e.key === 'ArrowRight') setLightboxIdx(i => i !== null ? (i >= photos.length - 1 ? 0 : i + 1) : null)
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [lightboxIdx, photos.length])
 
   return (
     <>
@@ -62,34 +52,8 @@ export default function DogGallery({ photos, name, sex }: DogGalleryProps) {
         )}
       </div>
 
-      {/* Lightbox */}
       {lightboxIdx !== null && hasPhotos && (
-        <div className="fixed inset-0 z-[80] bg-black/95 flex items-center justify-center" onClick={() => setLightboxIdx(null)}>
-          <button className="absolute top-4 right-4 text-white/60 hover:text-white transition" onClick={() => setLightboxIdx(null)}>
-            <X className="w-8 h-8" />
-          </button>
-          <img src={photos[lightboxIdx]} alt={name} className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg" onClick={e => e.stopPropagation()} />
-          {photos.length > 1 && (
-            <>
-              <button onClick={e => { e.stopPropagation(); setLightboxIdx(i => i !== null ? (i <= 0 ? photos.length - 1 : i - 1) : null) }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 flex items-center justify-center text-white/70 hover:text-white transition">
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <button onClick={e => { e.stopPropagation(); setLightboxIdx(i => i !== null ? (i >= photos.length - 1 ? 0 : i + 1) : null) }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 flex items-center justify-center text-white/70 hover:text-white transition">
-                <ChevronRight className="w-6 h-6" />
-              </button>
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2" onClick={e => e.stopPropagation()}>
-                {photos.map((url, i) => (
-                  <button key={i} onClick={() => setLightboxIdx(i)}
-                    className={`w-12 h-12 rounded-lg overflow-hidden transition ${i === lightboxIdx ? 'ring-2 ring-[#D74709] opacity-100' : 'opacity-40 hover:opacity-70'}`}>
-                    <img src={url} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+        <Lightbox files={photos} startIndex={lightboxIdx} onClose={() => setLightboxIdx(null)} />
       )}
     </>
   )

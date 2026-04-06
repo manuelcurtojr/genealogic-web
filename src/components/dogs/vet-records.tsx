@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Syringe, Bug, Pill, FlaskConical, Scissors, FileText, Image } from 'lucide-react'
+import { Syringe, Bug, Pill, FlaskConical, Scissors, FileText } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import Lightbox from '@/components/ui/lightbox'
 
 interface VetRecord {
   id: string
@@ -42,6 +43,8 @@ function isImage(url: string) { return /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(u
 export default function VetRecords({ dogId, ownerId, isOwner }: VetRecordsProps) {
   const [records, setRecords] = useState<VetRecord[]>([])
   const [loading, setLoading] = useState(true)
+  const [lightboxFiles, setLightboxFiles] = useState<string[] | null>(null)
+  const [lightboxStart, setLightboxStart] = useState(0)
 
   const supabase = createClient()
 
@@ -93,14 +96,15 @@ export default function VetRecords({ dogId, ownerId, isOwner }: VetRecordsProps)
                 {record.notes && <p className="text-xs text-white/50 mt-1">{record.notes}</p>}
                 {files.length > 0 && (
                   <div className="flex gap-1.5 mt-2">
-                    {files.map((url, i) => isImage(url) ? (
-                      <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded overflow-hidden">
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                      </a>
-                    ) : (
-                      <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded bg-white/5 flex items-center justify-center hover:bg-white/10">
-                        <FileText className="w-4 h-4 text-[#D74709]" />
-                      </a>
+                    {files.map((url, i) => (
+                      <button key={i} onClick={() => { setLightboxFiles(files); setLightboxStart(i) }}
+                        className="w-10 h-10 rounded overflow-hidden cursor-pointer hover:opacity-80 transition">
+                        {isImage(url) ? (
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-white/5 flex items-center justify-center"><FileText className="w-4 h-4 text-[#D74709]" /></div>
+                        )}
+                      </button>
                     ))}
                   </div>
                 )}
@@ -109,6 +113,10 @@ export default function VetRecords({ dogId, ownerId, isOwner }: VetRecordsProps)
           )
         })}
       </div>
+
+      {lightboxFiles && (
+        <Lightbox files={lightboxFiles} startIndex={lightboxStart} onClose={() => setLightboxFiles(null)} />
+      )}
     </div>
   )
 }
