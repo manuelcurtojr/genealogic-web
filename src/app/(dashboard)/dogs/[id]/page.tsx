@@ -6,6 +6,7 @@ import { BRAND } from '@/lib/constants'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import DogGallery from '@/components/dogs/dog-gallery'
 import DogDetailActions from '@/components/dogs/dog-detail-actions'
+import DogTabs from '@/components/dogs/dog-tabs'
 
 export default async function DogDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -134,6 +135,16 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
       )}
+
+      {/* Tabs: Salud, Palmares, Hermanos, Descendientes */}
+      <DogTabs
+        dogId={id}
+        ownerId={dog.owner_id}
+        isOwner={isOwner}
+        fatherId={dog.father_id}
+        motherId={dog.mother_id}
+        dogSex={dog.sex}
+      />
     </div>
   )
 }
