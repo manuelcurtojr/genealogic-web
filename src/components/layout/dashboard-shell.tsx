@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Menu, Bell, Sun, Moon } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
+import { createClient } from '@/lib/supabase/client'
 import Sidebar from './sidebar'
 import SearchBar from './search-bar'
 import NotificationsPanel from './notifications-panel'
@@ -18,6 +19,13 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
   const [collapsed, setCollapsed] = useState(false)
   const [darkMode, setDarkMode] = useState(true)
   const [notifOpen, setNotifOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('is_read', false)
+      .then(({ count }) => setUnreadCount(count || 0))
+  }, [notifOpen])
 
   useEffect(() => {
     const savedCollapsed = localStorage.getItem('sidebar-collapsed')
@@ -75,7 +83,7 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
           </button>
           <button onClick={() => setNotifOpen(true)} className={`w-8 h-8 rounded-full flex items-center justify-center ${iconColor} transition relative`}>
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#D74709]" />
+            {unreadCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#D74709]" />}
           </button>
           <div className={`w-8 h-8 rounded-full overflow-hidden border-2 ${avatarBg}`}>
             {user?.avatar_url ? (
@@ -104,7 +112,7 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
           </button>
           <button onClick={() => setNotifOpen(true)} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-black/5 dark:hover:bg-white/5 transition relative`}>
             <Bell className="w-[18px] h-[18px]" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#D74709]" />
+            {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#D74709]" />}
           </button>
           <div className={`w-9 h-9 rounded-full overflow-hidden border-2 ${avatarBg} cursor-pointer`}>
             {user?.avatar_url ? (
