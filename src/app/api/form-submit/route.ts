@@ -70,7 +70,35 @@ export async function POST(request: NextRequest) {
       deal_id: dealId,
     })
 
-    // 4. Notify owner
+    // 4. Create deal activity with form data
+    if (dealId) {
+      const lines: string[] = []
+      lines.push(`📋 **Formulario de contacto**`)
+      lines.push(`👤 ${formData.first_name} ${formData.last_name || ''}`.trim())
+      lines.push(`📧 ${formData.email}`)
+      if (formData.phone) lines.push(`📱 ${formData.phone}`)
+      if (formData.country || formData.city) lines.push(`📍 ${[formData.city, formData.country].filter(Boolean).join(', ')}`)
+      if (formData.dog_description) lines.push(`🐕 ${formData.dog_description}`)
+      // Custom fields
+      if (customData && Object.keys(customData).length > 0) {
+        const { data: formDef } = await supabase.from('kennel_forms').select('fields').eq('id', formId).single()
+        const fieldDefs = (formDef?.fields as any[]) || []
+        for (const [fieldId, value] of Object.entries(customData)) {
+          if (!value) continue
+          const def = fieldDefs.find((f: any) => f.id === fieldId)
+          const label = def?.label || fieldId
+          lines.push(`• ${label}: ${value}`)
+        }
+      }
+      await supabase.from('deal_activities').insert({
+        deal_id: dealId,
+        user_id: ownerId,
+        type: 'note',
+        content: lines.join('\n'),
+      })
+    }
+
+    // 5. Notify owner
     await supabase.from('notifications').insert({
       user_id: ownerId,
       type: 'contact',

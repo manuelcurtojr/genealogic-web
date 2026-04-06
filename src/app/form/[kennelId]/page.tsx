@@ -26,8 +26,15 @@ export default function PublicFormPage() {
 
   // Fixed fields
   const [data, setData] = useState({
-    first_name: '', last_name: '', email: '', phone: '', city: '', country: '',
+    first_name: '', last_name: '', email: '', phone: '', city: '', country: '', dog_description: '',
   })
+  // Country search
+  const [countrySearch, setCountrySearch] = useState('')
+  const [countryResults, setCountryResults] = useState<string[]>([])
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false)
+  const [citySearch, setCitySearch] = useState('')
+  const [cityResults, setCityResults] = useState<string[]>([])
+  const [showCityDropdown, setShowCityDropdown] = useState(false)
   // Custom field values
   const [customData, setCustomData] = useState<Record<string, string>>({})
 
@@ -52,9 +59,35 @@ export default function PublicFormPage() {
   const setField = (key: string, val: string) => setData(prev => ({ ...prev, [key]: val }))
   const setCustom = (id: string, val: string) => setCustomData(prev => ({ ...prev, [id]: val }))
 
+  async function searchCountries(q: string) {
+    setCountrySearch(q)
+    setField('country', q)
+    if (q.length < 2) { setCountryResults([]); setShowCountryDropdown(false); return }
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?country=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=5&featuretype=country`)
+      const data = await res.json()
+      const countries = [...new Set(data.map((r: any) => r.address?.country).filter(Boolean))] as string[]
+      setCountryResults(countries)
+      setShowCountryDropdown(countries.length > 0)
+    } catch { setCountryResults([]) }
+  }
+
+  async function searchCities(q: string) {
+    setCitySearch(q)
+    setField('city', q)
+    if (q.length < 2 || !data.country) { setCityResults([]); setShowCityDropdown(false); return }
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(q)}&country=${encodeURIComponent(data.country)}&format=json&addressdetails=1&limit=5`)
+      const results = await res.json()
+      const cities = [...new Set(results.map((r: any) => r.address?.city || r.address?.town || r.address?.village).filter(Boolean))] as string[]
+      setCityResults(cities)
+      setShowCityDropdown(cities.length > 0)
+    } catch { setCityResults([]) }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!data.first_name.trim() || !data.email.trim()) return
+    if (!data.first_name.trim() || !data.email.trim() || !data.dog_description.trim()) return
     setSubmitting(true)
     setError('')
 
@@ -139,9 +172,50 @@ export default function PublicFormPage() {
           </div>
           <PubField label="Email *" value={data.email} onChange={v => setField('email', v)} type="email" required />
           <PubField label="Telefono" value={data.phone} onChange={v => setField('phone', v)} type="tel" />
+
+          {/* Country + City search */}
           <div className="grid grid-cols-2 gap-3">
-            <PubField label="Ciudad" value={data.city} onChange={v => setField('city', v)} />
-            <PubField label="Pais" value={data.country} onChange={v => setField('country', v)} />
+            <div className="relative">
+              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Pais</label>
+              <input type="text" value={data.country} onChange={e => searchCountries(e.target.value)}
+                onFocus={() => countryResults.length > 0 && setShowCountryDropdown(true)}
+                onBlur={() => setTimeout(() => setShowCountryDropdown(false), 200)}
+                placeholder="Buscar pais..."
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition" />
+              {showCountryDropdown && (
+                <div className="absolute z-20 mt-1 w-full bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-40 overflow-y-auto">
+                  {countryResults.map(c => (
+                    <button key={c} type="button" onMouseDown={() => { setField('country', c); setCountrySearch(c); setShowCountryDropdown(false) }}
+                      className="w-full text-left px-3 py-2 text-sm text-white/70 hover:bg-white/5">{c}</button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="relative">
+              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Ciudad</label>
+              <input type="text" value={data.city} onChange={e => searchCities(e.target.value)}
+                onFocus={() => cityResults.length > 0 && setShowCityDropdown(true)}
+                onBlur={() => setTimeout(() => setShowCityDropdown(false), 200)}
+                placeholder={data.country ? 'Buscar ciudad...' : 'Primero selecciona pais'}
+                disabled={!data.country}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition disabled:opacity-40" />
+              {showCityDropdown && (
+                <div className="absolute z-20 mt-1 w-full bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-40 overflow-y-auto">
+                  {cityResults.map(c => (
+                    <button key={c} type="button" onMouseDown={() => { setField('city', c); setCitySearch(c); setShowCityDropdown(false) }}
+                      className="w-full text-left px-3 py-2 text-sm text-white/70 hover:bg-white/5">{c}</button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Dog description - always required */}
+          <div>
+            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Describe el perro que buscas *</label>
+            <textarea value={data.dog_description} onChange={e => setField('dog_description', e.target.value)} rows={3} required
+              placeholder="Sexo, color, caracter, uso previsto, cuando lo necesitas..."
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition resize-none" />
           </div>
 
           {/* Custom fields */}
@@ -170,6 +244,7 @@ export default function PublicFormPage() {
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             {submitting ? 'Enviando...' : 'Enviar solicitud'}
           </button>
+          <p className="text-[10px] text-white/20 text-center mt-2">Los campos marcados con * son obligatorios</p>
         </form>
 
         <p className="text-center text-[10px] text-white/15 mt-4">Powered by Genealogic</p>
