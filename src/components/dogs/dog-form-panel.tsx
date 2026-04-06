@@ -216,15 +216,17 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                     </>
                   )}
                 </Sec>
-                <Sec icon={Weight} title="Medidas">
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Peso (kg)" value={form.weight} onChange={v=>set('weight',v)} type="number"/>
-                    <Field label="Altura (cm)" value={form.height} onChange={v=>set('height',v)} type="number"/>
-                  </div>
-                </Sec>
+                {!isFromLitter && (
+                  <Sec icon={Weight} title="Medidas">
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label="Peso (kg)" value={form.weight} onChange={v=>set('weight',v)} type="number"/>
+                      <Field label="Altura (cm)" value={form.height} onChange={v=>set('height',v)} type="number"/>
+                    </div>
+                  </Sec>
+                )}
                 <Sec icon={ImageIcon} title="Galeria">
                   {editDogId ? <GalleryTab dogId={editDogId} userId={userId} /> : (
-                    <p className="text-xs text-white/30 text-center py-4">Guarda el perro primero para subir fotos</p>
+                    <p className="text-xs text-white/30 text-center py-4">{isFromLitter ? 'Guarda el cachorro para subir fotos' : 'Guarda el perro primero para subir fotos'}</p>
                   )}
                 </Sec>
                 <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg p-3">
