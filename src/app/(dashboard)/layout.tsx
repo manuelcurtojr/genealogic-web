@@ -14,8 +14,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <img src="/logo.svg" alt="Genealogic" className="h-6" />
           </a>
           <div className="flex-1 max-w-xl mx-auto">
-            <input type="text" placeholder="Buscar perros, razas o criaderos..." readOnly onClick={() => window.location.href = '/'}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white placeholder:text-white/30 cursor-pointer hover:border-white/20 transition" />
+            <a href="/" className="block w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white/30 hover:border-white/20 transition">
+              Buscar perros, razas o criaderos...
+            </a>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
             <a href="/login" className="px-4 py-2 rounded-lg border border-white/20 text-sm font-medium text-white/80 hover:bg-white/5 transition">
