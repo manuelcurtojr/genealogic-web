@@ -155,14 +155,14 @@ export default function PlannerPage() {
 
       {/* Combined Pedigree */}
       {loading ? (
-        <div className="text-center py-12 text-white/30">Cargando pedigri combinado...</div>
+        <div className="text-center py-12 text-white/30">Cargando pedigrí combinado...</div>
       ) : pedigreeData.length > 1 ? (
-        <div className="bg-white/5 border border-white/10 rounded-xl p-6 overflow-x-auto">
-          <h2 className="text-lg font-bold mb-4">Pedigri Combinado</h2>
+        <div>
+          <h2 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-3">Genealogía</h2>
           <PedigreeTree data={pedigreeData} rootId="virtual-litter" />
         </div>
       ) : sireId && damId ? (
-        <div className="text-center py-12 text-white/30">No hay datos de pedigri disponibles</div>
+        <div className="text-center py-12 text-white/30">No hay datos de pedigrí disponibles</div>
       ) : (
         <div className="text-center py-20">
           <Heart className="w-12 h-12 mx-auto mb-4 text-white/10" />
