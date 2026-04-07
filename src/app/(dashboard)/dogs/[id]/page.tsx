@@ -58,8 +58,8 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
 
   return (
     <div>
-      {/* Gallery — full width */}
-      <div className="relative">
+      {/* Gallery — full width, edge to edge */}
+      <div className="relative -mx-[30px] -mt-[30px]">
         <DogGallery photos={galleryPhotos} name={dog.name} sex={dog.sex} />
 
         {/* Favorite button top-right */}

@@ -83,7 +83,7 @@ export default function Awards({ dogId, ownerId, isOwner }: AwardsProps) {
           const type = getAwardType(award.award_type)
           const files = parseFiles(award.file_url)
           return (
-            <div key={award.id} className="bg-white/5 border border-white/10 rounded-lg p-4 flex items-start gap-3">
+            <div key={award.id} className="bg-white/5 border border-white/10 rounded-lg p-4 flex items-center gap-3">
               <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${type.color}`}>
                 <Trophy className="w-4 h-4" />
               </div>
@@ -96,22 +96,22 @@ export default function Awards({ dogId, ownerId, isOwner }: AwardsProps) {
                   {new Date(award.date).toLocaleDateString('es-ES')}
                   {award.judge && <> &middot; Juez: {award.judge}</>}
                 </p>
-                {award.notes && <p className="text-xs text-white/50 mt-1">{award.notes}</p>}
-                {files.length > 0 && (
-                  <div className="flex gap-1.5 mt-2">
-                    {files.map((url, i) => (
-                      <button key={i} onClick={() => { setLightboxFiles(files); setLightboxStart(i) }}
-                        className="w-10 h-10 rounded overflow-hidden cursor-pointer hover:opacity-80 transition">
-                        {isImage(url) ? (
-                          <img src={url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-white/5 flex items-center justify-center"><FileText className="w-4 h-4 text-[#D74709]" /></div>
-                        )}
+                {award.notes && <p className="text-xs text-white/50 mt-0.5 truncate">{award.notes}</p>}
+              </div>
+              {files.length > 0 && (
+                <div className="flex gap-1.5 flex-shrink-0">
+                  {files.map((url, i) => (
+                    <button key={i} onClick={() => { setLightboxFiles(files); setLightboxStart(i) }}
+                      className="w-10 h-10 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition">
+                      {isImage(url) ? (
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-white/5 flex items-center justify-center"><FileText className="w-4 h-4 text-[#D74709]" /></div>
+                      )}
                       </button>
                     ))}
                   </div>
                 )}
-              </div>
             </div>
           )
         })}
