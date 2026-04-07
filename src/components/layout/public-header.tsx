@@ -24,17 +24,12 @@ export default function PublicHeader() {
     document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light')
   }
 
-  const borderColor = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-  const iconColor = darkMode ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-gray-800'
   const loginStyle = darkMode
     ? 'border-white/20 text-white/80 hover:bg-white/5'
     : 'border-gray-300 text-gray-700 hover:bg-gray-100'
 
   return (
-    <header
-      className="sticky top-0 z-50 flex items-center gap-3 px-4 py-2"
-      style={{ backgroundColor: darkMode ? '#0a0a0a' : '#f8fafc', borderBottom: `1px solid ${borderColor}` }}
-    >
+    <header className="sticky top-0 z-50 flex items-center gap-3 px-4 py-2 bg-gray-950 border-b border-white/10">
       <a href="/" className="flex-shrink-0">
         <><img src="/logo.svg" alt="Genealogic" className="logo-dark h-6" /><img src="/logo-dark.svg" alt="Genealogic" className="logo-light h-6" /></>
       </a>
