@@ -348,14 +348,25 @@ export default function SettingsPage() {
               {/* Danger zone */}
               <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-5">
                 <h3 className="text-sm font-semibold text-red-400 flex items-center gap-2 mb-3"><AlertTriangle className="w-4 h-4" /> Zona de peligro</h3>
-                <p className="text-xs text-white/40 mb-4">Eliminar tu cuenta borrará permanentemente todos tus datos, perros, camadas, negocios y contactos. Esta acción no se puede deshacer.</p>
                 {!deleteConfirm ? (
-                  <button onClick={() => setDeleteConfirm(true)} className="text-sm text-red-400 border border-red-500/30 px-4 py-2 rounded-lg hover:bg-red-500/10 transition">Eliminar mi cuenta</button>
+                  <>
+                    <p className="text-xs text-white/40 mb-4">Eliminar tu cuenta es una acción permanente. Antes de proceder, ten en cuenta lo siguiente:</p>
+                    <div className="space-y-2 mb-4 text-xs">
+                      <div className="flex items-start gap-2 text-white/50"><Trash2 className="w-3 h-3 mt-0.5 text-red-400 flex-shrink-0" /><span><strong className="text-white/70">Se eliminará:</strong> tu perfil, datos de CRM (contactos, negocios), calendario, favoritos, notificaciones, genes, formularios</span></div>
+                      <div className="flex items-start gap-2 text-white/50"><Shield className="w-3 h-3 mt-0.5 text-yellow-400 flex-shrink-0" /><span><strong className="text-white/70">Se anonimizará:</strong> perros con descendientes o que aparezcan en pedigrees de otros usuarios se mantendrán como &quot;Propietario eliminado&quot;</span></div>
+                      <div className="flex items-start gap-2 text-white/50"><Shield className="w-3 h-3 mt-0.5 text-yellow-400 flex-shrink-0" /><span><strong className="text-white/70">Criadero histórico:</strong> si tu criadero tiene perros o camadas, se mantendrá como perfil público sin datos de contacto</span></div>
+                      <div className="flex items-start gap-2 text-white/50"><Check className="w-3 h-3 mt-0.5 text-green-400 flex-shrink-0" /><span><strong className="text-white/70">Sí se eliminan:</strong> perros sin descendientes ni camadas, camadas sin cachorros, criaderos vacíos</span></div>
+                    </div>
+                    <button onClick={() => setDeleteConfirm(true)} className="text-sm text-red-400 border border-red-500/30 px-4 py-2 rounded-lg hover:bg-red-500/10 transition">Quiero eliminar mi cuenta</button>
+                  </>
                 ) : (
-                  <div className="flex items-center gap-3">
-                    <p className="text-xs text-red-400">¿Estás seguro? Esta acción es irreversible.</p>
-                    <button onClick={async () => { await fetch('/api/delete-account', { method: 'POST' }); window.location.href = '/' }} className="text-sm text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition font-semibold">Confirmar eliminación</button>
-                    <button onClick={() => setDeleteConfirm(false)} className="text-sm text-white/40 hover:text-white transition">Cancelar</button>
+                  <div className="space-y-3">
+                    <p className="text-sm text-red-400 font-semibold">¿Estás completamente seguro?</p>
+                    <p className="text-xs text-white/40">Esta acción no se puede deshacer. La información genealógica importante se preservará de forma anónima.</p>
+                    <div className="flex items-center gap-3">
+                      <button onClick={async () => { await fetch('/api/delete-account', { method: 'POST' }); window.location.href = '/' }} className="text-sm text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition font-semibold">Confirmar eliminación</button>
+                      <button onClick={() => setDeleteConfirm(false)} className="text-sm text-white/40 hover:text-white transition">Cancelar</button>
+                    </div>
                   </div>
                 )}
               </div>
