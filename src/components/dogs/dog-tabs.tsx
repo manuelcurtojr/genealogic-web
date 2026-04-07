@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Stethoscope, Trophy, Users, GitBranch } from 'lucide-react'
 import VetRecords from './vet-records'
+import DogVetReminders from './dog-vet-reminders'
 import Awards from './awards'
 import Siblings from './siblings'
 import Offspring from './offspring'
@@ -49,7 +50,12 @@ export default function DogTabs({ dogId, ownerId, isOwner, fatherId, motherId, d
       </div>
 
       {/* Tab content */}
-      {active === 'health' && <VetRecords dogId={dogId} ownerId={ownerId} isOwner={isOwner} />}
+      {active === 'health' && (
+        <>
+          {isOwner && <DogVetReminders dogId={dogId} isOwner={isOwner} />}
+          <VetRecords dogId={dogId} ownerId={ownerId} isOwner={isOwner} />
+        </>
+      )}
       {active === 'awards' && <Awards dogId={dogId} ownerId={ownerId} isOwner={isOwner} />}
       {active === 'siblings' && <Siblings dogId={dogId} fatherId={fatherId} motherId={motherId} />}
       {active === 'offspring' && <Offspring dogId={dogId} dogSex={dogSex} />}

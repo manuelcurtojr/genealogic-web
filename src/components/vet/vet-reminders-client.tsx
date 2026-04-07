@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Stethoscope, Plus, Check, Clock, AlertTriangle, Syringe, Bug, Search as SearchIcon, Filter, Dog, X, Loader2, Sparkles, Calendar } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
@@ -198,7 +198,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
         </div>
       </div>
 
-      {/* Filters + Auto-generate */}
+      {/* Filters + Dog search + Auto-generate */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="flex bg-white/5 border border-white/10 rounded-lg overflow-hidden">
           {[
@@ -214,37 +214,20 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
           ))}
         </div>
 
-        <select value={dogFilter} onChange={e => setDogFilter(e.target.value)}
-          className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/60 focus:border-[#D74709] focus:outline-none transition appearance-none">
-          <option value="">Todos los perros</option>
-          {dogs.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-        </select>
+        {/* Dog filter with search */}
+        <DogSearchFilter
+          dogs={dogs}
+          value={dogFilter}
+          onChange={setDogFilter}
+          placeholder="Filtrar por perro..."
+        />
 
-        {/* Auto-generate dropdown */}
-        <div className="relative ml-auto group">
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-medium hover:bg-purple-500/15 transition">
-            <Sparkles className="w-3.5 h-3.5" /> Auto-generar
-          </button>
-          <div className="absolute right-0 top-full mt-1 w-64 bg-gray-800 border border-white/10 rounded-lg shadow-xl hidden group-hover:block z-30">
-            <p className="text-[10px] text-white/30 px-3 pt-2 pb-1">Selecciona un perro para generar recordatorios automáticos basados en su edad</p>
-            <div className="max-h-48 overflow-y-auto">
-              {dogs.filter(d => d.birth_date).map(d => (
-                <button key={d.id} onClick={() => autoGenerate(d.id)}
-                  disabled={generatingFor === d.id}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-white/60 hover:bg-white/5 transition text-left disabled:opacity-50">
-                  <div className="w-5 h-5 rounded-full overflow-hidden bg-white/5 flex-shrink-0 border" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
-                    {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
-                  </div>
-                  <span className="truncate flex-1">{d.name}</span>
-                  {generatingFor === d.id && <Loader2 className="w-3 h-3 animate-spin" />}
-                </button>
-              ))}
-            </div>
-            {dogs.filter(d => d.birth_date).length === 0 && (
-              <p className="text-[10px] text-white/20 px-3 py-3 text-center">Tus perros necesitan fecha de nacimiento</p>
-            )}
-          </div>
-        </div>
+        {/* Auto-generate with search */}
+        <AutoGenerateButton
+          dogs={dogs.filter(d => d.birth_date)}
+          generatingFor={generatingFor}
+          onGenerate={autoGenerate}
+        />
       </div>
 
       {/* Reminders list */}
@@ -347,6 +330,130 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
         templates={templates}
         userId={userId}
       />
+    </div>
+  )
+}
+
+/* ---- Dog search filter ---- */
+function DogSearchFilter({ dogs, value, onChange, placeholder }: {
+  dogs: any[]; value: string; onChange: (v: string) => void; placeholder?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const ref = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const selectedDog = dogs.find(d => d.id === value)
+  const filtered = dogs.filter(d => d.name.toLowerCase().includes(search.toLowerCase()))
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [])
+
+  useEffect(() => { if (open && inputRef.current) inputRef.current.focus() }, [open])
+
+  return (
+    <div ref={ref} className="relative">
+      <button onClick={() => { setOpen(!open); setSearch('') }}
+        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition ${
+          value ? 'bg-[#D74709]/10 text-[#D74709] border-[#D74709]/20' : 'bg-white/5 text-white/50 border-white/10 hover:bg-white/10'
+        }`}>
+        <Dog className="w-3.5 h-3.5" />
+        {selectedDog ? selectedDog.name : (placeholder || 'Todos los perros')}
+        {value && (
+          <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="ml-1 hover:text-white transition">
+            <X className="w-3 h-3" />
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-full mt-1 w-72 bg-gray-800 border border-white/10 rounded-lg shadow-xl z-30 flex flex-col">
+          <div className="p-2 border-b border-white/5">
+            <div className="relative">
+              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+              <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Buscar perro..." className="w-full bg-white/5 border border-white/10 rounded pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+            </div>
+          </div>
+          <div className="max-h-56 overflow-y-auto">
+            <button onClick={() => { onChange(''); setOpen(false) }}
+              className={`w-full text-left px-3 py-2 text-xs transition ${!value ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/50 hover:bg-white/5'}`}>
+              Todos los perros
+            </button>
+            {filtered.map(d => (
+              <button key={d.id} onClick={() => { onChange(d.id); setOpen(false); setSearch('') }}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition text-left ${
+                  d.id === value ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/60 hover:bg-white/5'
+                }`}>
+                <div className="w-5 h-5 rounded-full overflow-hidden bg-white/5 flex-shrink-0 border" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
+                  {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
+                </div>
+                <span className="truncate">{d.name}</span>
+              </button>
+            ))}
+            {filtered.length === 0 && <p className="text-[10px] text-white/20 px-3 py-3 text-center">Sin resultados</p>}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ---- Auto-generate button with dog search ---- */
+function AutoGenerateButton({ dogs, generatingFor, onGenerate }: {
+  dogs: any[]; generatingFor: string | null; onGenerate: (dogId: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const ref = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const filtered = dogs.filter(d => d.name.toLowerCase().includes(search.toLowerCase()))
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [])
+
+  useEffect(() => { if (open && inputRef.current) inputRef.current.focus() }, [open])
+
+  return (
+    <div ref={ref} className="relative ml-auto">
+      <button onClick={() => { setOpen(!open); setSearch('') }}
+        className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-medium hover:bg-purple-500/15 transition">
+        <Sparkles className="w-3.5 h-3.5" /> Auto-generar
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-72 bg-gray-800 border border-white/10 rounded-lg shadow-xl z-30 flex flex-col">
+          <p className="text-[10px] text-white/30 px-3 pt-2 pb-1">Busca un perro para generar recordatorios automáticos según su edad</p>
+          <div className="p-2 border-b border-white/5">
+            <div className="relative">
+              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+              <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Buscar perro..." className="w-full bg-white/5 border border-white/10 rounded pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-purple-500 focus:outline-none" />
+            </div>
+          </div>
+          <div className="max-h-56 overflow-y-auto">
+            {filtered.map(d => (
+              <button key={d.id} onClick={() => { onGenerate(d.id); setOpen(false) }}
+                disabled={generatingFor === d.id}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-white/60 hover:bg-white/5 transition text-left disabled:opacity-50">
+                <div className="w-5 h-5 rounded-full overflow-hidden bg-white/5 flex-shrink-0 border" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
+                  {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
+                </div>
+                <span className="truncate flex-1">{d.name}</span>
+                {generatingFor === d.id && <Loader2 className="w-3 h-3 animate-spin" />}
+              </button>
+            ))}
+            {filtered.length === 0 && <p className="text-[10px] text-white/20 px-3 py-3 text-center">{dogs.length === 0 ? 'Tus perros necesitan fecha de nacimiento' : 'Sin resultados'}</p>}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
