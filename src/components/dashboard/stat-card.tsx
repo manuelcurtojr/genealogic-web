@@ -3,7 +3,7 @@ import { LucideIcon } from 'lucide-react'
 interface StatCardProps {
   icon: LucideIcon
   label: string
-  value: number
+  value: number | string
   accentColor: string
 }
 
