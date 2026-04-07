@@ -128,7 +128,7 @@ export default function KennelEmpty({ userId }: Props) {
             </div>
           </div>
 
-          <p className="text-[11px] text-white/25">Podras completar redes sociales, WhatsApp y mas detalles despues en la pagina de edicion.</p>
+          <p className="text-[11px] text-white/25">Podras completar redes sociales, WhatsApp y mas detalles despues en la página de edicion.</p>
         </div>
 
         {/* Footer */}

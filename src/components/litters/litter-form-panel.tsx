@@ -297,7 +297,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                   onClick={() => onAddPuppy?.(editLitterId!, form.breed_id || null, form.father_id || null, form.mother_id || null)}
                   className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-white/10 text-xs text-white/40 hover:text-[#D74709] hover:border-[#D74709]/30 transition"
                 >
-                  <Plus className="w-3.5 h-3.5" /> Anadir cachorro
+                  <Plus className="w-3.5 h-3.5" /> Añadir cachorro
                 </button>
               </div>
             )}

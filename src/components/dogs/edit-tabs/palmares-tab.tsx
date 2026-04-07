@@ -59,7 +59,7 @@ export default function PalmaresTab({ dogId, userId }: { dogId: string; userId: 
         {AWARD_TYPES.map(t => <button key={t.key} onClick={() => setFilter(t.key)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${filter === t.key ? 'text-white' : 'bg-white/5 text-white/50 hover:bg-white/10'}`} style={filter === t.key ? { backgroundColor: t.color } : undefined}>{t.label}</button>)}
       </div>
 
-      <button onClick={openAdd} className="flex items-center gap-1.5 text-sm text-[#D74709] hover:text-[#c03d07] transition font-medium"><Plus className="w-4 h-4" /> Anadir titulo</button>
+      <button onClick={openAdd} className="flex items-center gap-1.5 text-sm text-[#D74709] hover:text-[#c03d07] transition font-medium"><Plus className="w-4 h-4" /> Añadir titulo</button>
 
       {showForm && (
         <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-3">
@@ -90,7 +90,7 @@ export default function PalmaresTab({ dogId, userId }: { dogId: string; userId: 
           <div className="flex justify-end gap-2">
             <button onClick={() => setShowForm(false)} className="px-3 py-1.5 text-xs text-white/50">Cancelar</button>
             <button onClick={handleSave} disabled={saving || !form.event_name.trim()} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition disabled:opacity-50 flex items-center gap-1">
-              {saving && <Loader2 className="w-3 h-3 animate-spin" />}{editAward ? 'Guardar' : 'Anadir'}
+              {saving && <Loader2 className="w-3 h-3 animate-spin" />}{editAward ? 'Guardar' : 'Añadir'}
             </button>
           </div>
         </div>

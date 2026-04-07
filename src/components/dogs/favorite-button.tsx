@@ -46,7 +46,7 @@ export default function FavoriteButton({ dogId, initialFavorited }: Props) {
             ? 'bg-red-500/20 border-red-500/40 text-red-400 hover:bg-red-500/30'
             : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
         }`}
-        title={favorited ? 'Quitar de favoritos' : 'Anadir a favoritos'}
+        title={favorited ? 'Quitar de favoritos' : 'Añadir a favoritos'}
       >
         <Heart className={`w-5 h-5 ${favorited ? 'fill-current' : ''}`} />
       </button>

@@ -98,7 +98,7 @@ export default function LitterForm({ initialData, breeds, maleDogs, femaleDogs, 
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Numero de cachorros</label>
+                <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Número de cachorros</label>
                 <input type="number" min="0" value={form.puppy_count} onChange={(e) => set('puppy_count', e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
               </div>

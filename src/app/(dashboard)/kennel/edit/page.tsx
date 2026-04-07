@@ -94,7 +94,7 @@ export default function EditKennelPage() {
 
         {/* Basic */}
         <section>
-          <h2 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-4">Informacion basica</h2>
+          <h2 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-4">Información basica</h2>
           <div className="space-y-4">
             <Field label="Nombre del criadero *" value={form.name} onChange={(v) => set('name', v)} required />
             <div>
@@ -135,7 +135,7 @@ export default function EditKennelPage() {
             </div>
             {form.whatsapp_enabled && (
               <>
-                <Field label="Numero de WhatsApp" value={form.whatsapp_phone} onChange={(v) => set('whatsapp_phone', v)} placeholder="+34 600 000 000" />
+                <Field label="Número de WhatsApp" value={form.whatsapp_phone} onChange={(v) => set('whatsapp_phone', v)} placeholder="+34 600 000 000" />
                 <Field label="Mensaje predeterminado" value={form.whatsapp_text} onChange={(v) => set('whatsapp_text', v)} placeholder="Hola, me interesa..." />
               </>
             )}

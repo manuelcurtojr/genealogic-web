@@ -84,7 +84,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Contrasena</label>
+            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Contraseña</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
               <input

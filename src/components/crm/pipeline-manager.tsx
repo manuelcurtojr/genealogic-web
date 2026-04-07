@@ -34,7 +34,7 @@ const DEFAULT_PIPELINES = [
     stages: [
       { name: 'Contacto nuevo', position: 0, color: '#3B82F6' },
       { name: 'Primer mensaje enviado', position: 1, color: '#06B6D4' },
-      { name: 'Informacion recibida', position: 2, color: '#8B5CF6' },
+      { name: 'Información recibida', position: 2, color: '#8B5CF6' },
       { name: 'Oferta enviada', position: 3, color: '#F59E0B' },
       { name: 'Seguimiento', position: 4, color: '#14B8A6' },
       { name: 'Venta ganada', position: 98, color: '#10B981' },
@@ -435,7 +435,7 @@ export default function PipelineManager({ open, onClose, pipelines, deals, userI
                   onClick={addStage}
                   className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-white/10 text-xs text-white/40 hover:text-white/60 hover:border-white/20 transition"
                 >
-                  <Plus className="w-3.5 h-3.5" /> Anadir etapa
+                  <Plus className="w-3.5 h-3.5" /> Añadir etapa
                 </button>
               </div>
 

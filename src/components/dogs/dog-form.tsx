@@ -88,7 +88,7 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
         <Link href={isEdit ? `/dogs/${initialData.id}` : '/dogs'} className="text-white/40 hover:text-white transition">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold">{isEdit ? 'Editar perro' : 'Anadir perro'}</h1>
+        <h1 className="text-2xl font-bold">{isEdit ? 'Editar perro' : 'Añadir perro'}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

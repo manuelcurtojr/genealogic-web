@@ -23,7 +23,7 @@ export default function LoginPage() {
 
     if (error) {
       setError(error.message === 'Invalid login credentials'
-        ? 'Email o contrasena incorrectos'
+        ? 'Email o contraseña incorrectos'
         : error.message)
       setLoading(false)
       return
@@ -66,14 +66,14 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Contrasena</label>
+            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Contraseña</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Tu contrasena"
+                placeholder="Tu contraseña"
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition"
               />

@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!htmlContent && !screenshotBase64) {
-      return NextResponse.json({ error: 'No se pudo acceder a la pagina. Intenta con otra URL.' }, { status: 400 })
+      return NextResponse.json({ error: 'No se pudo acceder a la página. Intenta con otra URL.' }, { status: 400 })
     }
 
     // Step 3: Call Claude API

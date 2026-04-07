@@ -269,7 +269,7 @@ export default async function DashboardPage() {
         ) : (
           <div className="text-center py-12 bg-white/5 border border-white/10 rounded-xl">
             <p className="text-white/40">No tienes perros aun</p>
-            <Link href="/dogs" className="text-sm text-[#D74709] hover:underline mt-2 inline-block">Anade tu primer perro</Link>
+            <Link href="/dogs" className="text-sm text-[#D74709] hover:underline mt-2 inline-block">Añade tu primer perro</Link>
           </div>
         )}
       </div>

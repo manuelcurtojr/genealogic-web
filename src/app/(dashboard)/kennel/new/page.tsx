@@ -54,7 +54,7 @@ export default function NewKennelPage() {
           {loading ? 'Creando...' : 'Crear criadero'}
         </button>
 
-        <p className="text-xs text-white/30 text-center">Podras completar los detalles despues en la pagina de edicion.</p>
+        <p className="text-xs text-white/30 text-center">Podras completar los detalles despues en la página de edicion.</p>
       </form>
     </div>
   )

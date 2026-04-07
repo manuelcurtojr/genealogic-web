@@ -258,7 +258,7 @@ export default function FormBuilder({ open, onClose, kennelId, userId }: Props) 
               </div>
               <button onClick={addField}
                 className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-white/10 text-xs text-white/40 hover:text-[#D74709] hover:border-[#D74709]/30 transition">
-                <Plus className="w-3.5 h-3.5" /> Anadir campo
+                <Plus className="w-3.5 h-3.5" /> Añadir campo
               </button>
             </div>
           </div>

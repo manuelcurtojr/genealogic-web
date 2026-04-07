@@ -66,7 +66,7 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
       </div>
 
       {/* Add button */}
-      <button onClick={openAdd} className="flex items-center gap-1.5 text-sm text-[#D74709] hover:text-[#c03d07] transition font-medium"><Plus className="w-4 h-4" /> Anadir registro</button>
+      <button onClick={openAdd} className="flex items-center gap-1.5 text-sm text-[#D74709] hover:text-[#c03d07] transition font-medium"><Plus className="w-4 h-4" /> Añadir registro</button>
 
       {/* Inline form */}
       {showForm && (
@@ -101,7 +101,7 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
           <div className="flex justify-end gap-2">
             <button onClick={() => setShowForm(false)} className="px-3 py-1.5 text-xs text-white/50 hover:text-white transition">Cancelar</button>
             <button onClick={handleSave} disabled={saving || !form.title.trim()} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition disabled:opacity-50 flex items-center gap-1">
-              {saving && <Loader2 className="w-3 h-3 animate-spin" />}{editRecord ? 'Guardar' : 'Anadir'}
+              {saving && <Loader2 className="w-3 h-3 animate-spin" />}{editRecord ? 'Guardar' : 'Añadir'}
             </button>
           </div>
         </div>

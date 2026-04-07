@@ -101,7 +101,7 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
           {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
           {/* Basic info */}
-          <Sec title="Informacion basica">
+          <Sec title="Información basica">
             <Field label="Nombre del criadero *" value={form.name} onChange={v => set('name', v)} />
             <div>
               <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Descripcion</label>
@@ -183,7 +183,7 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
             </div>
             {form.whatsapp_enabled && (
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Numero" value={form.whatsapp_phone} onChange={v => set('whatsapp_phone', v)} placeholder="+34 600 000 000" />
+                <Field label="Número" value={form.whatsapp_phone} onChange={v => set('whatsapp_phone', v)} placeholder="+34 600 000 000" />
                 <Field label="Mensaje predeterminado" value={form.whatsapp_text} onChange={v => set('whatsapp_text', v)} placeholder="Hola, me interesa..." />
               </div>
             )}

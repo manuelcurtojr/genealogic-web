@@ -51,7 +51,6 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
     const lostStageIds = new Set(allStages.filter((s: any) => LOST.test(s.name)).map((s: any) => s.id))
 
     // Debug: log for troubleshooting
-    console.log('Analytics:', { totalDeals: deals.length, stages: allStages.length, wonIds: wonStageIds.size, lostIds: lostStageIds.size, totalValue: deals.reduce((s: number, d: any) => s + (Number(d.value) || 0), 0) })
 
     const wonDeals = deals.filter((d: any) => wonStageIds.has(d.stage_id))
     const lostDeals = deals.filter((d: any) => lostStageIds.has(d.stage_id))

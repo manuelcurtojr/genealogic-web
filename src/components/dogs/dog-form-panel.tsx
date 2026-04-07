@@ -143,7 +143,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       <div className={`fixed top-0 right-0 h-full w-full max-w-3xl z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open?'translate-x-0':'translate-x-full'}`}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
-          <h2 className="text-lg font-semibold">{isEdit?'Editar perro':defaultLitterId?'Anadir cachorro':'Anadir perro'}</h2>
+          <h2 className="text-lg font-semibold">{isEdit?'Editar perro':defaultLitterId?'Añadir cachorro':'Añadir perro'}</h2>
           <button onClick={onClose} className="text-white/40 hover:text-white transition"><X className="w-5 h-5"/></button>
         </div>
 
@@ -207,7 +207,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Nacimiento" value={form.birth_date} onChange={v=>set('birth_date',v)} type="date"/>
-                    <Field label="Microchip" value={form.microchip} onChange={v=>set('microchip',v)} placeholder="Numero"/>
+                    <Field label="Microchip" value={form.microchip} onChange={v=>set('microchip',v)} placeholder="Número"/>
                   </div>
                   <Field label="Registro" value={form.registration} onChange={v=>set('registration',v)} placeholder="UKC, FCI, etc."/>
                 </Sec>

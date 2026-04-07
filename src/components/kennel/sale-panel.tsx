@@ -185,7 +185,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
                   <h3 className="text-[11px] font-semibold text-white/40 uppercase tracking-wider flex items-center gap-1"><MapPin className="w-3 h-3" /> Ubicacion</h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Codigo postal</label>
+                      <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Código postal</label>
                       <input type="text" value={form.sale_zipcode} onChange={e => set('sale_zipcode', e.target.value)}
                         onBlur={lookupZipcode}
                         placeholder="28001"
@@ -198,7 +198,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
                         className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition" />
                     </div>
                   </div>
-                  <p className="text-[10px] text-white/20">Introduce el codigo postal para autocompletar la ubicacion</p>
+                  <p className="text-[10px] text-white/20">Introduce el código postal para autocompletar la ubicacion</p>
                 </div>
 
                 {/* Description */}

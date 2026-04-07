@@ -8,7 +8,7 @@ export default function DashboardError({ error, reset }: { error: Error; reset: 
       <AlertTriangle className="w-16 h-16 text-[#D74709]/50 mb-4" />
       <h2 className="text-xl font-bold mb-2">Algo salio mal</h2>
       <p className="text-white/40 text-sm mb-6 text-center max-w-md">
-        {error.message || 'Ha ocurrido un error inesperado. Intenta recargar la pagina.'}
+        {error.message || 'Ha ocurrido un error inesperado. Intenta recargar la página.'}
       </p>
       <button
         onClick={reset}

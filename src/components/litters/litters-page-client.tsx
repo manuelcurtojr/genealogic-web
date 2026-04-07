@@ -125,7 +125,7 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
             <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
               <Plus className="w-6 h-6 text-white/30 group-hover:text-[#D74709] transition" />
             </div>
-            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Anadir camada</p>
+            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir camada</p>
           </button>
 
           {filtered.map(litter => {
