@@ -58,8 +58,8 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
 
   return (
     <div>
-      {/* Gallery — full width, breaks out of padding container */}
-      <div className="relative" style={{ marginLeft: '-30px', marginRight: '-30px', marginTop: '-30px', width: 'calc(100% + 60px)' }}>
+      {/* Gallery — full bleed, cancel parent padding */}
+      <div className="relative -mx-4 -mt-4 lg:-mx-[30px] lg:-mt-[30px]">
         <DogGallery photos={galleryPhotos} name={dog.name} sex={dog.sex} />
 
         {/* Favorite button top-right */}
