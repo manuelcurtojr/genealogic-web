@@ -1,12 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Edit, Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette } from 'lucide-react'
+import { ArrowLeft, Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import DogGallery from '@/components/dogs/dog-gallery'
 import DogTabs from '@/components/dogs/dog-tabs'
 import FavoriteButton from '@/components/dogs/favorite-button'
+import DogEditButton from '@/components/dogs/dog-edit-button'
 
 export default async function DogDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -72,11 +73,10 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         </Link>
 
         {/* Edit button — only for owner */}
-        {isOwner && (
-          <Link href={`/dogs/${id}/edit`}
-            className="absolute top-4 right-16 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition border border-white/20">
-            <Edit className="w-4 h-4" /> Editar
-          </Link>
+        {isOwner && user && (
+          <div className="absolute top-4 right-16">
+            <DogEditButton dogId={id} userId={user.id} />
+          </div>
         )}
       </div>
 
