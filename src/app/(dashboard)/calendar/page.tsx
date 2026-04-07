@@ -152,15 +152,15 @@ export default function CalendarPage() {
   const EventDot = ({ ev, compact }: { ev: CalendarEvent; compact?: boolean }) => (
     <div
       onClick={(e) => handleEventClick(e, ev)}
-      className={`flex items-center gap-1 px-1 py-0.5 rounded text-[10px] bg-white/5 hover:bg-white/10 transition cursor-pointer ${ev.is_completed ? 'opacity-50' : ''}`}
+      className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs bg-white/5 hover:bg-white/10 transition cursor-pointer ${ev.is_completed ? 'opacity-50' : ''}`}
     >
       <button
         onClick={(e) => { e.stopPropagation(); toggleCompleted(ev) }}
-        className={`w-3 h-3 rounded-sm border flex-shrink-0 flex items-center justify-center transition ${ev.is_completed ? 'bg-green-500 border-green-500' : 'border-white/20 hover:border-white/40'}`}
+        className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center transition ${ev.is_completed ? 'bg-green-500 border-green-500' : 'border border-white/20 hover:border-white/40'}`}
       >
-        {ev.is_completed && <Check className="w-2 h-2 text-white" />}
+        {ev.is_completed && <Check className="w-2.5 h-2.5 text-white" />}
       </button>
-      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ev.color || '#D74709' }} />
+      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: ev.color || '#D74709' }} />
       <span className={`truncate text-white/70 ${ev.is_completed ? 'line-through' : ''}`}>
         {!compact && !ev.all_day && ev.start_date && <span className="text-white/30 mr-1">{new Date(ev.start_date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>}
         {ev.title}
@@ -209,11 +209,11 @@ export default function CalendarPage() {
               const dateStr = formatDateStr(new Date(year, month, day))
               const dayEvents = getEventsForDate(dateStr)
               return (
-                <div key={day} className="min-h-[90px] border-b border-r border-white/5 p-1.5 cursor-pointer hover:bg-white/[0.03] transition" onClick={() => handleDayClick(dateStr)}>
-                  <span className={`inline-flex w-6 h-6 items-center justify-center rounded-full text-xs font-medium ${isToday(new Date(year, month, day)) ? 'bg-[#D74709] text-white' : 'text-white/60'}`}>{day}</span>
-                  <div className="mt-1 space-y-0.5">
-                    {dayEvents.slice(0, 3).map(ev => <EventDot key={ev.id} ev={ev} compact />)}
-                    {dayEvents.length > 3 && <span className="text-[10px] text-white/30 pl-1">+{dayEvents.length - 3}</span>}
+                <div key={day} className="min-h-[120px] border-b border-r border-white/5 p-1.5 cursor-pointer hover:bg-white/[0.03] transition" onClick={() => handleDayClick(dateStr)}>
+                  <span className={`inline-flex w-7 h-7 items-center justify-center rounded-full text-xs font-semibold ${isToday(new Date(year, month, day)) ? 'bg-[#D74709] text-white' : 'text-white/60'}`}>{day}</span>
+                  <div className="mt-1 space-y-1">
+                    {dayEvents.slice(0, 4).map(ev => <EventDot key={ev.id} ev={ev} compact />)}
+                    {dayEvents.length > 4 && <span className="text-[10px] text-white/30 pl-1">+{dayEvents.length - 4} más</span>}
                   </div>
                 </div>
               )
@@ -236,9 +236,9 @@ export default function CalendarPage() {
             ))}
           </div>
           {/* Time slots */}
-          <div className="max-h-[60vh] overflow-y-auto">
+          <div className="max-h-[65vh] overflow-y-auto">
             {HOURS.map(h => (
-              <div key={h} className="grid grid-cols-[60px_repeat(7,1fr)] min-h-[48px]">
+              <div key={h} className="grid grid-cols-[60px_repeat(7,1fr)] min-h-[56px]">
                 <div className="border-r border-b border-white/5 pr-2 pt-1 text-right">
                   <span className="text-[10px] text-white/25">{String(h).padStart(2, '0')}:00</span>
                 </div>
@@ -259,8 +259,8 @@ export default function CalendarPage() {
                         <div
                           key={ev.id}
                           onClick={e => handleEventClick(e, ev)}
-                          className="text-[10px] px-1 py-0.5 rounded truncate cursor-pointer hover:opacity-80"
-                          style={{ background: (ev.color || '#D74709') + '25', color: ev.color || '#D74709', borderLeft: `2px solid ${ev.color || '#D74709'}` }}
+                          className="text-xs px-1.5 py-1 rounded-md truncate cursor-pointer hover:opacity-80 mb-0.5"
+                          style={{ background: (ev.color || '#D74709') + '25', color: ev.color || '#D74709', borderLeft: `3px solid ${ev.color || '#D74709'}` }}
                         >
                           {ev.title}
                         </div>
@@ -277,7 +277,7 @@ export default function CalendarPage() {
       {/* === DAY VIEW === */}
       {view === 'day' && (
         <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-          <div className="max-h-[70vh] overflow-y-auto">
+          <div className="max-h-[72vh] overflow-y-auto">
             {/* All-day events */}
             {(() => {
               const dateStr = formatDateStr(currentDate)
@@ -301,7 +301,7 @@ export default function CalendarPage() {
                 return new Date(e.start_date).getHours() === h
               })
               return (
-                <div key={h} className="flex min-h-[56px] border-b border-white/5">
+                <div key={h} className="flex min-h-[60px] border-b border-white/5">
                   <div className="w-16 flex-shrink-0 pr-3 pt-2 text-right border-r border-white/5">
                     <span className="text-xs text-white/25">{String(h).padStart(2, '0')}:00</span>
                   </div>
