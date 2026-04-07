@@ -342,7 +342,7 @@ export default function SettingsPage() {
               <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3"><Download className="w-5 h-5 text-blue-400" /><div><p className="text-sm font-medium">Exportar mis datos</p><p className="text-xs text-white/40">Descarga todos tus datos en formato JSON</p></div></div>
-                  <button className="text-sm text-blue-400 hover:text-blue-300 font-medium transition">Exportar</button>
+                  <button onClick={() => window.location.href = '/api/export-data'} className="text-sm text-blue-400 hover:text-blue-300 font-medium transition">Exportar</button>
                 </div>
               </div>
               {/* Danger zone */}
@@ -354,7 +354,7 @@ export default function SettingsPage() {
                 ) : (
                   <div className="flex items-center gap-3">
                     <p className="text-xs text-red-400">¿Estás seguro? Esta acción es irreversible.</p>
-                    <button className="text-sm text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition font-semibold">Confirmar eliminación</button>
+                    <button onClick={async () => { await fetch('/api/delete-account', { method: 'POST' }); window.location.href = '/' }} className="text-sm text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition font-semibold">Confirmar eliminación</button>
                     <button onClick={() => setDeleteConfirm(false)} className="text-sm text-white/40 hover:text-white transition">Cancelar</button>
                   </div>
                 )}
