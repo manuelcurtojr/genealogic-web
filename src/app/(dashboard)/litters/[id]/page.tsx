@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, Baby, Eye, EyeOff, Dog, MessageCircle, FileText, C
 import { BRAND } from '@/lib/constants'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import LitterEditButton from '@/components/litters/litter-edit-button'
+import LitterWaitingList from '@/components/litters/litter-waiting-list'
 
 export default async function LitterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -173,6 +174,9 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
           </div>
         </div>
       )}
+
+      {/* Waiting list — only for owner */}
+      {isOwner && <LitterWaitingList litterId={id} isOwner={isOwner} />}
 
       {/* Pedigree - free, no box */}
       {pedigreeData.length > 1 && pedigreeRootId && (

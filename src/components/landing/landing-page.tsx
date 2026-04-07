@@ -141,11 +141,9 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
               )}
             </Link>
           ))}
-          {featuredDogs.length > 5 && (
-            <Link href="/kennels" className={`w-10 h-10 rounded-lg flex items-center justify-center border hover:border-white/20 transition text-sm ${darkMode ? 'bg-white/5 border-white/10 text-white/30' : 'bg-gray-100 border-gray-200 text-gray-400'}`}>
-              ...
-            </Link>
-          )}
+          <Link href="/search" className={`h-10 px-3 rounded-lg flex items-center justify-center border hover:border-[#D74709]/50 transition text-xs font-medium ${darkMode ? 'bg-white/5 border-white/10 text-white/40 hover:text-white' : 'bg-gray-100 border-gray-200 text-gray-500 hover:text-gray-700'}`}>
+            Ver todos →
+          </Link>
         </div>
       </main>
 

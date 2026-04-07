@@ -32,9 +32,10 @@ export async function updateSession(request: NextRequest) {
   const isKennelDetailPage = /^\/kennels\/[^/]+$/.test(request.nextUrl.pathname)
   const isLitterDetailPage = /^\/litters\/[^/]+$/.test(request.nextUrl.pathname)
   const isPricingPage = request.nextUrl.pathname === '/pricing'
+  const isSearchPage = request.nextUrl.pathname === '/search'
 
   // Protected routes — redirect to login if not authenticated
-  const isProtectedRoute = !isDogDetailPage && !isKennelDetailPage && !isLitterDetailPage && !isPricingPage && (
+  const isProtectedRoute = !isDogDetailPage && !isKennelDetailPage && !isLitterDetailPage && !isPricingPage && !isSearchPage && (
     request.nextUrl.pathname.startsWith('/dogs') ||
     request.nextUrl.pathname.startsWith('/kennel') ||
     request.nextUrl.pathname.startsWith('/litters') ||
@@ -44,7 +45,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/favorites') ||
     request.nextUrl.pathname.startsWith('/planner') ||
     request.nextUrl.pathname.startsWith('/settings') ||
-    request.nextUrl.pathname.startsWith('/analytics')
+    request.nextUrl.pathname.startsWith('/analytics') ||
+    request.nextUrl.pathname.startsWith('/vet')
   )
 
   if (isProtectedRoute && !user) {

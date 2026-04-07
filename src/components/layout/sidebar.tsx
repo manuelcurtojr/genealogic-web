@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogOut, X, GitCompareArrows, LayoutDashboard, Menu, Home, Store, BarChart3 } from 'lucide-react'
+import { Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogOut, X, GitCompareArrows, LayoutDashboard, Menu, Home, Store, BarChart3, Search, Stethoscope } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { NAV_ITEMS, PRO_NAV_ITEMS, BRAND } from '@/lib/constants'
 import { getTranslator } from '@/lib/i18n'
 
 const iconMap: Record<string, React.ElementType> = {
-  Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LayoutDashboard, GitCompareArrows, Home, Store, BarChart3,
+  Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LayoutDashboard, GitCompareArrows, Home, Store, BarChart3, Search, Stethoscope,
 }
 
 interface SidebarProps {

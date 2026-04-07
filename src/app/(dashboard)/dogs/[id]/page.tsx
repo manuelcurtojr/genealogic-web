@@ -8,6 +8,7 @@ import DogGallery from '@/components/dogs/dog-gallery'
 import DogTabs from '@/components/dogs/dog-tabs'
 import FavoriteButton from '@/components/dogs/favorite-button'
 import DogEditButton from '@/components/dogs/dog-edit-button'
+import ShareButton from '@/components/dogs/share-button'
 
 export default async function DogDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -63,8 +64,9 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         style={!user ? { marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)', marginTop: '-24px', width: '100vw' } : undefined}>
         <DogGallery photos={galleryPhotos} name={dog.name} sex={dog.sex} />
 
-        {/* Favorite button top-right */}
-        <div className="absolute top-4 right-4">
+        {/* Share + Favorite buttons top-right */}
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          <ShareButton dog={{ name: dog.name, sex: dog.sex, breed_name: breedName, kennel_name: kennel?.name, thumbnail_url: dog.thumbnail_url, birth_date: dog.birth_date }} dogUrl={`/dogs/${id}`} />
           <FavoriteButton dogId={id} initialFavorited={isFavorited} />
         </div>
 

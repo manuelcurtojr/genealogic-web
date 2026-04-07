@@ -23,6 +23,8 @@ export const NAV_ITEMS = [
   { label: 'Camadas', href: '/litters', icon: 'Baby' },
   { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
   { label: 'Planificador', href: '/planner', icon: 'GitCompareArrows' },
+  { label: 'Veterinario', href: '/vet', icon: 'Stethoscope' },
+  { label: 'Buscar', href: '/search', icon: 'Search' },
   { label: 'Favoritos', href: '/favorites', icon: 'Heart' },
   { label: 'Mi Criadero', href: '/kennel', icon: 'Store' },
   { label: 'Analiticas', href: '/analytics', icon: 'BarChart3' },

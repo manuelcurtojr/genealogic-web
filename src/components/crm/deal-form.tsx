@@ -51,6 +51,9 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
     dog_ids: [] as string[],
     litter_id: '',
     lost_reason: '',
+    preferred_sex: 'any' as string,
+    preferred_color: '',
+    queue_position: '' as string,
   }))
 
   // Reset form when panel opens/closes or initialData changes
@@ -66,10 +69,13 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
       // Fetch dogs and litters
       const [dogsRes, littersRes] = await Promise.all([
         supabase.from('dogs').select('id, name, thumbnail_url').eq('owner_id', userId).order('name'),
-        supabase.from('litters').select('id, name').eq('owner_id', userId).order('name'),
+        supabase.from('litters').select('id, father:dogs!litters_father_id_fkey(name), mother:dogs!litters_mother_id_fkey(name)').eq('owner_id', userId).order('created_at', { ascending: false }),
       ])
       setDogs(dogsRes.data || [])
-      setLitters(littersRes.data || [])
+      setLitters((littersRes.data || []).map((l: any) => ({
+        id: l.id,
+        name: `${(l.father as any)?.name || '?'} × ${(l.mother as any)?.name || '?'}`,
+      })))
 
       if (initialData) {
         // Fetch linked dogs for this deal
@@ -91,6 +97,9 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
           dog_ids: dogIds,
           litter_id: initialData.litter_id || '',
           lost_reason: initialData.lost_reason || '',
+          preferred_sex: initialData.preferred_sex || 'any',
+          preferred_color: initialData.preferred_color || '',
+          queue_position: initialData.queue_position?.toString() || '',
         })
       } else {
         setForm({
@@ -105,6 +114,9 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
           dog_ids: [],
           litter_id: '',
           lost_reason: '',
+          preferred_sex: 'any',
+          preferred_color: '',
+          queue_position: '',
         })
       }
       setDataLoading(false)
@@ -142,6 +154,9 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
       stage_id: form.stage_id || null,
       pipeline_id: pipelineId,
       litter_id: form.litter_id || null,
+      preferred_sex: form.litter_id ? (form.preferred_sex || 'any') : null,
+      preferred_color: form.litter_id ? (form.preferred_color || null) : null,
+      queue_position: form.litter_id && form.queue_position ? parseInt(form.queue_position) : null,
       lost_reason: isLostStage ? (form.lost_reason || null) : null,
     }
 
@@ -364,6 +379,48 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
                   onChange={v => set('litter_id', v)}
                   placeholder="Buscar camada..."
                 />
+
+                {/* Waiting list preferences — shown when litter is linked */}
+                {form.litter_id && (
+                  <div className="bg-purple-500/5 border border-purple-500/15 rounded-xl p-4 space-y-3">
+                    <p className="text-[11px] font-semibold text-purple-400 uppercase tracking-wider">Lista de espera</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Preferencia sexo</label>
+                        <select
+                          value={form.preferred_sex}
+                          onChange={e => set('preferred_sex', e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none transition appearance-none"
+                        >
+                          <option value="any">Cualquiera</option>
+                          <option value="male">♂ Macho</option>
+                          <option value="female">♀ Hembra</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Color preferido</label>
+                        <input
+                          type="text"
+                          value={form.preferred_color}
+                          onChange={e => set('preferred_color', e.target.value)}
+                          placeholder="Ej: Negro, Tricolor..."
+                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Posición cola</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={form.queue_position}
+                          onChange={e => set('queue_position', e.target.value)}
+                          placeholder="1, 2, 3..."
+                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Lost reason - only if stage is lost */}
                 {isLostStage && (
