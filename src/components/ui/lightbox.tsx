@@ -47,9 +47,9 @@ export default function Lightbox({ files, startIndex, onClose }: LightboxProps) 
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex items-center justify-center px-16 pb-20 min-h-0" onClick={e => e.stopPropagation()}>
+      <div className="flex-1 flex items-center justify-center px-16 pb-20 min-h-0">
         {img ? (
-          <img src={url} alt="" className="max-w-full max-h-full object-contain rounded-lg" />
+          <img src={url} alt="" className="max-w-full max-h-full object-contain rounded-lg" onClick={e => e.stopPropagation()} />
         ) : pdf ? (
           <iframe src={url} className="w-full h-full max-w-4xl rounded-lg bg-white" />
         ) : (

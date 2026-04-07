@@ -59,7 +59,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   return (
     <div>
       {/* Gallery — full bleed, cancel parent padding */}
-      <div className="relative -mx-4 -mt-4 lg:-mx-[30px] lg:-mt-[30px]">
+      <div className="relative -mx-4 -mt-4 lg:-mx-[30px] lg:-mt-[30px] overflow-hidden">
         <DogGallery photos={galleryPhotos} name={dog.name} sex={dog.sex} />
 
         {/* Favorite button top-right */}

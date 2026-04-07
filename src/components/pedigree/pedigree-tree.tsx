@@ -38,7 +38,7 @@ export default function PedigreeTree({data,rootId}:Props){
         </div>
       </div>
       {/* COI Panel */}
-      <div className={`fixed top-[56px] right-0 bottom-0 w-[300px] z-[55] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${coiPanel?'translate-x-0':'translate-x-full'}`}>
+      <div className={`fixed top-[56px] right-0 bottom-0 w-[300px] z-[45] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${coiPanel?'translate-x-0':'translate-x-full'}`}>
         <button onClick={()=>setCoiPanel(!coiPanel)} className="absolute -left-7 top-1/2 -translate-y-1/2 w-7 h-14 bg-gray-900 border border-r-0 border-white/10 rounded-l-lg flex items-center justify-center text-white/40 hover:text-white transition">{coiPanel?<ChevronRight className="w-3.5 h-3.5"/>:<ChevronLeft className="w-3.5 h-3.5"/>}</button>
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10"><div className="flex items-center gap-2"><Dna className="w-4 h-4 text-[#D74709]"/><h3 className="text-sm font-semibold">Salud Genetica</h3></div><button onClick={()=>setCoiPanel(false)} className="text-white/40 hover:text-white"><ChevronRight className="w-4 h-4"/></button></div>
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
