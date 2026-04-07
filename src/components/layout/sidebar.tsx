@@ -74,12 +74,12 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
           )}
           {NAV_ITEMS.map((item) => {
             const Icon = iconMap[item.icon]
-            const active = pathname.startsWith(item.href)
+            const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
             return (
-              <Link
+              <a
                 key={item.href}
                 href={item.href}
-                onClick={handleNav}
+                onClick={() => onClose()}
                 title={collapsed && !mobileOpen ? item.label : undefined}
                 className={`flex items-center gap-3 rounded-lg text-sm font-medium transition mb-0.5 ${
                   collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
@@ -91,7 +91,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
               >
                 {Icon && <Icon className="w-[18px] h-[18px] flex-shrink-0" />}
                 {(!collapsed || mobileOpen) && <span>{item.label}</span>}
-              </Link>
+              </a>
             )
           })}
 
@@ -105,10 +105,10 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
                 const Icon = iconMap[item.icon]
                 const active = pathname.startsWith(item.href)
                 return (
-                  <Link
+                  <a
                     key={item.href}
                     href={item.href}
-                    onClick={handleNav}
+                    onClick={() => onClose()}
                     title={collapsed && !mobileOpen ? item.label : undefined}
                     className={`flex items-center gap-3 rounded-lg text-sm font-medium transition mb-0.5 ${
                       collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
@@ -120,7 +120,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
                   >
                     {Icon && <Icon className="w-[18px] h-[18px] flex-shrink-0" />}
                     {(!collapsed || mobileOpen) && <span>{item.label}</span>}
-                  </Link>
+                  </a>
                 )
               })}
             </>
