@@ -10,6 +10,8 @@ import {
   ChevronRight, AlertTriangle
 } from 'lucide-react'
 import AvatarUpload from '@/components/settings/avatar-upload'
+import { getLocalizedCountries, searchCities } from '@/lib/countries'
+import { getTranslator } from '@/lib/i18n'
 
 const LANGUAGES = [
   { code: 'es', name: 'Español' }, { code: 'en', name: 'English' },
@@ -71,6 +73,31 @@ export default function SettingsPage() {
   const [passwordSuccess, setPasswordSuccess] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
 
+  // Country/City autocomplete
+  const countries = getLocalizedCountries()
+  const [countryOpen, setCountryOpen] = useState(false)
+  const [countryQ, setCountryQ] = useState('')
+  const [cityOpen, setCityOpen] = useState(false)
+  const [cityQ, setCityQ] = useState('')
+  const [cityResults, setCityResults] = useState<string[]>([])
+  const [cityLoading, setCityLoading] = useState(false)
+
+  const selectedCountry = countries.find(c => c.name === form.country)
+  const filteredCountries = countryQ ? countries.filter(c => c.name.toLowerCase().includes(countryQ.toLowerCase())) : countries
+
+  async function handleCitySearch(q: string) {
+    setCityQ(q)
+    if (q.length < 2 || !selectedCountry) { setCityResults([]); return }
+    setCityLoading(true)
+    const results = await searchCities(selectedCountry.code, q)
+    setCityResults(results)
+    setCityOpen(results.length > 0)
+    setCityLoading(false)
+  }
+
+  // i18n translator
+  const t = getTranslator(form.language)
+
   useEffect(() => {
     async function load() {
       const supabase = createClient()
@@ -110,6 +137,7 @@ export default function SettingsPage() {
   async function handleSave() {
     setSaving(true)
     const supabase = createClient()
+    const oldLang = profile?.language || 'es'
     await supabase.from('profiles').update({
       display_name: form.display_name.trim() || null,
       phone: form.phone || null, country: form.country || null,
@@ -122,8 +150,14 @@ export default function SettingsPage() {
       public_profile: form.public_profile, show_email: form.show_email,
       show_phone: form.show_phone,
     }).eq('id', profile.id)
+    // Store language in localStorage for client-side components
+    localStorage.setItem('genealogic-lang', form.language)
     setProfile((prev: any) => ({ ...prev, ...form }))
     setSaving(false)
+    // If language changed, reload to apply translations everywhere
+    if (form.language !== oldLang) {
+      window.location.reload()
+    }
   }
 
   async function handleChangePassword(e: React.FormEvent) {
@@ -202,8 +236,48 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Nombre para mostrar" value={form.display_name} onChange={v => set('display_name', v)} />
                   <Field label="Teléfono" value={form.phone} onChange={v => set('phone', v)} placeholder="+34 600 000 000" />
-                  <Field label="País" value={form.country} onChange={v => set('country', v)} />
-                  <Field label="Ciudad" value={form.city} onChange={v => set('city', v)} />
+                  {/* Country selector */}
+                  <div className="relative">
+                    <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">País</label>
+                    <button type="button" onClick={() => { setCountryOpen(!countryOpen); setCityOpen(false) }}
+                      className={`w-full bg-white/5 border rounded-lg px-3 py-2 text-sm flex items-center gap-2 transition text-left ${countryOpen ? 'border-[#D74709]' : 'border-white/10'}`}>
+                      {selectedCountry ? <><span className="text-base">{selectedCountry.flag}</span><span className="truncate flex-1">{selectedCountry.name}</span></> : <span className="text-white/25 flex-1">Seleccionar país</span>}
+                    </button>
+                    {countryOpen && (
+                      <div className="absolute z-30 mt-1 w-full bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-48 flex flex-col">
+                        <div className="p-2 border-b border-white/5">
+                          <input autoFocus value={countryQ} onChange={e => setCountryQ(e.target.value)} placeholder="Buscar país..."
+                            className="w-full bg-white/5 border border-white/10 rounded pl-3 pr-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+                        </div>
+                        <div className="overflow-y-auto flex-1">
+                          {filteredCountries.map(c => (
+                            <button key={c.code} type="button" onClick={() => { set('country', c.name); set('city', ''); setCountryOpen(false); setCountryQ('') }}
+                              className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${c.name === form.country ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/70 hover:bg-white/5'}`}>
+                              <span className="text-base">{c.flag}</span> {c.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* City selector */}
+                  <div className="relative">
+                    <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Ciudad</label>
+                    <input type="text" value={form.city || cityQ} readOnly={!!form.city}
+                      onChange={e => { if (!form.city) handleCitySearch(e.target.value) }}
+                      onClick={() => { if (form.city) { set('city', ''); setCityQ('') } }}
+                      disabled={!selectedCountry}
+                      placeholder={selectedCountry ? 'Buscar ciudad...' : 'Primero selecciona país'}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition disabled:opacity-40" />
+                    {cityOpen && cityResults.length > 0 && (
+                      <div className="absolute z-30 mt-1 w-full bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-40 overflow-y-auto">
+                        {cityResults.map(c => (
+                          <button key={c} type="button" onClick={() => { set('city', c); setCityOpen(false); setCityQ('') }}
+                            className="w-full text-left px-3 py-2 text-sm text-white/70 hover:bg-white/5">{c}</button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="mt-3">
                   <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Biografía</label>

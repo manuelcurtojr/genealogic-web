@@ -6,6 +6,7 @@ import { Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogO
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { NAV_ITEMS, PRO_NAV_ITEMS, BRAND } from '@/lib/constants'
+import { getTranslator } from '@/lib/i18n'
 
 const iconMap: Record<string, React.ElementType> = {
   Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LayoutDashboard, GitCompareArrows, Home, Store, BarChart3,
@@ -24,6 +25,8 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
   const pathname = usePathname()
   const router = useRouter()
   const isPro = user?.role === 'pro' || user?.role === 'admin'
+  const lang = typeof window !== 'undefined' ? localStorage.getItem('genealogic-lang') || 'es' : 'es'
+  const t = getTranslator(lang)
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -90,7 +93,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
                 }`}
               >
                 {Icon && <Icon className="w-[18px] h-[18px] flex-shrink-0" />}
-                {(!collapsed || mobileOpen) && <span>{item.label}</span>}
+                {(!collapsed || mobileOpen) && <span>{t(item.label)}</span>}
               </a>
             )
           })}
@@ -119,7 +122,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
                     }`}
                   >
                     {Icon && <Icon className="w-[18px] h-[18px] flex-shrink-0" />}
-                    {(!collapsed || mobileOpen) && <span>{item.label}</span>}
+                    {(!collapsed || mobileOpen) && <span>{t(item.label)}</span>}
                   </a>
                 )
               })}
@@ -129,17 +132,16 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
 
         {/* Bottom: Settings + Logout */}
         <div className="border-t border-white/10 p-2">
-          <Link
+          <a
             href="/settings"
-            onClick={handleNav}
-            title={collapsed && !mobileOpen ? 'Ajustes' : undefined}
+            title={collapsed && !mobileOpen ? t('Ajustes') : undefined}
             className={`flex items-center gap-3 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition ${
               collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
             }`}
           >
             <Settings className="w-[18px] h-[18px] flex-shrink-0" />
-            {(!collapsed || mobileOpen) && <span>Ajustes</span>}
-          </Link>
+            {(!collapsed || mobileOpen) && <span>{t('Ajustes')}</span>}
+          </a>
           <button
             onClick={handleLogout}
             title={collapsed && !mobileOpen ? 'Cerrar sesion' : undefined}
@@ -148,7 +150,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
             }`}
           >
             <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
-            {(!collapsed || mobileOpen) && <span>Cerrar sesion</span>}
+            {(!collapsed || mobileOpen) && <span>{t('Cerrar sesión')}</span>}
           </button>
         </div>
 
