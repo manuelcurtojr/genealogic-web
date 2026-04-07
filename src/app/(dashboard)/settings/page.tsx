@@ -14,18 +14,12 @@ import { getLocalizedCountries, searchCities } from '@/lib/countries'
 import { getTranslator } from '@/lib/i18n'
 
 const LANGUAGES = [
-  { code: 'es', name: 'Español' }, { code: 'en', name: 'English' },
-  { code: 'fr', name: 'Français' }, { code: 'de', name: 'Deutsch' },
-  { code: 'pt', name: 'Português' }, { code: 'it', name: 'Italiano' },
-  { code: 'nl', name: 'Nederlands' }, { code: 'pl', name: 'Polski' },
-  { code: 'ru', name: 'Русский' }, { code: 'ja', name: '日本語' },
-  { code: 'zh', name: '中文' }, { code: 'ko', name: '한국어' },
-  { code: 'ar', name: 'العربية' }, { code: 'tr', name: 'Türkçe' },
-  { code: 'sv', name: 'Svenska' }, { code: 'da', name: 'Dansk' },
-  { code: 'fi', name: 'Suomi' }, { code: 'no', name: 'Norsk' },
-  { code: 'cs', name: 'Čeština' }, { code: 'ro', name: 'Română' },
-  { code: 'hu', name: 'Magyar' }, { code: 'el', name: 'Ελληνικά' },
-  { code: 'th', name: 'ไทย' }, { code: 'vi', name: 'Tiếng Việt' },
+  { code: 'es', name: 'Español' },
+  { code: 'en', name: 'English' },
+  { code: 'fr', name: 'Français' },
+  { code: 'de', name: 'Deutsch' },
+  { code: 'pt', name: 'Português' },
+  { code: 'it', name: 'Italiano' },
 ]
 
 const DATE_FORMATS = [
@@ -72,6 +66,8 @@ export default function SettingsPage() {
   const [passwordError, setPasswordError] = useState('')
   const [passwordSuccess, setPasswordSuccess] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [closingAllSessions, setClosingAllSessions] = useState(false)
+  const [sessionsSuccess, setSessionsSuccess] = useState(false)
 
   // Country/City autocomplete
   const countries = getLocalizedCountries()
@@ -311,6 +307,38 @@ export default function SettingsPage() {
                     </div>
                   </form>
                 )}
+              </div>
+
+              {/* Sessions */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold">Sesiones activas</h3>
+                </div>
+                <div className="bg-white/[0.03] rounded-lg p-3 flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-4 h-4 text-green-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium flex items-center gap-2">Sesión actual <span className="text-[9px] bg-green-500/10 text-green-400 px-1.5 py-0.5 rounded-full">Activa</span></p>
+                    <p className="text-xs text-white/40">{typeof navigator !== 'undefined' ? navigator.userAgent.split('(')[1]?.split(')')[0] || 'Navegador' : 'Navegador'}</p>
+                  </div>
+                </div>
+                {sessionsSuccess && <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm text-green-400 mb-3 flex items-center gap-2"><Check className="w-4 h-4" /> Todas las sesiones han sido cerradas</div>}
+                <button
+                  onClick={async () => {
+                    setClosingAllSessions(true)
+                    const supabase = createClient()
+                    await supabase.auth.signOut({ scope: 'global' })
+                    setClosingAllSessions(false)
+                    setSessionsSuccess(true)
+                    setTimeout(() => { window.location.href = '/login' }, 1500)
+                  }}
+                  disabled={closingAllSessions}
+                  className="text-sm text-red-400 border border-red-500/30 px-4 py-2 rounded-lg hover:bg-red-500/10 transition disabled:opacity-50 flex items-center gap-2">
+                  {closingAllSessions && <Loader2 className="w-4 h-4 animate-spin" />}
+                  Cerrar todas las sesiones
+                </button>
+                <p className="text-[10px] text-white/25 mt-2">Esto cerrará tu sesión en todos los dispositivos, incluyendo este.</p>
               </div>
             </div>
           )}

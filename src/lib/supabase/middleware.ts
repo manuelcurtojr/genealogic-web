@@ -31,9 +31,10 @@ export async function updateSession(request: NextRequest) {
   const isDogDetailPage = /^\/dogs\/[^/]+$/.test(request.nextUrl.pathname)
   const isKennelDetailPage = /^\/kennels\/[^/]+$/.test(request.nextUrl.pathname)
   const isLitterDetailPage = /^\/litters\/[^/]+$/.test(request.nextUrl.pathname)
+  const isPricingPage = request.nextUrl.pathname === '/pricing'
 
   // Protected routes — redirect to login if not authenticated
-  const isProtectedRoute = !isDogDetailPage && !isKennelDetailPage && !isLitterDetailPage && (
+  const isProtectedRoute = !isDogDetailPage && !isKennelDetailPage && !isLitterDetailPage && !isPricingPage && (
     request.nextUrl.pathname.startsWith('/dogs') ||
     request.nextUrl.pathname.startsWith('/kennel') ||
     request.nextUrl.pathname.startsWith('/litters') ||
