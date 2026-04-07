@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import { Dog, Baby, Users, HandCoins, PawPrint, Tag, TrendingUp, FileText, Plus, Calendar, Stethoscope, ArrowRight, Heart, Store, Search } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import StatCard from '@/components/dashboard/stat-card'
@@ -11,6 +12,10 @@ export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
+
+  // Admins go to admin panel
+  const { data: roleCheck } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (roleCheck?.role === 'admin') redirect('/admin')
 
   const { data: profile } = await supabase
     .from('profiles')
