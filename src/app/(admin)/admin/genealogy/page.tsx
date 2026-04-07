@@ -9,15 +9,25 @@ export default async function AdminGenealogyPage() {
   // Get all dogs with their parent info to detect incomplete pedigrees
   const { data: dogs } = await supabase
     .from('dogs')
-    .select('id, name, sex, thumbnail_url, father_id, mother_id, breed:breeds(name), kennel:kennels(name), owner:profiles!dogs_owner_id_fkey(display_name)')
+    .select('id, name, sex, thumbnail_url, father_id, mother_id, owner_id, breed:breeds(name), kennel:kennels(name)')
     .order('name')
+
+  // Get owner names
+  const ownerIds = [...new Set((dogs || []).map(d => d.owner_id).filter(Boolean))]
+  const { data: ownerProfiles } = ownerIds.length > 0
+    ? await supabase.from('profiles').select('id, display_name').in('id', ownerIds)
+    : { data: [] }
+  const ownerMap = new Map((ownerProfiles || []).map(p => [p.id, p]))
+
+  // Attach owner info
+  const dogsWithOwner = (dogs || []).map(d => ({ ...d, owner: ownerMap.get(d.owner_id) || null }))
 
   const { data: breeds } = await supabase.from('breeds').select('id, name').order('name')
   const { data: colors } = await supabase.from('colors').select('id, name, breed_id').order('name')
 
   // Calculate completeness: how many ancestors out of expected
-  const dogMap = new Map((dogs || []).map(d => [d.id, d]))
-  const dogsWithCompleteness = (dogs || []).map(d => {
+  const dogMap = new Map(dogsWithOwner.map(d => [d.id, d]))
+  const dogsWithCompleteness = dogsWithOwner.map(d => {
     let filled = 0, total = 0
     // Check 5 generations (parents, grandparents, great-grandparents...)
     function check(id: string | null, gen: number) {

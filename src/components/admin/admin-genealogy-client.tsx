@@ -71,13 +71,15 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
     setSaving(true)
     const supabase = createClient()
 
-    // Create the new dog (ancestor)
+    // Create the new dog (ancestor) — assign to the same owner as the child dog
+    const childDog = allDogs.find(d => d.id === addingFor.dogId)
+    const ancestorOwnerId = childDog?.owner_id || userId
     const { data: created, error } = await supabase.from('dogs').insert({
       name: newAncestor.name.trim(),
       sex: newAncestor.sex,
       breed_id: newAncestor.breed_id || null,
       color_id: newAncestor.color_id || null,
-      owner_id: userId,
+      owner_id: ancestorOwnerId,
       is_public: false,
     }).select('id').single()
 
@@ -188,7 +190,7 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
                   <p className="text-sm font-bold">{selectedDog.name}</p>
                   <p className="text-[10px] text-white/30">{(selectedDog.breed as any)?.name} · {selectedDog.filledAncestors}/{selectedDog.totalSlots} ancestros</p>
                 </div>
-                {/* Quick buttons to add missing parents */}
+                {/* Quick buttons to add missing parents to root */}
                 {!selectedDog.father_id && (
                   <button onClick={() => startAddAncestor(selectedDog.id, 'father')}
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 text-xs font-medium hover:bg-blue-500/20 transition">
@@ -273,6 +275,32 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
                   )}
                 </div>
               )}
+
+              {/* Nodes with missing parents in the pedigree */}
+              {pedigreeData.length > 0 && !addingFor && (() => {
+                const nodesWithGaps = pedigreeData.filter(n => !n.father_id || !n.mother_id)
+                if (nodesWithGaps.length === 0) return null
+                return (
+                  <div className="bg-amber-500/5 border border-amber-500/15 rounded-xl p-4 mb-4">
+                    <p className="text-xs font-semibold text-amber-400 mb-2">Huecos en el pedigrí ({nodesWithGaps.length} nodos sin completar)</p>
+                    <div className="flex flex-wrap gap-2">
+                      {nodesWithGaps.map(n => (
+                        <div key={n.id} className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5">
+                          <span className="text-xs font-medium truncate max-w-[120px]">{n.name}</span>
+                          {!n.father_id && (
+                            <button onClick={() => startAddAncestor(n.id, 'father')}
+                              className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded hover:bg-blue-500/20 transition">+♂</button>
+                          )}
+                          {!n.mother_id && (
+                            <button onClick={() => startAddAncestor(n.id, 'mother')}
+                              className="text-[10px] font-bold text-pink-400 bg-pink-500/10 px-1.5 py-0.5 rounded hover:bg-pink-500/20 transition">+♀</button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
 
               {/* Pedigree tree */}
               {pedigreeData.length > 0 ? (

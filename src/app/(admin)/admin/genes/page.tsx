@@ -6,9 +6,16 @@ export default async function AdminGenesPage() {
 
   const { data: transactions } = await supabase
     .from('genes_transactions')
-    .select('id, user_id, amount, type, description, created_at, user:profiles!genes_transactions_user_id_fkey(display_name, email)')
+    .select('id, user_id, amount, type, description, created_at')
     .order('created_at', { ascending: false })
     .limit(100)
+
+  // Get user info for all transaction user_ids
+  const userIds = [...new Set((transactions || []).map(t => t.user_id).filter(Boolean))]
+  const { data: profiles } = userIds.length > 0
+    ? await supabase.from('profiles').select('id, display_name, email').in('id', userIds)
+    : { data: [] }
+  const profileMap = new Map((profiles || []).map(p => [p.id, p]))
 
   const allTx = transactions || []
   const totalPurchased = allTx.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0)
@@ -58,13 +65,13 @@ export default async function AdminGenesPage() {
           </thead>
           <tbody>
             {allTx.map(t => {
-              const user = t.user as any
+              const user = profileMap.get(t.user_id)
               const isPositive = t.amount > 0
               return (
                 <tr key={t.id} className="border-b border-white/5 hover:bg-white/[0.02] transition">
                   <td className="px-4 py-3">
                     <p className="text-xs font-medium">{user?.display_name || '—'}</p>
-                    <p className="text-[10px] text-white/30">{user?.email}</p>
+                    <p className="text-[10px] text-white/30">{user?.email || t.user_id?.slice(0, 8)}</p>
                   </td>
                   <td className="px-4 py-3">
                     <span className={`text-sm font-bold ${isPositive ? 'text-green-400' : 'text-red-400'}`}>

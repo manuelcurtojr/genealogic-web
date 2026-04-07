@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogOut, X, GitCompareArrows, LayoutDashboard, Menu, Home, Store, BarChart3, Search, Stethoscope } from 'lucide-react'
+import { Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogOut, X, GitCompareArrows, LayoutDashboard, Menu, Home, Store, BarChart3, Search, Stethoscope, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { NAV_ITEMS, PRO_NAV_ITEMS, BRAND } from '@/lib/constants'
@@ -135,8 +135,20 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
           )}
         </nav>
 
-        {/* Bottom: Settings + Logout */}
+        {/* Bottom: Admin + Settings + Logout */}
         <div className="border-t border-white/10 p-2">
+          {isPro && user?.role === 'admin' && (
+            <a
+              href="/admin"
+              title={collapsed && !mobileOpen ? 'Admin' : undefined}
+              className={`flex items-center gap-3 rounded-lg text-sm text-[#D74709] hover:bg-[#D74709]/10 transition mb-0.5 ${
+                collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
+              }`}
+            >
+              <Shield className="w-[18px] h-[18px] flex-shrink-0" />
+              {(!collapsed || mobileOpen) && <span className="font-medium">Admin</span>}
+            </a>
+          )}
           <a
             href="/settings"
             title={collapsed && !mobileOpen ? t('Ajustes') : undefined}
