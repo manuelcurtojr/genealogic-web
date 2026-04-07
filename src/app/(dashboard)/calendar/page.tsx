@@ -170,13 +170,6 @@ export default function CalendarPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Calendario</h1>
-        <button onClick={handleNewEvent} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition">
-          <Plus className="w-4 h-4" /> Nuevo evento
-        </button>
-      </div>
-
       {/* Controls */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -185,12 +178,17 @@ export default function CalendarPage() {
           <button onClick={() => navigate(1)} className="text-white/50 hover:text-white transition p-2"><ChevronRight className="w-5 h-5" /></button>
           <button onClick={goToday} className="text-xs text-white/40 hover:text-white bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 ml-2 transition">Hoy</button>
         </div>
-        <div className="flex bg-white/5 border border-white/10 rounded-lg overflow-hidden">
-          {(['month', 'week', 'day'] as ViewMode[]).map(v => (
-            <button key={v} onClick={() => setView(v)} className={`px-4 py-1.5 text-xs font-medium transition ${view === v ? 'bg-[#D74709] text-white' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
-              {v === 'month' ? 'Mes' : v === 'week' ? 'Semana' : 'Dia'}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <div className="flex bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+            {(['month', 'week', 'day'] as ViewMode[]).map(v => (
+              <button key={v} onClick={() => setView(v)} className={`px-4 py-1.5 text-xs font-medium transition ${view === v ? 'bg-[#D74709] text-white' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
+                {v === 'month' ? 'Mes' : v === 'week' ? 'Semana' : 'Día'}
+              </button>
+            ))}
+          </div>
+          <button onClick={handleNewEvent} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+            <Plus className="w-3.5 h-3.5" /> Evento
+          </button>
         </div>
       </div>
 
