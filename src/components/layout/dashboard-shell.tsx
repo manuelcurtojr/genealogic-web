@@ -107,10 +107,10 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          <button onClick={toggleTheme} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-black/5 dark:hover:bg-white/5 transition`} title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
+          <button onClick={toggleTheme} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-white/5 transition`} title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
             {darkMode ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
           </button>
-          <button onClick={() => setNotifOpen(true)} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-black/5 dark:hover:bg-white/5 transition relative`}>
+          <button onClick={() => setNotifOpen(true)} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-white/5 transition relative`}>
             <Bell className="w-[18px] h-[18px]" />
             {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#D74709]" />}
           </button>

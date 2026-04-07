@@ -25,8 +25,13 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
   const pathname = usePathname()
   const router = useRouter()
   const isPro = user?.role === 'pro' || user?.role === 'admin'
+  const isBreeder = !!kennel
   const lang = typeof window !== 'undefined' ? localStorage.getItem('genealogic-lang') || 'es' : 'es'
   const t = getTranslator(lang)
+
+  // Hide breeder-only items for non-breeders
+  const BREEDER_ONLY = ['/litters', '/planner', '/kennel', '/analytics']
+  const filteredNavItems = isBreeder ? NAV_ITEMS : NAV_ITEMS.filter(item => !BREEDER_ONLY.includes(item.href))
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -75,7 +80,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
           {(!collapsed || mobileOpen) && (
             <p className="text-[11px] font-semibold text-white/30 uppercase tracking-wider px-3 mb-2">General</p>
           )}
-          {NAV_ITEMS.map((item) => {
+          {filteredNavItems.map((item) => {
             const Icon = iconMap[item.icon]
             const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
             return (

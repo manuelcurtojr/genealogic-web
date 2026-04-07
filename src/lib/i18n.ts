@@ -5,11 +5,12 @@ const translations: Record<string, Record<string, string>> = {
   en: {
     // Nav
     'Escritorio': 'Dashboard', 'Mis Perros': 'My Dogs', 'Camadas': 'Litters',
-    'Calendario': 'Calendar', 'Planificador': 'Planner', 'Favoritos': 'Favorites',
+    'Calendario': 'Calendar', 'Planificador': 'Planner', 'Veterinario': 'Veterinary',
+    'Buscar': 'Search', 'Favoritos': 'Favorites',
     'Mi Criadero': 'My Kennel', 'Analíticas': 'Analytics', 'Contactos': 'Contacts',
     'Negocios': 'Deals', 'Ajustes': 'Settings', 'Cerrar sesión': 'Log out',
     // Common
-    'Buscar': 'Search', 'Guardar': 'Save', 'Cancelar': 'Cancel', 'Editar': 'Edit',
+    'Guardar': 'Save', 'Cancelar': 'Cancel', 'Editar': 'Edit',
     'Eliminar': 'Delete', 'Crear': 'Create', 'Ver': 'View', 'Añadir': 'Add',
     'Nuevo': 'New', 'Todos': 'All', 'Ninguno': 'None',
     // Dog
@@ -37,7 +38,8 @@ const translations: Record<string, Record<string, string>> = {
   },
   fr: {
     'Escritorio': 'Tableau de bord', 'Mis Perros': 'Mes Chiens', 'Camadas': 'Portées',
-    'Calendario': 'Calendrier', 'Favoritos': 'Favoris', 'Mi Criadero': 'Mon Élevage',
+    'Calendario': 'Calendrier', 'Veterinario': 'Vétérinaire', 'Buscar': 'Rechercher',
+    'Favoritos': 'Favoris', 'Mi Criadero': 'Mon Élevage',
     'Analíticas': 'Analytiques', 'Contactos': 'Contacts', 'Negocios': 'Affaires',
     'Ajustes': 'Paramètres', 'Cerrar sesión': 'Déconnexion',
     'Macho': 'Mâle', 'Hembra': 'Femelle', 'Nombre': 'Nom', 'Raza': 'Race',
@@ -47,7 +49,8 @@ const translations: Record<string, Record<string, string>> = {
   },
   de: {
     'Escritorio': 'Dashboard', 'Mis Perros': 'Meine Hunde', 'Camadas': 'Würfe',
-    'Calendario': 'Kalender', 'Favoritos': 'Favoriten', 'Mi Criadero': 'Meine Zucht',
+    'Calendario': 'Kalender', 'Veterinario': 'Tierarzt', 'Buscar': 'Suchen',
+    'Favoritos': 'Favoriten', 'Mi Criadero': 'Meine Zucht',
     'Analíticas': 'Analytik', 'Contactos': 'Kontakte', 'Negocios': 'Geschäfte',
     'Ajustes': 'Einstellungen', 'Cerrar sesión': 'Abmelden',
     'Macho': 'Rüde', 'Hembra': 'Hündin', 'Nombre': 'Name', 'Raza': 'Rasse',
@@ -57,7 +60,8 @@ const translations: Record<string, Record<string, string>> = {
   },
   pt: {
     'Escritorio': 'Painel', 'Mis Perros': 'Meus Cães', 'Camadas': 'Ninhadas',
-    'Calendario': 'Calendário', 'Favoritos': 'Favoritos', 'Mi Criadero': 'Meu Canil',
+    'Calendario': 'Calendário', 'Veterinario': 'Veterinário', 'Buscar': 'Pesquisar',
+    'Favoritos': 'Favoritos', 'Mi Criadero': 'Meu Canil',
     'Analíticas': 'Análises', 'Contactos': 'Contactos', 'Negocios': 'Negócios',
     'Ajustes': 'Configurações', 'Cerrar sesión': 'Sair',
     'Macho': 'Macho', 'Hembra': 'Fêmea', 'Nombre': 'Nome', 'Raza': 'Raça',
@@ -67,7 +71,8 @@ const translations: Record<string, Record<string, string>> = {
   },
   it: {
     'Escritorio': 'Pannello', 'Mis Perros': 'I miei cani', 'Camadas': 'Cucciolate',
-    'Calendario': 'Calendario', 'Favoritos': 'Preferiti', 'Mi Criadero': 'Il mio allevamento',
+    'Calendario': 'Calendario', 'Veterinario': 'Veterinario', 'Buscar': 'Cerca',
+    'Favoritos': 'Preferiti', 'Mi Criadero': 'Il mio allevamento',
     'Analíticas': 'Analisi', 'Contactos': 'Contatti', 'Negocios': 'Affari',
     'Ajustes': 'Impostazioni', 'Cerrar sesión': 'Esci',
     'Macho': 'Maschio', 'Hembra': 'Femmina', 'Nombre': 'Nome', 'Raza': 'Razza',

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Shield, Lock, Globe } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Lock, Globe } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { formatDogName, type AffixFormat } from '@/lib/affix'
 import GalleryTab from './edit-tabs/gallery-tab'
@@ -20,10 +20,9 @@ interface DogFormPanelProps {
 const TABS = [
   { key: 'datos', label: 'Datos', icon: Dog },
   { key: 'salud', label: 'Salud', icon: Stethoscope },
-  { key: 'palmares', label: 'Palmares', icon: Trophy },
+  { key: 'palmares', label: 'Palmarés', icon: Trophy },
   { key: 'pedigree-pdf', label: 'Pedigree PDF', icon: FileText },
   { key: 'historial', label: 'Historial', icon: History },
-  { key: 'verificacion', label: 'Verificacion', icon: Shield },
 ] as const
 
 type TabKey = typeof TABS[number]['key']
@@ -273,29 +272,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             {/* TAB: HISTORIAL */}
             {activeTab === 'historial' && editDogId && <HistorialTab dogId={editDogId} />}
 
-            {/* TAB: VERIFICACION */}
-            {activeTab === 'verificacion' && (
-              <div className="space-y-5">
-                <div className="text-[#D74709] mx-auto w-14 h-14 rounded-2xl bg-[#D74709]/10 flex items-center justify-center"><Shield className="w-7 h-7"/></div>
-                <div className="text-center">
-                  <h3 className="text-lg font-bold">Verifica la genealogia</h3>
-                  <p className="text-sm text-white/50 mt-2">La verificacion confirma que la genealogia de tu perro esta respaldada por un <strong className="text-white">registro oficial de un club canino</strong>. Los perros verificados muestran un distintivo especial en su perfil.</p>
-                </div>
-                {[
-                  { num: '1', title: 'Microchip', desc: 'Introduce el numero de microchip de tu perro para identificarlo de forma unica.' },
-                  { num: '2', title: 'Pedigri oficial', desc: 'Sube una foto o PDF del pedigri emitido por un club canino oficial (FCI, AKC, KC, RSCE, etc.).' },
-                  { num: '3', title: 'Revision', desc: 'Nuestro equipo verificara que la documentacion coincide con los datos del perro.' },
-                ].map(step => (
-                  <div key={step.num} className="bg-white/5 border border-white/10 rounded-lg p-4 flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#D74709] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">{step.num}</div>
-                    <div><p className="text-sm font-semibold">{step.title}</p><p className="text-xs text-white/40 mt-0.5">{step.desc}</p></div>
-                  </div>
-                ))}
-                <button className="w-full bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2">
-                  <Shield className="w-4 h-4"/> Iniciar verificacion
-                </button>
-              </div>
-            )}
           </div>
         )}
 

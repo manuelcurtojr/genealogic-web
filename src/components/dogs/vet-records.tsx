@@ -22,11 +22,11 @@ interface VetRecordsProps {
 }
 
 const RECORD_TYPES = [
-  { key: 'vaccine', label: 'Vacuna', icon: Syringe, color: '#3498db', bg: 'bg-blue-500/15 text-blue-400' },
-  { key: 'deworming', label: 'Desparasitacion', icon: Bug, color: '#27ae60', bg: 'bg-green-500/15 text-green-400' },
+  { key: 'vaccine', label: 'Vacuna', icon: Syringe, color: '#10B981', bg: 'bg-green-500/15 text-green-400' },
+  { key: 'deworming', label: 'Desparasitación', icon: Bug, color: '#F59E0B', bg: 'bg-amber-500/15 text-amber-400' },
   { key: 'treatment', label: 'Tratamiento', icon: Pill, color: '#f39c12', bg: 'bg-orange-500/15 text-orange-400' },
   { key: 'test', label: 'Test', icon: FlaskConical, color: '#9b59b6', bg: 'bg-purple-500/15 text-purple-400' },
-  { key: 'surgery', label: 'Cirugia', icon: Scissors, color: '#e74c3c', bg: 'bg-red-500/15 text-red-400' },
+  { key: 'surgery', label: 'Cirugía', icon: Scissors, color: '#e74c3c', bg: 'bg-red-500/15 text-red-400' },
 ] as const
 
 function getRecordType(key: string) {
