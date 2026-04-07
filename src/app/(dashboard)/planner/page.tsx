@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Dna, Heart } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import SearchableSelect from '@/components/ui/searchable-select'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
-import { calculateCOIFromParents, getCOILevel, getCOIInterpretation } from '@/components/pedigree/coi-calculator'
 
 export default function PlannerPage() {
   const [males, setMales] = useState<{ value: string; label: string }[]>([])
@@ -77,21 +76,6 @@ export default function PlannerPage() {
     loadPedigree()
   }, [sireId, damId])
 
-  // Calculate COI
-  const coi = useMemo(() => {
-    if (!sireId || !damId || pedigreeData.length === 0) return null
-    return calculateCOIFromParents(sireId, damId, pedigreeData, 10)
-  }, [sireId, damId, pedigreeData])
-
-  const coiLevel = coi !== null ? getCOILevel(coi) : null
-  const coiText = coi !== null ? getCOIInterpretation(coi) : ''
-
-  const coiColors: Record<string, { bg: string; text: string; border: string }> = {
-    green: { bg: 'bg-green-500/15', text: 'text-green-400', border: 'border-green-500/30' },
-    orange: { bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/30' },
-    red: { bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/30' },
-  }
-
   return (
     <div>
       <div className="mb-8">
@@ -120,38 +104,6 @@ export default function PlannerPage() {
           />
         </div>
       </div>
-
-      {/* COI Result */}
-      {coi !== null && coiLevel && (
-        <div className={`${coiColors[coiLevel].bg} border ${coiColors[coiLevel].border} rounded-xl p-5 mb-6`}>
-          <div className="flex items-center gap-3">
-            <Dna className={`w-6 h-6 ${coiColors[coiLevel].text}`} />
-            <div>
-              <p className={`text-2xl font-bold ${coiColors[coiLevel].text}`}>COI: {coi}%</p>
-              <p className={`text-sm ${coiColors[coiLevel].text} opacity-80 mt-0.5`}>{coiText}</p>
-            </div>
-          </div>
-          {/* COI bar */}
-          <div className="mt-4 h-3 rounded-full bg-white/10 overflow-hidden flex">
-            <div className="bg-green-500 h-full" style={{ width: '25%' }} />
-            <div className="bg-orange-500 h-full" style={{ width: '25%' }} />
-            <div className="bg-red-500 h-full" style={{ width: '50%' }} />
-          </div>
-          <div className="flex justify-between text-[10px] text-white/30 mt-1 px-0.5">
-            <span>0%</span>
-            <span>6.25%</span>
-            <span>12.5%</span>
-            <span>25%</span>
-          </div>
-          {/* Indicator */}
-          <div className="relative h-4 -mt-1">
-            <div
-              className={`absolute w-2 h-2 rounded-full ${coiColors[coiLevel].text.replace('text-', 'bg-')} -translate-x-1`}
-              style={{ left: `${Math.min((coi / 25) * 100, 100)}%` }}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Combined Pedigree */}
       {loading ? (
