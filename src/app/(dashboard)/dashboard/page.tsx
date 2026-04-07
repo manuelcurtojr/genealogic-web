@@ -35,8 +35,8 @@ export default async function DashboardPage() {
     supabase.from('kennels').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
     supabase.from('vet_records').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
     supabase.from('awards').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
-    // Recent dogs
-    supabase.from('dogs').select('id, name, sex, thumbnail_url, breed:breeds(name)').eq('owner_id', user.id).order('created_at', { ascending: false }).limit(6),
+    // Recent dogs (with photos first)
+    supabase.from('dogs').select('id, name, sex, thumbnail_url, breed:breeds(name)').eq('owner_id', user.id).not('thumbnail_url', 'is', null).order('created_at', { ascending: false }).limit(6),
     // Upcoming events (next 7 days)
     supabase.from('events').select('id, title, event_type, start_date, color, is_completed').gte('start_date', new Date().toISOString()).lte('start_date', new Date(Date.now() + 7 * 86400000).toISOString()).order('start_date').limit(5),
     // Recent submissions
