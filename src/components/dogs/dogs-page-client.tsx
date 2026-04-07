@@ -129,7 +129,7 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
           {/* Add new dog card */}
           <button
             onClick={openAdd}
-            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[320px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer"
+            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[200px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer"
           >
             <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
               <Plus className="w-6 h-6 text-white/30 group-hover:text-[#D74709] transition" />
