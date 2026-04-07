@@ -48,20 +48,44 @@ export default function CalendarPage() {
     const start = new Date(year, month - 1, 1).toISOString()
     const end = new Date(year, month + 2, 0, 23, 59, 59).toISOString()
 
-    const { data } = await supabase
-      .from('events')
-      .select('id, title, event_type, start_date, end_date, all_day, is_completed, color, notes')
-      .gte('start_date', start)
-      .lte('start_date', end)
-      .order('start_date')
+    const [eventsRes, vetRes] = await Promise.all([
+      supabase
+        .from('events')
+        .select('id, title, event_type, start_date, end_date, all_day, is_completed, color, notes')
+        .gte('start_date', start)
+        .lte('start_date', end)
+        .order('start_date'),
+      supabase
+        .from('vet_reminders')
+        .select('id, title, type, due_date, completed_date, dog:dogs(name)')
+        .eq('owner_id', user!.id)
+        .is('completed_date', null)
+        .gte('due_date', start.split('T')[0])
+        .lte('due_date', end.split('T')[0])
+        .order('due_date'),
+    ])
 
-    setEvents(data || [])
+    // Convert vet reminders to calendar events
+    const vetAsEvents: CalendarEvent[] = (vetRes.data || []).map((r: any) => ({
+      id: `vet-${r.id}`,
+      title: `🩺 ${r.title}${r.dog?.name ? ` — ${r.dog.name}` : ''}`,
+      event_type: 'vet',
+      start_date: `${r.due_date}T09:00:00`,
+      end_date: null,
+      all_day: true,
+      is_completed: false,
+      color: r.type === 'vaccine' ? '#10B981' : r.type === 'deworming' ? '#F59E0B' : '#3498db',
+      notes: null,
+    }))
+
+    setEvents([...(eventsRes.data || []), ...vetAsEvents])
     setLoading(false)
   }, [year, month])
 
   useEffect(() => { fetchEvents() }, [fetchEvents])
 
   const toggleCompleted = async (event: CalendarEvent) => {
+    if (event.id.startsWith('vet-')) return // Vet reminders managed from /vet
     const supabase = createClient()
     const newValue = !event.is_completed
     await supabase.from('events').update({ is_completed: newValue }).eq('id', event.id)
@@ -110,7 +134,12 @@ export default function CalendarPage() {
   const isToday = (d: Date) => d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
 
   const handleDayClick = (dateStr: string) => { setSelectedDate(dateStr); setEditingEvent(null); setShowForm(true) }
-  const handleEventClick = (e: React.MouseEvent, event: CalendarEvent) => { e.stopPropagation(); setEditingEvent(event); setSelectedDate(''); setShowForm(true) }
+  const handleEventClick = (e: React.MouseEvent, event: CalendarEvent) => {
+    e.stopPropagation()
+    // Vet reminders open the vet page instead of the event form
+    if (event.id.startsWith('vet-')) { window.location.href = '/vet'; return }
+    setEditingEvent(event); setSelectedDate(''); setShowForm(true)
+  }
   const handleNewEvent = () => { setSelectedDate(formatDateStr(today)); setEditingEvent(null); setShowForm(true) }
 
   // Event dot component
