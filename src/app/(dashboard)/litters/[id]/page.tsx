@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Edit, Calendar, Baby, Eye, EyeOff, Dog, MessageCircle, FileText, Check, Circle, Clock } from 'lucide-react'
+import { ArrowLeft, Calendar, Baby, Eye, EyeOff, Dog, MessageCircle, FileText, Check, Circle } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
+import LitterEditButton from '@/components/litters/litter-edit-button'
 
 export default async function LitterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -23,7 +24,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
   const mother = litter.mother as any
   const breedName = (litter.breed as any)?.name
 
-  const { data: kennelArr } = await supabase.from('kennels').select('id, name, logo_url, whatsapp_enabled, whatsapp_phone, whatsapp_text').eq('owner_id', litter.owner_id).limit(1)
+  const { data: kennelArr } = await supabase.from('kennels').select('id, name, logo_url, whatsapp_enabled, whatsapp_phone, whatsapp_text, affix_format').eq('owner_id', litter.owner_id).limit(1)
   const kennel = kennelArr?.[0]
 
   // Check if form exists for this kennel
@@ -94,10 +95,14 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
               <MessageCircle className="w-4 h-4" /> WhatsApp
             </a>
           )}
-          {isOwner && (
-            <Link href={`/litters/${id}/edit`} className="bg-white/10 hover:bg-white/15 text-white/60 px-3 py-2 rounded-lg text-sm flex items-center gap-1.5 transition">
-              <Edit className="w-4 h-4" />
-            </Link>
+          {isOwner && user && (
+            <LitterEditButton
+              litterId={id}
+              userId={user.id}
+              userKennelId={kennel?.id}
+              userKennelName={kennel?.name}
+              userAffixFormat={kennel?.affix_format}
+            />
           )}
         </div>
       </div>
