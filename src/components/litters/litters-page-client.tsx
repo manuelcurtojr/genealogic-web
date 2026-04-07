@@ -33,7 +33,11 @@ const statusConfig: Record<string, { label: string; color: string; icon: string 
 
 export default function LittersPageClient({ litters, userId, userKennelId, userKennelName, userAffixFormat }: { litters: Litter[]; userId: string; userKennelId?: string | null; userKennelName?: string | null; userAffixFormat?: string | null }) {
   const [search, setSearch] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    if (typeof window !== 'undefined') return (localStorage.getItem('litters-view') as 'grid' | 'list') || 'grid'
+    return 'grid'
+  })
+  const changeView = (v: 'grid' | 'list') => { setViewMode(v); localStorage.setItem('litters-view', v) }
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState('')
   const [panelOpen, setPanelOpen] = useState(false)
@@ -107,8 +111,8 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
             className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
         </div>
         <div className="flex rounded-lg border border-white/10 overflow-hidden">
-          <button onClick={() => setViewMode('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}><Grid3X3 className="w-4 h-4" /></button>
-          <button onClick={() => setViewMode('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}><List className="w-4 h-4" /></button>
+          <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}><Grid3X3 className="w-4 h-4" /></button>
+          <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}><List className="w-4 h-4" /></button>
         </div>
       </div>
 
@@ -188,29 +192,36 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
           })}
         </div>
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-2">
           {filtered.map(litter => {
             const father = litter.father as any
             const mother = litter.mother as any
             const status = statusConfig[litter.status] || statusConfig.planned
+            const hasPuppies = litter.puppy_count && litter.puppy_count > 0
             return (
-              <Link key={litter.id} href={`/litters/${litter.id}`}
-                className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-lg px-4 py-3 hover:bg-white/10 transition">
+              <div key={litter.id} className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition cursor-pointer" onClick={() => window.location.href = `/litters/${litter.id}`}>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <div className="w-8 h-8 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.male }}>
-                    {father?.thumbnail_url ? <img src={father.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-4 h-4 opacity-20" /></div>}
+                  <div className="w-10 h-10 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.male }}>
+                    {father?.thumbnail_url ? <img src={father.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-blue-400/30 text-xs">♂</div>}
                   </div>
-                  <span className="text-white/30 text-xs">x</span>
-                  <div className="w-8 h-8 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.female }}>
-                    {mother?.thumbnail_url ? <img src={mother.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-4 h-4 opacity-20" /></div>}
+                  <span className="text-white/20 text-xs">x</span>
+                  <div className="w-10 h-10 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.female }}>
+                    {mother?.thumbnail_url ? <img src={mother.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-pink-400/30 text-xs">♀</div>}
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">{father?.name || '?'} x {mother?.name || '?'}</p>
-                  <p className="text-xs text-white/40">{litter.birth_date ? new Date(litter.birth_date).toLocaleDateString('es-ES') : '—'}</p>
+                  <p className="font-semibold text-sm truncate">{father?.name || '?'} x {mother?.name || '?'}</p>
+                  <div className="flex items-center gap-3 mt-0.5 text-xs text-white/40">
+                    {litter.birth_date && <span>{new Date(litter.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
+                    {hasPuppies && <span>{litter.puppy_count} cachorros</span>}
+                  </div>
                 </div>
-                <span className="text-[11px] font-medium rounded-full px-2 py-0.5 hidden sm:inline" style={{ backgroundColor: status.color + '20', color: status.color }}>{status.label}</span>
-              </Link>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <span className="text-[10px] font-semibold rounded-full px-2 py-0.5" style={{ backgroundColor: status.color + '20', color: status.color }}>{status.label}</span>
+                  <Link href={`/litters/${litter.id}`} onClick={e => e.stopPropagation()} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition"><Eye className="w-3 h-3" /> Ver</Link>
+                  <button onClick={e => { e.stopPropagation(); openEdit(litter.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition"><Edit className="w-3 h-3" /> Editar</button>
+                </div>
+              </div>
             )
           })}
         </div>

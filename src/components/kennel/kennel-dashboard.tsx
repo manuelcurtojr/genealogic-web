@@ -24,7 +24,11 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
   const router = useRouter()
   const [dogs, setDogs] = useState(initialDogs)
   const [search, setSearch] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    if (typeof window !== 'undefined') return (localStorage.getItem('kennel-view') as 'grid' | 'list') || 'grid'
+    return 'grid'
+  })
+  const changeView = (v: 'grid' | 'list') => { setViewMode(v); localStorage.setItem('kennel-view', v) }
   const [showEdit, setShowEdit] = useState(false)
   const [showFormBuilder, setShowFormBuilder] = useState(false)
   const [transferDog, setTransferDog] = useState<any>(null)
@@ -213,12 +217,8 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
           </div>
           {/* View toggle */}
           <div className="flex bg-white/5 border border-white/10 rounded-lg overflow-hidden">
-            <button onClick={() => setViewMode('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'text-white/40 hover:text-white'}`}>
-              <Grid3X3 className="w-4 h-4" />
-            </button>
-            <button onClick={() => setViewMode('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'text-white/40 hover:text-white'}`}>
-              <List className="w-4 h-4" />
-            </button>
+            <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'text-white/40 hover:text-white'}`}><Grid3X3 className="w-4 h-4" /></button>
+            <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'text-white/40 hover:text-white'}`}><List className="w-4 h-4" /></button>
           </div>
         </div>
       </div>
@@ -330,39 +330,44 @@ function DogRow({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; userI
   const sexColor = dog.sex === 'male' ? '#017DFA' : '#e84393'
   const isOwner = dog.owner_id === userId
   return (
-    <div className="bg-white/[0.04] border border-white/10 rounded-lg px-4 py-3 flex items-center gap-3 hover:border-[#D74709]/30 transition">
+    <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition">
       <Link href={`/dogs/${dog.id}`} className="flex-shrink-0">
-        <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/5 border-2" style={{ borderColor: sexColor }}>
-          {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-5 h-5 text-white/15" /></div>}
+        <div className="w-10 h-10 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: sexColor }}>
+          {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-4 h-4 text-white/15" /></div>}
         </div>
       </Link>
       <Link href={`/dogs/${dog.id}`} className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold truncate hover:text-[#D74709] transition">{dog.name}</p>
+          <p className="font-semibold text-sm truncate hover:text-[#D74709] transition">{dog.name}</p>
           {!isOwner && <span className="text-[9px] font-bold text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">Transferido</span>}
         </div>
-        <p className="text-[11px] text-white/35 truncate">{dog.breed?.name}{dog.color?.name ? ` · ${dog.color.name}` : ''}</p>
+        <div className="flex items-center gap-3 mt-0.5 text-xs text-white/40">
+          {dog.breed?.name && <span>{dog.breed.name}</span>}
+          {dog.color?.name && <span>{dog.color.name}</span>}
+        </div>
       </Link>
-      <button onClick={() => onToggle(dog.id, 'show_in_kennel', dog.show_in_kennel !== false)}
-        className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition flex-shrink-0 ${dog.show_in_kennel !== false ? 'bg-green-500/10 text-green-400' : 'bg-white/5 text-white/30'}`}>
-        {dog.show_in_kennel !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-      </button>
-      <button onClick={() => onToggle(dog.id, 'is_reproductive', !!dog.is_reproductive)}
-        className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition flex-shrink-0 ${dog.is_reproductive ? 'bg-pink-500/10 text-pink-400' : 'bg-white/5 text-white/30'}`}>
-        <Heart className="w-3.5 h-3.5" />
-      </button>
-      {isOwner && (
-        <button onClick={() => onSale({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
-          className={`px-2 py-1.5 rounded-lg text-[11px] font-semibold transition flex-shrink-0 ${dog.is_for_sale ? 'bg-[#D74709]/10 text-[#D74709]' : 'text-white/20 hover:text-[#D74709]'}`}>
-          <Tag className="w-3.5 h-3.5" />
+      <div className="flex items-center gap-1.5 flex-shrink-0">
+        <button onClick={() => onToggle(dog.id, 'show_in_kennel', dog.show_in_kennel !== false)}
+          className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.show_in_kennel !== false ? 'bg-green-500/10 text-green-400' : 'bg-white/5 text-white/30'}`}>
+          {dog.show_in_kennel !== false ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
         </button>
-      )}
-      {isOwner && (
-        <button onClick={() => onTransfer({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
-          className="text-white/20 hover:text-[#D74709] transition flex-shrink-0">
-          <ArrowRightLeft className="w-4 h-4" />
+        <button onClick={() => onToggle(dog.id, 'is_reproductive', !!dog.is_reproductive)}
+          className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.is_reproductive ? 'bg-pink-500/10 text-pink-400' : 'bg-white/5 text-white/30'}`}>
+          <Heart className="w-3 h-3" />
         </button>
-      )}
+        {isOwner && (
+          <button onClick={() => onSale({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
+            className={`px-2 py-1 rounded text-[10px] font-semibold transition ${dog.is_for_sale ? 'bg-[#D74709]/10 text-[#D74709]' : 'bg-white/5 text-white/30 hover:text-[#D74709]'}`}>
+            <Tag className="w-3 h-3" />
+          </button>
+        )}
+        {isOwner && (
+          <button onClick={() => onTransfer({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
+            className="px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:text-[#D74709] transition">
+            <ArrowRightLeft className="w-3 h-3" />
+          </button>
+        )}
+      </div>
     </div>
   )
 }

@@ -39,8 +39,13 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
   const closePanel = () => { setPanelOpen(false); setEditDogId(null) }
   const [sexFilter, setSexFilter] = useState('')
   const [breedFilter, setBreedFilter] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    if (typeof window !== 'undefined') return (localStorage.getItem('dogs-view') as 'grid' | 'list') || 'grid'
+    return 'grid'
+  })
   const [page, setPage] = useState(0)
+
+  const changeView = (v: 'grid' | 'list') => { setViewMode(v); localStorage.setItem('dogs-view', v) }
 
   const filtered = dogs.filter((dog) => {
     const q = search.toLowerCase()
@@ -105,18 +110,8 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
 
         {/* View toggle */}
         <div className="flex rounded-lg border border-white/10 overflow-hidden">
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}
-          >
-            <Grid3X3 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}
-          >
-            <List className="w-4 h-4" />
-          </button>
+          <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><Grid3X3 className="w-4 h-4" /></button>
+          <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><List className="w-4 h-4" /></button>
         </div>
       </div>
 
@@ -143,45 +138,29 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
           ))}
         </div>
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-2">
           {paged.map((dog) => {
-            const borderColor = dog.sex === 'male' ? BRAND.male : BRAND.female
+            const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
             const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
-            const SexIcon = dog.sex === 'male' ? Mars : Venus
+            const colorName = Array.isArray(dog.color) ? dog.color[0]?.name : dog.color?.name
             return (
-              <Link
-                key={dog.id}
-                href={`/dogs/${dog.id}`}
-                className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 hover:bg-white/10 transition"
-              >
-                <div className="w-10 h-10 rounded-full border-2 overflow-hidden flex-shrink-0 bg-white/5" style={{ borderColor }}>
-                  {dog.thumbnail_url ? (
-                    <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/20 text-sm">
-                      {dog.sex === 'male' ? '♂' : '♀'}
-                    </div>
-                  )}
+              <div key={dog.id} className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition cursor-pointer" onClick={() => window.location.href = `/dogs/${dog.id}`}>
+                <div className="w-10 h-10 rounded-full border-2 overflow-hidden flex-shrink-0 bg-white/5" style={{ borderColor: sexColor }}>
+                  {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/20 text-sm">{dog.sex === 'male' ? '♂' : '♀'}</div>}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-sm font-semibold text-white truncate">{dog.name}</p>
-                    <SexIcon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: borderColor }} />
+                  <p className="font-semibold text-sm">{dog.name}</p>
+                  <div className="flex items-center gap-3 mt-0.5 text-xs text-white/40">
+                    {breedName && <span>{breedName}</span>}
+                    {colorName && <span>{colorName}</span>}
+                    {dog.birth_date && <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
                   </div>
-                  <p className="text-xs text-white/40 truncate">{breedName || '—'}</p>
                 </div>
-                <div className="text-xs text-white/30 hidden sm:block">
-                  {dog.birth_date ? new Date(dog.birth_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <Link href={`/dogs/${dog.id}`} onClick={e => e.stopPropagation()} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition"><Eye className="w-3 h-3" /> Ver</Link>
+                  <button onClick={e => { e.stopPropagation(); openEdit(dog.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition"><Edit className="w-3 h-3" /> Editar</button>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition">
-                    <Eye className="w-3.5 h-3.5" />
-                  </div>
-                  <Link href={`/dogs/${dog.id}/edit`} className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition" onClick={e => e.stopPropagation()}>
-                    <Edit className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </Link>
+              </div>
             )
           })}
         </div>
