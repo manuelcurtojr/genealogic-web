@@ -30,9 +30,10 @@ export async function updateSession(request: NextRequest) {
   // Public dog detail pages (e.g. /dogs/uuid) and public kennel pages
   const isDogDetailPage = /^\/dogs\/[^/]+$/.test(request.nextUrl.pathname)
   const isKennelDetailPage = /^\/kennels\/[^/]+$/.test(request.nextUrl.pathname)
+  const isLitterDetailPage = /^\/litters\/[^/]+$/.test(request.nextUrl.pathname)
 
   // Protected routes — redirect to login if not authenticated
-  const isProtectedRoute = !isDogDetailPage && !isKennelDetailPage && (
+  const isProtectedRoute = !isDogDetailPage && !isKennelDetailPage && !isLitterDetailPage && (
     request.nextUrl.pathname.startsWith('/dogs') ||
     request.nextUrl.pathname.startsWith('/kennel') ||
     request.nextUrl.pathname.startsWith('/litters') ||
