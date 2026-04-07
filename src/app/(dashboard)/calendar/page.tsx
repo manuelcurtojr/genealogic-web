@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ChevronLeft, ChevronRight, Plus, Check, Calendar as CalendarIcon } from 'lucide-react'
 import EventForm from '@/components/calendar/event-form'
+import VetReminderForm from '@/components/vet/vet-reminder-form'
 
 interface CalendarEvent {
   id: string
@@ -33,6 +34,8 @@ export default function CalendarPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [selectedDate, setSelectedDate] = useState('')
+  const [vetFormOpen, setVetFormOpen] = useState(false)
+  const [vetReminderId, setVetReminderId] = useState('')
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
@@ -136,8 +139,11 @@ export default function CalendarPage() {
   const handleDayClick = (dateStr: string) => { setSelectedDate(dateStr); setEditingEvent(null); setShowForm(true) }
   const handleEventClick = (e: React.MouseEvent, event: CalendarEvent) => {
     e.stopPropagation()
-    // Vet reminders open the vet page instead of the event form
-    if (event.id.startsWith('vet-')) { window.location.href = '/vet'; return }
+    if (event.id.startsWith('vet-')) {
+      setVetReminderId(event.id.replace('vet-', ''))
+      setVetFormOpen(true)
+      return
+    }
     setEditingEvent(event); setSelectedDate(''); setShowForm(true)
   }
   const handleNewEvent = () => { setSelectedDate(formatDateStr(today)); setEditingEvent(null); setShowForm(true) }
@@ -353,6 +359,13 @@ export default function CalendarPage() {
           userId={userId}
         />
       )}
+
+      <VetReminderForm
+        open={vetFormOpen}
+        onClose={() => { setVetFormOpen(false); setVetReminderId('') }}
+        onSaved={fetchEvents}
+        reminderId={vetReminderId}
+      />
     </div>
   )
 }
