@@ -17,7 +17,10 @@ interface DashboardShellProps {
 export default function DashboardShell({ user, kennel, children }: DashboardShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
-  const [darkMode, setDarkMode] = useState(true)
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('theme') !== 'light'
+    return true
+  })
   const [notifOpen, setNotifOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
