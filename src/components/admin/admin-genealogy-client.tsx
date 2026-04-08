@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Search, GitBranch, AlertTriangle, Loader2, PanelLeftClose, PanelLeftOpen, X, Plus, Link2, Unlink } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
@@ -14,6 +14,9 @@ interface Props {
   userId: string
 }
 
+const DOG_PANEL_WIDTH = 280
+const DOG_PANEL_COLLAPSED = 40
+
 export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, userId }: Props) {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'incomplete' | 'no-parents' | 'all'>('incomplete')
@@ -22,6 +25,19 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
   const [loadingPedigree, setLoadingPedigree] = useState(false)
   const [listCollapsed, setListCollapsed] = useState(false)
 
+  // Read admin sidebar collapsed state
+  const [sidebarWidth, setSidebarWidth] = useState(240)
+  useEffect(() => {
+    const saved = localStorage.getItem('admin-sidebar-collapsed')
+    setSidebarWidth(saved === 'true' ? 68 : 240)
+    // Listen for changes
+    const interval = setInterval(() => {
+      const current = localStorage.getItem('admin-sidebar-collapsed')
+      setSidebarWidth(current === 'true' ? 68 : 240)
+    }, 300)
+    return () => clearInterval(interval)
+  }, [])
+
   // Slide panel state
   const [panelOpen, setPanelOpen] = useState(false)
   const [panelMode, setPanelMode] = useState<'add' | 'edit'>('add')
@@ -29,7 +45,6 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
   const [editNodeData, setEditNodeData] = useState<any>(null)
   const [editNodeParent, setEditNodeParent] = useState<{ parentId: string; role: 'father' | 'mother' } | null>(null)
 
-  // Add form state
   const [ancestorMode, setAncestorMode] = useState<'existing' | 'new'>('existing')
   const [ancestorSearch, setAncestorSearch] = useState('')
   const [newAncestor, setNewAncestor] = useState({ name: '', breed_id: '', color_id: '' })
@@ -62,7 +77,6 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
     setPedigreeData(data || [])
   }, [selectedDog])
 
-  // Click empty slot → open slide panel in add mode
   const handleClickEmpty = (parentDogId: string, role: 'father' | 'mother') => {
     const parentNode = pedigreeData.find(n => n.id === parentDogId)
     setPanelTarget({ dogId: parentDogId, role, dogName: parentNode?.name || '?' })
@@ -74,7 +88,6 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
     setPanelOpen(true)
   }
 
-  // Click filled node → open slide panel in edit mode
   const handleClickDog = (dogId: string) => {
     const node = pedigreeData.find(n => n.id === dogId)
     if (!node) return
@@ -87,7 +100,6 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
     setPanelOpen(true)
   }
 
-  // Link existing dog
   const linkExisting = async (ancestorId: string) => {
     if (!panelTarget) return
     setSaving(true)
@@ -99,7 +111,6 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
     reloadPedigree()
   }
 
-  // Create and link
   const createAndLink = async () => {
     if (!panelTarget || !newAncestor.name.trim()) return
     setSaving(true)
@@ -120,7 +131,6 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
     reloadPedigree()
   }
 
-  // Disconnect
   const disconnectDog = async () => {
     if (!editNodeParent) return
     setSaving(true)
@@ -141,11 +151,17 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
     return d.name.toLowerCase().includes(ancestorSearch.toLowerCase())
   }).slice(0, 30)
 
+  const dogPanelPx = listCollapsed ? DOG_PANEL_COLLAPSED : DOG_PANEL_WIDTH
+  const totalLeftOffset = sidebarWidth + dogPanelPx
+
   return (
-    <div className="flex h-[calc(100vh-56px)]">
-      {/* LEFT: Fixed dog list panel — extension of admin sidebar */}
-      <div className={`flex-shrink-0 bg-gray-950 border-r border-white/10 flex flex-col transition-all duration-300 h-full ${listCollapsed ? 'w-[44px]' : 'w-[300px]'}`}>
-        <div className="h-10 border-b border-white/10 flex items-center px-2 flex-shrink-0">
+    <>
+      {/* FIXED DOG LIST PANEL — extension of admin sidebar */}
+      <div className="fixed top-0 bottom-0 z-20 bg-gray-950 border-r border-white/10 flex flex-col transition-all duration-300"
+        style={{ left: sidebarWidth, width: dogPanelPx }}>
+
+        {/* Header — aligned with admin sidebar header */}
+        <div className="h-14 border-b border-white/10 flex items-center px-2 flex-shrink-0">
           <button onClick={() => setListCollapsed(!listCollapsed)}
             className="w-10 h-10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 rounded-lg transition flex-shrink-0">
             {listCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
@@ -208,8 +224,9 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
         )}
       </div>
 
-      {/* CENTER: Pedigree tree */}
-      <div className="flex-1 min-w-0 h-full overflow-hidden">
+      {/* MAIN PEDIGREE AREA — offset by sidebar + dog panel */}
+      <div className="fixed top-0 bottom-0 right-0 transition-all duration-300 overflow-auto"
+        style={{ left: totalLeftOffset }}>
         {!selectedDog ? (
           <div className="flex items-center justify-center h-full text-white/20">
             <div className="text-center">
@@ -228,168 +245,164 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
         )}
       </div>
 
-      {/* RIGHT: Slide panel (add ancestor or edit node) */}
-      <>
-        <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${panelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setPanelOpen(false)} />
+      {/* FLOATING BUTTONS — bottom left, moves with dog panel */}
+      <div className="fixed bottom-6 z-30 flex items-center gap-2 transition-all duration-300"
+        style={{ left: totalLeftOffset + 16 }}>
+        {/* Buttons are rendered inside AdminPedigreeTree, but we can add extras here if needed */}
+      </div>
 
-        <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${panelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      {/* SLIDE PANEL (add / edit) */}
+      <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${panelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setPanelOpen(false)} />
 
-          {/* ADD MODE */}
-          {panelMode === 'add' && panelTarget && (
-            <>
-              <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 flex-shrink-0">
+      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${panelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+
+        {/* ADD MODE */}
+        {panelMode === 'add' && panelTarget && (
+          <>
+            <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 flex-shrink-0">
+              <div>
+                <p className="text-sm font-semibold">Añadir {panelTarget.role === 'father' ? 'padre' : 'madre'}</p>
+                <p className="text-[10px] text-white/30">a {panelTarget.dogName}</p>
+              </div>
+              <button onClick={() => setPanelOpen(false)} className="text-white/30 hover:text-white"><X className="w-4 h-4" /></button>
+            </div>
+
+            <div className={`px-5 py-2 text-xs font-medium flex items-center gap-1.5 flex-shrink-0 ${panelTarget.role === 'father' ? 'bg-blue-500/5 text-blue-400' : 'bg-pink-500/5 text-pink-400'}`}>
+              {panelTarget.role === 'father' ? '♂ Se creará como macho' : '♀ Se creará como hembra'}
+            </div>
+
+            <div className="flex border-b border-white/10 flex-shrink-0">
+              <button onClick={() => setAncestorMode('existing')}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition border-b-2 -mb-px ${ancestorMode === 'existing' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40'}`}>
+                <Link2 className="w-3.5 h-3.5" /> Existente
+              </button>
+              <button onClick={() => setAncestorMode('new')}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition border-b-2 -mb-px ${ancestorMode === 'new' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40'}`}>
+                <Plus className="w-3.5 h-3.5" /> Nuevo
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-5">
+              {ancestorMode === 'existing' ? (
                 <div>
-                  <p className="text-sm font-semibold">Añadir {panelTarget.role === 'father' ? 'padre' : 'madre'}</p>
-                  <p className="text-[10px] text-white/30">a {panelTarget.dogName}</p>
-                </div>
-                <button onClick={() => setPanelOpen(false)} className="text-white/30 hover:text-white"><X className="w-4 h-4" /></button>
-              </div>
-
-              <div className={`px-5 py-2 text-xs font-medium flex items-center gap-1.5 flex-shrink-0 ${panelTarget.role === 'father' ? 'bg-blue-500/5 text-blue-400' : 'bg-pink-500/5 text-pink-400'}`}>
-                {panelTarget.role === 'father' ? '♂ Se creará como macho' : '♀ Se creará como hembra'}
-              </div>
-
-              <div className="flex border-b border-white/10 flex-shrink-0">
-                <button onClick={() => setAncestorMode('existing')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition border-b-2 -mb-px ${ancestorMode === 'existing' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40'}`}>
-                  <Link2 className="w-3.5 h-3.5" /> Existente
-                </button>
-                <button onClick={() => setAncestorMode('new')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition border-b-2 -mb-px ${ancestorMode === 'new' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40'}`}>
-                  <Plus className="w-3.5 h-3.5" /> Nuevo
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-5">
-                {ancestorMode === 'existing' ? (
-                  <div>
-                    <div className="relative mb-3">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
-                      <input type="text" value={ancestorSearch} onChange={e => setAncestorSearch(e.target.value)}
-                        placeholder={`Buscar ${panelTarget.role === 'father' ? 'macho' : 'hembra'}...`} autoFocus
-                        className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
-                    </div>
-                    <div className="space-y-1">
-                      {ancestorCandidates.map(d => (
-                        <button key={d.id} onClick={() => linkExisting(d.id)} disabled={saving}
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs text-white/60 hover:bg-white/5 transition text-left disabled:opacity-50">
-                          <div className="w-7 h-7 rounded-full overflow-hidden bg-white/5 border flex-shrink-0" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
-                            {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
-                          </div>
-                          <span className="truncate flex-1 font-medium">{d.name}</span>
-                          {(d.breed as any)?.name && <span className="text-[10px] text-white/20">{(d.breed as any).name}</span>}
-                        </button>
-                      ))}
-                      {ancestorCandidates.length === 0 && <p className="text-xs text-white/20 text-center py-6">Sin resultados</p>}
-                    </div>
+                  <div className="relative mb-3">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+                    <input type="text" value={ancestorSearch} onChange={e => setAncestorSearch(e.target.value)}
+                      placeholder={`Buscar ${panelTarget.role === 'father' ? 'macho' : 'hembra'}...`} autoFocus
+                      className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">Nombre *</label>
-                      <input type="text" value={newAncestor.name} onChange={e => setNewAncestor(p => ({ ...p, name: e.target.value }))}
-                        placeholder="Nombre del ancestro" autoFocus
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">Raza</label>
-                      <select value={newAncestor.breed_id} onChange={e => setNewAncestor(p => ({ ...p, breed_id: e.target.value }))}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/60 focus:border-[#D74709] focus:outline-none appearance-none">
-                        <option value="">Sin raza</option>
-                        {breeds.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">Color</label>
-                      <select value={newAncestor.color_id} onChange={e => setNewAncestor(p => ({ ...p, color_id: e.target.value }))}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/60 focus:border-[#D74709] focus:outline-none appearance-none">
-                        <option value="">Sin color</option>
-                        {colors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                      </select>
-                    </div>
-                    <button onClick={createAndLink} disabled={saving || !newAncestor.name.trim()}
-                      className="w-full bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-1.5">
-                      {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                      {saving ? 'Creando...' : 'Crear y vincular'}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-
-          {/* EDIT MODE */}
-          {panelMode === 'edit' && editNodeData && (
-            <>
-              <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 flex-shrink-0">
-                <p className="text-sm font-semibold">{editNodeData.name}</p>
-                <button onClick={() => setPanelOpen(false)} className="text-white/30 hover:text-white"><X className="w-4 h-4" /></button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-5 space-y-4">
-                {/* Dog info card */}
-                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-4">
-                  <div className="w-14 h-14 rounded-lg overflow-hidden bg-white/5 border-2 flex-shrink-0" style={{ borderColor: editNodeData.sex === 'male' ? BRAND.male : BRAND.female }}>
-                    {editNodeData.photo_url ? <img src={editNodeData.photo_url} alt="" className="w-full h-full object-cover" /> :
-                      <div className="w-full h-full flex items-center justify-center text-white/15 text-2xl">{editNodeData.sex === 'male' ? '♂' : '♀'}</div>}
-                  </div>
-                  <div>
-                    <p className="font-bold">{editNodeData.name}</p>
-                    <p className="text-xs text-white/40">
-                      {editNodeData.sex === 'male' ? '♂ Macho' : '♀ Hembra'}
-                      {editNodeData.breed_name && ` · ${editNodeData.breed_name}`}
-                    </p>
-                    {editNodeData.color_name && <p className="text-[10px] text-white/25">{editNodeData.color_name}</p>}
-                    {editNodeData.registration && <p className="text-[10px] text-white/20 font-mono mt-0.5">{editNodeData.registration}</p>}
+                  <div className="space-y-1">
+                    {ancestorCandidates.map(d => (
+                      <button key={d.id} onClick={() => linkExisting(d.id)} disabled={saving}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs text-white/60 hover:bg-white/5 transition text-left disabled:opacity-50">
+                        <div className="w-7 h-7 rounded-full overflow-hidden bg-white/5 border flex-shrink-0" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
+                          {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
+                        </div>
+                        <span className="truncate flex-1 font-medium">{d.name}</span>
+                        {(d.breed as any)?.name && <span className="text-[10px] text-white/20">{(d.breed as any).name}</span>}
+                      </button>
+                    ))}
+                    {ancestorCandidates.length === 0 && <p className="text-xs text-white/20 text-center py-6">Sin resultados</p>}
                   </div>
                 </div>
-
-                {/* Role info */}
-                {editNodeParent && (
-                  <p className="text-xs text-white/40">
-                    Vinculado como <strong className={editNodeParent.role === 'father' ? 'text-blue-400' : 'text-pink-400'}>{editNodeParent.role === 'father' ? 'padre' : 'madre'}</strong> de {pedigreeData.find(n => n.id === editNodeParent.parentId)?.name || '?'}
-                  </p>
-                )}
-
-                {/* Actions */}
-                <a href={`/dogs/${editNodeData.id}`} target="_blank"
-                  className="w-full flex items-center justify-center gap-1.5 bg-white/5 border border-white/10 text-white/60 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10 transition">
-                  Ver perfil completo ↗
-                </a>
-
-                {editNodeParent && (
-                  <button onClick={disconnectDog} disabled={saving}
-                    className="w-full flex items-center justify-center gap-1.5 bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-red-500/20 transition disabled:opacity-50">
-                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlink className="w-4 h-4" />}
-                    {saving ? 'Desconectando...' : 'Desconectar de este nodo'}
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">Nombre *</label>
+                    <input type="text" value={newAncestor.name} onChange={e => setNewAncestor(p => ({ ...p, name: e.target.value }))}
+                      placeholder="Nombre del ancestro" autoFocus
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">Raza</label>
+                    <select value={newAncestor.breed_id} onChange={e => setNewAncestor(p => ({ ...p, breed_id: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/60 focus:border-[#D74709] focus:outline-none appearance-none">
+                      <option value="">Sin raza</option>
+                      {breeds.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">Color</label>
+                    <select value={newAncestor.color_id} onChange={e => setNewAncestor(p => ({ ...p, color_id: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/60 focus:border-[#D74709] focus:outline-none appearance-none">
+                      <option value="">Sin color</option>
+                      {colors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <button onClick={createAndLink} disabled={saving || !newAncestor.name.trim()}
+                    className="w-full bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-1.5">
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                    {saving ? 'Creando...' : 'Crear y vincular'}
                   </button>
-                )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
 
-                {/* Missing parents */}
-                {(!editNodeData.father_id || !editNodeData.mother_id) && (
-                  <div className="border-t border-white/10 pt-4">
-                    <p className="text-xs text-white/40 mb-2">Ancestros faltantes:</p>
-                    <div className="space-y-2">
-                      {!editNodeData.father_id && (
-                        <button onClick={() => { setPanelOpen(false); setTimeout(() => handleClickEmpty(editNodeData.id, 'father'), 100) }}
-                          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-blue-400/30 text-blue-400 text-xs font-medium hover:bg-blue-500/5 transition">
-                          <Plus className="w-3.5 h-3.5" /> Añadir padre
-                        </button>
-                      )}
-                      {!editNodeData.mother_id && (
-                        <button onClick={() => { setPanelOpen(false); setTimeout(() => handleClickEmpty(editNodeData.id, 'mother'), 100) }}
-                          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-pink-400/30 text-pink-400 text-xs font-medium hover:bg-pink-500/5 transition">
-                          <Plus className="w-3.5 h-3.5" /> Añadir madre
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
+        {/* EDIT MODE */}
+        {panelMode === 'edit' && editNodeData && (
+          <>
+            <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 flex-shrink-0">
+              <p className="text-sm font-semibold">{editNodeData.name}</p>
+              <button onClick={() => setPanelOpen(false)} className="text-white/30 hover:text-white"><X className="w-4 h-4" /></button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-4">
+                <div className="w-14 h-14 rounded-lg overflow-hidden bg-white/5 border-2 flex-shrink-0" style={{ borderColor: editNodeData.sex === 'male' ? BRAND.male : BRAND.female }}>
+                  {editNodeData.photo_url ? <img src={editNodeData.photo_url} alt="" className="w-full h-full object-cover" /> :
+                    <div className="w-full h-full flex items-center justify-center text-white/15 text-2xl">{editNodeData.sex === 'male' ? '♂' : '♀'}</div>}
+                </div>
+                <div>
+                  <p className="font-bold">{editNodeData.name}</p>
+                  <p className="text-xs text-white/40">{editNodeData.sex === 'male' ? '♂ Macho' : '♀ Hembra'}{editNodeData.breed_name && ` · ${editNodeData.breed_name}`}</p>
+                  {editNodeData.registration && <p className="text-[10px] text-white/20 font-mono mt-0.5">{editNodeData.registration}</p>}
+                </div>
               </div>
-            </>
-          )}
-        </div>
-      </>
-    </div>
+
+              {editNodeParent && (
+                <p className="text-xs text-white/40">
+                  Vinculado como <strong className={editNodeParent.role === 'father' ? 'text-blue-400' : 'text-pink-400'}>{editNodeParent.role === 'father' ? 'padre' : 'madre'}</strong> de {pedigreeData.find(n => n.id === editNodeParent.parentId)?.name || '?'}
+                </p>
+              )}
+
+              <a href={`/dogs/${editNodeData.id}`} target="_blank"
+                className="w-full flex items-center justify-center gap-1.5 bg-white/5 border border-white/10 text-white/60 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10 transition">
+                Ver perfil completo ↗
+              </a>
+
+              {editNodeParent && (
+                <button onClick={disconnectDog} disabled={saving}
+                  className="w-full flex items-center justify-center gap-1.5 bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-red-500/20 transition disabled:opacity-50">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlink className="w-4 h-4" />}
+                  {saving ? 'Desconectando...' : 'Desconectar de este nodo'}
+                </button>
+              )}
+
+              {(!editNodeData.father_id || !editNodeData.mother_id) && (
+                <div className="border-t border-white/10 pt-4">
+                  <p className="text-xs text-white/40 mb-2">Ancestros faltantes:</p>
+                  <div className="space-y-2">
+                    {!editNodeData.father_id && (
+                      <button onClick={() => { setPanelOpen(false); setTimeout(() => handleClickEmpty(editNodeData.id, 'father'), 150) }}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-blue-400/30 text-blue-400 text-xs font-medium hover:bg-blue-500/5 transition">
+                        <Plus className="w-3.5 h-3.5" /> Añadir padre
+                      </button>
+                    )}
+                    {!editNodeData.mother_id && (
+                      <button onClick={() => { setPanelOpen(false); setTimeout(() => handleClickEmpty(editNodeData.id, 'mother'), 150) }}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-pink-400/30 text-pink-400 text-xs font-medium hover:bg-pink-500/5 transition">
+                        <Plus className="w-3.5 h-3.5" /> Añadir madre
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </>
   )
 }

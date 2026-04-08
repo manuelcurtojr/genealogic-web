@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { Search, ArrowLeftRight, Plus } from 'lucide-react'
+import { Search, ArrowLeftRight, Plus, GitBranch } from 'lucide-react'
 
 interface PN {
   id: string; name: string; sex: string; registration: string | null
@@ -24,6 +24,7 @@ export default function AdminPedigreeTree({ data, rootId, onClickDog, onClickEmp
   const [zoom, setZoom] = useState(100)
   const [genMenu, setGenMenu] = useState(false)
   const [zoomMenu, setZoomMenu] = useState(false)
+  const [vert, setVert] = useState(false)
 
   const nm = useMemo(() => { const m = new Map<string, PN>(); data.forEach(n => m.set(n.id, n)); return m }, [data])
   const root = nm.get(rootId)
@@ -32,15 +33,15 @@ export default function AdminPedigreeTree({ data, rootId, onClickDog, onClickEmp
   const close = () => { setGenMenu(false); setZoomMenu(false) }
 
   return (
-    <div className="relative" onClick={close}>
-      <div className="overflow-auto pb-20" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}>
-        <div className="min-w-max py-4 px-2">
+    <div className="relative h-full" onClick={close}>
+      <div className="h-full overflow-auto" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}>
+        <div className="min-w-max min-h-max py-6 px-4 pb-24">
           <HN n={root} nm={nm} g={0} mx={maxGen} isRoot onClickDog={onClickDog} onClickEmpty={onClickEmpty} />
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="fixed bottom-[30px] z-30 flex items-center gap-2" style={{ left: 'calc(var(--sidebar-width, 0px) + 30px)' }}>
+      {/* Controls — bottom left of this container */}
+      <div className="absolute bottom-4 left-4 z-30 flex items-center gap-2">
         <div className="relative">
           <button onClick={e => { e.stopPropagation(); setZoomMenu(!zoomMenu); setGenMenu(false) }}
             className="w-11 h-11 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-white/60 shadow-lg hover:border-white/30 transition">
@@ -67,12 +68,17 @@ export default function AdminPedigreeTree({ data, rootId, onClickDog, onClickEmp
             </div>
           )}
         </div>
+        <button onClick={() => setVert(!vert)} className={`w-11 h-11 rounded-full border flex items-center justify-center shadow-lg transition ${vert ? 'bg-[#D74709] border-[#D74709] text-white' : 'bg-gray-900 border-white/10 text-white/60 hover:border-white/30'}`}>
+          <ArrowLeftRight className="w-4 h-4" />
+        </button>
+        <button onClick={e => { e.stopPropagation(); }} className="w-11 h-11 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-white/60 shadow-lg hover:border-white/30 transition">
+          <GitBranch className="w-4 h-4" />
+        </button>
       </div>
     </div>
   )
 }
 
-/* Interactive Card — click to edit */
 function Card({ n, isRoot, onClickDog }: { n: PN; isRoot?: boolean; onClickDog: (id: string) => void }) {
   const sc = n.sex === 'male' ? '#017DFA' : '#e84393'
   return (
@@ -93,7 +99,6 @@ function Card({ n, isRoot, onClickDog }: { n: PN; isRoot?: boolean; onClickDog: 
   )
 }
 
-/* Empty slot — click to add */
 function EmptySlot({ parentDogId, role, onClickEmpty }: { parentDogId: string; role: 'father' | 'mother'; onClickEmpty: (parentId: string, role: 'father' | 'mother') => void }) {
   const isFather = role === 'father'
   const bc = isFather ? 'border-blue-400/30 hover:border-blue-400/60' : 'border-pink-400/30 hover:border-pink-400/60'
@@ -109,7 +114,6 @@ function EmptySlot({ parentDogId, role, onClickEmpty }: { parentDogId: string; r
   )
 }
 
-/* Horizontal recursive node */
 function HN({ n, nm, g, mx, isRoot, onClickDog, onClickEmpty }: {
   n: PN; nm: Map<string, PN>; g: number; mx: number; isRoot?: boolean
   onClickDog: (id: string) => void; onClickEmpty: (parentId: string, role: 'father' | 'mother') => void
@@ -118,7 +122,6 @@ function HN({ n, nm, g, mx, isRoot, onClickDog, onClickEmpty }: {
   const f = n.father_id ? nm.get(n.father_id) : null
   const m = n.mother_id ? nm.get(n.mother_id) : null
 
-  // If no children at all and not last gen before max, just show card
   if (!(f || m || !n.father_id || !n.mother_id) && g >= mx - 1) return <Card n={n} isRoot={isRoot} onClickDog={onClickDog} />
 
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -135,7 +138,6 @@ function HN({ n, nm, g, mx, isRoot, onClickDog, onClickEmpty }: {
     const fMidY = fr.top - wr.top + fr.height / 2
     const mMidY = mr.top - wr.top + mr.height / 2
     const cardMidY = (fMidY + mMidY) / 2
-
     setLines([
       { x1: CW, y1: cardMidY, x2: CW + hGap, y2: cardMidY },
       { x1: CW + hGap, y1: fMidY, x2: CW + hGap, y2: mMidY },
