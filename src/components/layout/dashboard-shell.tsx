@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Menu, Bell, Sun, Moon } from 'lucide-react'
+import { Menu, Bell, Sun, Moon, LayoutDashboard, Dog, Calendar, Settings } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import Sidebar from './sidebar'
 import SearchBar from './search-bar'
 import NotificationsPanel from './notifications-panel'
@@ -16,8 +17,10 @@ interface DashboardShellProps {
 }
 
 export default function DashboardShell({ user, kennel, children }: DashboardShellProps) {
+  const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const [isNative, setIsNative] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') return localStorage.getItem('theme') !== 'light'
     return true
@@ -34,6 +37,9 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
   useEffect(() => {
     const savedCollapsed = localStorage.getItem('sidebar-collapsed')
     if (savedCollapsed === 'true') setCollapsed(true)
+
+    // Detect Capacitor native app
+    if ((window as any).Capacitor?.isNativePlatform?.()) setIsNative(true)
 
     // Force dark mode on mobile
     const isMobile = window.innerWidth < 1024
@@ -123,11 +129,51 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
       </div>
 
       {/* Main content */}
-      <main className="p-4 pt-18 lg:pt-[74px] transition-all duration-300">
+      <main className={`p-4 pt-18 lg:pt-[74px] transition-all duration-300 ${isNative ? 'pb-24' : ''}`}>
         <div className={`transition-all duration-300 ${collapsed ? 'lg:ml-[68px]' : 'lg:ml-64'} lg:px-[30px] lg:py-[30px]`}>
           {children}
         </div>
       </main>
+
+      {/* Native app bottom tab bar */}
+      {isNative && (
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-gray-950 border-t border-white/10" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          <div className="flex items-center justify-around h-14">
+            {([
+              { href: '/dashboard', icon: LayoutDashboard, label: 'Inicio' },
+              { href: '/dogs', icon: Dog, label: 'Perros' },
+              { href: '/calendar', icon: Calendar, label: 'Calendario' },
+              { href: '/notifications', icon: Bell, label: 'Alertas', badge: unreadCount },
+            ] as const).map(tab => {
+              const active = pathname === tab.href || (tab.href !== '/dashboard' && pathname.startsWith(tab.href))
+              return (
+                <Link key={tab.href} href={tab.href} className={`flex flex-col items-center justify-center gap-0.5 w-16 py-1 transition ${active ? 'text-[#D74709]' : 'text-white/40'}`}>
+                  <div className="relative">
+                    <tab.icon className="w-[22px] h-[22px]" />
+                    {'badge' in tab && (tab.badge ?? 0) > 0 && (
+                      <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#D74709] text-white text-[8px] font-bold flex items-center justify-center">{tab.badge! > 9 ? '9+' : tab.badge}</span>
+                    )}
+                  </div>
+                  <span className="text-[10px] font-medium">{tab.label}</span>
+                </Link>
+              )
+            })}
+            {/* Avatar → Settings */}
+            <Link href="/settings" className={`flex flex-col items-center justify-center gap-0.5 w-16 py-1 transition ${pathname.startsWith('/settings') ? 'text-[#D74709]' : 'text-white/40'}`}>
+              <div className={`w-[22px] h-[22px] rounded-full overflow-hidden border ${pathname.startsWith('/settings') ? 'border-[#D74709]' : 'border-white/20'}`}>
+                {user?.avatar_url ? (
+                  <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-[#D74709]/20 flex items-center justify-center text-[#D74709] text-[8px] font-bold">
+                    {(user?.display_name || '?')[0].toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <span className="text-[10px] font-medium">Perfil</span>
+            </Link>
+          </div>
+        </nav>
+      )}
 
       {/* Notifications panel */}
       <NotificationsPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
