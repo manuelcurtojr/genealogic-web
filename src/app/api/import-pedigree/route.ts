@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
-const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
-const APIFLASH_KEY = process.env.APIFLASH_KEY
+// Read API keys from DB (platform_settings) with fallback to env vars
+async function getApiKey(key: string): Promise<string | null> {
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase.from('platform_settings').select('value').eq('key', key).single()
+    if (data?.value) return data.value
+  } catch {}
+  // Fallback to env
+  return process.env[key] || null
+}
+
+let ANTHROPIC_KEY: string | null = null
+let APIFLASH_KEY: string | null = null
 
 const EXTRACTION_PROMPT = `You are a dog pedigree data extractor. Extract the complete pedigree information from this content.
 
@@ -48,6 +60,10 @@ Rules:
 
 export async function POST(request: NextRequest) {
   try {
+    // Load API keys from DB or env
+    ANTHROPIC_KEY = await getApiKey('ANTHROPIC_API_KEY')
+    APIFLASH_KEY = await getApiKey('APIFLASH_KEY')
+
     if (!ANTHROPIC_KEY) return NextResponse.json({ error: 'Anthropic API key not configured' }, { status: 500 })
 
     const { url } = await request.json()

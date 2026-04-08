@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Store, Palette, Coins, GitBranch, Stethoscope, ArrowLeft, Shield, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Users, Store, Palette, Coins, GitBranch, Stethoscope, ArrowLeft, Shield, Menu, X, Key } from 'lucide-react'
 
 const ADMIN_NAV = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -12,6 +12,7 @@ const ADMIN_NAV = [
   { label: 'Genes', href: '/admin/genes', icon: Coins },
   { label: 'Genealogías', href: '/admin/genealogy', icon: GitBranch },
   { label: 'Plantillas vet.', href: '/admin/vet-templates', icon: Stethoscope },
+  { label: 'Configuración', href: '/admin/settings', icon: Key },
 ]
 
 interface Props {
