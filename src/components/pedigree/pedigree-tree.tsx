@@ -33,13 +33,15 @@ export default function PedigreeTree({data,rootId}:Props){
   const close=()=>{setGenMenu(false);setZoomMenu(false)}
 
   return(
-    <div className="relative" onClick={close}>
-      <div className="overflow-auto pb-20" style={{transform:`scale(${zoom/100})`,transformOrigin:'top left'}}>
-        <div className="min-w-max py-4 px-4 lg:px-2">
-          {vert?<VN n={root} nm={nm} g={0} mx={maxGen} isRoot si={showIB} rc={rc}/>:<HN n={root} nm={nm} g={0} mx={maxGen} isRoot si={showIB} rc={rc}/>}
+    <>
+      <div className="relative" onClick={close}>
+        <div className="overflow-auto pb-20" style={{transform:`scale(${zoom/100})`,transformOrigin:'top left'}}>
+          <div className="min-w-max py-4 px-4 lg:px-2">
+            {vert?<VN n={root} nm={nm} g={0} mx={maxGen} isRoot si={showIB} rc={rc}/>:<HN n={root} nm={nm} g={0} mx={maxGen} isRoot si={showIB} rc={rc}/>}
+          </div>
         </div>
       </div>
-      {/* COI Panel */}
+      {/* COI Panel — outside transform context */}
       <div className={`fixed top-[56px] right-0 bottom-0 w-[300px] z-[45] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${coiPanel?'translate-x-0':'translate-x-full'}`}>
         <button onClick={()=>setCoiPanel(!coiPanel)} className="absolute -left-7 top-1/2 -translate-y-1/2 w-7 h-14 bg-gray-900 border border-r-0 border-white/10 rounded-l-lg flex items-center justify-center text-white/40 hover:text-white transition">{coiPanel?<ChevronRight className="w-3.5 h-3.5"/>:<ChevronLeft className="w-3.5 h-3.5"/>}</button>
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10"><div className="flex items-center gap-2"><Dna className="w-4 h-4 text-[#D74709]"/><h3 className="text-sm font-semibold">Salud Genetica</h3></div><button onClick={()=>setCoiPanel(false)} className="text-white/40 hover:text-white"><ChevronRight className="w-4 h-4"/></button></div>
@@ -50,15 +52,14 @@ export default function PedigreeTree({data,rootId}:Props){
           <p className="text-[10px] text-white/20 text-center">Calculado con 10 generaciones</p>
         </div>
       </div>
-      {/* Buttons */}
-      <div className="fixed z-50 flex items-center gap-1.5 lg:gap-2" style={{left: 'max(16px, calc(var(--sidebar-width, 0px) + 30px))', bottom: isNative ? '106px' : '16px'}}>
-
+      {/* Floating buttons — outside transform context so fixed works */}
+      <div className="fixed z-50 flex items-center gap-1.5 lg:gap-2" style={{left: 'max(16px, calc(var(--sidebar-width, 0px) + 30px))', bottom: isNative ? '106px' : '16px'}} onClick={close}>
         <div className="relative"><button onClick={e=>{e.stopPropagation();setZoomMenu(!zoomMenu);setGenMenu(false)}} className="w-11 h-11 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-white/60 shadow-lg hover:border-white/30 transition"><Search className="w-4 h-4"/></button>{zoomMenu&&<div className="absolute bottom-14 left-0 bg-gray-800 border border-white/10 rounded-lg shadow-xl overflow-hidden" onClick={e=>e.stopPropagation()}>{[150,130,110,100,90,80,70,60,50].map(z=><button key={z} onClick={()=>{setZoom(z);setZoomMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${zoom===z?'bg-[#D74709] text-white':'text-white/60 hover:bg-white/10'}`}>{z}%</button>)}</div>}</div>
         <div className="relative"><button onClick={e=>{e.stopPropagation();setGenMenu(!genMenu);setZoomMenu(false)}} className="w-11 h-11 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-white/60 shadow-lg hover:border-white/30 font-bold text-xs transition">x{maxGen}</button>{genMenu&&<div className="absolute bottom-14 left-0 bg-gray-800 border border-white/10 rounded-lg shadow-xl overflow-hidden" onClick={e=>e.stopPropagation()}>{[10,9,8,7,6,5,4,3].map(g=><button key={g} onClick={()=>{setMaxGen(g);setGenMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${maxGen===g?'bg-[#D74709] text-white':'text-white/60 hover:bg-white/10'}`}>x{g}</button>)}</div>}</div>
         <button onClick={()=>setVert(!vert)} className={`w-11 h-11 rounded-full border flex items-center justify-center shadow-lg transition ${vert?'bg-[#D74709] border-[#D74709] text-white':'bg-gray-900 border-white/10 text-white/60 hover:border-white/30'}`}><ArrowLeftRight className="w-4 h-4"/></button>
         <button onClick={toggleIB} className={`w-11 h-11 rounded-full border flex items-center justify-center shadow-lg transition ${showIB?'bg-[#D74709] border-[#D74709] text-white':'bg-gray-900 border-white/10 text-white/60 hover:border-white/30'}`}><GitBranch className="w-4 h-4"/></button>
       </div>
-    </div>
+    </>
   )
 }
 
