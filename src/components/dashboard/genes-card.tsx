@@ -46,26 +46,26 @@ export default function GenesCard({ balance, userId }: Props) {
 
   return (
     <>
-      <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between">
+      <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-            <Dna className="w-5 h-5 text-purple-400" />
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+            <Dna className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
           </div>
           <div>
             <p className="text-sm font-semibold">{balance?.toLocaleString() || 0} Genes</p>
-            <p className="text-xs text-white/40">Tu saldo de genes</p>
+            <p className="text-[11px] sm:text-xs text-white/40">Tu saldo de genes</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={openHistory}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-white/50 bg-white/5 hover:bg-white/10 transition"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg text-xs text-white/50 bg-white/5 hover:bg-white/10 transition"
           >
             <History className="w-3.5 h-3.5" /> Historial
           </button>
           <button
             onClick={() => setShowBuy(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#D74709] bg-[#D74709]/10 hover:bg-[#D74709]/20 transition"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg text-xs font-semibold text-[#D74709] bg-[#D74709]/10 hover:bg-[#D74709]/20 transition"
           >
             <ShoppingCart className="w-3.5 h-3.5" /> Comprar
           </button>
@@ -76,8 +76,8 @@ export default function GenesCard({ balance, userId }: Props) {
       {showHistory && (
         <>
           <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px]" onClick={() => setShowHistory(false)} />
-          <div className="fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-gray-900 border-l border-white/10 shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
+          <div className="fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-gray-900 border-l border-white/10 shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-white/10">
               <div className="flex items-center gap-2">
                 <Dna className="w-4 h-4 text-purple-400" />
                 <h3 className="text-sm font-semibold">Historial de Genes</h3>
