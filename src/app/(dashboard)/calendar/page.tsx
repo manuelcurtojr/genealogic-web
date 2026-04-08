@@ -118,16 +118,7 @@ export default function CalendarPage() {
   const goToMonth = (dir: number) => setCurrentDate(new Date(year, month + dir))
   const goToday = () => { setCurrentDate(new Date()); setSelectedDate(new Date()) }
 
-  // ─── Swipe (mobile only) ───
-  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; swiping.current = false }
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX
-    if (Math.abs(touchStartX.current - touchEndX.current) > 30) swiping.current = true
-  }
-  const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current
-    if (Math.abs(diff) > 60) goToMonth(diff > 0 ? 1 : -1)
-  }
+  // Swipe refs kept for potential future use but no swipe — month change via arrows only
 
   // ─── Week helpers (desktop) ───
   const weekStart = useMemo(() => {
@@ -181,7 +172,6 @@ export default function CalendarPage() {
 
   // ─── Handlers ───
   const handleMobileDayClick = (d: Date) => {
-    if (swiping.current) return
     setSelectedDate(d)
     setDayPanelDate(d)
     setDayPanelOpen(true)
@@ -265,9 +255,9 @@ export default function CalendarPage() {
       {/* ═══════════════════════════════════════════ */}
       {/* ═══  MOBILE VIEW (< lg)  ═══════════════ */}
       {/* ═══════════════════════════════════════════ */}
-      <div className="lg:hidden">
+      <div className="lg:hidden flex flex-col" style={{ minHeight: 'calc(100vh - 120px)' }}>
         {/* Month header */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1">
             <button onClick={() => goToMonth(-1)} className="text-white/50 hover:text-white transition p-1.5"><ChevronLeft className="w-5 h-5" /></button>
             <h2 className="text-base font-bold min-w-[160px] text-center">{MONTH_NAMES[month]} {year}</h2>
@@ -281,23 +271,19 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {/* Compact calendar grid */}
-        <div
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
+        {/* Calendar grid — fills remaining space */}
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Day initials */}
-          <div className="grid grid-cols-7 mb-1">
+          <div className="grid grid-cols-7">
             {DAY_NAMES_SHORT.map(d => (
               <div key={d} className="text-center text-[11px] font-semibold text-white/40 py-1">{d}</div>
             ))}
           </div>
 
-          {/* Days */}
-          <div className="grid grid-cols-7">
+          {/* Days — flex-1 so rows stretch to fill */}
+          <div className="flex-1 grid grid-cols-7" style={{ gridTemplateRows: `repeat(${calendarDays.length / 7}, 1fr)` }}>
             {calendarDays.map((day, i) => {
-              if (!day) return <div key={`pad-${i}`} className="aspect-square" />
+              if (!day) return <div key={`pad-${i}`} />
               const hasEvents = eventDates.has(formatDateStr(day))
               const todayDay = isToday(day)
               const selected = isSameDay(day, selectedDate)
@@ -306,24 +292,25 @@ export default function CalendarPage() {
                 <button
                   key={i}
                   onClick={() => handleMobileDayClick(day)}
-                  className="flex flex-col items-center justify-center aspect-square"
+                  className="flex flex-col items-center justify-center"
                 >
                   <span className={`
-                    w-9 h-9 flex items-center justify-center rounded-full text-[13px] font-medium transition
+                    w-10 h-10 flex items-center justify-center rounded-full text-[15px] font-medium transition
                     ${selected ? 'bg-[#D74709] text-white' : todayDay ? 'text-[#D74709] font-bold' : 'text-white/80'}
                   `}>
                     {day.getDate()}
                   </span>
-                  <div className="h-1 mt-0.5">
-                    {hasEvents && <div className={`w-1 h-1 rounded-full mx-auto ${selected ? 'bg-white' : 'bg-[#D74709]'}`} />}
+                  <div className="h-1.5 mt-0.5">
+                    {hasEvents && <div className={`w-1.5 h-1.5 rounded-full mx-auto ${selected ? 'bg-white' : 'bg-[#D74709]'}`} />}
                   </div>
                 </button>
               )
             })}
           </div>
-        </div>
 
-        <Legend />
+          {/* Legend at the very bottom */}
+          <Legend />
+        </div>
 
         {/* ─── Mobile Day Panel (slide from right) ─── */}
         <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${dayPanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setDayPanelOpen(false)} />
