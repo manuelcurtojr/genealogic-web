@@ -107,13 +107,13 @@ export default function ContactForm({ open, onClose, onSaved, initialData, userI
       {/* Slide panel */}
       <div className={`fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
-          <h2 className="text-base font-semibold">{isEdit ? 'Editar contacto' : 'Nuevo contacto'}</h2>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 flex-shrink-0">
+          <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar contacto' : 'Nuevo contacto'}</h2>
           <button onClick={onClose} className="text-white/40 hover:text-white transition p-1"><X className="w-5 h-5" /></button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
           <Field label="Nombre *" value={form.name} onChange={(v) => set('name', v)} required autoFocus={open} />
@@ -143,7 +143,7 @@ export default function ContactForm({ open, onClose, onSaved, initialData, userI
         </form>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-5 py-4 border-t border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t border-white/10 flex-shrink-0">
           {isEdit ? (
             <button type="button" onClick={() => setShowDelete(true)} className="text-sm text-red-400 hover:text-red-300 transition">
               Eliminar

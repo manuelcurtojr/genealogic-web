@@ -113,12 +113,12 @@ export default function SalePanel({ open, onClose, dog }: Props) {
   return (
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
-      <div className={`fixed top-0 right-0 h-full w-full max-w-xl z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center gap-2">
             <Tag className="w-4 h-4 text-[#D74709]" />
-            <h2 className="text-lg font-semibold">Anuncio de venta</h2>
+            <h2 className="text-base sm:text-lg font-semibold">Anuncio de venta</h2>
           </div>
           <button onClick={onClose} className="text-white/40 hover:text-white transition"><X className="w-5 h-5" /></button>
         </div>
@@ -126,7 +126,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
         {fetching ? (
           <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-white/20" /></div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
             {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
             {/* Dog info */}
@@ -157,7 +157,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
                 {/* Price section */}
                 <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 space-y-3">
                   <h3 className="text-[11px] font-semibold text-white/40 uppercase tracking-wider">Precio</h3>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Divisa</label>
                       <select value={form.sale_currency} onChange={e => set('sale_currency', e.target.value)}
@@ -183,7 +183,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
                 {/* Location */}
                 <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 space-y-3">
                   <h3 className="text-[11px] font-semibold text-white/40 uppercase tracking-wider flex items-center gap-1"><MapPin className="w-3 h-3" /> Ubicacion</h3>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Código postal</label>
                       <input type="text" value={form.sale_zipcode} onChange={e => set('sale_zipcode', e.target.value)}
@@ -214,7 +214,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-white/10 flex-shrink-0">
           <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">Cancelar</button>
           <button onClick={handleSave} disabled={saving || fetching}
             className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">

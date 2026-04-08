@@ -218,10 +218,10 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
       />
 
       {/* Panel */}
-      <div className={`fixed top-0 right-0 h-full w-full max-w-xl z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
-          <h2 className="text-lg font-semibold">{isEdit ? 'Editar negocio' : 'Nuevo negocio'}</h2>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 flex-shrink-0">
+          <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar negocio' : 'Nuevo negocio'}</h2>
           <button onClick={onClose} className="text-white/40 hover:text-white transition">
             <X className="w-5 h-5" />
           </button>
@@ -256,7 +256,7 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
             <Loader2 className="w-6 h-6 animate-spin text-white/30" />
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-6 py-5">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400 mb-4">{error}</div>
             )}
@@ -278,7 +278,7 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
                 </div>
 
                 {/* Value + Currency */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Valor</label>
                     <input
@@ -384,7 +384,7 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
                 {form.litter_id && (
                   <div className="bg-purple-500/5 border border-purple-500/15 rounded-xl p-4 space-y-3">
                     <p className="text-[11px] font-semibold text-purple-400 uppercase tracking-wider">Lista de espera</p>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
                         <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Preferencia sexo</label>
                         <select
@@ -458,7 +458,7 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t border-white/10 flex-shrink-0">
           <div>
             {isEdit && (
               <button

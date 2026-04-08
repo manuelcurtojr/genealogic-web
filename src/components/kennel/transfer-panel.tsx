@@ -94,17 +94,17 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
   return (
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
-      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center gap-2">
             <ArrowRightLeft className="w-4 h-4 text-[#D74709]" />
-            <h2 className="text-lg font-semibold">Transferir perro</h2>
+            <h2 className="text-base sm:text-lg font-semibold">Transferir perro</h2>
           </div>
           <button onClick={onClose} className="text-white/40 hover:text-white transition"><X className="w-5 h-5" /></button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
           {/* Dog info */}
           <div className="flex items-center gap-3 bg-white/[0.03] border border-white/5 rounded-xl p-3">
             <div className="w-14 h-14 rounded-lg overflow-hidden bg-white/5 flex-shrink-0">
@@ -182,7 +182,7 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-white/10 flex-shrink-0">
           <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">Cancelar</button>
           <button
             onClick={handleTransfer}
