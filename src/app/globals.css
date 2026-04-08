@@ -48,6 +48,18 @@ body {
   }
 }
 
+/* Mobile: make all buttons taller and easier to tap */
+@media (max-width: 1023px) {
+  button, a[class*="rounded"], a[class*="px-"] {
+    min-height: 36px;
+  }
+  /* Icon-only buttons: square */
+  button:has(> svg:only-child) {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+
 /* Hide scrollbar globally on iOS app */
 ::-webkit-scrollbar {
   display: none;

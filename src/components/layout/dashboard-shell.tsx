@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Menu, Bell, Sun, Moon } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 import Sidebar from './sidebar'
 import SearchBar from './search-bar'
 import NotificationsPanel from './notifications-panel'
@@ -88,7 +89,7 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#D74709]" />}
           </button>
-          <div className={`w-8 h-8 rounded-full overflow-hidden border-2 ${avatarBg}`}>
+          <Link href="/settings" className={`w-8 h-8 rounded-full overflow-hidden border-2 ${avatarBg} block`}>
             {user?.avatar_url ? (
               <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -96,7 +97,7 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
                 {(user?.display_name || '?')[0].toUpperCase()}
               </div>
             )}
-          </div>
+          </Link>
         </div>
       </div>
 
@@ -117,7 +118,7 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
             <Bell className="w-[18px] h-[18px]" />
             {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#D74709]" />}
           </button>
-          <div className={`w-9 h-9 rounded-full overflow-hidden border-2 ${avatarBg} cursor-pointer`}>
+          <Link href="/settings" className={`w-9 h-9 rounded-full overflow-hidden border-2 ${avatarBg} cursor-pointer block`}>
             {user?.avatar_url ? (
               <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -125,7 +126,7 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
                 {(user?.display_name || '?')[0].toUpperCase()}
               </div>
             )}
-          </div>
+          </Link>
         </div>
       </div>
 
