@@ -73,16 +73,23 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
 
   const sidebarWidth = collapsed ? 68 : 256
 
-  // ─── Tab bar memory (Instagram-style) ───
+  // ─── Tab bar memory (Instagram-style, persisted in sessionStorage) ───
   const TAB_ROOTS = ['/dashboard', '/dogs', '/calendar', '/notifications', '/settings'] as const
-  const tabHistory = useRef<Record<string, string>>({})
   const lastTapTime = useRef<Record<string, number>>({})
+
+  function getTabHistory(): Record<string, string> {
+    try { return JSON.parse(sessionStorage.getItem('tab-history') || '{}') } catch { return {} }
+  }
+  function setTabHistory(root: string, path: string) {
+    const h = getTabHistory(); h[root] = path
+    sessionStorage.setItem('tab-history', JSON.stringify(h))
+  }
 
   // Track current path per tab
   useEffect(() => {
     for (const root of TAB_ROOTS) {
       if (root === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(root)) {
-        tabHistory.current[root] = pathname
+        setTabHistory(root, pathname)
         break
       }
     }
@@ -101,14 +108,14 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
 
     if (isDoubleTap || (isCurrentTab && pathname !== tabRoot)) {
       // Double tap or already on this tab but not root → go to root
-      tabHistory.current[tabRoot] = tabRoot
+      setTabHistory(tabRoot, tabRoot)
       window.location.href = tabRoot
     } else if (isCurrentTab) {
       // Already at root → do nothing
       return
     } else {
       // Switch tab → go to stored path or root
-      const stored = tabHistory.current[tabRoot]
+      const stored = getTabHistory()[tabRoot]
       window.location.href = stored || tabRoot
     }
   }, [pathname])

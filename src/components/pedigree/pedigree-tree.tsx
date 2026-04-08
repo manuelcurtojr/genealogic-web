@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Search, ArrowLeftRight, GitBranch, ChevronLeft, ChevronRight, Dna, CheckCircle } from 'lucide-react'
 import { calculateCOI, getCOILevel, getCOIInterpretation } from './coi-calculator'
@@ -14,6 +14,8 @@ const CW=200,CH=64,PH=56
 const L='var(--pedigree-line, rgba(255,255,255,0.12))'
 
 export default function PedigreeTree({data,rootId}:Props){
+  const[isNative,setIsNative]=useState(false)
+  useEffect(()=>{if((window as any).Capacitor?.isNativePlatform?.())setIsNative(true)},[])
   const[maxGen,setMaxGen]=useState(4)
   const[zoom,setZoom]=useState(100)
   const[showIB,setShowIB]=useState(false)
@@ -49,7 +51,7 @@ export default function PedigreeTree({data,rootId}:Props){
         </div>
       </div>
       {/* Buttons */}
-      <div className="fixed z-50 flex items-center gap-1.5 lg:gap-2" style={{left: 'max(16px, calc(var(--sidebar-width, 0px) + 30px))', bottom: 'calc(16px + var(--tab-bar-height, 0px))'}}>
+      <div className="fixed z-50 flex items-center gap-1.5 lg:gap-2" style={{left: 'max(16px, calc(var(--sidebar-width, 0px) + 30px))', bottom: isNative ? '106px' : '16px'}}>
 
         <div className="relative"><button onClick={e=>{e.stopPropagation();setZoomMenu(!zoomMenu);setGenMenu(false)}} className="w-11 h-11 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-white/60 shadow-lg hover:border-white/30 transition"><Search className="w-4 h-4"/></button>{zoomMenu&&<div className="absolute bottom-14 left-0 bg-gray-800 border border-white/10 rounded-lg shadow-xl overflow-hidden" onClick={e=>e.stopPropagation()}>{[150,130,110,100,90,80,70,60,50].map(z=><button key={z} onClick={()=>{setZoom(z);setZoomMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${zoom===z?'bg-[#D74709] text-white':'text-white/60 hover:bg-white/10'}`}>{z}%</button>)}</div>}</div>
         <div className="relative"><button onClick={e=>{e.stopPropagation();setGenMenu(!genMenu);setZoomMenu(false)}} className="w-11 h-11 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-white/60 shadow-lg hover:border-white/30 font-bold text-xs transition">x{maxGen}</button>{genMenu&&<div className="absolute bottom-14 left-0 bg-gray-800 border border-white/10 rounded-lg shadow-xl overflow-hidden" onClick={e=>e.stopPropagation()}>{[10,9,8,7,6,5,4,3].map(g=><button key={g} onClick={()=>{setMaxGen(g);setGenMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${maxGen===g?'bg-[#D74709] text-white':'text-white/60 hover:bg-white/10'}`}>x{g}</button>)}</div>}</div>
