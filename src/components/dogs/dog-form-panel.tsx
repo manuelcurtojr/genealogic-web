@@ -232,15 +232,13 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                       {form.breed_id && <InlineSearch label="Color" items={colors.map(c=>({id:c.id,name:c.name,image:null}))} value={form.color_id} onChange={v=>set('color_id',v)} placeholder="Buscar color..."/>}
                     </div>
                   ) : (
-                    <>
-                      <div className="grid grid-cols-2 sm:flex sm:gap-2 sm:overflow-x-auto gap-2 pb-1">
-                        <GCard label="RAZA" name={selBreed?.name} onClear={()=>set('breed_id','')} selector={<ISearch items={breeds.map(b=>({id:b.id,name:b.name,image:null}))} value={form.breed_id} onChange={v=>set('breed_id',v)} placeholder="Buscar raza..."/>}/>
-                        <GCard label="PADRE" name={selFather?.name} image={selFather?.thumbnail_url} sexColor={BRAND.male} onClear={()=>set('father_id','')} disabled={!form.breed_id} selector={<ISearch items={maleDogs.filter(d=>d.id!==editDogId).map(d=>({id:d.id,name:d.name,image:d.thumbnail_url}))} value={form.father_id} onChange={v=>set('father_id',v)} placeholder="Buscar padre..." sexColor={BRAND.male}/>}/>
-                        <GCard label="MADRE" name={selMother?.name} image={selMother?.thumbnail_url} sexColor={BRAND.female} onClear={()=>set('mother_id','')} disabled={!form.breed_id} selector={<ISearch items={femaleDogs.filter(d=>d.id!==editDogId).map(d=>({id:d.id,name:d.name,image:d.thumbnail_url}))} value={form.mother_id} onChange={v=>set('mother_id',v)} placeholder="Buscar madre..." sexColor={BRAND.female}/>}/>
-                        <GCard label="CRIADERO" name={selKennel?.name} image={selKennel?.logo_url} onClear={()=>set('kennel_id','')} selector={<ISearch items={kennels.map(k=>({id:k.id,name:k.name,image:k.logo_url}))} value={form.kennel_id} onChange={v=>set('kennel_id',v)} placeholder="Buscar criadero..."/>}/>
-                      </div>
-                      {form.breed_id && <InlineSearch label="Color" items={colors.map(c=>({id:c.id,name:c.name,image:null}))} value={form.color_id} onChange={v=>set('color_id',v)} placeholder="Buscar color..."/>}
-                    </>
+                    <div className="space-y-3">
+                      <GCard label="RAZA" name={selBreed?.name} onClear={()=>set('breed_id','')} selector={<ISearch items={breeds.map(b=>({id:b.id,name:b.name,image:null}))} value={form.breed_id} onChange={v=>set('breed_id',v)} placeholder="Buscar raza..."/>}/>
+                      <InlineSearch label="Color" items={(form.breed_id ? colors : allColors).map(c=>({id:c.id,name:c.name,image:null}))} value={form.color_id} onChange={v=>set('color_id',v)} placeholder="Buscar color..."/>
+                      <GCard label="PADRE" name={selFather?.name} image={selFather?.thumbnail_url} sexColor={BRAND.male} onClear={()=>set('father_id','')} selector={<ISearch items={(form.breed_id ? maleDogs : allMaleDogs).filter(d=>d.id!==editDogId).map(d=>({id:d.id,name:d.name,image:d.thumbnail_url}))} value={form.father_id} onChange={v=>set('father_id',v)} placeholder="Buscar padre..." sexColor={BRAND.male}/>}/>
+                      <GCard label="MADRE" name={selMother?.name} image={selMother?.thumbnail_url} sexColor={BRAND.female} onClear={()=>set('mother_id','')} selector={<ISearch items={(form.breed_id ? femaleDogs : allFemaleDogs).filter(d=>d.id!==editDogId).map(d=>({id:d.id,name:d.name,image:d.thumbnail_url}))} value={form.mother_id} onChange={v=>set('mother_id',v)} placeholder="Buscar madre..." sexColor={BRAND.female}/>}/>
+                      <GCard label="CRIADERO" name={selKennel?.name} image={selKennel?.logo_url} onClear={()=>set('kennel_id','')} selector={<ISearch items={kennels.map(k=>({id:k.id,name:k.name,image:k.logo_url}))} value={form.kennel_id} onChange={v=>set('kennel_id',v)} placeholder="Buscar criadero..."/>}/>
+                    </div>
                   )}
                 </Sec>
                 {!isFromLitter && (
