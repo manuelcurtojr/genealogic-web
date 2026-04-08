@@ -58,7 +58,8 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
       <h3 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-4">
         {offspring.length} descendiente{offspring.length !== 1 ? 's' : ''}
       </h3>
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div className="-mx-4 lg:mx-0">
+      <div className="flex gap-3 overflow-x-auto pb-2 px-4 lg:px-0">
         {offspring.map(dog => {
           const borderColor = dog.sex === 'male' ? BRAND.male : BRAND.female
           return (
@@ -93,6 +94,7 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
             </Link>
           )
         })}
+      </div>
       </div>
     </div>
   )

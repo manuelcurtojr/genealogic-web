@@ -76,10 +76,12 @@ export default function Siblings({ dogId, fatherId, motherId }: SiblingsProps) {
       <h3 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-4">
         {siblings.length} hermano{siblings.length !== 1 ? 's' : ''} encontrado{siblings.length !== 1 ? 's' : ''}
       </h3>
-      <div className="flex gap-3 overflow-x-auto pb-2">
-        {siblings.map(dog => (
-          <MiniDogCard key={dog.id} dog={dog} />
-        ))}
+      <div className="-mx-4 lg:mx-0">
+        <div className="flex gap-3 overflow-x-auto pb-2 px-4 lg:px-0">
+          {siblings.map(dog => (
+            <MiniDogCard key={dog.id} dog={dog} />
+          ))}
+        </div>
       </div>
     </div>
   )
