@@ -153,6 +153,13 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
         </div>
       ) : (
         <div className="space-y-2">
+          <button onClick={openAdd}
+            className="w-full flex items-center gap-3 border-2 border-dashed border-white/10 rounded-xl p-3 sm:p-4 hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition shrink-0">
+              <Plus className="w-5 h-5 text-white/30 group-hover:text-[#D74709] transition" />
+            </div>
+            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir perro</p>
+          </button>
           {paged.map((dog) => {
             const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
             const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name

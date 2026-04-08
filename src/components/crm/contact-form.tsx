@@ -1,9 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
-import Modal from '@/components/ui/modal'
+import { Loader2, X } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
 
 const SOURCES = [
@@ -38,6 +37,26 @@ export default function ContactForm({ open, onClose, onSaved, initialData, userI
     source: initialData?.source || '',
     notes: initialData?.notes || '',
   }))
+
+  useEffect(() => {
+    if (open) {
+      setForm({
+        name: initialData?.name || '',
+        email: initialData?.email || '',
+        phone: initialData?.phone || '',
+        city: initialData?.city || '',
+        source: initialData?.source || '',
+        notes: initialData?.notes || '',
+      })
+      setError('')
+    }
+  }, [open, initialData])
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape' && open) onClose() }
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  }, [open, onClose])
 
   const set = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }))
 
@@ -82,11 +101,22 @@ export default function ContactForm({ open, onClose, onSaved, initialData, userI
 
   return (
     <>
-      <Modal open={open} onClose={onClose} title={isEdit ? 'Editar contacto' : 'Nuevo contacto'}>
-        <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Overlay */}
+      <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
+
+      {/* Slide panel */}
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
+          <h2 className="text-base font-semibold">{isEdit ? 'Editar contacto' : 'Nuevo contacto'}</h2>
+          <button onClick={onClose} className="text-white/40 hover:text-white transition p-1"><X className="w-5 h-5" /></button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
           {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
-          <Field label="Nombre *" value={form.name} onChange={(v) => set('name', v)} required autoFocus />
+          <Field label="Nombre *" value={form.name} onChange={(v) => set('name', v)} required autoFocus={open} />
           <Field label="Email" value={form.email} onChange={(v) => set('email', v)} type="email" placeholder="email@ejemplo.com" />
           <Field label="Telefono" value={form.phone} onChange={(v) => set('phone', v)} placeholder="+34 600 000 000" />
           <Field label="Ciudad" value={form.city} onChange={(v) => set('city', v)} />
@@ -110,26 +140,27 @@ export default function ContactForm({ open, onClose, onSaved, initialData, userI
               placeholder="Notas sobre el contacto..."
             />
           </div>
-
-          <div className="flex items-center justify-between pt-2">
-            {isEdit ? (
-              <button type="button" onClick={() => setShowDelete(true)} className="text-sm text-red-400 hover:text-red-300 transition">
-                Eliminar
-              </button>
-            ) : <div />}
-            <div className="flex gap-2">
-              <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/15 text-white transition">
-                Cancelar
-              </button>
-              <button type="submit" disabled={loading || !form.name.trim()}
-                className="px-4 py-2 rounded-lg text-sm font-semibold bg-[#D74709] hover:bg-[#c03d07] text-white transition disabled:opacity-50 flex items-center gap-2">
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {isEdit ? 'Guardar' : 'Crear'}
-              </button>
-            </div>
-          </div>
         </form>
-      </Modal>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-5 py-4 border-t border-white/10 flex-shrink-0">
+          {isEdit ? (
+            <button type="button" onClick={() => setShowDelete(true)} className="text-sm text-red-400 hover:text-red-300 transition">
+              Eliminar
+            </button>
+          ) : <div />}
+          <div className="flex gap-2">
+            <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm bg-white/10 hover:bg-white/15 text-white transition">
+              Cancelar
+            </button>
+            <button onClick={handleSubmit} disabled={loading || !form.name.trim()}
+              className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-[#D74709] hover:bg-[#c03d07] text-white transition disabled:opacity-50 flex items-center gap-2">
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isEdit ? 'Guardar' : 'Crear'}
+            </button>
+          </div>
+        </div>
+      </div>
 
       <ConfirmDialog
         open={showDelete}

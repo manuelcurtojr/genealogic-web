@@ -12,11 +12,14 @@ export default function SearchPage() {
   const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [loaded, setLoaded] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   // Filters
   const [breedFilter, setBreedFilter] = useState('')
   const [sexFilter, setSexFilter] = useState('')
   const [forSaleOnly, setForSaleOnly] = useState(false)
+
+  const hasActiveFilters = !!breedFilter || !!sexFilter || forSaleOnly
 
   useEffect(() => {
     const supabase = createClient()
@@ -54,35 +57,45 @@ export default function SearchPage() {
       <h1 className="text-xl sm:text-2xl font-bold mb-2">Buscar perros</h1>
       <p className="text-white/40 text-xs sm:text-sm mb-4 sm:mb-6">Encuentra perros de raza, reproductores y cachorros disponibles</p>
 
-      {/* Search bar + filters */}
-      <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
+      {/* Search bar + filter toggle */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
           <input type="text" value={query} onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
             placeholder="Buscar por nombre..."
             className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
         </div>
-        <select value={breedFilter} onChange={e => setBreedFilter(e.target.value)}
-          className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none">
-          <option value="">Todas las razas</option>
-          {breeds.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-        </select>
-        <select value={sexFilter} onChange={e => setSexFilter(e.target.value)}
-          className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none">
-          <option value="">Ambos sexos</option>
-          <option value="male">♂ Macho</option>
-          <option value="female">♀ Hembra</option>
-        </select>
-        <button onClick={() => setForSaleOnly(!forSaleOnly)}
-          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium border transition ${forSaleOnly ? 'bg-[#D74709]/15 text-[#D74709] border-[#D74709]/30' : 'bg-white/5 text-white/50 border-white/10 hover:bg-white/10'}`}>
-          <Tag className="w-4 h-4" /> En venta
-        </button>
-        <button onClick={handleSearch}
-          className="bg-[#D74709] hover:bg-[#c03d07] text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition">
-          Buscar
+        <button onClick={() => setFiltersOpen(!filtersOpen)}
+          className={`p-2.5 rounded-lg border transition shrink-0 ${hasActiveFilters ? 'bg-[#D74709]/15 text-[#D74709] border-[#D74709]/30' : filtersOpen ? 'bg-white/10 text-white border-white/20' : 'bg-white/5 text-white/40 border-white/10'}`}>
+          <Filter className="w-4 h-4" />
         </button>
       </div>
+
+      {/* Collapsible filters */}
+      {filtersOpen && (
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 mb-4 p-3 bg-white/[0.03] border border-white/10 rounded-xl">
+          <select value={breedFilter} onChange={e => setBreedFilter(e.target.value)}
+            className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none flex-1 min-w-0 sm:min-w-[160px]">
+            <option value="">Todas las razas</option>
+            {breeds.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+          <select value={sexFilter} onChange={e => setSexFilter(e.target.value)}
+            className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none flex-1 min-w-0 sm:min-w-[130px]">
+            <option value="">Ambos sexos</option>
+            <option value="male">♂ Macho</option>
+            <option value="female">♀ Hembra</option>
+          </select>
+          <button onClick={() => setForSaleOnly(!forSaleOnly)}
+            className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium border transition ${forSaleOnly ? 'bg-[#D74709]/15 text-[#D74709] border-[#D74709]/30' : 'bg-white/5 text-white/50 border-white/10 hover:bg-white/10'}`}>
+            <Tag className="w-4 h-4" /> En venta
+          </button>
+          <button onClick={handleSearch}
+            className="bg-[#D74709] hover:bg-[#c03d07] text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition">
+            Buscar
+          </button>
+        </div>
+      )}
 
       {/* Results count */}
       {loaded && <p className="text-xs text-white/30 mb-4">{results.length} resultado{results.length !== 1 ? 's' : ''}</p>}
@@ -97,7 +110,7 @@ export default function SearchPage() {
           <p className="text-xs text-white/25 mt-1">Prueba con otros filtros</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
           {results.map((dog: any) => {
             const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
             const sexIcon = dog.sex === 'male' ? '♂' : '♀'
