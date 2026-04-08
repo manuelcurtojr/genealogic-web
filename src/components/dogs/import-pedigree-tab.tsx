@@ -41,6 +41,8 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported }: Prop
   const [genMenu, setGenMenu] = useState(false)
   const [zoomMenu, setZoomMenu] = useState(false)
 
+  const [uploadingImage, setUploadingImage] = useState(false)
+
   async function handleScan() {
     if (!url.trim()) return
     setScanning(true); setError(''); setData(null); setSwaps({})
@@ -48,12 +50,40 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported }: Prop
       const res = await fetch('/api/import-pedigree', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: url.trim() }) })
       const result = await res.json()
       if (!res.ok) throw new Error(result.error)
+      // Check if result has actual data
+      if (!result.data?.main_dog?.name) {
+        setError('No se pudo extraer datos de esta web. Prueba a subir un screenshot manual del pedigrí.')
+        setScanning(false); return
+      }
       setData(result.data)
       setEditedMain(result.data.main_dog)
       setEditedAncestors(result.data.ancestors || [])
       setShowPreview(true)
     } catch (err: any) { setError(err.message || 'Error al escanear') }
     setScanning(false)
+  }
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingImage(true); setError(''); setData(null); setSwaps({})
+    try {
+      const reader = new FileReader()
+      const base64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => { const result = reader.result as string; resolve(result.split(',')[1]) }
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+      const res = await fetch('/api/import-pedigree', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageBase64: base64 }) })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error)
+      if (!result.data?.main_dog?.name) { setError('No se pudo extraer datos de la imagen.'); setUploadingImage(false); return }
+      setData(result.data)
+      setEditedMain(result.data.main_dog)
+      setEditedAncestors(result.data.ancestors || [])
+      setShowPreview(true)
+    } catch (err: any) { setError(err.message || 'Error al analizar la imagen') }
+    setUploadingImage(false)
   }
 
   async function searchSwap(query: string) {
@@ -220,10 +250,31 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported }: Prop
           </button>
         </div>
       </div>
-      {scanning && (
+      {/* Divider */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 border-t border-white/10" />
+        <span className="text-xs text-white/20">o</span>
+        <div className="flex-1 border-t border-white/10" />
+      </div>
+
+      {/* Image upload */}
+      <div>
+        <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Subir screenshot del pedigrí</label>
+        <label className={`flex items-center justify-center gap-2 border-2 border-dashed border-white/10 rounded-lg py-4 cursor-pointer hover:border-white/20 hover:bg-white/[0.02] transition ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}>
+          {uploadingImage ? (
+            <><Loader2 className="w-4 h-4 animate-spin text-[#D74709]" /><span className="text-sm text-white/50">Analizando imagen con IA...</span></>
+          ) : (
+            <><Globe className="w-4 h-4 text-white/30" /><span className="text-sm text-white/40">Arrastra o haz clic para subir una imagen</span></>
+          )}
+          <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+        </label>
+        <p className="text-[10px] text-white/20 mt-1">Si la web bloquea el escaneo automático, haz un screenshot del pedigrí y súbelo aquí</p>
+      </div>
+
+      {(scanning || uploadingImage) && (
         <div className="text-center py-8">
           <Loader2 className="w-8 h-8 animate-spin text-[#D74709] mx-auto mb-3" />
-          <p className="text-sm text-white/50">Escaneando pedigrí con IA...</p>
+          <p className="text-sm text-white/50">{uploadingImage ? 'Analizando imagen con IA...' : 'Escaneando pedigrí con IA...'}</p>
           <p className="text-xs text-white/25 mt-1">Esto puede tardar hasta 30 segundos</p>
         </div>
       )}

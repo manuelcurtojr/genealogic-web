@@ -71,7 +71,35 @@ export async function POST(request: NextRequest) {
 
     if (!ANTHROPIC_KEY) return NextResponse.json({ error: 'Anthropic API key not configured' }, { status: 500 })
 
-    const { url } = await request.json()
+    const body = await request.json()
+    const { url, imageBase64 } = body
+
+    // If image provided directly (manual screenshot upload), skip fetch
+    if (imageBase64) {
+      const messages = [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: imageBase64 } },
+          { type: 'text', text: EXTRACTION_PROMPT },
+        ],
+      }]
+      const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 8000, messages }),
+        signal: AbortSignal.timeout(55000),
+      })
+      if (!claudeRes.ok) return NextResponse.json({ error: `AI error: ${claudeRes.status}` }, { status: 500 })
+      const claudeData = await claudeRes.json()
+      const responseText = claudeData.content?.[0]?.text || ''
+      let jsonStr = responseText
+      const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/)
+      if (jsonMatch) jsonStr = jsonMatch[1]
+      const objMatch = jsonStr.match(/\{[\s\S]*\}/)
+      if (objMatch) jsonStr = objMatch[0]
+      return NextResponse.json({ success: true, data: JSON.parse(jsonStr), source: 'image_upload' })
+    }
+
     if (!url) return NextResponse.json({ error: 'URL is required' }, { status: 400 })
 
     // Step 1: Try to fetch the HTML directly
