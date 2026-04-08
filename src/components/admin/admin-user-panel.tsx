@@ -1,0 +1,364 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { X, Loader2, User, Shield, Coins, Calendar, Globe, Bell, FileText, AlertTriangle, Check } from 'lucide-react'
+
+interface Props {
+  open: boolean
+  onClose: () => void
+  onSaved: () => void
+  userId: string | null
+}
+
+const ROLE_OPTIONS = [
+  { value: 'free', label: 'Free', color: '#6B7280' },
+  { value: 'pro', label: 'Pro', color: '#8B5CF6' },
+  { value: 'admin', label: 'Admin', color: '#EF4444' },
+]
+
+const STATUS_OPTIONS = [
+  { value: 'active', label: 'Activo', color: '#10B981' },
+  { value: 'suspended', label: 'Suspendido', color: '#F59E0B' },
+  { value: 'banned', label: 'Baneado', color: '#EF4444' },
+]
+
+export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props) {
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [profile, setProfile] = useState<any>(null)
+  const [activity, setActivity] = useState({ dogs: 0, kennels: 0, litters: 0, deals: 0, genesSpent: 0, genesPurchased: 0 })
+  const [genesAdjust, setGenesAdjust] = useState('')
+  const [showGenesForm, setShowGenesForm] = useState(false)
+
+  const [form, setForm] = useState({
+    display_name: '', email: '', phone: '', country: '', city: '', bio: '',
+    language: 'es', currency: 'EUR', timezone: '', date_format: 'DD/MM/YYYY',
+    role: 'free', status: 'active', genes: 0,
+    pro_started_at: '', pro_expires_at: '', stripe_customer_id: '', admin_notes: '',
+    public_profile: true, show_email: false, show_phone: false,
+    notif_email: true, notif_submissions: true, notif_deals: true, notif_vet: true, notif_calendar: true,
+  })
+
+  useEffect(() => {
+    if (!open || !userId) return
+    setLoading(true)
+    setError('')
+
+    const supabase = createClient()
+    async function load() {
+      const { data: p } = await supabase.from('profiles').select('*').eq('id', userId).single()
+      if (!p) { setLoading(false); return }
+      setProfile(p)
+      setForm({
+        display_name: p.display_name || '', email: p.email || '', phone: p.phone || '',
+        country: p.country || '', city: p.city || '', bio: p.bio || '',
+        language: p.language || 'es', currency: p.currency || 'EUR', timezone: p.timezone || '',
+        date_format: p.date_format || 'DD/MM/YYYY',
+        role: p.role || 'free', status: p.status || 'active', genes: p.genes || 0,
+        pro_started_at: p.pro_started_at ? p.pro_started_at.split('T')[0] : '',
+        pro_expires_at: p.pro_expires_at ? p.pro_expires_at.split('T')[0] : '',
+        stripe_customer_id: p.stripe_customer_id || '', admin_notes: p.admin_notes || '',
+        public_profile: p.public_profile ?? true, show_email: p.show_email ?? false, show_phone: p.show_phone ?? false,
+        notif_email: p.notif_email ?? true, notif_submissions: p.notif_submissions ?? true,
+        notif_deals: p.notif_deals ?? true, notif_vet: p.notif_vet ?? true, notif_calendar: p.notif_calendar ?? true,
+      })
+
+      // Load activity stats
+      const [dogsRes, kennelsRes, littersRes, dealsRes, txRes] = await Promise.all([
+        supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('owner_id', userId),
+        supabase.from('kennels').select('id', { count: 'exact', head: true }).eq('owner_id', userId),
+        supabase.from('litters').select('id', { count: 'exact', head: true }).eq('owner_id', userId),
+        supabase.from('deals').select('id', { count: 'exact', head: true }).eq('owner_id', userId),
+        supabase.from('genes_transactions').select('amount, type').eq('user_id', userId),
+      ])
+      const txs = txRes.data || []
+      setActivity({
+        dogs: dogsRes.count || 0, kennels: kennelsRes.count || 0,
+        litters: littersRes.count || 0, deals: dealsRes.count || 0,
+        genesPurchased: txs.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0),
+        genesSpent: txs.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0),
+      })
+      setLoading(false)
+    }
+    load()
+  }, [open, userId])
+
+  useEffect(() => {
+    if (!open) return
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', h)
+    return () => document.removeEventListener('keydown', h)
+  }, [open, onClose])
+
+  const set = (f: string, v: any) => setForm(prev => ({ ...prev, [f]: v }))
+
+  const handleSave = async () => {
+    setSaving(true); setError('')
+    const supabase = createClient()
+    const { error: err } = await supabase.from('profiles').update({
+      display_name: form.display_name.trim() || null, email: form.email.trim() || null,
+      phone: form.phone.trim() || null, country: form.country.trim() || null,
+      city: form.city.trim() || null, bio: form.bio.trim() || null,
+      language: form.language, currency: form.currency, timezone: form.timezone.trim() || null,
+      date_format: form.date_format, role: form.role, status: form.status, genes: form.genes,
+      pro_started_at: form.pro_started_at || null, pro_expires_at: form.pro_expires_at || null,
+      stripe_customer_id: form.stripe_customer_id.trim() || null,
+      admin_notes: form.admin_notes.trim() || null,
+      public_profile: form.public_profile, show_email: form.show_email, show_phone: form.show_phone,
+      notif_email: form.notif_email, notif_submissions: form.notif_submissions,
+      notif_deals: form.notif_deals, notif_vet: form.notif_vet, notif_calendar: form.notif_calendar,
+    }).eq('id', userId)
+    if (err) setError(err.message)
+    setSaving(false)
+    onSaved()
+    onClose()
+  }
+
+  const adjustGenes = async () => {
+    const amount = parseInt(genesAdjust)
+    if (!amount || !userId) return
+    const supabase = createClient()
+    const newBalance = form.genes + amount
+    await supabase.from('profiles').update({ genes: newBalance }).eq('id', userId)
+    await supabase.from('genes_transactions').insert({
+      user_id: userId, amount, type: amount > 0 ? 'admin_grant' : 'admin_deduct',
+      description: `Ajuste manual por admin (${amount > 0 ? '+' : ''}${amount})`,
+    })
+    set('genes', newBalance)
+    setGenesAdjust('')
+    setShowGenesForm(false)
+  }
+
+  return (
+    <>
+      <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
+
+      <div className={`fixed top-0 right-0 h-full w-full max-w-xl z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+          <h2 className="text-lg font-semibold">Editar usuario</h2>
+          <button onClick={onClose} className="text-white/40 hover:text-white transition"><X className="w-5 h-5" /></button>
+        </div>
+
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+        ) : (
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+            {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
+
+            {/* Header with avatar */}
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full overflow-hidden bg-white/5 border-2 border-white/10 flex-shrink-0">
+                {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> :
+                  <div className="w-full h-full flex items-center justify-center text-[#D74709] text-xl font-bold">{(form.display_name || '?')[0].toUpperCase()}</div>}
+              </div>
+              <div>
+                <p className="font-bold">{form.display_name || 'Sin nombre'}</p>
+                <p className="text-xs text-white/30">{form.email}</p>
+                <p className="text-[10px] text-white/20">Registrado: {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('es-ES') : '—'}</p>
+              </div>
+            </div>
+
+            {/* Activity stats */}
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: 'Perros', value: activity.dogs },
+                { label: 'Criaderos', value: activity.kennels },
+                { label: 'Camadas', value: activity.litters },
+                { label: 'Negocios', value: activity.deals },
+                { label: 'Genes comprados', value: activity.genesPurchased },
+                { label: 'Genes gastados', value: activity.genesSpent },
+              ].map(s => (
+                <div key={s.label} className="bg-white/5 rounded-lg p-2 text-center">
+                  <p className="text-sm font-bold">{s.value}</p>
+                  <p className="text-[9px] text-white/30">{s.label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Section: Cuenta */}
+            <Section title="Cuenta" icon={Shield}>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Rol">
+                  <div className="flex gap-1">
+                    {ROLE_OPTIONS.map(r => (
+                      <button key={r.value} onClick={() => set('role', r.value)}
+                        className={`flex-1 text-[10px] font-bold py-1.5 rounded-lg transition ${form.role === r.value ? 'ring-2 ring-offset-1 ring-offset-gray-900' : 'opacity-50'}`}
+                        style={{ background: r.color + '20', color: r.color }}>
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+                <Field label="Estado">
+                  <div className="flex gap-1">
+                    {STATUS_OPTIONS.map(s => (
+                      <button key={s.value} onClick={() => set('status', s.value)}
+                        className={`flex-1 text-[10px] font-bold py-1.5 rounded-lg transition ${form.status === s.value ? 'ring-2 ring-offset-1 ring-offset-gray-900' : 'opacity-50'}`}
+                        style={{ background: s.color + '20', color: s.color }}>
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+              </div>
+              {/* Genes */}
+              <div className="flex items-center gap-3 mt-3">
+                <div className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 flex items-center gap-2">
+                  <Coins className="w-4 h-4 text-[#D74709]" />
+                  <span className="text-sm font-bold">{form.genes}</span>
+                  <span className="text-[10px] text-white/30">genes</span>
+                </div>
+                {showGenesForm ? (
+                  <div className="flex items-center gap-1">
+                    <input type="number" value={genesAdjust} onChange={e => setGenesAdjust(e.target.value)}
+                      placeholder="+100" className="w-20 bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white focus:border-[#D74709] focus:outline-none" />
+                    <button onClick={adjustGenes} className="text-green-400 hover:text-green-300 text-xs font-bold">OK</button>
+                    <button onClick={() => setShowGenesForm(false)} className="text-white/30 text-xs">✕</button>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowGenesForm(true)} className="text-xs text-[#D74709] hover:text-[#c03d07] font-medium">Ajustar</button>
+                )}
+              </div>
+            </Section>
+
+            {/* Section: Datos personales */}
+            <Section title="Datos personales" icon={User}>
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Nombre" value={form.display_name} onChange={v => set('display_name', v)} />
+                <Input label="Email" value={form.email} onChange={v => set('email', v)} type="email" />
+                <Input label="Teléfono" value={form.phone} onChange={v => set('phone', v)} />
+                <Input label="País" value={form.country} onChange={v => set('country', v)} />
+                <Input label="Ciudad" value={form.city} onChange={v => set('city', v)} />
+                <div className="col-span-2">
+                  <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">Bio</label>
+                  <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={2}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none resize-none" />
+                </div>
+              </div>
+            </Section>
+
+            {/* Section: Preferencias */}
+            <Section title="Preferencias" icon={Globe}>
+              <div className="grid grid-cols-3 gap-3">
+                <Select label="Idioma" value={form.language} onChange={v => set('language', v)}
+                  options={[{ v: 'es', l: 'Español' }, { v: 'en', l: 'English' }, { v: 'fr', l: 'Français' }, { v: 'de', l: 'Deutsch' }, { v: 'pt', l: 'Português' }, { v: 'it', l: 'Italiano' }]} />
+                <Select label="Moneda" value={form.currency} onChange={v => set('currency', v)}
+                  options={[{ v: 'EUR', l: 'EUR €' }, { v: 'USD', l: 'USD $' }, { v: 'GBP', l: 'GBP £' }, { v: 'MXN', l: 'MXN $' }]} />
+                <Select label="Formato fecha" value={form.date_format} onChange={v => set('date_format', v)}
+                  options={[{ v: 'DD/MM/YYYY', l: 'DD/MM/YYYY' }, { v: 'MM/DD/YYYY', l: 'MM/DD/YYYY' }, { v: 'YYYY-MM-DD', l: 'YYYY-MM-DD' }]} />
+              </div>
+              <Input label="Zona horaria" value={form.timezone} onChange={v => set('timezone', v)} placeholder="Europe/Madrid" />
+            </Section>
+
+            {/* Section: Privacidad */}
+            <Section title="Privacidad" icon={Bell}>
+              <div className="space-y-2">
+                {[
+                  { key: 'public_profile', label: 'Perfil público' },
+                  { key: 'show_email', label: 'Mostrar email' },
+                  { key: 'show_phone', label: 'Mostrar teléfono' },
+                  { key: 'notif_email', label: 'Notificaciones email' },
+                  { key: 'notif_submissions', label: 'Notif. solicitudes' },
+                  { key: 'notif_deals', label: 'Notif. negocios' },
+                  { key: 'notif_vet', label: 'Notif. veterinario' },
+                  { key: 'notif_calendar', label: 'Notif. calendario' },
+                ].map(t => (
+                  <label key={t.key} className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
+                    <input type="checkbox" checked={(form as any)[t.key]} onChange={e => set(t.key, e.target.checked)}
+                      className="w-4 h-4 rounded border-white/20 bg-white/5 text-[#D74709] focus:ring-[#D74709] focus:ring-offset-0" />
+                    {t.label}
+                  </label>
+                ))}
+              </div>
+            </Section>
+
+            {/* Section: Suscripción */}
+            <Section title="Suscripción" icon={Calendar}>
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Inicio plan Pro" value={form.pro_started_at} onChange={v => set('pro_started_at', v)} type="date" />
+                <Input label="Expiración Pro" value={form.pro_expires_at} onChange={v => set('pro_expires_at', v)} type="date" />
+                <div className="col-span-2">
+                  <Input label="Stripe Customer ID" value={form.stripe_customer_id} onChange={v => set('stripe_customer_id', v)} placeholder="cus_..." />
+                </div>
+              </div>
+            </Section>
+
+            {/* Section: Notas admin */}
+            <Section title="Notas del administrador" icon={FileText}>
+              <textarea value={form.admin_notes} onChange={e => set('admin_notes', e.target.value)} rows={4}
+                placeholder="Notas internas sobre este usuario (solo visibles para admins)..."
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:border-[#D74709] focus:outline-none resize-none" />
+            </Section>
+
+            {/* Danger zone */}
+            {form.status !== 'active' && (
+              <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-red-400">Cuenta {form.status === 'suspended' ? 'suspendida' : 'baneada'}</p>
+                  <p className="text-xs text-white/30 mt-0.5">Este usuario no puede acceder a la plataforma.</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-white/10 flex-shrink-0">
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">Cancelar</button>
+          <button onClick={handleSave} disabled={saving || loading}
+            className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            {saving ? 'Guardando...' : 'Guardar'}
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
+/* Helpers */
+function Section({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
+        <Icon className="w-4 h-4 text-[#D74709]" />
+        <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider">{title}</h3>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function Input({ label, value, onChange, type, placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
+  return (
+    <div>
+      <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">{label}</label>
+      <input type={type || 'text'} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 focus:border-[#D74709] focus:outline-none transition" />
+    </div>
+  )
+}
+
+function Select({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { v: string; l: string }[] }) {
+  return (
+    <div>
+      <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">{label}</label>
+      <select value={value} onChange={e => onChange(e.target.value)}
+        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none appearance-none">
+        {options.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
+      </select>
+    </div>
+  )
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">{label}</label>
+      {children}
+    </div>
+  )
+}

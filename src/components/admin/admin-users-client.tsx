@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Search, Users, Shield, Crown, User, Coins, ChevronDown } from 'lucide-react'
+import AdminUserPanel from './admin-user-panel'
 
 interface Props { initialUsers: any[] }
 
@@ -19,6 +20,7 @@ export default function AdminUsersClient({ initialUsers }: Props) {
   const [editingRole, setEditingRole] = useState<string | null>(null)
   const [editingGenes, setEditingGenes] = useState<string | null>(null)
   const [genesAmount, setGenesAmount] = useState('')
+  const [panelUserId, setPanelUserId] = useState<string | null>(null)
 
   const filtered = users.filter(u => {
     if (roleFilter && u.role !== roleFilter) return false
@@ -96,7 +98,7 @@ export default function AdminUsersClient({ initialUsers }: Props) {
             {filtered.map(u => {
               const rc = ROLE_CONFIG[u.role] || ROLE_CONFIG.free
               return (
-                <tr key={u.id} className="border-b border-white/5 hover:bg-white/[0.02] transition">
+                <tr key={u.id} className="border-b border-white/5 hover:bg-white/[0.02] transition cursor-pointer" onClick={() => setPanelUserId(u.id)}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full overflow-hidden bg-white/5 border border-white/10 flex-shrink-0">
@@ -155,6 +157,17 @@ export default function AdminUsersClient({ initialUsers }: Props) {
         </table>
         {filtered.length === 0 && <p className="text-center py-8 text-white/30 text-sm">Sin resultados</p>}
       </div>
+
+      <AdminUserPanel
+        open={!!panelUserId}
+        onClose={() => setPanelUserId(null)}
+        onSaved={async () => {
+          const supabase = createClient()
+          const { data } = await supabase.from('profiles').select('id, display_name, email, role, genes, created_at, country, city, avatar_url, status').order('created_at', { ascending: false })
+          setUsers(data || [])
+        }}
+        userId={panelUserId}
+      />
     </div>
   )
 }
