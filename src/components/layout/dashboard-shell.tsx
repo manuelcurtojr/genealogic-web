@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Menu, Bell, Sun, Moon, LayoutDashboard, Dog, Calendar, Settings } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
@@ -72,6 +72,46 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
   }
 
   const sidebarWidth = collapsed ? 68 : 256
+
+  // ─── Tab bar memory (Instagram-style) ───
+  const TAB_ROOTS = ['/dashboard', '/dogs', '/calendar', '/notifications', '/settings'] as const
+  const tabHistory = useRef<Record<string, string>>({})
+  const lastTapTime = useRef<Record<string, number>>({})
+
+  // Track current path per tab
+  useEffect(() => {
+    for (const root of TAB_ROOTS) {
+      if (root === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(root)) {
+        tabHistory.current[root] = pathname
+        break
+      }
+    }
+  }, [pathname])
+
+  const handleTabTap = useCallback((e: React.MouseEvent, tabRoot: string) => {
+    e.preventDefault()
+    const now = Date.now()
+    const lastTap = lastTapTime.current[tabRoot] || 0
+    const isDoubleTap = now - lastTap < 300
+    lastTapTime.current[tabRoot] = now
+
+    const isCurrentTab = tabRoot === '/dashboard'
+      ? pathname === '/dashboard'
+      : pathname.startsWith(tabRoot)
+
+    if (isDoubleTap || (isCurrentTab && pathname !== tabRoot)) {
+      // Double tap or already on this tab but not root → go to root
+      tabHistory.current[tabRoot] = tabRoot
+      window.location.href = tabRoot
+    } else if (isCurrentTab) {
+      // Already at root → do nothing
+      return
+    } else {
+      // Switch tab → go to stored path or root
+      const stored = tabHistory.current[tabRoot]
+      window.location.href = stored || tabRoot
+    }
+  }, [pathname])
 
   const shellBg = darkMode ? 'bg-gray-950 text-white' : 'bg-gray-50 text-gray-900'
   const headerBg = darkMode ? 'bg-gray-950 border-white/10' : 'bg-white border-gray-200'
@@ -145,9 +185,9 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
               { href: '/calendar', icon: Calendar, label: 'Calendario' },
               { href: '/notifications', icon: Bell, label: 'Alertas', badge: unreadCount },
             ] as const).map(tab => {
-              const active = pathname === tab.href || (tab.href !== '/dashboard' && pathname.startsWith(tab.href))
+              const active = tab.href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(tab.href)
               return (
-                <Link key={tab.href} href={tab.href} className={`flex flex-col items-center justify-center gap-0.5 w-16 py-1 transition ${active ? 'text-[#D74709]' : 'text-white/40'}`}>
+                <a key={tab.href} href="#" onClick={(e) => handleTabTap(e, tab.href)} className={`flex flex-col items-center justify-center gap-0.5 w-16 py-1 transition ${active ? 'text-[#D74709]' : 'text-white/40'}`}>
                   <div className="relative">
                     <tab.icon className="w-[22px] h-[22px]" />
                     {'badge' in tab && (tab.badge ?? 0) > 0 && (
@@ -155,11 +195,11 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
                     )}
                   </div>
                   <span className="text-[10px] font-medium">{tab.label}</span>
-                </Link>
+                </a>
               )
             })}
             {/* Avatar → Settings */}
-            <Link href="/settings" className={`flex flex-col items-center justify-center gap-0.5 w-16 py-1 transition ${pathname.startsWith('/settings') ? 'text-[#D74709]' : 'text-white/40'}`}>
+            <a href="#" onClick={(e) => handleTabTap(e, '/settings')} className={`flex flex-col items-center justify-center gap-0.5 w-16 py-1 transition ${pathname.startsWith('/settings') ? 'text-[#D74709]' : 'text-white/40'}`}>
               <div className={`w-[22px] h-[22px] rounded-full overflow-hidden border ${pathname.startsWith('/settings') ? 'border-[#D74709]' : 'border-white/20'}`}>
                 {user?.avatar_url ? (
                   <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -170,7 +210,7 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
                 )}
               </div>
               <span className="text-[10px] font-medium">Perfil</span>
-            </Link>
+            </a>
           </div>
         </nav>
       )}

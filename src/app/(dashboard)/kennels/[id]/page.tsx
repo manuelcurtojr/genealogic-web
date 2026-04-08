@@ -8,6 +8,8 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
   const { id } = await params
   const supabase = await createClient()
 
+  const { data: { user } } = await supabase.auth.getUser()
+
   const { data: kennel } = await supabase
     .from('kennels')
     .select('*')
@@ -43,7 +45,7 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
   return (
     <div>
       <div className="flex items-center gap-4 mb-6">
-        <Link href="/kennels" className="text-white/40 hover:text-white transition"><ArrowLeft className="w-5 h-5" /></Link>
+        <Link href={user?.id === kennel.owner_id ? '/kennel' : '/kennels'} className="text-white/40 hover:text-white transition"><ArrowLeft className="w-5 h-5" /></Link>
       </div>
 
       {/* Kennel banner */}

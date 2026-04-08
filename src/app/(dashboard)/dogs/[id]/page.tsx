@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette } from 'lucide-react'
+import { Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette } from 'lucide-react'
+import BackButton from '@/components/ui/back-button'
 import { BRAND } from '@/lib/constants'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import DogGallery from '@/components/dogs/dog-gallery'
@@ -71,9 +72,9 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         </div>
 
         {/* Back button top-left */}
-        <Link href="/dogs" className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
+        <div className="absolute top-4 left-4">
+          <BackButton fallback="/dogs" />
+        </div>
       </div>
 
       {/* Content */}
