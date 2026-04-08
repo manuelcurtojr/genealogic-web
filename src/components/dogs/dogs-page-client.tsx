@@ -190,6 +190,12 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
       <DogFormPanel
         open={panelOpen}
         onClose={closePanel}
+        onSaved={(newId) => {
+          if (newId) {
+            // Reopen in edit mode so user can add photos
+            setTimeout(() => openEdit(newId), 300)
+          }
+        }}
         editDogId={editDogId}
         userId={userId}
       />
