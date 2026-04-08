@@ -61,6 +61,8 @@ Rules:
 - If data is not available, use null
 - Return ONLY the JSON, no markdown, no explanation`
 
+export const maxDuration = 60 // Allow up to 60s for AI extraction
+
 export async function POST(request: NextRequest) {
   try {
     // Load API keys from DB or env
@@ -80,7 +82,6 @@ export async function POST(request: NextRequest) {
     const fetchStrategies = [
       { ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
       { ua: 'Googlebot/2.1 (+http://www.google.com/bot.html)' },
-      { ua: 'Mozilla/5.0 (compatible; Genealogic/1.0)' },
     ]
 
     for (const strategy of fetchStrategies) {
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
           },
-          signal: AbortSignal.timeout(15000),
+          signal: AbortSignal.timeout(10000),
           redirect: 'follow',
         })
         const html = await res.text()

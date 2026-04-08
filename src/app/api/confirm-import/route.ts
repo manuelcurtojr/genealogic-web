@@ -8,6 +8,8 @@ interface ImportDog {
   generation?: number
 }
 
+export const maxDuration = 60
+
 // POST: Confirm import
 export async function POST(request: NextRequest) {
   try {
