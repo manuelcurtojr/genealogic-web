@@ -123,14 +123,15 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         {/* Tabs — right after parents */}
         <DogTabs dogId={id} ownerId={dog.owner_id} isOwner={isOwner} fatherId={dog.father_id} motherId={dog.mother_id} dogSex={dog.sex} />
 
-        {/* Pedigree */}
-        {pedigree && pedigree.length > 1 && (
-          <div className="mt-8">
-            <h2 className="text-lg font-bold mb-6">Pedigri</h2>
-            <PedigreeTree data={pedigree} rootId={id} />
-          </div>
-        )}
       </div>
+
+      {/* Pedigree — full bleed on mobile, padding inside scroll */}
+      {pedigree && pedigree.length > 1 && (
+        <div className="-mx-4 lg:mx-0 mt-4 sm:mt-8">
+          <h2 className="text-lg font-bold mb-4 sm:mb-6 px-4 lg:px-0">Pedigri</h2>
+          <PedigreeTree data={pedigree} rootId={id} />
+        </div>
+      )}
     </div>
   )
 }

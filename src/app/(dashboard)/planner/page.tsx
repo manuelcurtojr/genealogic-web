@@ -109,8 +109,8 @@ export default function PlannerPage() {
       {loading ? (
         <div className="text-center py-12 text-white/30">Cargando pedigrí combinado...</div>
       ) : pedigreeData.length > 1 ? (
-        <div>
-          <h2 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-3">Genealogía</h2>
+        <div className="-mx-4 lg:mx-0">
+          <h2 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-3 px-4 lg:px-0">Genealogía</h2>
           <PedigreeTree data={pedigreeData} rootId="virtual-litter" />
         </div>
       ) : sireId && damId ? (

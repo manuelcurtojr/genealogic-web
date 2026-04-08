@@ -178,10 +178,10 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
       {/* Waiting list — only for owner */}
       {isOwner && <LitterWaitingList litterId={id} isOwner={isOwner} />}
 
-      {/* Pedigree - free, no box */}
+      {/* Pedigree — full bleed on mobile */}
       {pedigreeData.length > 1 && pedigreeRootId && (
-        <div className="mb-6">
-          <h2 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-3">Genealogia</h2>
+        <div className="-mx-4 lg:mx-0 mb-6">
+          <h2 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-3 px-4 lg:px-0">Genealogia</h2>
           <PedigreeTree data={pedigreeData} rootId={pedigreeRootId} />
         </div>
       )}
