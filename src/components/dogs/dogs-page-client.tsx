@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Grid3X3, List, ChevronLeft, ChevronRight, Search, Plus, Eye, Edit, GitBranch, Mars, Venus, ArrowRightLeft } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Grid3X3, List, Search, Plus, Eye, Edit, ArrowRightLeft } from 'lucide-react'
 import DogCard from './dog-card'
 import DogFormPanel from './dog-form-panel'
 import TransferPanel from '../kennel/transfer-panel'
@@ -43,7 +43,8 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
     if (typeof window !== 'undefined') return (localStorage.getItem('dogs-view') as 'grid' | 'list') || 'grid'
     return 'grid'
   })
-  const [page, setPage] = useState(0)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
 
   const changeView = (v: 'grid' | 'list') => { setViewMode(v); localStorage.setItem('dogs-view', v) }
 
@@ -59,10 +60,22 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
     return true
   })
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
-  const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const paged = filtered.slice(0, visibleCount)
+  const hasMore = visibleCount < filtered.length
 
-  const handleSearchChange = (v: string) => { setSearch(v); setPage(0) }
+  // Reset visible count when filters change
+  const handleSearchChange = (v: string) => { setSearch(v); setVisibleCount(PAGE_SIZE) }
+
+  // Infinite scroll with IntersectionObserver
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasMore) return
+    const observer = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) setVisibleCount(prev => prev + PAGE_SIZE) },
+      { threshold: 0.1 }
+    )
+    observer.observe(loadMoreRef.current)
+    return () => observer.disconnect()
+  }, [hasMore, visibleCount])
 
   return (
     <>
@@ -89,7 +102,7 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
           {/* Sex filter — dropdown */}
           <select
             value={sexFilter}
-            onChange={(e) => { setSexFilter(e.target.value); setPage(0) }}
+            onChange={(e) => { setSexFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
             className="bg-white/5 border border-white/10 rounded-lg px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-0 flex-1 sm:flex-none sm:min-w-[130px]"
           >
             <option value="">Todos los sexos</option>
@@ -100,7 +113,7 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
           {/* Breed filter */}
           <select
             value={breedFilter}
-            onChange={(e) => { setBreedFilter(e.target.value); setPage(0) }}
+            onChange={(e) => { setBreedFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
             className="bg-white/5 border border-white/10 rounded-lg px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-0 flex-1 sm:flex-none sm:min-w-[160px]"
           >
             <option value="">Todas las razas</option>
@@ -167,44 +180,8 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
         </div>
       )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-6">
-          <button
-            onClick={() => setPage(p => Math.max(0, p - 1))}
-            disabled={page === 0}
-            className="p-2 text-white/30 hover:text-white disabled:opacity-20 transition"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-            let pageNum = i
-            if (totalPages > 7) {
-              if (page < 4) pageNum = i
-              else if (page > totalPages - 4) pageNum = totalPages - 7 + i
-              else pageNum = page - 3 + i
-            }
-            return (
-              <button
-                key={pageNum}
-                onClick={() => setPage(pageNum)}
-                className={`w-8 h-8 rounded-lg text-sm transition ${
-                  page === pageNum ? 'bg-[#D74709] text-white' : 'text-white/40 hover:bg-white/10'
-                }`}
-              >
-                {pageNum + 1}
-              </button>
-            )
-          })}
-          <button
-            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-            disabled={page === totalPages - 1}
-            className="p-2 text-white/30 hover:text-white disabled:opacity-20 transition"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      {/* Infinite scroll sentinel */}
+      {hasMore && <div ref={loadMoreRef} className="h-10" />}
 
       {/* Dog form slide panel (add + edit) */}
       <DogFormPanel
