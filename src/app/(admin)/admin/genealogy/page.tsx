@@ -48,12 +48,14 @@ export default async function AdminGenealogyPage() {
   })
 
   return (
-    <AdminGenealogyClient
-      dogs={dogsWithCompleteness}
-      allDogs={dogs || []}
-      breeds={breeds || []}
-      colors={colors || []}
-      userId={user.id}
-    />
+    <div className="-m-6 lg:-m-8">
+      <AdminGenealogyClient
+        dogs={dogsWithCompleteness}
+        allDogs={dogs || []}
+        breeds={breeds || []}
+        colors={colors || []}
+        userId={user.id}
+      />
+    </div>
   )
 }
