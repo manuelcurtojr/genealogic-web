@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { X, Plus, Link2, Unlink, Search, Loader2, GitBranch } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
-import PedigreeTree from './pedigree-tree'
+import AdminPedigreeTree from '../admin/admin-pedigree-tree'
 
 interface Props {
   open: boolean
@@ -163,12 +163,12 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
           </button>
         </div>
 
-        {/* Tree area */}
-        <div className="flex-1 overflow-auto relative">
+        {/* Tree area — fills remaining space, AdminPedigreeTree handles scroll + controls */}
+        <div className="flex-1 relative min-h-0">
           {loading ? (
             <div className="flex items-center justify-center h-full"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
           ) : pedigreeData.length > 0 ? (
-            <PedigreeTree data={pedigreeData} rootId={dogId} onClickDog={handleClickDog} onClickEmpty={handleClickEmpty} />
+            <AdminPedigreeTree data={pedigreeData} rootId={dogId} onClickDog={handleClickDog} onClickEmpty={handleClickEmpty} />
           ) : (
             <div className="flex items-center justify-center h-full text-white/20">
               <div className="text-center">

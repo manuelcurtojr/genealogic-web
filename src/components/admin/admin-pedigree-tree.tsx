@@ -35,7 +35,7 @@ export default function AdminPedigreeTree({ data, rootId, onClickDog, onClickEmp
   return (
     <div className="relative h-full" onClick={close}>
       <div className="h-full overflow-auto" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}>
-        <div className="min-w-max min-h-max py-6 px-4 pb-24">
+        <div className="min-w-max min-h-full flex items-center py-6 px-4 pb-24">
           <HN n={root} nm={nm} g={0} mx={maxGen} isRoot onClickDog={onClickDog} onClickEmpty={onClickEmpty} />
         </div>
       </div>
