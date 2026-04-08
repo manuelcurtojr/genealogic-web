@@ -9,7 +9,14 @@ const FIELD_LABELS: Record<string, string> = {
   microchip: 'Microchip', weight: 'Peso', height: 'Altura', breed_id: 'Raza',
   color_id: 'Color', kennel_id: 'Criadero', father_id: 'Padre', mother_id: 'Madre',
   is_public: 'Visibilidad', thumbnail_url: 'Foto principal',
+  is_for_sale: 'En venta', sale_price: 'Precio', sale_location: 'Ubicación',
+  breeder_id: 'Criador', owner_id: 'Propietario',
+  photo_added: 'Foto añadida', photo_removed: 'Foto eliminada',
+  verified: 'Perfil verificado',
 }
+
+// Fields where the value is a URL (show "foto" instead of the URL)
+const URL_FIELDS = new Set(['photo_added', 'photo_removed', 'thumbnail_url'])
 
 export default function HistorialTab({ dogId }: { dogId: string }) {
   const [changes, setChanges] = useState<any[]>([])
@@ -55,13 +62,19 @@ export default function HistorialTab({ dogId }: { dogId: string }) {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-white/60">
                     <span className="font-semibold text-white/80">{FIELD_LABELS[c.field_name] || c.field_name}</span>
-                    {' cambiado'}
+                    {c.field_name === 'photo_added' ? '' : c.field_name === 'photo_removed' ? '' : ' cambiado'}
                   </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    {c.old_value && <span className="text-[11px] text-red-400/60 line-through truncate max-w-[120px]">{c.old_value}</span>}
-                    {c.old_value && c.new_value && <span className="text-[10px] text-white/20">&rarr;</span>}
-                    {c.new_value && <span className="text-[11px] text-green-400/60 truncate max-w-[120px]">{c.new_value}</span>}
-                  </div>
+                  {URL_FIELDS.has(c.field_name) ? (
+                    <div className="flex items-center gap-2 mt-1">
+                      {c.new_value && <img src={c.new_value} alt="" className="w-10 h-10 rounded-md object-cover" />}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {c.old_value && <span className="text-[11px] text-red-400/60 line-through truncate max-w-[120px]">{c.old_value}</span>}
+                      {c.old_value && c.new_value && <span className="text-[10px] text-white/20">&rarr;</span>}
+                      {c.new_value && <span className="text-[11px] text-green-400/60 truncate max-w-[120px]">{c.new_value}</span>}
+                    </div>
+                  )}
                 </div>
                 <span className="text-[10px] text-white/20 flex-shrink-0">
                   {new Date(c.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}

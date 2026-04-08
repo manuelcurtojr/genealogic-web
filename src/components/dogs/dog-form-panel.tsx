@@ -119,7 +119,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       // Track changes
       if (originalForm) {
         const changes: { field_name: string; old_value: string | null; new_value: string | null }[] = []
-        const fields = ['name','sex','birth_date','registration','microchip','weight','height','breed_id','color_id','kennel_id','father_id','mother_id','is_public']
+        const fields = ['name','sex','birth_date','registration','microchip','weight','height','breed_id','color_id','kennel_id','father_id','mother_id','is_public','is_for_sale','sale_price','sale_location','breeder_id']
         for (const f of fields) {
           const ov = String(originalForm[f] || ''), nv = String((form as any)[f] || '')
           if (ov !== nv) changes.push({ field_name: f, old_value: ov || null, new_value: nv || null })

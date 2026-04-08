@@ -32,9 +32,13 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
       const newPos = photos.length + i
       await supabase.from('dog_photos').insert({ dog_id: dogId, url: publicUrl, storage_path: path, position: newPos })
 
+      // Track photo upload in history
+      await supabase.from('dog_changes').insert({ dog_id: dogId, user_id: userId, field_name: 'photo_added', old_value: null, new_value: publicUrl })
+
       // First photo overall becomes thumbnail
       if (newPos === 0) {
         await supabase.from('dogs').update({ thumbnail_url: publicUrl }).eq('id', dogId)
+        await supabase.from('dog_changes').insert({ dog_id: dogId, user_id: userId, field_name: 'thumbnail_url', old_value: null, new_value: publicUrl })
       }
     }
     setUploading(false)
@@ -44,6 +48,9 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
   async function deletePhoto(photo: any) {
     if (photo.storage_path) await supabase.storage.from('dog-photos').remove([photo.storage_path])
     await supabase.from('dog_photos').delete().eq('id', photo.id)
+
+    // Track photo deletion in history
+    await supabase.from('dog_changes').insert({ dog_id: dogId, user_id: userId, field_name: 'photo_removed', old_value: photo.url, new_value: null })
 
     // Reload and fix positions + thumbnail
     const { data: remaining } = await supabase.from('dog_photos').select('*').eq('dog_id', dogId).order('position')
