@@ -104,13 +104,13 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
         <p className="text-white/50 text-xs sm:text-sm mt-1">{litters.length} camadas</p>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-        <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
+      <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por padre, madre o raza..."
             className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
         </div>
-        <div className="flex rounded-lg border border-white/10 overflow-hidden">
+        <div className="flex rounded-lg border border-white/10 overflow-hidden shrink-0">
           <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}><Grid3X3 className="w-4 h-4" /></button>
           <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}><List className="w-4 h-4" /></button>
         </div>
@@ -119,7 +119,7 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
       <p className="text-xs text-white/30 mb-3">{filtered.length} camada{filtered.length !== 1 ? 's' : ''}</p>
 
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
           <button onClick={openAdd}
             className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer min-h-[160px] sm:min-h-[200px]">
             <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
@@ -193,6 +193,13 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
         </div>
       ) : (
         <div className="space-y-2">
+          <button onClick={openAdd}
+            className="w-full flex items-center gap-3 border-2 border-dashed border-white/10 rounded-xl p-3 sm:p-4 hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition shrink-0">
+              <Plus className="w-5 h-5 text-white/30 group-hover:text-[#D74709] transition" />
+            </div>
+            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir camada</p>
+          </button>
           {filtered.map(litter => {
             const father = litter.father as any
             const mother = litter.mother as any
