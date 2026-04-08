@@ -1,13 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { Search, Store, Dog, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
+import AdminKennelPanel from './admin-kennel-panel'
 
 interface Props { kennels: any[] }
 
-export default function AdminKennelsClient({ kennels }: Props) {
+export default function AdminKennelsClient({ kennels: initKennels }: Props) {
+  const [kennels, setKennels] = useState(initKennels)
   const [search, setSearch] = useState('')
+  const [panelKennelId, setPanelKennelId] = useState<string | null>(null)
 
   const filtered = kennels.filter(k => {
     if (!search) return true
@@ -47,7 +51,7 @@ export default function AdminKennelsClient({ kennels }: Props) {
             {filtered.map(k => {
               const owner = k.owner as any
               return (
-                <tr key={k.id} className="border-b border-white/5 hover:bg-white/[0.02] transition">
+                <tr key={k.id} className="border-b border-white/5 hover:bg-white/[0.02] transition cursor-pointer" onClick={() => setPanelKennelId(k.id)}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/5 border border-white/10 flex-shrink-0 flex items-center justify-center">
@@ -79,6 +83,23 @@ export default function AdminKennelsClient({ kennels }: Props) {
         </table>
         {filtered.length === 0 && <p className="text-center py-8 text-white/30 text-sm">Sin resultados</p>}
       </div>
+
+      <AdminKennelPanel
+        open={!!panelKennelId}
+        onClose={() => setPanelKennelId(null)}
+        onSaved={async () => {
+          const supabase = createClient()
+          const { data } = await supabase.from('kennels').select('id, name, logo_url, description, website, owner_id, created_at, affix_format').order('created_at', { ascending: false })
+          const ownerIds = [...new Set((data || []).map(k => k.owner_id).filter(Boolean))]
+          const { data: owners } = ownerIds.length > 0 ? await supabase.from('profiles').select('id, display_name, email').in('id', ownerIds) : { data: [] }
+          const ownerMap = new Map((owners || []).map(p => [p.id, p]))
+          const { data: dogCounts } = await supabase.from('dogs').select('kennel_id').in('kennel_id', (data || []).map(k => k.id))
+          const countMap: Record<string, number> = {}
+          ;(dogCounts || []).forEach((d: any) => { countMap[d.kennel_id] = (countMap[d.kennel_id] || 0) + 1 })
+          setKennels((data || []).map(k => ({ ...k, owner: ownerMap.get(k.owner_id) || null, dog_count: countMap[k.id] || 0 })))
+        }}
+        kennelId={panelKennelId}
+      />
     </div>
   )
 }
