@@ -158,6 +158,31 @@ export async function POST(request: NextRequest) {
     if (!htmlContent) needsScreenshot = true
     } // end fetch strategies
 
+    // Step 1b: ScrapingBee residential proxy (if direct fetch failed)
+    if (!htmlContent && fetchUrl) {
+      try {
+        const sbSupabase = createSupabase(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+        const { data: sbKey } = await sbSupabase.from('platform_settings').select('value').eq('key', 'SCRAPINGBEE_API_KEY').single()
+        if (sbKey?.value) {
+          const sbUrl = `https://app.scrapingbee.com/api/v1/?api_key=${sbKey.value}&url=${encodeURIComponent(fetchUrl)}&render_js=false&premium_proxy=true`
+          const sbRes = await fetch(sbUrl, { signal: AbortSignal.timeout(25000) })
+          if (sbRes.ok) {
+            const html = await sbRes.text()
+            if (html.length > 3000 && !html.includes('403 Forbidden')) {
+              htmlContent = html
+                .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+                .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+                .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
+                .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
+                .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '')
+                .slice(0, 80000)
+              needsScreenshot = false
+            }
+          }
+        }
+      } catch { /* ScrapingBee failed, continue to screenshot */ }
+    }
+
     // Step 2: Screenshot fallback
     let screenshotBase64: string | null = null
     if (needsScreenshot && APIFLASH_KEY) {
