@@ -21,22 +21,22 @@ export default async function FavoritesPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Favoritos</h1>
-        <p className="text-white/50 text-sm mt-1">{dogs.length} perros guardados</p>
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">Favoritos</h1>
+        <p className="text-white/50 text-xs sm:text-sm mt-1">{dogs.length} perros guardados</p>
       </div>
 
       {dogs.length === 0 ? (
-        <div className="text-center py-20">
-          <Heart className="w-16 h-16 text-white/20 mx-auto mb-4" />
-          <p className="text-white/40 text-lg">No tienes favoritos</p>
+        <div className="text-center py-12 sm:py-20">
+          <Heart className="w-12 h-12 sm:w-16 sm:h-16 text-white/20 mx-auto mb-4" />
+          <p className="text-white/40 text-base sm:text-lg">No tienes favoritos</p>
           <p className="text-white/25 text-sm mt-2">Pulsa el corazon en el perfil de un perro para guardarlo</p>
           <Link href="/dogs" className="text-sm text-[#D74709] hover:underline mt-4 inline-block">
             Explorar perros
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
           {dogs.map((dog: any) => {
             const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
             const sexIcon = dog.sex === 'male' ? '♂' : '♀'
@@ -65,12 +65,12 @@ export default async function FavoritesPage() {
                 </div>
 
                 {/* Info */}
-                <div className="p-3">
+                <div className="p-2 sm:p-3">
                   <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1.5 group-hover:text-[#D74709] transition">
-                    <span className="text-sm font-semibold truncate">{dog.name}</span>
+                    <span className="text-xs sm:text-sm font-semibold truncate">{dog.name}</span>
                     <span className="text-xs" style={{ color: sexColor }}>{sexIcon}</span>
                   </Link>
-                  <div className="flex items-center gap-3 mt-1.5 text-[11px] text-white/35">
+                  <div className="flex items-center gap-3 mt-1.5 text-[10px] sm:text-[11px] text-white/35">
                     {dog.birth_date && <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
                     {colorName && <span>{colorName}</span>}
                   </div>
@@ -79,7 +79,7 @@ export default async function FavoritesPage() {
                   )}
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/5">
+                  <div className="flex items-center gap-2 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-white/5">
                     <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition">
                       Ver perfil
                     </Link>

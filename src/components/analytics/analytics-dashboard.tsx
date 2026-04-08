@@ -185,13 +185,13 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Analiticas</h1>
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+      <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Analiticas</h1>
+      <div className="flex gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1 -mx-1 px-1">
         {sections.map(s => {
           const Icon = s.icon
           return (
             <button key={s.key} onClick={() => setActiveSection(s.key)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${activeSection === s.key ? 'bg-[#D74709]/15 text-[#D74709] border border-[#D74709]/30' : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'}`}>
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition ${activeSection === s.key ? 'bg-[#D74709]/15 text-[#D74709] border border-[#D74709]/30' : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'}`}>
               <Icon className="w-3.5 h-3.5" /> {s.label}
             </button>
           )
@@ -201,13 +201,13 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
       {/* === RESUMEN === */}
       {activeSection === 'resumen' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
             <Card icon={Dog} label="Perros" value={stats.totalDogs} color="#D74709" />
             <Card icon={Tag} label="En venta" value={stats.forSale} color="#10B981" />
             <Card icon={Baby} label="Camadas" value={stats.totalLitters} color="#8B5CF6" />
             <Card icon={HandCoins} label="Negocios" value={stats.totalDeals} color="#F59E0B" />
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
             <Card icon={TrendingUp} label="Revenue" value={`${fmt(stats.totalRevenue)} €`} color="#10B981" />
             <Card icon={Target} label="Win rate" value={`${stats.winRate}%`} color="#D74709" />
             <Card icon={Users} label="Contactos" value={stats.totalContacts} color="#3B82F6" />
@@ -215,9 +215,9 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
           </div>
 
           {/* Funnel */}
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
             <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Embudo de ventas</h3>
-            <div className="flex items-center gap-3 text-center">
+            <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3 text-center">
               {[
                 { label: 'Solicitudes', value: stats.totalSubmissions, color: 'blue' },
                 { label: 'Negocios', value: stats.totalDeals, color: 'yellow' },
@@ -236,8 +236,9 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
           </div>
 
           {/* Monthly trend chart */}
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 overflow-x-auto">
             <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Tendencia mensual de negocios</h3>
+            <div className="min-w-[320px]">
             <ResponsiveContainer width="100%" height={250}>
               <AreaChart data={stats.monthlyDeals}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -250,6 +251,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
                 <Legend wrapperStyle={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }} />
               </AreaChart>
             </ResponsiveContainer>
+            </div>
           </div>
         </div>
       )}
@@ -257,7 +259,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
       {/* === VENTAS === */}
       {activeSection === 'ventas' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
             <Card icon={TrendingUp} label="Ganado" value={`${fmt(stats.totalRevenue)} €`} color="#10B981" />
             <Card icon={TrendingDown} label="Perdido" value={`${fmt(stats.lostRevenue)} €`} color="#EF4444" />
             <Card icon={HandCoins} label="Pipeline" value={`${fmt(stats.activeRevenue)} €`} color="#3B82F6" />
@@ -266,8 +268,9 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
           </div>
 
           {/* Deals by stage bar chart */}
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 overflow-x-auto">
             <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Negocios por etapa</h3>
+            <div className="min-w-[320px]">
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={stats.dealsByStage} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -279,11 +282,12 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Loss reasons */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
               <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Razones de perdida</h3>
               {stats.topLosses.length === 0 ? <p className="text-xs text-white/25 text-center py-8">Sin datos</p> : (
                 <ResponsiveContainer width="100%" height={200}>
@@ -298,7 +302,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
             </div>
 
             {/* Clients by country */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
               <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-1"><Globe className="w-3 h-3" /> Clientes por pais</h3>
               {stats.countryData.length === 0 ? <p className="text-xs text-white/25 text-center py-8">Sin datos</p> : (
                 <ResponsiveContainer width="100%" height={200}>
@@ -318,7 +322,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
       {/* === REPRODUCCION === */}
       {activeSection === 'reproduccion' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
             <Card icon={Baby} label="Camadas" value={stats.totalLitters} color="#8B5CF6" />
             <Card icon={Dog} label="Cachorros" value={stats.totalPuppies} color="#D74709" />
             <Card icon={BarChart3} label="Media/camada" value={stats.avgPuppies} color="#3B82F6" />
@@ -327,7 +331,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Litters by year */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
               <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Camadas por ano</h3>
               {stats.littersChart.length === 0 ? <p className="text-xs text-white/25 text-center py-8">Sin datos</p> : (
                 <ResponsiveContainer width="100%" height={220}>
@@ -343,7 +347,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
             </div>
 
             {/* Top reproducers */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
               <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Top reproductores</h3>
               {stats.topReproducers.length === 0 ? <p className="text-xs text-white/25 text-center py-8">Sin datos</p> : (
                 <ResponsiveContainer width="100%" height={220}>
@@ -365,7 +369,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
       {/* === CRIADERO === */}
       {activeSection === 'criadero' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
             <Card icon={Dog} label="Perros criadero" value={stats.totalKennelDogs} color="#D74709" />
             <Card icon={ArrowRightLeft} label="Transferidos" value={stats.transferred} color="#8B5CF6" />
             <Card icon={Dog} label="Retenidos" value={stats.retained} color="#10B981" />
@@ -374,7 +378,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Breed pie chart */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 overflow-x-auto">
               <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Distribucion por raza</h3>
               {stats.breedPie.length === 0 ? <p className="text-xs text-white/25 text-center py-8">Sin datos</p> : (
                 <ResponsiveContainer width="100%" height={250}>
@@ -390,7 +394,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
 
             {/* Sex + pedigree */}
             <div className="space-y-4">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
                 <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Sexo</h3>
                 <div className="flex gap-4">
                   <div className="flex-1 text-center bg-blue-500/10 rounded-lg p-3">
@@ -403,7 +407,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
                   </div>
                 </div>
               </div>
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
                 <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Pedigree</h3>
                 <div className="flex gap-4">
                   <div className="flex-1 text-center bg-green-500/10 rounded-lg p-3">
@@ -424,7 +428,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
       {/* === FORMULARIOS === */}
       {activeSection === 'formularios' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3">
             <Card icon={FileText} label="Solicitudes" value={stats.totalSubmissions} color="#EC4899" />
             <Card icon={Target} label="→ Negocio" value={`${pct(stats.totalDeals, stats.totalSubmissions)}%`} color="#D74709" />
             <Card icon={TrendingUp} label="→ Venta" value={`${pct(stats.wonDeals, stats.totalSubmissions)}%`} color="#10B981" />
@@ -432,7 +436,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Submissions area chart */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
               <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Solicitudes por mes</h3>
               <ResponsiveContainer width="100%" height={220}>
                 <AreaChart data={stats.subMonthly}>
@@ -446,7 +450,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
             </div>
 
             {/* Breed demand */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
               <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Razas mas demandadas</h3>
               {stats.demandChart.length === 0 ? <p className="text-xs text-white/25 text-center py-8">Sin datos</p> : (
                 <ResponsiveContainer width="100%" height={220}>
@@ -466,14 +470,14 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
       {/* === ACTIVIDAD === */}
       {activeSection === 'actividad' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
             <Card icon={Stethoscope} label="Vet records" value={stats.vetCount} color="#3B82F6" />
             <Card icon={Trophy} label="Premios" value={stats.awardsCount} color="#F59E0B" />
             <Card icon={Gem} label="Genes" value={stats.genesBalance} color="#8B5CF6" />
             <Card icon={Clock} label="Antiguedad" value={`${stats.accountAge}a`} color="#06B6D4" />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
               <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Genes</h3>
               <div className="flex gap-4 mb-4">
                 <div className="flex-1 text-center bg-green-500/10 rounded-lg p-3">
@@ -490,7 +494,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
                 </div>
               </div>
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
               <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Resumen</h3>
               <div className="space-y-2">
                 {[
