@@ -41,25 +41,25 @@ export default function DogCard({ dog, onEdit, onTransfer }: DogCardProps) {
       </Link>
 
       {/* Info */}
-      <div className="p-3">
-        <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1.5 group-hover:text-[#D74709] transition">
-          <span className="text-sm font-semibold truncate">{dog.name}</span>
-          <span className="text-xs" style={{ color: sexColor }}>{sexIcon}</span>
+      <div className="p-2 sm:p-3">
+        <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1 sm:gap-1.5 group-hover:text-[#D74709] transition">
+          <span className="text-xs sm:text-sm font-semibold truncate">{dog.name}</span>
+          <span className="text-[10px] sm:text-xs" style={{ color: sexColor }}>{sexIcon}</span>
         </Link>
-        <div className="flex items-center gap-3 mt-1.5 text-[11px] text-white/35">
+        <div className="flex items-center gap-2 sm:gap-3 mt-1 sm:mt-1.5 text-[10px] sm:text-[11px] text-white/35">
           {dog.birth_date && <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
-          {colorName && <span>{colorName}</span>}
+          {colorName && <span className="truncate">{colorName}</span>}
         </div>
 
         {/* Action buttons - pill style matching kennel/litter */}
-        <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-white/5">
-          <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition">
+        <div className="flex items-center gap-1 sm:gap-1.5 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-white/5">
+          <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded text-[9px] sm:text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition">
             <Eye className="w-3 h-3" /> Ver
           </Link>
-          <button onClick={onEdit} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition">
-            <Edit className="w-3 h-3" /> Editar
+          <button onClick={onEdit} className="flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded text-[9px] sm:text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition">
+            <Edit className="w-3 h-3" /> <span className="hidden sm:inline">Editar</span><span className="sm:hidden">Edit</span>
           </button>
-          <button onClick={onTransfer} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709] transition ml-auto">
+          <button onClick={onTransfer} className="flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded text-[9px] sm:text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709] transition ml-auto">
             <ArrowRightLeft className="w-3 h-3" />
           </button>
         </div>
