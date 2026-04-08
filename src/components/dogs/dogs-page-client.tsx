@@ -85,49 +85,45 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
         <p className="text-white/50 text-xs sm:text-sm mt-1">{dogs.length} perros registrados</p>
       </div>
 
-      {/* Filter bar */}
-      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-        <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
+      {/* Search + view toggle (always same row) */}
+      <div className="flex items-center gap-2 mb-2 sm:mb-3">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
           <input
             type="text"
             placeholder="Buscar por nombre, raza, color..."
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition"
+            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition"
           />
         </div>
-
-        <div className="flex items-center gap-2 flex-wrap min-w-0">
-          {/* Sex filter — dropdown */}
-          <select
-            value={sexFilter}
-            onChange={(e) => { setSexFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
-            className="bg-white/5 border border-white/10 rounded-lg px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-0 flex-1 sm:flex-none sm:min-w-[130px]"
-          >
-            <option value="">Todos los sexos</option>
-            <option value="male">Machos</option>
-            <option value="female">Hembras</option>
-          </select>
-
-          {/* Breed filter */}
-          <select
-            value={breedFilter}
-            onChange={(e) => { setBreedFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
-            className="bg-white/5 border border-white/10 rounded-lg px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-0 flex-1 sm:flex-none sm:min-w-[160px]"
-          >
-            <option value="">Todas las razas</option>
-            {breeds.map((b) => (
-              <option key={b.id} value={b.id}>{b.name}</option>
-            ))}
-          </select>
-
-          {/* View toggle */}
-          <div className="flex rounded-lg border border-white/10 overflow-hidden shrink-0">
-            <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><Grid3X3 className="w-4 h-4" /></button>
-            <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><List className="w-4 h-4" /></button>
-          </div>
+        <div className="flex rounded-lg border border-white/10 overflow-hidden shrink-0">
+          <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><Grid3X3 className="w-4 h-4" /></button>
+          <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><List className="w-4 h-4" /></button>
         </div>
+      </div>
+
+      {/* Filters row */}
+      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+        <select
+          value={sexFilter}
+          onChange={(e) => { setSexFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
+          className="bg-white/5 border border-white/10 rounded-lg px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer flex-1 min-w-0 sm:flex-none sm:min-w-[130px]"
+        >
+          <option value="">Todos los sexos</option>
+          <option value="male">Machos</option>
+          <option value="female">Hembras</option>
+        </select>
+        <select
+          value={breedFilter}
+          onChange={(e) => { setBreedFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
+          className="bg-white/5 border border-white/10 rounded-lg px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer flex-1 min-w-0 sm:flex-none sm:min-w-[160px]"
+        >
+          <option value="">Todas las razas</option>
+          {breeds.map((b) => (
+            <option key={b.id} value={b.id}>{b.name}</option>
+          ))}
+        </select>
       </div>
 
       {/* Count */}
