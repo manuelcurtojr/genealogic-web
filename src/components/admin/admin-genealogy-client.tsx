@@ -15,7 +15,7 @@ interface Props {
 }
 
 const DOG_PANEL_WIDTH = 280
-const DOG_PANEL_COLLAPSED = 40
+const DOG_PANEL_COLLAPSED = 44
 
 export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, userId }: Props) {
   const [search, setSearch] = useState('')
@@ -161,7 +161,7 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
         style={{ left: sidebarWidth, width: dogPanelPx }}>
 
         {/* Header — aligned with admin sidebar header */}
-        <div className="h-14 border-b border-white/10 flex items-center px-2 flex-shrink-0">
+        <div className={`h-14 border-b border-white/10 flex items-center flex-shrink-0 ${listCollapsed ? 'justify-center' : 'px-2'}`}>
           <button onClick={() => setListCollapsed(!listCollapsed)}
             className="w-10 h-10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 rounded-lg transition flex-shrink-0">
             {listCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
