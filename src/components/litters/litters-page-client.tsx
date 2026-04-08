@@ -99,13 +99,13 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
 
   return (
     <>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Camadas</h1>
-        <p className="text-white/50 text-sm mt-1">{litters.length} camadas</p>
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">Camadas</h1>
+        <p className="text-white/50 text-xs sm:text-sm mt-1">{litters.length} camadas</p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+        <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por padre, madre o raza..."
             className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
@@ -119,10 +119,10 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
       <p className="text-xs text-white/30 mb-3">{filtered.length} camada{filtered.length !== 1 ? 's' : ''}</p>
 
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
           <button onClick={openAdd}
-            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer min-h-[200px]">
-            <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
+            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer min-h-[160px] sm:min-h-[200px]">
+            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
               <Plus className="w-6 h-6 text-white/30 group-hover:text-[#D74709] transition" />
             </div>
             <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir camada</p>
@@ -199,13 +199,13 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
             const status = statusConfig[litter.status] || statusConfig.planned
             const hasPuppies = litter.puppy_count && litter.puppy_count > 0
             return (
-              <div key={litter.id} className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition cursor-pointer" onClick={() => window.location.href = `/litters/${litter.id}`}>
+              <div key={litter.id} className="flex items-center gap-2.5 sm:gap-4 bg-white/5 border border-white/10 rounded-xl p-2.5 sm:p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition cursor-pointer" onClick={() => window.location.href = `/litters/${litter.id}`}>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.male }}>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.male }}>
                     {father?.thumbnail_url ? <img src={father.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-blue-400/30 text-xs">♂</div>}
                   </div>
                   <span className="text-white/20 text-xs">x</span>
-                  <div className="w-10 h-10 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.female }}>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.female }}>
                     {mother?.thumbnail_url ? <img src={mother.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-pink-400/30 text-xs">♀</div>}
                   </div>
                 </div>
@@ -218,8 +218,8 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   <span className="text-[10px] font-semibold rounded-full px-2 py-0.5" style={{ backgroundColor: status.color + '20', color: status.color }}>{status.label}</span>
-                  <Link href={`/litters/${litter.id}`} onClick={e => e.stopPropagation()} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition"><Eye className="w-3 h-3" /> Ver</Link>
-                  <button onClick={e => { e.stopPropagation(); openEdit(litter.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition"><Edit className="w-3 h-3" /> Editar</button>
+                  <Link href={`/litters/${litter.id}`} onClick={e => e.stopPropagation()} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition"><Eye className="w-3 h-3" /> <span className="hidden sm:inline">Ver</span></Link>
+                  <button onClick={e => { e.stopPropagation(); openEdit(litter.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition"><Edit className="w-3 h-3" /> <span className="hidden sm:inline">Editar</span></button>
                 </div>
               </div>
             )

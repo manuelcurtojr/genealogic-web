@@ -78,15 +78,15 @@ export default function PlannerPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold">Planificador de Cruces</h1>
-        <p className="text-sm text-white/40 mt-1">Selecciona un macho y una hembra para ver el pedigri combinado y calcular el COI</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold">Planificador de Cruces</h1>
+        <p className="text-xs sm:text-sm text-white/40 mt-1">Selecciona un macho y una hembra para ver el pedigri combinado y calcular el COI</p>
       </div>
 
       {/* Parent selectors */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div className="bg-white/5 border border-blue-400/30 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-3">Padre (Macho)</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="bg-white/5 border border-blue-400/30 rounded-xl p-3 sm:p-5">
+          <h3 className="text-xs sm:text-sm font-semibold text-blue-400 uppercase tracking-wider mb-2 sm:mb-3">Padre (Macho)</h3>
           <SearchableSelect
             options={males}
             value={sireId}
@@ -94,8 +94,8 @@ export default function PlannerPage() {
             placeholder="Seleccionar macho..."
           />
         </div>
-        <div className="bg-white/5 border border-pink-400/30 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-pink-400 uppercase tracking-wider mb-3">Madre (Hembra)</h3>
+        <div className="bg-white/5 border border-pink-400/30 rounded-xl p-3 sm:p-5">
+          <h3 className="text-xs sm:text-sm font-semibold text-pink-400 uppercase tracking-wider mb-2 sm:mb-3">Madre (Hembra)</h3>
           <SearchableSelect
             options={females}
             value={damId}

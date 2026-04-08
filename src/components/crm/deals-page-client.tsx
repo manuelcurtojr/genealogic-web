@@ -181,20 +181,20 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Negocios</h1>
-          <p className="text-white/50 text-sm mt-1">{pipelineDeals.length} negocios en {activePipeline?.name || 'pipeline'}</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Negocios</h1>
+          <p className="text-white/50 text-xs sm:text-sm mt-1">{pipelineDeals.length} negocios en {activePipeline?.name || 'pipeline'}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowDashboard(!showDashboard)}
-            className={`px-4 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition border ${showDashboard ? 'bg-[#D74709]/15 text-[#D74709] border-[#D74709]/30' : 'bg-white/5 text-white/50 border-white/10 hover:bg-white/10'}`}
+            className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-2 transition border ${showDashboard ? 'bg-[#D74709]/15 text-[#D74709] border-[#D74709]/30' : 'bg-white/5 text-white/50 border-white/10 hover:bg-white/10'}`}
           >
             <BarChart3 className="w-4 h-4" /> Dashboard
           </button>
-          <button onClick={handleNewDeal} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition">
-            <Plus className="w-4 h-4" /> Nuevo negocio
+          <button onClick={handleNewDeal} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 transition">
+            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nuevo negocio</span><span className="sm:hidden">Nuevo</span>
           </button>
         </div>
       </div>
@@ -274,7 +274,7 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
             return (
               <div
                 key={stage.id}
-                className={`flex-shrink-0 w-72 bg-white/[0.03] border border-white/5 rounded-xl flex flex-col transition ${isDragOver ? 'bg-white/[0.06] border-[#D74709]/30' : ''}`}
+                className={`flex-shrink-0 w-60 sm:w-72 bg-white/[0.03] border border-white/5 rounded-xl flex flex-col transition ${isDragOver ? 'bg-white/[0.06] border-[#D74709]/30' : ''}`}
                 onDragOver={(e) => handleDragOver(e, stage.id)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, stage.id)}

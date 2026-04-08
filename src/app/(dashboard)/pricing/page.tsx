@@ -61,7 +61,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {/* Header */}
-      <nav className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
+      <nav className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-6xl mx-auto">
         <Link href="/" className="flex items-center gap-2">
           <PawPrint className="w-6 h-6" style={{ color: BRAND.primary }} />
           <span className="font-bold text-lg">Genealogic</span>
@@ -71,9 +71,9 @@ export default function PricingPage() {
         </Link>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-6 py-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Planes y precios</h1>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Planes y precios</h1>
           <p className="text-white/50 max-w-lg mx-auto">Elige el plan que mejor se adapte a tu criadero</p>
 
           {/* Toggle */}
@@ -92,11 +92,11 @@ export default function PricingPage() {
         </div>
 
         {/* Plans grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           {PLANS.map((plan) => (
             <div
               key={plan.name}
-              className={`rounded-2xl p-6 ${
+              className={`rounded-2xl p-4 sm:p-6 ${
                 plan.highlighted
                   ? 'bg-[#D74709]/10 border-2 border-[#D74709] relative'
                   : 'bg-white/5 border border-white/10'

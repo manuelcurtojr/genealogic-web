@@ -60,7 +60,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   return (
     <div>
       {/* Gallery — full bleed: public = 100vw, logged-in = cancel padding */}
-      <div className={`relative overflow-hidden ${user ? '-mx-4 -mt-4 lg:-mx-[30px] lg:-mt-[30px]' : ''}`}
+      <div className={`relative overflow-hidden ${user ? '-mx-4 -mt-4 sm:-mx-[30px] sm:-mt-[30px]' : ''}`}
         style={!user ? { marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)', marginTop: '-24px', width: '100vw' } : undefined}>
         <DogGallery photos={galleryPhotos} name={dog.name} sex={dog.sex} />
 
@@ -84,10 +84,10 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
       </div>
 
       {/* Content */}
-      <div className="px-[30px] pt-5 pb-8">
+      <div className="px-4 sm:px-[30px] pt-4 sm:pt-5 pb-6 sm:pb-8">
         {/* Name + badges */}
-        <div className="flex flex-wrap items-center gap-3 mb-3">
-          <h1 className="text-3xl font-bold">{dog.name}</h1>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+          <h1 className="text-2xl sm:text-3xl font-bold">{dog.name}</h1>
           <SexIcon className="w-6 h-6" style={{ color: sexColor }} />
           {breedName && (
             <div className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-3 py-1">
@@ -104,7 +104,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         </div>
 
         {/* Info chips */}
-        <div className="flex flex-wrap items-center gap-2 mb-5">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-4 sm:mb-5">
           <Chip icon={dog.sex === 'male' ? Mars : Venus} label="Sexo" value={dog.sex === 'male' ? 'Macho' : 'Hembra'} color={sexColor} />
           {colorName && <Chip icon={Palette} label="Color" value={colorName} />}
           {dog.birth_date && <Chip icon={Calendar} label="Nacimiento" value={new Date(dog.birth_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })} />}
@@ -155,7 +155,7 @@ function ParentCard({ parent, role }: { parent: any; role: string }) {
   )
 
   return (
-    <Link href={`/dogs/${parent.id}`} className={`border ${borderClass} bg-white/5 rounded-xl p-3 hover:bg-white/10 transition flex items-center gap-3`}>
+    <Link href={`/dogs/${parent.id}`} className={`border ${borderClass} bg-white/5 rounded-xl p-2.5 sm:p-3 hover:bg-white/10 transition flex items-center gap-2 sm:gap-3`}>
       <div className="w-10 h-10 rounded-full border-2 overflow-hidden flex-shrink-0 bg-white/5" style={{ borderColor: sexColor }}>
         {parent.thumbnail_url
           ? <img src={parent.thumbnail_url} alt="" className="w-full h-full object-cover" />

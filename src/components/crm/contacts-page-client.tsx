@@ -63,22 +63,22 @@ export default function ContactsPageClient({ initialContacts, initialDeals, user
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Contactos</h1>
-          <p className="text-white/50 text-sm mt-1">{contacts.length} contactos</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Contactos</h1>
+          <p className="text-white/50 text-xs sm:text-sm mt-1">{contacts.length} contactos</p>
         </div>
         <button
           onClick={handleNew}
-          className="bg-[#D74709] hover:bg-[#c03d07] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition"
+          className="bg-[#D74709] hover:bg-[#c03d07] text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 transition"
         >
           <Plus className="w-4 h-4" /> Nuevo contacto
         </button>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
           <input
             type="text" placeholder="Buscar contacto..." value={search}
@@ -107,7 +107,7 @@ export default function ContactsPageClient({ initialContacts, initialDeals, user
             <div
               key={contact.id}
               onClick={() => handleContactClick(contact)}
-              className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition cursor-pointer"
+              className="flex items-center gap-2.5 sm:gap-4 bg-white/5 border border-white/10 rounded-xl p-2.5 sm:p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition cursor-pointer"
             >
               <div className="w-10 h-10 rounded-full bg-[#D74709]/20 flex items-center justify-center text-[#D74709] text-sm font-bold flex-shrink-0">
                 {contact.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
@@ -116,8 +116,8 @@ export default function ContactsPageClient({ initialContacts, initialDeals, user
                 <p className="font-semibold text-sm text-white">{contact.name}</p>
                 <div className="flex items-center gap-3 mt-0.5 text-xs text-white/40">
                   {contact.email && <span className="flex items-center gap-1 truncate"><Mail className="w-3 h-3 flex-shrink-0" />{contact.email}</span>}
-                  {contact.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3 flex-shrink-0" />{contact.phone}</span>}
-                  {contact.city && <span className="flex items-center gap-1"><MapPin className="w-3 h-3 flex-shrink-0" />{contact.city}</span>}
+                  {contact.phone && <span className="hidden sm:flex items-center gap-1"><Phone className="w-3 h-3 flex-shrink-0" />{contact.phone}</span>}
+                  {contact.city && <span className="hidden sm:flex items-center gap-1"><MapPin className="w-3 h-3 flex-shrink-0" />{contact.city}</span>}
                 </div>
               </div>
               {contact.source && (

@@ -147,20 +147,20 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Recordatorios veterinarios</h1>
-          <p className="text-white/40 text-sm mt-0.5">Gestiona vacunas, desparasitaciones y revisiones de tus perros</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Recordatorios veterinarios</h1>
+          <p className="text-white/40 text-xs sm:text-sm mt-0.5">Gestiona vacunas, desparasitaciones y revisiones de tus perros</p>
         </div>
         <button onClick={() => { setEditingReminder(null); setShowForm(true) }}
-          className="flex items-center gap-1.5 bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition">
+          className="flex items-center gap-1.5 bg-[#D74709] hover:bg-[#c03d07] text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition self-start sm:self-auto">
           <Plus className="w-4 h-4" /> Nuevo recordatorio
         </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
           <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
             <Stethoscope className="w-5 h-5 text-blue-400" />
           </div>
@@ -169,7 +169,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
             <p className="text-[10px] text-white/30">Total</p>
           </div>
         </div>
-        <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-3">
+        <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
           <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
             <Clock className="w-5 h-5 text-amber-400" />
           </div>
@@ -178,7 +178,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
             <p className="text-[10px] text-white/30">Pendientes</p>
           </div>
         </div>
-        <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-3">
+        <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
           <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
             <AlertTriangle className="w-5 h-5 text-red-400" />
           </div>
@@ -187,7 +187,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
             <p className="text-[10px] text-white/30">Vencidos</p>
           </div>
         </div>
-        <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-3">
+        <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
           <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
             <Check className="w-5 h-5 text-green-400" />
           </div>
@@ -250,7 +250,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
 
             return (
               <div key={r.id}
-                className={`bg-white/5 border rounded-xl p-3 flex items-center gap-3 transition ${
+                className={`bg-white/5 border rounded-xl p-2 sm:p-3 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 transition ${
                   r.completed_date ? 'border-white/5 opacity-50' : isOverdue ? 'border-red-500/30 bg-red-500/5' : isDueSoon ? 'border-amber-500/20' : 'border-white/10'
                 }`}>
                 {/* Type icon */}
@@ -259,7 +259,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
                 </div>
 
                 {/* Dog avatar + name */}
-                <div className="flex items-center gap-2 min-w-[140px] flex-shrink-0">
+                <div className="flex items-center gap-2 min-w-0 sm:min-w-[140px] flex-shrink-0">
                   <div className="w-7 h-7 rounded-full overflow-hidden bg-white/5 border flex-shrink-0" style={{ borderColor: sexColor }}>
                     {dog?.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
                   </div>

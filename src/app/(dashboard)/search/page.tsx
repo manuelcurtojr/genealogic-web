@@ -51,12 +51,12 @@ export default function SearchPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-2">Buscar perros</h1>
-      <p className="text-white/40 text-sm mb-6">Encuentra perros de raza, reproductores y cachorros disponibles</p>
+      <h1 className="text-xl sm:text-2xl font-bold mb-2">Buscar perros</h1>
+      <p className="text-white/40 text-xs sm:text-sm mb-4 sm:mb-6">Encuentra perros de raza, reproductores y cachorros disponibles</p>
 
       {/* Search bar + filters */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
           <input type="text" value={query} onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
@@ -97,7 +97,7 @@ export default function SearchPage() {
           <p className="text-xs text-white/25 mt-1">Prueba con otros filtros</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
           {results.map((dog: any) => {
             const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
             const sexIcon = dog.sex === 'male' ? '♂' : '♀'
@@ -124,9 +124,9 @@ export default function SearchPage() {
                   <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: sexColor }} />
                 </div>
                 {/* Info */}
-                <div className="p-3">
+                <div className="p-2 sm:p-3">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-semibold truncate group-hover:text-[#D74709] transition">{dog.name}</span>
+                    <span className="text-xs sm:text-sm font-semibold truncate group-hover:text-[#D74709] transition">{dog.name}</span>
                     <span className="text-xs" style={{ color: sexColor }}>{sexIcon}</span>
                   </div>
                   <div className="flex items-center gap-2 mt-1 text-[11px] text-white/35">

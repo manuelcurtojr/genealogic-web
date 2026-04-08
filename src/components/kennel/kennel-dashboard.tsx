@@ -92,7 +92,7 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
     <div>
       {/* Header banner */}
       <div className="relative bg-gradient-to-r from-[#D74709]/20 to-[#D74709]/5 border border-white/10 rounded-2xl overflow-hidden mb-6">
-        <div className="px-6 py-6 flex items-center gap-5">
+        <div className="px-4 py-4 sm:px-6 sm:py-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
           {/* Logo */}
           <button
             onClick={() => fileRef.current?.click()}
@@ -112,7 +112,7 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-bold truncate">{kennel.name}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold truncate">{kennel.name}</h1>
               <button onClick={() => setShowEdit(true)} className="text-white/40 hover:text-[#D74709] transition" title="Editar criadero">
                 <Settings className="w-5 h-5" />
               </button>
@@ -153,7 +153,7 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
           </div>
 
           {/* Stats */}
-          <div className="flex gap-4 flex-shrink-0">
+          <div className="grid grid-cols-4 sm:flex gap-3 sm:gap-4 flex-shrink-0 w-full sm:w-auto">
             <div className="text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
               <p className="text-[10px] text-white/40 uppercase">Perros</p>
@@ -174,7 +174,7 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
         </div>
 
         {/* Quick actions */}
-        <div className="px-6 py-3 bg-white/[0.03] border-t border-white/5 flex items-center gap-3">
+        <div className="px-4 sm:px-6 py-3 bg-white/[0.03] border-t border-white/5 flex items-center gap-3 overflow-x-auto">
           <button onClick={() => setShowEdit(true)} className="text-xs text-white/50 hover:text-[#D74709] flex items-center gap-1.5 transition">
             <Edit className="w-3.5 h-3.5" /> Editar perfil
           </button>
@@ -198,9 +198,9 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
       </div>
 
       {/* Controls bar */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold">Perros del criadero</h2>
+          <h2 className="text-base sm:text-lg font-semibold">Perros del criadero</h2>
           <span className="text-xs text-white/30 bg-white/5 rounded-full px-2.5 py-0.5">{filtered.length}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -212,7 +212,7 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar perro..."
-              className="bg-white/5 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition w-48"
+              className="bg-white/5 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition w-full sm:w-48"
             />
           </div>
           {/* View toggle */}
@@ -275,7 +275,7 @@ function DogCard({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; user
   const isTransferred = !isOwner
   return (
     <div className="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden hover:border-[#D74709]/30 transition group">
-      <Link href={`/dogs/${dog.id}`} className="block relative aspect-[4/3] bg-white/5">
+      <Link href={`/dogs/${dog.id}`} className="block relative aspect-[3/2] sm:aspect-[4/3] bg-white/5">
         {dog.thumbnail_url ? (
           <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
         ) : (
@@ -285,7 +285,7 @@ function DogCard({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; user
         {isTransferred && <span className="absolute top-2 left-2 bg-purple-500/80 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">Transferido</span>}
         <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: sexColor }} />
       </Link>
-      <div className="p-3">
+      <div className="p-2.5 sm:p-3">
         <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1.5 group-hover:text-[#D74709] transition">
           <span className="text-sm font-semibold truncate">{dog.name}</span>
           <span className="text-xs" style={{ color: sexColor }}>{sexIcon}</span>
@@ -330,7 +330,7 @@ function DogRow({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; userI
   const sexColor = dog.sex === 'male' ? '#017DFA' : '#e84393'
   const isOwner = dog.owner_id === userId
   return (
-    <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition">
+    <div className="flex items-center gap-3 sm:gap-4 bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition">
       <Link href={`/dogs/${dog.id}`} className="flex-shrink-0">
         <div className="w-10 h-10 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: sexColor }}>
           {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-4 h-4 text-white/15" /></div>}
