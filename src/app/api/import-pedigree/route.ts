@@ -121,66 +121,43 @@ export async function POST(request: NextRequest) {
     const fetchUrl = url || sourceUrl
     if (!htmlContent && !fetchUrl) return NextResponse.json({ error: 'No content to analyze' }, { status: 400 })
 
-    // Try multiple fetch strategies (only if we don't have HTML yet)
+    // Fetch HTML — try ScrapingBee first (if configured), then direct fetch
     if (!htmlContent && fetchUrl) {
-    const fetchStrategies = [
-      { ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
-      { ua: 'Googlebot/2.1 (+http://www.google.com/bot.html)' },
-    ]
+      const cleanHtml = (html: string) => html
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+        .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
+        .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
+        .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '')
+        .slice(0, 80000)
 
-    for (const strategy of fetchStrategies) {
-      if (htmlContent) break
-      try {
-        const res = await fetch(fetchUrl, {
-          headers: {
-            'User-Agent': strategy.ua,
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-          },
-          signal: AbortSignal.timeout(10000),
-          redirect: 'follow',
-        })
-        const html = await res.text()
-        const isChallenge = html.includes('cf-challenge') || html.includes('challenge-platform') || html.includes('_cf_chl') || (html.length < 2000 && html.includes('Just a moment'))
-        if (res.ok && !isChallenge && html.length > 2000) {
-          const cleaned = html
-            .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-            .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
-            .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
-            .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '')
-            .slice(0, 80000)
-          htmlContent = cleaned
-        }
-      } catch { /* try next strategy */ }
-    }
-
-    if (!htmlContent) needsScreenshot = true
-    } // end fetch strategies
-
-    // Step 1b: ScrapingBee residential proxy (if direct fetch failed)
-    if (!htmlContent && fetchUrl) {
+      // Try ScrapingBee first (residential proxy, bypasses IP blocks)
       try {
         const sbSupabase = createSupabase(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
         const { data: sbKey } = await sbSupabase.from('platform_settings').select('value').eq('key', 'SCRAPINGBEE_API_KEY').single()
         if (sbKey?.value) {
-          const sbUrl = `https://app.scrapingbee.com/api/v1/?api_key=${sbKey.value}&url=${encodeURIComponent(fetchUrl)}&render_js=false&premium_proxy=true`
-          const sbRes = await fetch(sbUrl, { signal: AbortSignal.timeout(25000) })
+          const sbUrl = `https://app.scrapingbee.com/api/v1/?api_key=${sbKey.value}&url=${encodeURIComponent(fetchUrl)}&render_js=false`
+          const sbRes = await fetch(sbUrl, { signal: AbortSignal.timeout(8000) })
           if (sbRes.ok) {
             const html = await sbRes.text()
-            if (html.length > 3000 && !html.includes('403 Forbidden')) {
-              htmlContent = html
-                .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-                .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-                .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
-                .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
-                .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '')
-                .slice(0, 80000)
-              needsScreenshot = false
-            }
+            if (html.length > 3000 && !html.includes('403 Forbidden')) htmlContent = cleanHtml(html)
           }
         }
-      } catch { /* ScrapingBee failed, continue to screenshot */ }
+      } catch {}
+
+      // Fallback: direct fetch
+      if (!htmlContent) {
+        try {
+          const res = await fetch(fetchUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+            signal: AbortSignal.timeout(5000), redirect: 'follow',
+          })
+          const html = await res.text()
+          if (res.ok && html.length > 3000 && !html.includes('cf-challenge') && !html.includes('403 Forbidden')) htmlContent = cleanHtml(html)
+        } catch {}
+      }
+
+      if (!htmlContent) needsScreenshot = true
     }
 
     // Step 2: Screenshot fallback
