@@ -36,7 +36,6 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
 
   const isOwner = user?.id === dog.owner_id
   const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
-  const SexIcon = dog.sex === 'male' ? Mars : Venus
   const breedName = (dog.breed as any)?.name
   const colorName = (dog.color as any)?.name
   const kennel = dog.kennel as any
@@ -84,11 +83,10 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
       </div>
 
       {/* Content */}
-      <div className="px-4 sm:px-[30px] pt-4 sm:pt-5 pb-6 sm:pb-8">
+      <div className="lg:px-[30px] pt-4 sm:pt-5 pb-6 sm:pb-8">
         {/* Name + badges */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
           <h1 className="text-2xl sm:text-3xl font-bold">{dog.name}</h1>
-          <SexIcon className="w-6 h-6" style={{ color: sexColor }} />
           {breedName && (
             <div className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-3 py-1">
               <img src="/icon.svg" alt="" className="w-4 h-4" />
