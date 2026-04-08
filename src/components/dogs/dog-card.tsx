@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Eye, Edit, ArrowRightLeft, Dog } from 'lucide-react'
+import { Eye, Edit, ArrowRightLeft, Dog, GitBranch } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 
 interface DogCardProps {
@@ -17,9 +17,10 @@ interface DogCardProps {
   }
   onEdit?: () => void
   onTransfer?: () => void
+  onEditPedigree?: () => void
 }
 
-export default function DogCard({ dog, onEdit, onTransfer }: DogCardProps) {
+export default function DogCard({ dog, onEdit, onTransfer, onEditPedigree }: DogCardProps) {
   const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
   const sexIcon = dog.sex === 'male' ? '♂' : '♀'
   const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
@@ -59,6 +60,11 @@ export default function DogCard({ dog, onEdit, onTransfer }: DogCardProps) {
           <button onClick={onEdit} className="flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded text-[9px] sm:text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition">
             <Edit className="w-3 h-3" /> <span className="hidden sm:inline">Editar</span><span className="sm:hidden">Edit</span>
           </button>
+          {onEditPedigree && (
+            <button onClick={onEditPedigree} className="flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded text-[9px] sm:text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709] transition" title="Genealogía">
+              <GitBranch className="w-3 h-3" />
+            </button>
+          )}
           <button onClick={onTransfer} className="flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded text-[9px] sm:text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709] transition ml-auto">
             <ArrowRightLeft className="w-3 h-3" />
           </button>

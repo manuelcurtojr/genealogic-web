@@ -4,7 +4,7 @@
 const translations: Record<string, Record<string, string>> = {
   en: {
     // ─── Nav ───
-    'Escritorio': 'Dashboard', 'Mis Perros': 'My Dogs', 'Camadas': 'Litters',
+    'Escritorio': 'Dashboard', 'Mis Perros': 'My Dogs', 'Contribuciones': 'Contributions', 'Camadas': 'Litters',
     'Calendario': 'Calendar', 'Planificador': 'Planner', 'Veterinario': 'Veterinary',
     'Buscar': 'Search', 'Favoritos': 'Favorites',
     'Mi Criadero': 'My Kennel', 'Analíticas': 'Analytics', 'Contactos': 'Contacts',
@@ -151,7 +151,7 @@ const translations: Record<string, Record<string, string>> = {
 
   fr: {
     // Nav
-    'Escritorio': 'Tableau de bord', 'Mis Perros': 'Mes Chiens', 'Camadas': 'Portées',
+    'Escritorio': 'Tableau de bord', 'Mis Perros': 'Mes Chiens', 'Contribuciones': 'Contributions', 'Camadas': 'Portées',
     'Calendario': 'Calendrier', 'Planificador': 'Planificateur', 'Veterinario': 'Vétérinaire',
     'Buscar': 'Rechercher', 'Favoritos': 'Favoris',
     'Mi Criadero': 'Mon Élevage', 'Analíticas': 'Analytiques', 'Contactos': 'Contacts',
@@ -258,7 +258,7 @@ const translations: Record<string, Record<string, string>> = {
 
   de: {
     // Nav
-    'Escritorio': 'Dashboard', 'Mis Perros': 'Meine Hunde', 'Camadas': 'Würfe',
+    'Escritorio': 'Dashboard', 'Mis Perros': 'Meine Hunde', 'Contribuciones': 'Beiträge', 'Camadas': 'Würfe',
     'Calendario': 'Kalender', 'Planificador': 'Planer', 'Veterinario': 'Tierarzt',
     'Buscar': 'Suchen', 'Favoritos': 'Favoriten',
     'Mi Criadero': 'Meine Zucht', 'Analíticas': 'Analytik', 'Contactos': 'Kontakte',
@@ -362,7 +362,7 @@ const translations: Record<string, Record<string, string>> = {
 
   pt: {
     // Nav
-    'Escritorio': 'Painel', 'Mis Perros': 'Meus Cães', 'Camadas': 'Ninhadas',
+    'Escritorio': 'Painel', 'Mis Perros': 'Meus Cães', 'Contribuciones': 'Contribuições', 'Camadas': 'Ninhadas',
     'Calendario': 'Calendário', 'Planificador': 'Planificador', 'Veterinario': 'Veterinário',
     'Buscar': 'Pesquisar', 'Favoritos': 'Favoritos',
     'Mi Criadero': 'Meu Canil', 'Analíticas': 'Análises', 'Contactos': 'Contactos',
@@ -446,7 +446,7 @@ const translations: Record<string, Record<string, string>> = {
 
   it: {
     // Nav
-    'Escritorio': 'Pannello', 'Mis Perros': 'I miei cani', 'Camadas': 'Cucciolate',
+    'Escritorio': 'Pannello', 'Mis Perros': 'I miei cani', 'Contribuciones': 'Contributi', 'Camadas': 'Cucciolate',
     'Calendario': 'Calendario', 'Planificador': 'Pianificatore', 'Veterinario': 'Veterinario',
     'Buscar': 'Cerca', 'Favoritos': 'Preferiti',
     'Mi Criadero': 'Il mio allevamento', 'Analíticas': 'Analisi', 'Contactos': 'Contatti',

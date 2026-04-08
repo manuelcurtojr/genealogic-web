@@ -1,26 +1,19 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { Grid3X3, List, Search, Plus, Eye, Edit, ArrowRightLeft, GitBranch } from 'lucide-react'
-import DogCard from './dog-card'
-import DogFormPanel from './dog-form-panel'
-import TransferPanel from '../kennel/transfer-panel'
-import PedigreeEditor from '../pedigree/pedigree-editor'
+import { useState, useEffect, useRef } from 'react'
+import { Grid3X3, List, Search, Plus, Eye, Edit, GitBranch } from 'lucide-react'
+import DogCard from '@/components/dogs/dog-card'
+import DogFormPanel from '@/components/dogs/dog-form-panel'
+import PedigreeEditor from '@/components/pedigree/pedigree-editor'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 
 interface Dog {
-  id: string
-  name: string
-  sex: string | null
-  birth_date: string | null
-  thumbnail_url: string | null
-  breed: any
-  color: any
-  breed_id: string | null
+  id: string; name: string; sex: string | null; birth_date: string | null
+  thumbnail_url: string | null; breed: any; color: any; breed_id: string | null
 }
 
-interface DogsPageClientProps {
+interface Props {
   dogs: Dog[]
   breeds: { id: string; name: string }[]
   userId: string
@@ -28,29 +21,26 @@ interface DogsPageClientProps {
 
 const PAGE_SIZE = 24
 
-export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientProps) {
+export default function ContributionsClient({ dogs, breeds, userId }: Props) {
   const [search, setSearch] = useState('')
   const [panelOpen, setPanelOpen] = useState(false)
   const [editDogId, setEditDogId] = useState<string | null>(null)
-
-  const [transferDog, setTransferDog] = useState<any>(null)
   const [pedigreeOpen, setPedigreeOpen] = useState(false)
   const [pedigreeDogId, setPedigreeDogId] = useState('')
-
-  const openAdd = () => { setEditDogId(null); setPanelOpen(true) }
-  const openEdit = (dogId: string) => { setEditDogId(dogId); setPanelOpen(true) }
-  const openPedigree = (dogId: string) => { setPedigreeDogId(dogId); setPedigreeOpen(true) }
-  const closePanel = () => { setPanelOpen(false); setEditDogId(null) }
   const [sexFilter, setSexFilter] = useState('')
   const [breedFilter, setBreedFilter] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
-    if (typeof window !== 'undefined') return (localStorage.getItem('dogs-view') as 'grid' | 'list') || 'grid'
+    if (typeof window !== 'undefined') return (localStorage.getItem('contributions-view') as 'grid' | 'list') || 'grid'
     return 'grid'
   })
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
-  const changeView = (v: 'grid' | 'list') => { setViewMode(v); localStorage.setItem('dogs-view', v) }
+  const openAdd = () => { setEditDogId(null); setPanelOpen(true) }
+  const openEdit = (dogId: string) => { setEditDogId(dogId); setPanelOpen(true) }
+  const closePanel = () => { setPanelOpen(false); setEditDogId(null) }
+  const changeView = (v: 'grid' | 'list') => { setViewMode(v); localStorage.setItem('contributions-view', v) }
+  const openPedigree = (dogId: string) => { setPedigreeDogId(dogId); setPedigreeOpen(true) }
 
   const filtered = dogs.filter((dog) => {
     const q = search.toLowerCase()
@@ -67,10 +57,8 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
   const paged = filtered.slice(0, visibleCount)
   const hasMore = visibleCount < filtered.length
 
-  // Reset visible count when filters change
   const handleSearchChange = (v: string) => { setSearch(v); setVisibleCount(PAGE_SIZE) }
 
-  // Infinite scroll with IntersectionObserver
   useEffect(() => {
     if (!loadMoreRef.current || !hasMore) return
     const observer = new IntersectionObserver(
@@ -83,19 +71,19 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
 
   return (
     <>
-      {/* Title */}
       <div className="mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold">Mis Perros</h1>
-        <p className="text-white/50 text-xs sm:text-sm mt-1">{dogs.length} perros registrados</p>
+        <h1 className="text-xl sm:text-2xl font-bold">Contribuciones</h1>
+        <p className="text-white/50 text-xs sm:text-sm mt-1">{dogs.length} perros documentados</p>
       </div>
 
-      {/* Search + filters + toggle — 1 row desktop, 2 rows mobile */}
+      {/* Search + filters — 1 row on desktop, 2 rows on mobile */}
       <div className="flex items-center gap-2 mb-2 lg:mb-3">
         <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
           <input type="text" placeholder="Buscar por nombre, raza, color..." value={search} onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
         </div>
+        {/* Desktop: filters inline */}
         <select value={sexFilter} onChange={(e) => { setSexFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
           className="hidden lg:block bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-[130px]">
           <option value="">Todos los sexos</option>
@@ -112,7 +100,8 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
           <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><List className="w-4 h-4" /></button>
         </div>
       </div>
-      {/* Mobile filters */}
+
+      {/* Mobile: filters row */}
       <div className="flex items-center gap-2 mb-3 lg:hidden">
         <select value={sexFilter} onChange={(e) => { setSexFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
           className="bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-xs text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer flex-1 min-w-0">
@@ -127,25 +116,19 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
         </select>
       </div>
 
-      {/* Count */}
       <p className="text-xs text-white/30 mb-3">{filtered.length} perro{filtered.length !== 1 ? 's' : ''}</p>
 
-      {/* Grid view */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
-          {/* Add new dog card */}
-          <button
-            onClick={openAdd}
-            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[160px] sm:min-h-[200px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer"
-          >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+          <button onClick={openAdd}
+            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[160px] sm:min-h-[200px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer p-4">
             <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-2 sm:mb-3">
               <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-white/30 group-hover:text-[#D74709] transition" />
             </div>
-            <p className="text-xs sm:text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir perro</p>
+            <p className="text-xs sm:text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir contribución</p>
           </button>
-
           {paged.map((dog) => (
-            <DogCard key={dog.id} dog={dog} onEdit={() => openEdit(dog.id)} onEditPedigree={() => openPedigree(dog.id)} onTransfer={() => setTransferDog({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name })} />
+            <DogCard key={dog.id} dog={dog} onEdit={() => openEdit(dog.id)} onEditPedigree={() => openPedigree(dog.id)} />
           ))}
         </div>
       ) : (
@@ -155,7 +138,7 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition shrink-0">
               <Plus className="w-5 h-5 text-white/30 group-hover:text-[#D74709] transition" />
             </div>
-            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir perro</p>
+            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir contribución</p>
           </button>
           {paged.map((dog) => {
             const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
@@ -171,10 +154,10 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
                   <div className="flex items-center gap-2 sm:gap-3 mt-0.5 text-[10px] sm:text-xs text-white/40">
                     {breedName && <span className="truncate">{breedName}</span>}
                     {colorName && <span className="hidden sm:inline">{colorName}</span>}
-                    {dog.birth_date && <span className="hidden sm:inline">{new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <button onClick={e => { e.stopPropagation(); openPedigree(dog.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition"><GitBranch className="w-3 h-3" /></button>
                   <Link href={`/dogs/${dog.id}`} onClick={e => e.stopPropagation()} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition"><Eye className="w-3 h-3" /> <span className="hidden sm:inline">Ver</span></Link>
                   <button onClick={e => { e.stopPropagation(); openEdit(dog.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition"><Edit className="w-3 h-3" /> <span className="hidden sm:inline">Editar</span></button>
                 </div>
@@ -184,31 +167,12 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
         </div>
       )}
 
-      {/* Infinite scroll sentinel */}
       {hasMore && <div ref={loadMoreRef} className="h-10" />}
 
-      {/* Dog form slide panel (add + edit) */}
-      <DogFormPanel
-        open={panelOpen}
-        onClose={closePanel}
-        onSaved={(newId) => {
-          if (newId) {
-            // Reopen in edit mode so user can add photos
-            setTimeout(() => openEdit(newId), 300)
-          }
-        }}
-        editDogId={editDogId}
-        userId={userId}
-      />
+      <DogFormPanel open={panelOpen} onClose={closePanel}
+        onSaved={(newId) => { if (newId) setTimeout(() => openEdit(newId), 300) }}
+        editDogId={editDogId} userId={userId} />
 
-      {/* Transfer panel */}
-      <TransferPanel
-        open={!!transferDog}
-        onClose={() => setTransferDog(null)}
-        dog={transferDog}
-      />
-
-      {/* Pedigree editor */}
       <PedigreeEditor open={pedigreeOpen} onClose={() => setPedigreeOpen(false)} dogId={pedigreeDogId} userId={userId} />
     </>
   )

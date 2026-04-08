@@ -20,6 +20,7 @@ export const ROLES = {
 export const NAV_ITEMS = [
   { label: 'Escritorio', href: '/dashboard', icon: 'LayoutDashboard' },
   { label: 'Mis Perros', href: '/dogs', icon: 'Dog' },
+  { label: 'Contribuciones', href: '/contributions', icon: 'FileInput' },
   { label: 'Camadas', href: '/litters', icon: 'Baby' },
   { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
   { label: 'Planificador', href: '/planner', icon: 'GitCompareArrows' },

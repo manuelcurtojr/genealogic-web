@@ -1,19 +1,21 @@
 'use client'
 
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback, createContext, useContext } from 'react'
 import Link from 'next/link'
-import { Search, ArrowLeftRight, GitBranch, ChevronLeft, ChevronRight, Dna, CheckCircle } from 'lucide-react'
+import { Search, ArrowLeftRight, GitBranch, ChevronLeft, ChevronRight, Dna, CheckCircle, Plus } from 'lucide-react'
+
+const PedigreeCtx = createContext<{ onClickDog?: (id: string) => void; onClickEmpty?: (parentId: string, role: 'father' | 'mother') => void }>({})
 import { calculateCOI, getCOILevel, getCOIInterpretation } from './coi-calculator'
 
 interface PN { id:string;name:string;sex:string;registration:string|null;father_id:string|null;mother_id:string|null;generation:number;photo_url:string|null;breed_name:string|null;color_name:string|null }
-interface Props { data:PN[];rootId:string }
+interface Props { data:PN[];rootId:string;onClickDog?:(dogId:string)=>void;onClickEmpty?:(parentDogId:string,role:'father'|'mother')=>void }
 
 function countOcc(nId:string|null,nm:Map<string,PN>,mx:number,g:number,c:Map<string,number>){if(!nId||g>mx)return;const n=nm.get(nId);if(!n)return;c.set(nId,(c.get(nId)||0)+1);countOcc(n.father_id,nm,mx,g+1,c);countOcc(n.mother_id,nm,mx,g+1,c)}
 const RC=['','','#3498db','#27ae60','#f39c12','#e74c3c','#9b59b6','#e84393']
 const CW=200,CH=64,PH=56
 const L='var(--pedigree-line, rgba(255,255,255,0.12))'
 
-export default function PedigreeTree({data,rootId}:Props){
+export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props){
   const[isNative,setIsNative]=useState(false)
   useEffect(()=>{if((window as any).Capacitor?.isNativePlatform?.())setIsNative(true)},[])
   const[maxGen,setMaxGen]=useState(4)
@@ -35,11 +37,13 @@ export default function PedigreeTree({data,rootId}:Props){
   return(
     <>
       <div className="relative" onClick={close}>
+        <PedigreeCtx.Provider value={{onClickDog,onClickEmpty}}>
         <div className="overflow-auto pb-20" style={{transform:`scale(${zoom/100})`,transformOrigin:'top left'}}>
           <div className="min-w-max py-4 px-4 lg:px-2">
             {vert?<VN n={root} nm={nm} g={0} mx={maxGen} isRoot si={showIB} rc={rc}/>:<HN n={root} nm={nm} g={0} mx={maxGen} isRoot si={showIB} rc={rc}/>}
           </div>
         </div>
+      </PedigreeCtx.Provider>
       </div>
       {/* COI Panel — outside transform context */}
       <div className={`fixed top-[56px] right-0 bottom-0 w-[300px] z-[45] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${coiPanel?'translate-x-0':'translate-x-full'}`}>
@@ -64,20 +68,23 @@ export default function PedigreeTree({data,rootId}:Props){
 }
 
 function Card({n,isRoot,si,rc}:{n:PN;isRoot?:boolean;si:boolean;rc:Map<string,number>}){
+  const{onClickDog}=useContext(PedigreeCtx)
   const sc=n.sex==='male'?'#017DFA':'#e84393',reps=rc.get(n.id)||0,repC=reps>=2?(RC[Math.min(reps,RC.length-1)]||'#e74c3c'):''
-  return(
-    <Link href={`/dogs/${n.id}`} className={`flex items-stretch bg-white/[0.04] border ${isRoot?'border-[#D74709]':'border-white/10'} rounded-xl overflow-hidden hover:bg-white/[0.07] transition relative`} style={{width:CW,height:CH,flexShrink:0}}>
-      <div className="flex-shrink-0 bg-white/5 relative" style={{width:PH}}>
-        {n.photo_url?<img src={n.photo_url} alt="" className="w-full h-full object-cover"/>:<div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-5 h-5 opacity-20"/></div>}
-        <div className="absolute top-0 right-0 bottom-0 w-[3px]" style={{backgroundColor:sc}}/>
-      </div>
-      <div className="flex-1 min-w-0 px-2.5 py-1.5 flex flex-col justify-center overflow-hidden">
-        <p className="text-[12px] font-bold text-white leading-tight whitespace-nowrap" style={{maskImage:'linear-gradient(to right,black 80%,transparent)',WebkitMaskImage:'linear-gradient(to right,black 80%,transparent)'}}>{n.name}</p>
-        {n.breed_name&&<p className="text-[10px] text-white/35 truncate mt-0.5">{n.breed_name}</p>}
-      </div>
-      {si&&reps>=2&&<span className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{backgroundColor:repC}}>{reps}x</span>}
-    </Link>
-  )
+  const cls=`flex items-stretch bg-white/[0.04] border ${isRoot?'border-[#D74709]':'border-white/10'} rounded-xl overflow-hidden hover:bg-white/[0.07] transition relative cursor-pointer`
+  const inner=<>
+    <div className="flex-shrink-0 bg-white/5 relative" style={{width:PH}}>
+      {n.photo_url?<img src={n.photo_url} alt="" className="w-full h-full object-cover"/>:<div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-5 h-5 opacity-20"/></div>}
+      <div className="absolute top-0 right-0 bottom-0 w-[3px]" style={{backgroundColor:sc}}/>
+    </div>
+    <div className="flex-1 min-w-0 px-2.5 py-1.5 flex flex-col justify-center overflow-hidden">
+      <p className="text-[12px] font-bold text-white leading-tight whitespace-nowrap" style={{maskImage:'linear-gradient(to right,black 80%,transparent)',WebkitMaskImage:'linear-gradient(to right,black 80%,transparent)'}}>{n.name}</p>
+      {n.breed_name&&<p className="text-[10px] text-white/35 truncate mt-0.5">{n.breed_name}</p>}
+    </div>
+    {si&&reps>=2&&<span className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{backgroundColor:repC}}>{reps}x</span>}
+  </>
+  return onClickDog
+    ? <div onClick={()=>onClickDog(n.id)} className={cls} style={{width:CW,height:CH,flexShrink:0}}>{inner}</div>
+    : <Link href={`/dogs/${n.id}`} className={cls} style={{width:CW,height:CH,flexShrink:0}}>{inner}</Link>
 }
 
 /* HORIZONTAL: Use a measured approach - render children, then draw SVG connectors */
@@ -132,8 +139,8 @@ function HN({n,nm,g,mx,isRoot,si,rc}:{n:PN;nm:Map<string,PN>;g:number;mx:number;
       </svg>
       {/* Children column */}
       <div style={{marginLeft:CW+hGap+20,display:'flex',flexDirection:'column',gap:30}}>
-        <div ref={fRef}>{f?<HN n={f} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<Empty sex="male"/>}</div>
-        <div ref={mRef}>{m?<HN n={m} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<Empty sex="female"/>}</div>
+        <div ref={fRef}>{f?<HN n={f} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<Empty sex="male" parentDogId={n.id}/>}</div>
+        <div ref={mRef}>{m?<HN n={m} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<Empty sex="female" parentDogId={n.id}/>}</div>
       </div>
     </div>
   )
@@ -176,14 +183,20 @@ function VN({n,nm,g,mx,isRoot,si,rc}:{n:PN;nm:Map<string,PN>;g:number;mx:number;
         {lines.map((l,i)=><line key={i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke={L} strokeWidth={1}/>)}
       </svg>
       <div className="flex gap-10" style={{marginTop:40}}>
-        <div ref={fRef}>{f?<VN n={f} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<div className="flex justify-center"><Empty sex="male"/></div>}</div>
-        <div ref={mRef}>{m?<VN n={m} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<div className="flex justify-center"><Empty sex="female"/></div>}</div>
+        <div ref={fRef}>{f?<VN n={f} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<div className="flex justify-center"><Empty sex="male" parentDogId={n.id}/></div>}</div>
+        <div ref={mRef}>{m?<VN n={m} nm={nm} g={g+1} mx={mx} si={si} rc={rc}/>:<div className="flex justify-center"><Empty sex="female" parentDogId={n.id}/></div>}</div>
       </div>
     </div>
   )
 }
 
-function Empty({sex}:{sex:string}){
+function Empty({sex,parentDogId}:{sex:string;parentDogId?:string}){
+  const{onClickEmpty}=useContext(PedigreeCtx)
   const bc=sex==='female'?'border-pink-400/30':'border-blue-400/30'
-  return<div className={`w-9 h-9 rounded-full border-2 border-dashed ${bc} flex items-center justify-center text-white/20 text-xs`}>?</div>
+  const role=sex==='male'?'father' as const:'mother' as const
+  const clickable=!!onClickEmpty&&!!parentDogId
+  return<div onClick={clickable?()=>onClickEmpty(parentDogId!,role):undefined}
+    className={`border-2 border-dashed ${bc} flex items-center justify-center text-white/20 rounded-xl ${clickable?'cursor-pointer hover:bg-white/5 hover:border-white/20 transition':''}`} style={{width:CW,height:CH}}>
+    {clickable?<Plus className="w-4 h-4 text-white/30"/>:<span className="text-xs">?</span>}
+  </div>
 }
