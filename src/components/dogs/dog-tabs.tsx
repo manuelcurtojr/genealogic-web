@@ -18,16 +18,16 @@ interface DogTabsProps {
 }
 
 const TABS = [
+  { key: 'offspring', label: 'Descendientes', icon: GitBranch },
+  { key: 'siblings', label: 'Hermanos', icon: Users },
   { key: 'health', label: 'Salud', icon: Stethoscope },
   { key: 'awards', label: 'Palmares', icon: Trophy },
-  { key: 'siblings', label: 'Hermanos', icon: Users },
-  { key: 'offspring', label: 'Descendientes', icon: GitBranch },
 ] as const
 
 type TabKey = typeof TABS[number]['key']
 
 export default function DogTabs({ dogId, ownerId, isOwner, fatherId, motherId, dogSex }: DogTabsProps) {
-  const [active, setActive] = useState<TabKey>('health')
+  const [active, setActive] = useState<TabKey>('offspring')
 
   return (
     <div className="mt-8">
