@@ -47,10 +47,25 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported }: Prop
     if (!url.trim()) return
     setScanning(true); setError(''); setData(null); setSwaps({})
     try {
-      const res = await fetch('/api/import-pedigree', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: url.trim() }) })
+      // Strategy 1: Fetch HTML from the USER'S BROWSER (bypasses datacenter IP blocks)
+      let clientHtml: string | null = null
+      try {
+        const proxyUrl = `/api/proxy-fetch?url=${encodeURIComponent(url.trim())}`
+        const proxyRes = await fetch(proxyUrl, { signal: AbortSignal.timeout(15000) })
+        if (proxyRes.ok) {
+          const html = await proxyRes.text()
+          if (html.length > 3000 && !html.includes('403 Forbidden')) clientHtml = html
+        }
+      } catch {}
+
+      // Strategy 2: Send HTML or URL to the AI extraction API
+      const res = await fetch('/api/import-pedigree', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(clientHtml ? { htmlContent: clientHtml, sourceUrl: url.trim() } : { url: url.trim() }),
+      })
       const result = await res.json()
       if (!res.ok) throw new Error(result.error)
-      // Check if result has actual data
       if (!result.data?.main_dog?.name) {
         setError('No se pudo extraer datos de esta web. Prueba a subir un screenshot manual del pedigrí.')
         setScanning(false); return

@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     if (!ANTHROPIC_KEY) return NextResponse.json({ error: 'Anthropic API key not configured' }, { status: 500 })
 
     const body = await request.json()
-    const { url, imageBase64 } = body
+    const { url, imageBase64, htmlContent: preloadedHtml, sourceUrl } = body
 
     // If image provided directly (manual screenshot upload), skip fetch
     if (imageBase64) {
@@ -100,13 +100,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, data: JSON.parse(jsonStr), source: 'image_upload' })
     }
 
-    if (!url) return NextResponse.json({ error: 'URL is required' }, { status: 400 })
+    if (!url && !preloadedHtml) return NextResponse.json({ error: 'URL is required' }, { status: 400 })
 
-    // Step 1: Try to fetch the HTML directly
+    // Step 1: Try to get HTML
     let htmlContent: string | null = null
     let needsScreenshot = false
 
-    // Try multiple fetch strategies
+    // If HTML was pre-fetched by the client, use it directly
+    if (preloadedHtml && preloadedHtml.length > 2000) {
+      const cleaned = preloadedHtml
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+        .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
+        .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
+        .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '')
+        .slice(0, 80000)
+      htmlContent = cleaned
+    }
+
+    const fetchUrl = url || sourceUrl
+    if (!htmlContent && !fetchUrl) return NextResponse.json({ error: 'No content to analyze' }, { status: 400 })
+
+    // Try multiple fetch strategies (only if we don't have HTML yet)
+    if (!htmlContent && fetchUrl) {
     const fetchStrategies = [
       { ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
       { ua: 'Googlebot/2.1 (+http://www.google.com/bot.html)' },
@@ -115,7 +131,7 @@ export async function POST(request: NextRequest) {
     for (const strategy of fetchStrategies) {
       if (htmlContent) break
       try {
-        const res = await fetch(url, {
+        const res = await fetch(fetchUrl, {
           headers: {
             'User-Agent': strategy.ua,
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -140,12 +156,13 @@ export async function POST(request: NextRequest) {
     }
 
     if (!htmlContent) needsScreenshot = true
+    } // end fetch strategies
 
     // Step 2: Screenshot fallback
     let screenshotBase64: string | null = null
     if (needsScreenshot && APIFLASH_KEY) {
       try {
-        const screenshotUrl = `https://api.apiflash.com/v1/urltoimage?access_key=${APIFLASH_KEY}&url=${encodeURIComponent(url)}&format=jpeg&quality=80&width=1920&height=1080&full_page=true&fresh=true&wait_until=network_idle&delay=3&response_type=image`
+        const screenshotUrl = `https://api.apiflash.com/v1/urltoimage?access_key=${APIFLASH_KEY}&url=${encodeURIComponent(fetchUrl)}&format=jpeg&quality=80&width=1920&height=1080&full_page=true&fresh=true&wait_until=network_idle&delay=3&response_type=image`
         const ssRes = await fetch(screenshotUrl, { signal: AbortSignal.timeout(30000) })
         if (ssRes.ok) {
           const buffer = await ssRes.arrayBuffer()
