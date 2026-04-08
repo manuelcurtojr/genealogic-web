@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { X, Loader2, User, Shield, Coins, Calendar, Globe, Bell, FileText, AlertTriangle, Check } from 'lucide-react'
+import { X, Loader2, User, Shield, Coins, Calendar, Globe, Bell, FileText, AlertTriangle, Check, Eye, Trash2, ExternalLink } from 'lucide-react'
 
 interface Props {
   open: boolean
@@ -31,6 +31,9 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
   const [activity, setActivity] = useState({ dogs: 0, kennels: 0, litters: 0, deals: 0, genesSpent: 0, genesPurchased: 0 })
   const [genesAdjust, setGenesAdjust] = useState('')
   const [showGenesForm, setShowGenesForm] = useState(false)
+  const [impersonating, setImpersonating] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const [form, setForm] = useState({
     display_name: '', email: '', phone: '', country: '', city: '', bio: '',
@@ -129,6 +132,46 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
     set('genes', newBalance)
     setGenesAdjust('')
     setShowGenesForm(false)
+  }
+
+  const impersonate = async () => {
+    if (!userId) return
+    setImpersonating(true)
+    try {
+      const res = await fetch('/api/admin/impersonate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.open(data.url, '_blank')
+      } else {
+        alert(data.error || 'Error al impersonar')
+      }
+    } catch { alert('Error de red') }
+    setImpersonating(false)
+  }
+
+  const deleteUser = async () => {
+    if (!userId) return
+    setDeleting(true)
+    try {
+      const res = await fetch('/api/admin/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: 'profiles', id: userId }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        onSaved()
+        onClose()
+      } else {
+        alert(data.error || 'Error al eliminar')
+      }
+    } catch { alert('Error de red') }
+    setDeleting(false)
+    setShowDeleteConfirm(false)
   }
 
   return (
@@ -292,16 +335,52 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:border-[#D74709] focus:outline-none resize-none" />
             </Section>
 
-            {/* Danger zone */}
-            {form.status !== 'active' && (
-              <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-red-400">Cuenta {form.status === 'suspended' ? 'suspendida' : 'baneada'}</p>
-                  <p className="text-xs text-white/30 mt-0.5">Este usuario no puede acceder a la plataforma.</p>
-                </div>
+            {/* Acciones admin */}
+            <Section title="Acciones" icon={Shield}>
+              <div className="space-y-2">
+                <button onClick={impersonate} disabled={impersonating}
+                  className="w-full flex items-center justify-center gap-2 bg-purple-500/10 border border-purple-500/20 text-purple-400 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-500/20 transition disabled:opacity-50">
+                  {impersonating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />}
+                  {impersonating ? 'Generando enlace...' : 'Ver como este usuario'}
+                </button>
+                <a href={`/dogs?owner=${userId}`} target="_blank"
+                  className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white/60 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10 transition">
+                  <ExternalLink className="w-4 h-4" /> Ver perros del usuario
+                </a>
               </div>
-            )}
+            </Section>
+
+            {/* Danger zone */}
+            <div className="border-t border-red-500/20 pt-4">
+              {form.status !== 'active' && (
+                <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 flex items-start gap-3 mb-3">
+                  <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-red-400">Cuenta {form.status === 'suspended' ? 'suspendida' : 'baneada'}</p>
+                    <p className="text-xs text-white/30 mt-0.5">Este usuario no puede acceder a la plataforma.</p>
+                  </div>
+                </div>
+              )}
+              {showDeleteConfirm ? (
+                <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 space-y-3">
+                  <p className="text-sm text-red-400 font-medium">¿Eliminar este usuario permanentemente?</p>
+                  <p className="text-xs text-white/30">Se eliminarán todos sus datos: perros, camadas, negocios, favoritos, notificaciones y transacciones de genes. Esta acción NO se puede deshacer.</p>
+                  <div className="flex gap-2">
+                    <button onClick={deleteUser} disabled={deleting}
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center gap-1.5">
+                      {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                      {deleting ? 'Eliminando...' : 'Confirmar eliminación'}
+                    </button>
+                    <button onClick={() => setShowDeleteConfirm(false)} className="text-white/50 hover:text-white px-4 py-2 text-sm transition">Cancelar</button>
+                  </div>
+                </div>
+              ) : (
+                <button onClick={() => setShowDeleteConfirm(true)}
+                  className="w-full flex items-center justify-center gap-2 bg-red-500/5 border border-red-500/20 text-red-400 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-red-500/10 transition">
+                  <Trash2 className="w-4 h-4" /> Eliminar usuario
+                </button>
+              )}
+            </div>
           </div>
         )}
 

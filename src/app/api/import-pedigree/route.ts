@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabase } from '@supabase/supabase-js'
 
-// Read API keys from DB (platform_settings) with fallback to env vars
+// Read API keys from DB using service role (bypasses RLS)
 async function getApiKey(key: string): Promise<string | null> {
   try {
-    const supabase = await createClient()
+    const supabase = createSupabase(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    )
     const { data } = await supabase.from('platform_settings').select('value').eq('key', key).single()
     if (data?.value) return data.value
   } catch {}
