@@ -39,6 +39,13 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Prevent iOS auto-zoom on input focus (triggers when font-size < 16px) */
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* Light mode overrides — stronger contrasts */
 [data-theme="light"] .bg-gray-950 { background-color: #ffffff !important; }
 [data-theme="light"] .bg-gray-900 { background-color: #f8fafc !important; }
