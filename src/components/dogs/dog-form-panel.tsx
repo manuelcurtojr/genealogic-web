@@ -139,11 +139,11 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   return (
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open?'opacity-100':'opacity-0 pointer-events-none'}`} onClick={onClose}/>
-      <div className={`fixed top-0 right-0 h-full w-full max-w-3xl z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open?'translate-x-0':'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-3xl z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open?'translate-x-0':'translate-x-full'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
-          <h2 className="text-lg font-semibold">{isEdit?'Editar perro':defaultLitterId?'Añadir cachorro':'Añadir perro'}</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition"><X className="w-5 h-5"/></button>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10 flex-shrink-0">
+          <h2 className="text-base sm:text-lg font-semibold">{isEdit?'Editar perro':defaultLitterId?'Añadir cachorro':'Añadir perro'}</h2>
+          <button onClick={onClose} className="text-white/40 hover:text-white transition p-1"><X className="w-5 h-5"/></button>
         </div>
 
         {/* Create mode toggle (Manual / Import) — only for new dogs, not from litter */}
@@ -177,13 +177,13 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
 
         {/* Import mode */}
         {!isEdit && !isFromLitter && createMode === 'import' ? (
-          <div className="flex-1 overflow-y-auto px-6 py-5">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5">
             <ImportPedigreeTab userId={userId} kennelId={defaultKennelId || undefined} onImported={() => { onClose(); onSaved?.(); router.refresh() }} />
           </div>
         ) : dataLoading ? (
           <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-white/30"/></div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-6 py-5">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5">
             {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400 mb-4">{error}</div>}
 
             {/* TAB: DATOS */}
@@ -277,11 +277,11 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
 
         {/* Footer — only show save button on Datos tab, not in import mode */}
         {activeTab === 'datos' && createMode === 'manual' && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/10 flex-shrink-0">
-            <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">Cancelar</button>
+          <div className="flex items-center justify-end gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-white/10 flex-shrink-0">
+            <button onClick={onClose} className="px-3 sm:px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">Cancelar</button>
             <button onClick={handleSubmit} disabled={loading||!form.name.trim()||dataLoading}
-              className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
-              {loading&&<Loader2 className="w-4 h-4 animate-spin"/>}{loading?'Guardando...':isEdit?'Actualizar perro':'Crear perro'}
+              className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-4 sm:px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+              {loading&&<Loader2 className="w-4 h-4 animate-spin"/>}{loading?'Guardando...':isEdit?'Actualizar':'Crear perro'}
             </button>
           </div>
         )}
