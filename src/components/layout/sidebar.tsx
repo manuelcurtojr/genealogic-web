@@ -52,8 +52,8 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
         <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={onClose} />
       )}
 
-      <aside className={`fixed left-0 top-0 h-screen ${sidebarWidth} bg-gray-950 border-r border-white/10 flex flex-col z-50 transition-all duration-300 ${
-        mobileOpen ? 'translate-x-0 !w-64' : '-translate-x-full lg:translate-x-0'
+      <aside className={`fixed left-0 top-0 h-screen bg-gray-950 border-r border-white/10 flex flex-col z-50 w-64 ${collapsed ? 'lg:w-[68px]' : 'lg:w-64'} lg:transition-all lg:duration-300 ${
+        mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
         {/* Logo + toggle */}
         <div className="h-14 border-b border-white/10 flex items-center px-3 gap-2 flex-shrink-0">

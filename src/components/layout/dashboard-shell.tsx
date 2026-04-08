@@ -35,12 +35,20 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
     const savedCollapsed = localStorage.getItem('sidebar-collapsed')
     if (savedCollapsed === 'true') setCollapsed(true)
 
-    const savedTheme = localStorage.getItem('theme')
-    if (savedTheme === 'light') {
-      setDarkMode(false)
-      document.documentElement.setAttribute('data-theme', 'light')
-    } else {
+    // Force dark mode on mobile
+    const isMobile = window.innerWidth < 1024
+    if (isMobile) {
+      setDarkMode(true)
+      localStorage.setItem('theme', 'dark')
       document.documentElement.setAttribute('data-theme', 'dark')
+    } else {
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme === 'light') {
+        setDarkMode(false)
+        document.documentElement.setAttribute('data-theme', 'light')
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark')
+      }
     }
   }, [])
 
@@ -82,9 +90,6 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
         </button>
         <img src="/icon.svg" alt="Genealogic" className="h-6 w-auto" />
         <div className="ml-auto flex items-center gap-2">
-          <button onClick={toggleTheme} className={`w-8 h-8 rounded-full flex items-center justify-center ${iconColor} transition`}>
-            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
           <button onClick={() => setNotifOpen(true)} className={`w-8 h-8 rounded-full flex items-center justify-center ${iconColor} transition relative`}>
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#D74709]" />}

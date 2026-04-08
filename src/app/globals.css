@@ -53,10 +53,13 @@ body {
   button, a[class*="rounded"], a[class*="px-"] {
     min-height: 36px;
   }
-  /* Icon-only buttons: square */
+  /* Icon-only buttons: perfectly square with centered icon */
   button:has(> svg:only-child) {
     min-width: 36px;
     min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
