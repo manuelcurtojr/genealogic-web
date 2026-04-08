@@ -186,9 +186,9 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-2xl font-bold mb-6">Ajustes</h1>
+      <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Ajustes</h1>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
         {/* Sidebar navigation */}
         <div className="w-48 flex-shrink-0 hidden md:block">
           <nav className="space-y-1 sticky top-24">
@@ -220,8 +220,8 @@ export default function SettingsPage() {
           {activeSection === 'perfil' && (
             <div className="space-y-4">
               <SectionHeader title="Perfil personal" desc="Tu información personal y avatar" />
-              <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                <div className="flex items-center gap-4 mb-5">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5">
+                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
                   <AvatarUpload userId={profile?.id} currentUrl={profile?.avatar_url} displayName={form.display_name} onUploaded={(url) => setProfile((prev: any) => ({ ...prev, avatar_url: url }))} />
                   <div>
                     <p className="font-semibold">{form.display_name || 'Sin nombre'}</p>
@@ -229,7 +229,7 @@ export default function SettingsPage() {
                     <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${currentPlan.color}`}>{currentPlan.name}</span>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label="Nombre para mostrar" value={form.display_name} onChange={v => set('display_name', v)} />
                   <Field label="Teléfono" value={form.phone} onChange={v => set('phone', v)} placeholder="+34 600 000 000" />
                   {/* Country selector */}
@@ -289,7 +289,7 @@ export default function SettingsPage() {
           {activeSection === 'seguridad' && (
             <div className="space-y-4">
               <SectionHeader title="Contraseña y seguridad" desc="Gestiona tu contraseña de acceso" />
-              <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5">
                 {passwordSuccess && <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm text-green-400 mb-4 flex items-center gap-2"><Check className="w-4 h-4" /> Contraseña actualizada correctamente</div>}
                 {!showPassword ? (
                   <div className="flex items-center justify-between">
@@ -301,16 +301,16 @@ export default function SettingsPage() {
                     {passwordError && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{passwordError}</div>}
                     <Field label="Nueva contraseña" value={newPassword} onChange={v => setNewPassword(v)} type="password" placeholder="Mínimo 6 caracteres" />
                     <Field label="Confirmar contraseña" value={confirmPassword} onChange={v => setConfirmPassword(v)} type="password" />
-                    <div className="flex gap-2">
-                      <button type="submit" disabled={passwordLoading} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center gap-2">{passwordLoading && <Loader2 className="w-4 h-4 animate-spin" />}Cambiar contraseña</button>
-                      <button type="button" onClick={() => { setShowPassword(false); setPasswordError('') }} className="px-4 py-2 rounded-lg text-sm bg-white/5 text-white/50 hover:bg-white/10 transition">Cancelar</button>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <button type="submit" disabled={passwordLoading} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2">{passwordLoading && <Loader2 className="w-4 h-4 animate-spin" />}Cambiar contraseña</button>
+                      <button type="button" onClick={() => { setShowPassword(false); setPasswordError('') }} className="px-4 py-2 rounded-lg text-xs sm:text-sm bg-white/5 text-white/50 hover:bg-white/10 transition">Cancelar</button>
                     </div>
                   </form>
                 )}
               </div>
 
               {/* Sessions */}
-              <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold">Sesiones activas</h3>
                 </div>
@@ -348,8 +348,8 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <SectionHeader title="Plan y suscripción" desc="Gestiona tu plan actual y los genes" />
               {/* Current plan */}
-              <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                <div className="flex items-center justify-between mb-4">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${currentPlan.color}`}><Crown className="w-5 h-5" /></div>
                     <div>
@@ -359,15 +359,15 @@ export default function SettingsPage() {
                   </div>
                   <Link href="/pricing" className="text-sm text-[#D74709] hover:text-[#c03d07] font-medium flex items-center gap-1 transition">Cambiar plan <ChevronRight className="w-4 h-4" /></Link>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {currentPlan.features.map(f => (
                     <div key={f} className="flex items-center gap-2 text-xs text-white/50"><Check className="w-3 h-3 text-green-400 flex-shrink-0" />{f}</div>
                   ))}
                 </div>
               </div>
               {/* Genes */}
-              <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                <div className="flex items-center justify-between">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3"><Gem className="w-5 h-5 text-purple-400" /><div><p className="font-semibold">{profile?.genes?.toLocaleString() || 0} Genes</p><p className="text-xs text-white/40">Tu saldo actual</p></div></div>
                   <Link href="/pricing" className="text-sm text-purple-400 hover:text-purple-300 font-medium transition">Comprar genes</Link>
                 </div>

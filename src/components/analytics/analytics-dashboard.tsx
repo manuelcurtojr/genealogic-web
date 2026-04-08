@@ -521,14 +521,14 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
 
 function Card({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string | number; color: string }) {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${color}15` }}>
-          <Icon className="w-3.5 h-3.5" style={{ color }} />
+    <div className="bg-white/5 border border-white/10 rounded-xl p-2.5 sm:p-3">
+      <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center" style={{ background: `${color}15` }}>
+          <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" style={{ color }} />
         </div>
       </div>
-      <p className="text-sm font-bold">{typeof value === 'number' ? fmt(value) : value}</p>
-      <p className="text-[10px] text-white/40 mt-0.5">{label}</p>
+      <p className="text-xs sm:text-sm font-bold">{typeof value === 'number' ? fmt(value) : value}</p>
+      <p className="text-[9px] sm:text-[10px] text-white/40 mt-0.5">{label}</p>
     </div>
   )
 }
