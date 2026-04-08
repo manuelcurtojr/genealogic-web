@@ -85,12 +85,12 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
           />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap min-w-0">
           {/* Sex filter — dropdown */}
           <select
             value={sexFilter}
             onChange={(e) => { setSexFilter(e.target.value); setPage(0) }}
-            className="bg-white/5 border border-white/10 rounded-lg px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer flex-1 sm:flex-none sm:min-w-[130px]"
+            className="bg-white/5 border border-white/10 rounded-lg px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-0 flex-1 sm:flex-none sm:min-w-[130px]"
           >
             <option value="">Todos los sexos</option>
             <option value="male">Machos</option>
@@ -101,7 +101,7 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
           <select
             value={breedFilter}
             onChange={(e) => { setBreedFilter(e.target.value); setPage(0) }}
-            className="bg-white/5 border border-white/10 rounded-lg px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer flex-1 sm:flex-none sm:min-w-[160px]"
+            className="bg-white/5 border border-white/10 rounded-lg px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-0 flex-1 sm:flex-none sm:min-w-[160px]"
           >
             <option value="">Todas las razas</option>
             {breeds.map((b) => (
@@ -110,7 +110,7 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
           </select>
 
           {/* View toggle */}
-          <div className="flex rounded-lg border border-white/10 overflow-hidden flex-shrink-0">
+          <div className="flex rounded-lg border border-white/10 overflow-hidden shrink-0">
             <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><Grid3X3 className="w-4 h-4" /></button>
             <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><List className="w-4 h-4" /></button>
           </div>
