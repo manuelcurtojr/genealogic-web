@@ -84,25 +84,12 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
       />
 
       {/* Mobile top bar */}
-      <div className={`lg:hidden fixed top-0 left-0 right-0 h-14 ${headerBg} border-b flex items-center px-4 z-30 transition-colors duration-300`}>
-        <button onClick={() => setMobileOpen(true)} className={`${iconColor} transition mr-3`}>
+      <div className={`lg:hidden fixed top-0 left-0 right-0 h-14 ${headerBg} border-b flex items-center gap-3 px-4 z-30 transition-colors duration-300`}>
+        <button onClick={() => setMobileOpen(true)} className={`${iconColor} transition shrink-0`}>
           <Menu className="w-6 h-6" />
         </button>
-        <img src="/icon.svg" alt="Genealogic" className="h-6 w-auto" />
-        <div className="ml-auto flex items-center gap-2">
-          <button onClick={() => setNotifOpen(true)} className={`w-8 h-8 rounded-full flex items-center justify-center ${iconColor} transition relative`}>
-            <Bell className="w-4 h-4" />
-            {unreadCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#D74709]" />}
-          </button>
-          <Link href="/settings" className={`w-8 h-8 rounded-full overflow-hidden border-2 ${avatarBg} block`}>
-            {user?.avatar_url ? (
-              <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-[#D74709]/20 flex items-center justify-center text-[#D74709] text-xs font-bold">
-                {(user?.display_name || '?')[0].toUpperCase()}
-              </div>
-            )}
-          </Link>
+        <div className="flex-1 min-w-0">
+          <SearchBar />
         </div>
       </div>
 
