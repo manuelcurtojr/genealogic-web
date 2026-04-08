@@ -136,17 +136,17 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
       />
 
       {/* Slide panel */}
-      <div className={`fixed top-0 right-0 h-full w-full max-w-lg z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-lg z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Fixed header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 flex-shrink-0">
-          <h2 className="text-lg font-semibold">{isEdit ? 'Editar evento' : 'Nuevo evento'}</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 flex-shrink-0">
+          <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar evento' : 'Nuevo evento'}</h2>
+          <button onClick={onClose} className="text-white/40 hover:text-white transition p-1">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5">
           {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
           {/* Title */}
@@ -178,7 +178,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
           </div>
 
           {/* Date */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Inicio</label>
               <input
@@ -232,7 +232,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
           {/* Entity linking */}
           <div>
             <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-2 block">Vincular a (opcional)</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {dogs.length > 0 && (
                 <SearchableSelect options={dogs} value={form.dog_id} onChange={v => set('dog_id', v)} placeholder="Perro..." label="Perro" />
               )}
@@ -261,21 +261,21 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
         </div>
 
         {/* Fixed footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t border-white/10 flex-shrink-0 gap-2">
           {isEdit ? (
-            <button type="button" onClick={() => setShowDelete(true)} className="text-sm text-red-400 hover:text-red-300 transition flex items-center gap-1.5">
+            <button type="button" onClick={() => setShowDelete(true)} className="text-sm text-red-400 hover:text-red-300 transition flex items-center gap-1.5 py-2">
               <Trash2 className="w-4 h-4" />
-              Eliminar
+              <span className="hidden sm:inline">Eliminar</span>
             </button>
           ) : <div />}
           <div className="flex gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">
+            <button type="button" onClick={onClose} className="px-3 sm:px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">
               Cancelar
             </button>
             <button onClick={handleSubmit} disabled={loading || !form.title.trim()}
-              className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+              className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-4 sm:px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              {isEdit ? 'Guardar' : 'Crear evento'}
+              {isEdit ? 'Guardar' : 'Crear'}
             </button>
           </div>
         </div>
