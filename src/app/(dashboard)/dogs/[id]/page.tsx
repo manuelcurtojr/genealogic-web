@@ -63,8 +63,9 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         style={!user ? { marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)', marginTop: '-24px', width: '100vw' } : undefined}>
         <DogGallery photos={galleryPhotos} name={dog.name} sex={dog.sex} />
 
-        {/* Share + Favorite buttons top-right */}
+        {/* Action buttons top-right */}
         <div className="absolute top-4 right-4 flex items-center gap-2">
+          {isOwner && user && <DogEditButton dogId={id} userId={user.id} />}
           <ShareButton dog={{ name: dog.name, sex: dog.sex, breed_name: breedName, kennel_name: kennel?.name, thumbnail_url: dog.thumbnail_url, birth_date: dog.birth_date }} dogUrl={`/dogs/${id}`} />
           <FavoriteButton dogId={id} initialFavorited={isFavorited} />
         </div>
@@ -73,13 +74,6 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         <Link href="/dogs" className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-
-        {/* Edit button — only for owner */}
-        {isOwner && user && (
-          <div className="absolute top-4 right-16">
-            <DogEditButton dogId={id} userId={user.id} />
-          </div>
-        )}
       </div>
 
       {/* Content */}
