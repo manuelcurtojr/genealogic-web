@@ -120,8 +120,6 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
       const supabase = createClient()
       const field = panelTarget.role === 'father' ? 'father_id' : 'mother_id'
       await supabase.from('dogs').update({ [field]: newDogId }).eq('id', panelTarget.dogId)
-      // Mark as contribution
-      await supabase.from('dogs').update({ contributor_id: userId, owner_id: null, is_public: true }).eq('id', newDogId)
     }
     setDogFormOpen(false)
     flashSaved()
@@ -322,6 +320,7 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
             onClose={() => setDogFormOpen(false)}
             onSaved={handleNewAncestorSaved}
             userId={userId}
+            asContribution
           />
         </div>
       )}

@@ -26,6 +26,7 @@ interface DogFormPanelProps {
   defaultKennelId?: string | null
   defaultKennelName?: string | null
   defaultAffixFormat?: string | null
+  asContribution?: boolean
 }
 
 const TABS = [
@@ -38,7 +39,7 @@ const TABS = [
 
 type TabKey = typeof TABS[number]['key']
 
-export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId, defaultLitterId, defaultBreedId, defaultFatherId, defaultMotherId, defaultKennelId, defaultKennelName, defaultAffixFormat }: DogFormPanelProps) {
+export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId, defaultLitterId, defaultBreedId, defaultFatherId, defaultMotherId, defaultKennelId, defaultKennelName, defaultAffixFormat, asContribution }: DogFormPanelProps) {
   const router = useRouter()
   const isEdit = !!editDogId
   const [activeTab, setActiveTab] = useState<TabKey>('datos')
@@ -153,7 +154,10 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         if (changes.length > 0) await supabase.from('dog_changes').insert(changes.map(c => ({ ...c, dog_id: editDogId!, user_id: userId })))
       }
     } else {
-      const { data: newDog, error: err } = await supabase.from('dogs').insert({ ...payload, owner_id: userId }).select('id').single()
+      const insertData = asContribution
+        ? { ...payload, contributor_id: userId, owner_id: null, is_public: true }
+        : { ...payload, owner_id: userId }
+      const { data: newDog, error: err } = await supabase.from('dogs').insert(insertData).select('id').single()
       setLoading(false)
       if (err) { setError(err.message); return }
       if (onSaved) onSaved(newDog?.id)
