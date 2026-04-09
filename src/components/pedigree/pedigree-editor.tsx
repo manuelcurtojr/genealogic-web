@@ -224,7 +224,7 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
                       placeholder={`Buscar ${panelTarget.role === 'father' ? 'macho' : 'hembra'} existente...`} autoFocus
                       className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
                   </div>
-                  <div className="space-y-1 mb-4">
+                  <div className="space-y-1">
                     {ancestorCandidates.map(d => (
                       <button key={d.id} onClick={() => linkExisting(d.id)} disabled={saving}
                         className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5 transition text-left disabled:opacity-50">
@@ -237,15 +237,14 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
                     ))}
                     {ancestorCandidates.length === 0 && ancestorSearch && <p className="text-xs text-white/20 text-center py-4">Sin resultados</p>}
                   </div>
+                </div>
 
-                  {/* Create new — opens full DogFormPanel */}
-                  <div className="border-t border-white/10 pt-4">
-                    <p className="text-xs text-white/40 mb-3">¿No encuentras al {panelTarget.role === 'father' ? 'padre' : 'madre'}?</p>
-                    <button onClick={openNewAncestorForm}
-                      className="w-full bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-1.5">
-                      <Plus className="w-4 h-4" /> Crear nuevo {panelTarget.role === 'father' ? 'perro' : 'perra'}
-                    </button>
-                  </div>
+                {/* Create new — fixed at bottom */}
+                <div className="px-4 sm:px-5 py-3 sm:py-4 border-t border-white/10 flex-shrink-0">
+                  <button onClick={openNewAncestorForm}
+                    className="w-full bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-1.5">
+                    <Plus className="w-4 h-4" /> Crear nuevo {panelTarget.role === 'father' ? 'perro' : 'perra'}
+                  </button>
                 </div>
               </>
             )}
@@ -315,13 +314,17 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
         </>
       )}
 
-      {/* Full DogFormPanel for creating new ancestor */}
-      <DogFormPanel
-        open={dogFormOpen}
-        onClose={() => setDogFormOpen(false)}
-        onSaved={handleNewAncestorSaved}
-        userId={userId}
-      />
+      {/* Full DogFormPanel for creating new ancestor — z-index above everything */}
+      {dogFormOpen && (
+        <div className="fixed inset-0 z-[110]">
+          <DogFormPanel
+            open={dogFormOpen}
+            onClose={() => setDogFormOpen(false)}
+            onSaved={handleNewAncestorSaved}
+            userId={userId}
+          />
+        </div>
+      )}
     </>
   )
 }
