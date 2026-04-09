@@ -276,7 +276,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                     {puppies.map((pup: any) => {
                       const sexColor = pup.sex === 'male' ? '#017DFA' : '#e84393'
                       return (
-                        <Link key={pup.id} href={`/dogs/${pup.id}`}
+                        <Link key={pup.id} href={`/dogs/${pup.slug || pup.id}`}
                           className="flex items-center gap-2.5 bg-white/[0.03] border border-white/5 rounded-lg px-3 py-2 hover:border-white/15 transition">
                           <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/5 flex-shrink-0 border" style={{ borderColor: sexColor }}>
                             {pup.thumbnail_url ? <img src={pup.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-4 h-4 text-white/15" /></div>}

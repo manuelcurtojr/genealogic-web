@@ -140,7 +140,7 @@ function DogsSearch() {
             const symbol = currencySymbol[dog.sale_currency] || '€'
 
             return (
-              <Link key={dog.id} href={`/dogs/${dog.id}`}
+              <Link key={dog.id} href={`/dogs/${dog.slug || dog.id}`}
                 className={`bg-white/[0.04] border rounded-xl overflow-hidden hover:border-[#D74709]/30 transition group ${dog.is_for_sale ? 'border-[#D74709]/20' : 'border-white/10'}`}>
                 <div className="relative aspect-[4/3] bg-white/5">
                   {dog.thumbnail_url ? (
@@ -396,7 +396,7 @@ function KennelsSearch() {
               .filter(Boolean) as string[]
 
             return (
-              <Link key={kennel.id} href={`/kennels/${kennel.id}`}
+              <Link key={kennel.id} href={`/kennels/${kennel.slug || kennel.id}`}
                 className="bg-white/[0.04] border border-white/10 rounded-xl p-4 sm:p-5 hover:border-[#D74709]/30 hover:bg-white/[0.06] transition group">
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="w-14 h-14 rounded-xl bg-[#D74709]/10 flex items-center justify-center flex-shrink-0 border border-[#D74709]/20 overflow-hidden">

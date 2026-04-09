@@ -8,6 +8,7 @@ import { BRAND } from '@/lib/constants'
 
 interface SearchResult {
   id: string
+  slug?: string | null
   name: string
   type: 'dog' | 'kennel' | 'breed'
   subtitle?: string
@@ -56,18 +57,18 @@ export default function SearchBar() {
       const q = query.trim()
 
       const [dogsRes, kennelsRes, breedsRes] = await Promise.all([
-        supabase.from('dogs').select('id, name, sex, thumbnail_url, breed:breeds(name)').ilike('name', `%${q}%`).limit(3),
-        supabase.from('kennels').select('id, name, logo_url').ilike('name', `%${q}%`).limit(3),
+        supabase.from('dogs').select('id, slug, name, sex, thumbnail_url, breed:breeds(name)').ilike('name', `%${q}%`).limit(3),
+        supabase.from('kennels').select('id, slug, name, logo_url').ilike('name', `%${q}%`).limit(3),
         supabase.from('breeds').select('id, name').ilike('name', `%${q}%`).limit(3),
       ])
 
       const items: SearchResult[] = [
         ...(dogsRes.data || []).map((d: any) => ({
-          id: d.id, name: d.name, type: 'dog' as const,
+          id: d.id, slug: d.slug, name: d.name, type: 'dog' as const,
           subtitle: d.breed?.name, image: d.thumbnail_url, sex: d.sex,
         })),
         ...(kennelsRes.data || []).map((k: any) => ({
-          id: k.id, name: k.name, type: 'kennel' as const, image: k.logo_url,
+          id: k.id, slug: k.slug, name: k.name, type: 'kennel' as const, image: k.logo_url,
         })),
         ...(breedsRes.data || []).map((b: any) => ({
           id: b.id, name: b.name, type: 'breed' as const,
@@ -82,7 +83,7 @@ export default function SearchBar() {
   }, [query])
 
   function getLink(r: SearchResult) {
-    if (r.type === 'dog') return `/dogs/${r.id}`
+    if (r.type === 'dog') return `/dogs/${r.slug || r.id}`
     if (r.type === 'kennel') return `/kennel`
     return `/dogs`
   }

@@ -378,7 +378,7 @@ export default async function DashboardPage() {
             {recentDogsRes.data.map((dog: any) => {
               const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
               return (
-                <Link key={dog.id} href={`/dogs/${dog.id}`}
+                <Link key={dog.id} href={`/dogs/${dog.slug || dog.id}`}
                   className="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden hover:border-[#D74709]/50 transition group">
                   <div className="aspect-square bg-white/5 relative">
                     {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/10"><PawPrint className="w-10 h-10" /></div>}

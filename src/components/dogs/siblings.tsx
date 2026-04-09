@@ -14,6 +14,7 @@ interface SiblingsProps {
 
 interface SiblingDog {
   id: string
+  slug?: string | null
   name: string
   sex: string | null
   thumbnail_url: string | null
@@ -31,7 +32,7 @@ export default function Siblings({ dogId, fatherId, motherId }: SiblingsProps) {
       const supabase = createClient()
       let query = supabase
         .from('dogs')
-        .select('id, name, sex, thumbnail_url, breed:breeds(name)')
+        .select('id, slug, name, sex, thumbnail_url, breed:breeds(name)')
         .neq('id', dogId)
 
       if (fatherId && motherId) {
@@ -91,7 +92,7 @@ function MiniDogCard({ dog }: { dog: SiblingDog }) {
   const borderColor = dog.sex === 'male' ? BRAND.male : BRAND.female
   return (
     <Link
-      href={`/dogs/${dog.id}`}
+      href={`/dogs/${dog.slug || dog.id}`}
       className="w-[140px] flex-shrink-0 bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:bg-white/10 transition group"
     >
       <div className="relative w-[140px] h-[140px] bg-white/5">

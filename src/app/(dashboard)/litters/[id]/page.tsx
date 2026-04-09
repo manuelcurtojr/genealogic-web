@@ -163,7 +163,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
             {puppies.map((pup: any) => {
               const sc = pup.sex === 'male' ? BRAND.male : BRAND.female
               return (
-                <Link key={pup.id} href={`/dogs/${pup.id}`} className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 hover:border-[#D74709]/30 transition flex-shrink-0">
+                <Link key={pup.id} href={`/dogs/${pup.slug || pup.id}`} className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 hover:border-[#D74709]/30 transition flex-shrink-0">
                   <div className="w-8 h-8 rounded-full border-2 overflow-hidden bg-white/5 flex-shrink-0" style={{ borderColor: sc }}>
                     {pup.thumbnail_url ? <img src={pup.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/15 text-xs">{pup.sex === 'male' ? '♂' : '♀'}</div>}
                   </div>
@@ -194,7 +194,7 @@ function CompactParent({ parent, role }: { parent: any; role: string }) {
   const sc = isFather ? BRAND.male : BRAND.female
   if (!parent) return <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/20 text-sm">{role} ?</div>
   return (
-    <Link href={`/dogs/${parent.id}`} className="relative w-24 h-24 rounded-xl overflow-hidden border-2 hover:border-[#D74709] transition group" style={{ borderColor: sc }}>
+    <Link href={`/dogs/${parent.slug || parent.id}`} className="relative w-24 h-24 rounded-xl overflow-hidden border-2 hover:border-[#D74709] transition group" style={{ borderColor: sc }}>
       {parent.thumbnail_url ? <img src={parent.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/5 flex items-center justify-center text-2xl" style={{ color: sc + '40' }}>{isFather ? '♂' : '♀'}</div>}
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-4">
         <p className="text-[10px] text-white/60">{role}</p>

@@ -7,6 +7,7 @@ import { BRAND } from '@/lib/constants'
 
 interface Kennel {
   id: string
+  slug?: string | null
   name: string
   logo_url: string | null
   description: string | null
@@ -45,7 +46,7 @@ export default function KennelsClient({ kennels }: { kennels: Kennel[] }) {
           {filtered.map(kennel => (
             <Link
               key={kennel.id}
-              href={`/kennels/${kennel.id}`}
+              href={`/kennels/${kennel.slug || kennel.id}`}
               className="bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10 transition group"
             >
               <div className="flex items-center gap-4">

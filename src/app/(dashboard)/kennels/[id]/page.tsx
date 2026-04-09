@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Globe, Calendar, Dog, ExternalLink, Heart, MessageCircle, Tag, Baby } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
+import { isUUID } from '@/lib/slug'
 
 export default async function KennelDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -10,10 +11,11 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  const field = isUUID(id) ? 'id' : 'slug'
   const { data: kennel } = await supabase
     .from('kennels')
     .select('*')
-    .eq('id', id)
+    .eq(field, id)
     .single()
 
   if (!kennel) notFound()
@@ -173,7 +175,7 @@ function SaleDogCard({ dog, currencySymbol }: { dog: any; currencySymbol: Record
   const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
   const symbol = currencySymbol[dog.sale_currency] || '€'
   return (
-    <Link href={`/dogs/${dog.id}`} className="bg-white/[0.04] border border-[#D74709]/20 rounded-xl overflow-hidden hover:border-[#D74709]/50 transition group relative">
+    <Link href={`/dogs/${dog.slug || dog.id}`} className="bg-white/[0.04] border border-[#D74709]/20 rounded-xl overflow-hidden hover:border-[#D74709]/50 transition group relative">
       <div className="absolute top-2 left-2 z-10 bg-[#D74709] text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
         <Tag className="w-2.5 h-2.5" /> EN VENTA
       </div>
@@ -201,7 +203,7 @@ function PublicDogCard({ dog }: { dog: any }) {
   const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
   const sexIcon = dog.sex === 'male' ? '♂' : '♀'
   return (
-    <Link href={`/dogs/${dog.id}`} className="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden hover:border-[#D74709]/30 transition group">
+    <Link href={`/dogs/${dog.slug || dog.id}`} className="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden hover:border-[#D74709]/30 transition group">
       <div className="relative aspect-square bg-white/5">
         {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-10 h-10 text-white/10" /></div>}
         {dog.breed?.name && <span className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-2 py-0.5 rounded-full">{dog.breed.name}</span>}

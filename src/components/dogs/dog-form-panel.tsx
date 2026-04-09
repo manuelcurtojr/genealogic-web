@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Lock, Globe } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { formatDogName, type AffixFormat } from '@/lib/affix'
+import { generateSlug } from '@/lib/slug'
 import GalleryTab from './edit-tabs/gallery-tab'
 import SaludTab from './edit-tabs/salud-tab'
 import PalmaresTab from './edit-tabs/palmares-tab'
@@ -154,10 +155,11 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         if (changes.length > 0) await supabase.from('dog_changes').insert(changes.map(c => ({ ...c, dog_id: editDogId!, user_id: userId })))
       }
     } else {
+      const slug = generateSlug(payload.name)
       const insertData = asContribution
-        ? { ...payload, contributor_id: userId, owner_id: null, is_public: true }
-        : { ...payload, owner_id: userId }
-      const { data: newDog, error: err } = await supabase.from('dogs').insert(insertData).select('id').single()
+        ? { ...payload, slug, contributor_id: userId, owner_id: null, is_public: true }
+        : { ...payload, slug, owner_id: userId }
+      const { data: newDog, error: err } = await supabase.from('dogs').insert(insertData).select('id, slug').single()
       setLoading(false)
       if (err) { setError(err.message); return }
       if (onSaved) onSaved(newDog?.id)

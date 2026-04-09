@@ -13,6 +13,7 @@ interface OffspringProps {
 
 interface OffspringDog {
   id: string
+  slug?: string | null
   name: string
   sex: string | null
   thumbnail_url: string | null
@@ -30,7 +31,7 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
       const parentField = dogSex === 'female' ? 'mother_id' : 'father_id'
       const { data } = await supabase
         .from('dogs')
-        .select('id, name, sex, thumbnail_url, birth_date, breed:breeds(name)')
+        .select('id, slug, name, sex, thumbnail_url, birth_date, breed:breeds(name)')
         .eq(parentField, dogId)
         .order('birth_date', { ascending: false })
 
@@ -65,7 +66,7 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
           return (
             <Link
               key={dog.id}
-              href={`/dogs/${dog.id}`}
+              href={`/dogs/${dog.slug || dog.id}`}
               className="w-[140px] flex-shrink-0 bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:bg-white/10 transition"
             >
               <div className="relative w-[140px] h-[140px] bg-white/5">

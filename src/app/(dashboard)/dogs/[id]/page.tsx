@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette } from 'lucide-react'
 import BackButton from '@/components/ui/back-button'
 import { BRAND } from '@/lib/constants'
+import { isUUID } from '@/lib/slug'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import DogGallery from '@/components/dogs/dog-gallery'
 import DogTabs from '@/components/dogs/dog-tabs'
@@ -16,17 +17,19 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Accept both UUID and slug
+  const field = isUUID(id) ? 'id' : 'slug'
   const { data: dog } = await supabase
     .from('dogs')
     .select(`*, breed:breeds(id, name), color:colors(id, name), kennel:kennels(id, name, logo_url)`)
-    .eq('id', id)
+    .eq(field, id)
     .single()
 
   if (!dog) notFound()
 
   const [fatherRes, motherRes] = await Promise.all([
-    dog.father_id ? supabase.from('dogs').select('id, name, sex, thumbnail_url').eq('id', dog.father_id).single() : { data: null },
-    dog.mother_id ? supabase.from('dogs').select('id, name, sex, thumbnail_url').eq('id', dog.mother_id).single() : { data: null },
+    dog.father_id ? supabase.from('dogs').select('id, name, sex, thumbnail_url, slug').eq('id', dog.father_id).single() : { data: null },
+    dog.mother_id ? supabase.from('dogs').select('id, name, sex, thumbnail_url, slug').eq('id', dog.mother_id).single() : { data: null },
   ])
   const father = fatherRes.data
   const mother = motherRes.data
@@ -89,7 +92,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
             </div>
           )}
           {kennel?.name && (
-            <Link href={`/kennels/${kennel.id}`} className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-3 py-1 hover:border-[#D74709]/30 hover:bg-white/10 transition">
+            <Link href={`/kennels/${kennel.slug || kennel.id}`} className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-3 py-1 hover:border-[#D74709]/30 hover:bg-white/10 transition">
               {kennel.logo_url ? <img src={kennel.logo_url} alt="" className="w-4 h-4 rounded-full object-cover" /> : <img src="/icon.svg" alt="" className="w-4 h-4" />}
               <span className="text-sm text-white/70 font-medium">{kennel.name}</span>
             </Link>
@@ -149,7 +152,7 @@ function ParentCard({ parent, role }: { parent: any; role: string }) {
   )
 
   return (
-    <Link href={`/dogs/${parent.id}`} className={`border ${borderClass} bg-white/5 rounded-xl p-2.5 sm:p-3 hover:bg-white/10 transition flex items-center gap-2 sm:gap-3`}>
+    <Link href={`/dogs/${parent.slug || parent.id}`} className={`border ${borderClass} bg-white/5 rounded-xl p-2.5 sm:p-3 hover:bg-white/10 transition flex items-center gap-2 sm:gap-3`}>
       <div className="w-10 h-10 rounded-full border-2 overflow-hidden flex-shrink-0 bg-white/5" style={{ borderColor: sexColor }}>
         {parent.thumbnail_url
           ? <img src={parent.thumbnail_url} alt="" className="w-full h-full object-cover" />

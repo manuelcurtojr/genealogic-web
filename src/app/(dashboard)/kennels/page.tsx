@@ -8,7 +8,7 @@ export default async function KennelsPage() {
 
   const { data: kennels } = await supabase
     .from('kennels')
-    .select('id, name, logo_url, description, foundation_date')
+    .select('id, slug, name, logo_url, description, foundation_date')
     .order('name')
 
   return (

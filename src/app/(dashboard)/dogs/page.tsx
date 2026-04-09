@@ -9,7 +9,7 @@ export default async function DogsPage() {
     supabase
       .from('dogs')
       .select(`
-        id, name, sex, birth_date, thumbnail_url, breed_id,
+        id, slug, name, sex, birth_date, thumbnail_url, breed_id,
         breed:breeds(name),
         color:colors(name),
         kennel:kennels(id, name, logo_url)

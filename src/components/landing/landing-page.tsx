@@ -132,7 +132,7 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
         {/* Featured dogs */}
         <div className="flex items-center gap-3 mt-6">
           {breedThumbs.map(dog => (
-            <Link key={dog.id} href={`/dogs/${dog.id}`}
+            <Link key={dog.id} href={`/dogs/${dog.slug || dog.id}`}
               className={`w-10 h-10 rounded-lg overflow-hidden border hover:border-[#D74709]/50 transition hover:scale-110 ${darkMode ? 'bg-white/5 border-white/10' : 'bg-gray-100 border-gray-200'}`}>
               {dog.thumbnail_url ? (
                 <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />

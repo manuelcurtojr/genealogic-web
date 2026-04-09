@@ -367,7 +367,7 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
                 </p>
               )}
 
-              <a href={`/dogs/${editNodeData.id}`} target="_blank"
+              <a href={`/dogs/${(editNodeData as any).slug || editNodeData.id}`} target="_blank"
                 className="w-full flex items-center justify-center gap-1.5 bg-white/5 border border-white/10 text-white/60 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10 transition">
                 Ver perfil completo ↗
               </a>

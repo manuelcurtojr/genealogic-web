@@ -84,7 +84,7 @@ function Card({n,isRoot,si,rc}:{n:PN;isRoot?:boolean;si:boolean;rc:Map<string,nu
   </>
   return onClickDog
     ? <div onClick={()=>onClickDog(n.id)} className={cls} style={{width:CW,height:CH,flexShrink:0}}>{inner}</div>
-    : <Link href={`/dogs/${n.id}`} className={cls} style={{width:CW,height:CH,flexShrink:0}}>{inner}</Link>
+    : <Link href={`/dogs/${(n as any).slug || n.id}`} className={cls} style={{width:CW,height:CH,flexShrink:0}}>{inner}</Link>
 }
 
 /* HORIZONTAL: Use a measured approach - render children, then draw SVG connectors */

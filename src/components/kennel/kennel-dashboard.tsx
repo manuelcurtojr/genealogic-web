@@ -275,7 +275,7 @@ function DogCard({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; user
   const isTransferred = !isOwner
   return (
     <div className="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden hover:border-[#D74709]/30 transition group">
-      <Link href={`/dogs/${dog.id}`} className="block relative aspect-[3/2] sm:aspect-[4/3] bg-white/5">
+      <Link href={`/dogs/${dog.slug || dog.id}`} className="block relative aspect-[3/2] sm:aspect-[4/3] bg-white/5">
         {dog.thumbnail_url ? (
           <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
         ) : (
@@ -286,7 +286,7 @@ function DogCard({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; user
         <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: sexColor }} />
       </Link>
       <div className="p-2.5 sm:p-3">
-        <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1.5 group-hover:text-[#D74709] transition">
+        <Link href={`/dogs/${dog.slug || dog.id}`} className="flex items-center gap-1.5 group-hover:text-[#D74709] transition">
           <span className="text-sm font-semibold truncate">{dog.name}</span>
           <span className="text-xs" style={{ color: sexColor }}>{sexIcon}</span>
         </Link>
@@ -331,12 +331,12 @@ function DogRow({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; userI
   const isOwner = dog.owner_id === userId
   return (
     <div className="flex items-center gap-3 sm:gap-4 bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition">
-      <Link href={`/dogs/${dog.id}`} className="flex-shrink-0">
+      <Link href={`/dogs/${dog.slug || dog.id}`} className="flex-shrink-0">
         <div className="w-10 h-10 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: sexColor }}>
           {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-4 h-4 text-white/15" /></div>}
         </div>
       </Link>
-      <Link href={`/dogs/${dog.id}`} className="flex-1 min-w-0">
+      <Link href={`/dogs/${dog.slug || dog.id}`} className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="font-semibold text-sm truncate hover:text-[#D74709] transition">{dog.name}</p>
           {!isOwner && <span className="text-[9px] font-bold text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">Transferido</span>}

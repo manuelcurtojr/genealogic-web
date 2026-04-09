@@ -7,7 +7,7 @@ export default async function ContributionsPage() {
 
   const { data: dogs } = await supabase
     .from('dogs')
-    .select('id, name, sex, birth_date, thumbnail_url, breed:breeds(id, name), color:colors(id, name), breed_id')
+    .select('id, slug, name, sex, birth_date, thumbnail_url, breed:breeds(id, name), color:colors(id, name), breed_id')
     .eq('contributor_id', user!.id)
     .is('owner_id', null)
     .order('created_at', { ascending: false })

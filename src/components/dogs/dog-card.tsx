@@ -7,6 +7,7 @@ import { BRAND } from '@/lib/constants'
 interface DogCardProps {
   dog: {
     id: string
+    slug?: string | null
     name: string
     sex: string | null
     birth_date: string | null
@@ -29,7 +30,7 @@ export default function DogCard({ dog, onEdit, onTransfer, onEditPedigree }: Dog
   return (
     <div className="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden hover:border-[#D74709]/30 transition group">
       {/* Photo */}
-      <Link href={`/dogs/${dog.id}`} className="block relative aspect-[4/3] bg-white/5">
+      <Link href={`/dogs/${dog.slug || dog.id}`} className="block relative aspect-[4/3] bg-white/5">
         {dog.thumbnail_url ? (
           <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
         ) : (
@@ -43,7 +44,7 @@ export default function DogCard({ dog, onEdit, onTransfer, onEditPedigree }: Dog
 
       {/* Info */}
       <div className="p-2 sm:p-3">
-        <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1 sm:gap-1.5 group-hover:text-[#D74709] transition">
+        <Link href={`/dogs/${dog.slug || dog.id}`} className="flex items-center gap-1 sm:gap-1.5 group-hover:text-[#D74709] transition">
           <span className="text-xs sm:text-sm font-semibold truncate">{dog.name}</span>
           <span className="text-[10px] sm:text-xs" style={{ color: sexColor }}>{sexIcon}</span>
         </Link>
@@ -54,7 +55,7 @@ export default function DogCard({ dog, onEdit, onTransfer, onEditPedigree }: Dog
 
         {/* Action buttons */}
         <div className="flex items-center gap-1.5 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-white/5">
-          <Link href={`/dogs/${dog.id}`} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition">
+          <Link href={`/dogs/${dog.slug || dog.id}`} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition">
             <Eye className="w-3.5 h-3.5" /> Ver
           </Link>
           <button onClick={onEdit} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition">
