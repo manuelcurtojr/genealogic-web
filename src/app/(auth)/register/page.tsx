@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [acceptTerms, setAcceptTerms] = useState(false)
   const router = useRouter()
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -99,9 +100,18 @@ export default function RegisterPage() {
             </div>
           </div>
 
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <input type="checkbox" checked={acceptTerms} onChange={e => setAcceptTerms(e.target.checked)}
+              className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5 text-[#D74709] focus:ring-[#D74709] focus:ring-offset-0" />
+            <span className="text-xs text-white/40 leading-relaxed">
+              Acepto los <a href="/terms" target="_blank" className="text-[#D74709] hover:underline">Términos y Condiciones</a> y
+              la <a href="/privacy" target="_blank" className="text-[#D74709] hover:underline">Política de Privacidad</a>
+            </span>
+          </label>
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !acceptTerms}
             className="w-full bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -113,6 +123,13 @@ export default function RegisterPage() {
           Ya tienes cuenta?{' '}
           <Link href="/login" className="text-[#D74709] hover:underline">Inicia sesion</Link>
         </p>
+      </div>
+
+      <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 text-[11px] text-white/20">
+        <Link href="/privacy" className="hover:text-white/40 transition">Privacidad</Link>
+        <Link href="/terms" className="hover:text-white/40 transition">Términos</Link>
+        <Link href="/cookies" className="hover:text-white/40 transition">Cookies</Link>
+        <Link href="/legal" className="hover:text-white/40 transition">Aviso Legal</Link>
       </div>
     </div>
   )
