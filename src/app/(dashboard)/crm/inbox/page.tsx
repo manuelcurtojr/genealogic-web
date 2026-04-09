@@ -15,7 +15,7 @@ interface Submission {
   data: any
   contact_id: string | null
   deal_id: string | null
-  is_read: boolean
+  is_read?: boolean
   created_at: string
   contact?: { id: string; name: string; email: string | null; phone: string | null; city: string | null; country: string | null }
 }
@@ -49,7 +49,7 @@ export default function InboxPage() {
 
     const { data } = await supabase
       .from('form_submissions')
-      .select('id, data, contact_id, deal_id, is_read, created_at')
+      .select('id, data, contact_id, deal_id, created_at')
       .eq('kennel_id', kennel.id)
       .order('created_at', { ascending: false })
       .limit(200)
@@ -69,7 +69,8 @@ export default function InboxPage() {
     const sub = submissions.find(s => s.id === id)
     if (!sub || sub.is_read) return
     const supabase = createClient()
-    await supabase.from('form_submissions').update({ is_read: true }).eq('id', id)
+    // is_read column may not exist yet — ignore errors
+    await supabase.from('form_submissions').update({ is_read: true } as any).eq('id', id).then(() => {})
     setSubmissions(prev => prev.map(s => s.id === id ? { ...s, is_read: true } : s))
   }
 
