@@ -13,7 +13,8 @@ interface Props {
 
 const ROLE_OPTIONS = [
   { value: 'free', label: 'Free', color: '#6B7280' },
-  { value: 'pro', label: 'Pro', color: '#8B5CF6' },
+  { value: 'amateur', label: 'Amateur', color: '#3B82F6' },
+  { value: 'pro', label: 'Pro', color: '#D74709' },
   { value: 'admin', label: 'Admin', color: '#EF4444' },
 ]
 
