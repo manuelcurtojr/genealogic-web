@@ -13,10 +13,15 @@ export const maxDuration = 60
 // POST: Confirm import
 export async function POST(request: NextRequest) {
   try {
-    const { mainDog, ancestors, userId, kennelId, swaps, importPhotos } = await request.json()
-    if (!mainDog || !userId) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
-
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+
+    const { mainDog, ancestors, userId, kennelId, swaps, importPhotos } = await request.json()
+    if (!mainDog) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
+
+    // Ensure userId matches authenticated user
+    const safeUserId = user.id
     const [breedsRes, colorsRes] = await Promise.all([
       supabase.from('breeds').select('id, name'),
       supabase.from('colors').select('id, name'),
@@ -42,7 +47,7 @@ export async function POST(request: NextRequest) {
     // Duplicate detection
     for (const dog of allDogs) {
       if (nameToId.has(dog.name)) continue
-      const { data: existing } = await supabase.from('dogs').select('id').eq('owner_id', userId).ilike('name', dog.name).limit(1)
+      const { data: existing } = await supabase.from('dogs').select('id').eq('owner_id', safeUserId).ilike('name', dog.name).limit(1)
       if (existing?.length) { nameToId.set(dog.name, existing[0].id); continue }
       if (dog.registration) {
         const { data: regMatch } = await supabase.from('dogs').select('id').eq('registration', dog.registration).limit(1)
@@ -63,7 +68,7 @@ export async function POST(request: NextRequest) {
         name: dog.name, sex: dog.sex === 'Female' ? 'female' : 'male',
         registration: dog.registration || null, breed_id: findBreed(dog.breed), color_id: findColor(dog.color),
         birth_date: parsedDate, father_id: fatherId, mother_id: motherId,
-        kennel_id: kennelId || null, owner_id: userId, is_public: true,
+        kennel_id: kennelId || null, owner_id: safeUserId, is_public: true,
         thumbnail_url: importPhotos !== false ? (dog.photo_url || null) : null,
       }).select('id').single()
 
@@ -92,7 +97,7 @@ export async function POST(request: NextRequest) {
     // Save import record
     const notifTitle = `Pedigrí importado: ${mainDog.name}`
     await supabase.from('notifications').insert({
-      user_id: userId, type: 'import',
+      user_id: safeUserId, type: 'import',
       title: notifTitle,
       message: JSON.stringify({ importId, createdIds, mainDogId }),
       is_read: false,
@@ -100,7 +105,7 @@ export async function POST(request: NextRequest) {
 
     // Send push notification
     const { sendPushToUser } = await import('@/lib/push')
-    await sendPushToUser(userId, notifTitle, `Se han importado ${createdIds.length} perros`, { link: `/dogs/${mainDogId}` })
+    await sendPushToUser(safeUserId, notifTitle, `Se han importado ${createdIds.length} perros`, { link: `/dogs/${mainDogId}` })
 
     return NextResponse.json({ success: true, mainDogId, totalCreated: createdIds.length, totalLinked: nameToId.size - createdIds.length, importId })
   } catch (err: any) {
@@ -111,11 +116,15 @@ export async function POST(request: NextRequest) {
 // DELETE: Undo import
 export async function DELETE(request: NextRequest) {
   try {
-    const { importId, userId } = await request.json()
-    if (!importId || !userId) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
-
     const supabase = await createClient()
-    const { data: notifs } = await supabase.from('notifications').select('id, message').eq('user_id', userId).eq('type', 'import').order('created_at', { ascending: false }).limit(50)
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    if (!authUser) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+
+    const { importId } = await request.json()
+    if (!importId) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
+
+    const safeUserId = authUser.id
+    const { data: notifs } = await supabase.from('notifications').select('id, message').eq('user_id', safeUserId).eq('type', 'import').order('created_at', { ascending: false }).limit(50)
 
     let createdIds: string[] = []
     let notifId: string | null = null
@@ -132,7 +141,7 @@ export async function DELETE(request: NextRequest) {
     for (const id of createdIds) {
       await supabase.from('dog_photos').delete().eq('dog_id', id)
       await supabase.from('favorites').delete().eq('dog_id', id)
-      await supabase.from('dogs').delete().eq('id', id).eq('owner_id', userId)
+      await supabase.from('dogs').delete().eq('id', id).eq('owner_id', safeUserId)
     }
     if (notifId) await supabase.from('notifications').delete().eq('id', notifId)
 

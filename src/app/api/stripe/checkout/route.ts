@@ -60,7 +60,9 @@ export async function POST(request: NextRequest) {
 
     // Apply 50% discount on first month (only for monthly, first subscription)
     if (withDiscount && isFirstSubscription && period === 'monthly') {
-      sessionParams.discounts = [{ coupon: 'APYSgodR' }]
+      const { data: couponSetting } = await admin.from('platform_settings').select('value').eq('key', 'STRIPE_FIRST_MONTH_COUPON').single()
+      const couponId = couponSetting?.value || 'APYSgodR'
+      sessionParams.discounts = [{ coupon: couponId }]
       // Can't combine trial with discounts, so remove trial when using coupon
       delete sessionParams.subscription_data.trial_period_days
     }

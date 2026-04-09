@@ -71,6 +71,20 @@ export async function POST() {
     await supabase.from('genes_transactions').delete().eq('user_id', userId)
     await supabase.from('events').delete().eq('owner_id', userId)
 
+    // Delete conversations and messages
+    const { data: convs } = await supabase.from('conversations').select('id').or(`owner_id.eq.${userId},participant_id.eq.${userId}`)
+    const convIds = (convs || []).map(c => c.id)
+    if (convIds.length > 0) {
+      await supabase.from('messages').delete().in('conversation_id', convIds)
+      await supabase.from('conversations').delete().in('id', convIds)
+    }
+
+    // Delete device tokens
+    await supabase.from('device_tokens').delete().eq('user_id', userId)
+
+    // Delete subscriptions
+    await supabase.from('subscriptions').delete().eq('user_id', userId)
+
     // Delete CRM data
     await supabase.from('deals').delete().eq('owner_id', userId)
     await supabase.from('contacts').delete().eq('owner_id', userId)

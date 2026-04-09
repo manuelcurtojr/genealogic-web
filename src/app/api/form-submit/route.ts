@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     // 1. Create or find contact
     let contactId: string | null = null
-    const { data: existingContact } = await supabase.from('contacts').select('id').eq('email', formData.email).eq('owner_id', ownerId).limit(1)
+    const { data: existingContact } = await supabase.from('contacts').select('id').ilike('email', formData.email).eq('owner_id', ownerId).limit(1)
 
     if (existingContact?.length) {
       contactId = existingContact[0].id
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     const contactName = `${formData.first_name} ${formData.last_name || ''}`.trim()
 
     // Check if the submitter has a Genealogic account
-    const { data: existingUser } = await supabase.from('profiles').select('id').eq('email', formData.email).limit(1)
+    const { data: existingUser } = await supabase.from('profiles').select('id').ilike('email', formData.email).limit(1)
     const participantId = existingUser?.[0]?.id || null
 
     const { data: conv } = await supabase.from('conversations').insert({

@@ -170,8 +170,7 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
       await Push.register()
 
       Push.addListener('registration', async (token: any) => {
-        console.log('Push token received:', token.value?.substring(0, 20) + '...')
-        // Save token directly via Supabase client (more reliable than API route)
+        // Save token directly via Supabase client
         const supabase = createClient()
         const { data: { user: authUser } } = await supabase.auth.getUser()
         if (authUser && token.value) {
@@ -179,7 +178,6 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
             { user_id: authUser.id, token: token.value, platform: 'ios' },
             { onConflict: 'user_id,token' }
           )
-          console.log('Push token saved for user', authUser.id)
         }
       })
 
