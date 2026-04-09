@@ -35,6 +35,7 @@ export default function InboxPage() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
+  const [kennelNames, setKennelNames] = useState<Record<string, string>>({})
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [userId, setUserId] = useState('')
   const [newMessage, setNewMessage] = useState('')
@@ -57,7 +58,17 @@ export default function InboxPage() {
         .or(`owner_id.eq.${user.id},participant_id.eq.${user.id}`)
         .order('last_message_at', { ascending: false })
         .limit(100)
-        .then(({ data }) => { setConversations(data || []); setLoading(false) })
+        .then(async ({ data }) => {
+          const convs = data || []
+          setConversations(convs)
+          // Load kennel names for conversations where user is participant
+          const ownerIds = [...new Set(convs.filter(c => c.participant_id === user.id).map(c => c.owner_id))]
+          if (ownerIds.length) {
+            const { data: kennels } = await supabase.from('kennels').select('owner_id, name').in('owner_id', ownerIds)
+            if (kennels) setKennelNames(Object.fromEntries(kennels.map(k => [k.owner_id, k.name])))
+          }
+          setLoading(false)
+        })
     })
   }, [])
 
@@ -210,7 +221,7 @@ export default function InboxPage() {
               </div>
             ) : conversations.map(conv => {
               const isOwner = conv.owner_id === userId
-              const name = isOwner ? (conv.participant_name || conv.participant_email || 'Sin nombre') : 'Criador'
+              const name = isOwner ? (conv.participant_name || conv.participant_email || 'Sin nombre') : (kennelNames[conv.owner_id] || 'Criadero')
               const unread = isOwner ? conv.unread_owner : conv.unread_participant
               const isSel = conv.id === selectedId
               return (
