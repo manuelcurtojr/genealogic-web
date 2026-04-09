@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+Allow: /dogs/
+Allow: /kennels/
+Allow: /search
+Allow: /privacy
+Allow: /terms
+Allow: /legal
+Allow: /cookies
+Disallow: /api/
+Disallow: /admin/
+Disallow: /settings
+Disallow: /crm/
+Disallow: /dashboard
+Disallow: /calendar
+Disallow: /planner
+Disallow: /analytics
+Disallow: /vet
+Disallow: /litters
+
+Sitemap: https://genealogic.io/sitemap.xml

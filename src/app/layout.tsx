@@ -17,8 +17,34 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Genealogic — Plataforma de Crianza Canina",
-  description: "Gestiona tus perros, genealogias, camadas y criadero en una sola plataforma.",
+  title: {
+    default: "Genealogic — Plataforma de Crianza Canina",
+    template: "%s — Genealogic",
+  },
+  description: "La plataforma definitiva para criadores y propietarios de perros. Gestiona genealogías, camadas, criaderos, CRM y mucho más.",
+  keywords: ["crianza canina", "pedigree", "genealogía", "criadero", "perros", "camadas", "cachorros", "CRM criadores", "gestión canina"],
+  authors: [{ name: "Manuel Curtó SL" }],
+  creator: "Genealogic",
+  metadataBase: new URL("https://genealogic.io"),
+  openGraph: {
+    type: "website",
+    locale: "es_ES",
+    url: "https://genealogic.io",
+    siteName: "Genealogic",
+    title: "Genealogic — Plataforma de Crianza Canina",
+    description: "La plataforma definitiva para criadores y propietarios de perros. Gestiona genealogías, camadas, criaderos, CRM y mucho más.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Genealogic" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Genealogic — Plataforma de Crianza Canina",
+    description: "La plataforma definitiva para criadores y propietarios de perros.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
