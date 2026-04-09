@@ -140,15 +140,21 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
   // Push notifications registration (Capacitor)
   async function initPushNotifications() {
     try {
-      const { PushNotifications } = await import('@capacitor/push-notifications')
+      const Capacitor = (window as any).Capacitor
+      if (!Capacitor?.Plugins?.PushNotifications) {
+        console.warn('PushNotifications plugin not available')
+        return
+      }
 
-      const permResult = await PushNotifications.requestPermissions()
+      const Push = Capacitor.Plugins.PushNotifications
+
+      const permResult = await Push.requestPermissions()
       if (permResult.receive !== 'granted') return
 
-      await PushNotifications.register()
+      await Push.register()
 
-      PushNotifications.addListener('registration', async (token) => {
-        // Send token to backend
+      Push.addListener('registration', async (token: any) => {
+        console.log('Push token:', token.value?.substring(0, 20) + '...')
         await fetch('/api/push/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -156,13 +162,12 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
         })
       })
 
-      PushNotifications.addListener('registrationError', (err) => {
+      Push.addListener('registrationError', (err: any) => {
         console.error('Push registration error:', err)
       })
 
-      // Tap on notification → navigate to link
-      PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-        const link = notification.notification.data?.link
+      Push.addListener('pushNotificationActionPerformed', (notification: any) => {
+        const link = notification.notification?.data?.link
         if (link) window.location.href = link
       })
     } catch (err) {
