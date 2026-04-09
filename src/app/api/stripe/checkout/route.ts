@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { plan, period } = await request.json() // plan: 'amateur'|'pro', period: 'monthly'|'yearly'
+    const { plan, period, withDiscount } = await request.json() // plan: 'amateur'|'pro', period: 'monthly'|'yearly'
     if (!['amateur', 'pro'].includes(plan) || !['monthly', 'yearly'].includes(period)) {
       return Response.json({ error: 'Invalid plan or period' }, { status: 400 })
     }
@@ -41,7 +41,11 @@ export async function POST(request: NextRequest) {
     // Create checkout session
     const origin = request.headers.get('origin') || 'https://genealogic.io'
 
-    const session = await stripe.checkout.sessions.create({
+    // Check if user has ever had a subscription (no discount for returning users)
+    const { data: existingSub } = await admin.from('subscriptions').select('id').eq('user_id', user.id).limit(1)
+    const isFirstSubscription = !existingSub?.length
+
+    const sessionParams: any = {
       customer: customerId,
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
@@ -50,8 +54,18 @@ export async function POST(request: NextRequest) {
       metadata: { supabase_user_id: user.id, plan },
       subscription_data: {
         metadata: { supabase_user_id: user.id, plan },
+        trial_period_days: isFirstSubscription ? 14 : undefined, // 14-day free trial for new subscribers
       },
-    })
+    }
+
+    // Apply 50% discount on first month (only for monthly, first subscription)
+    if (withDiscount && isFirstSubscription && period === 'monthly') {
+      sessionParams.discounts = [{ coupon: 'APYSgodR' }]
+      // Can't combine trial with discounts, so remove trial when using coupon
+      delete sessionParams.subscription_data.trial_period_days
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams)
 
     return Response.json({ url: session.url })
   } catch (err: any) {

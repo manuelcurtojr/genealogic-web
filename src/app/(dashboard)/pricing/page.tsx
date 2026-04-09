@@ -120,11 +120,46 @@ export default function PricingPage() {
   const roleOrder = ['free', 'amateur', 'pro', 'admin']
   const userRoleIdx = roleOrder.indexOf(userRole)
 
+  async function handleDiscountUpgrade(plan: string) {
+    setLoading(plan)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan, period: 'monthly', withDiscount: true }),
+      })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+      else alert(data.error || 'Error al procesar')
+    } catch { alert('Error de conexión') }
+    setLoading(null)
+  }
+
   return (
     <div>
+      {/* First month discount banner */}
+      {userRole === 'free' && !annual && (
+        <div className="max-w-5xl mx-auto mb-6">
+          <div className="bg-gradient-to-r from-[#D74709]/20 to-purple-500/20 border border-[#D74709]/30 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
+            <div className="text-3xl">🎉</div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white">50% de descuento en tu primer mes</p>
+              <p className="text-xs text-white/50">Amateur desde 3,99€ o Profesional desde 7,49€. Solo para nuevos suscriptores.</p>
+            </div>
+            <button onClick={() => handleDiscountUpgrade('amateur')} disabled={loading === 'amateur'}
+              className="bg-[#D74709] hover:bg-[#c03d07] text-white text-sm font-semibold px-4 py-2 rounded-lg transition whitespace-nowrap">
+              Empezar por 3,99€
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="text-center mb-10">
         <h1 className="text-2xl font-bold mb-2">Planes y precios</h1>
         <p className="text-white/40 text-sm">Elige el plan que mejor se adapte a tus necesidades</p>
+        {userRole === 'free' && (
+          <p className="text-xs text-green-400 mt-1">Prueba gratis 14 días — sin compromiso, cancela cuando quieras</p>
+        )}
 
         {/* Toggle */}
         <div className="flex items-center justify-center gap-3 mt-6">

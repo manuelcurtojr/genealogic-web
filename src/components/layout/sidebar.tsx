@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogOut, X,
   GitCompareArrows, LayoutDashboard, Menu, Home, Store, BarChart3, Search,
-  Stethoscope, Shield, Inbox
+  Stethoscope, Shield, Inbox, Lock
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -42,22 +42,22 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
     window.location.href = '/login'
   }
 
-  // Filter sections based on user role
-  const visibleSections = NAV_SECTIONS.filter(section => {
-    // Role check
-    if (section.minRole && !roleAtLeast(userRole, section.minRole)) return false
-
+  // Determine which sections are visible vs locked
+  const allSections = NAV_SECTIONS.filter(section => {
     // 'tools' section: only for free users (amateur+ see cal/vet in 'breeding')
     if (section.id === 'tools' && roleAtLeast(userRole, 'amateur')) return false
-
     // 'inbox' section: only for amateur (pro has full CRM)
     if (section.id === 'inbox' && roleAtLeast(userRole, 'pro')) return false
-
-    // 'kennel' requires having a kennel
-    if (section.requiresKennel && !isBreeder) return false
-
+    // 'kennel' requires having a kennel (for users who have access)
+    if (section.requiresKennel && !isBreeder && (!section.minRole || roleAtLeast(userRole, section.minRole))) return false
     return true
   })
+
+  // Determine if section is locked (user doesn't have required role)
+  const isSectionLocked = (section: typeof NAV_SECTIONS[number]) => {
+    if (!section.minRole) return false
+    return !roleAtLeast(userRole, section.minRole)
+  }
 
   return (
     <>
@@ -88,12 +88,15 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
 
         {/* Navigation by sections */}
         <nav className="flex-1 overflow-y-auto py-3 px-2">
-          {visibleSections.map((section, sIdx) => (
+          {allSections.map((section, sIdx) => {
+            const locked = isSectionLocked(section)
+            return (
             <div key={section.id}>
               {/* Section title */}
               {(!collapsed || mobileOpen) ? (
-                <p className={`text-[11px] font-semibold text-white/30 uppercase tracking-wider px-3 ${sIdx > 0 ? 'mt-5' : ''} mb-2`}>
+                <p className={`text-[11px] font-semibold uppercase tracking-wider px-3 ${sIdx > 0 ? 'mt-5' : ''} mb-2 flex items-center gap-1.5 ${locked ? 'text-white/15' : 'text-white/30'}`}>
                   {t(section.label)}
+                  {locked && <Lock className="w-2.5 h-2.5" />}
                 </p>
               ) : sIdx > 0 ? (
                 <div className="my-3 mx-3 border-t border-white/10" />
@@ -102,7 +105,30 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
               {/* Section items */}
               {section.items.map((item) => {
                 const Icon = iconMap[item.icon]
-                const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
+                const active = !locked && (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href)))
+
+                if (locked) {
+                  return (
+                    <a
+                      key={item.href}
+                      href="/pricing"
+                      onClick={() => onClose()}
+                      title={collapsed && !mobileOpen ? `${t(item.label)} (Premium)` : undefined}
+                      className={`flex items-center gap-3 rounded-lg text-sm font-medium transition mb-0.5 text-white/15 hover:text-white/25 hover:bg-white/[0.02] ${
+                        collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
+                      }`}
+                    >
+                      {Icon && <Icon className="w-[18px] h-[18px] flex-shrink-0" />}
+                      {(!collapsed || mobileOpen) && (
+                        <span className="flex items-center gap-2 flex-1">
+                          {t(item.label)}
+                          <Lock className="w-3 h-3 ml-auto opacity-50" />
+                        </span>
+                      )}
+                    </a>
+                  )
+                }
+
                 return (
                   <a
                     key={item.href}
@@ -123,7 +149,8 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
                 )
               })}
             </div>
-          ))}
+            )
+          })}
         </nav>
 
         {/* Bottom: Admin + Settings + Logout */}
