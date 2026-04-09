@@ -140,9 +140,14 @@ export default function InboxPage() {
     }
   }, [conversations, userId])
 
+  function hideNativeTabBar(hidden: boolean) {
+    try { (window as any).webkit?.messageHandlers?.tabBarVisibility?.postMessage({ hidden }) } catch {}
+  }
+
   function selectConversation(id: string) {
     setSelectedId(id)
     setShowDetail(true)
+    hideNativeTabBar(true)
     loadMessages(id)
   }
 
@@ -198,7 +203,7 @@ export default function InboxPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         {showDetail && selectedId ? (
-          <button onClick={() => { setShowDetail(false); setSelectedId(null) }} className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white transition lg:hidden">
+          <button onClick={() => { setShowDetail(false); setSelectedId(null); hideNativeTabBar(false) }} className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white transition lg:hidden">
             <ArrowLeft className="w-4 h-4" /> Bandeja
           </button>
         ) : null}
