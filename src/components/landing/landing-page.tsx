@@ -105,19 +105,20 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
       )}
 
       {/* Header */}
-      <header className={`relative z-10 flex items-center justify-between px-6 py-4 border-b ${darkMode ? 'border-white/5' : 'border-gray-200'}`}>
+      <header className={`relative z-10 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b ${darkMode ? 'border-white/5' : 'border-gray-200'}`}>
         <Link href="/" className="flex items-center gap-2">
-          <><img src="/logo.svg" alt="Genealogic" className="logo-dark h-7" /><img src="/logo-dark.svg" alt="Genealogic" className="logo-light h-7" /></>
+          <img src="/icon.svg" alt="Genealogic" className="h-6 sm:hidden" />
+          <><img src="/logo.svg" alt="Genealogic" className="logo-dark h-6 hidden sm:block" /><img src="/logo-dark.svg" alt="Genealogic" className="logo-light h-6 hidden sm:block" /></>
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button onClick={toggleTheme}
-            className={`w-10 h-10 rounded-full border flex items-center justify-center transition ${darkMode ? 'border-white/10 text-yellow-400 hover:bg-white/5' : 'border-gray-200 text-yellow-500 hover:bg-gray-100'}`}>
-            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center transition ${darkMode ? 'border-white/10 text-yellow-400 hover:bg-white/5' : 'border-gray-200 text-yellow-500 hover:bg-gray-100'}`}>
+            {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
           </button>
-          <Link href="/login" className={`px-5 py-2.5 rounded-lg border text-sm font-medium transition ${darkMode ? 'border-white/20 text-white hover:bg-white/5' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>
+          <Link href="/login" className={`hidden sm:inline-flex px-5 py-2.5 rounded-lg border text-sm font-medium transition ${darkMode ? 'border-white/20 text-white hover:bg-white/5' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>
             Iniciar sesion
           </Link>
-          <Link href="/register" className="px-5 py-2.5 rounded-lg bg-[#D74709] hover:bg-[#c03d07] text-sm font-semibold text-white transition">
+          <Link href="/register" className="px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg bg-[#D74709] hover:bg-[#c03d07] text-xs sm:text-sm font-semibold text-white transition">
             Registrarse
           </Link>
         </div>

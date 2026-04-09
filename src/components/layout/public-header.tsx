@@ -14,9 +14,9 @@ export default function PublicHeader() {
   return (
     <header className="sticky top-0 z-50 bg-gray-950 border-b border-white/10">
       {/* Mobile */}
-      <div className="lg:hidden flex items-center gap-3 px-4 h-14">
+      <div className="lg:hidden flex items-center gap-3 px-4 h-12">
         <a href="/" className="shrink-0">
-          <img src="/icon.svg" alt="Genealogic" className="h-7 w-auto" />
+          <img src="/icon.svg" alt="Genealogic" className="h-5 w-auto" />
         </a>
         <div className="flex-1 min-w-0">
           <SearchBar />
