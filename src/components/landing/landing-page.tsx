@@ -107,8 +107,7 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
       {/* Header */}
       <header className={`relative z-10 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b ${darkMode ? 'border-white/5' : 'border-gray-200'}`}>
         <Link href="/" className="flex items-center gap-2">
-          <img src="/icon.svg" alt="Genealogic" className="h-6 sm:hidden" />
-          <><img src="/logo.svg" alt="Genealogic" className="logo-dark h-6 hidden sm:block" /><img src="/logo-dark.svg" alt="Genealogic" className="logo-light h-6 hidden sm:block" /></>
+          <img src="/icon.svg" alt="Genealogic" className="h-5" />
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
           <button onClick={toggleTheme}
