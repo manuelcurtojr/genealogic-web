@@ -1,10 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import DealsPageClient from '@/components/crm/deals-page-client'
+import { getUserRole } from '@/lib/get-user-role'
+import { roleAtLeast } from '@/lib/permissions'
+import PlanGate from '@/components/ui/plan-gate'
 
 export default async function DealsPage() {
+  const { userId, role } = await getUserRole()
+  if (!userId) return null
+  if (!roleAtLeast(role, 'pro')) return <PlanGate requiredPlan="pro" featureName="CRM — Negocios" featureDescription="Gestiona tu pipeline de ventas con etapas personalizadas y seguimiento de cada negocio." />
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) return null
 
   const [pipelinesRes, dealsRes, contactsRes] = await Promise.all([

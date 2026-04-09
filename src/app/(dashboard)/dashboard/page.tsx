@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Dog, Baby, Users, HandCoins, PawPrint, Tag, TrendingUp, FileText, Plus, Calendar, Stethoscope, ArrowRight, Heart, Store, Search } from 'lucide-react'
+import { Dog, Baby, Users, HandCoins, PawPrint, Tag, TrendingUp, FileText, Plus, Calendar, Stethoscope, ArrowRight, Heart, Store, Search, Crown } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
+import { roleAtLeast } from '@/lib/permissions'
 import StatCard from '@/components/dashboard/stat-card'
 import Achievements from '@/components/dashboard/achievements'
 import GenesCard from '@/components/dashboard/genes-card'
@@ -16,6 +17,9 @@ export default async function DashboardPage() {
   // Admins go to admin panel
   const { data: roleCheck } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (roleCheck?.role === 'admin') redirect('/admin')
+  const userRole = roleCheck?.role || 'free'
+  const isAmateur = roleAtLeast(userRole, 'amateur')
+  const isPro = roleAtLeast(userRole, 'pro')
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -103,17 +107,17 @@ export default async function DashboardPage() {
           <Link href="/dogs" className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-[#D74709] hover:bg-[#c03d07] text-white text-xs sm:text-sm font-semibold transition">
             <Plus className="w-4 h-4" /> Perro
           </Link>
-          {isBreeder && (
+          {isAmateur && isBreeder && (
             <Link href="/litters" className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 text-xs sm:text-sm font-medium hover:bg-white/10 transition">
               <Baby className="w-4 h-4" /> Camada
             </Link>
           )}
-          {isBreeder && (
+          {isPro && isBreeder && (
             <Link href="/crm/deals" className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 text-sm font-medium hover:bg-white/10 transition">
               <HandCoins className="w-4 h-4" /> Negocio
             </Link>
           )}
-          {!isBreeder && (
+          {!isAmateur && (
             <Link href="/search" className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 text-xs sm:text-sm font-medium hover:bg-white/10 transition">
               <Search className="w-4 h-4" /> Buscar
             </Link>
@@ -315,12 +319,12 @@ export default async function DashboardPage() {
                 ))}
               </div>
 
-              {/* CTA to become breeder */}
+              {/* CTA to upgrade */}
               <div className="mt-4 p-3 bg-[#D74709]/5 border border-[#D74709]/15 rounded-lg">
                 <p className="text-xs font-semibold text-[#D74709] mb-1">¿Eres criador?</p>
-                <p className="text-[11px] text-white/40 mb-2">Crea tu criadero para gestionar camadas, CRM y más.</p>
-                <Link href="/kennel" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#D74709] hover:text-[#c03d07] transition">
-                  <Store className="w-3.5 h-3.5" /> Crear criadero <ArrowRight className="w-3 h-3" />
+                <p className="text-[11px] text-white/40 mb-2">Mejora tu plan para gestionar tu criadero, camadas y más.</p>
+                <Link href="/pricing" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#D74709] hover:text-[#c03d07] transition">
+                  <Crown className="w-3.5 h-3.5" /> Ver planes <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
             </div>

@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Dog, X, Loader2, Store, Globe, Calendar } from 'lucide-react'
+import { Dog, X, Loader2, Store, Globe, Calendar, Crown, ArrowRight } from 'lucide-react'
+import { roleAtLeast } from '@/lib/permissions'
+import Link from 'next/link'
 
 interface Props {
   userId: string
@@ -14,6 +16,13 @@ export default function KennelEmpty({ userId }: Props) {
   const [showPanel, setShowPanel] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [userRole, setUserRole] = useState<string | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.from('profiles').select('role').eq('id', userId).single()
+      .then(({ data }) => setUserRole(data?.role || 'free'))
+  }, [userId])
 
   const [form, setForm] = useState({
     name: '',
@@ -56,13 +65,24 @@ export default function KennelEmpty({ userId }: Props) {
       <div className="text-center py-20">
         <Store className="w-16 h-16 text-white/20 mx-auto mb-4" />
         <h1 className="text-xl font-bold text-white mb-2">No tienes un criadero</h1>
-        <p className="text-white/40 mb-6">Crea tu criadero para gestionar tus perros y tu perfil publico</p>
-        <button
-          onClick={() => setShowPanel(true)}
-          className="bg-[#D74709] hover:bg-[#c03d07] text-white px-6 py-3 rounded-lg font-semibold transition"
-        >
-          Crear criadero
-        </button>
+        {userRole && !roleAtLeast(userRole, 'amateur') ? (
+          <>
+            <p className="text-white/40 mb-6">Mejora a Amateur para crear tu criadero, gestionar camadas y recibir solicitudes.</p>
+            <Link href="/pricing" className="inline-flex items-center gap-2 bg-[#D74709] hover:bg-[#c03d07] text-white px-6 py-3 rounded-lg font-semibold transition">
+              <Crown className="w-4 h-4" /> Ver planes <ArrowRight className="w-4 h-4" />
+            </Link>
+          </>
+        ) : (
+          <>
+            <p className="text-white/40 mb-6">Crea tu criadero para gestionar tus perros y tu perfil publico</p>
+            <button
+              onClick={() => setShowPanel(true)}
+              className="bg-[#D74709] hover:bg-[#c03d07] text-white px-6 py-3 rounded-lg font-semibold transition"
+            >
+              Crear criadero
+            </button>
+          </>
+        )}
       </div>
 
       {/* Slide panel */}

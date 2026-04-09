@@ -1,7 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import LittersPageClient from '@/components/litters/litters-page-client'
+import { getUserRole } from '@/lib/get-user-role'
+import { roleAtLeast } from '@/lib/permissions'
+import PlanGate from '@/components/ui/plan-gate'
 
 export default async function LittersPage() {
+  const { userId, role } = await getUserRole()
+  if (!userId) return null
+  if (!roleAtLeast(role, 'amateur')) return <PlanGate requiredPlan="amateur" featureName="Camadas" featureDescription="Gestiona tus camadas, registra nacimientos y haz seguimiento de cada cachorro." />
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null

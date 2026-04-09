@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation'
 import { X, Loader2, Search, ChevronDown, Lock, Calendar, Heart, PawPrint, Plus, Dog } from 'lucide-react'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
+import { canCreateLitter, getPlanLimits } from '@/lib/permissions'
+import UpgradeModal from '@/components/ui/upgrade-modal'
 
 interface LitterFormPanelProps {
   open: boolean
@@ -125,6 +127,17 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
       setLoading(false)
       if (err) { setError(err.message); return }
     } else {
+      // Check litter limit
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single()
+      const role = profile?.role || 'free'
+      const { count } = await supabase.from('litters').select('id', { count: 'exact', head: true })
+        .eq('owner_id', userId).in('status', ['planned', 'mated', 'born'])
+      if (!canCreateLitter(role, count || 0)) {
+        setLoading(false)
+        setError(`Has alcanzado el límite de ${getPlanLimits(role).maxActiveLitters} camadas activas. Mejora tu plan en /pricing`)
+        return
+      }
+
       const { error: err } = await supabase.from('litters').insert({ ...payload, owner_id: userId })
       setLoading(false)
       if (err) { setError(err.message); return }

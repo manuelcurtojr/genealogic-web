@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Inbox, Mail, Phone, Loader2, ExternalLink, Calendar } from 'lucide-react'
+import { roleAtLeast } from '@/lib/permissions'
+import PlanGate from '@/components/ui/plan-gate'
 import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 
 interface Submission {
@@ -16,6 +18,7 @@ interface Submission {
 export default function InboxPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
+  const [userRole, setUserRole] = useState<string | null>(null)
 
   useEffect(() => { load() }, [])
 
@@ -24,6 +27,12 @@ export default function InboxPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
+
+    // Check role
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const role = profile?.role || 'free'
+    setUserRole(role)
+    if (!roleAtLeast(role, 'amateur')) { setLoading(false); return }
 
     // Get kennel
     const { data: kennel } = await supabase.from('kennels').select('id').eq('owner_id', user.id).single()
@@ -62,6 +71,10 @@ export default function InboxPage() {
     if (days === 1) return 'Ayer'
     if (days < 7) return `Hace ${days} días`
     return new Date(dateStr).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
+  }
+
+  if (userRole && !roleAtLeast(userRole, 'amateur')) {
+    return <PlanGate requiredPlan="amateur" featureName="Bandeja de solicitudes" featureDescription="Recibe y gestiona las solicitudes de tu formulario de contacto." />
   }
 
   function getWhatsAppUrl(phone: string, name: string) {
