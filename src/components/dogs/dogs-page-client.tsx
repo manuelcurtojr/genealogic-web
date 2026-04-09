@@ -8,6 +8,7 @@ import TransferPanel from '../kennel/transfer-panel'
 import PedigreeEditor from '../pedigree/pedigree-editor'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
+import SortSelect, { useSortPreference, sortItems } from '@/components/ui/sort-select'
 
 interface Dog {
   id: string
@@ -44,6 +45,7 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
   const closePanel = () => { setPanelOpen(false); setEditDogId(null) }
   const [sexFilter, setSexFilter] = useState('')
   const [breedFilter, setBreedFilter] = useState('')
+  const [sortBy, setSortBy] = useSortPreference('dogs-sort')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     if (typeof window !== 'undefined') return (localStorage.getItem('dogs-view') as 'grid' | 'list') || 'grid'
     return 'grid'
@@ -65,7 +67,8 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
     return true
   })
 
-  const paged = filtered.slice(0, visibleCount)
+  const sorted = sortItems(filtered, sortBy)
+  const paged = sorted.slice(0, visibleCount)
   const hasMore = visibleCount < filtered.length
 
   // Reset visible count when filters change
@@ -108,6 +111,9 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
           <option value="">Todas las razas</option>
           {breeds.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
+        <div className="hidden lg:block">
+          <SortSelect value={sortBy} onChange={setSortBy} storageKey="dogs-sort" />
+        </div>
         <div className="flex rounded-lg border border-white/10 overflow-hidden shrink-0">
           <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><Grid3X3 className="w-4 h-4" /></button>
           <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><List className="w-4 h-4" /></button>
@@ -126,6 +132,7 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
           <option value="">Todas las razas</option>
           {breeds.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
+        <SortSelect value={sortBy} onChange={setSortBy} storageKey="dogs-sort" />
       </div>
 
       {/* Count */}

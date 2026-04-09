@@ -9,6 +9,7 @@ import {
   Loader2, ExternalLink, Settings, Baby, Heart, ArrowRightLeft, Tag, FileText
 } from 'lucide-react'
 import WhatsAppIcon from '@/components/ui/whatsapp-icon'
+import SortSelect, { useSortPreference, sortItems } from '@/components/ui/sort-select'
 import KennelEditPanel from './kennel-edit-panel'
 import TransferPanel from './transfer-panel'
 import SalePanel from './sale-panel'
@@ -30,6 +31,7 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
     return 'grid'
   })
   const changeView = (v: 'grid' | 'list') => { setViewMode(v); localStorage.setItem('kennel-view', v) }
+  const [sortBy, setSortBy] = useSortPreference('kennel-sort')
   const [showEdit, setShowEdit] = useState(false)
   const [showFormBuilder, setShowFormBuilder] = useState(false)
   const [transferDog, setTransferDog] = useState<any>(null)
@@ -37,9 +39,9 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const filtered = dogs.filter((d: any) =>
+  const filtered = sortItems(dogs.filter((d: any) =>
     d.name.toLowerCase().includes(search.toLowerCase())
-  )
+  ), sortBy)
 
   const stats = {
     total: dogs.length,
@@ -216,6 +218,7 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
               className="bg-white/5 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition w-full sm:w-48"
             />
           </div>
+          <SortSelect value={sortBy} onChange={setSortBy} storageKey="kennel-sort" />
           {/* View toggle */}
           <div className="flex bg-white/5 border border-white/10 rounded-lg overflow-hidden">
             <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'text-white/40 hover:text-white'}`}><Grid3X3 className="w-4 h-4" /></button>

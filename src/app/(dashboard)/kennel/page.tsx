@@ -22,9 +22,9 @@ export default async function KennelPage() {
 
   const { data: dogs } = await supabase
     .from('dogs')
-    .select('id, name, sex, thumbnail_url, is_public, is_reproductive, show_in_kennel, is_for_sale, sale_price, sale_currency, owner_id, breeder_id, breed:breeds(name), birth_date, color:colors(name)')
+    .select('id, name, sex, thumbnail_url, is_public, is_reproductive, show_in_kennel, is_for_sale, sale_price, sale_currency, owner_id, breeder_id, breed:breeds(name), birth_date, color:colors(name), created_at, updated_at')
     .eq('kennel_id', kennel.id)
-    .order('name')
+    .order('created_at', { ascending: false })
 
   const { data: litters } = await supabase
     .from('litters')

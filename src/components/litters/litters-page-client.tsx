@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Search, Plus, Grid3X3, List, Trash2, Edit, Eye, Calendar, Baby, Lock, Globe } from 'lucide-react'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
+import SortSelect, { useSortPreference, sortItems } from '@/components/ui/sort-select'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
@@ -51,6 +52,7 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
   const [addPuppyKennelId, setAddPuppyKennelId] = useState<string | null>(null)
   const router = useRouter()
 
+  const [sortBy, setSortBy] = useSortPreference('litters-sort')
   const openAdd = () => { setEditLitterId(null); setPanelOpen(true) }
   const openEdit = (id: string) => { setEditLitterId(id); setPanelOpen(true) }
   const closePanel = () => { setPanelOpen(false); setEditLitterId(null) }
@@ -75,6 +77,11 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
     const breedName = (Array.isArray(l.breed) ? l.breed[0]?.name : l.breed?.name)?.toLowerCase() || ''
     return fName.includes(q) || mName.includes(q) || breedName.includes(q)
   })
+
+  // Sort: for alpha, sort by father name
+  const sorted = sortBy === 'alpha'
+    ? [...filtered].sort((a, b) => ((a.father as any)?.name || '').localeCompare((b.father as any)?.name || '', 'es', { sensitivity: 'base' }))
+    : sortItems(filtered, sortBy)
 
   async function handleDelete() {
     if (!deleteId) return
@@ -110,13 +117,14 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por padre, madre o raza..."
             className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
         </div>
+        <SortSelect value={sortBy} onChange={setSortBy} storageKey="litters-sort" />
         <div className="flex rounded-lg border border-white/10 overflow-hidden shrink-0">
           <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}><Grid3X3 className="w-4 h-4" /></button>
           <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}><List className="w-4 h-4" /></button>
         </div>
       </div>
 
-      <p className="text-xs text-white/30 mb-3">{filtered.length} camada{filtered.length !== 1 ? 's' : ''}</p>
+      <p className="text-xs text-white/30 mb-3">{sorted.length} camada{sorted.length !== 1 ? 's' : ''}</p>
 
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
@@ -128,7 +136,7 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
             <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir camada</p>
           </button>
 
-          {filtered.map(litter => {
+          {sorted.map(litter => {
             const father = litter.father as any
             const mother = litter.mother as any
             const breed = Array.isArray(litter.breed) ? litter.breed[0] : litter.breed
@@ -200,7 +208,7 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
             </div>
             <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir camada</p>
           </button>
-          {filtered.map(litter => {
+          {sorted.map(litter => {
             const father = litter.father as any
             const mother = litter.mother as any
             const status = statusConfig[litter.status] || statusConfig.planned
