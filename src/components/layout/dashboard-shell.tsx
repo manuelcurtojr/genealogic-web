@@ -154,12 +154,17 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
       await Push.register()
 
       Push.addListener('registration', async (token: any) => {
-        console.log('Push token:', token.value?.substring(0, 20) + '...')
-        await fetch('/api/push/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: token.value, platform: 'ios' }),
-        })
+        console.log('Push token received:', token.value?.substring(0, 20) + '...')
+        // Save token directly via Supabase client (more reliable than API route)
+        const supabase = createClient()
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        if (authUser && token.value) {
+          await supabase.from('device_tokens').upsert(
+            { user_id: authUser.id, token: token.value, platform: 'ios' },
+            { onConflict: 'user_id,token' }
+          )
+          console.log('Push token saved for user', authUser.id)
+        }
       })
 
       Push.addListener('registrationError', (err: any) => {
