@@ -142,6 +142,22 @@ body {
 [data-theme="light"] input:focus, [data-theme="light"] textarea:focus, [data-theme="light"] select:focus {
   border-color: #D74709 !important;
 }
+[data-theme="light"] select option {
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+/* Dark mode: force native select option styling for Windows */
+select option {
+  background-color: #1a1a2e;
+  color: #e0e0e0;
+}
+select {
+  color-scheme: dark;
+}
+[data-theme="light"] select {
+  color-scheme: light;
+}
 
 /* Cards: white with subtle shadow */
 [data-theme="light"] .bg-white\/\[0\.04\] {
