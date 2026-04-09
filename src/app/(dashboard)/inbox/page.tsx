@@ -217,7 +217,7 @@ export default function InboxPage() {
     const location = [contactData?.city, contactData?.country].filter(Boolean).join(', ')
 
     return (
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex flex-col h-full overflow-hidden">
         {/* Header */}
         <div className="border-b border-white/10 px-4 py-2.5 flex items-center gap-3 flex-shrink-0">
           <div className="w-9 h-9 rounded-full bg-[#D74709]/15 flex items-center justify-center flex-shrink-0">
@@ -237,7 +237,7 @@ export default function InboxPage() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2.5">
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-2.5">
           {messages.map(msg => {
             const isMine = msg.sender_id === userId
             if (msg.type === 'submission') {
@@ -307,14 +307,14 @@ export default function InboxPage() {
       </div>
 
       {/* Desktop: two panes | Mobile: list OR chat */}
-      <div className="border-t border-white/10 -mx-4 lg:-mx-[30px]" style={{ height: 'calc(100vh - 160px)' }}>
-        <div className="flex h-full">
+      <div className="border-t border-white/10 -mx-4 lg:-mx-[30px] overflow-hidden" style={{ height: 'calc(100vh - 160px)', maxHeight: 'calc(100vh - 160px)' }}>
+        <div className="flex h-full overflow-hidden">
           {/* List — hidden on mobile when detail is shown */}
-          <div className={`w-full lg:w-[340px] lg:min-w-[280px] border-r border-white/10 ${showDetail && selectedId ? 'hidden lg:block' : ''}`}>
+          <div className={`w-full lg:w-[340px] lg:min-w-[280px] border-r border-white/10 overflow-hidden ${showDetail && selectedId ? 'hidden lg:block' : ''}`}>
             <ConvList />
           </div>
           {/* Chat — hidden on mobile when list is shown, always visible on desktop */}
-          <div className={`flex-1 flex flex-col min-h-0 ${!showDetail || !selectedId ? 'hidden lg:flex' : 'flex'}`}>
+          <div className={`w-full lg:flex-1 overflow-hidden ${!showDetail || !selectedId ? 'hidden lg:flex' : 'flex'} flex-col`} style={{ maxHeight: '100%' }}>
             <ChatPanel />
           </div>
         </div>
