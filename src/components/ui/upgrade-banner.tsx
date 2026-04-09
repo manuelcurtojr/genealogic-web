@@ -3,6 +3,7 @@
 import { Crown, ArrowRight, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { isNativeApp } from '@/lib/is-native'
 
 interface UpgradeBannerProps {
   message: string
@@ -42,12 +43,16 @@ export default function UpgradeBanner({ message, plan = 'amateur', dismissKey, v
         <Crown className="w-4 h-4 text-[#D74709]" />
       </div>
       <p className="text-sm flex-1 min-w-0">{message}</p>
-      <button
-        onClick={() => router.push('/pricing')}
-        className="bg-[#D74709] hover:bg-[#c03d07] text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1 transition flex-shrink-0 whitespace-nowrap"
-      >
-        {plan === 'pro' ? 'Ver Pro' : 'Mejorar'} <ArrowRight className="w-3 h-3" />
-      </button>
+      {isNativeApp() ? (
+        <span className="text-xs text-white/30 flex-shrink-0">genealogic.io</span>
+      ) : (
+        <button
+          onClick={() => router.push('/pricing')}
+          className="bg-[#D74709] hover:bg-[#c03d07] text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1 transition flex-shrink-0 whitespace-nowrap"
+        >
+          {plan === 'pro' ? 'Ver Pro' : 'Mejorar'} <ArrowRight className="w-3 h-3" />
+        </button>
+      )}
       {dismissKey && (
         <button onClick={handleDismiss} className="p-1 text-white/20 hover:text-white/50 transition flex-shrink-0">
           <X className="w-3.5 h-3.5" />

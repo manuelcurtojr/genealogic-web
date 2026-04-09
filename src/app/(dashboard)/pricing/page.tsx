@@ -5,6 +5,7 @@ import { Check, X, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { PRICING, getRoleLabel } from '@/lib/permissions'
 import ToggleSwitch from '@/components/ui/toggle'
+import { isNativeApp } from '@/lib/is-native'
 
 const PLANS = [
   {
@@ -76,7 +77,10 @@ export default function PricingPage() {
   const [userRole, setUserRole] = useState('free')
   const [loading, setLoading] = useState<string | null>(null)
 
+  const [native, setNative] = useState(false)
+
   useEffect(() => {
+    setNative(isNativeApp())
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {
@@ -137,8 +141,17 @@ export default function PricingPage() {
 
   return (
     <div>
+      {/* Native app: redirect to web for payments */}
+      {native && (
+        <div className="max-w-5xl mx-auto mb-6">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+            <p className="text-sm text-white/60">Para gestionar tu suscripción, visita <strong className="text-white">genealogic.io/pricing</strong> desde tu navegador.</p>
+          </div>
+        </div>
+      )}
+
       {/* First month discount banner */}
-      {userRole === 'free' && !annual && (
+      {!native && userRole === 'free' && !annual && (
         <div className="max-w-5xl mx-auto mb-6">
           <div className="bg-gradient-to-r from-[#D74709]/20 to-purple-500/20 border border-[#D74709]/30 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
             <div className="text-3xl">🎉</div>
@@ -225,6 +238,10 @@ export default function PricingPage() {
                 >
                   Plan actual
                 </button>
+              ) : native ? (
+                <p className="w-full py-2.5 text-center text-xs text-white/30">
+                  Disponible en genealogic.io
+                </p>
               ) : isUpgrade ? (
                 <button
                   onClick={() => handleUpgrade(plan.id)}
