@@ -80,7 +80,7 @@ function Card({n,isRoot,si,rc}:{n:PN;isRoot?:boolean;si:boolean;rc:Map<string,nu
       <p className="text-[12px] font-bold text-white leading-tight whitespace-nowrap" style={{maskImage:'linear-gradient(to right,black 80%,transparent)',WebkitMaskImage:'linear-gradient(to right,black 80%,transparent)'}}>{n.name}</p>
       {n.breed_name&&<p className="text-[10px] text-white/35 truncate mt-0.5">{n.breed_name}</p>}
     </div>
-    {si&&reps>=2&&<span className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{backgroundColor:repC}}>{reps}x</span>}
+    {si&&reps>=2&&<span className="absolute bottom-1 right-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{backgroundColor:repC}}>{reps}x</span>}
   </>
   return onClickDog
     ? <div onClick={()=>onClickDog(n.id)} className={cls} style={{width:CW,height:CH,flexShrink:0}}>{inner}</div>
