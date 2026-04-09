@@ -100,13 +100,19 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Notify owner
+    const notifTitle = 'Nueva solicitud recibida'
+    const notifBody = `${formData.first_name} ${formData.last_name || ''} ha rellenado tu formulario de contacto`.trim()
     await supabase.from('notifications').insert({
       user_id: ownerId,
       type: 'contact',
-      title: 'Nueva solicitud recibida',
-      message: `${formData.first_name} ${formData.last_name || ''} ha rellenado tu formulario de contacto`.trim(),
+      title: notifTitle,
+      message: notifBody,
       link: '/crm/contacts',
     })
+
+    // Send push notification
+    const { sendPushToUser } = await import('@/lib/push')
+    await sendPushToUser(ownerId, notifTitle, notifBody, { link: '/crm/contacts' })
 
     return NextResponse.json({ success: true, contactId, dealId })
   } catch (err: any) {

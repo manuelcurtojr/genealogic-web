@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.86.1",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/push-notifications": "^8.0.3",
     "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.101.1",
     "@tsparticles/react": "^3.0.0",

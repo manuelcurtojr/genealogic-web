@@ -90,12 +90,17 @@ export async function POST(request: NextRequest) {
     const importId = `import_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 
     // Save import record
+    const notifTitle = `Pedigrí importado: ${mainDog.name}`
     await supabase.from('notifications').insert({
       user_id: userId, type: 'import',
-      title: `Pedigrí importado: ${mainDog.name}`,
+      title: notifTitle,
       message: JSON.stringify({ importId, createdIds, mainDogId }),
       is_read: false,
     })
+
+    // Send push notification
+    const { sendPushToUser } = await import('@/lib/push')
+    await sendPushToUser(userId, notifTitle, `Se han importado ${createdIds.length} perros`, { link: `/dogs/${mainDogId}` })
 
     return NextResponse.json({ success: true, mainDogId, totalCreated: createdIds.length, totalLinked: nameToId.size - createdIds.length, importId })
   } catch (err: any) {

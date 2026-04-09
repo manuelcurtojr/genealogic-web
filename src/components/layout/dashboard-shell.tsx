@@ -42,7 +42,11 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
     if (savedCollapsed === 'true') setCollapsed(true)
 
     // Detect Capacitor native app
-    if ((window as any).Capacitor?.isNativePlatform?.()) setIsNative(true)
+    if ((window as any).Capacitor?.isNativePlatform?.()) {
+      setIsNative(true)
+      // Register push notifications
+      initPushNotifications()
+    }
 
     // Force dark mode on mobile
     const isMobile = window.innerWidth < 1024
@@ -122,6 +126,39 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
       window.location.href = stored || tabRoot
     }
   }, [pathname])
+
+  // Push notifications registration (Capacitor)
+  async function initPushNotifications() {
+    try {
+      const { PushNotifications } = await import('@capacitor/push-notifications')
+
+      const permResult = await PushNotifications.requestPermissions()
+      if (permResult.receive !== 'granted') return
+
+      await PushNotifications.register()
+
+      PushNotifications.addListener('registration', async (token) => {
+        // Send token to backend
+        await fetch('/api/push/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: token.value, platform: 'ios' }),
+        })
+      })
+
+      PushNotifications.addListener('registrationError', (err) => {
+        console.error('Push registration error:', err)
+      })
+
+      // Tap on notification → navigate to link
+      PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+        const link = notification.notification.data?.link
+        if (link) window.location.href = link
+      })
+    } catch (err) {
+      console.error('Push init error:', err)
+    }
+  }
 
   const shellBg = darkMode ? 'bg-gray-950 text-white' : 'bg-gray-50 text-gray-900'
   const headerBg = darkMode ? 'bg-gray-950 border-white/10' : 'bg-white border-gray-200'

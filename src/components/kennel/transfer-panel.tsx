@@ -73,13 +73,27 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
     if (err) { setError(err.message); setTransferring(false); return }
 
     // Notify new owner
+    const notifTitle = 'Has recibido un perro'
+    const notifMessage = `${kennelName || 'Un criador'} te ha transferido el perro "${dog.name}"`
     await supabase.from('notifications').insert({
       user_id: foundUser.id,
       type: 'info',
-      title: 'Has recibido un perro',
-      message: `${kennelName || 'Un criador'} te ha transferido el perro "${dog.name}"`,
+      title: notifTitle,
+      message: notifMessage,
       link: `/dogs/${dog.id}`,
     })
+
+    // Send push notification
+    fetch('/api/push/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: foundUser.id,
+        title: notifTitle,
+        body: notifMessage,
+        data: { link: `/dogs/${dog.id}` },
+      }),
+    }).catch(() => {})
 
     setTransferring(false)
     setDone(true)
