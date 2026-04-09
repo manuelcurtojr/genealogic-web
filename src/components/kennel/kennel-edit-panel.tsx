@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Globe, ExternalLink, MessageCircle } from 'lucide-react'
+import { X, Loader2, Globe, ExternalLink, MessageCircle, MapPin, ChevronDown } from 'lucide-react'
 import { AFFIX_FORMATS, getAffixPreview, type AffixFormat } from '@/lib/affix'
+import { getLocalizedCountries, searchCities } from '@/lib/countries'
 
 interface Props {
   open: boolean
@@ -24,7 +25,30 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
     whatsapp_phone: '', whatsapp_text: '', whatsapp_enabled: false,
     affix_format: 'suffix_de' as AffixFormat,
     breed_ids: [] as string[],
+    country: '',
+    city: '',
   })
+
+  // Country/city UI state
+  const [countryOpen, setCountryOpen] = useState(false)
+  const [countryQ, setCountryQ] = useState('')
+  const [cityOpen, setCityOpen] = useState(false)
+  const [cityQ, setCityQ] = useState('')
+  const [citySuggestions, setCitySuggestions] = useState<string[]>([])
+
+  const countries = getLocalizedCountries()
+  const selectedCountry = countries.find(c => c.name === form.country)
+  const filteredCountries = countryQ ? countries.filter(c => c.name.toLowerCase().includes(countryQ.toLowerCase())) : countries
+
+  // City search with Nominatim
+  useEffect(() => {
+    if (!cityQ || cityQ.length < 2 || !selectedCountry) { setCitySuggestions([]); return }
+    const t = setTimeout(async () => {
+      const results = await searchCities(selectedCountry.code, cityQ)
+      setCitySuggestions(results)
+    }, 300)
+    return () => clearTimeout(t)
+  }, [cityQ, selectedCountry])
 
   useEffect(() => {
     if (!open || !kennel) return
@@ -46,6 +70,8 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
       whatsapp_enabled: kennel.whatsapp_enabled || false,
       affix_format: kennel.affix_format || 'suffix_de',
       breed_ids: kennel.breed_ids || [],
+      country: kennel.country || '',
+      city: kennel.city || '',
     })
   }, [open, kennel])
 
@@ -78,6 +104,8 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
       whatsapp_enabled: form.whatsapp_enabled,
       affix_format: form.affix_format,
       breed_ids: form.breed_ids,
+      country: form.country || null,
+      city: form.city || null,
     }).eq('id', kennel.id)
 
     setSaving(false)
@@ -112,6 +140,56 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Fecha de fundacion" value={form.foundation_date} onChange={v => set('foundation_date', v)} type="date" />
               <Field label="Sitio web" value={form.website} onChange={v => set('website', v)} placeholder="https://..." />
+            </div>
+
+            {/* Country & City */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="relative">
+                <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">País</label>
+                <button type="button" onClick={() => { setCountryOpen(!countryOpen); setCityOpen(false) }}
+                  className={`w-full bg-white/5 border rounded-lg px-3 py-2 text-sm flex items-center gap-2 transition text-left ${countryOpen ? 'border-[#D74709]' : 'border-white/10'}`}>
+                  {selectedCountry ? (
+                    <><span className="text-base">{selectedCountry.flag}</span><span className="truncate flex-1">{selectedCountry.name}</span></>
+                  ) : (
+                    <span className="text-white/25 flex-1">Seleccionar país</span>
+                  )}
+                  <ChevronDown className="w-3.5 h-3.5 text-white/20" />
+                </button>
+                {countryOpen && (
+                  <div className="absolute z-30 mt-1 w-full bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-48 flex flex-col">
+                    <div className="p-2 border-b border-white/5">
+                      <input autoFocus value={countryQ} onChange={e => setCountryQ(e.target.value)} placeholder="Buscar país..."
+                        className="w-full bg-white/5 border border-white/10 rounded pl-3 pr-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+                    </div>
+                    <div className="overflow-y-auto flex-1">
+                      {filteredCountries.map(c => (
+                        <button key={c.code} type="button" onClick={() => { set('country', c.name); set('city', ''); setCountryOpen(false); setCountryQ('') }}
+                          className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${c.name === form.country ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/70 hover:bg-white/5'}`}>
+                          <span className="text-base">{c.flag}</span> {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="relative">
+                <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Ciudad</label>
+                <input type="text" value={cityOpen ? cityQ : form.city} placeholder={selectedCountry ? 'Buscar ciudad...' : 'Selecciona un país primero'}
+                  disabled={!selectedCountry}
+                  onFocus={() => { setCityOpen(true); setCityQ(form.city) }}
+                  onChange={e => { setCityQ(e.target.value); setCityOpen(true) }}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition disabled:opacity-40" />
+                {cityOpen && citySuggestions.length > 0 && (
+                  <div className="absolute z-30 mt-1 w-full bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-40 overflow-y-auto">
+                    {citySuggestions.map(city => (
+                      <button key={city} type="button" onClick={() => { set('city', city); setCityOpen(false); setCityQ('') }}
+                        className={`w-full text-left px-3 py-2 text-sm transition ${city === form.city ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/70 hover:bg-white/5'}`}>
+                        {city}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </Sec>
 
