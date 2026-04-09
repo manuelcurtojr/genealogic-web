@@ -35,7 +35,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   const mother = motherRes.data
 
   // Check if favorited
-  const { data: favData } = user ? await supabase.from('favorites').select('id').eq('dog_id', id).eq('user_id', user.id).limit(1) : { data: null }
+  const { data: favData } = user ? await supabase.from('favorites').select('id').eq('dog_id', dog.id).eq('user_id', user.id).limit(1) : { data: null }
   const isFavorited = (favData?.length || 0) > 0
 
   const isOwner = user?.id === dog.owner_id
@@ -49,8 +49,8 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   let pedigree: any[] | null = null
   try {
     const [photosRes, pedigreeRes] = await Promise.all([
-      supabase.from('dog_photos').select('id, url, position').eq('dog_id', id).order('position'),
-      supabase.rpc('get_pedigree', { dog_uuid: id, max_gen: 5 }),
+      supabase.from('dog_photos').select('id, url, position').eq('dog_id', dog.id).order('position'),
+      supabase.rpc('get_pedigree', { dog_uuid: dog.id, max_gen: 5 }),
     ])
     galleryPhotos = (photosRes.data || []).map((p: any) => p.url)
     pedigree = pedigreeRes.data
@@ -69,9 +69,9 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
 
         {/* Action buttons top-right */}
         <div className="absolute top-4 right-4 flex items-center gap-2">
-          {isOwner && user && <DogEditButton dogId={id} userId={user.id} />}
-          <ShareButton dog={{ name: dog.name, sex: dog.sex, breed_name: breedName, kennel_name: kennel?.name, thumbnail_url: dog.thumbnail_url, birth_date: dog.birth_date }} dogUrl={`/dogs/${id}`} />
-          <FavoriteButton dogId={id} initialFavorited={isFavorited} />
+          {isOwner && user && <DogEditButton dogId={dog.id} userId={user.id} />}
+          <ShareButton dog={{ name: dog.name, sex: dog.sex, breed_name: breedName, kennel_name: kennel?.name, thumbnail_url: dog.thumbnail_url, birth_date: dog.birth_date }} dogUrl={`/dogs/${dog.slug || dog.id}`} />
+          <FavoriteButton dogId={dog.id} initialFavorited={isFavorited} />
         </div>
 
         {/* Back button top-left */}
@@ -117,7 +117,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         )}
 
         {/* Tabs — right after parents */}
-        <DogTabs dogId={id} ownerId={dog.owner_id} isOwner={isOwner} fatherId={dog.father_id} motherId={dog.mother_id} dogSex={dog.sex} />
+        <DogTabs dogId={dog.id} ownerId={dog.owner_id} isOwner={isOwner} fatherId={dog.father_id} motherId={dog.mother_id} dogSex={dog.sex} />
 
       </div>
 
@@ -125,7 +125,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
       {pedigree && pedigree.length > 1 && (
         <div className="-mx-4 lg:mx-0 mt-4 sm:mt-8">
           <h2 className="text-lg font-bold mb-4 sm:mb-6 px-4 lg:px-0">Pedigri</h2>
-          <PedigreeTree data={pedigree} rootId={id} />
+          <PedigreeTree data={pedigree} rootId={dog.id} />
         </div>
       )}
     </div>
