@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Lock, Globe } from 'lucide-react'
@@ -320,10 +321,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                       <p className="text-xs text-white/40">{form.is_public ? 'Visible para otros' : 'Solo tú'}</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => set('is_public', !form.is_public)}
-                    className={`w-11 h-6 rounded-full transition relative ${form.is_public ? 'bg-[#D74709]' : 'bg-white/20'}`}>
-                    <div className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition ${form.is_public ? 'left-[22px]' : 'left-0.5'}`} />
-                  </button>
+                  <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
                 </div>
               </div>
             )}

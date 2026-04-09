@@ -217,21 +217,23 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
           {/* Funnel */}
           <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
             <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Embudo de ventas</h3>
-            <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3 text-center">
-              {[
-                { label: 'Solicitudes', value: stats.totalSubmissions, color: 'blue' },
-                { label: 'Negocios', value: stats.totalDeals, color: 'yellow' },
-                { label: 'Ganados', value: stats.wonDeals, color: 'green' },
-                { label: 'Perdidos', value: stats.lostDeals, color: 'red' },
-              ].map((s, i) => (
-                <div key={s.label} className="flex items-center gap-3 flex-1">
-                  {i > 0 && <ChevronDown className="w-4 h-4 text-white/20 -rotate-90 flex-shrink-0" />}
-                  <div className={`flex-1 bg-${s.color}-500/10 rounded-lg p-3`}>
-                    <p className={`text-2xl font-bold text-${s.color}-400`}>{s.value}</p>
-                    <p className="text-[10px] text-white/40">{s.label}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-center">
+              <div className="bg-blue-500/10 rounded-lg p-3">
+                <p className="text-xl sm:text-2xl font-bold text-blue-400">{stats.totalSubmissions}</p>
+                <p className="text-[10px] text-white/40">Solicitudes</p>
+              </div>
+              <div className="bg-yellow-500/10 rounded-lg p-3">
+                <p className="text-xl sm:text-2xl font-bold text-yellow-400">{stats.totalDeals}</p>
+                <p className="text-[10px] text-white/40">Negocios</p>
+              </div>
+              <div className="bg-green-500/10 rounded-lg p-3">
+                <p className="text-xl sm:text-2xl font-bold text-green-400">{stats.wonDeals}</p>
+                <p className="text-[10px] text-white/40">Ganados</p>
+              </div>
+              <div className="bg-red-500/10 rounded-lg p-3">
+                <p className="text-xl sm:text-2xl font-bold text-red-400">{stats.lostDeals}</p>
+                <p className="text-[10px] text-white/40">Perdidos</p>
+              </div>
             </div>
           </div>
 
@@ -275,7 +277,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
               <BarChart data={stats.dealsByStage} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                 <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="name" type="category" width={120} tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis dataKey="name" type="category" width={90} tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="count" name="Negocios" radius={[0, 4, 4, 0]}>
                   {stats.dealsByStage.map((s: any, i: number) => <Cell key={i} fill={s.color} fillOpacity={0.7} />)}
@@ -383,7 +385,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
               {stats.breedPie.length === 0 ? <p className="text-xs text-white/25 text-center py-8">Sin datos</p> : (
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
-                    <Pie data={stats.breedPie} cx="50%" cy="50%" outerRadius={90} innerRadius={50} paddingAngle={2} dataKey="value" label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`} labelLine={false}>
+                    <Pie data={stats.breedPie} cx="50%" cy="50%" outerRadius={80} innerRadius={45} paddingAngle={2} dataKey="value" label={({ name, percent }: any) => { const p = ((percent || 0) * 100).toFixed(0); return name.length > 12 ? `${name.slice(0,11)}… ${p}%` : `${name} ${p}%` }} labelLine={false}>
                       {stats.breedPie.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} fillOpacity={0.7} />)}
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />

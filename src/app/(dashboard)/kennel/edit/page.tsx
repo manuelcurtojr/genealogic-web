@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -128,10 +129,7 @@ export default function EditKennelPage() {
                 <p className="text-sm font-medium">Activar WhatsApp</p>
                 <p className="text-xs text-white/40 mt-0.5">Mostrar boton de WhatsApp en tu perfil</p>
               </div>
-              <button type="button" onClick={() => set('whatsapp_enabled', !form.whatsapp_enabled)}
-                className={`w-11 h-6 rounded-full transition-colors relative ${form.whatsapp_enabled ? 'bg-green-500' : 'bg-white/20'}`}>
-                <div className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all ${form.whatsapp_enabled ? 'left-[22px]' : 'left-0.5'}`} />
-              </button>
+              <ToggleSwitch value={form.whatsapp_enabled} onChange={(v) => set('whatsapp_enabled', v)} color="bg-green-500" />
             </div>
             {form.whatsapp_enabled && (
               <>

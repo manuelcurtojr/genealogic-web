@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -498,9 +499,7 @@ function Toggle({ label, desc, value, onChange }: { label: string; desc: string;
   return (
     <div className="flex items-center justify-between py-1">
       <div><p className="text-sm font-medium">{label}</p><p className="text-xs text-white/40">{desc}</p></div>
-      <button onClick={() => onChange(!value)} className={`w-10 h-5 rounded-full transition relative flex-shrink-0 ${value ? 'bg-[#D74709]' : 'bg-white/20'}`}>
-        <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-all ${value ? 'left-[22px]' : 'left-0.5'}`} />
-      </button>
+      <ToggleSwitch value={value} onChange={onChange} />
     </div>
   )
 }

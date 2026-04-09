@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { Stethoscope, Syringe, Bug, Pill, FlaskConical, Scissors, Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff, FileText, Image } from 'lucide-react'
 import FileGallery from './file-gallery'
@@ -93,10 +94,7 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
           {/* Public toggle */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-white/50">Visible en perfil</span>
-            <button type="button" onClick={() => setForm(p => ({ ...p, is_public: !p.is_public }))}
-              className={`w-9 h-5 rounded-full transition relative ${form.is_public ? 'bg-[#D74709]' : 'bg-white/20'}`}>
-              <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition ${form.is_public ? 'left-[18px]' : 'left-0.5'}`} />
-            </button>
+            <ToggleSwitch value={form.is_public} onChange={(v) => setForm(p => ({ ...p, is_public: v }))} />
           </div>
           <div className="flex justify-end gap-2">
             <button onClick={() => setShowForm(false)} className="px-3 py-1.5 text-xs text-white/50 hover:text-white transition">Cancelar</button>

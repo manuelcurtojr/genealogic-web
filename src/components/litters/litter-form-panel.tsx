@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Search, ChevronDown, Lock, Calendar, Heart, PawPrint, Plus, Dog } from 'lucide-react'
@@ -259,10 +260,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                 <p className="text-sm font-medium">Camada publica</p>
                 <p className="text-xs text-white/40">Visible para otros usuarios</p>
               </div>
-              <button type="button" onClick={() => set('is_public', !form.is_public)}
-                className={`w-10 h-5 rounded-full transition relative ${form.is_public ? 'bg-[#D74709]' : 'bg-white/20'}`}>
-                <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition ${form.is_public ? 'left-[22px]' : 'left-0.5'}`} />
-              </button>
+              <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
             </div>
 
             {/* Puppies section (edit mode only) */}

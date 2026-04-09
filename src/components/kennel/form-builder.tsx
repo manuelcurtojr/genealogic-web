@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Plus, Trash2, GripVertical, Copy, Check, ExternalLink, FileText } from 'lucide-react'
@@ -167,10 +168,7 @@ export default function FormBuilder({ open, onClose, kennelId, userId }: Props) 
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition" />
               </div>
               <div className="pt-5">
-                <button onClick={() => setIsActive(!isActive)}
-                  className={`w-10 h-5 rounded-full transition relative ${isActive ? 'bg-green-500' : 'bg-white/20'}`}>
-                  <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-all ${isActive ? 'left-[22px]' : 'left-0.5'}`} />
-                </button>
+                <ToggleSwitch value={isActive} onChange={setIsActive} color="bg-green-500" />
               </div>
             </div>
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Loader2 } from 'lucide-react'
@@ -133,13 +134,7 @@ export default function LitterForm({ initialData, breeds, maleDogs, femaleDogs, 
             <p className="text-sm font-medium">Camada publica</p>
             <p className="text-xs text-white/40 mt-0.5">Visible para otros usuarios</p>
           </div>
-          <button
-            type="button"
-            onClick={() => set('is_public', !form.is_public)}
-            className={`w-11 h-6 rounded-full transition-colors relative ${form.is_public ? 'bg-[#D74709]' : 'bg-white/20'}`}
-          >
-            <div className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all ${form.is_public ? 'left-[22px]' : 'left-0.5'}`} />
-          </button>
+          <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
         </div>
 
         <button type="submit" disabled={loading}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Tag, MapPin, DollarSign, Dog } from 'lucide-react'
@@ -146,10 +147,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
                 <p className="text-sm font-medium">{form.is_for_sale ? 'En venta' : 'No en venta'}</p>
                 <p className="text-[11px] text-white/30">{form.is_for_sale ? 'El anuncio esta activo' : 'Activa el anuncio para vender'}</p>
               </div>
-              <button type="button" onClick={() => set('is_for_sale', !form.is_for_sale)}
-                className={`w-11 h-6 rounded-full transition relative ${form.is_for_sale ? 'bg-green-500' : 'bg-white/20'}`}>
-                <div className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all ${form.is_for_sale ? 'left-[22px]' : 'left-0.5'}`} />
-              </button>
+              <ToggleSwitch value={form.is_for_sale} onChange={(v) => set('is_for_sale', v)} color="bg-green-500" />
             </div>
 
             {form.is_for_sale && (

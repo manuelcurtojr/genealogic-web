@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Globe, ExternalLink, MessageCircle, MapPin, ChevronDown } from 'lucide-react'
@@ -254,10 +255,7 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
                   <p className="text-[11px] text-white/30">Boton de WhatsApp en tu perfil publico</p>
                 </div>
               </div>
-              <button type="button" onClick={() => set('whatsapp_enabled', !form.whatsapp_enabled)}
-                className={`w-10 h-5 rounded-full transition relative ${form.whatsapp_enabled ? 'bg-green-500' : 'bg-white/20'}`}>
-                <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-all ${form.whatsapp_enabled ? 'left-[22px]' : 'left-0.5'}`} />
-              </button>
+              <ToggleSwitch value={form.whatsapp_enabled} onChange={(v) => set('whatsapp_enabled', v)} color="bg-green-500" />
             </div>
             {form.whatsapp_enabled && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

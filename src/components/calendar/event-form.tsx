@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2, X, Trash2 } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
@@ -200,10 +201,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
           {/* All day toggle */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-white/70">Todo el dia</span>
-            <button type="button" onClick={() => set('all_day', !form.all_day)}
-              className={`w-10 h-5 rounded-full transition relative ${form.all_day ? 'bg-[#D74709]' : 'bg-white/20'}`}>
-              <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition ${form.all_day ? 'left-[22px]' : 'left-0.5'}`} />
-            </button>
+            <ToggleSwitch value={form.all_day} onChange={(v) => set('all_day', v)} />
           </div>
 
           {/* Color */}
@@ -252,10 +250,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
           {isEdit && (
             <div className="flex items-center justify-between">
               <span className="text-sm text-white/70">Completado</span>
-              <button type="button" onClick={() => set('is_completed', !form.is_completed)}
-                className={`w-10 h-5 rounded-full transition relative ${form.is_completed ? 'bg-green-500' : 'bg-white/20'}`}>
-                <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition ${form.is_completed ? 'left-[22px]' : 'left-0.5'}`} />
-              </button>
+              <ToggleSwitch value={form.is_completed} onChange={(v) => set('is_completed', v)} color="bg-green-500" />
             </div>
           )}
         </div>
