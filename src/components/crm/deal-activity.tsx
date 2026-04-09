@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, MessageSquare, CheckSquare, ArrowRight, Send, Mail, Phone, Copy, Check, User } from 'lucide-react'
+import { Plus, MessageSquare, CheckSquare, ArrowRight, Send, Mail, Phone, Copy, Check, User, Sparkles, RefreshCw } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface Activity {
@@ -35,6 +35,8 @@ export default function DealActivity({ dealId, userId, contactId }: DealActivity
   const [sending, setSending] = useState(false)
   const [activeTab, setActiveTab] = useState<'note' | 'task'>('note')
   const [copied, setCopied] = useState<string | null>(null)
+  const [summary, setSummary] = useState<string | null>(null)
+  const [summaryLoading, setSummaryLoading] = useState(false)
 
   const supabase = createClient()
 
@@ -54,7 +56,21 @@ export default function DealActivity({ dealId, userId, contactId }: DealActivity
     if (data) setContact(data)
   }
 
-  useEffect(() => { fetchActivities(); fetchContact() }, [dealId, contactId])
+  async function fetchSummary() {
+    setSummaryLoading(true)
+    try {
+      const res = await fetch('/api/deal-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dealId }),
+      })
+      const data = await res.json()
+      if (data.summary) setSummary(data.summary)
+    } catch {}
+    setSummaryLoading(false)
+  }
+
+  useEffect(() => { fetchActivities(); fetchContact(); fetchSummary() }, [dealId, contactId])
 
   async function addActivity() {
     if (!newNote.trim()) return
@@ -105,6 +121,35 @@ export default function DealActivity({ dealId, userId, contactId }: DealActivity
 
   return (
     <div>
+      {/* Genos AI Summary */}
+      <div className="bg-gradient-to-br from-[#D74709]/10 to-[#D74709]/5 border border-[#D74709]/20 rounded-xl p-4 mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-[#D74709]" />
+            <span className="text-xs font-semibold text-[#D74709]">Genos</span>
+          </div>
+          <button
+            onClick={fetchSummary}
+            disabled={summaryLoading}
+            className="p-1 rounded hover:bg-white/10 transition disabled:opacity-30"
+            title="Regenerar resumen"
+          >
+            <RefreshCw className={`w-3 h-3 text-white/30 ${summaryLoading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+        {summaryLoading ? (
+          <div className="space-y-1.5">
+            <div className="h-3 bg-white/5 rounded animate-pulse w-full" />
+            <div className="h-3 bg-white/5 rounded animate-pulse w-4/5" />
+            <div className="h-3 bg-white/5 rounded animate-pulse w-3/5" />
+          </div>
+        ) : summary ? (
+          <p className="text-sm text-white/60 leading-relaxed">{summary}</p>
+        ) : (
+          <p className="text-xs text-white/30 italic">No se pudo generar el resumen</p>
+        )}
+      </div>
+
       {/* Contact card */}
       {contact && (
         <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-5">
