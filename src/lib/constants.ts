@@ -46,6 +46,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Principal',
     items: [
       { label: 'Escritorio', href: '/dashboard', icon: 'LayoutDashboard' },
+      { label: 'Bandeja', href: '/inbox', icon: 'Inbox' },
       { label: 'Buscar', href: '/search', icon: 'Search' },
     ],
   },
@@ -85,15 +86,6 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Mi Criadero', href: '/kennel', icon: 'Store' },
       { label: 'Analíticas', href: '/analytics', icon: 'BarChart3' },
-    ],
-  },
-  {
-    id: 'inbox',
-    label: 'Solicitudes',
-    minRole: 'amateur',
-    // Only for amateur — pro users see CRM instead
-    items: [
-      { label: 'Bandeja', href: '/crm/inbox', icon: 'Inbox' },
     ],
   },
   {

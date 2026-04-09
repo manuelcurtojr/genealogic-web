@@ -46,8 +46,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
   const allSections = NAV_SECTIONS.filter(section => {
     // 'tools' section: only for free users (amateur+ see cal/vet in 'breeding')
     if (section.id === 'tools' && roleAtLeast(userRole, 'amateur')) return false
-    // 'inbox' section: visible for amateur AND pro
-    // (removed: was hidden for pro, but inbox is useful alongside CRM)
+    // inbox is now in 'main' section — no separate section needed
     // 'kennel' requires having a kennel (for users who have access)
     if (section.requiresKennel && !isBreeder && (!section.minRole || roleAtLeast(userRole, section.minRole))) return false
     return true

@@ -103,20 +103,49 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // 5. Notify owner
+    // 5. Create conversation + first message
+    const contactName = `${formData.first_name} ${formData.last_name || ''}`.trim()
+
+    // Check if the submitter has a Genealogic account
+    const { data: existingUser } = await supabase.from('profiles').select('id').eq('email', formData.email).limit(1)
+    const participantId = existingUser?.[0]?.id || null
+
+    const { data: conv } = await supabase.from('conversations').insert({
+      owner_id: ownerId,
+      participant_id: participantId,
+      participant_email: formData.email,
+      participant_name: contactName,
+      contact_id: contactId,
+      submission_id: null, // will update below
+      last_message_preview: formData.dog_description || formData.breed_interest_names || `Nueva solicitud de ${contactName}`,
+      unread_owner: 1,
+    }).select('id').single()
+
+    if (conv) {
+      // First message = submission data
+      await supabase.from('messages').insert({
+        conversation_id: conv.id,
+        sender_id: participantId,
+        content: formData.dog_description || `Solicitud de contacto de ${contactName}`,
+        type: 'submission',
+        metadata: { ...formData, custom: customData || {} },
+      })
+    }
+
+    // 6. Notify owner
     const notifTitle = 'Nueva solicitud recibida'
-    const notifBody = `${formData.first_name} ${formData.last_name || ''} ha rellenado tu formulario de contacto`.trim()
+    const notifBody = `${contactName} ha rellenado tu formulario de contacto`
     await supabase.from('notifications').insert({
       user_id: ownerId,
       type: 'contact',
       title: notifTitle,
       message: notifBody,
-      link: '/crm/contacts',
+      link: '/inbox',
     })
 
     // Send push notification
     const { sendPushToUser } = await import('@/lib/push')
-    await sendPushToUser(ownerId, notifTitle, notifBody, { link: '/crm/contacts' })
+    await sendPushToUser(ownerId, notifTitle, notifBody, { link: '/inbox' })
 
     return NextResponse.json({ success: true, contactId, dealId })
   } catch (err: any) {

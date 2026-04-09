@@ -47,6 +47,22 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
     fetch('/api/marketing-notifications', { method: 'POST' }).catch(() => {})
   }, [])
 
+  // Link conversations to newly registered users (by email)
+  useEffect(() => {
+    const key = 'conv-linked'
+    if (sessionStorage.getItem(key)) return
+    sessionStorage.setItem(key, '1')
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user: u } }) => {
+      if (!u?.email) return
+      // Find conversations where this email is participant but not linked yet
+      await supabase.from('conversations')
+        .update({ participant_id: u.id } as any)
+        .eq('participant_email', u.email)
+        .is('participant_id', null)
+    })
+  }, [])
+
   useEffect(() => {
     const savedCollapsed = localStorage.getItem('sidebar-collapsed')
     if (savedCollapsed === 'true') setCollapsed(true)
