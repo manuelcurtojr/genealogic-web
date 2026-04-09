@@ -198,7 +198,7 @@ export default function InboxPage() {
       </div>
 
       {/* Desktop: two panes | Mobile: list OR chat */}
-      <div className="border-t border-white/10 -mx-4 lg:-mx-[30px] overflow-hidden" style={{ height: 'calc(100vh - 160px)', maxHeight: 'calc(100vh - 160px)' }}>
+      <div className="border-t border-white/10 -mx-4 lg:-mx-[30px] -mb-4 lg:-mb-[30px] overflow-hidden" style={{ height: 'calc(100vh - 140px)' }}>
         <div className="flex h-full overflow-hidden">
 
           {/* ─── Left: Conversation List ─── */}
