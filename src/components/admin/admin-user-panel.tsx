@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { X, Loader2, User, Shield, Coins, Calendar, Globe, Bell, FileText, AlertTriangle, Check, Eye, Trash2, ExternalLink } from 'lucide-react'
+import { X, Loader2, User, Shield, Coins, Calendar, Globe, Bell, FileText, AlertTriangle, Check, Eye, Trash2, ExternalLink, Key, Mail } from 'lucide-react'
 
 interface Props {
   open: boolean
@@ -334,6 +334,39 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
               <textarea value={form.admin_notes} onChange={e => set('admin_notes', e.target.value)} rows={4}
                 placeholder="Notas internas sobre este usuario (solo visibles para admins)..."
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:border-[#D74709] focus:outline-none resize-none" />
+            </Section>
+
+            {/* Section: Contraseña */}
+            <Section title="Contraseña" icon={Key}>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">Establecer contraseña</label>
+                  <div className="flex gap-2">
+                    <input id="admin-pw" type="text" placeholder="Nueva contraseña..."
+                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 focus:border-[#D74709] focus:outline-none" />
+                    <button onClick={async () => {
+                      const pw = (document.getElementById('admin-pw') as HTMLInputElement)?.value
+                      if (!pw || pw.length < 6) { alert('Mínimo 6 caracteres'); return }
+                      const supabase = createClient()
+                      const res = await fetch('/api/admin/update-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId, password: pw }) })
+                      const data = await res.json()
+                      if (data.ok) { alert('Contraseña actualizada'); (document.getElementById('admin-pw') as HTMLInputElement).value = '' }
+                      else alert('Error: ' + (data.error || 'Desconocido'))
+                    }} className="bg-[#D74709] hover:bg-[#c03d07] text-white text-xs font-semibold px-3 py-2 rounded-lg transition whitespace-nowrap">
+                      Guardar
+                    </button>
+                  </div>
+                </div>
+                <button onClick={async () => {
+                  if (!form.email) { alert('No tiene email'); return }
+                  const res = await fetch('/api/admin/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: form.email }) })
+                  const data = await res.json()
+                  if (data.ok) alert('Enlace de reseteo enviado a ' + form.email)
+                  else alert('Error: ' + (data.error || 'Desconocido'))
+                }} className="w-full flex items-center justify-center gap-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-500/20 transition">
+                  <Mail className="w-4 h-4" /> Enviar enlace de reseteo por email
+                </button>
+              </div>
             </Section>
 
             {/* Acciones admin */}
