@@ -61,36 +61,42 @@ export default function InboxPage() {
     })
   }, [])
 
-  // Realtime: listen for new messages across ALL conversations
+  // Poll for new messages every 3 seconds when a conversation is selected
+  useEffect(() => {
+    if (!selectedId || !userId) return
+    const interval = setInterval(async () => {
+      const { data } = await supabase.from('messages')
+        .select('*')
+        .eq('conversation_id', selectedId)
+        .order('created_at', { ascending: true })
+        .limit(200)
+      if (data) {
+        setMessages(prev => {
+          // Only update if there are new messages
+          if (data.length !== prev.length || (data.length > 0 && data[data.length - 1].id !== prev[prev.length - 1]?.id)) {
+            setTimeout(scrollToBottom, 50)
+            return data
+          }
+          return prev
+        })
+      }
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [selectedId, userId])
+
+  // Poll conversation list every 10 seconds for new conversations / unread counts
   useEffect(() => {
     if (!userId) return
-    const channel = supabase
-      .channel('inbox-messages')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-      }, (payload) => {
-        const msg = payload.new as Message
-        // If message is in currently selected conversation and not from me
-        if (msg.conversation_id === selectedId && msg.sender_id !== userId) {
-          setMessages(prev => {
-            if (prev.some(m => m.id === msg.id)) return prev
-            return [...prev, msg]
-          })
-          scrollToBottom()
-        }
-        // Update conversation list preview
-        setConversations(prev => prev.map(c =>
-          c.id === msg.conversation_id
-            ? { ...c, last_message_preview: msg.content.substring(0, 100), last_message_at: msg.created_at }
-            : c
-        ))
-      })
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
-  }, [userId, selectedId])
+    const interval = setInterval(async () => {
+      const { data } = await supabase.from('conversations')
+        .select('*')
+        .or(`owner_id.eq.${userId},participant_id.eq.${userId}`)
+        .order('last_message_at', { ascending: false })
+        .limit(100)
+      if (data) setConversations(data)
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [userId])
 
   const loadMessages = useCallback(async (convId: string) => {
     const { data } = await supabase.from('messages')
