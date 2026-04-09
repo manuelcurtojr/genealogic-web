@@ -15,6 +15,7 @@ interface DealFormProps {
   stages: { id: string; name: string; color?: string }[]
   contacts: { id: string; name: string }[]
   pipelineId: string
+  allPipelines?: any[]
   userId: string
 }
 
@@ -26,7 +27,7 @@ const TABS = [
 
 type TabKey = typeof TABS[number]['key']
 
-export default function DealForm({ open, onClose, onSaved, initialData, stages, contacts, pipelineId, userId }: DealFormProps) {
+export default function DealForm({ open, onClose, onSaved, initialData, stages, contacts, pipelineId, allPipelines, userId }: DealFormProps) {
   const isEdit = !!initialData
   const [activeTab, setActiveTab] = useState<TabKey>('detalles')
   const [loading, setLoading] = useState(false)
@@ -47,6 +48,7 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
     advance_amount: '',
     payment_completed: false,
     contact_id: '',
+    pipeline_id: '',
     stage_id: '',
     dog_ids: [] as string[],
     litter_id: '',
@@ -93,6 +95,7 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
           advance_amount: initialData.advance_amount?.toString() || '',
           payment_completed: initialData.payment_completed || false,
           contact_id: initialData.contact_id || '',
+          pipeline_id: initialData.pipeline_id || pipelineId,
           stage_id: initialData.stage_id || stages[0]?.id || '',
           dog_ids: dogIds,
           litter_id: initialData.litter_id || '',
@@ -110,6 +113,7 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
           advance_amount: '',
           payment_completed: false,
           contact_id: '',
+          pipeline_id: pipelineId,
           stage_id: stages[0]?.id || '',
           dog_ids: [],
           litter_id: '',
@@ -134,7 +138,14 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
 
   const set = (field: string, value: any) => setForm(prev => ({ ...prev, [field]: value }))
 
-  const currentStage = stages.find(s => s.id === form.stage_id)
+  // Compute stages for the selected pipeline
+  const selectedPipeline = allPipelines?.find((p: any) => p.id === form.pipeline_id)
+  const availableStages = selectedPipeline
+    ? [...(selectedPipeline.stages || [])].sort((a: any, b: any) => a.position - b.position)
+    : stages
+  const stageOptions = availableStages.map((s: any) => ({ value: s.id, label: s.name }))
+
+  const currentStage = availableStages.find((s: any) => s.id === form.stage_id)
   const isLostStage = currentStage ? /perdid|cancelada/i.test(currentStage.name) : false
 
   const handleSubmit = async () => {
@@ -152,7 +163,7 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
       payment_completed: form.is_reservation ? form.payment_completed : false,
       contact_id: form.contact_id || null,
       stage_id: form.stage_id || null,
-      pipeline_id: pipelineId,
+      pipeline_id: form.pipeline_id || pipelineId,
       litter_id: form.litter_id || null,
       preferred_sex: form.litter_id ? (form.preferred_sex || 'any') : null,
       preferred_color: form.litter_id ? (form.preferred_color || null) : null,
@@ -206,8 +217,6 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
         : [...prev.dog_ids, dogId],
     }))
   }
-
-  const stageOptions = stages.map(s => ({ value: s.id, label: s.name }))
 
   return (
     <>
@@ -352,6 +361,22 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
                   onChange={v => set('contact_id', v)}
                   placeholder="Buscar contacto..."
                 />
+
+                {/* Pipeline selector */}
+                {allPipelines && allPipelines.length > 1 && (
+                  <SearchableSelect
+                    label="Pipeline"
+                    options={allPipelines.map((p: any) => ({ value: p.id, label: p.name }))}
+                    value={form.pipeline_id}
+                    onChange={v => {
+                      const pl = allPipelines.find((p: any) => p.id === v)
+                      const firstStage = pl?.stages?.sort((a: any, b: any) => a.position - b.position)?.[0]
+                      set('pipeline_id', v)
+                      if (firstStage) set('stage_id', firstStage.id)
+                    }}
+                    placeholder="Seleccionar pipeline"
+                  />
+                )}
 
                 {/* Stage selector */}
                 <SearchableSelect

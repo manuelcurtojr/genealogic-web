@@ -412,6 +412,7 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
           stages={sortedStages}
           contacts={contacts}
           pipelineId={activePipelineId}
+          allPipelines={pipelines}
           userId={userId}
         />
       )}
