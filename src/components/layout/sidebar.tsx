@@ -2,14 +2,21 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogOut, X, GitCompareArrows, LayoutDashboard, Menu, Home, Store, BarChart3, Search, Stethoscope, Shield } from 'lucide-react'
+import {
+  Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogOut, X,
+  GitCompareArrows, LayoutDashboard, Menu, Home, Store, BarChart3, Search,
+  Stethoscope, Shield, Inbox
+} from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { NAV_ITEMS, PRO_NAV_ITEMS, BRAND } from '@/lib/constants'
+import { NAV_SECTIONS, BRAND } from '@/lib/constants'
+import { roleAtLeast } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 
 const iconMap: Record<string, React.ElementType> = {
-  Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LayoutDashboard, GitCompareArrows, Home, Store, BarChart3, Search, Stethoscope,
+  Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings,
+  LayoutDashboard, GitCompareArrows, Home, Store, BarChart3, Search,
+  Stethoscope, Inbox,
 }
 
 interface SidebarProps {
@@ -24,14 +31,10 @@ interface SidebarProps {
 export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const isPro = user?.role === 'pro' || user?.role === 'admin'
+  const userRole = user?.role || 'free'
   const isBreeder = !!kennel
   const lang = typeof window !== 'undefined' ? localStorage.getItem('genealogic-lang') || 'es' : 'es'
   const t = getTranslator(lang)
-
-  // Hide breeder-only items for non-breeders
-  const BREEDER_ONLY = ['/litters', '/planner', '/kennel', '/analytics']
-  const filteredNavItems = isBreeder ? NAV_ITEMS : NAV_ITEMS.filter(item => !BREEDER_ONLY.includes(item.href))
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -39,11 +42,22 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
     window.location.href = '/login'
   }
 
-  const handleNav = () => {
-    onClose()
-  }
+  // Filter sections based on user role
+  const visibleSections = NAV_SECTIONS.filter(section => {
+    // Role check
+    if (section.minRole && !roleAtLeast(userRole, section.minRole)) return false
 
-  const sidebarWidth = collapsed ? 'w-[68px]' : 'w-64'
+    // 'tools' section: only for free users (amateur+ see cal/vet in 'breeding')
+    if (section.id === 'tools' && roleAtLeast(userRole, 'amateur')) return false
+
+    // 'inbox' section: only for amateur (pro has full CRM)
+    if (section.id === 'inbox' && roleAtLeast(userRole, 'pro')) return false
+
+    // 'kennel' requires having a kennel
+    if (section.requiresKennel && !isBreeder) return false
+
+    return true
+  })
 
   return (
     <>
@@ -57,16 +71,13 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
       }`}>
         {/* Logo + toggle */}
         <div className="h-14 border-b border-white/10 flex items-center px-3 gap-2 flex-shrink-0">
-          {/* Toggle button */}
           <button
             onClick={mobileOpen ? onClose : onToggleCollapse}
             className="w-10 h-10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 rounded-lg transition flex-shrink-0"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-
-          {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-2 min-w-0" onClick={handleNav}>
+          <Link href="/dashboard" className="flex items-center gap-2 min-w-0" onClick={onClose}>
             {(collapsed && !mobileOpen) ? (
               <img src="/icon.svg" alt="Genealogic" className="h-7 w-auto" />
             ) : (
@@ -75,49 +86,29 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
           </Link>
         </div>
 
-        {/* Navigation */}
+        {/* Navigation by sections */}
         <nav className="flex-1 overflow-y-auto py-3 px-2">
-          {(!collapsed || mobileOpen) && (
-            <p className="text-[11px] font-semibold text-white/30 uppercase tracking-wider px-3 mb-2">General</p>
-          )}
-          {filteredNavItems.map((item) => {
-            const Icon = iconMap[item.icon]
-            const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
-            return (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={() => onClose()}
-                title={collapsed && !mobileOpen ? item.label : undefined}
-                className={`flex items-center gap-3 rounded-lg text-sm font-medium transition mb-0.5 ${
-                  collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
-                } ${
-                  active
-                    ? 'bg-[#D74709]/15 text-[#D74709]'
-                    : 'text-white/60 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                {Icon && <Icon className="w-[18px] h-[18px] flex-shrink-0" />}
-                {(!collapsed || mobileOpen) && <span>{t(item.label)}</span>}
-              </a>
-            )
-          })}
+          {visibleSections.map((section, sIdx) => (
+            <div key={section.id}>
+              {/* Section title */}
+              {(!collapsed || mobileOpen) ? (
+                <p className={`text-[11px] font-semibold text-white/30 uppercase tracking-wider px-3 ${sIdx > 0 ? 'mt-5' : ''} mb-2`}>
+                  {t(section.label)}
+                </p>
+              ) : sIdx > 0 ? (
+                <div className="my-3 mx-3 border-t border-white/10" />
+              ) : null}
 
-          {isPro && (
-            <>
-              {(!collapsed || mobileOpen) && (
-                <p className="text-[11px] font-semibold text-white/30 uppercase tracking-wider px-3 mt-5 mb-2">CRM</p>
-              )}
-              {collapsed && !mobileOpen && <div className="my-3 mx-3 border-t border-white/10" />}
-              {PRO_NAV_ITEMS.map((item) => {
+              {/* Section items */}
+              {section.items.map((item) => {
                 const Icon = iconMap[item.icon]
-                const active = pathname.startsWith(item.href)
+                const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
                 return (
                   <a
                     key={item.href}
                     href={item.href}
                     onClick={() => onClose()}
-                    title={collapsed && !mobileOpen ? item.label : undefined}
+                    title={collapsed && !mobileOpen ? t(item.label) : undefined}
                     className={`flex items-center gap-3 rounded-lg text-sm font-medium transition mb-0.5 ${
                       collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
                     } ${
@@ -131,13 +122,13 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
                   </a>
                 )
               })}
-            </>
-          )}
+            </div>
+          ))}
         </nav>
 
         {/* Bottom: Admin + Settings + Logout */}
         <div className="border-t border-white/10 p-2">
-          {isPro && user?.role === 'admin' && (
+          {userRole === 'admin' && (
             <a
               href="/admin"
               title={collapsed && !mobileOpen ? 'Admin' : undefined}
