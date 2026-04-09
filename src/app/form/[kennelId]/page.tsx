@@ -3,7 +3,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useParams } from 'next/navigation'
-import { Loader2, Check, Send, MessageCircle, ChevronDown, Search } from 'lucide-react'
+import { Loader2, Check, Send, ChevronDown, Search } from 'lucide-react'
+import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 import { getLocalizedCountries, searchCities } from '@/lib/countries'
 
 interface FormField { id: string; label: string; type: 'text' | 'select' | 'file'; options?: string; required: boolean }
@@ -125,7 +126,7 @@ export default function PublicFormPage() {
           {kennel.whatsapp_enabled && kennel.whatsapp_phone && (
             <a href={`https://wa.me/${kennel.whatsapp_phone.replace(/\D/g, '')}?text=${encodeURIComponent(kennel.whatsapp_text || `Hola, acabo de rellenar el formulario y me interesa un perro de ${kennel.name}`)}`}
               target="_blank" rel="noopener" className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-lg transition">
-              <MessageCircle className="w-5 h-5" /> Contactar por WhatsApp
+              <WhatsAppIcon className="w-5 h-5" /> Contactar por WhatsApp
             </a>
           )}
         </div>

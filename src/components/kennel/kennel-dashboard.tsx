@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Edit, Globe, Calendar, Dog, Camera, Search, Grid3X3, List, Eye, EyeOff,
-  Loader2, ExternalLink, MessageCircle, Settings, Baby, Heart, ArrowRightLeft, Tag, FileText
+  Loader2, ExternalLink, Settings, Baby, Heart, ArrowRightLeft, Tag, FileText
 } from 'lucide-react'
+import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 import KennelEditPanel from './kennel-edit-panel'
 import TransferPanel from './transfer-panel'
 import SalePanel from './sale-panel'
@@ -146,7 +147,7 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
               )}
               {kennel.whatsapp_enabled && kennel.whatsapp_phone && (
                 <a href={`https://wa.me/${kennel.whatsapp_phone.replace(/\D/g, '')}?text=${encodeURIComponent(kennel.whatsapp_text || '')}`} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-xs text-white/40 hover:text-green-400 transition">
-                  <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                  <WhatsAppIcon className="w-3.5 h-3.5" /> WhatsApp
                 </a>
               )}
             </div>

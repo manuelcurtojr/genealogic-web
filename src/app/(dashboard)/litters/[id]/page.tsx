@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, Baby, Eye, EyeOff, Dog, MessageCircle, FileText, Check, Circle } from 'lucide-react'
+import { ArrowLeft, Calendar, Baby, Eye, EyeOff, Dog, FileText, Check, Circle } from 'lucide-react'
+import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 import { BRAND } from '@/lib/constants'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import LitterEditButton from '@/components/litters/litter-edit-button'
@@ -93,7 +94,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
           {kennel?.whatsapp_enabled && kennel.whatsapp_phone && (
             <a href={`https://wa.me/${kennel.whatsapp_phone.replace(/\D/g, '')}?text=${encodeURIComponent(kennel.whatsapp_text || `Hola, me interesa la camada de ${father?.name || ''} x ${mother?.name || ''}`)}`}
               target="_blank" rel="noopener" className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition">
-              <MessageCircle className="w-4 h-4" /> WhatsApp
+              <WhatsAppIcon className="w-4 h-4" /> WhatsApp
             </a>
           )}
           {isOwner && user && (

@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Globe, Calendar, Dog, ExternalLink, Heart, MessageCircle, Tag, Baby } from 'lucide-react'
+import { ArrowLeft, Globe, Calendar, Dog, ExternalLink, Heart, Tag, Baby } from 'lucide-react'
+import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 import { BRAND } from '@/lib/constants'
 import { isUUID } from '@/lib/slug'
 
@@ -66,7 +67,7 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
               {kennel.social_facebook && <a href={kennel.social_facebook} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-xs text-white/40 hover:text-blue-400 transition"><ExternalLink className="w-3.5 h-3.5" /> Facebook</a>}
               {kennel.whatsapp_enabled && kennel.whatsapp_phone && (
                 <a href={`https://wa.me/${kennel.whatsapp_phone.replace(/\D/g, '')}?text=${encodeURIComponent(kennel.whatsapp_text || '')}`} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-xs font-semibold text-green-400 bg-green-500/10 px-2.5 py-1 rounded-full hover:bg-green-500/20 transition">
-                  <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                  <WhatsAppIcon className="w-3.5 h-3.5" /> WhatsApp
                 </a>
               )}
             </div>
