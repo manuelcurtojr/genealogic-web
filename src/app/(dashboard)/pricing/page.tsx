@@ -1,102 +1,153 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Check, PawPrint } from 'lucide-react'
-import { BRAND } from '@/lib/constants'
+import { useState, useEffect } from 'react'
+import { Check, X, Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { PRICING, getRoleLabel } from '@/lib/permissions'
+import ToggleSwitch from '@/components/ui/toggle'
 
 const PLANS = [
   {
-    name: 'Criador',
-    price: { monthly: 0, annual: 0 },
-    description: 'Para empezar a gestionar tu criadero',
+    id: 'free',
+    name: 'Propietario',
+    price: { monthly: 0, yearly: 0 },
+    description: 'Para dueños de perros',
     features: [
-      'Hasta 10 perros',
-      'Arbol de pedigri (3 generaciones)',
-      'Calendario basico',
-      'Cartilla veterinaria',
-      '1 criadero',
+      'Hasta 5 perros',
+      'Pedigree completo (5 generaciones)',
+      'Contribuciones ilimitadas',
+      'Calendario y veterinario',
+      'Buscador y favoritos',
+      'Importador de pedigrees',
+      'Genos IA (asistente)',
+      'Notificaciones',
     ],
-    cta: 'Empezar gratis',
+    notIncluded: ['Criadero', 'Camadas', 'CRM', 'Analíticas'],
+    cta: 'Plan actual',
     highlighted: false,
   },
   {
-    name: 'Criador Pro',
-    price: { monthly: 10, annual: 8 },
-    description: 'Gestion profesional completa',
+    id: 'amateur',
+    name: 'Amateur',
+    price: { monthly: PRICING.amateur.monthly, yearly: Math.round(PRICING.amateur.yearly / 12 * 100) / 100 },
+    yearlyTotal: PRICING.amateur.yearly,
+    description: 'Para criadores con pocas camadas',
     features: [
-      'Perros ilimitados',
-      'Arbol de pedigri (5 generaciones)',
-      'Calculador COI',
+      'Hasta 25 perros',
+      'Hasta 3 camadas activas',
+      'Perfil de criadero público',
       'Planificador de cruces',
-      'CRM completo (contactos + negocios)',
-      'Calendario con vinculacion',
-      'Palmares y certificados',
-      'Exportar pedigri en PDF',
-      'Directorio de criaderos',
-      'Perfiles publicos',
-      'Soporte prioritario',
+      'Formulario de contacto',
+      'Bandeja de solicitudes',
+      'Palmarés y certificados',
+      'Analíticas básicas',
+      'Todo lo del plan gratuito',
     ],
-    cta: 'Comenzar prueba gratis',
+    notIncluded: ['CRM completo', 'Analíticas avanzadas'],
+    cta: 'Mejorar a Amateur',
     highlighted: true,
   },
   {
-    name: 'Verificaciones',
-    price: { monthly: null, annual: null },
-    description: 'Acciones verificables con Genes',
+    id: 'pro',
+    name: 'Profesional',
+    price: { monthly: PRICING.pro.monthly, yearly: Math.round(PRICING.pro.yearly / 12 * 100) / 100 },
+    yearlyTotal: PRICING.pro.yearly,
+    description: 'Para criadores profesionales',
     features: [
-      'Verificar propiedad de perros',
-      'Certificados de pedigri verificados',
-      'Transferencias de propiedad',
-      'Usa Genes como moneda virtual',
+      'Perros ilimitados',
+      'Camadas ilimitadas',
+      'CRM completo (Contactos + Negocios)',
+      'Pipelines personalizados',
+      'Lista de espera para camadas',
+      'Analíticas avanzadas',
+      'Formularios personalizados',
+      'WhatsApp integrado',
+      'Soporte prioritario',
+      'Todo lo de Amateur',
     ],
-    cta: 'Comprar Genes',
+    notIncluded: [],
+    cta: 'Mejorar a Profesional',
     highlighted: false,
   },
 ]
 
 export default function PricingPage() {
   const [annual, setAnnual] = useState(true)
+  const [userRole, setUserRole] = useState('free')
+  const [loading, setLoading] = useState<string | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (user) {
+        const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+        if (data?.role) setUserRole(data.role)
+      }
+    })
+  }, [])
+
+  async function handleUpgrade(plan: string) {
+    if (plan === 'free' || plan === userRole) return
+    setLoading(plan)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan, period: annual ? 'yearly' : 'monthly' }),
+      })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+      else alert(data.error || 'Error al procesar')
+    } catch {
+      alert('Error de conexión')
+    }
+    setLoading(null)
+  }
+
+  async function handleManageSubscription() {
+    setLoading('manage')
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+      else alert(data.error || 'Error')
+    } catch {
+      alert('Error de conexión')
+    }
+    setLoading(null)
+  }
+
+  const roleOrder = ['free', 'amateur', 'pro', 'admin']
+  const userRoleIdx = roleOrder.indexOf(userRole)
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      {/* Header */}
-      <nav className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-6xl mx-auto">
-        <Link href="/" className="flex items-center gap-2">
-          <PawPrint className="w-6 h-6" style={{ color: BRAND.primary }} />
-          <span className="font-bold text-lg">Genealogic</span>
-        </Link>
-        <Link href="/login" className="text-sm text-white/60 hover:text-white transition">
-          Iniciar sesion
-        </Link>
-      </nav>
+    <div>
+      <div className="text-center mb-10">
+        <h1 className="text-2xl font-bold mb-2">Planes y precios</h1>
+        <p className="text-white/40 text-sm">Elige el plan que mejor se adapte a tus necesidades</p>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Planes y precios</h1>
-          <p className="text-white/50 max-w-lg mx-auto">Elige el plan que mejor se adapte a tu criadero</p>
-
-          {/* Toggle */}
-          <div className="flex items-center justify-center gap-3 mt-8">
-            <span className={`text-sm ${!annual ? 'text-white' : 'text-white/40'}`}>Mensual</span>
-            <button
-              onClick={() => setAnnual(!annual)}
-              className={`w-12 h-6 rounded-full transition relative ${annual ? 'bg-[#D74709]' : 'bg-white/20'}`}
-            >
-              <div className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition ${annual ? 'left-[26px]' : 'left-0.5'}`} />
-            </button>
-            <span className={`text-sm ${annual ? 'text-white' : 'text-white/40'}`}>
-              Anual <span className="text-[#D74709] text-xs font-semibold">-20%</span>
-            </span>
-          </div>
+        {/* Toggle */}
+        <div className="flex items-center justify-center gap-3 mt-6">
+          <span className={`text-sm ${!annual ? 'text-white' : 'text-white/40'}`}>Mensual</span>
+          <ToggleSwitch value={annual} onChange={setAnnual} />
+          <span className={`text-sm ${annual ? 'text-white' : 'text-white/40'}`}>
+            Anual <span className="text-green-400 text-xs font-semibold">Ahorra ~17%</span>
+          </span>
         </div>
+      </div>
 
-        {/* Plans grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          {PLANS.map((plan) => (
+      {/* Plans grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+        {PLANS.map((plan) => {
+          const planIdx = roleOrder.indexOf(plan.id)
+          const isCurrent = userRole === plan.id || (userRole === 'admin' && plan.id === 'pro')
+          const isDowngrade = planIdx < userRoleIdx
+          const isUpgrade = planIdx > userRoleIdx && !isCurrent
+
+          return (
             <div
-              key={plan.name}
-              className={`rounded-2xl p-4 sm:p-6 ${
+              key={plan.id}
+              className={`rounded-2xl p-5 flex flex-col ${
                 plan.highlighted
                   ? 'bg-[#D74709]/10 border-2 border-[#D74709] relative'
                   : 'bg-white/5 border border-white/10'
@@ -104,47 +155,101 @@ export default function PricingPage() {
             >
               {plan.highlighted && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#D74709] text-white text-xs font-bold px-3 py-1 rounded-full">
-                  Mas popular
+                  Popular
                 </div>
               )}
 
               <h3 className="text-lg font-bold">{plan.name}</h3>
-              <p className="text-sm text-white/40 mt-1">{plan.description}</p>
+              <p className="text-xs text-white/40 mt-1">{plan.description}</p>
 
-              <div className="mt-4 mb-6">
-                {plan.price.monthly !== null ? (
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">{annual ? plan.price.annual : plan.price.monthly}</span>
-                    <span className="text-white/40">EUR/mes</span>
-                  </div>
+              <div className="mt-4 mb-5">
+                {plan.price.monthly === 0 ? (
+                  <div className="text-3xl font-bold">Gratis</div>
                 ) : (
-                  <div className="text-2xl font-bold text-[#D74709]">Variable</div>
+                  <>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-bold">
+                        {annual ? plan.price.yearly : plan.price.monthly}€
+                      </span>
+                      <span className="text-white/40 text-sm">/mes</span>
+                    </div>
+                    {annual && (plan as any).yearlyTotal && (
+                      <p className="text-xs text-white/30 mt-1">
+                        {(plan as any).yearlyTotal}€ facturado anualmente
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
 
-              <Link
-                href="/register"
-                className={`block text-center py-3 rounded-lg text-sm font-semibold transition ${
-                  plan.highlighted
-                    ? 'bg-[#D74709] hover:bg-[#c03d07] text-white'
-                    : 'bg-white/10 hover:bg-white/15 text-white'
-                }`}
-              >
-                {plan.cta}
-              </Link>
+              {/* CTA Button */}
+              {isCurrent ? (
+                <button
+                  disabled
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold bg-white/10 text-white/40 cursor-default"
+                >
+                  Plan actual
+                </button>
+              ) : isUpgrade ? (
+                <button
+                  onClick={() => handleUpgrade(plan.id)}
+                  disabled={loading === plan.id}
+                  className={`w-full py-2.5 rounded-lg text-sm font-semibold transition ${
+                    plan.highlighted
+                      ? 'bg-[#D74709] hover:bg-[#c03d07] text-white'
+                      : 'bg-white/10 hover:bg-white/20 text-white'
+                  } disabled:opacity-50`}
+                >
+                  {loading === plan.id ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : plan.cta}
+                </button>
+              ) : isDowngrade && userRole !== 'admin' ? (
+                <button
+                  onClick={handleManageSubscription}
+                  disabled={loading === 'manage'}
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold bg-white/5 hover:bg-white/10 text-white/40 transition"
+                >
+                  Gestionar suscripción
+                </button>
+              ) : (
+                <button
+                  disabled
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold bg-white/10 text-white/40 cursor-default"
+                >
+                  {plan.cta}
+                </button>
+              )}
 
-              <div className="mt-6 space-y-3">
+              {/* Features */}
+              <div className="mt-5 space-y-2.5 flex-1">
                 {plan.features.map((f) => (
-                  <div key={f} className="flex items-start gap-2.5">
-                    <Check className="w-4 h-4 text-[#D74709] flex-shrink-0 mt-0.5" />
+                  <div key={f} className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
                     <span className="text-sm text-white/60">{f}</span>
+                  </div>
+                ))}
+                {plan.notIncluded.map((f) => (
+                  <div key={f} className="flex items-start gap-2">
+                    <X className="w-4 h-4 text-white/15 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-white/25">{f}</span>
                   </div>
                 ))}
               </div>
             </div>
-          ))}
-        </div>
+          )
+        })}
       </div>
+
+      {/* Manage subscription link */}
+      {userRole !== 'free' && userRole !== 'admin' && (
+        <div className="text-center mt-6">
+          <button
+            onClick={handleManageSubscription}
+            className="text-sm text-white/40 hover:text-white transition underline"
+          >
+            Gestionar suscripción y facturación
+          </button>
+        </div>
+      )}
     </div>
   )
 }
