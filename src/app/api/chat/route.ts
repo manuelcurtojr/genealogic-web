@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    const userId = user.id
 
     const { message, history } = await request.json()
     if (!message?.trim()) return Response.json({ error: 'Message required' }, { status: 400 })
@@ -27,10 +28,10 @@ export async function POST(request: NextRequest) {
 
     // Fetch user context for system prompt
     const [profileRes, dogsRes, kennelRes, littersRes] = await Promise.all([
-      supabase.from('profiles').select('display_name, role').eq('id', user.id).single(),
-      supabase.from('dogs').select('id, name, sex, birth_date, breed:breeds(name), is_for_sale').eq('owner_id', user.id).order('name').limit(100),
-      supabase.from('kennels').select('id, name, country, city, breed_ids').eq('owner_id', user.id).single(),
-      supabase.from('litters').select('id').eq('owner_id', user.id),
+      supabase.from('profiles').select('display_name, role').eq('id', userId).single(),
+      supabase.from('dogs').select('id, name, sex, birth_date, breed:breeds(name), is_for_sale').eq('owner_id', userId).order('name').limit(100),
+      supabase.from('kennels').select('id, name, country, city, breed_ids').eq('owner_id', userId).single(),
+      supabase.from('litters').select('id').eq('owner_id', userId),
     ])
 
     const profile = profileRes.data
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     // Save user message
     await supabase.from('chat_messages').insert({
-      user_id: user.id,
+      user_id: userId,
       role: 'user',
       content: message,
     })
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
           const { data: litters } = await supabase
             .from('litters')
             .select('id, birth_date, status, puppy_count, father:dogs!father_id(name), mother:dogs!mother_id(name)')
-            .eq('owner_id', user.id)
+            .eq('owner_id', userId)
             .order('birth_date', { ascending: false })
             .limit(20)
           if (!litters?.length) return 'No tienes camadas registradas.'
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
           const { data: dog } = await supabase
             .from('dogs')
             .select('id, name, sex, birth_date, weight, height, registration, microchip, is_for_sale, sale_price, sale_currency, breed:breeds(name), color:colors(name), kennel:kennels(name), father:dogs!father_id(name), mother:dogs!mother_id(name)')
-            .eq('owner_id', user.id)
+            .eq('owner_id', userId)
             .ilike('name', `%${name}%`)
             .limit(1)
             .single()
@@ -209,7 +210,7 @@ export async function POST(request: NextRequest) {
           // Save assistant response
           if (fullResponse.trim()) {
             await supabase.from('chat_messages').insert({
-              user_id: user.id,
+              user_id: userId,
               role: 'assistant',
               content: fullResponse,
             })
