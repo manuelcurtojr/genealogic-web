@@ -49,7 +49,7 @@ export default function InboxPage() {
 
     const { data } = await supabase
       .from('form_submissions')
-      .select('id, data, contact_id, deal_id, created_at')
+      .select('id, data, contact_id, deal_id, is_read, created_at')
       .eq('kennel_id', kennel.id)
       .order('created_at', { ascending: false })
       .limit(200)
