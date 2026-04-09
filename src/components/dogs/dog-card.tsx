@@ -58,15 +58,15 @@ export default function DogCard({ dog, onEdit, onTransfer, onEditPedigree }: Dog
             <Eye className="w-3.5 h-3.5" /> Ver
           </Link>
           <button onClick={onEdit} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition">
-            <Edit className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Editar</span><span className="sm:hidden">Edit</span>
+            <Edit className="w-3.5 h-3.5" /> <span className="hidden lg:inline">Editar</span>
           </button>
           {onEditPedigree && (
-            <button onClick={onEditPedigree} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709] transition" title="Genealogía">
-              <GitBranch className="w-3.5 h-3.5" />
+            <button onClick={onEditPedigree} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-white/5 text-white/30 hover:bg-green-500/10 hover:text-green-400 transition">
+              <GitBranch className="w-3.5 h-3.5" /> <span className="hidden lg:inline">Constructor</span>
             </button>
           )}
           <button onClick={onTransfer} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709] transition ml-auto">
-            <ArrowRightLeft className="w-3.5 h-3.5" />
+            <ArrowRightLeft className="w-3.5 h-3.5" /> <span className="hidden lg:inline">Transferir</span>
           </button>
         </div>
       </div>
