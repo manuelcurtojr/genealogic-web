@@ -89,10 +89,10 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
             </div>
           )}
           {kennel?.name && (
-            <div className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-3 py-1">
+            <Link href={`/kennels/${kennel.id}`} className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-3 py-1 hover:border-[#D74709]/30 hover:bg-white/10 transition">
               {kennel.logo_url ? <img src={kennel.logo_url} alt="" className="w-4 h-4 rounded-full object-cover" /> : <img src="/icon.svg" alt="" className="w-4 h-4" />}
               <span className="text-sm text-white/70 font-medium">{kennel.name}</span>
-            </div>
+            </Link>
           )}
         </div>
 
