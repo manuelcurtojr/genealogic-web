@@ -12,6 +12,7 @@ import ContactForm from '@/components/crm/contact-form'
 
 interface Submission {
   id: string
+  form_id?: string
   data: any
   contact_id: string | null
   deal_id: string | null
@@ -26,6 +27,7 @@ export default function InboxPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [userRole, setUserRole] = useState<string | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
+  const [fieldLabels, setFieldLabels] = useState<Record<string, Record<string, string>>>({})
   const [contactFormOpen, setContactFormOpen] = useState(false)
   const [editingContact, setEditingContact] = useState<any>(null)
   const [userId, setUserId] = useState('')
@@ -49,7 +51,7 @@ export default function InboxPage() {
 
     const { data } = await supabase
       .from('form_submissions')
-      .select('id, data, contact_id, deal_id, is_read, created_at')
+      .select('id, form_id, data, contact_id, deal_id, is_read, created_at')
       .eq('kennel_id', kennel.id)
       .order('created_at', { ascending: false })
       .limit(200)
@@ -60,6 +62,22 @@ export default function InboxPage() {
         ? await supabase.from('contacts').select('id, name, email, phone, city, country').in('id', contactIds)
         : { data: [] }
       const contactMap = Object.fromEntries((contacts || []).map(c => [c.id, c]))
+
+      // Load form field definitions to resolve custom field labels
+      const formIds = [...new Set(data.filter(s => s.form_id).map(s => s.form_id))]
+      const { data: forms } = formIds.length
+        ? await supabase.from('kennel_forms').select('id, fields').in('id', formIds)
+        : { data: [] }
+      const formFieldsMap: Record<string, Record<string, string>> = {}
+      for (const form of (forms || [])) {
+        const fieldMap: Record<string, string> = {}
+        for (const f of ((form.fields as any[]) || [])) {
+          if (f.id && f.label) fieldMap[f.id] = f.label
+        }
+        formFieldsMap[form.id] = fieldMap
+      }
+      setFieldLabels(formFieldsMap)
+
       setSubmissions(data.map(s => ({ ...s, contact: s.contact_id ? contactMap[s.contact_id] : undefined })))
     }
     setLoading(false)
@@ -152,7 +170,7 @@ export default function InboxPage() {
           <p className="text-xs text-white/20 mt-1">Aparecerán aquí cuando alguien complete tu formulario</p>
         </div>
       ) : (
-        <div className="flex gap-0 lg:gap-0 border border-white/10 rounded-xl overflow-hidden" style={{ height: 'calc(100vh - 180px)' }}>
+        <div className="flex border-t border-white/10 -mx-4 lg:-mx-[30px]" style={{ height: 'calc(100vh - 160px)' }}>
           {/* Left: submission list */}
           <div className="w-full lg:w-[380px] lg:min-w-[320px] border-r border-white/10 overflow-y-auto bg-white/[0.01]">
             {submissions.map(sub => {
@@ -205,6 +223,7 @@ export default function InboxPage() {
                 onCopy={copyToClipboard}
                 getWhatsAppUrl={getWhatsAppUrl}
                 onEditContact={() => { setEditingContact(selected.contact); setContactFormOpen(true) }}
+                fieldLabels={selected.form_id ? fieldLabels[selected.form_id] || {} : {}}
               />
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-white/20">
@@ -222,12 +241,13 @@ export default function InboxPage() {
 }
 
 // ─── Detail View Component ───
-function DetailView({ sub, copied, onCopy, getWhatsAppUrl, onEditContact }: {
+function DetailView({ sub, copied, onCopy, getWhatsAppUrl, onEditContact, fieldLabels = {} }: {
   sub: Submission
   copied: string | null
   onCopy: (text: string, field: string) => void
   getWhatsAppUrl: (phone: string, name: string) => string
   onEditContact: () => void
+  fieldLabels?: Record<string, string>
 }) {
   const formData = sub.data || {}
   const contact = sub.contact
@@ -295,7 +315,7 @@ function DetailView({ sub, copied, onCopy, getWhatsAppUrl, onEditContact }: {
             </a>
           )}
           {sub.deal_id && (
-            <a href={`/crm/deals`}
+            <a href={`/crm/deals?dealId=${sub.deal_id}`}
               className="flex items-center gap-1.5 text-xs bg-[#D74709]/10 hover:bg-[#D74709]/20 text-[#D74709] px-3 py-1.5 rounded-lg transition">
               <ExternalLink className="w-3 h-3" /> Ver negocio
             </a>
@@ -346,7 +366,7 @@ function DetailView({ sub, copied, onCopy, getWhatsAppUrl, onEditContact }: {
               {Object.entries(customData).map(([key, value]) => (
                 value ? (
                   <div key={key} className="flex items-start gap-2">
-                    <span className="text-xs text-white/40 min-w-[100px]">{key}:</span>
+                    <span className="text-xs text-white/40 min-w-[100px]">{fieldLabels[key] || key}:</span>
                     <span className="text-sm text-white/70">{String(value)}</span>
                   </div>
                 ) : null

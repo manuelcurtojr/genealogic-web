@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Plus, GripVertical, HandCoins, Trash2, X, Loader2, BarChart3, Trophy, XCircle, Copy, Settings } from 'lucide-react'
 import PipelineSummary from './pipeline-summary'
@@ -13,12 +13,13 @@ interface DealsPageClientProps {
   pipelines: any[]
   contacts: any[]
   userId: string
+  openDealId?: string
 }
 
 const WON_PATTERNS = /ganad|entregad/i
 const LOST_PATTERNS = /perdid|cancelad/i
 
-export default function DealsPageClient({ initialDeals, pipelines: initialPipelines, contacts, userId }: DealsPageClientProps) {
+export default function DealsPageClient({ initialDeals, pipelines: initialPipelines, contacts, userId, openDealId }: DealsPageClientProps) {
   const [deals, setDeals] = useState(initialDeals)
   const [pipelines, setPipelines] = useState(initialPipelines)
   const [activePipelineId, setActivePipelineId] = useState(initialPipelines[0]?.id || '')
@@ -34,6 +35,14 @@ export default function DealsPageClient({ initialDeals, pipelines: initialPipeli
   const [lostReason, setLostReason] = useState('')
   const [savingLost, setSavingLost] = useState(false)
   const [cloning, setCloning] = useState(false)
+
+  // Open deal panel from URL query param
+  useEffect(() => {
+    if (openDealId && deals.length) {
+      const deal = deals.find((d: any) => d.id === openDealId)
+      if (deal) { setEditingDeal(deal); setShowForm(true) }
+    }
+  }, [openDealId, deals])
 
   const activePipeline = pipelines.find((p: any) => p.id === activePipelineId)
   const stages = activePipeline?.stages || []

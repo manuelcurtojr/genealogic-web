@@ -4,7 +4,8 @@ import { getUserRole } from '@/lib/get-user-role'
 import { roleAtLeast } from '@/lib/permissions'
 import PlanGate from '@/components/ui/plan-gate'
 
-export default async function DealsPage() {
+export default async function DealsPage({ searchParams }: { searchParams: Promise<{ dealId?: string }> }) {
+  const params = await searchParams
   const { userId, role } = await getUserRole()
   if (!userId) return null
   if (!roleAtLeast(role, 'pro')) return <PlanGate requiredPlan="pro" featureName="CRM — Negocios" featureDescription="Gestiona tu pipeline de ventas con etapas personalizadas y seguimiento de cada negocio." />
@@ -42,6 +43,7 @@ export default async function DealsPage() {
       pipelines={pipelines}
       contacts={contactsRes.data || []}
       userId={user.id}
+      openDealId={params.dealId}
     />
   )
 }
