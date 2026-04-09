@@ -14,7 +14,7 @@ const PLANS = [
     description: 'Para dueños de perros',
     features: [
       'Hasta 5 perros',
-      'Pedigree completo (5 generaciones)',
+      'Pedigree completo e ilimitado',
       'Contribuciones ilimitadas',
       'Calendario y veterinario',
       'Buscador y favoritos',
