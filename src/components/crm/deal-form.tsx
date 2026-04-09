@@ -440,7 +440,7 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
 
             {/* TAB: ACTIVIDADES */}
             {activeTab === 'actividades' && isEdit && initialData?.id && (
-              <DealActivity dealId={initialData.id} userId={userId} />
+              <DealActivity dealId={initialData.id} userId={userId} contactId={form.contact_id} />
             )}
 
             {/* TAB: DOCUMENTOS */}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, MessageSquare, CheckSquare, ArrowRight, Send } from 'lucide-react'
+import { Plus, MessageSquare, CheckSquare, ArrowRight, Send, Mail, Phone, Copy, Check, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface Activity {
@@ -12,17 +12,29 @@ interface Activity {
   created_at: string
 }
 
+interface Contact {
+  id: string
+  name: string
+  email: string | null
+  phone: string | null
+  country: string | null
+  city: string | null
+}
+
 interface DealActivityProps {
   dealId: string
   userId: string
+  contactId?: string | null
 }
 
-export default function DealActivity({ dealId, userId }: DealActivityProps) {
+export default function DealActivity({ dealId, userId, contactId }: DealActivityProps) {
   const [activities, setActivities] = useState<Activity[]>([])
+  const [contact, setContact] = useState<Contact | null>(null)
   const [loading, setLoading] = useState(true)
   const [newNote, setNewNote] = useState('')
   const [sending, setSending] = useState(false)
   const [activeTab, setActiveTab] = useState<'note' | 'task'>('note')
+  const [copied, setCopied] = useState<string | null>(null)
 
   const supabase = createClient()
 
@@ -36,7 +48,13 @@ export default function DealActivity({ dealId, userId }: DealActivityProps) {
     setLoading(false)
   }
 
-  useEffect(() => { fetchActivities() }, [dealId])
+  async function fetchContact() {
+    if (!contactId) return
+    const { data } = await supabase.from('contacts').select('id, name, email, phone, country, city').eq('id', contactId).single()
+    if (data) setContact(data)
+  }
+
+  useEffect(() => { fetchActivities(); fetchContact() }, [dealId, contactId])
 
   async function addActivity() {
     if (!newNote.trim()) return
@@ -60,6 +78,12 @@ export default function DealActivity({ dealId, userId }: DealActivityProps) {
     fetchActivities()
   }
 
+  function copyToClipboard(text: string, field: string) {
+    navigator.clipboard.writeText(text)
+    setCopied(field)
+    setTimeout(() => setCopied(null), 2000)
+  }
+
   function getIcon(type: string) {
     if (type === 'task') return CheckSquare
     if (type === 'status_change') return ArrowRight
@@ -72,8 +96,55 @@ export default function DealActivity({ dealId, userId }: DealActivityProps) {
     return 'Nota'
   }
 
+  // Clean phone number for WhatsApp link
+  function getWhatsAppUrl(phone: string) {
+    const clean = phone.replace(/[^0-9+]/g, '')
+    const num = clean.startsWith('+') ? clean.slice(1) : clean.startsWith('34') ? clean : '34' + clean
+    return `https://wa.me/${num}`
+  }
+
   return (
     <div>
+      {/* Contact card */}
+      {contact && (
+        <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-11 h-11 rounded-full bg-[#D74709]/15 flex items-center justify-center flex-shrink-0">
+              <User className="w-5 h-5 text-[#D74709]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{contact.name}</p>
+              {(contact.city || contact.country) && (
+                <p className="text-[11px] text-white/30 truncate">{[contact.city, contact.country].filter(Boolean).join(', ')}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            {contact.email && (
+              <div className="flex items-center gap-2 bg-white/[0.03] rounded-lg px-3 py-2">
+                <Mail className="w-3.5 h-3.5 text-white/30 shrink-0" />
+                <a href={`mailto:${contact.email}`} className="text-sm text-white/60 hover:text-[#D74709] transition truncate flex-1">{contact.email}</a>
+                <button onClick={() => copyToClipboard(contact.email!, 'email')} className="p-1 rounded hover:bg-white/10 transition shrink-0">
+                  {copied === 'email' ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 text-white/20" />}
+                </button>
+              </div>
+            )}
+            {contact.phone && (
+              <div className="flex items-center gap-2 bg-white/[0.03] rounded-lg px-3 py-2">
+                <Phone className="w-3.5 h-3.5 text-white/30 shrink-0" />
+                <a href={getWhatsAppUrl(contact.phone)} target="_blank" rel="noopener" className="text-sm text-white/60 hover:text-green-400 transition truncate flex-1">
+                  {contact.phone}
+                </a>
+                <button onClick={() => copyToClipboard(contact.phone!, 'phone')} className="p-1 rounded hover:bg-white/10 transition shrink-0">
+                  {copied === 'phone' ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 text-white/20" />}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <h4 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-3">Actividad</h4>
 
       {/* Add note/task */}
@@ -135,7 +206,7 @@ export default function DealActivity({ dealId, userId }: DealActivityProps) {
                       {new Date(act.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  <p className={`text-sm text-white/70 mt-0.5 ${act.is_completed ? 'line-through opacity-50' : ''}`}>
+                  <p className={`text-sm text-white/70 mt-0.5 whitespace-pre-wrap ${act.is_completed ? 'line-through opacity-50' : ''}`}>
                     {act.content}
                   </p>
                 </div>
