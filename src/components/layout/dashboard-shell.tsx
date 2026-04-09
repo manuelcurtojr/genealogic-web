@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Menu, Bell, Sun, Moon, LayoutDashboard, Dog, Calendar, Settings } from 'lucide-react'
+import { Menu, Bell, Sun, Moon, LayoutDashboard, Dog, Calendar, Settings, Sparkles } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -9,14 +9,16 @@ import { usePathname } from 'next/navigation'
 import Sidebar from './sidebar'
 import SearchBar from './search-bar'
 import NotificationsPanel from './notifications-panel'
+import ChatPanel from '../chat/chat-panel'
 
 interface DashboardShellProps {
   user: { display_name: string; email: string; role: string; avatar_url: string | null } | null
   kennel: { name: string; logo_url: string | null } | null
+  userId?: string
   children: React.ReactNode
 }
 
-export default function DashboardShell({ user, kennel, children }: DashboardShellProps) {
+export default function DashboardShell({ user, kennel, userId, children }: DashboardShellProps) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
@@ -26,6 +28,7 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
     return true
   })
   const [notifOpen, setNotifOpen] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
@@ -144,6 +147,9 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
         <div className="flex-1 min-w-0">
           <SearchBar />
         </div>
+        <button onClick={() => setChatOpen(true)} className={`${iconColor} transition shrink-0`}>
+          <Sparkles className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Desktop header */}
@@ -158,6 +164,9 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
         <div className="flex items-center gap-2 flex-shrink-0">
           <button onClick={toggleTheme} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-white/5 transition`} title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
             {darkMode ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+          </button>
+          <button onClick={() => setChatOpen(true)} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-white/5 transition`} title="Genos — Asistente IA">
+            <Sparkles className="w-[18px] h-[18px]" />
           </button>
           <button onClick={() => setNotifOpen(true)} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-white/5 transition relative`}>
             <Bell className="w-[18px] h-[18px]" />
@@ -224,6 +233,9 @@ export default function DashboardShell({ user, kennel, children }: DashboardShel
 
       {/* Notifications panel */}
       <NotificationsPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
+
+      {/* Genos chat panel */}
+      {userId && <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} userId={userId} userName={user?.display_name || ''} avatarUrl={user?.avatar_url || null} />}
     </div>
   )
 }

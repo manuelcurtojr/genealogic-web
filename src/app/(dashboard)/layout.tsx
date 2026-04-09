@@ -30,7 +30,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const kennel = kennelArr?.[0] || null
 
   return (
-    <DashboardShell user={profile} kennel={kennel}>
+    <DashboardShell user={profile} kennel={kennel} userId={user.id}>
       {children}
     </DashboardShell>
   )
