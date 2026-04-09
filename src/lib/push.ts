@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import * as crypto from 'crypto'
+import * as http2 from 'http2'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -44,45 +45,76 @@ function generateAPNsJWT(config: NonNullable<typeof apnsConfig>): string {
   const signature = sign.sign(config.p8Key, 'base64url')
 
   const jwt = `${signingInput}.${signature}`
-  cachedJWT = { token: jwt, expiry: now + 3000 } // 50 min
+  cachedJWT = { token: jwt, expiry: now + 3000 }
   return jwt
 }
 
-async function sendAPNs(config: NonNullable<typeof apnsConfig>, deviceToken: string, title: string, body: string, data?: Record<string, string>): Promise<boolean> {
-  const jwt = generateAPNsJWT(config)
+function sendAPNsHTTP2(config: NonNullable<typeof apnsConfig>, deviceToken: string, title: string, body: string, data?: Record<string, string>): Promise<boolean> {
+  return new Promise((resolve) => {
+    const jwt = generateAPNsJWT(config)
 
-  const payload = {
-    aps: {
-      alert: { title, body },
-      sound: 'default',
-      badge: 1,
-    },
-    ...data,
-  }
+    const payload = JSON.stringify({
+      aps: {
+        alert: { title, body },
+        sound: 'default',
+        badge: 1,
+      },
+      ...data,
+    })
 
-  try {
-    const res = await fetch(`https://${config.host}/3/device/${deviceToken}`, {
-      method: 'POST',
-      headers: {
+    try {
+      const client = http2.connect(`https://${config.host}`)
+
+      client.on('error', (err) => {
+        console.error('APNs HTTP/2 connection error:', err)
+        resolve(false)
+      })
+
+      const req = client.request({
+        ':method': 'POST',
+        ':path': `/3/device/${deviceToken}`,
         'authorization': `bearer ${jwt}`,
         'apns-topic': APNS_TOPIC,
         'apns-push-type': 'alert',
         'apns-priority': '10',
         'content-type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    })
+        'content-length': Buffer.byteLength(payload),
+      })
 
-    if (!res.ok) {
-      const err = await res.text()
-      console.error(`APNs error (${res.status}):`, err)
-      return false
+      let status = 0
+      let responseData = ''
+
+      req.on('response', (headers) => {
+        status = headers[':status'] as number || 0
+      })
+
+      req.on('data', (chunk) => {
+        responseData += chunk
+      })
+
+      req.on('end', () => {
+        client.close()
+        if (status === 200) {
+          resolve(true)
+        } else {
+          console.error(`APNs error (${status}):`, responseData)
+          resolve(false)
+        }
+      })
+
+      req.on('error', (err) => {
+        console.error('APNs request error:', err)
+        client.close()
+        resolve(false)
+      })
+
+      req.write(payload)
+      req.end()
+    } catch (err) {
+      console.error('APNs send error:', err)
+      resolve(false)
     }
-    return true
-  } catch (err) {
-    console.error('APNs fetch error:', err)
-    return false
-  }
+  })
 }
 
 /**
@@ -113,7 +145,7 @@ export async function sendPushToUser(
   let failed = 0
 
   for (const { token } of tokens) {
-    const ok = await sendAPNs(config, token, title, body, data)
+    const ok = await sendAPNsHTTP2(config, token, title, body, data)
     if (ok) sent++
     else failed++
   }
