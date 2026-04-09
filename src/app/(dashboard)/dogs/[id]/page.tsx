@@ -11,6 +11,50 @@ import DogTabs from '@/components/dogs/dog-tabs'
 import FavoriteButton from '@/components/dogs/favorite-button'
 import DogEditButton from '@/components/dogs/dog-edit-button'
 import ShareButton from '@/components/dogs/share-button'
+import type { Metadata } from 'next'
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const field = isUUID(id) ? 'id' : 'slug'
+  const { data: dog } = await supabase
+    .from('dogs')
+    .select('name, slug, sex, birth_date, thumbnail_url, breed:breeds(name), color:colors(name), kennel:kennels(name)')
+    .eq(field, id)
+    .single()
+
+  if (!dog) return { title: 'Perro no encontrado — Genealogic' }
+
+  const breed = (Array.isArray(dog.breed) ? dog.breed[0]?.name : (dog.breed as any)?.name) || ''
+  const color = (Array.isArray(dog.color) ? dog.color[0]?.name : (dog.color as any)?.name) || ''
+  const kennel = (Array.isArray(dog.kennel) ? dog.kennel[0]?.name : (dog.kennel as any)?.name) || ''
+  const sex = dog.sex === 'male' ? 'Macho' : dog.sex === 'female' ? 'Hembra' : ''
+
+  const parts = [breed, sex, color].filter(Boolean)
+  const description = `${dog.name}${parts.length ? ' — ' + parts.join(' · ') : ''}${kennel ? ' | Criadero ' + kennel : ''} | Genealogic`
+
+  const url = `https://genealogic.io/dogs/${dog.slug || id}`
+  const image = dog.thumbnail_url || 'https://genealogic.io/icon.svg'
+
+  return {
+    title: `${dog.name} — Genealogic`,
+    description,
+    openGraph: {
+      title: dog.name,
+      description,
+      url,
+      siteName: 'Genealogic',
+      images: [{ url: image, width: 800, height: 800, alt: dog.name }],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: dog.name,
+      description,
+      images: [image],
+    },
+  }
+}
 
 export default async function DogDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

@@ -5,6 +5,26 @@ import { ArrowLeft, Globe, Calendar, Dog, ExternalLink, Heart, Tag, Baby } from 
 import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 import { BRAND } from '@/lib/constants'
 import { isUUID } from '@/lib/slug'
+import type { Metadata } from 'next'
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const field = isUUID(id) ? 'id' : 'slug'
+  const { data: kennel } = await supabase.from('kennels').select('name, logo_url, description, country, city').eq(field, id).single()
+  if (!kennel) return { title: 'Criadero no encontrado — Genealogic' }
+
+  const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
+  const description = kennel.description?.substring(0, 160) || `Criadero ${kennel.name}${location ? ' en ' + location : ''} | Genealogic`
+  const image = kennel.logo_url || 'https://genealogic.io/icon.svg'
+
+  return {
+    title: `${kennel.name} — Criadero | Genealogic`,
+    description,
+    openGraph: { title: kennel.name, description, images: [{ url: image, alt: kennel.name }], type: 'website', siteName: 'Genealogic' },
+    twitter: { card: 'summary_large_image', title: kennel.name, description, images: [image] },
+  }
+}
 
 export default async function KennelDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
