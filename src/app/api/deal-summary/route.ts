@@ -12,18 +12,28 @@ export async function POST(request: NextRequest) {
     const { dealId } = await request.json()
     if (!dealId) return Response.json({ error: 'Missing dealId' }, { status: 400 })
 
-    // Fetch deal + activities + contact
-    const [dealRes, activitiesRes] = await Promise.all([
-      supabase.from('deals').select('title, stage:pipeline_stages(name), contact:contacts(name, email, phone, city, country)').eq('id', dealId).single(),
+    // Fetch deal, stage, contact, and activities separately to avoid join issues
+    const { data: deal } = await supabase
+      .from('deals')
+      .select('title, stage_id, contact_id, pipeline_id')
+      .eq('id', dealId)
+      .single()
+
+    if (!deal) return Response.json({ error: 'Deal not found' }, { status: 404 })
+
+    const [stageRes, contactRes, activitiesRes] = await Promise.all([
+      deal.stage_id
+        ? supabase.from('pipeline_stages').select('name').eq('id', deal.stage_id).single()
+        : Promise.resolve({ data: null }),
+      deal.contact_id
+        ? supabase.from('contacts').select('name, email, phone, city, country').eq('id', deal.contact_id).single()
+        : Promise.resolve({ data: null }),
       supabase.from('deal_activities').select('type, content, is_completed, created_at').eq('deal_id', dealId).order('created_at'),
     ])
 
-    const deal = dealRes.data
-    if (!deal) return Response.json({ error: 'Deal not found' }, { status: 404 })
-
+    const stage = stageRes.data
+    const contact = contactRes.data
     const activities = activitiesRes.data || []
-    const contact = deal.contact as any
-    const stage = deal.stage as any
 
     // Build context
     const lines: string[] = []
@@ -50,7 +60,7 @@ export async function POST(request: NextRequest) {
     const anthropic = new Anthropic({ apiKey: apiKeyData.value })
 
     const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-20250414',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 300,
       messages: [{ role: 'user', content: lines.join('\n') }],
       system: `Eres Genos, el asistente de Genealogic (plataforma de crianza canina). Resume este negocio del CRM en 2-3 frases cortas en espanol. Incluye: quien es el contacto, que busca, en que etapa esta, y que acciones se han tomado. Se conciso y directo. No uses encabezados ni listas, solo un parrafo corto.`,
