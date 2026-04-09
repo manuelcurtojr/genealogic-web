@@ -4,6 +4,61 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { X, Send, Loader2, Sparkles, Trash2 } from 'lucide-react'
 
+// Lightweight Markdown renderer for chat messages
+function ChatMarkdown({ text }: { text: string }) {
+  const lines = text.split('\n')
+  const elements: React.ReactNode[] = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+
+    // Headers
+    const h3 = line.match(/^### (.+)/)
+    const h2 = line.match(/^## (.+)/)
+    const h1 = line.match(/^# (.+)/)
+    if (h1) { elements.push(<p key={i} className="font-bold text-white mt-3 mb-1">{renderInline(h1[1])}</p>); continue }
+    if (h2) { elements.push(<p key={i} className="font-bold text-white mt-2.5 mb-1 text-[13px]">{renderInline(h2[1])}</p>); continue }
+    if (h3) { elements.push(<p key={i} className="font-semibold text-white/90 mt-2 mb-0.5">{renderInline(h3[1])}</p>); continue }
+
+    // List items
+    const li = line.match(/^[-•] (.+)/)
+    const numLi = line.match(/^\d+\. (.+)/)
+    if (li) { elements.push(<div key={i} className="flex gap-1.5 ml-1 mt-0.5"><span className="text-[#D74709] shrink-0">•</span><span>{renderInline(li[1])}</span></div>); continue }
+    if (numLi) {
+      const num = line.match(/^(\d+)\./)?.[1]
+      elements.push(<div key={i} className="flex gap-1.5 ml-1 mt-0.5"><span className="text-[#D74709] shrink-0 font-semibold text-xs min-w-[16px]">{num}.</span><span>{renderInline(numLi[1])}</span></div>)
+      continue
+    }
+
+    // Empty line
+    if (!line.trim()) { elements.push(<div key={i} className="h-2" />); continue }
+
+    // Regular paragraph
+    elements.push(<p key={i} className="mt-0.5">{renderInline(line)}</p>)
+  }
+
+  return <>{elements}</>
+}
+
+function renderInline(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = []
+  // Process: **bold**, [link text](url), `code`
+  const regex = /(\*\*(.+?)\*\*)|(\[(.+?)\]\((.+?)\))|(`(.+?)`)/g
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index))
+    if (match[2]) parts.push(<strong key={match.index} className="font-semibold text-white">{match[2]}</strong>)
+    else if (match[4] && match[5]) parts.push(<a key={match.index} href={match[5]} className="text-[#D74709] underline underline-offset-2 hover:text-[#ff6b2b] transition">{match[4]}</a>)
+    else if (match[7]) parts.push(<code key={match.index} className="bg-white/10 text-[#ff6b2b] px-1 py-0.5 rounded text-[12px]">{match[7]}</code>)
+    lastIndex = match.index + match[0].length
+  }
+
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex))
+  return parts
+}
+
 interface Message {
   role: 'user' | 'assistant'
   content: string
@@ -207,12 +262,14 @@ export default function ChatPanel({ open, onClose, userId, userName, avatarUrl }
                   <Sparkles className="w-3.5 h-3.5 text-white" />
                 </div>
               )}
-              <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+              <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                 msg.role === 'user'
-                  ? 'bg-[#D74709] text-white rounded-br-md'
+                  ? 'bg-[#D74709] text-white rounded-br-md whitespace-pre-wrap'
                   : 'bg-white/5 text-white/80 rounded-bl-md'
               }`}>
-                {msg.content || (streaming && i === messages.length - 1 ? (
+                {msg.content ? (
+                  msg.role === 'assistant' ? <ChatMarkdown text={msg.content} /> : msg.content
+                ) : (streaming && i === messages.length - 1 ? (
                   <span className="flex items-center gap-1.5 text-white/30">
                     <Loader2 className="w-3 h-3 animate-spin" /> Pensando...
                   </span>
