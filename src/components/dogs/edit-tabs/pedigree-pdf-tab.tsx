@@ -30,14 +30,22 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
     try {
       const supabase = createClient()
 
-      // Fetch dog data with breed, color, kennel, father, mother
-      const { data: dog } = await supabase
+      // Fetch dog data
+      const { data: dog, error: dogErr } = await supabase
         .from('dogs')
-        .select('*, breed:breeds(name), color:colors(name), kennel:kennels(name), father:dogs!dogs_father_id_fkey(name), mother:dogs!dogs_mother_id_fkey(name)')
+        .select('*, breed:breeds(name), color:colors(name), kennel:kennels(name)')
         .eq('id', dogId)
         .single()
 
-      if (!dog) throw new Error('Dog not found')
+      if (!dog || dogErr) throw new Error('Dog not found')
+
+      // Fetch parents separately
+      const [fatherRes, motherRes] = await Promise.all([
+        dog.father_id ? supabase.from('dogs').select('name').eq('id', dog.father_id).single() : null,
+        dog.mother_id ? supabase.from('dogs').select('name').eq('id', dog.mother_id).single() : null,
+      ])
+      const fatherName = fatherRes?.data?.name || 'Desconocido'
+      const motherName = motherRes?.data?.name || 'Desconocido'
 
       // Fetch owner name
       const { data: profile } = await supabase
@@ -58,8 +66,6 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
       const b = Array.isArray(dog.breed) ? dog.breed[0] : dog.breed
       const c = Array.isArray(dog.color) ? dog.color[0] : dog.color
       const k = Array.isArray(dog.kennel) ? dog.kennel[0] : dog.kennel
-      const f = Array.isArray(dog.father) ? dog.father[0] : dog.father
-      const m = Array.isArray(dog.mother) ? dog.mother[0] : dog.mother
 
       const dogData = {
         name: dog.name || '',
@@ -69,8 +75,8 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
         birth_date: dog.birth_date ? formatDate(dog.birth_date) : '',
         microchip: dog.microchip || '',
         registration: dog.registration || '',
-        father: f?.name || 'Desconocido',
-        mother: m?.name || 'Desconocido',
+        father: fatherName,
+        mother: motherName,
         kennel: k?.name || '',
         owner: profile?.display_name || profile?.email || 'Propietario',
       }
