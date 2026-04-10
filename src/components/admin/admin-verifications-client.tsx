@@ -65,11 +65,27 @@ export default function AdminVerificationsClient({ userId }: Props) {
       status: action, admin_notes: notes, reviewed_by: userId, reviewed_at: new Date().toISOString(),
     }).eq('id', id)
 
-    // If approving review step, mark dog as verified
     const v = verifications.find(vr => vr.id === id)
-    if (v && v.step === 'review' && action === 'approved') {
-      await supabase.from('dogs').update({ is_verified: true }).eq('id', v.dog_id)
+    if (v && action === 'approved') {
+      // Check if all document steps for this dog are now approved
+      const { data: allSteps } = await supabase.from('verifications').select('step, status').eq('dog_id', v.dog_id)
+      const microOk = allSteps?.find(s => s.step === 'microchip')?.status === 'approved'
+      const pedigreeOk = allSteps?.find(s => s.step === 'pedigree')?.status === 'approved'
+      const reviewExists = allSteps?.find(s => s.step === 'review')
+
+      if (microOk && pedigreeOk && !reviewExists) {
+        // Auto-create review step as pending so admin can approve it
+        await supabase.from('verifications').insert({
+          dog_id: v.dog_id, step: 'review', status: 'pending', submitted_by: v.submitted_by,
+        })
+      }
+
+      // If approving review step, mark dog as verified
+      if (v.step === 'review') {
+        await supabase.from('dogs').update({ is_verified: true }).eq('id', v.dog_id)
+      }
     }
+
     // If rejecting review, unverify
     if (v && v.step === 'review' && action === 'rejected') {
       await supabase.from('dogs').update({ is_verified: false }).eq('id', v.dog_id)

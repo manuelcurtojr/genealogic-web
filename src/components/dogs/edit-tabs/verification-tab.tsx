@@ -129,8 +129,11 @@ export default function VerificationTab({ dogId, userId }: Props) {
                 </label>
               )}
 
-              {isReview && !allApproved && (
+              {isReview && !allApproved && !v && (
                 <span className="text-[10px] text-white/20 flex-shrink-0">Primero sube los documentos</span>
+              )}
+              {isReview && allApproved && !v && (
+                <span className="text-[10px] text-yellow-400 flex-shrink-0">Pendiente de revision por el equipo</span>
               )}
             </div>
           </div>
