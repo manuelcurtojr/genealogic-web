@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2, Search, Globe, AlertTriangle, Check, X, Link2, ArrowLeftRight, Undo2 } from 'lucide-react'
@@ -445,7 +445,7 @@ Rules:
         <div className="flex-1 overflow-auto relative" onClick={() => { setGenMenu(false); setZoomMenu(false) }}>
           <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}>
             <div className="min-w-max min-h-max py-6 px-4 pb-24">
-              <TN name={editedMain.name} byName={byName} swaps={swaps} g={0} mx={maxGen} isRoot onSwap={n => { setSwapTarget(n); setSwapSearch(''); setSwapResults([]) }} onRemoveSwap={removeSwap} />
+              <TN name={editedMain.name} byName={byName} swaps={swaps} g={0} mx={maxGen} isRoot zoomScale={zoom / 100} onSwap={n => { setSwapTarget(n); setSwapSearch(''); setSwapResults([]) }} onRemoveSwap={removeSwap} />
             </div>
           </div>
           <div className="absolute bottom-4 left-4 z-30 flex items-center gap-2">
@@ -557,8 +557,8 @@ Rules:
 }
 
 // ===== TREE NODE =====
-function TN({ name, byName, swaps, g, mx, isRoot, onSwap, onRemoveSwap }: {
-  name: string; byName: Map<string, ImportDog>; swaps: Record<string, any>; g: number; mx: number; isRoot?: boolean
+function TN({ name, byName, swaps, g, mx, isRoot, zoomScale, onSwap, onRemoveSwap }: {
+  name: string; byName: Map<string, ImportDog>; swaps: Record<string, any>; g: number; mx: number; isRoot?: boolean; zoomScale: number
   onSwap: (n: string) => void; onRemoveSwap: (n: string) => void
 }) {
   const dog = byName.get(name)
@@ -577,20 +577,25 @@ function TN({ name, byName, swaps, g, mx, isRoot, onSwap, onRemoveSwap }: {
   const mRef = useRef<HTMLDivElement>(null)
   const [lines, setLines] = useState<{ x1: number; y1: number; x2: number; y2: number }[]>([])
 
-  useEffect(() => {
-    if (!wrapRef.current || !fRef.current || !mRef.current) return
-    const wr = wrapRef.current.getBoundingClientRect()
-    const fr = fRef.current.getBoundingClientRect()
-    const mr = mRef.current.getBoundingClientRect()
-    const fMidY = fr.top - wr.top + fr.height / 2
-    const mMidY = mr.top - wr.top + mr.height / 2
-    const cardMidY = (fMidY + mMidY) / 2
-    setLines([
-      { x1: CW, y1: cardMidY, x2: CW + 45, y2: cardMidY },
-      { x1: CW + 45, y1: fMidY, x2: CW + 45, y2: mMidY },
-      { x1: CW + 45, y1: fMidY, x2: CW + 60, y2: fMidY },
-      { x1: CW + 45, y1: mMidY, x2: CW + 60, y2: mMidY },
-    ])
+  useLayoutEffect(() => {
+    // Wait for all children to finish layout before measuring
+    requestAnimationFrame(() => {
+      if (!wrapRef.current || !fRef.current || !mRef.current) return
+      const s = zoomScale || 1
+      const wr = wrapRef.current.getBoundingClientRect()
+      const fr = fRef.current.getBoundingClientRect()
+      const mr = mRef.current.getBoundingClientRect()
+      // Divide by scale to convert viewport coords to layout coords
+      const fMidY = (fr.top - wr.top + fr.height / 2) / s
+      const mMidY = (mr.top - wr.top + mr.height / 2) / s
+      const cardMidY = (fMidY + mMidY) / 2
+      setLines([
+        { x1: CW, y1: cardMidY, x2: CW + 45, y2: cardMidY },
+        { x1: CW + 45, y1: fMidY, x2: CW + 45, y2: mMidY },
+        { x1: CW + 45, y1: fMidY, x2: CW + 60, y2: fMidY },
+        { x1: CW + 45, y1: mMidY, x2: CW + 60, y2: mMidY },
+      ])
+    })
   })
 
   return (
@@ -602,8 +607,8 @@ function TN({ name, byName, swaps, g, mx, isRoot, onSwap, onRemoveSwap }: {
         {lines.map((l, i) => <line key={i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke={L} strokeWidth={1} />)}
       </svg>
       <div style={{ marginLeft: CW + 60, display: 'flex', flexDirection: 'column', gap: 24 }}>
-        <div ref={fRef}>{hasFather ? <TN name={fatherName!} byName={byName} swaps={swaps} g={g + 1} mx={mx} onSwap={onSwap} onRemoveSwap={onRemoveSwap} /> : <div className="w-8 h-8 rounded-full border-2 border-dashed border-blue-400/20 flex items-center justify-center text-blue-400/30 text-xs">♂</div>}</div>
-        <div ref={mRef}>{hasMother ? <TN name={motherName!} byName={byName} swaps={swaps} g={g + 1} mx={mx} onSwap={onSwap} onRemoveSwap={onRemoveSwap} /> : <div className="w-8 h-8 rounded-full border-2 border-dashed border-pink-400/20 flex items-center justify-center text-pink-400/30 text-xs">♀</div>}</div>
+        <div ref={fRef}>{hasFather ? <TN name={fatherName!} byName={byName} swaps={swaps} g={g + 1} mx={mx} zoomScale={zoomScale} onSwap={onSwap} onRemoveSwap={onRemoveSwap} /> : <div className="w-8 h-8 rounded-full border-2 border-dashed border-blue-400/20 flex items-center justify-center text-blue-400/30 text-xs">♂</div>}</div>
+        <div ref={mRef}>{hasMother ? <TN name={motherName!} byName={byName} swaps={swaps} g={g + 1} mx={mx} zoomScale={zoomScale} onSwap={onSwap} onRemoveSwap={onRemoveSwap} /> : <div className="w-8 h-8 rounded-full border-2 border-dashed border-pink-400/20 flex items-center justify-center text-pink-400/30 text-xs">♀</div>}</div>
       </div>
     </div>
   )
