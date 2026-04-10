@@ -31,6 +31,17 @@ export async function POST(request: NextRequest) {
     const findBreed = (name: string | null) => { if (!name) return null; return breeds.find(b => b.name.toLowerCase() === name.toLowerCase())?.id || null }
     const findColor = (name: string | null) => { if (!name) return null; return colors.find(c => c.name.toLowerCase() === name.toLowerCase())?.id || null }
 
+    const lowerWords = new Set(['de', 'del', 'of', 'von', 'du', 'vom', 'y', 'the', 'and', 'las', 'los', 'la', 'el'])
+    function titleCase(name: string): string {
+      return name.split(' ').map((w, i) => {
+        const lower = w.toLowerCase()
+        if (i > 0 && lowerWords.has(lower)) return lower
+        if (w.includes("'")) return w.split("'").map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join("'")
+        return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+      }).join(' ')
+    }
+    const formatName = (name: string) => name === name.toUpperCase() && name.length > 3 ? titleCase(name) : name
+
     // Merge swaps
     const swapMap = new Map<string, string>()
     if (swaps) { for (const [name, data] of Object.entries(swaps)) { if ((data as any)?.id) swapMap.set(name, (data as any).id) } }
@@ -70,7 +81,7 @@ export async function POST(request: NextRequest) {
       // Use dog's own breed, fall back to overrideBreed or main dog's breed
       const breedName = dog.breed || overrideBreed || mainDog.breed
       const { data: created } = await supabase.from('dogs').insert({
-        name: dog.name, sex: dog.sex === 'Female' ? 'female' : 'male',
+        name: formatName(dog.name), sex: dog.sex === 'Female' ? 'female' : 'male',
         registration: dog.registration || null, breed_id: findBreed(breedName), color_id: findColor(dog.color),
         birth_date: parsedDate, father_id: fatherId, mother_id: motherId,
         kennel_id: (isMainDog && !isAdmin) ? (kennelId || null) : null,
