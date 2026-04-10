@@ -582,16 +582,12 @@ function TN({ name, byName, swaps, g, mx, isRoot, zoomScale, onSwap, onRemoveSwa
   const [lines, setLines] = useState<{ x1: number; y1: number; x2: number; y2: number }[]>([])
 
   useLayoutEffect(() => {
-    // Wait for all children to finish layout before measuring
-    requestAnimationFrame(() => {
+    // Use double rAF to ensure all nested children have finished layout
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       if (!wrapRef.current || !fRef.current || !mRef.current) return
-      const s = zoomScale || 1
-      const wr = wrapRef.current.getBoundingClientRect()
-      const fr = fRef.current.getBoundingClientRect()
-      const mr = mRef.current.getBoundingClientRect()
-      // Divide by scale to convert viewport coords to layout coords
-      const fMidY = (fr.top - wr.top + fr.height / 2) / s
-      const mMidY = (mr.top - wr.top + mr.height / 2) / s
+      // offsetTop/offsetHeight are layout-space values, unaffected by CSS transforms
+      const fMidY = fRef.current.offsetTop + fRef.current.offsetHeight / 2
+      const mMidY = mRef.current.offsetTop + mRef.current.offsetHeight / 2
       const cardMidY = (fMidY + mMidY) / 2
       setLines([
         { x1: CW, y1: cardMidY, x2: CW + 45, y2: cardMidY },
@@ -599,7 +595,7 @@ function TN({ name, byName, swaps, g, mx, isRoot, zoomScale, onSwap, onRemoveSwa
         { x1: CW + 45, y1: fMidY, x2: CW + 60, y2: fMidY },
         { x1: CW + 45, y1: mMidY, x2: CW + 60, y2: mMidY },
       ])
-    })
+    }))
   })
 
   return (
