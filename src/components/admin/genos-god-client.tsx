@@ -13,6 +13,23 @@ function normName(s: string): string {
   return s.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[''`']/g, '').replace(/\s+/g, ' ')
 }
 
+// Levenshtein distance between two strings
+function levenshtein(a: string, b: string): number {
+  if (a.length === 0) return b.length
+  if (b.length === 0) return a.length
+  const matrix: number[][] = []
+  for (let i = 0; i <= b.length; i++) matrix[i] = [i]
+  for (let j = 0; j <= a.length; j++) matrix[0][j] = j
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      matrix[i][j] = b[i - 1] === a[j - 1]
+        ? matrix[i - 1][j - 1]
+        : Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+    }
+  }
+  return matrix[b.length][a.length]
+}
+
 // Core name for fuzzy grouping: strip numbers, asterisks, parenthesized suffixes
 function coreName(s: string): string {
   return normName(s).replace(/\([^)]*\)/g, '').replace(/[*"_.,:;!?#]/g, '').replace(/\d+/g, '').replace(/\s+/g, ' ').trim()
@@ -120,8 +137,29 @@ function KennelDetector() {
       }
     }
 
-    // Sort by dog count desc
-    const sorted = [...affixGroups.values()].sort((a, b) => b.dogs.length - a.dogs.length)
+    // Merge similar groups (Levenshtein distance <= 2) into the largest one
+    const groupList = [...affixGroups.entries()]
+    const merged = new Set<string>()
+    for (let i = 0; i < groupList.length; i++) {
+      if (merged.has(groupList[i][0])) continue
+      for (let j = i + 1; j < groupList.length; j++) {
+        if (merged.has(groupList[j][0])) continue
+        if (levenshtein(groupList[i][0], groupList[j][0]) <= 2) {
+          // Merge smaller into larger
+          const [largeKey, large] = groupList[i][1].dogs.length >= groupList[j][1].dogs.length ? [groupList[i][0], groupList[i][1]] : [groupList[j][0], groupList[j][1]]
+          const [smallKey, small] = largeKey === groupList[i][0] ? [groupList[j][0], groupList[j][1]] : [groupList[i][0], groupList[i][1]]
+          large.dogs.push(...small.dogs)
+          large.assignedCount += small.assignedCount
+          large.unassignedCount += small.unassignedCount
+          merged.add(smallKey)
+          // If small had the existing kennel, transfer it
+          if (!large.existingKennel && small.existingKennel) large.existingKennel = small.existingKennel
+          if (small.existingKennel) large.affix = small.existingKennel.name
+        }
+      }
+    }
+
+    const sorted = groupList.filter(([k]) => !merged.has(k)).map(([, v]) => v).sort((a, b) => b.dogs.length - a.dogs.length)
     setGroups(sorted)
     setLoading(false)
   }
@@ -476,11 +514,25 @@ function DuplicateDetector() {
       nameGroups.get(norm)!.push(dog)
     }
 
+    // Merge similar name groups (Levenshtein <= 2)
+    const groupEntries = [...nameGroups.entries()]
+    const mergedKeys = new Set<string>()
+    for (let i = 0; i < groupEntries.length; i++) {
+      if (mergedKeys.has(groupEntries[i][0])) continue
+      for (let j = i + 1; j < groupEntries.length; j++) {
+        if (mergedKeys.has(groupEntries[j][0])) continue
+        if (levenshtein(groupEntries[i][0], groupEntries[j][0]) <= 2) {
+          groupEntries[i][1].push(...groupEntries[j][1])
+          mergedKeys.add(groupEntries[j][0])
+        }
+      }
+    }
+
     // Only keep groups with 2+ dogs
     const duplicates: DuplicateGroup[] = []
-    for (const [normalizedName, groupDogs] of nameGroups) {
+    for (const [normalizedName, groupDogs] of groupEntries) {
+      if (mergedKeys.has(normalizedName)) continue
       if (groupDogs.length >= 2) {
-        // Sort: most complete first (more fields filled = better candidate to keep)
         groupDogs.sort((a, b) => {
           const score = (d: DogRow) => [d.registration, d.microchip, d.birth_date, d.thumbnail_url, d.father_id, d.mother_id, d.owner_id, d.kennel_id].filter(Boolean).length
           return score(b) - score(a)

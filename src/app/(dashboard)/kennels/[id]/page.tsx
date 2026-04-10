@@ -41,12 +41,11 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
 
   if (!kennel) notFound()
 
-  // Fetch all kennel dogs (visible by default unless user explicitly hides them)
+  // Fetch all kennel dogs
   const { data: allDogs } = await supabase
     .from('dogs')
     .select('id, name, sex, thumbnail_url, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, breed:breeds(name)')
     .eq('kennel_id', id)
-    .neq('show_in_kennel', false)
     .order('name')
 
   // Fetch public litters with parents and breed
