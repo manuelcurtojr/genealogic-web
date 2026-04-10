@@ -96,7 +96,7 @@ Rules:
       .slice(0, 40000)
   }
 
-  async function callClaude(apiKey: string, messages: any[], maxTokens = 8000): Promise<PedigreeData> {
+  async function callClaude(apiKey: string, messages: any[], maxTokens = 8000, _retries = 0): Promise<PedigreeData> {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -108,6 +108,12 @@ Rules:
       body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: maxTokens, messages }),
     })
     if (!res.ok) {
+      // Auto-retry on 529 (overloaded) — wait and try again up to 3 times
+      if (res.status === 529 && _retries < 3) {
+        setScanPhase(`Servidor ocupado, reintentando en ${5 + _retries * 5}s...`)
+        await new Promise(r => setTimeout(r, (5 + _retries * 5) * 1000))
+        return callClaude(apiKey, messages, maxTokens, _retries + 1)
+      }
       let detail = ''
       try { const b = await res.json(); detail = b?.error?.message || '' } catch {}
       throw new Error(`Error de IA (${res.status}): ${detail || 'Intenta de nuevo'}`)
