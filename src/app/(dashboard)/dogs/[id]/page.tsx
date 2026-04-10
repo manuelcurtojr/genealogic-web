@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette } from 'lucide-react'
+import { Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette, ShieldCheck } from 'lucide-react'
 import BackButton from '@/components/ui/back-button'
 import { BRAND } from '@/lib/constants'
 import { isUUID } from '@/lib/slug'
@@ -129,6 +129,12 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         {/* Name + badges */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
           <h1 className="text-2xl sm:text-3xl font-bold">{dog.name}</h1>
+          {dog.is_verified && (
+            <div className="inline-flex items-center gap-1 bg-blue-500/10 border border-blue-500/20 rounded-full px-2.5 py-1" title="Perro verificado">
+              <ShieldCheck className="w-4 h-4 text-blue-400" />
+              <span className="text-xs text-blue-400 font-semibold">Verificado</span>
+            </div>
+          )}
           {breedName && (
             <div className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-3 py-1">
               <img src="/icon.svg" alt="" className="w-4 h-4" />

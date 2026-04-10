@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Lock, Globe } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Lock, Globe, Shield } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { canCreateDog, getPlanLimits } from '@/lib/permissions'
 import UpgradeModal from '@/components/ui/upgrade-modal'
@@ -16,6 +16,7 @@ import PalmaresTab from './edit-tabs/palmares-tab'
 import HistorialTab from './edit-tabs/historial-tab'
 import PedigreePdfTab from './edit-tabs/pedigree-pdf-tab'
 import ImportPedigreeTab from './import-pedigree-tab'
+import VerificationTab from './edit-tabs/verification-tab'
 
 interface DogFormPanelProps {
   open: boolean
@@ -39,6 +40,7 @@ const TABS = [
   { key: 'palmares', label: 'Palmarés', icon: Trophy },
   { key: 'pedigree-pdf', label: 'Pedigree PDF', icon: FileText },
   { key: 'historial', label: 'Historial', icon: History },
+  { key: 'verificacion', label: 'Verificación', icon: Shield },
 ] as const
 
 type TabKey = typeof TABS[number]['key']
@@ -347,6 +349,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
             {activeTab === 'pedigree-pdf' && editDogId && <PedigreePdfTab dogId={editDogId} dogName={form.name} userId={userId} />}
             {activeTab === 'historial' && editDogId && <HistorialTab dogId={editDogId} />}
+            {activeTab === 'verificacion' && editDogId && <VerificationTab dogId={editDogId} userId={userId} />}
           </div>
         )}
 
