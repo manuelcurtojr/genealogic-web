@@ -9,7 +9,7 @@ export default async function FavoritesPage() {
     .from('favorites')
     .select(`
       dog_id,
-      dog:dogs(id, name, sex, thumbnail_url, birth_date, breed:breeds(name), color:colors(name), kennel:kennels(name))
+      dog:dogs(id, name, sex, thumbnail_url, birth_date, is_verified, breed:breeds(name), color:colors(name), kennel:kennels(name))
     `)
     .eq('user_id', user!.id)
     .order('created_at', { ascending: false })
