@@ -81,18 +81,21 @@ export async function POST(request: NextRequest) {
       if (created) { nameToId.set(dog.name, created.id); createdIds.push(created.id) }
     }
 
-    // Enrich existing dogs with missing parent links
+    // Enrich existing dogs — only fill empty fields, never overwrite
     for (const dog of allDogs) {
       const dogId = nameToId.get(dog.name)
       if (!dogId || createdIds.includes(dogId)) continue
+      const { data: existing } = await supabase.from('dogs').select('father_id, mother_id, registration, breed_id, color_id, birth_date').eq('id', dogId).single()
+      if (!existing) continue
       const updates: any = {}
-      if (dog.father_name && nameToId.has(dog.father_name)) {
-        const { data: c } = await supabase.from('dogs').select('father_id').eq('id', dogId).single()
-        if (!c?.father_id) updates.father_id = nameToId.get(dog.father_name)
-      }
-      if (dog.mother_name && nameToId.has(dog.mother_name)) {
-        const { data: c } = await supabase.from('dogs').select('mother_id').eq('id', dogId).single()
-        if (!c?.mother_id) updates.mother_id = nameToId.get(dog.mother_name)
+      if (!existing.father_id && dog.father_name && nameToId.has(dog.father_name)) updates.father_id = nameToId.get(dog.father_name)
+      if (!existing.mother_id && dog.mother_name && nameToId.has(dog.mother_name)) updates.mother_id = nameToId.get(dog.mother_name)
+      if (!existing.registration && dog.registration) updates.registration = dog.registration
+      if (!existing.breed_id && dog.breed) updates.breed_id = findBreed(dog.breed)
+      if (!existing.color_id && dog.color) updates.color_id = findColor(dog.color)
+      if (!existing.birth_date && dog.birth_date) {
+        const pd = dog.birth_date.length === 4 ? `${dog.birth_date}-01-01` : dog.birth_date
+        updates.birth_date = pd
       }
       if (Object.keys(updates).length > 0) await supabase.from('dogs').update(updates).eq('id', dogId)
     }
