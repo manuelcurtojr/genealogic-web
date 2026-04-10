@@ -11,17 +11,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params
   const supabase = await createClient()
   const field = isUUID(id) ? 'id' : 'slug'
-  const { data: kennel } = await supabase.from('kennels').select('name, logo_url, description, country, city').eq(field, id).single()
+  const { data: kennel } = await supabase.from('kennels').select('name, slug, logo_url, description, country, city').eq(field, id).single()
   if (!kennel) return { title: 'Criadero no encontrado — Genealogic' }
 
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const description = kennel.description?.substring(0, 160) || `Criadero ${kennel.name}${location ? ' en ' + location : ''} | Genealogic`
   const image = kennel.logo_url || 'https://genealogic.io/icon.svg'
+  const canonical = `https://genealogic.io/kennels/${kennel.slug || id}`
 
   return {
     title: `${kennel.name} — Criadero | Genealogic`,
     description,
-    openGraph: { title: kennel.name, description, images: [{ url: image, alt: kennel.name }], type: 'website', siteName: 'Genealogic' },
+    alternates: { canonical },
+    openGraph: { title: kennel.name, description, url: canonical, images: [{ url: image, alt: kennel.name }], type: 'website', siteName: 'Genealogic' },
     twitter: { card: 'summary_large_image', title: kennel.name, description, images: [image] },
   }
 }
@@ -65,8 +67,23 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
 
   const currencySymbol: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', MXN: '$', COP: '$', ARS: '$', CLP: '$' }
 
+  const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: kennel.name,
+    description: kennel.description || `Criadero ${kennel.name}${location ? ' en ' + location : ''}`,
+    url: `https://genealogic.io/kennels/${kennel.slug || id}`,
+    ...(kennel.logo_url && { logo: kennel.logo_url }),
+    ...(kennel.website && { sameAs: [kennel.website] }),
+    ...(location && { address: { '@type': 'PostalAddress', addressLocality: kennel.city, addressCountry: kennel.country } }),
+    ...(kennel.foundation_date && { foundingDate: kennel.foundation_date }),
+    numberOfEmployees: dogs.length,
+  }
+
   return (
     <div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="flex items-center gap-4 mb-6">
         <Link href={user?.id === kennel.owner_id ? '/kennel' : '/kennels'} className="text-white/40 hover:text-white transition"><ArrowLeft className="w-5 h-5" /></Link>
       </div>

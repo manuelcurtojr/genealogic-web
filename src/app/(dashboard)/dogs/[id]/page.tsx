@@ -39,6 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return {
     title: `${dog.name} — Genealogic`,
     description,
+    alternates: { canonical: url },
     openGraph: {
       title: dog.name,
       description,
@@ -104,8 +105,23 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
     galleryPhotos.unshift(dog.thumbnail_url)
   }
 
+  // JSON-LD structured data for SEO
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Thing',
+    name: dog.name,
+    description: `${dog.name}${breedName ? `, ${breedName}` : ''}${kennel?.name ? ` de ${kennel.name}` : ''}. Genealogic — Plataforma de Crianza Canina.`,
+    image: dog.thumbnail_url || 'https://genealogic.io/icon.svg',
+    url: `https://genealogic.io/dogs/${dog.slug || dog.id}`,
+    ...(breedName && { additionalType: breedName }),
+    ...(dog.birth_date && { birthDate: dog.birth_date }),
+    ...(dog.sex && { gender: dog.sex === 'male' ? 'Male' : 'Female' }),
+    ...(kennel && { isPartOf: { '@type': 'Organization', name: kennel.name } }),
+  }
+
   return (
     <div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Gallery — full bleed: public = 100vw, logged-in = cancel padding */}
       <div className={`relative overflow-hidden ${user ? '-mx-4 -mt-4 sm:-mx-[30px] sm:-mt-[30px]' : ''}`}
         style={!user ? { marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)', marginTop: '-24px', width: '100vw' } : undefined}>
