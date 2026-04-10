@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-    const { mainDog, ancestors, userId, kennelId, swaps, importPhotos } = await request.json()
+    const { mainDog, ancestors, userId, kennelId, swaps, importPhotos, isAdmin } = await request.json()
     if (!mainDog) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
 
     // Ensure userId matches authenticated user
@@ -71,9 +71,9 @@ export async function POST(request: NextRequest) {
         name: dog.name, sex: dog.sex === 'Female' ? 'female' : 'male',
         registration: dog.registration || null, breed_id: findBreed(dog.breed), color_id: findColor(dog.color),
         birth_date: parsedDate, father_id: fatherId, mother_id: motherId,
-        kennel_id: isMainDog ? (kennelId || null) : null,
-        owner_id: isMainDog ? safeUserId : null,
-        contributor_id: isMainDog ? undefined : safeUserId,
+        kennel_id: (isMainDog && !isAdmin) ? (kennelId || null) : null,
+        owner_id: (isMainDog && !isAdmin) ? safeUserId : null,
+        contributor_id: (isMainDog && !isAdmin) ? undefined : safeUserId,
         is_public: false,
         thumbnail_url: importPhotos !== false ? (dog.photo_url || null) : null,
       }).select('id').single()

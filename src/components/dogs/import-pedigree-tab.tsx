@@ -14,12 +14,12 @@ interface ImportDog {
 
 interface PedigreeData { main_dog: ImportDog; ancestors: ImportDog[] }
 
-interface Props { userId: string; kennelId?: string | null; onImported?: () => void }
+interface Props { userId: string; kennelId?: string | null; onImported?: () => void; isAdmin?: boolean }
 
 const CW = 190, CH = 58
 const L = 'var(--pedigree-line, rgba(255,255,255,0.12))'
 
-export default function ImportPedigreeTab({ userId, kennelId, onImported }: Props) {
+export default function ImportPedigreeTab({ userId, kennelId, onImported, isAdmin }: Props) {
   const [url, setUrl] = useState('')
   const [scanning, setScanning] = useState(false)
   const [error, setError] = useState('')
@@ -428,7 +428,7 @@ Rules:
     if (!editedMain) return
     setImporting(true); setError('')
     try {
-      const res = await fetch('/api/confirm-import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mainDog: editedMain, ancestors: importAncestors ? editedAncestors : [], userId, kennelId, swaps, importPhotos }) })
+      const res = await fetch('/api/confirm-import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mainDog: editedMain, ancestors: importAncestors ? editedAncestors : [], userId, kennelId, swaps, importPhotos, isAdmin }) })
       const result = await res.json()
       if (!res.ok) throw new Error(result.error)
       setImportResult(result)

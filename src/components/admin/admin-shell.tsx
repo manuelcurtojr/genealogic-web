@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Store, Palette, Coins, GitBranch, Stethoscope, ArrowLeft, Shield, Menu, X, Key, BarChart3, Sparkles, Dog, Activity } from 'lucide-react'
+import { LayoutDashboard, Users, Store, Palette, Coins, GitBranch, Stethoscope, ArrowLeft, Shield, Menu, X, Key, BarChart3, Sparkles, Dog, Activity, Globe } from 'lucide-react'
 
 const ADMIN_NAV: { section?: string; label: string; href: string; icon: any }[] = [
   // General
@@ -15,7 +15,8 @@ const ADMIN_NAV: { section?: string; label: string; href: string; icon: any }[] 
   { label: 'Criaderos', href: '/admin/kennels', icon: Store },
   { label: 'Genealogías', href: '/admin/genealogy', icon: GitBranch },
   // Herramientas
-  { section: 'Herramientas', label: 'Genos God', href: '/admin/genos-god', icon: Sparkles },
+  { section: 'Herramientas', label: 'Importar pedigrí', href: '/admin/import', icon: Globe },
+  { label: 'Genos God', href: '/admin/genos-god', icon: Sparkles },
   { label: 'Catálogo', href: '/admin/catalog', icon: Palette },
   { label: 'Plantillas vet.', href: '/admin/vet-templates', icon: Stethoscope },
   // Sistema
