@@ -46,6 +46,9 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported, isAdmi
   const [uploadingImage, setUploadingImage] = useState(false)
   const [scanPhase, setScanPhase] = useState('')
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(null)
+  const [overrideBreed, setOverrideBreed] = useState('')
+  const [allBreeds, setAllBreeds] = useState<{ id: string; name: string }[]>([])
+  const [breedsLoaded, setBreedsLoaded] = useState(false)
 
   const EXTRACTION_PROMPT = `You are a dog pedigree data extractor. Extract the complete pedigree information from this content.
 
@@ -110,6 +113,7 @@ Rules:
           dogInfoHtml = html.substring(bodyStart, tableStart)
             .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
             .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+            .replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi, '[PHOTO:$1]') // preserve photo URLs
             .replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim()
             .slice(0, 3000)
         }
@@ -327,6 +331,12 @@ Rules:
         setScanning(false); setScanPhase(''); return
       }
 
+      // Fallback: if main dog has no photo, find the largest photo from the page
+      if (!pedigreeData.main_dog.photo_url) {
+        const largePhoto = imgUrls.find(u => u.includes('350') || u.includes('photo')) || imgUrls[0]
+        if (largePhoto) pedigreeData.main_dog.photo_url = largePhoto
+      }
+
       // Post-processing: find existing dogs in DB and auto-link them
       setScanPhase('Verificando perros existentes...')
       const { autoSwaps, linked } = await findExistingDogs(pedigreeData)
@@ -334,6 +344,14 @@ Rules:
       // Save draft so it can be resumed
       const draftId = await saveDraft(pedigreeData, url.trim())
       setCurrentDraftId(draftId)
+
+      // Load breeds for selector if not loaded
+      if (!breedsLoaded) {
+        const supabase2 = createClient()
+        const { data: br } = await supabase2.from('breeds').select('id, name').order('name')
+        setAllBreeds(br || []); setBreedsLoaded(true)
+      }
+      setOverrideBreed(pedigreeData.main_dog.breed || '')
 
       setData(pedigreeData)
       setEditedMain(pedigreeData.main_dog)
@@ -375,6 +393,13 @@ Rules:
 
       const draftId = await saveDraft(pedigreeData)
       setCurrentDraftId(draftId)
+
+      if (!breedsLoaded) {
+        const supabase2 = createClient()
+        const { data: br } = await supabase2.from('breeds').select('id, name').order('name')
+        setAllBreeds(br || []); setBreedsLoaded(true)
+      }
+      setOverrideBreed(pedigreeData.main_dog.breed || '')
 
       setData(pedigreeData)
       setEditedMain(pedigreeData.main_dog)
@@ -428,7 +453,7 @@ Rules:
     if (!editedMain) return
     setImporting(true); setError('')
     try {
-      const res = await fetch('/api/confirm-import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mainDog: editedMain, ancestors: importAncestors ? editedAncestors : [], userId, kennelId, swaps, importPhotos, isAdmin }) })
+      const res = await fetch('/api/confirm-import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mainDog: editedMain, ancestors: importAncestors ? editedAncestors : [], userId, kennelId, swaps, importPhotos, isAdmin, overrideBreed: overrideBreed || undefined }) })
       const result = await res.json()
       if (!res.ok) throw new Error(result.error)
       setImportResult(result)
@@ -472,6 +497,10 @@ Rules:
             <p className="text-xs text-white/40">{totalDogs} perros · {totalDogs - swappedCount} nuevos · {swappedCount} existentes</p>
           </div>
           <div className="flex items-center gap-3">
+            <select value={overrideBreed} onChange={e => setOverrideBreed(e.target.value)} className="bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white/70 focus:border-[#D74709] focus:outline-none appearance-none cursor-pointer max-w-[160px]">
+              <option value="">Sin raza</option>
+              {allBreeds.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
+            </select>
             <label className="flex items-center gap-1.5 text-xs text-white/50 cursor-pointer">
               <input type="checkbox" checked={importPhotos} onChange={e => setImportPhotos(e.target.checked)} className="w-3.5 h-3.5 rounded border-white/20 bg-white/5 text-[#D74709] focus:ring-0" />Fotos
             </label>

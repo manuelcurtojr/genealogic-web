@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-    const { mainDog, ancestors, userId, kennelId, swaps, importPhotos, isAdmin } = await request.json()
+    const { mainDog, ancestors, userId, kennelId, swaps, importPhotos, isAdmin, overrideBreed } = await request.json()
     if (!mainDog) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
 
     // Ensure userId matches authenticated user
@@ -67,9 +67,11 @@ export async function POST(request: NextRequest) {
       const parsedDate = dog.birth_date && dog.birth_date.length >= 4 ? (dog.birth_date.length === 4 ? `${dog.birth_date}-01-01` : dog.birth_date) : null
 
       const isMainDog = dog.generation === 0
+      // Use dog's own breed, fall back to overrideBreed or main dog's breed
+      const breedName = dog.breed || overrideBreed || mainDog.breed
       const { data: created } = await supabase.from('dogs').insert({
         name: dog.name, sex: dog.sex === 'Female' ? 'female' : 'male',
-        registration: dog.registration || null, breed_id: findBreed(dog.breed), color_id: findColor(dog.color),
+        registration: dog.registration || null, breed_id: findBreed(breedName), color_id: findColor(dog.color),
         birth_date: parsedDate, father_id: fatherId, mother_id: motherId,
         kennel_id: (isMainDog && !isAdmin) ? (kennelId || null) : null,
         owner_id: (isMainDog && !isAdmin) ? safeUserId : null,
