@@ -469,6 +469,22 @@ Rules:
             )}
           </div>
         </div>
+        {/* Legend */}
+        <div className="flex items-center gap-5 px-6 py-2 border-b border-white/5 bg-gray-900/50 flex-shrink-0">
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded border-2 border-[#D74709] bg-[#D74709]/20 flex items-center justify-center"><Link2 className="w-2 h-2 text-[#D74709]" /></div>
+            <span className="text-[10px] text-white/40">Registrado — ya existe, su genealogia es la de la plataforma</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded border-2 border-blue-400/60 bg-blue-400/10" />
+            <span className="text-[10px] text-white/40">Cambiado — sustituido manualmente por otro perro</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded border border-white/20 bg-white/5" />
+            <span className="text-[10px] text-white/40">Nuevo — se creara como contribucion al importar</span>
+          </div>
+          <span className="text-[10px] text-white/20 ml-auto">Haz clic en cualquier perro para cambiarlo</span>
+        </div>
         {error && <div className="mx-6 mt-3 bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
         <div className="flex-1 overflow-auto relative" onClick={() => { setGenMenu(false); setZoomMenu(false) }}>
           <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}>
