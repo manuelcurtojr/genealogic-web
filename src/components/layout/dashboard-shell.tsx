@@ -211,7 +211,7 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
       />
 
       {/* Mobile top bar */}
-      <div className={`lg:hidden fixed top-0 left-0 right-0 h-14 ${headerBg} border-b flex items-center gap-3 px-4 z-30 transition-colors duration-300`}>
+      <div className={`lg:hidden fixed top-0 left-0 right-0 h-14 ${headerBg} border-b flex items-center gap-3 px-4 z-40 transition-colors duration-300`}>
         <button onClick={() => setMobileOpen(true)} className={`${iconColor} transition shrink-0`}>
           <Menu className="w-6 h-6" />
         </button>
@@ -225,7 +225,7 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
 
       {/* Desktop header */}
       <div
-        className={`hidden lg:flex fixed top-0 right-0 h-14 ${headerBg} border-b items-center px-6 z-20 transition-all duration-300`}
+        className={`hidden lg:flex fixed top-0 right-0 h-14 ${headerBg} border-b items-center px-6 z-40 transition-all duration-300`}
         style={{ left: sidebarWidth }}
       >
         <div className="flex-1 mr-4">
@@ -256,7 +256,7 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
       </div>
 
       {/* Main content */}
-      <main className="p-4 pt-18 lg:pt-[74px] transition-all duration-300">
+      <main className="p-4 pt-18 lg:pt-[74px] transition-all duration-300 relative z-0">
         <div className={`transition-all duration-300 ${collapsed ? 'lg:ml-[68px]' : 'lg:ml-64'} lg:px-[30px] lg:py-[30px]`}>
           <UpgradePrompts userRole={user?.role || 'free'} />
           {children}
