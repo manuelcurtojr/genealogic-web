@@ -46,31 +46,7 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported }: Prop
   const [uploadingImage, setUploadingImage] = useState(false)
   const [scanPhase, setScanPhase] = useState('')
 
-  const LIGHT_EXTRACTION_PROMPT = `You are a dog pedigree data extractor. Extract ONLY the main dog, its parents (generation 1), and its grandparents (generation 2). Do NOT extract deeper ancestors.
-
-Return JSON:
-{
-  "main_dog": {
-    "name": "string", "sex": "Male" or "Female", "registration": "string or null",
-    "breed": "string or null", "color": "string or null", "birth_date": "YYYY-MM-DD or YYYY or null",
-    "health": "string or null", "breeder": "string or null", "owner": "string or null",
-    "photo_url": "string or null", "father_name": "exact name or null", "mother_name": "exact name or null"
-  },
-  "ancestors": [
-    { "name": "string", "sex": "Male" or "Female", "registration": "string or null",
-      "breed": "string or null", "color": "string or null", "birth_date": "string or null",
-      "health": "string or null", "photo_url": "string or null",
-      "father_name": "string or null", "mother_name": "string or null",
-      "generation": 1 or 2 }
-  ]
-}
-
-Rules:
-- Extract ONLY up to grandparents (generation 2). Stop there.
-- Names must be EXACT. father_name/mother_name must match another dog's name.
-- Return ONLY JSON, no markdown.`
-
-  const FULL_EXTRACTION_PROMPT = `You are a dog pedigree data extractor. Extract the complete pedigree information from this content.
+  const EXTRACTION_PROMPT = `You are a dog pedigree data extractor. Extract the complete pedigree information from this content.
 
 Return a JSON object with this EXACT structure:
 {
@@ -164,60 +140,6 @@ Rules:
     }
   }
 
-  async function verifyParentInDB(parentName: string, grandFatherName: string | null, grandMotherName: string | null): Promise<{ id: string; name: string; sex: string; photo: string | null; breed: string | null; father: { id: string; name: string } | null; mother: { id: string; name: string } | null } | null> {
-    const supabase = createClient()
-    // Search globally — grandparent verification prevents false positives with homonyms
-    const { data: candidates } = await supabase
-      .from('dogs').select('id, name, sex, thumbnail_url, father_id, mother_id, breed:breeds(name)')
-      .ilike('name', parentName).limit(10)
-    if (!candidates?.length) return null
-
-    const norm = (s: string | null) => s?.toLowerCase().trim() || ''
-
-    // First pass: try exact grandparent match (strongest verification)
-    for (const c of candidates) {
-      if (!c.father_id && !c.mother_id) continue // skip candidates with no parents — handle in second pass
-      let dbFatherName: string | null = null
-      let dbMotherName: string | null = null
-      if (c.father_id) {
-        const { data: f } = await supabase.from('dogs').select('name').eq('id', c.father_id).single()
-        dbFatherName = f?.name || null
-      }
-      if (c.mother_id) {
-        const { data: m } = await supabase.from('dogs').select('name').eq('id', c.mother_id).single()
-        dbMotherName = m?.name || null
-      }
-      if (norm(grandFatherName) === norm(dbFatherName) && norm(grandMotherName) === norm(dbMotherName)) {
-        return {
-          id: c.id, name: c.name, sex: c.sex, photo: c.thumbnail_url, breed: (c.breed as any)?.name || null,
-          father: c.father_id && dbFatherName ? { id: c.father_id, name: dbFatherName } : null,
-          mother: c.mother_id && dbMotherName ? { id: c.mother_id, name: dbMotherName } : null,
-        }
-      }
-    }
-
-    // Second pass: if only one candidate exists with that name and has no parents in DB, accept it
-    // (no grandparent data to verify against, but name is unique enough)
-    if (candidates.length === 1 && !candidates[0].father_id && !candidates[0].mother_id) {
-      const c = candidates[0]
-      return {
-        id: c.id, name: c.name, sex: c.sex, photo: c.thumbnail_url, breed: (c.breed as any)?.name || null,
-        father: null, mother: null,
-      }
-    }
-    return null
-  }
-
-  function buildAutoSwaps(
-    fatherName: string | null, fatherMatch: any | null,
-    motherName: string | null, motherMatch: any | null,
-  ) {
-    const autoSwaps: Record<string, any> = {}
-    if (fatherMatch && fatherName) autoSwaps[fatherName] = { id: fatherMatch.id, name: fatherMatch.name, breed: fatherMatch.breed, photo: fatherMatch.photo, linked: true, father_name: fatherMatch.father?.name || null, mother_name: fatherMatch.mother?.name || null }
-    if (motherMatch && motherName) autoSwaps[motherName] = { id: motherMatch.id, name: motherMatch.name, breed: motherMatch.breed, photo: motherMatch.photo, linked: true, father_name: motherMatch.father?.name || null, mother_name: motherMatch.mother?.name || null }
-    return autoSwaps
-  }
-
   function extractImageUrls(html: string): string[] {
     const urls: string[] = []
     const regex = /<img[^>]+src=["']([^"']+)["']/gi
@@ -229,14 +151,71 @@ Rules:
     return urls
   }
 
+  // After extraction, find all dogs that already exist in the DB and auto-link them
+  async function findExistingDogs(pedigreeData: PedigreeData): Promise<{ autoSwaps: Record<string, any>; linked: Map<string, ImportDog[]> }> {
+    const supabase = createClient()
+    const allDogs = [pedigreeData.main_dog, ...(pedigreeData.ancestors || [])]
+    const autoSwaps: Record<string, any> = {}
+    const linked = new Map<string, ImportDog[]>()
+
+    for (const dog of allDogs) {
+      if (dog === pedigreeData.main_dog) continue // skip the main dog — it's the one being imported
+      const { data: candidates } = await supabase
+        .from('dogs').select('id, name, sex, thumbnail_url, father_id, mother_id, breed:breeds(name)')
+        .ilike('name', dog.name).limit(5)
+      if (!candidates?.length) continue
+
+      // Match: prefer candidate with matching parents, fall back to unique name
+      let match = null
+      const norm = (s: string | null) => s?.toLowerCase().trim() || ''
+
+      for (const c of candidates) {
+        if (!c.father_id && !c.mother_id) continue
+        let dbFN: string | null = null, dbMN: string | null = null
+        if (c.father_id) { const { data: f } = await supabase.from('dogs').select('name').eq('id', c.father_id).single(); dbFN = f?.name || null }
+        if (c.mother_id) { const { data: m } = await supabase.from('dogs').select('name').eq('id', c.mother_id).single(); dbMN = m?.name || null }
+        if (norm(dog.father_name) === norm(dbFN) && norm(dog.mother_name) === norm(dbMN)) { match = c; break }
+      }
+      if (!match && candidates.length === 1 && !candidates[0].father_id && !candidates[0].mother_id) {
+        match = candidates[0]
+      }
+
+      if (match) {
+        // Fetch real pedigree from DB
+        const { data: nodes } = await supabase.rpc('get_pedigree', { dog_uuid: match.id, max_gen: 10 })
+        const rootNode = (nodes || []).find((n: any) => n.generation === 0)
+        const dbFatherName = rootNode?.father_id ? (nodes || []).find((n: any) => n.id === rootNode.father_id)?.name || null : null
+        const dbMotherName = rootNode?.mother_id ? (nodes || []).find((n: any) => n.id === rootNode.mother_id)?.name || null : null
+
+        autoSwaps[dog.name] = {
+          id: match.id, name: match.name, breed: (match.breed as any)?.name || null,
+          photo: match.thumbnail_url, linked: true,
+          father_name: dbFatherName, mother_name: dbMotherName,
+        }
+
+        if (nodes?.length) {
+          const dbAnc = (nodes || []).filter((n: any) => n.generation > 0).map((n: any) => ({
+            name: n.name, sex: n.sex === 'female' ? 'Female' : 'Male',
+            registration: n.registration, breed: n.breed_name, color: n.color_name,
+            birth_date: null, health: null, photo_url: n.photo_url,
+            father_name: (nodes || []).find((p: any) => p.id === n.father_id)?.name || null,
+            mother_name: (nodes || []).find((p: any) => p.id === n.mother_id)?.name || null,
+            generation: n.generation,
+          }))
+          linked.set(dog.name, dbAnc)
+        }
+      }
+    }
+    return { autoSwaps, linked }
+  }
+
   async function handleScan() {
     if (!url.trim()) return
-    setScanning(true); setError(''); setData(null); setSwaps({}); setScanPhase('Obteniendo datos...')
+    setScanning(true); setError(''); setData(null); setSwaps({}); setScanPhase('Accediendo a la web...')
     try {
       const apiKey = await getApiKey()
 
       // Fetch HTML via proxy
-      setScanPhase('Accediendo a la web...')
       let html: string | null = null
       try {
         const proxyRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(url.trim())}`, { signal: AbortSignal.timeout(15000) })
@@ -248,70 +227,26 @@ Rules:
       if (!html) throw new Error('No se pudo acceder a la página. Intenta con otra URL o sube un screenshot.')
 
       const imgUrls = extractImageUrls(html)
-      const htmlContent = `${LIGHT_EXTRACTION_PROMPT}\n\n--- PAGE HTML ---\n${html}\n\n--- IMAGE URLS FOUND ---\n${imgUrls.slice(0, 10).join('\n')}`
 
-      // Step 1: Light extraction (main dog + parents + grandparents only)
+      // Single Claude call — full extraction
       setScanPhase('Analizando pedigrí con IA...')
-      const lightData = await callClaude(apiKey, [{ role: 'user', content: htmlContent }], 4000)
+      const pedigreeData = await callClaude(apiKey, [{
+        role: 'user',
+        content: `${EXTRACTION_PROMPT}\n\n--- PAGE HTML ---\n${html}\n\n--- IMAGE URLS FOUND ---\n${imgUrls.slice(0, 10).join('\n')}`,
+      }])
 
-      if (!lightData?.main_dog?.name) {
+      if (!pedigreeData?.main_dog?.name) {
         setError('No se pudo extraer datos de esta web. Prueba a subir un screenshot manual del pedigrí.')
         setScanning(false); setScanPhase(''); return
       }
 
-      // Step 2: Verify parents against DB
-      setScanPhase('Verificando ancestros existentes...')
-      const { father_name, mother_name } = lightData.main_dog
-      const ancestors = lightData.ancestors || []
-      const fatherDog = father_name ? ancestors.find(a => a.name === father_name) : null
-      const motherDog = mother_name ? ancestors.find(a => a.name === mother_name) : null
+      // Post-processing: find existing dogs in DB and auto-link them
+      setScanPhase('Verificando perros existentes...')
+      const { autoSwaps, linked } = await findExistingDogs(pedigreeData)
 
-      const [fatherMatch, motherMatch] = await Promise.all([
-        father_name ? verifyParentInDB(father_name, fatherDog?.father_name || null, fatherDog?.mother_name || null) : null,
-        mother_name ? verifyParentInDB(mother_name, motherDog?.father_name || null, motherDog?.mother_name || null) : null,
-      ])
-
-      const bothParentsResolved = (!father_name || !!fatherMatch) && (!mother_name || !!motherMatch)
-
-      let finalData: PedigreeData
-      if (bothParentsResolved) {
-        // FAST PATH: Parents already in DB, skip full extraction
-        finalData = lightData
-      } else {
-        // FULL PATH: Need deeper ancestors
-        setScanPhase('Extrayendo árbol completo...')
-        const fullContent = `${FULL_EXTRACTION_PROMPT}\n\n--- PAGE HTML ---\n${html}\n\n--- IMAGE URLS FOUND ---\n${imgUrls.slice(0, 10).join('\n')}`
-        finalData = await callClaude(apiKey, [{ role: 'user', content: fullContent }], 8000)
-        if (!finalData?.main_dog?.name) {
-          setError('No se pudo extraer el pedigrí completo.')
-          setScanning(false); setScanPhase(''); return
-        }
-      }
-
-      const autoSwaps = buildAutoSwaps(father_name, fatherMatch, mother_name, motherMatch)
-
-      // Load full pedigrees for auto-matched parents
-      const linked = new Map<string, ImportDog[]>()
-      const supabase = createClient()
-      for (const [dogName, swap] of Object.entries(autoSwaps)) {
-        if (!swap.linked) continue
-        const { data: nodes } = await supabase.rpc('get_pedigree', { dog_uuid: swap.id, max_gen: 10 })
-        if (nodes?.length) {
-          const dbAnc = nodes.filter((n: any) => n.generation > 0).map((n: any) => ({
-            name: n.name, sex: n.sex === 'female' ? 'Female' : 'Male',
-            registration: n.registration, breed: n.breed_name, color: n.color_name,
-            birth_date: null, health: null, photo_url: n.photo_url,
-            father_name: nodes.find((p: any) => p.id === n.father_id)?.name || null,
-            mother_name: nodes.find((p: any) => p.id === n.mother_id)?.name || null,
-            generation: n.generation,
-          }))
-          linked.set(dogName, dbAnc)
-        }
-      }
-
-      setData(finalData)
-      setEditedMain(finalData.main_dog)
-      setEditedAncestors(finalData.ancestors || [])
+      setData(pedigreeData)
+      setEditedMain(pedigreeData.main_dog)
+      setEditedAncestors(pedigreeData.ancestors || [])
       setSwaps(autoSwaps)
       setLinkedAncestors(linked)
       setShowPreview(true)
@@ -331,68 +266,25 @@ Rules:
         reader.onerror = reject
         reader.readAsDataURL(file)
       })
-      const imageContent = [
-        { type: 'image' as const, source: { type: 'base64' as const, media_type: 'image/jpeg' as const, data: base64 } },
-      ]
 
-      // Step 1: Light extraction
-      const lightData = await callClaude(apiKey, [{
+      // Single Claude call — full extraction from image
+      const pedigreeData = await callClaude(apiKey, [{
         role: 'user',
-        content: [...imageContent, { type: 'text' as const, text: LIGHT_EXTRACTION_PROMPT }],
-      }], 4000)
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+          { type: 'text', text: EXTRACTION_PROMPT },
+        ],
+      }])
 
-      if (!lightData?.main_dog?.name) { setError('No se pudo extraer datos de la imagen.'); setUploadingImage(false); setScanPhase(''); return }
+      if (!pedigreeData?.main_dog?.name) { setError('No se pudo extraer datos de la imagen.'); setUploadingImage(false); setScanPhase(''); return }
 
-      // Step 2: Verify parents
-      setScanPhase('Verificando ancestros existentes...')
-      const { father_name, mother_name } = lightData.main_dog
-      const ancestors = lightData.ancestors || []
-      const fatherDog = father_name ? ancestors.find(a => a.name === father_name) : null
-      const motherDog = mother_name ? ancestors.find(a => a.name === mother_name) : null
+      // Post-processing: find existing dogs in DB
+      setScanPhase('Verificando perros existentes...')
+      const { autoSwaps, linked } = await findExistingDogs(pedigreeData)
 
-      const [fatherMatch, motherMatch] = await Promise.all([
-        father_name ? verifyParentInDB(father_name, fatherDog?.father_name || null, fatherDog?.mother_name || null) : null,
-        mother_name ? verifyParentInDB(mother_name, motherDog?.father_name || null, motherDog?.mother_name || null) : null,
-      ])
-
-      const bothParentsResolved = (!father_name || !!fatherMatch) && (!mother_name || !!motherMatch)
-
-      let finalData: PedigreeData
-      if (bothParentsResolved) {
-        finalData = lightData
-      } else {
-        setScanPhase('Extrayendo árbol completo...')
-        finalData = await callClaude(apiKey, [{
-          role: 'user',
-          content: [...imageContent, { type: 'text' as const, text: FULL_EXTRACTION_PROMPT }],
-        }], 8000)
-        if (!finalData?.main_dog?.name) { setError('No se pudo extraer el pedigrí completo.'); setUploadingImage(false); setScanPhase(''); return }
-      }
-
-      const autoSwaps = buildAutoSwaps(father_name, fatherMatch, mother_name, motherMatch)
-
-      // Load full pedigrees for auto-matched parents
-      const linked = new Map<string, ImportDog[]>()
-      const supabase = createClient()
-      for (const [dogName, swap] of Object.entries(autoSwaps)) {
-        if (!swap.linked) continue
-        const { data: nodes } = await supabase.rpc('get_pedigree', { dog_uuid: swap.id, max_gen: 10 })
-        if (nodes?.length) {
-          const dbAnc = nodes.filter((n: any) => n.generation > 0).map((n: any) => ({
-            name: n.name, sex: n.sex === 'female' ? 'Female' : 'Male',
-            registration: n.registration, breed: n.breed_name, color: n.color_name,
-            birth_date: null, health: null, photo_url: n.photo_url,
-            father_name: nodes.find((p: any) => p.id === n.father_id)?.name || null,
-            mother_name: nodes.find((p: any) => p.id === n.mother_id)?.name || null,
-            generation: n.generation,
-          }))
-          linked.set(dogName, dbAnc)
-        }
-      }
-
-      setData(finalData)
-      setEditedMain(finalData.main_dog)
-      setEditedAncestors(finalData.ancestors || [])
+      setData(pedigreeData)
+      setEditedMain(pedigreeData.main_dog)
+      setEditedAncestors(pedigreeData.ancestors || [])
       setSwaps(autoSwaps)
       setLinkedAncestors(linked)
       setShowPreview(true)
