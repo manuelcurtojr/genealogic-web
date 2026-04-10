@@ -145,11 +145,12 @@ Rules:
     try { return JSON.parse(jsonStr) } catch { throw new Error('No se pudo interpretar la respuesta de la IA') }
   }
 
-  async function verifyParentInDB(parentName: string, grandFatherName: string | null, grandMotherName: string | null): Promise<{ id: string; name: string; sex: string; photo: string | null; breed: string | null } | null> {
+  async function verifyParentInDB(parentName: string, grandFatherName: string | null, grandMotherName: string | null): Promise<{ id: string; name: string; sex: string; photo: string | null; breed: string | null; father: { id: string; name: string } | null; mother: { id: string; name: string } | null } | null> {
     const supabase = createClient()
+    // Search globally — grandparent verification prevents false positives with homonyms
     const { data: candidates } = await supabase
       .from('dogs').select('id, name, sex, thumbnail_url, father_id, mother_id, breed:breeds(name)')
-      .eq('owner_id', userId).ilike('name', parentName).limit(5)
+      .ilike('name', parentName).limit(10)
     if (!candidates?.length) return null
 
     for (const c of candidates) {
@@ -165,7 +166,11 @@ Rules:
       }
       const norm = (s: string | null) => s?.toLowerCase().trim() || ''
       if (norm(grandFatherName) === norm(dbFatherName) && norm(grandMotherName) === norm(dbMotherName)) {
-        return { id: c.id, name: c.name, sex: c.sex, photo: c.thumbnail_url, breed: (c.breed as any)?.name || null }
+        return {
+          id: c.id, name: c.name, sex: c.sex, photo: c.thumbnail_url, breed: (c.breed as any)?.name || null,
+          father: c.father_id && dbFatherName ? { id: c.father_id, name: dbFatherName } : null,
+          mother: c.mother_id && dbMotherName ? { id: c.mother_id, name: dbMotherName } : null,
+        }
       }
     }
     return null
@@ -663,7 +668,7 @@ function Card({ dog, swaps, isRoot, onSwap, onRemoveSwap }: { dog: ImportDog; sw
     : isSwapped
       ? 'border-2 border-blue-400/60 bg-blue-400/5'
       : isRoot
-        ? 'border-2 border-[#D74709] bg-white/[0.04]'
+        ? 'border-2 border-white/30 bg-white/[0.06]'
         : 'border border-white/10 bg-white/[0.04]'
   return (
     <div className="relative" style={{ width: CW, flexShrink: 0 }}>
