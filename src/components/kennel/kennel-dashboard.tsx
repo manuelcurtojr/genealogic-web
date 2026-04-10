@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Edit, Globe, Calendar, Dog, Camera, Search, Grid3X3, List, Eye, EyeOff,
-  Loader2, ExternalLink, Settings, Baby, Heart, ArrowRightLeft, Tag, FileText
+  Loader2, ExternalLink, Settings, Baby, Heart, ArrowRightLeft, Tag, FileText, ShieldCheck
 } from 'lucide-react'
 import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 import SortSelect, { useSortPreference, sortItems } from '@/components/ui/sort-select'
@@ -292,7 +292,7 @@ function DogCard({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; user
       <div className="p-2.5 sm:p-3">
         <Link href={`/dogs/${dog.slug || dog.id}`} className="flex items-center gap-1.5 group-hover:text-[#D74709] transition">
           <span className="text-sm font-semibold truncate">{dog.name}</span>
-          <span className="text-xs" style={{ color: sexColor }}>{sexIcon}</span>
+          {(dog as any).is_verified && <div className="relative group/tip flex-shrink-0"><ShieldCheck className="w-3.5 h-3.5 text-blue-400" /><div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-gray-800 border border-white/10 rounded text-[10px] text-white/70 whitespace-nowrap opacity-0 group-hover/tip:opacity-100 transition pointer-events-none shadow-lg">Verificado con microchip y pedigri oficial</div></div>}
         </Link>
         <div className="flex items-center gap-3 mt-1.5 text-[11px] text-white/35">
           {dog.birth_date && <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}

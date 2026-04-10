@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Search, Dog, Filter, X, Tag, MapPin, Home, ChevronDown } from 'lucide-react'
+import { Search, Dog, Filter, X, Tag, MapPin, Home, ChevronDown, ShieldCheck } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { getLocalizedCountries } from '@/lib/countries'
 
@@ -159,7 +159,7 @@ function DogsSearch() {
                 <div className="p-2 sm:p-3">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs sm:text-sm font-semibold truncate group-hover:text-[#D74709] transition">{dog.name}</span>
-                    <span className="text-xs" style={{ color: sexColor }}>{sexIcon}</span>
+                    {(dog as any).is_verified && <ShieldCheck className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />}
                   </div>
                   <div className="flex items-center gap-2 mt-1 text-[11px] text-white/35">
                     {dog.birth_date && <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })}</span>}

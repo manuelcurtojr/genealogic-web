@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Globe, Calendar, Dog, ExternalLink, Heart, Tag, Baby } from 'lucide-react'
+import { ArrowLeft, Globe, Calendar, Dog, ExternalLink, Heart, Tag, Baby, ShieldCheck } from 'lucide-react'
 import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 import { BRAND } from '@/lib/constants'
 import { isUUID } from '@/lib/slug'
@@ -44,7 +44,7 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
   // Fetch kennel dogs (all visible unless explicitly hidden)
   const { data: allDogs } = await supabase
     .from('dogs')
-    .select('id, name, sex, thumbnail_url, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, breed:breeds(name)')
+    .select('id, name, sex, thumbnail_url, is_verified, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, breed:breeds(name)')
     .eq('kennel_id', kennel.id)
     .or('show_in_kennel.is.null,show_in_kennel.eq.true')
     .order('name')
@@ -233,7 +233,7 @@ function PublicDogCard({ dog }: { dog: any }) {
       <div className="p-2.5">
         <div className="flex items-center gap-1">
           <p className="text-sm font-semibold truncate group-hover:text-[#D74709] transition">{dog.name}</p>
-          <span className="text-xs" style={{ color: sexColor }}>{sexIcon}</span>
+          {(dog as any).is_verified && <ShieldCheck className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />}
         </div>
         {dog.breed?.name && <p className="text-[11px] text-white/40 truncate">{dog.breed.name}</p>}
       </div>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Heart, Dog, Grid3X3, List, Eye } from 'lucide-react'
+import { Heart, Dog, Grid3X3, List, Eye, ShieldCheck } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import FavoriteButton from '@/components/dogs/favorite-button'
 
@@ -66,7 +66,7 @@ export default function FavoritesClient({ dogs }: FavoritesClientProps) {
                 <div className="p-2 sm:p-3">
                   <Link href={`/dogs/${dog.slug || dog.id}`} className="flex items-center gap-1.5 group-hover:text-[#D74709] transition">
                     <span className="text-xs sm:text-sm font-semibold truncate">{dog.name}</span>
-                    <span className="text-xs" style={{ color: sexColor }}>{sexIcon}</span>
+                    {(dog as any).is_verified && <ShieldCheck className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />}
                   </Link>
                   <div className="flex items-center gap-3 mt-1.5 text-[10px] sm:text-[11px] text-white/35">
                     {dog.birth_date && <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
