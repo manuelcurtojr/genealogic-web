@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { X, Bell, Calendar, Stethoscope, Trophy, UserPlus, HandCoins, Loader2, Check } from 'lucide-react'
+import { X, Bell, Calendar, Stethoscope, Trophy, UserPlus, HandCoins, Loader2, Check, Link2 } from 'lucide-react'
 
 interface Notification {
   id: string
@@ -26,6 +26,8 @@ function getNotifIcon(type: string) {
     case 'award': return Trophy
     case 'contact': return UserPlus
     case 'deal': return HandCoins
+    case 'import': return Link2
+    case 'import_draft': return Link2
     default: return Bell
   }
 }
@@ -37,6 +39,8 @@ function getNotifColor(type: string) {
     case 'contact': return 'bg-green-500/15 text-green-400'
     case 'deal': return 'bg-orange-500/15 text-orange-400'
     case 'award': return 'bg-yellow-500/15 text-yellow-400'
+    case 'import': return 'bg-[#D74709]/15 text-[#D74709]'
+    case 'import_draft': return 'bg-yellow-500/15 text-yellow-400'
     default: return 'bg-white/10 text-white/40'
   }
 }
@@ -171,7 +175,7 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
                           <p className={`text-sm font-medium ${notif.is_read ? 'text-white/60' : 'text-white'}`}>{notif.title}</p>
                           {!notif.is_read && <div className="w-2 h-2 rounded-full bg-[#D74709] flex-shrink-0" />}
                         </div>
-                        <p className="text-xs text-white/40 mt-0.5">{notif.message}</p>
+                        <p className="text-xs text-white/40 mt-0.5">{notif.type === 'import' ? (() => { try { const p = JSON.parse(notif.message); return `${p.createdIds?.length || 0} perros importados` } catch { return '' } })() : notif.type === 'import_draft' ? 'Borrador pendiente de confirmar' : notif.message}</p>
                         <p className="text-[11px] text-white/25 mt-1">{timeAgo(notif.created_at)}</p>
                       </div>
                     </div>
