@@ -274,12 +274,22 @@ function KennelDuplicateDetector() {
 
     const kennelsWithCount = (kennels || []).map(k => ({ ...k, dogCount: dogCounts.get(k.id) || 0 }))
 
-    // Group by normalized name
+    // Core name: strip numbers, asterisks, parenthesized suffixes, punctuation → just the key words
+    function coreName(s: string): string {
+      return normName(s)
+        .replace(/\([^)]*\)/g, '') // remove (2000), (abc), etc.
+        .replace(/[*"_.,:;!?#]/g, '') // remove punctuation/asterisks
+        .replace(/\d+/g, '') // remove numbers
+        .replace(/\s+/g, ' ').trim()
+    }
+
+    // Group by core name — catches "Irema Curtó", "IREMA CURTO (2000)", "IREMA CURTO*", "Irema Cutó"
     const nameGroups = new Map<string, KennelRow[]>()
     for (const k of kennelsWithCount) {
-      const norm = normName(k.name)
-      if (!nameGroups.has(norm)) nameGroups.set(norm, [])
-      nameGroups.get(norm)!.push(k)
+      const core = coreName(k.name)
+      if (core.length < 3) continue // skip empty/tiny names
+      if (!nameGroups.has(core)) nameGroups.set(core, [])
+      nameGroups.get(core)!.push(k)
     }
 
     const duplicates: KennelDuplicateGroup[] = []
