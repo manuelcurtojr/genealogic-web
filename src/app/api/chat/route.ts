@@ -27,17 +27,23 @@ export async function POST(request: NextRequest) {
     if (!apiKeyData?.value) return Response.json({ error: 'API key not configured' }, { status: 500 })
 
     // Fetch user context for system prompt
-    const [profileRes, dogsRes, kennelRes, littersRes] = await Promise.all([
+    const [profileRes, dogsRes, kennelRes, littersRes, unreadRes] = await Promise.all([
       supabase.from('profiles').select('display_name, role').eq('id', userId).single(),
       supabase.from('dogs').select('id, name, sex, birth_date, breed:breeds(name), is_for_sale').eq('owner_id', userId).order('name').limit(100),
       supabase.from('kennels').select('id, name, country, city, breed_ids').eq('owner_id', userId).single(),
       supabase.from('litters').select('id').eq('owner_id', userId),
+      supabase.from('conversations')
+        .select('unread_owner, unread_participant, owner_id')
+        .or(`owner_id.eq.${userId},participant_id.eq.${userId}`),
     ])
 
     const profile = profileRes.data
     const dogs = dogsRes.data || []
     const kennel = kennelRes.data
     const litterCount = littersRes.data?.length || 0
+    const unreadMessages = (unreadRes.data || []).reduce((sum, c) => {
+      return sum + (c.owner_id === userId ? (c.unread_owner || 0) : (c.unread_participant || 0))
+    }, 0)
 
     const systemPrompt = buildSystemPrompt({
       displayName: profile?.display_name || user.email || 'Usuario',
@@ -46,6 +52,7 @@ export async function POST(request: NextRequest) {
       kennelName: kennel?.name || null,
       kennelId: kennel?.id || null,
       litterCount,
+      unreadMessages,
     })
 
     // Build messages from history
@@ -125,6 +132,53 @@ export async function POST(request: NextRequest) {
           info += `\n- Padre: ${father}\n- Madre: ${mother}`
           if (dog.is_for_sale) info += `\n- EN VENTA: ${dog.sale_price ? `${dog.sale_price} ${dog.sale_currency || 'EUR'}` : 'Consultar precio'}`
           return info
+        }
+        case 'get_my_conversations': {
+          const { data: convs } = await supabase
+            .from('conversations')
+            .select('id, participant_name, participant_email, last_message_at, last_message_preview, unread_owner, unread_participant, owner_id, contact:contacts(name)')
+            .or(`owner_id.eq.${userId},participant_id.eq.${userId}`)
+            .order('last_message_at', { ascending: false })
+            .limit(15)
+          if (!convs?.length) return 'No tienes conversaciones en la Bandeja.'
+          return convs.map(c => {
+            const contactName = (c.contact as any)?.name || c.participant_name || c.participant_email || 'Desconocido'
+            const unread = c.owner_id === userId ? (c.unread_owner || 0) : (c.unread_participant || 0)
+            const date = c.last_message_at ? new Date(c.last_message_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''
+            const preview = c.last_message_preview ? (c.last_message_preview.length > 50 ? c.last_message_preview.slice(0, 48) + '…' : c.last_message_preview) : '(sin mensajes)'
+            return `- ${contactName}${unread > 0 ? ` [${unread} sin leer]` : ''} — ${preview} (${date})`
+          }).join('\n')
+        }
+        case 'get_my_alerts': {
+          const { data: alerts } = await supabase
+            .from('notifications')
+            .select('id, type, title, body, is_read, created_at')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(10)
+          if (!alerts?.length) return 'No tienes notificaciones recientes.'
+          return alerts.map(a => {
+            const date = new Date(a.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+            const readIcon = a.is_read ? '✓' : '●'
+            return `${readIcon} ${date}: ${a.title || a.type}${a.body ? ' — ' + a.body : ''}`
+          }).join('\n')
+        }
+        case 'get_my_plan': {
+          const role = profile?.role || 'free'
+          const planName = role === 'amateur' ? 'Amateur' : role === 'pro' ? 'Profesional' : role === 'admin' ? 'Admin' : 'Propietario (gratuito)'
+          const maxDogs = role === 'free' ? 5 : role === 'amateur' ? 25 : '∞'
+          const maxLitters = role === 'free' ? 0 : role === 'amateur' ? 3 : '∞'
+          const features = []
+          features.push(`Plan: ${planName}`)
+          features.push(`Perros: ${dogs.length} / ${maxDogs}`)
+          features.push(`Camadas: ${litterCount} / ${maxLitters}`)
+          features.push(`Criadero: ${role === 'free' ? 'No incluido' : kennel ? kennel.name : 'No creado'}`)
+          features.push(`CRM: ${role === 'pro' || role === 'admin' ? 'Sí' : 'No incluido'}`)
+          features.push(`Planificador: ${role !== 'free' ? 'Sí' : 'No incluido'}`)
+          features.push(`Analíticas: ${role === 'pro' || role === 'admin' ? 'Avanzadas' : role === 'amateur' ? 'Básicas' : 'No incluido'}`)
+          features.push(`Importador IA: ${role === 'pro' || role === 'admin' ? 'Sí' : 'No incluido'}`)
+          if (role === 'free') features.push(`\nPara desbloquear más funciones, visita /pricing`)
+          return features.join('\n')
         }
         default:
           return 'Herramienta no disponible.'

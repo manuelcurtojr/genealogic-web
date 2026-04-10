@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     if (!deal) return Response.json({ error: 'Deal not found' }, { status: 404 })
 
-    const [stageRes, contactRes, activitiesRes] = await Promise.all([
+    const [stageRes, contactRes, activitiesRes, conversationRes] = await Promise.all([
       deal.stage_id
         ? supabase.from('pipeline_stages').select('name').eq('id', deal.stage_id).single()
         : Promise.resolve({ data: null }),
@@ -29,11 +29,15 @@ export async function POST(request: NextRequest) {
         ? supabase.from('contacts').select('name, email, phone, city, country').eq('id', deal.contact_id).single()
         : Promise.resolve({ data: null }),
       supabase.from('deal_activities').select('type, content, is_completed, created_at').eq('deal_id', dealId).order('created_at'),
+      deal.contact_id
+        ? supabase.from('conversations').select('id, last_message_preview').eq('contact_id', deal.contact_id).limit(1).single()
+        : Promise.resolve({ data: null }),
     ])
 
     const stage = stageRes.data
     const contact = contactRes.data
     const activities = activitiesRes.data || []
+    const conversation = conversationRes.data
 
     // Build context
     const lines: string[] = []
@@ -51,6 +55,9 @@ export async function POST(request: NextRequest) {
         lines.push(`${prefix} ${date}: ${act.content || '(sin contenido)'}`)
       }
     }
+    if (conversation?.last_message_preview) {
+      lines.push(`\nÚltimo mensaje en Bandeja: "${conversation.last_message_preview}"`)
+    }
 
     // Get API key
     const admin = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
@@ -63,7 +70,7 @@ export async function POST(request: NextRequest) {
       model: 'claude-sonnet-4-20250514',
       max_tokens: 300,
       messages: [{ role: 'user', content: lines.join('\n') }],
-      system: `Eres Genos, el asistente de Genealogic (plataforma de crianza canina). Resume este negocio del CRM en 2-3 frases cortas en espanol. Incluye: quien es el contacto, que busca, en que etapa esta, y que acciones se han tomado. Se conciso y directo. No uses encabezados ni listas, solo un parrafo corto.`,
+      system: `Eres Genos, el asistente IA de Genealogic — plataforma de gestión para criadores y propietarios de perros de raza. Resume este negocio del CRM en 2-3 frases cortas en español. Incluye: quién es el contacto, qué busca (raza, cachorro, servicio de monta, etc.), en qué etapa del pipeline está, y qué acciones se han tomado. Si hay tareas pendientes, menciónalas brevemente. Sé conciso y directo. No uses encabezados ni listas, solo un párrafo corto.`,
     })
 
     const summary = response.content[0].type === 'text' ? response.content[0].text : ''
