@@ -148,7 +148,13 @@ Rules:
     if (jsonMatch) jsonStr = jsonMatch[1]
     const objMatch = jsonStr.match(/\{[\s\S]*\}/)
     if (objMatch) jsonStr = objMatch[0]
-    try { return JSON.parse(jsonStr) } catch { throw new Error('No se pudo interpretar la respuesta de la IA') }
+    try {
+      return JSON.parse(jsonStr)
+    } catch {
+      console.error('Claude raw response:', text.substring(0, 500))
+      console.error('Extracted jsonStr:', jsonStr.substring(0, 500))
+      throw new Error('No se pudo interpretar la respuesta de la IA. Abre la consola del navegador para ver detalles.')
+    }
   }
 
   async function verifyParentInDB(parentName: string, grandFatherName: string | null, grandMotherName: string | null): Promise<{ id: string; name: string; sex: string; photo: string | null; breed: string | null; father: { id: string; name: string } | null; mother: { id: string; name: string } | null } | null> {
