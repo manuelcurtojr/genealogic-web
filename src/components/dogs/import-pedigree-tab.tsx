@@ -43,41 +43,122 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported }: Prop
 
   const [uploadingImage, setUploadingImage] = useState(false)
 
+  const EXTRACTION_PROMPT = `You are a dog pedigree data extractor. Extract the complete pedigree information from this content.
+
+Return a JSON object with this EXACT structure:
+{
+  "main_dog": {
+    "name": "string", "sex": "Male" or "Female", "registration": "string or null",
+    "breed": "string or null", "color": "string or null", "birth_date": "YYYY-MM-DD or YYYY or null",
+    "health": "string (HD, ED results) or null", "breeder": "string or null", "owner": "string or null",
+    "photo_url": "string or null", "father_name": "exact name or null", "mother_name": "exact name or null"
+  },
+  "ancestors": [
+    {
+      "name": "string", "sex": "Male" or "Female", "registration": "string or null",
+      "breed": "string or null", "color": "string or null", "birth_date": "YYYY-MM-DD or YYYY or null",
+      "health": "string or null", "photo_url": "string or null",
+      "father_name": "string or null", "mother_name": "string or null",
+      "generation": number (1=parents, 2=grandparents, 3=great-grandparents, etc)
+    }
+  ]
+}
+
+Rules:
+- Extract ALL dogs in the pedigree (main dog + ALL ancestors up to whatever generation is available)
+- Names must be EXACT as shown (preserve capitalization, accents, special chars)
+- father_name and mother_name must match the exact name of another dog in the tree
+- Sex: determine from context (sire/father = Male, dam/mother = Female)
+- If data is not available, use null
+- Return ONLY the JSON, no markdown, no explanation`
+
+  async function getApiKey(): Promise<string> {
+    const res = await fetch('/api/import-pedigree')
+    if (!res.ok) throw new Error('No se pudo obtener la clave de IA')
+    const { key } = await res.json()
+    if (!key) throw new Error('API key no configurada')
+    return key
+  }
+
+  function cleanHtml(html: string): string {
+    return html
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
+      .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
+      .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '')
+      .slice(0, 80000)
+  }
+
+  async function callClaude(apiKey: string, messages: any[]): Promise<PedigreeData> {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 8000, messages }),
+    })
+    if (!res.ok) {
+      let detail = ''
+      try { const b = await res.json(); detail = b?.error?.message || '' } catch {}
+      throw new Error(`Error de IA (${res.status}): ${detail || 'Intenta de nuevo'}`)
+    }
+    const data = await res.json()
+    const text = data.content?.[0]?.text || ''
+    if (!text) throw new Error('La IA no devolvió respuesta')
+
+    let jsonStr = text
+    const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (jsonMatch) jsonStr = jsonMatch[1]
+    const objMatch = jsonStr.match(/\{[\s\S]*\}/)
+    if (objMatch) jsonStr = objMatch[0]
+    try { return JSON.parse(jsonStr) } catch { throw new Error('No se pudo interpretar la respuesta de la IA') }
+  }
+
   async function handleScan() {
     if (!url.trim()) return
     setScanning(true); setError(''); setData(null); setSwaps({})
     try {
-      // Strategy 1: Fetch HTML from the USER'S BROWSER (bypasses datacenter IP blocks)
-      let clientHtml: string | null = null
+      // Step 1: Get API key (fast, < 1s)
+      const apiKey = await getApiKey()
+
+      // Step 2: Fetch HTML via proxy (bypasses CORS)
+      let html: string | null = null
       try {
-        const proxyUrl = `/api/proxy-fetch?url=${encodeURIComponent(url.trim())}`
-        const proxyRes = await fetch(proxyUrl, { signal: AbortSignal.timeout(15000) })
+        const proxyRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(url.trim())}`, { signal: AbortSignal.timeout(15000) })
         if (proxyRes.ok) {
-          const html = await proxyRes.text()
-          if (html.length > 3000 && !html.includes('403 Forbidden')) clientHtml = html
+          const raw = await proxyRes.text()
+          if (raw.length > 3000 && !raw.includes('403 Forbidden')) html = cleanHtml(raw)
         }
       } catch {}
 
-      // Strategy 2: Send HTML or URL to the AI extraction API
-      const res = await fetch('/api/import-pedigree', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(clientHtml ? { htmlContent: clientHtml, sourceUrl: url.trim() } : { url: url.trim() }),
-      })
-      let result
-      try {
-        result = await res.json()
-      } catch {
-        throw new Error(res.status === 504 ? 'Timeout del servidor. La petición tardó demasiado.' : `Error del servidor (${res.status}). Intenta de nuevo o sube un screenshot.`)
+      if (!html) throw new Error('No se pudo acceder a la página. Intenta con otra URL o sube un screenshot.')
+
+      // Extract image URLs from HTML
+      const imgUrls: string[] = []
+      const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi
+      let match
+      while ((match = imgRegex.exec(html)) !== null) {
+        const src = match[1]
+        if (src.startsWith('http') && !src.includes('logo') && !src.includes('icon') && !src.includes('banner')) imgUrls.push(src)
       }
-      if (!res.ok) throw new Error(result.error || 'Error al escanear')
-      if (!result.data?.main_dog?.name) {
+
+      // Step 3: Call Claude directly from browser (no timeout limit!)
+      const pedigreeData = await callClaude(apiKey, [{
+        role: 'user',
+        content: `${EXTRACTION_PROMPT}\n\n--- PAGE HTML ---\n${html}\n\n--- IMAGE URLS FOUND ---\n${imgUrls.slice(0, 10).join('\n')}`,
+      }])
+
+      if (!pedigreeData?.main_dog?.name) {
         setError('No se pudo extraer datos de esta web. Prueba a subir un screenshot manual del pedigrí.')
         setScanning(false); return
       }
-      setData(result.data)
-      setEditedMain(result.data.main_dog)
-      setEditedAncestors(result.data.ancestors || [])
+      setData(pedigreeData)
+      setEditedMain(pedigreeData.main_dog)
+      setEditedAncestors(pedigreeData.ancestors || [])
       setShowPreview(true)
     } catch (err: any) { setError(err.message || 'Error al escanear') }
     setScanning(false)
@@ -88,20 +169,24 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported }: Prop
     if (!file) return
     setUploadingImage(true); setError(''); setData(null); setSwaps({})
     try {
+      const apiKey = await getApiKey()
       const reader = new FileReader()
       const base64 = await new Promise<string>((resolve, reject) => {
         reader.onload = () => { const result = reader.result as string; resolve(result.split(',')[1]) }
         reader.onerror = reject
         reader.readAsDataURL(file)
       })
-      const res = await fetch('/api/import-pedigree', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageBase64: base64 }) })
-      let result
-      try { result = await res.json() } catch { throw new Error('Error del servidor. Intenta de nuevo.') }
-      if (!res.ok) throw new Error(result.error || 'Error al analizar')
-      if (!result.data?.main_dog?.name) { setError('No se pudo extraer datos de la imagen.'); setUploadingImage(false); return }
-      setData(result.data)
-      setEditedMain(result.data.main_dog)
-      setEditedAncestors(result.data.ancestors || [])
+      const pedigreeData = await callClaude(apiKey, [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+          { type: 'text', text: EXTRACTION_PROMPT },
+        ],
+      }])
+      if (!pedigreeData?.main_dog?.name) { setError('No se pudo extraer datos de la imagen.'); setUploadingImage(false); return }
+      setData(pedigreeData)
+      setEditedMain(pedigreeData.main_dog)
+      setEditedAncestors(pedigreeData.ancestors || [])
       setShowPreview(true)
     } catch (err: any) { setError(err.message || 'Error al analizar la imagen') }
     setUploadingImage(false)
