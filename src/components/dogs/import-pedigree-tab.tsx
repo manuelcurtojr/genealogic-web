@@ -30,7 +30,8 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported }: Prop
   const [importResult, setImportResult] = useState<any>(null)
   const [editedMain, setEditedMain] = useState<ImportDog | null>(null)
   const [editedAncestors, setEditedAncestors] = useState<ImportDog[]>([])
-  const [swaps, setSwaps] = useState<Record<string, { id: string; name: string; breed?: string; photo?: string }>>({})
+  const [swaps, setSwaps] = useState<Record<string, { id: string; name: string; breed?: string; photo?: string; linked?: boolean; father_name?: string | null; mother_name?: string | null }>>({})
+  const [linkedAncestors, setLinkedAncestors] = useState<Map<string, ImportDog[]>>(new Map()) // dogName → DB ancestors
   const [swapTarget, setSwapTarget] = useState<string | null>(null)
   const [swapSearch, setSwapSearch] = useState('')
   const [swapResults, setSwapResults] = useState<any[]>([])
@@ -173,10 +174,10 @@ Rules:
   function buildAutoSwaps(
     fatherName: string | null, fatherMatch: any | null,
     motherName: string | null, motherMatch: any | null,
-  ): Record<string, { id: string; name: string; breed?: string; photo?: string }> {
+  ) {
     const autoSwaps: Record<string, any> = {}
-    if (fatherMatch && fatherName) autoSwaps[fatherName] = { id: fatherMatch.id, name: fatherMatch.name, breed: fatherMatch.breed, photo: fatherMatch.photo }
-    if (motherMatch && motherName) autoSwaps[motherName] = { id: motherMatch.id, name: motherMatch.name, breed: motherMatch.breed, photo: motherMatch.photo }
+    if (fatherMatch && fatherName) autoSwaps[fatherName] = { id: fatherMatch.id, name: fatherMatch.name, breed: fatherMatch.breed, photo: fatherMatch.photo, linked: true, father_name: fatherMatch.father?.name || null, mother_name: fatherMatch.mother?.name || null }
+    if (motherMatch && motherName) autoSwaps[motherName] = { id: motherMatch.id, name: motherMatch.name, breed: motherMatch.breed, photo: motherMatch.photo, linked: true, father_name: motherMatch.father?.name || null, mother_name: motherMatch.mother?.name || null }
     return autoSwaps
   }
 
@@ -251,10 +252,31 @@ Rules:
       }
 
       const autoSwaps = buildAutoSwaps(father_name, fatherMatch, mother_name, motherMatch)
+
+      // Load full pedigrees for auto-matched parents
+      const linked = new Map<string, ImportDog[]>()
+      const supabase = createClient()
+      for (const [dogName, swap] of Object.entries(autoSwaps)) {
+        if (!swap.linked) continue
+        const { data: nodes } = await supabase.rpc('get_pedigree', { dog_uuid: swap.id, max_gen: 10 })
+        if (nodes?.length) {
+          const dbAnc = nodes.filter((n: any) => n.generation > 0).map((n: any) => ({
+            name: n.name, sex: n.sex === 'female' ? 'Female' : 'Male',
+            registration: n.registration, breed: n.breed_name, color: n.color_name,
+            birth_date: null, health: null, photo_url: n.photo_url,
+            father_name: nodes.find((p: any) => p.id === n.father_id)?.name || null,
+            mother_name: nodes.find((p: any) => p.id === n.mother_id)?.name || null,
+            generation: n.generation,
+          }))
+          linked.set(dogName, dbAnc)
+        }
+      }
+
       setData(finalData)
       setEditedMain(finalData.main_dog)
       setEditedAncestors(finalData.ancestors || [])
       setSwaps(autoSwaps)
+      setLinkedAncestors(linked)
       setShowPreview(true)
     } catch (err: any) { setError(err.message || 'Error al escanear') }
     setScanning(false); setScanPhase('')
@@ -311,10 +333,31 @@ Rules:
       }
 
       const autoSwaps = buildAutoSwaps(father_name, fatherMatch, mother_name, motherMatch)
+
+      // Load full pedigrees for auto-matched parents
+      const linked = new Map<string, ImportDog[]>()
+      const supabase = createClient()
+      for (const [dogName, swap] of Object.entries(autoSwaps)) {
+        if (!swap.linked) continue
+        const { data: nodes } = await supabase.rpc('get_pedigree', { dog_uuid: swap.id, max_gen: 10 })
+        if (nodes?.length) {
+          const dbAnc = nodes.filter((n: any) => n.generation > 0).map((n: any) => ({
+            name: n.name, sex: n.sex === 'female' ? 'Female' : 'Male',
+            registration: n.registration, breed: n.breed_name, color: n.color_name,
+            birth_date: null, health: null, photo_url: n.photo_url,
+            father_name: nodes.find((p: any) => p.id === n.father_id)?.name || null,
+            mother_name: nodes.find((p: any) => p.id === n.mother_id)?.name || null,
+            generation: n.generation,
+          }))
+          linked.set(dogName, dbAnc)
+        }
+      }
+
       setData(finalData)
       setEditedMain(finalData.main_dog)
       setEditedAncestors(finalData.ancestors || [])
       setSwaps(autoSwaps)
+      setLinkedAncestors(linked)
       setShowPreview(true)
     } catch (err: any) { setError(err.message || 'Error al analizar la imagen') }
     setUploadingImage(false); setScanPhase('')
@@ -329,13 +372,33 @@ Rules:
     setSwapSearching(false)
   }
 
-  function applySwap(dogName: string, existing: any) {
-    setSwaps(prev => ({ ...prev, [dogName]: { id: existing.id, name: existing.name, breed: (existing.breed as any)?.name, photo: existing.thumbnail_url } }))
+  async function applySwap(dogName: string, existing: any) {
+    const supabase = createClient()
+    // Fetch real pedigree from DB
+    const { data: pedigreeNodes } = await supabase.rpc('get_pedigree', { dog_uuid: existing.id, max_gen: 10 })
+    const nodes = pedigreeNodes || []
+    const rootNode = nodes.find((n: any) => n.generation === 0)
+    const dbAncestors: ImportDog[] = nodes
+      .filter((n: any) => n.generation > 0)
+      .map((n: any) => ({
+        name: n.name, sex: n.sex === 'female' ? 'Female' : 'Male',
+        registration: n.registration, breed: n.breed_name, color: n.color_name,
+        birth_date: null, health: null, photo_url: n.photo_url,
+        father_name: nodes.find((p: any) => p.id === n.father_id)?.name || null,
+        mother_name: nodes.find((p: any) => p.id === n.mother_id)?.name || null,
+        generation: n.generation,
+      }))
+    // Get the root's parent names so the tree can continue below the swapped node
+    const dbFatherName = rootNode?.father_id ? nodes.find((n: any) => n.id === rootNode.father_id)?.name || null : null
+    const dbMotherName = rootNode?.mother_id ? nodes.find((n: any) => n.id === rootNode.mother_id)?.name || null : null
+    setLinkedAncestors(prev => new Map(prev).set(dogName, dbAncestors))
+    setSwaps(prev => ({ ...prev, [dogName]: { id: existing.id, name: existing.name, breed: (existing.breed as any)?.name, photo: existing.thumbnail_url, linked: true, father_name: dbFatherName, mother_name: dbMotherName } }))
     setSwapTarget(null); setSwapSearch(''); setSwapResults([])
   }
 
   function removeSwap(dogName: string) {
     setSwaps(prev => { const next = { ...prev }; delete next[dogName]; return next })
+    setLinkedAncestors(prev => { const next = new Map(prev); next.delete(dogName); return next })
   }
 
   async function handleConfirm() {
@@ -364,8 +427,12 @@ Rules:
     const m = new Map<string, ImportDog>()
     m.set(editedMain.name, editedMain)
     editedAncestors.forEach(a => m.set(a.name, a))
+    // Overlay DB ancestors from linked swaps (overrides imported data for that branch)
+    for (const [, dbAncestors] of linkedAncestors) {
+      dbAncestors.forEach(a => m.set(a.name, a))
+    }
     return m
-  }, [editedMain, editedAncestors])
+  }, [editedMain, editedAncestors, linkedAncestors])
 
   const totalDogs = editedAncestors.length + 1
   const swappedCount = Object.keys(swaps).length
@@ -525,8 +592,12 @@ function TN({ name, byName, swaps, g, mx, isRoot, onSwap, onRemoveSwap }: {
   const dog = byName.get(name)
   if (!dog) return <div className="w-8 h-8 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center text-white/15 text-xs">?</div>
   if (g >= mx) return <Card dog={dog} swaps={swaps} isRoot={isRoot} onSwap={onSwap} onRemoveSwap={onRemoveSwap} />
-  const hasFather = !!dog.father_name && byName.has(dog.father_name)
-  const hasMother = !!dog.mother_name && byName.has(dog.mother_name)
+  // If this dog is swapped/linked, use DB parent names instead of imported ones
+  const swap = swaps[dog.name]
+  const fatherName = swap?.linked ? swap.father_name : dog.father_name
+  const motherName = swap?.linked ? swap.mother_name : dog.mother_name
+  const hasFather = !!fatherName && byName.has(fatherName)
+  const hasMother = !!motherName && byName.has(motherName)
   if (!hasFather && !hasMother) return <Card dog={dog} swaps={swaps} isRoot={isRoot} onSwap={onSwap} onRemoveSwap={onRemoveSwap} />
 
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -559,8 +630,8 @@ function TN({ name, byName, swaps, g, mx, isRoot, onSwap, onRemoveSwap }: {
         {lines.map((l, i) => <line key={i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke={L} strokeWidth={1} />)}
       </svg>
       <div style={{ marginLeft: CW + 60, display: 'flex', flexDirection: 'column', gap: 24 }}>
-        <div ref={fRef}>{hasFather ? <TN name={dog.father_name!} byName={byName} swaps={swaps} g={g + 1} mx={mx} onSwap={onSwap} onRemoveSwap={onRemoveSwap} /> : <div className="w-8 h-8 rounded-full border-2 border-dashed border-blue-400/20 flex items-center justify-center text-blue-400/30 text-xs">♂</div>}</div>
-        <div ref={mRef}>{hasMother ? <TN name={dog.mother_name!} byName={byName} swaps={swaps} g={g + 1} mx={mx} onSwap={onSwap} onRemoveSwap={onRemoveSwap} /> : <div className="w-8 h-8 rounded-full border-2 border-dashed border-pink-400/20 flex items-center justify-center text-pink-400/30 text-xs">♀</div>}</div>
+        <div ref={fRef}>{hasFather ? <TN name={fatherName!} byName={byName} swaps={swaps} g={g + 1} mx={mx} onSwap={onSwap} onRemoveSwap={onRemoveSwap} /> : <div className="w-8 h-8 rounded-full border-2 border-dashed border-blue-400/20 flex items-center justify-center text-blue-400/30 text-xs">♂</div>}</div>
+        <div ref={mRef}>{hasMother ? <TN name={motherName!} byName={byName} swaps={swaps} g={g + 1} mx={mx} onSwap={onSwap} onRemoveSwap={onRemoveSwap} /> : <div className="w-8 h-8 rounded-full border-2 border-dashed border-pink-400/20 flex items-center justify-center text-pink-400/30 text-xs">♀</div>}</div>
       </div>
     </div>
   )
@@ -569,33 +640,51 @@ function TN({ name, byName, swaps, g, mx, isRoot, onSwap, onRemoveSwap }: {
 function Card({ dog, swaps, isRoot, onSwap, onRemoveSwap }: { dog: ImportDog; swaps: Record<string, any>; isRoot?: boolean; onSwap: (n: string) => void; onRemoveSwap: (n: string) => void }) {
   const swap = swaps[dog.name]
   const sc = dog.sex === 'Female' ? '#e84393' : '#017DFA'
-  const isSwapped = !!swap
+  const isLinked = swap?.linked // Existing in DB — orange border + chain icon
+  const isSwapped = !!swap && !isLinked // Manually swapped — blue border
+  const borderClass = isLinked
+    ? 'border-2 border-[#D74709] bg-[#D74709]/5'
+    : isSwapped
+      ? 'border-2 border-blue-400/60 bg-blue-400/5'
+      : isRoot
+        ? 'border-2 border-[#D74709] bg-white/[0.04]'
+        : 'border border-white/10 bg-white/[0.04]'
   return (
-    <div className={`relative group rounded-xl overflow-hidden transition ${isSwapped ? 'border-2 border-green-500/40 bg-green-500/5' : isRoot ? 'border-2 border-[#D74709] bg-white/[0.04]' : 'border border-white/10 bg-white/[0.04]'}`} style={{ width: CW, minHeight: CH, flexShrink: 0 }}>
-      <div className="flex items-stretch" style={{ minHeight: CH }}>
-        <div className="flex-shrink-0 bg-white/5 relative" style={{ width: 48 }}>
-          {isSwapped && swap.photo ? <img src={swap.photo} alt="" className="w-full h-full object-cover" /> : dog.photo_url ? <img src={dog.photo_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/10 text-sm">{dog.sex === 'Female' ? '♀' : '♂'}</div>}
-          <div className="absolute top-0 right-0 bottom-0 w-[3px]" style={{ backgroundColor: sc }} />
+    <div className="relative" style={{ width: CW, flexShrink: 0 }}>
+      {/* Chain icon for linked dogs — outside the card, top-right */}
+      {isLinked && (
+        <div className="absolute -top-2 -right-2 z-10 w-5 h-5 rounded-full bg-[#D74709] flex items-center justify-center shadow-lg">
+          <Link2 className="w-3 h-3 text-white" />
         </div>
-        <div className="flex-1 min-w-0 px-2 py-1.5 flex flex-col justify-center">
-          <p className="text-[11px] font-bold text-white leading-tight truncate">{isSwapped ? swap.name : dog.name}</p>
-          {isSwapped ? (
-            <span className="text-[9px] font-bold text-green-400 flex items-center gap-0.5 mt-0.5"><Link2 className="w-2.5 h-2.5" /> Existente</span>
-          ) : (
-            <div className="flex flex-wrap gap-0.5 mt-0.5">
-              {dog.breed && <span className="text-[8px] bg-white/5 text-white/30 px-1 py-0.5 rounded">{dog.breed}</span>}
-              {dog.birth_date && <span className="text-[8px] bg-white/5 text-white/30 px-1 py-0.5 rounded">{dog.birth_date}</span>}
-              {dog.health && <span className="text-[8px] bg-green-500/10 text-green-400 px-1 py-0.5 rounded">{dog.health}</span>}
-            </div>
-          )}
+      )}
+      <div className={`relative group rounded-xl overflow-hidden transition ${borderClass}`} style={{ minHeight: CH }}>
+        <div className="flex items-stretch" style={{ minHeight: CH }}>
+          <div className="flex-shrink-0 bg-white/5 relative" style={{ width: 48 }}>
+            {swap?.photo ? <img src={swap.photo} alt="" className="w-full h-full object-cover" /> : dog.photo_url ? <img src={dog.photo_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/10 text-sm">{dog.sex === 'Female' ? '♀' : '♂'}</div>}
+            <div className="absolute top-0 right-0 bottom-0 w-[3px]" style={{ backgroundColor: sc }} />
+          </div>
+          <div className="flex-1 min-w-0 px-2 py-1.5 flex flex-col justify-center">
+            <p className="text-[11px] font-bold text-white leading-tight truncate">{swap ? swap.name : dog.name}</p>
+            {isLinked ? (
+              <span className="text-[9px] font-bold text-[#D74709] flex items-center gap-0.5 mt-0.5"><Link2 className="w-2.5 h-2.5" /> Registrado</span>
+            ) : isSwapped ? (
+              <span className="text-[9px] font-bold text-blue-400 flex items-center gap-0.5 mt-0.5"><ArrowLeftRight className="w-2.5 h-2.5" /> Cambiado</span>
+            ) : (
+              <div className="flex flex-wrap gap-0.5 mt-0.5">
+                {dog.breed && <span className="text-[8px] bg-white/5 text-white/30 px-1 py-0.5 rounded">{dog.breed}</span>}
+                {dog.birth_date && <span className="text-[8px] bg-white/5 text-white/30 px-1 py-0.5 rounded">{dog.birth_date}</span>}
+                {dog.health && <span className="text-[8px] bg-green-500/10 text-green-400 px-1 py-0.5 rounded">{dog.health}</span>}
+              </div>
+            )}
+          </div>
         </div>
+        <button onClick={() => (isSwapped || isLinked) ? onRemoveSwap(dog.name) : onSwap(dog.name)}
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-black/40 flex items-center justify-center transition">
+          <span className="text-[10px] font-bold text-white flex items-center gap-1">
+            {(isSwapped || isLinked) ? <><X className="w-3 h-3" /> Quitar</> : <><ArrowLeftRight className="w-3 h-3" /> Cambiar</>}
+          </span>
+        </button>
       </div>
-      <button onClick={() => isSwapped ? onRemoveSwap(dog.name) : onSwap(dog.name)}
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-black/40 flex items-center justify-center transition">
-        <span className="text-[10px] font-bold text-white flex items-center gap-1">
-          {isSwapped ? <><X className="w-3 h-3" /> Quitar</> : <><ArrowLeftRight className="w-3 h-3" /> Cambiar</>}
-        </span>
-      </button>
     </div>
   )
 }
