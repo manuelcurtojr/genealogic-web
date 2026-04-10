@@ -166,11 +166,14 @@ Rules:
       .replace(/\s+/g, ' ') // collapse multiple spaces
   }
 
-  // Build a search pattern for ilike: truncate words to avoid accent mismatches
-  // "Faruk de Irema Curtó" → "%faruk%irem%curt%"
-  // Truncating to len-1 handles accented last chars (curto vs curtó)
+  // Build a search pattern for ilike: keep apostrophes (DB has them), strip accents, truncate last char
+  // "P'Orum de Irema Curtó" → "%p'oru%irem%curt%"
   function toSearchPattern(name: string): string {
-    const words = normName(name).split(' ').filter(w => w.length > 2)
+    const normalized = name.toLowerCase().trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // strip accents
+      .replace(/[\u2018\u2019\u201A\u201B]/g, "'") // normalize curly apostrophes to straight
+      .replace(/\s+/g, ' ')
+    const words = normalized.split(/\s+/).filter(w => w.replace(/'/g, '').length > 2)
     const truncated = words.map(w => w.length > 3 ? w.slice(0, -1) : w)
     return `%${truncated.join('%')}%`
   }
