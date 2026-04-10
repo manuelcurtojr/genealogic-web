@@ -151,6 +151,21 @@ Rules:
     return urls
   }
 
+  // Normalize name for fuzzy matching: lowercase, strip accents, collapse spaces
+  function normName(s: string | null): string {
+    if (!s) return ''
+    return s.toLowerCase().trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // strip accents
+      .replace(/[''`]/g, '') // strip apostrophes
+      .replace(/\s+/g, ' ') // collapse multiple spaces
+  }
+
+  // Build a search pattern: "Faruk de Irema Curtó" → "%faruk%irema%curto%"
+  function toSearchPattern(name: string): string {
+    const words = normName(name).split(' ').filter(w => w.length > 1)
+    return `%${words.join('%')}%`
+  }
+
   // After extraction, find all dogs that already exist in the DB and auto-link them
   async function findExistingDogs(pedigreeData: PedigreeData): Promise<{ autoSwaps: Record<string, any>; linked: Map<string, ImportDog[]> }> {
     const supabase = createClient()
@@ -160,22 +175,25 @@ Rules:
 
     for (const dog of allDogs) {
       if (dog === pedigreeData.main_dog) continue // skip the main dog — it's the one being imported
+
+      // Fuzzy search: find candidates by key words in name
+      const pattern = toSearchPattern(dog.name)
       const { data: candidates } = await supabase
         .from('dogs').select('id, name, sex, thumbnail_url, father_id, mother_id, breed:breeds(name)')
-        .ilike('name', dog.name).limit(5)
+        .ilike('name', pattern).limit(10)
       if (!candidates?.length) continue
 
-      // Match: prefer candidate with matching parents, fall back to unique name
+      // Match: prefer candidate with matching parents (fuzzy name comparison)
       let match = null
-      const norm = (s: string | null) => s?.toLowerCase().trim() || ''
 
       for (const c of candidates) {
         if (!c.father_id && !c.mother_id) continue
         let dbFN: string | null = null, dbMN: string | null = null
         if (c.father_id) { const { data: f } = await supabase.from('dogs').select('name').eq('id', c.father_id).single(); dbFN = f?.name || null }
         if (c.mother_id) { const { data: m } = await supabase.from('dogs').select('name').eq('id', c.mother_id).single(); dbMN = m?.name || null }
-        if (norm(dog.father_name) === norm(dbFN) && norm(dog.mother_name) === norm(dbMN)) { match = c; break }
+        if (normName(dog.father_name) === normName(dbFN) && normName(dog.mother_name) === normName(dbMN)) { match = c; break }
       }
+      // Fall back: unique candidate with no parents in DB
       if (!match && candidates.length === 1 && !candidates[0].father_id && !candidates[0].mother_id) {
         match = candidates[0]
       }
