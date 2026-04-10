@@ -506,23 +506,29 @@ function DuplicateDetector() {
       .select('id, name, sex, birth_date, registration, microchip, thumbnail_url, owner_id, contributor_id, father_id, mother_id, kennel_id, breed:breeds(name)')
       .order('name')
 
-    // Group by normalized name
+    // Check if name has a kennel affix (contains a preposition like "de", "of", etc.)
+    const hasAffix = (name: string) => PREPOSITIONS.some(p => new RegExp(`\\s+${p}\\s+`, 'i').test(name))
+
+    // Group by normalized name + breed for generic names, or just name for affix names
     const nameGroups = new Map<string, DogRow[]>()
     for (const dog of (dogs || [])) {
       const norm = normName(dog.name)
-      if (!nameGroups.has(norm)) nameGroups.set(norm, [])
-      nameGroups.get(norm)!.push(dog)
+      // Generic names (no affix, short): group by name+breed to avoid false positives
+      const breedName = (Array.isArray(dog.breed) ? dog.breed[0]?.name : (dog.breed as any)?.name) || ''
+      const key = hasAffix(dog.name) ? norm : `${norm}||${normName(breedName)}`
+      if (!nameGroups.has(key)) nameGroups.set(key, [])
+      nameGroups.get(key)!.push(dog)
     }
 
-    // Only keep groups with 2+ dogs (exact normalized name match only — no fuzzy for dogs)
+    // Only keep groups with 2+ dogs
     const duplicates: DuplicateGroup[] = []
-    for (const [normalizedName, groupDogs] of nameGroups) {
+    for (const [key, groupDogs] of nameGroups) {
       if (groupDogs.length >= 2) {
         groupDogs.sort((a, b) => {
           const score = (d: DogRow) => [d.registration, d.microchip, d.birth_date, d.thumbnail_url, d.father_id, d.mother_id, d.owner_id, d.kennel_id].filter(Boolean).length
           return score(b) - score(a)
         })
-        duplicates.push({ normalizedName, dogs: groupDogs })
+        duplicates.push({ normalizedName: key.split('||')[0], dogs: groupDogs })
       }
     }
 
