@@ -200,9 +200,16 @@ export default function DealForm({ open, onClose, onSaved, initialData, stages, 
 
   const handleDelete = async () => {
     setDeleting(true)
-    const supabase = createClient()
-    await supabase.from('deal_dogs').delete().eq('deal_id', initialData.id)
-    await supabase.from('deals').delete().eq('id', initialData.id)
+    try {
+      const supabase = createClient()
+      const dealId = initialData.id
+      await supabase.from('deal_activities').delete().eq('deal_id', dealId)
+      await supabase.from('deal_dogs').delete().eq('deal_id', dealId)
+      await supabase.from('form_submissions').update({ deal_id: null } as any).eq('deal_id', dealId)
+      await supabase.from('deals').delete().eq('id', dealId)
+    } catch (err) {
+      console.error('Delete deal error:', err)
+    }
     setDeleting(false)
     setShowDelete(false)
     onSaved()
