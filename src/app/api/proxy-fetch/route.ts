@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-export const maxDuration = 30
+export const runtime = 'edge'
 
 // Proxy fetch — tries direct fetch, then ScrapingBee if configured
 export async function GET(request: NextRequest) {

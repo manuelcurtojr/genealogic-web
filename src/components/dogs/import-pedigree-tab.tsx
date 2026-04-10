@@ -68,7 +68,7 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported }: Prop
       try {
         result = await res.json()
       } catch {
-        throw new Error('Error del servidor. Intenta de nuevo o sube un screenshot manual.')
+        throw new Error(res.status === 504 ? 'Timeout del servidor. La petición tardó demasiado.' : `Error del servidor (${res.status}). Intenta de nuevo o sube un screenshot.`)
       }
       if (!res.ok) throw new Error(result.error || 'Error al escanear')
       if (!result.data?.main_dog?.name) {
