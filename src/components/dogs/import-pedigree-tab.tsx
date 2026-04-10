@@ -85,21 +85,35 @@ Rules:
   }
 
   function cleanHtml(html: string): string {
+    // Extract page title as main dog context (the pedigree table only has ancestors)
+    const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
+    const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)
+    const mainDogContext = `MAIN DOG PAGE: ${titleMatch?.[1] || ''} ${h1Match?.[1]?.replace(/<[^>]+>/g, '') || ''}`
+
     // Try to extract just the pedigree table (largest table usually contains the tree)
     const tables = [...html.matchAll(/<table[^>]*>([\s\S]*?)<\/table>/gi)]
     if (tables.length > 0) {
       const largest = tables.reduce((a, b) => a[0].length > b[0].length ? a : b)
       if (largest[0].length > 5000) {
-        // Strip HTML attributes and keep just structure + text
         const tableHtml = largest[0]
-          .replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi, '[IMG:$1]') // preserve image URLs
+          .replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi, '[IMG:$1]')
           .replace(/\s(class|style|width|height|bgcolor|align|valign|border|cellpadding|cellspacing|rowspan|colspan)=["'][^"']*["']/gi, (m, attr) => {
-            // Keep rowspan/colspan (critical for table structure), strip the rest
             if (attr === 'rowspan' || attr === 'colspan') return m
             return ''
           })
           .replace(/\s{2,}/g, ' ')
-        if (tableHtml.length < 120000) return tableHtml
+        // Also extract main dog info section (before the table)
+        const bodyStart = html.indexOf('<body')
+        const tableStart = html.indexOf(largest[0])
+        let dogInfoHtml = ''
+        if (bodyStart >= 0 && tableStart > bodyStart) {
+          dogInfoHtml = html.substring(bodyStart, tableStart)
+            .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+            .replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim()
+            .slice(0, 3000)
+        }
+        if (tableHtml.length < 120000) return `${mainDogContext}\n\nDOG INFO: ${dogInfoHtml}\n\nPEDIGREE TABLE:\n${tableHtml}`
       }
     }
 
