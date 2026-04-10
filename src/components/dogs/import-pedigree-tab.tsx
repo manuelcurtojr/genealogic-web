@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2, Search, Globe, AlertTriangle, Check, X, Link2, ArrowLeftRight, Undo2 } from 'lucide-react'
 
@@ -242,10 +243,10 @@ Rules:
   const totalDogs = editedAncestors.length + 1
   const swappedCount = Object.keys(swaps).length
 
-  // ===== PREVIEW =====
+  // ===== PREVIEW (portal to escape panel's transform containing block) =====
   if (showPreview && editedMain) {
-    return (
-      <div className="fixed inset-0 z-[100] bg-gray-950 flex flex-col">
+    return createPortal(
+      <div className="fixed inset-0 z-[200] bg-gray-950 flex flex-col">
         <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 bg-gray-900 flex-shrink-0">
           <div>
             <h2 className="text-lg font-bold">{editedMain.name}</h2>
@@ -294,8 +295,8 @@ Rules:
         </div>
         {/* Swap modal */}
         {swapTarget && (<>
-          <div className="fixed inset-0 z-[110] bg-black/60" onClick={() => setSwapTarget(null)} />
-          <div className="fixed z-[111] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] max-w-[90vw] bg-gray-900 border border-white/10 rounded-2xl shadow-2xl">
+          <div className="fixed inset-0 z-[210] bg-black/60" onClick={() => setSwapTarget(null)} />
+          <div className="fixed z-[211] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] max-w-[90vw] bg-gray-900 border border-white/10 rounded-2xl shadow-2xl">
             <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
               <div><h3 className="text-sm font-semibold">Cambiar perro</h3><p className="text-[10px] text-white/30">{swapTarget}</p></div>
               <button onClick={() => setSwapTarget(null)} className="text-white/30 hover:text-white"><X className="w-5 h-5" /></button>
@@ -329,7 +330,8 @@ Rules:
             </div>
           </div>
         </>)}
-      </div>
+      </div>,
+      document.body
     )
   }
 
