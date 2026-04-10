@@ -45,7 +45,7 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
   const { data: allDogs } = await supabase
     .from('dogs')
     .select('id, name, sex, thumbnail_url, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, breed:breeds(name)')
-    .eq('kennel_id', id)
+    .eq('kennel_id', kennel.id)
     .or('show_in_kennel.is.null,show_in_kennel.eq.true')
     .order('name')
 
