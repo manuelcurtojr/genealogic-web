@@ -192,18 +192,19 @@ Rules:
         .ilike('name', pattern).limit(10)
       if (!candidates?.length) continue
 
-      // Match: prefer candidate with matching parents (fuzzy name comparison)
+      // Match by normalized name — Genealogic is the source of truth, no parent verification needed
+      // If multiple candidates, prefer the one with most data (parents linked)
       let match = null
+      const dogNorm = normName(dog.name)
+      const exactMatches = candidates.filter(c => normName(c.name) === dogNorm)
 
-      for (const c of candidates) {
-        if (!c.father_id && !c.mother_id) continue
-        let dbFN: string | null = null, dbMN: string | null = null
-        if (c.father_id) { const { data: f } = await supabase.from('dogs').select('name').eq('id', c.father_id).single(); dbFN = f?.name || null }
-        if (c.mother_id) { const { data: m } = await supabase.from('dogs').select('name').eq('id', c.mother_id).single(); dbMN = m?.name || null }
-        if (normName(dog.father_name) === normName(dbFN) && normName(dog.mother_name) === normName(dbMN)) { match = c; break }
-      }
-      // Fall back: unique candidate with no parents in DB
-      if (!match && candidates.length === 1 && !candidates[0].father_id && !candidates[0].mother_id) {
+      if (exactMatches.length === 1) {
+        match = exactMatches[0]
+      } else if (exactMatches.length > 1) {
+        // Multiple dogs with same name — prefer the one with parents (more complete)
+        match = exactMatches.find(c => c.father_id || c.mother_id) || exactMatches[0]
+      } else if (candidates.length === 1) {
+        // Fuzzy match — only one candidate from pattern search
         match = candidates[0]
       }
 
