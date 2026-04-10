@@ -514,24 +514,9 @@ function DuplicateDetector() {
       nameGroups.get(norm)!.push(dog)
     }
 
-    // Merge similar name groups (Levenshtein <= 2)
-    const groupEntries = [...nameGroups.entries()]
-    const mergedKeys = new Set<string>()
-    for (let i = 0; i < groupEntries.length; i++) {
-      if (mergedKeys.has(groupEntries[i][0])) continue
-      for (let j = i + 1; j < groupEntries.length; j++) {
-        if (mergedKeys.has(groupEntries[j][0])) continue
-        if (levenshtein(groupEntries[i][0], groupEntries[j][0]) <= 2) {
-          groupEntries[i][1].push(...groupEntries[j][1])
-          mergedKeys.add(groupEntries[j][0])
-        }
-      }
-    }
-
-    // Only keep groups with 2+ dogs
+    // Only keep groups with 2+ dogs (exact normalized name match only — no fuzzy for dogs)
     const duplicates: DuplicateGroup[] = []
-    for (const [normalizedName, groupDogs] of groupEntries) {
-      if (mergedKeys.has(normalizedName)) continue
+    for (const [normalizedName, groupDogs] of nameGroups) {
       if (groupDogs.length >= 2) {
         groupDogs.sort((a, b) => {
           const score = (d: DogRow) => [d.registration, d.microchip, d.birth_date, d.thumbnail_url, d.father_id, d.mother_id, d.owner_id, d.kennel_id].filter(Boolean).length
