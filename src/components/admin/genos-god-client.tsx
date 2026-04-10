@@ -13,6 +13,11 @@ function normName(s: string): string {
   return s.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[''`']/g, '').replace(/\s+/g, ' ')
 }
 
+// Core name for fuzzy grouping: strip numbers, asterisks, parenthesized suffixes
+function coreName(s: string): string {
+  return normName(s).replace(/\([^)]*\)/g, '').replace(/[*"_.,:;!?#]/g, '').replace(/\d+/g, '').replace(/\s+/g, ' ').trim()
+}
+
 export default function GenosGodClient({ userId }: Props) {
   const [activeTab, setActiveTab] = useState<'kennels' | 'kennel-dupes' | 'duplicates'>('kennels')
 
@@ -75,7 +80,10 @@ function KennelDetector() {
     const { data: dogs } = await supabase.from('dogs').select('id, name, kennel_id').order('name')
     const { data: kennels } = await supabase.from('kennels').select('id, name, owner_id, affix_format')
 
-    const kennelMap = new Map((kennels || []).map(k => [normName(k.name), k]))
+    // Map kennels by coreName for fuzzy matching
+    const kennelByCoreMap = new Map<string, typeof kennels extends (infer T)[] | null ? T : never>()
+    for (const k of (kennels || [])) { kennelByCoreMap.set(coreName(k.name), k) }
+
     const affixGroups = new Map<string, KennelGroup>()
 
     for (const dog of (dogs || [])) {
@@ -88,13 +96,13 @@ function KennelDetector() {
         const match = name.match(regex)
         if (match) {
           const affix = match[1].trim()
-          const affixNorm = normName(affix)
-          if (affixNorm.length < 3) continue // skip very short affixes
+          const affixCore = coreName(affix)
+          if (affixCore.length < 3) continue // skip very short affixes
 
-          if (!affixGroups.has(affixNorm)) {
-            const existing = kennelMap.get(affixNorm) || null
-            affixGroups.set(affixNorm, {
-              affix,
+          if (!affixGroups.has(affixCore)) {
+            const existing = kennelByCoreMap.get(affixCore) || null
+            affixGroups.set(affixCore, {
+              affix: existing?.name || affix, // prefer existing kennel name
               format: `suffix_${prep}`,
               preposition: prep,
               dogs: [],
@@ -103,7 +111,7 @@ function KennelDetector() {
               unassignedCount: 0,
             })
           }
-          const group = affixGroups.get(affixNorm)!
+          const group = affixGroups.get(affixCore)!
           group.dogs.push(dog)
           if (dog.kennel_id) group.assignedCount++
           else group.unassignedCount++
@@ -274,16 +282,7 @@ function KennelDuplicateDetector() {
 
     const kennelsWithCount = (kennels || []).map(k => ({ ...k, dogCount: dogCounts.get(k.id) || 0 }))
 
-    // Core name: strip numbers, asterisks, parenthesized suffixes, punctuation → just the key words
-    function coreName(s: string): string {
-      return normName(s)
-        .replace(/\([^)]*\)/g, '') // remove (2000), (abc), etc.
-        .replace(/[*"_.,:;!?#]/g, '') // remove punctuation/asterisks
-        .replace(/\d+/g, '') // remove numbers
-        .replace(/\s+/g, ' ').trim()
-    }
-
-    // Group by core name — catches "Irema Curtó", "IREMA CURTO (2000)", "IREMA CURTO*", "Irema Cutó"
+    // Group by core name — catches "Irema Curtó", "IREMA CURTO (2000)", "IREMA CURTO*"
     const nameGroups = new Map<string, KennelRow[]>()
     for (const k of kennelsWithCount) {
       const core = coreName(k.name)
