@@ -43,8 +43,33 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported }: Prop
   const [zoomMenu, setZoomMenu] = useState(false)
 
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [scanPhase, setScanPhase] = useState('')
 
-  const EXTRACTION_PROMPT = `You are a dog pedigree data extractor. Extract the complete pedigree information from this content.
+  const LIGHT_EXTRACTION_PROMPT = `You are a dog pedigree data extractor. Extract ONLY the main dog, its parents (generation 1), and its grandparents (generation 2). Do NOT extract deeper ancestors.
+
+Return JSON:
+{
+  "main_dog": {
+    "name": "string", "sex": "Male" or "Female", "registration": "string or null",
+    "breed": "string or null", "color": "string or null", "birth_date": "YYYY-MM-DD or YYYY or null",
+    "health": "string or null", "breeder": "string or null", "owner": "string or null",
+    "photo_url": "string or null", "father_name": "exact name or null", "mother_name": "exact name or null"
+  },
+  "ancestors": [
+    { "name": "string", "sex": "Male" or "Female", "registration": "string or null",
+      "breed": "string or null", "color": "string or null", "birth_date": "string or null",
+      "health": "string or null", "photo_url": "string or null",
+      "father_name": "string or null", "mother_name": "string or null",
+      "generation": 1 or 2 }
+  ]
+}
+
+Rules:
+- Extract ONLY up to grandparents (generation 2). Stop there.
+- Names must be EXACT. father_name/mother_name must match another dog's name.
+- Return ONLY JSON, no markdown.`
+
+  const FULL_EXTRACTION_PROMPT = `You are a dog pedigree data extractor. Extract the complete pedigree information from this content.
 
 Return a JSON object with this EXACT structure:
 {
@@ -91,7 +116,7 @@ Rules:
       .slice(0, 80000)
   }
 
-  async function callClaude(apiKey: string, messages: any[]): Promise<PedigreeData> {
+  async function callClaude(apiKey: string, messages: any[], maxTokens = 8000): Promise<PedigreeData> {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -100,7 +125,7 @@ Rules:
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true',
       },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 8000, messages }),
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: maxTokens, messages }),
     })
     if (!res.ok) {
       let detail = ''
@@ -119,14 +144,61 @@ Rules:
     try { return JSON.parse(jsonStr) } catch { throw new Error('No se pudo interpretar la respuesta de la IA') }
   }
 
+  async function verifyParentInDB(parentName: string, grandFatherName: string | null, grandMotherName: string | null): Promise<{ id: string; name: string; sex: string; photo: string | null; breed: string | null } | null> {
+    const supabase = createClient()
+    const { data: candidates } = await supabase
+      .from('dogs').select('id, name, sex, thumbnail_url, father_id, mother_id, breed:breeds(name)')
+      .eq('owner_id', userId).ilike('name', parentName).limit(5)
+    if (!candidates?.length) return null
+
+    for (const c of candidates) {
+      let dbFatherName: string | null = null
+      let dbMotherName: string | null = null
+      if (c.father_id) {
+        const { data: f } = await supabase.from('dogs').select('name').eq('id', c.father_id).single()
+        dbFatherName = f?.name || null
+      }
+      if (c.mother_id) {
+        const { data: m } = await supabase.from('dogs').select('name').eq('id', c.mother_id).single()
+        dbMotherName = m?.name || null
+      }
+      const norm = (s: string | null) => s?.toLowerCase().trim() || ''
+      if (norm(grandFatherName) === norm(dbFatherName) && norm(grandMotherName) === norm(dbMotherName)) {
+        return { id: c.id, name: c.name, sex: c.sex, photo: c.thumbnail_url, breed: (c.breed as any)?.name || null }
+      }
+    }
+    return null
+  }
+
+  function buildAutoSwaps(
+    fatherName: string | null, fatherMatch: any | null,
+    motherName: string | null, motherMatch: any | null,
+  ): Record<string, { id: string; name: string; breed?: string; photo?: string }> {
+    const autoSwaps: Record<string, any> = {}
+    if (fatherMatch && fatherName) autoSwaps[fatherName] = { id: fatherMatch.id, name: fatherMatch.name, breed: fatherMatch.breed, photo: fatherMatch.photo }
+    if (motherMatch && motherName) autoSwaps[motherName] = { id: motherMatch.id, name: motherMatch.name, breed: motherMatch.breed, photo: motherMatch.photo }
+    return autoSwaps
+  }
+
+  function extractImageUrls(html: string): string[] {
+    const urls: string[] = []
+    const regex = /<img[^>]+src=["']([^"']+)["']/gi
+    let m
+    while ((m = regex.exec(html)) !== null) {
+      const src = m[1]
+      if (src.startsWith('http') && !src.includes('logo') && !src.includes('icon') && !src.includes('banner')) urls.push(src)
+    }
+    return urls
+  }
+
   async function handleScan() {
     if (!url.trim()) return
-    setScanning(true); setError(''); setData(null); setSwaps({})
+    setScanning(true); setError(''); setData(null); setSwaps({}); setScanPhase('Obteniendo datos...')
     try {
-      // Step 1: Get API key (fast, < 1s)
       const apiKey = await getApiKey()
 
-      // Step 2: Fetch HTML via proxy (bypasses CORS)
+      // Fetch HTML via proxy
+      setScanPhase('Accediendo a la web...')
       let html: string | null = null
       try {
         const proxyRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(url.trim())}`, { signal: AbortSignal.timeout(15000) })
@@ -135,40 +207,63 @@ Rules:
           if (raw.length > 3000 && !raw.includes('403 Forbidden')) html = cleanHtml(raw)
         }
       } catch {}
-
       if (!html) throw new Error('No se pudo acceder a la página. Intenta con otra URL o sube un screenshot.')
 
-      // Extract image URLs from HTML
-      const imgUrls: string[] = []
-      const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi
-      let match
-      while ((match = imgRegex.exec(html)) !== null) {
-        const src = match[1]
-        if (src.startsWith('http') && !src.includes('logo') && !src.includes('icon') && !src.includes('banner')) imgUrls.push(src)
-      }
+      const imgUrls = extractImageUrls(html)
+      const htmlContent = `${LIGHT_EXTRACTION_PROMPT}\n\n--- PAGE HTML ---\n${html}\n\n--- IMAGE URLS FOUND ---\n${imgUrls.slice(0, 10).join('\n')}`
 
-      // Step 3: Call Claude directly from browser (no timeout limit!)
-      const pedigreeData = await callClaude(apiKey, [{
-        role: 'user',
-        content: `${EXTRACTION_PROMPT}\n\n--- PAGE HTML ---\n${html}\n\n--- IMAGE URLS FOUND ---\n${imgUrls.slice(0, 10).join('\n')}`,
-      }])
+      // Step 1: Light extraction (main dog + parents + grandparents only)
+      setScanPhase('Analizando pedigrí con IA...')
+      const lightData = await callClaude(apiKey, [{ role: 'user', content: htmlContent }], 3000)
 
-      if (!pedigreeData?.main_dog?.name) {
+      if (!lightData?.main_dog?.name) {
         setError('No se pudo extraer datos de esta web. Prueba a subir un screenshot manual del pedigrí.')
-        setScanning(false); return
+        setScanning(false); setScanPhase(''); return
       }
-      setData(pedigreeData)
-      setEditedMain(pedigreeData.main_dog)
-      setEditedAncestors(pedigreeData.ancestors || [])
+
+      // Step 2: Verify parents against DB
+      setScanPhase('Verificando ancestros existentes...')
+      const { father_name, mother_name } = lightData.main_dog
+      const ancestors = lightData.ancestors || []
+      const fatherDog = father_name ? ancestors.find(a => a.name === father_name) : null
+      const motherDog = mother_name ? ancestors.find(a => a.name === mother_name) : null
+
+      const [fatherMatch, motherMatch] = await Promise.all([
+        father_name ? verifyParentInDB(father_name, fatherDog?.father_name || null, fatherDog?.mother_name || null) : null,
+        mother_name ? verifyParentInDB(mother_name, motherDog?.father_name || null, motherDog?.mother_name || null) : null,
+      ])
+
+      const bothParentsResolved = (!father_name || !!fatherMatch) && (!mother_name || !!motherMatch)
+
+      let finalData: PedigreeData
+      if (bothParentsResolved) {
+        // FAST PATH: Parents already in DB, skip full extraction
+        finalData = lightData
+      } else {
+        // FULL PATH: Need deeper ancestors
+        setScanPhase('Extrayendo árbol completo...')
+        const fullContent = `${FULL_EXTRACTION_PROMPT}\n\n--- PAGE HTML ---\n${html}\n\n--- IMAGE URLS FOUND ---\n${imgUrls.slice(0, 10).join('\n')}`
+        finalData = await callClaude(apiKey, [{ role: 'user', content: fullContent }], 8000)
+        if (!finalData?.main_dog?.name) {
+          setError('No se pudo extraer el pedigrí completo.')
+          setScanning(false); setScanPhase(''); return
+        }
+      }
+
+      const autoSwaps = buildAutoSwaps(father_name, fatherMatch, mother_name, motherMatch)
+      setData(finalData)
+      setEditedMain(finalData.main_dog)
+      setEditedAncestors(finalData.ancestors || [])
+      setSwaps(autoSwaps)
       setShowPreview(true)
     } catch (err: any) { setError(err.message || 'Error al escanear') }
-    setScanning(false)
+    setScanning(false); setScanPhase('')
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setUploadingImage(true); setError(''); setData(null); setSwaps({})
+    setUploadingImage(true); setError(''); setData(null); setSwaps({}); setScanPhase('Analizando imagen con IA...')
     try {
       const apiKey = await getApiKey()
       const reader = new FileReader()
@@ -177,20 +272,52 @@ Rules:
         reader.onerror = reject
         reader.readAsDataURL(file)
       })
-      const pedigreeData = await callClaude(apiKey, [{
+      const imageContent = [
+        { type: 'image' as const, source: { type: 'base64' as const, media_type: 'image/jpeg' as const, data: base64 } },
+      ]
+
+      // Step 1: Light extraction
+      const lightData = await callClaude(apiKey, [{
         role: 'user',
-        content: [
-          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
-          { type: 'text', text: EXTRACTION_PROMPT },
-        ],
-      }])
-      if (!pedigreeData?.main_dog?.name) { setError('No se pudo extraer datos de la imagen.'); setUploadingImage(false); return }
-      setData(pedigreeData)
-      setEditedMain(pedigreeData.main_dog)
-      setEditedAncestors(pedigreeData.ancestors || [])
+        content: [...imageContent, { type: 'text' as const, text: LIGHT_EXTRACTION_PROMPT }],
+      }], 3000)
+
+      if (!lightData?.main_dog?.name) { setError('No se pudo extraer datos de la imagen.'); setUploadingImage(false); setScanPhase(''); return }
+
+      // Step 2: Verify parents
+      setScanPhase('Verificando ancestros existentes...')
+      const { father_name, mother_name } = lightData.main_dog
+      const ancestors = lightData.ancestors || []
+      const fatherDog = father_name ? ancestors.find(a => a.name === father_name) : null
+      const motherDog = mother_name ? ancestors.find(a => a.name === mother_name) : null
+
+      const [fatherMatch, motherMatch] = await Promise.all([
+        father_name ? verifyParentInDB(father_name, fatherDog?.father_name || null, fatherDog?.mother_name || null) : null,
+        mother_name ? verifyParentInDB(mother_name, motherDog?.father_name || null, motherDog?.mother_name || null) : null,
+      ])
+
+      const bothParentsResolved = (!father_name || !!fatherMatch) && (!mother_name || !!motherMatch)
+
+      let finalData: PedigreeData
+      if (bothParentsResolved) {
+        finalData = lightData
+      } else {
+        setScanPhase('Extrayendo árbol completo...')
+        finalData = await callClaude(apiKey, [{
+          role: 'user',
+          content: [...imageContent, { type: 'text' as const, text: FULL_EXTRACTION_PROMPT }],
+        }], 8000)
+        if (!finalData?.main_dog?.name) { setError('No se pudo extraer el pedigrí completo.'); setUploadingImage(false); setScanPhase(''); return }
+      }
+
+      const autoSwaps = buildAutoSwaps(father_name, fatherMatch, mother_name, motherMatch)
+      setData(finalData)
+      setEditedMain(finalData.main_dog)
+      setEditedAncestors(finalData.ancestors || [])
+      setSwaps(autoSwaps)
       setShowPreview(true)
     } catch (err: any) { setError(err.message || 'Error al analizar la imagen') }
-    setUploadingImage(false)
+    setUploadingImage(false); setScanPhase('')
   }
 
   async function searchSwap(query: string) {
@@ -382,8 +509,8 @@ Rules:
       {(scanning || uploadingImage) && (
         <div className="text-center py-8">
           <Loader2 className="w-8 h-8 animate-spin text-[#D74709] mx-auto mb-3" />
-          <p className="text-sm text-white/50">{uploadingImage ? 'Analizando imagen con IA...' : 'Escaneando pedigrí con IA...'}</p>
-          <p className="text-xs text-white/25 mt-1">Esto puede tardar hasta 30 segundos</p>
+          <p className="text-sm text-white/50">{scanPhase || 'Escaneando pedigrí con IA...'}</p>
+          <p className="text-xs text-white/25 mt-1">Esto puede tardar unos segundos</p>
         </div>
       )}
     </div>
