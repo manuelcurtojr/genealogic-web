@@ -96,12 +96,6 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 text-[11px] text-white/20">
-        <Link href="/privacy" className="hover:text-white/40 transition">Privacidad</Link>
-        <Link href="/terms" className="hover:text-white/40 transition">Términos</Link>
-        <Link href="/cookies" className="hover:text-white/40 transition">Cookies</Link>
-        <Link href="/legal" className="hover:text-white/40 transition">Aviso Legal</Link>
-      </div>
     </div>
   )
 }
