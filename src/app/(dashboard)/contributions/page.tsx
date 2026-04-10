@@ -5,17 +5,17 @@ export default async function ContributionsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: dogs } = await supabase
-    .from('dogs')
-    .select('id, slug, name, sex, birth_date, thumbnail_url, breed:breeds(id, name), color:colors(id, name), breed_id')
-    .eq('contributor_id', user!.id)
-    .is('owner_id', null)
-    .order('created_at', { ascending: false })
+  const [dogsRes, breedsRes, importsRes] = await Promise.all([
+    supabase.from('dogs')
+      .select('id, slug, name, sex, birth_date, thumbnail_url, breed:breeds(id, name), color:colors(id, name), breed_id')
+      .eq('contributor_id', user!.id).is('owner_id', null)
+      .order('created_at', { ascending: false }),
+    supabase.from('breeds').select('id, name').order('name'),
+    supabase.from('notifications')
+      .select('id, title, message, created_at')
+      .eq('user_id', user!.id).eq('type', 'import')
+      .order('created_at', { ascending: false }),
+  ])
 
-  const { data: breeds } = await supabase
-    .from('breeds')
-    .select('id, name')
-    .order('name')
-
-  return <ContributionsClient dogs={dogs || []} breeds={breeds || []} userId={user!.id} />
+  return <ContributionsClient dogs={dogsRes.data || []} breeds={breedsRes.data || []} imports={importsRes.data || []} userId={user!.id} />
 }

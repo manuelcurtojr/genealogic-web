@@ -1,27 +1,35 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Grid3X3, List, Search, Plus, Eye, Edit, GitBranch } from 'lucide-react'
+import { Grid3X3, List, Search, Plus, Eye, Edit, GitBranch, Clock, Undo2, Link2, Loader2, AlertTriangle, Dog } from 'lucide-react'
 import DogCard from '@/components/dogs/dog-card'
 import DogFormPanel from '@/components/dogs/dog-form-panel'
 import PedigreeEditor from '@/components/pedigree/pedigree-editor'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { BRAND } from '@/lib/constants'
 
-interface Dog {
+interface DogItem {
   id: string; slug?: string | null; name: string; sex: string | null; birth_date: string | null
   thumbnail_url: string | null; breed: any; color: any; breed_id: string | null
 }
 
+interface ImportRecord {
+  id: string; title: string; message: string; created_at: string
+}
+
 interface Props {
-  dogs: Dog[]
+  dogs: DogItem[]
   breeds: { id: string; name: string }[]
+  imports: ImportRecord[]
   userId: string
 }
 
 const PAGE_SIZE = 24
 
-export default function ContributionsClient({ dogs, breeds, userId }: Props) {
+export default function ContributionsClient({ dogs, breeds, imports, userId }: Props) {
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState<'dogs' | 'history'>('dogs')
   const [search, setSearch] = useState('')
   const [panelOpen, setPanelOpen] = useState(false)
   const [editDogId, setEditDogId] = useState<string | null>(null)
@@ -73,101 +81,116 @@ export default function ContributionsClient({ dogs, breeds, userId }: Props) {
     <>
       <div className="mb-4 sm:mb-6">
         <h1 className="text-xl sm:text-2xl font-bold">Contribuciones</h1>
-        <p className="text-white/50 text-xs sm:text-sm mt-1">{dogs.length} perros documentados</p>
+        <p className="text-white/50 text-xs sm:text-sm mt-1">{dogs.length} perros documentados · {imports.length} importaciones</p>
       </div>
 
-      {/* Search + filters — 1 row on desktop, 2 rows on mobile */}
-      <div className="flex items-center gap-2 mb-2 lg:mb-3">
-        <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-          <input type="text" placeholder="Buscar por nombre, raza, color..." value={search} onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
-        </div>
-        {/* Desktop: filters inline */}
-        <select value={sexFilter} onChange={(e) => { setSexFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
-          className="hidden lg:block bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-[130px]">
-          <option value="">Todos los sexos</option>
-          <option value="male">Machos</option>
-          <option value="female">Hembras</option>
-        </select>
-        <select value={breedFilter} onChange={(e) => { setBreedFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
-          className="hidden lg:block bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-[160px]">
-          <option value="">Todas las razas</option>
-          {breeds.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-        </select>
-        <div className="flex rounded-lg border border-white/10 overflow-hidden shrink-0">
-          <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><Grid3X3 className="w-4 h-4" /></button>
-          <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><List className="w-4 h-4" /></button>
-        </div>
+      {/* Tabs */}
+      <div className="flex border-b border-white/10 mb-4">
+        <button onClick={() => setActiveTab('dogs')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition border-b-2 -mb-px ${activeTab === 'dogs' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40 hover:text-white/60'}`}>
+          <Dog className="w-3.5 h-3.5" /> Perros ({dogs.length})
+        </button>
+        <button onClick={() => setActiveTab('history')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition border-b-2 -mb-px ${activeTab === 'history' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40 hover:text-white/60'}`}>
+          <Clock className="w-3.5 h-3.5" /> Historial ({imports.length})
+        </button>
       </div>
 
-      {/* Mobile: filters row */}
-      <div className="flex items-center gap-2 mb-3 lg:hidden">
-        <select value={sexFilter} onChange={(e) => { setSexFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
-          className="bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-xs text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer flex-1 min-w-0">
-          <option value="">Todos los sexos</option>
-          <option value="male">Machos</option>
-          <option value="female">Hembras</option>
-        </select>
-        <select value={breedFilter} onChange={(e) => { setBreedFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
-          className="bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-xs text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer flex-1 min-w-0">
-          <option value="">Todas las razas</option>
-          {breeds.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-        </select>
-      </div>
-
-      <p className="text-xs text-white/30 mb-3">{filtered.length} perro{filtered.length !== 1 ? 's' : ''}</p>
-
-      {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
-          <button onClick={openAdd}
-            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[160px] sm:min-h-[200px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer p-4">
-            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-2 sm:mb-3">
-              <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-white/30 group-hover:text-[#D74709] transition" />
-            </div>
-            <p className="text-xs sm:text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir contribución</p>
-          </button>
-          {paged.map((dog) => (
-            <DogCard key={dog.id} dog={dog} onEdit={() => openEdit(dog.id)} onEditPedigree={() => openPedigree(dog.id)} />
-          ))}
-        </div>
+      {activeTab === 'history' ? (
+        <ImportHistory imports={imports} userId={userId} onUndone={() => router.refresh()} />
       ) : (
-        <div className="space-y-2">
-          <button onClick={openAdd}
-            className="w-full flex items-center gap-3 border-2 border-dashed border-white/10 rounded-xl p-3 sm:p-4 hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition shrink-0">
-              <Plus className="w-5 h-5 text-white/30 group-hover:text-[#D74709] transition" />
+        <>
+          {/* Search + filters */}
+          <div className="flex items-center gap-2 mb-2 lg:mb-3">
+            <div className="relative flex-1 min-w-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+              <input type="text" placeholder="Buscar por nombre, raza, color..." value={search} onChange={(e) => handleSearchChange(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
             </div>
-            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir contribución</p>
-          </button>
-          {paged.map((dog) => {
-            const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
-            const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
-            const colorName = Array.isArray(dog.color) ? dog.color[0]?.name : dog.color?.name
-            return (
-              <div key={dog.id} className="flex items-center gap-2.5 sm:gap-4 bg-white/5 border border-white/10 rounded-xl p-2.5 sm:p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition cursor-pointer" onClick={() => window.location.href = `/dogs/${dog.slug || dog.id}`}>
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 overflow-hidden flex-shrink-0 bg-white/5" style={{ borderColor: sexColor }}>
-                  {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/20 text-sm">{dog.sex === 'male' ? '♂' : '♀'}</div>}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-xs sm:text-sm truncate">{dog.name}</p>
-                  <div className="flex items-center gap-2 sm:gap-3 mt-0.5 text-[10px] sm:text-xs text-white/40">
-                    {breedName && <span className="truncate">{breedName}</span>}
-                    {colorName && <span className="hidden sm:inline">{colorName}</span>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <button onClick={e => { e.stopPropagation(); openPedigree(dog.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition"><GitBranch className="w-3 h-3" /></button>
-                  <Link href={`/dogs/${dog.slug || dog.id}`} onClick={e => e.stopPropagation()} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition"><Eye className="w-3 h-3" /> <span className="hidden sm:inline">Ver</span></Link>
-                  <button onClick={e => { e.stopPropagation(); openEdit(dog.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition"><Edit className="w-3 h-3" /> <span className="hidden sm:inline">Editar</span></button>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+            <select value={sexFilter} onChange={(e) => { setSexFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
+              className="hidden lg:block bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-[130px]">
+              <option value="">Todos los sexos</option>
+              <option value="male">Machos</option>
+              <option value="female">Hembras</option>
+            </select>
+            <select value={breedFilter} onChange={(e) => { setBreedFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
+              className="hidden lg:block bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-[160px]">
+              <option value="">Todas las razas</option>
+              {breeds.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+            <div className="flex rounded-lg border border-white/10 overflow-hidden shrink-0">
+              <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><Grid3X3 className="w-4 h-4" /></button>
+              <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><List className="w-4 h-4" /></button>
+            </div>
+          </div>
 
-      {hasMore && <div ref={loadMoreRef} className="h-10" />}
+          {/* Mobile filters */}
+          <div className="flex items-center gap-2 mb-3 lg:hidden">
+            <select value={sexFilter} onChange={(e) => { setSexFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
+              className="bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-xs text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer flex-1 min-w-0">
+              <option value="">Todos los sexos</option>
+              <option value="male">Machos</option>
+              <option value="female">Hembras</option>
+            </select>
+            <select value={breedFilter} onChange={(e) => { setBreedFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
+              className="bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-xs text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer flex-1 min-w-0">
+              <option value="">Todas las razas</option>
+              {breeds.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+          </div>
+
+          <p className="text-xs text-white/30 mb-3">{filtered.length} perro{filtered.length !== 1 ? 's' : ''}</p>
+
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+              <button onClick={openAdd}
+                className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[160px] sm:min-h-[200px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer p-4">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-2 sm:mb-3">
+                  <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-white/30 group-hover:text-[#D74709] transition" />
+                </div>
+                <p className="text-xs sm:text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir contribucion</p>
+              </button>
+              {paged.map((dog) => (
+                <DogCard key={dog.id} dog={dog} onEdit={() => openEdit(dog.id)} onEditPedigree={() => openPedigree(dog.id)} />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <button onClick={openAdd}
+                className="w-full flex items-center gap-3 border-2 border-dashed border-white/10 rounded-xl p-3 sm:p-4 hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition shrink-0">
+                  <Plus className="w-5 h-5 text-white/30 group-hover:text-[#D74709] transition" />
+                </div>
+                <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir contribucion</p>
+              </button>
+              {paged.map((dog) => {
+                const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
+                const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
+                const colorName = Array.isArray(dog.color) ? dog.color[0]?.name : dog.color?.name
+                return (
+                  <div key={dog.id} className="flex items-center gap-2.5 sm:gap-4 bg-white/5 border border-white/10 rounded-xl p-2.5 sm:p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition cursor-pointer" onClick={() => window.location.href = `/dogs/${dog.slug || dog.id}`}>
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 overflow-hidden flex-shrink-0 bg-white/5" style={{ borderColor: sexColor }}>
+                      {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/20 text-sm">{dog.sex === 'male' ? '♂' : '♀'}</div>}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-xs sm:text-sm truncate">{dog.name}</p>
+                      <div className="flex items-center gap-2 sm:gap-3 mt-0.5 text-[10px] sm:text-xs text-white/40">
+                        {breedName && <span className="truncate">{breedName}</span>}
+                        {colorName && <span className="hidden sm:inline">{colorName}</span>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <button onClick={e => { e.stopPropagation(); openPedigree(dog.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition"><GitBranch className="w-3 h-3" /></button>
+                      <Link href={`/dogs/${dog.slug || dog.id}`} onClick={e => e.stopPropagation()} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition"><Eye className="w-3 h-3" /> <span className="hidden sm:inline">Ver</span></Link>
+                      <button onClick={e => { e.stopPropagation(); openEdit(dog.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition"><Edit className="w-3 h-3" /> <span className="hidden sm:inline">Editar</span></button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {hasMore && <div ref={loadMoreRef} className="h-10" />}
+        </>
+      )}
 
       <DogFormPanel open={panelOpen} onClose={closePanel}
         onSaved={(newId) => { if (newId) setTimeout(() => openEdit(newId), 300) }}
@@ -175,5 +198,116 @@ export default function ContributionsClient({ dogs, breeds, userId }: Props) {
 
       <PedigreeEditor open={pedigreeOpen} onClose={() => setPedigreeOpen(false)} dogId={pedigreeDogId} userId={userId} />
     </>
+  )
+}
+
+// ===== Import History =====
+function ImportHistory({ imports, userId, onUndone }: { imports: ImportRecord[]; userId: string; onUndone: () => void }) {
+  const [undoing, setUndoing] = useState<string | null>(null)
+  const [confirming, setConfirming] = useState<string | null>(null)
+  const [undoneIds, setUndoneIds] = useState<Set<string>>(new Set())
+  const [results, setResults] = useState<Record<string, { deleted: number; skipped: number; skippedNames: string[] }>>({})
+
+  async function handleUndo(importId: string) {
+    setUndoing(importId); setConfirming(null)
+    try {
+      const res = await fetch('/api/confirm-import', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ importId, userId }),
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error)
+      setUndoneIds(prev => new Set(prev).add(importId))
+      setResults(prev => ({ ...prev, [importId]: { deleted: result.deletedCount || 0, skipped: result.skippedCount || 0, skippedNames: result.skippedNames || [] } }))
+      onUndone()
+    } catch (err: any) {
+      setResults(prev => ({ ...prev, [importId]: { deleted: 0, skipped: 0, skippedNames: [err.message] } }))
+    }
+    setUndoing(null)
+  }
+
+  if (imports.length === 0) {
+    return (
+      <div className="text-center py-16">
+        <Clock className="w-10 h-10 text-white/10 mx-auto mb-3" />
+        <p className="text-sm text-white/30">No hay importaciones registradas</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {imports.map((imp) => {
+        let parsed: { importId?: string; createdIds?: string[]; mainDogId?: string } = {}
+        try { parsed = JSON.parse(imp.message) } catch {}
+        const importId = parsed.importId || ''
+        const createdCount = parsed.createdIds?.length || 0
+        const mainDogId = parsed.mainDogId
+        const dogName = imp.title.replace('Pedigrí importado: ', '')
+        const date = new Date(imp.created_at)
+        const hoursAgo = (Date.now() - date.getTime()) / (1000 * 60 * 60)
+        const canUndo = hoursAgo <= 24
+        const isUndone = undoneIds.has(importId)
+        const result = results[importId]
+        const isUndoing = undoing === importId
+        const isConfirming = confirming === importId
+
+        const formatted = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+
+        return (
+          <div key={imp.id} className={`bg-white/5 border rounded-xl p-4 transition ${isUndone ? 'border-white/5 opacity-50' : 'border-white/10'}`}>
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-[#D74709]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Link2 className="w-4 h-4 text-[#D74709]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold truncate">{dogName}</p>
+                  {mainDogId && !isUndone && (
+                    <Link href={`/dogs/${mainDogId}`} className="text-[10px] text-[#D74709] hover:underline flex-shrink-0">Ver perro</Link>
+                  )}
+                </div>
+                <p className="text-xs text-white/40 mt-0.5">
+                  {formatted} · {createdCount} perro{createdCount !== 1 ? 's' : ''} creado{createdCount !== 1 ? 's' : ''}
+                </p>
+                {result && (
+                  <div className="mt-2">
+                    {result.deleted > 0 && (
+                      <p className="text-xs text-green-400">Se eliminaron {result.deleted} perros</p>
+                    )}
+                    {result.skipped > 0 && (
+                      <p className="text-xs text-yellow-400">{result.skipped} perros no se pudieron eliminar (tienen datos vinculados): {result.skippedNames.join(', ')}</p>
+                    )}
+                    {result.deleted === 0 && result.skipped === 0 && result.skippedNames.length > 0 && (
+                      <p className="text-xs text-red-400">{result.skippedNames[0]}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="flex-shrink-0">
+                {isUndone ? (
+                  <span className="text-xs text-white/30 font-medium">Deshecho</span>
+                ) : isUndoing ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-white/30" />
+                ) : isConfirming ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-white/40">Confirmar?</span>
+                    <button onClick={() => handleUndo(importId)} className="px-2.5 py-1 rounded text-[10px] font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 transition">Si</button>
+                    <button onClick={() => setConfirming(null)} className="px-2.5 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/40 hover:bg-white/10 transition">No</button>
+                  </div>
+                ) : canUndo ? (
+                  <button onClick={() => setConfirming(importId)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 transition">
+                    <Undo2 className="w-3 h-3" /> Deshacer
+                  </button>
+                ) : (
+                  <span className="text-[10px] text-white/20" title="Solo se puede deshacer en las primeras 24h">Hace mas de 24h</span>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
   )
 }

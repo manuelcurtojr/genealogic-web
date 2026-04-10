@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// DELETE: Undo import
+// DELETE: Undo import (with safety checks)
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -133,30 +133,88 @@ export async function DELETE(request: NextRequest) {
     if (!importId) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
 
     const safeUserId = authUser.id
-    const { data: notifs } = await supabase.from('notifications').select('id, message').eq('user_id', safeUserId).eq('type', 'import').order('created_at', { ascending: false }).limit(50)
+    const { data: notifs } = await supabase.from('notifications').select('id, message, created_at').eq('user_id', safeUserId).eq('type', 'import').order('created_at', { ascending: false }).limit(50)
 
     let createdIds: string[] = []
     let notifId: string | null = null
+    let createdAt: string | null = null
     for (const n of (notifs || [])) {
-      try { const p = JSON.parse(n.message); if (p.importId === importId) { createdIds = p.createdIds || []; notifId = n.id; break } } catch {}
+      try {
+        const p = JSON.parse(n.message)
+        if (p.importId === importId) { createdIds = p.createdIds || []; notifId = n.id; createdAt = n.created_at; break }
+      } catch {}
     }
 
-    if (createdIds.length === 0) return NextResponse.json({ error: 'Import not found' }, { status: 404 })
+    if (createdIds.length === 0) return NextResponse.json({ error: 'Importacion no encontrada' }, { status: 404 })
 
-    for (const id of createdIds) {
-      await supabase.from('dogs').update({ father_id: null }).eq('father_id', id)
-      await supabase.from('dogs').update({ mother_id: null }).eq('mother_id', id)
+    // Safety: 24h window
+    if (createdAt) {
+      const hoursAgo = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60)
+      if (hoursAgo > 24) return NextResponse.json({ error: 'Solo se puede deshacer en las primeras 24 horas' }, { status: 400 })
     }
+
+    const createdSet = new Set(createdIds)
+    const deletable: string[] = []
+    const skippedNames: string[] = []
+
+    // Safety: check each dog for external references before deleting
     for (const id of createdIds) {
+      let blocked = false
+      const { data: dog } = await supabase.from('dogs').select('name').eq('id', id).single()
+      const dogName = dog?.name || id
+
+      // Check if other users' dogs reference this as parent
+      const { count: extFather } = await supabase.from('dogs').select('id', { count: 'exact', head: true })
+        .eq('father_id', id).not('owner_id', 'eq', safeUserId).not('contributor_id', 'eq', safeUserId)
+        .not('id', 'in', `(${createdIds.join(',')})`)
+      if (extFather && extFather > 0) blocked = true
+
+      if (!blocked) {
+        const { count: extMother } = await supabase.from('dogs').select('id', { count: 'exact', head: true })
+          .eq('mother_id', id).not('owner_id', 'eq', safeUserId).not('contributor_id', 'eq', safeUserId)
+          .not('id', 'in', `(${createdIds.join(',')})`)
+        if (extMother && extMother > 0) blocked = true
+      }
+
+      // Check litter references
+      if (!blocked) {
+        const { count: litterRef } = await supabase.from('litters').select('id', { count: 'exact', head: true })
+          .or(`father_id.eq.${id},mother_id.eq.${id}`)
+        if (litterRef && litterRef > 0) blocked = true
+      }
+
+      if (blocked) { skippedNames.push(dogName) }
+      else { deletable.push(id) }
+    }
+
+    // Unlink parent refs within this import batch for deletable dogs
+    for (const id of deletable) {
+      await supabase.from('dogs').update({ father_id: null }).eq('father_id', id).not('id', 'in', `(${deletable.join(',')})`)
+      await supabase.from('dogs').update({ mother_id: null }).eq('mother_id', id).not('id', 'in', `(${deletable.join(',')})`)
+    }
+
+    // Delete related data and dogs
+    for (const id of deletable) {
       await supabase.from('dog_photos').delete().eq('dog_id', id)
       await supabase.from('favorites').delete().eq('dog_id', id)
-      // Delete owned dogs or contributed dogs
-      const { count: ownedCount } = await supabase.from('dogs').delete({ count: 'exact' }).eq('id', id).eq('owner_id', safeUserId)
-      if (!ownedCount) await supabase.from('dogs').delete().eq('id', id).eq('contributor_id', safeUserId)
+      await supabase.from('vet_records').delete().eq('dog_id', id)
+      await supabase.from('awards').delete().eq('dog_id', id)
+      await supabase.from('dog_changes').delete().eq('dog_id', id)
+      await supabase.from('dogs').delete().eq('id', id)
     }
-    if (notifId) await supabase.from('notifications').delete().eq('id', notifId)
 
-    return NextResponse.json({ success: true, deletedCount: createdIds.length })
+    // Update or delete notification
+    if (skippedNames.length === 0 && notifId) {
+      await supabase.from('notifications').delete().eq('id', notifId)
+    } else if (notifId) {
+      // Update notification to reflect remaining dogs
+      const remaining = createdIds.filter(id => !deletable.includes(id))
+      await supabase.from('notifications').update({
+        message: JSON.stringify({ importId, createdIds: remaining, mainDogId: remaining[0] || null }),
+      }).eq('id', notifId)
+    }
+
+    return NextResponse.json({ success: true, deletedCount: deletable.length, skippedCount: skippedNames.length, skippedNames })
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Error al deshacer' }, { status: 500 })
   }
