@@ -31,3 +31,32 @@ export function getAffixPreview(format: AffixFormat, kennelName: string): string
   const name = 'Pablo'
   return formatDogName(name, kennelName || 'Criadero', format)
 }
+
+// Extract the personal name from a full dog name by stripping any kennel affix
+// "Mito de Irema Curtó" → "Mito"
+// "IREMA CURTO's Mito" → "Mito"
+// "IREMA CURTO Mito" → harder to detect, returns full name if ambiguous
+export function extractPersonalName(fullName: string, kennelName?: string): string {
+  const name = fullName.trim()
+
+  // Try suffix patterns: "Name de/of/von/du/del/vom Kennel"
+  for (const prep of ['de', 'of', 'von', 'du', 'del', 'vom']) {
+    const regex = new RegExp(`^(.+?)\\s+${prep}\\s+.+$`, 'i')
+    const match = name.match(regex)
+    if (match) return match[1].trim()
+  }
+
+  // Try possessive prefix: "Kennel's Name"
+  const possMatch = name.match(/^.+'s\s+(.+)$/i)
+  if (possMatch) return possMatch[1].trim()
+
+  // If kennel name provided, try removing it from start or end
+  if (kennelName) {
+    const kn = kennelName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    const nl = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    if (nl.endsWith(kn)) return name.slice(0, name.length - kennelName.length).trim()
+    if (nl.startsWith(kn)) return name.slice(kennelName.length).trim()
+  }
+
+  return name
+}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
+import { extractPersonalName, formatDogName, type AffixFormat } from '@/lib/affix'
 
 async function getAdminSupabase(request?: NextRequest) {
   const supabase = await createServerClient()
@@ -40,10 +41,20 @@ export async function POST(request: NextRequest) {
         ownerId = kennel?.owner_id || null
       }
 
-      // Assign dogs to kennel
+      // Get kennel details for renaming
+      const { data: kennelData } = await sb.from('kennels').select('name, affix_format').eq('id', kennelId).single()
+      const realKennelName = kennelData?.name || kennelName
+      const format = (kennelData?.affix_format || affixFormat || 'suffix_de') as AffixFormat
+
+      // Assign dogs to kennel + fix names with correct affix
       let assigned = 0
-      for (const dogId of dogIds) {
-        const { error } = await sb.from('dogs').update({ kennel_id: kennelId }).eq('id', dogId).is('kennel_id', null)
+      const dogsToProcess = await sb.from('dogs').select('id, name').in('id', dogIds)
+      for (const dog of (dogsToProcess.data || [])) {
+        const personalName = extractPersonalName(dog.name, realKennelName)
+        const correctName = formatDogName(personalName, realKennelName, format)
+        const updates: Record<string, any> = { kennel_id: kennelId }
+        if (correctName !== dog.name) updates.name = correctName
+        const { error } = await sb.from('dogs').update(updates).eq('id', dog.id)
         if (!error) assigned++
       }
 
@@ -107,6 +118,23 @@ export async function POST(request: NextRequest) {
       await sb.from('dogs').delete().eq('id', removeId)
 
       return NextResponse.json({ success: true, deletedName: remove.name, keeperName: keeper.name, moved })
+    }
+
+    if (body.action === 'rename-kennel-dogs') {
+      const { kennelId, kennelName, affixFormat } = body
+      if (!kennelId || !kennelName || !affixFormat) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
+
+      const { data: dogs } = await sb.from('dogs').select('id, name').eq('kennel_id', kennelId)
+      let renamed = 0
+      for (const dog of (dogs || [])) {
+        const personalName = extractPersonalName(dog.name, kennelName)
+        const correctName = formatDogName(personalName, kennelName, affixFormat as AffixFormat)
+        if (correctName !== dog.name) {
+          await sb.from('dogs').update({ name: correctName }).eq('id', dog.id)
+          renamed++
+        }
+      }
+      return NextResponse.json({ success: true, renamed, total: dogs?.length || 0 })
     }
 
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 })

@@ -21,6 +21,8 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
   const [activity, setActivity] = useState({ dogs: 0, litters: 0, forms: 0, submissions: 0 })
   const [ownerInfo, setOwnerInfo] = useState<any>(null)
   const [breeds, setBreeds] = useState<any[]>([])
+  const [originalAffix, setOriginalAffix] = useState('')
+  const [originalName, setOriginalName] = useState('')
 
   const [form, setForm] = useState({
     name: '', description: '', website: '', foundation_date: '', logo_url: '',
@@ -48,6 +50,8 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
 
       if (!k) { setLoading(false); return }
 
+      setOriginalAffix(k.affix_format || 'suffix_de')
+      setOriginalName(k.name || '')
       setForm({
         name: k.name || '', description: k.description || '', website: k.website || '',
         foundation_date: k.foundation_date || '', logo_url: k.logo_url || '',
@@ -112,7 +116,24 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
       whatsapp_enabled: form.whatsapp_enabled, whatsapp_phone: form.whatsapp_phone.trim() || null,
       whatsapp_text: form.whatsapp_text.trim() || null,
     }).eq('id', kennelId)
-    if (err) setError(err.message)
+    if (err) { setError(err.message); setSaving(false); return }
+
+    // If affix format or kennel name changed, rename all dogs
+    if (form.affix_format !== originalAffix || form.name.trim() !== originalName) {
+      try {
+        await fetch('/api/admin/genos-god', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'rename-kennel-dogs',
+            kennelId,
+            kennelName: form.name.trim(),
+            affixFormat: form.affix_format,
+          }),
+        })
+      } catch {}
+    }
+
     setSaving(false)
     onSaved()
     onClose()
