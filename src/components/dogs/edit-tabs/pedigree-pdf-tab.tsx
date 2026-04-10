@@ -55,25 +55,32 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
       // Build tree structure from flat pedigree data
       const tree = buildTree(pedigreeData || [], dogId)
 
+      const b = Array.isArray(dog.breed) ? dog.breed[0] : dog.breed
+      const c = Array.isArray(dog.color) ? dog.color[0] : dog.color
+      const k = Array.isArray(dog.kennel) ? dog.kennel[0] : dog.kennel
+      const f = Array.isArray(dog.father) ? dog.father[0] : dog.father
+      const m = Array.isArray(dog.mother) ? dog.mother[0] : dog.mother
+
       const dogData = {
         name: dog.name || '',
-        breed: dog.breed?.name || 'Sin raza',
-        color: dog.color?.name || '',
+        breed: b?.name || 'Sin raza',
+        color: c?.name || '',
         sex: dog.sex || 'male',
         birth_date: dog.birth_date ? formatDate(dog.birth_date) : '',
         microchip: dog.microchip || '',
         registration: dog.registration || '',
-        father: dog.father?.name || 'Desconocido',
-        mother: dog.mother?.name || 'Desconocido',
-        kennel: dog.kennel?.name || '',
+        father: f?.name || 'Desconocido',
+        mother: m?.name || 'Desconocido',
+        kennel: k?.name || '',
         owner: profile?.display_name || profile?.email || 'Propietario',
       }
 
       generatePedigreePdf(dogData, tree)
       setDone(true)
       setTimeout(() => setDone(false), 3000)
-    } catch (err) {
+    } catch (err: any) {
       console.error('PDF generation error:', err)
+      alert('Error al generar el PDF: ' + (err?.message || 'Inténtalo de nuevo'))
     } finally {
       setGenerating(false)
     }
