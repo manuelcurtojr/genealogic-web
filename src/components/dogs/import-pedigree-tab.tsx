@@ -64,8 +64,13 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported }: Prop
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clientHtml ? { htmlContent: clientHtml, sourceUrl: url.trim() } : { url: url.trim() }),
       })
-      const result = await res.json()
-      if (!res.ok) throw new Error(result.error)
+      let result
+      try {
+        result = await res.json()
+      } catch {
+        throw new Error('Error del servidor. Intenta de nuevo o sube un screenshot manual.')
+      }
+      if (!res.ok) throw new Error(result.error || 'Error al escanear')
       if (!result.data?.main_dog?.name) {
         setError('No se pudo extraer datos de esta web. Prueba a subir un screenshot manual del pedigrí.')
         setScanning(false); return
@@ -90,8 +95,9 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported }: Prop
         reader.readAsDataURL(file)
       })
       const res = await fetch('/api/import-pedigree', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageBase64: base64 }) })
-      const result = await res.json()
-      if (!res.ok) throw new Error(result.error)
+      let result
+      try { result = await res.json() } catch { throw new Error('Error del servidor. Intenta de nuevo.') }
+      if (!res.ok) throw new Error(result.error || 'Error al analizar')
       if (!result.data?.main_dog?.name) { setError('No se pudo extraer datos de la imagen.'); setUploadingImage(false); return }
       setData(result.data)
       setEditedMain(result.data.main_dog)

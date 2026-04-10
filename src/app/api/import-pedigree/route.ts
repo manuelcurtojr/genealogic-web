@@ -89,7 +89,11 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 8000, messages }),
         signal: AbortSignal.timeout(55000),
       })
-      if (!claudeRes.ok) return NextResponse.json({ error: `AI error: ${claudeRes.status}` }, { status: 500 })
+      if (!claudeRes.ok) {
+        let errDetail = ''
+        try { const errBody = await claudeRes.json(); errDetail = errBody?.error?.message || '' } catch {}
+        return NextResponse.json({ error: `Error de IA (${claudeRes.status}): ${errDetail || 'Intenta de nuevo'}` }, { status: 500 })
+      }
       const claudeData = await claudeRes.json()
       const responseText = claudeData.content?.[0]?.text || ''
       let jsonStr = responseText
@@ -97,7 +101,9 @@ export async function POST(request: NextRequest) {
       if (jsonMatch) jsonStr = jsonMatch[1]
       const objMatch = jsonStr.match(/\{[\s\S]*\}/)
       if (objMatch) jsonStr = objMatch[0]
-      return NextResponse.json({ success: true, data: JSON.parse(jsonStr), source: 'image_upload' })
+      let parsedData
+      try { parsedData = JSON.parse(jsonStr) } catch { return NextResponse.json({ error: 'No se pudo interpretar la respuesta de la IA.' }, { status: 422 }) }
+      return NextResponse.json({ success: true, data: parsedData, source: 'image_upload' })
     }
 
     if (!url && !preloadedHtml) return NextResponse.json({ error: 'URL is required' }, { status: 400 })
@@ -227,12 +233,17 @@ export async function POST(request: NextRequest) {
     })
 
     if (!claudeRes.ok) {
-      const err = await claudeRes.text()
-      return NextResponse.json({ error: `AI error: ${claudeRes.status}` }, { status: 500 })
+      let errDetail = ''
+      try { const errBody = await claudeRes.json(); errDetail = errBody?.error?.message || '' } catch {}
+      return NextResponse.json({ error: `Error de IA (${claudeRes.status}): ${errDetail || 'Intenta de nuevo'}` }, { status: 500 })
     }
 
     const claudeData = await claudeRes.json()
     const responseText = claudeData.content?.[0]?.text || ''
+
+    if (!responseText) {
+      return NextResponse.json({ error: 'La IA no devolvió respuesta. Intenta de nuevo.' }, { status: 500 })
+    }
 
     // Parse JSON from response (may be wrapped in markdown code blocks)
     let jsonStr = responseText
@@ -243,7 +254,12 @@ export async function POST(request: NextRequest) {
     const objMatch = jsonStr.match(/\{[\s\S]*\}/)
     if (objMatch) jsonStr = objMatch[0]
 
-    const pedigreeData = JSON.parse(jsonStr)
+    let pedigreeData
+    try {
+      pedigreeData = JSON.parse(jsonStr)
+    } catch {
+      return NextResponse.json({ error: 'No se pudo interpretar la respuesta de la IA. Intenta con otra URL o sube un screenshot.' }, { status: 422 })
+    }
 
     return NextResponse.json({ success: true, data: pedigreeData, source: screenshotBase64 ? 'screenshot' : 'html' })
   } catch (err: any) {
