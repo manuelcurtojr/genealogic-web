@@ -44,11 +44,13 @@ export async function POST(request: NextRequest) {
     const nameToId = new Map<string, string>()
     for (const [name, id] of swapMap) nameToId.set(name, id)
 
-    // Duplicate detection
+    // Duplicate detection (check both owned and contributed dogs)
     for (const dog of allDogs) {
       if (nameToId.has(dog.name)) continue
-      const { data: existing } = await supabase.from('dogs').select('id').eq('owner_id', safeUserId).ilike('name', dog.name).limit(1)
-      if (existing?.length) { nameToId.set(dog.name, existing[0].id); continue }
+      const { data: owned } = await supabase.from('dogs').select('id').eq('owner_id', safeUserId).ilike('name', dog.name).limit(1)
+      if (owned?.length) { nameToId.set(dog.name, owned[0].id); continue }
+      const { data: contributed } = await supabase.from('dogs').select('id').eq('contributor_id', safeUserId).ilike('name', dog.name).limit(1)
+      if (contributed?.length) { nameToId.set(dog.name, contributed[0].id); continue }
       if (dog.registration) {
         const { data: regMatch } = await supabase.from('dogs').select('id').eq('registration', dog.registration).limit(1)
         if (regMatch?.length) nameToId.set(dog.name, regMatch[0].id)
@@ -64,11 +66,15 @@ export async function POST(request: NextRequest) {
       const motherId = dog.mother_name ? nameToId.get(dog.mother_name) || null : null
       const parsedDate = dog.birth_date && dog.birth_date.length >= 4 ? (dog.birth_date.length === 4 ? `${dog.birth_date}-01-01` : dog.birth_date) : null
 
+      const isMainDog = dog.generation === 0
       const { data: created } = await supabase.from('dogs').insert({
         name: dog.name, sex: dog.sex === 'Female' ? 'female' : 'male',
         registration: dog.registration || null, breed_id: findBreed(dog.breed), color_id: findColor(dog.color),
         birth_date: parsedDate, father_id: fatherId, mother_id: motherId,
-        kennel_id: kennelId || null, owner_id: safeUserId, is_public: true,
+        kennel_id: isMainDog ? (kennelId || null) : null,
+        owner_id: isMainDog ? safeUserId : null,
+        contributor_id: isMainDog ? undefined : safeUserId,
+        is_public: true,
         thumbnail_url: importPhotos !== false ? (dog.photo_url || null) : null,
       }).select('id').single()
 
@@ -141,7 +147,9 @@ export async function DELETE(request: NextRequest) {
     for (const id of createdIds) {
       await supabase.from('dog_photos').delete().eq('dog_id', id)
       await supabase.from('favorites').delete().eq('dog_id', id)
-      await supabase.from('dogs').delete().eq('id', id).eq('owner_id', safeUserId)
+      // Delete owned dogs or contributed dogs
+      const { count: ownedCount } = await supabase.from('dogs').delete({ count: 'exact' }).eq('id', id).eq('owner_id', safeUserId)
+      if (!ownedCount) await supabase.from('dogs').delete().eq('id', id).eq('contributor_id', safeUserId)
     }
     if (notifId) await supabase.from('notifications').delete().eq('id', notifId)
 
