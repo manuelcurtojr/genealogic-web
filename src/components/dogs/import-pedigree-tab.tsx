@@ -111,10 +111,13 @@ Rules:
     return html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<link[^>]*>/gi, '')
+      .replace(/<meta[^>]*>/gi, '')
       .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
       .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
       .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '')
-      .slice(0, 80000)
+      .replace(/\s{2,}/g, ' ')
+      .slice(0, 40000)
   }
 
   async function callClaude(apiKey: string, messages: any[], maxTokens = 8000): Promise<PedigreeData> {
@@ -138,9 +141,9 @@ Rules:
     const stopReason = data.stop_reason
     if (!text) throw new Error('La IA no devolvió respuesta')
 
-    // If response was truncated (by stop_reason or malformed JSON), retry with more tokens
-    if (maxTokens < 8000 && (stopReason === 'max_tokens' || stopReason !== 'end_turn')) {
-      return callClaude(apiKey, messages, 8000)
+    // If response was truncated, retry with more tokens
+    if (stopReason === 'max_tokens' && maxTokens < 16000) {
+      return callClaude(apiKey, messages, 16000)
     }
 
     let jsonStr = text
@@ -151,9 +154,9 @@ Rules:
     try {
       return JSON.parse(jsonStr)
     } catch {
-      // If JSON is truncated and we haven't retried yet, retry with more tokens
-      if (maxTokens < 8000) {
-        return callClaude(apiKey, messages, 8000)
+      // If JSON is malformed and we haven't maxed out, retry with more tokens
+      if (maxTokens < 16000) {
+        return callClaude(apiKey, messages, 16000)
       }
       console.error('Claude stop_reason:', stopReason, 'max_tokens:', maxTokens)
       console.error('Claude raw response:', text.substring(0, 500))
