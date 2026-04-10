@@ -135,7 +135,13 @@ Rules:
     }
     const data = await res.json()
     const text = data.content?.[0]?.text || ''
+    const stopReason = data.stop_reason
     if (!text) throw new Error('La IA no devolvió respuesta')
+
+    // If response was truncated, retry with more tokens
+    if (stopReason === 'max_tokens' && maxTokens < 8000) {
+      return callClaude(apiKey, messages, 8000)
+    }
 
     let jsonStr = text
     const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/)
@@ -220,7 +226,7 @@ Rules:
 
       // Step 1: Light extraction (main dog + parents + grandparents only)
       setScanPhase('Analizando pedigrí con IA...')
-      const lightData = await callClaude(apiKey, [{ role: 'user', content: htmlContent }], 3000)
+      const lightData = await callClaude(apiKey, [{ role: 'user', content: htmlContent }], 4000)
 
       if (!lightData?.main_dog?.name) {
         setError('No se pudo extraer datos de esta web. Prueba a subir un screenshot manual del pedigrí.')
@@ -307,7 +313,7 @@ Rules:
       const lightData = await callClaude(apiKey, [{
         role: 'user',
         content: [...imageContent, { type: 'text' as const, text: LIGHT_EXTRACTION_PROMPT }],
-      }], 3000)
+      }], 4000)
 
       if (!lightData?.main_dog?.name) { setError('No se pudo extraer datos de la imagen.'); setUploadingImage(false); setScanPhase(''); return }
 
