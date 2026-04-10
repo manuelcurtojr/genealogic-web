@@ -85,6 +85,25 @@ Rules:
   }
 
   function cleanHtml(html: string): string {
+    // Try to extract just the pedigree table (largest table usually contains the tree)
+    const tables = [...html.matchAll(/<table[^>]*>([\s\S]*?)<\/table>/gi)]
+    if (tables.length > 0) {
+      const largest = tables.reduce((a, b) => a[0].length > b[0].length ? a : b)
+      if (largest[0].length > 5000) {
+        // Strip HTML attributes and keep just structure + text
+        const tableHtml = largest[0]
+          .replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi, '[IMG:$1]') // preserve image URLs
+          .replace(/\s(class|style|width|height|bgcolor|align|valign|border|cellpadding|cellspacing|rowspan|colspan)=["'][^"']*["']/gi, (m, attr) => {
+            // Keep rowspan/colspan (critical for table structure), strip the rest
+            if (attr === 'rowspan' || attr === 'colspan') return m
+            return ''
+          })
+          .replace(/\s{2,}/g, ' ')
+        if (tableHtml.length < 120000) return tableHtml
+      }
+    }
+
+    // Fallback: clean full HTML
     return html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
@@ -94,7 +113,7 @@ Rules:
       .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
       .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '')
       .replace(/\s{2,}/g, ' ')
-      .slice(0, 40000)
+      .slice(0, 60000)
   }
 
   async function callClaude(apiKey: string, messages: any[], maxTokens = 8000, _retries = 0): Promise<PedigreeData> {
