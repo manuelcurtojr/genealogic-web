@@ -4,18 +4,22 @@ import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Users, Store, Palette, Coins, GitBranch, Stethoscope, ArrowLeft, Shield, Menu, X, Key, BarChart3, Sparkles, Dog, Activity } from 'lucide-react'
 
-const ADMIN_NAV = [
-  { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+const ADMIN_NAV: { section?: string; label: string; href: string; icon: any }[] = [
+  // General
+  { section: 'General', label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { label: 'Actividad', href: '/admin/activity', icon: Activity },
   { label: 'Estadísticas', href: '/admin/stats', icon: BarChart3 },
-  { label: 'Usuarios', href: '/admin/users', icon: Users },
+  // Gestión
+  { section: 'Gestion', label: 'Usuarios', href: '/admin/users', icon: Users },
   { label: 'Perros', href: '/admin/dogs', icon: Dog },
   { label: 'Criaderos', href: '/admin/kennels', icon: Store },
-  { label: 'Catálogo', href: '/admin/catalog', icon: Palette },
-  { label: 'Genes', href: '/admin/genes', icon: Coins },
   { label: 'Genealogías', href: '/admin/genealogy', icon: GitBranch },
-  { label: 'Genos God', href: '/admin/genos-god', icon: Sparkles },
+  // Herramientas
+  { section: 'Herramientas', label: 'Genos God', href: '/admin/genos-god', icon: Sparkles },
+  { label: 'Catálogo', href: '/admin/catalog', icon: Palette },
   { label: 'Plantillas vet.', href: '/admin/vet-templates', icon: Stethoscope },
+  // Sistema
+  { section: 'Sistema', label: 'Genes', href: '/admin/genes', icon: Coins },
   { label: 'Configuración', href: '/admin/settings', icon: Key },
 ]
 
@@ -68,19 +72,27 @@ export default function AdminShell({ user, children }: Props) {
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-3 px-2">
-          {ADMIN_NAV.map(item => {
+          {ADMIN_NAV.map((item, i) => {
             const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
             return (
-              <a key={item.href} href={item.href} onClick={() => setMobileOpen(false)}
-                title={collapsed && !mobileOpen ? item.label : undefined}
-                className={`flex items-center gap-3 rounded-lg text-sm font-medium transition mb-0.5 ${
-                  collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
-                } ${
-                  active ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/60 hover:text-white hover:bg-white/5'
-                }`}>
-                <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
-                {(!collapsed || mobileOpen) && <span>{item.label}</span>}
-              </a>
+              <div key={item.href}>
+                {item.section && (!collapsed || mobileOpen) && (
+                  <p className={`text-[10px] font-semibold text-white/20 uppercase tracking-wider px-3 ${i > 0 ? 'mt-4 mb-1' : 'mb-1'}`}>{item.section}</p>
+                )}
+                {item.section && collapsed && !mobileOpen && i > 0 && (
+                  <div className="mx-3 my-2 border-t border-white/5" />
+                )}
+                <a href={item.href} onClick={() => setMobileOpen(false)}
+                  title={collapsed && !mobileOpen ? item.label : undefined}
+                  className={`flex items-center gap-3 rounded-lg text-sm font-medium transition mb-0.5 ${
+                    collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
+                  } ${
+                    active ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/60 hover:text-white hover:bg-white/5'
+                  }`}>
+                  <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
+                  {(!collapsed || mobileOpen) && <span>{item.label}</span>}
+                </a>
+              </div>
             )
           })}
         </nav>
