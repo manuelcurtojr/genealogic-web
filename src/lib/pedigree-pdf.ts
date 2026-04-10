@@ -25,190 +25,160 @@ interface TreeNode {
   mother: TreeNode | null
 }
 
-const COLORS = {
-  dark: [30, 41, 59],       // #1e293b
-  primary: [215, 71, 9],    // #D74709
-  slate400: [148, 163, 184],// #94a3b8
-  slate500: [100, 116, 139],// #64748b
-  border: [203, 213, 225],  // #cbd5e1
-  borderLight: [226, 232, 240], // #e2e8f0
-  bgLight: [248, 250, 252], // #f8fafc
-  bgMed: [241, 245, 249],   // #f1f5f9
-  white: [255, 255, 255],
-  male: [26, 86, 219],      // #1a56db
-  female: [192, 38, 211],   // #c026d3
-} as const
+const C = {
+  bg:       [10, 15, 30] as const,       // dark navy
+  card:     [20, 28, 50] as const,       // card bg
+  cardAlt:  [15, 22, 42] as const,       // alternate card
+  primary:  [215, 71, 9] as const,       // #D74709
+  white:    [255, 255, 255] as const,
+  text:     [220, 225, 235] as const,    // light text
+  muted:    [130, 140, 160] as const,    // muted text
+  dim:      [80, 90, 110] as const,      // very muted
+  border:   [40, 50, 75] as const,       // subtle border
+  male:     [59, 130, 246] as const,     // blue
+  female:   [236, 72, 153] as const,    // pink
+  green:    [34, 197, 94] as const,
+}
 
 type RGB = readonly [number, number, number]
 
 export function generatePedigreePdf(dogData: DogData, tree: TreeNode | null) {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
   const pw = 297, ph = 210
-  const mx = 12, my = 10
-  const cw = pw - mx * 2, ch = ph - my * 2
 
   const docId = 'GEN-' + hashStr(dogData.name + (dogData.microchip || '')).slice(0, 8).toUpperCase()
   const dateGen = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
-  // === OUTER FRAME ===
-  doc.setDrawColor(...COLORS.dark)
-  doc.setLineWidth(0.5)
-  doc.rect(mx, my, cw, ch)
-  doc.setDrawColor(...COLORS.slate400)
-  doc.setLineWidth(0.15)
-  doc.rect(mx + 1.5, my + 1.5, cw - 3, ch - 3)
+  // === BACKGROUND ===
+  doc.setFillColor(...C.bg)
+  doc.rect(0, 0, pw, ph, 'F')
 
-  let y = my + 5
+  // === HEADER BAR ===
+  doc.setFillColor(...C.card)
+  doc.rect(0, 0, pw, 18, 'F')
 
-  // === HEADER ===
-  // Doc ID - right aligned
+  // Bottom border of header
+  doc.setDrawColor(...C.primary)
+  doc.setLineWidth(0.6)
+  doc.line(0, 18, pw, 18)
+
+  // Brand text
+  doc.setFontSize(16)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(...C.white)
+  doc.text('GENEALOGIC', 12, 11.5)
+
+  // Dot in brand color
+  doc.setFillColor(...C.primary)
+  doc.circle(12 + doc.getTextWidth('GENEALOGI') + 1.5, 9, 1.2, 'F')
+
+  // Subtitle
   doc.setFontSize(7)
-  doc.setTextColor(...COLORS.slate400)
-  doc.text(`N\u00ba ${docId}`, pw - mx - 4, y + 2, { align: 'right' })
-
-  // Brand
-  doc.setFontSize(22)
-  doc.setTextColor(...COLORS.dark)
-  doc.setFont('helvetica', 'bold')
-  const brand = 'GENEALOGIC'
-  const bw = doc.getTextWidth(brand)
-  const bx = pw / 2 - bw / 2
-  doc.text('GENEAL', bx, y + 4)
-  const oX = bx + doc.getTextWidth('GENEAL')
-  doc.setTextColor(...COLORS.primary)
-  doc.text('O', oX, y + 4)
-  const gX = oX + doc.getTextWidth('O')
-  doc.setTextColor(...COLORS.dark)
-  doc.text('GIC', gX, y + 4)
-
-  y += 8
-  doc.setFontSize(8)
-  doc.setTextColor(...COLORS.slate500)
   doc.setFont('helvetica', 'normal')
-  doc.text('CERTIFICADO DE PEDIGREE DIGITAL', pw / 2, y, { align: 'center' })
+  doc.setTextColor(...C.muted)
+  doc.text('Certificado de Pedigree Digital', 12, 15.5)
 
-  y += 4
-  doc.setDrawColor(...COLORS.dark)
-  doc.setLineWidth(0.4)
-  doc.line(mx + 4, y, pw - mx - 4, y)
+  // Doc ID + date right
+  doc.setFontSize(6.5)
+  doc.setTextColor(...C.dim)
+  doc.text(`${docId}  ·  ${dateGen}`, pw - 12, 11, { align: 'right' })
+  doc.setFontSize(5.5)
+  doc.text('genealogic.io', pw - 12, 15, { align: 'right' })
 
-  y += 4
+  let y = 24
 
-  // === DOG NAME BANNER ===
-  const bannerH = 12
-  doc.setFillColor(...COLORS.dark)
-  doc.rect(mx + 4, y, cw - 8, bannerH, 'F')
+  // === DOG NAME SECTION ===
+  doc.setFillColor(...C.card)
+  roundRect(doc, 10, y, pw - 20, 22, 3)
 
-  const sexIcon = dogData.sex === 'male' ? '\u2642' : '\u2640'
-  const sexColor: RGB = dogData.sex === 'male' ? COLORS.male : COLORS.female
+  // Sex color bar on left
+  const sexColor: RGB = dogData.sex === 'male' ? C.male : C.female
+  doc.setFillColor(...sexColor)
+  doc.rect(10, y, 1.5, 22, 'F')
 
-  doc.setFontSize(14)
+  // Dog name
+  doc.setFontSize(16)
   doc.setFont('helvetica', 'bold')
-  doc.setTextColor(...COLORS.white)
-  const nameStr = dogData.name.toUpperCase()
-  doc.text(nameStr, pw / 2 - 4, y + bannerH / 2 + 1.5, { align: 'center' })
+  doc.setTextColor(...C.white)
+  doc.text(dogData.name.toUpperCase(), 18, y + 9)
 
   // Sex icon
-  const nameW = doc.getTextWidth(nameStr)
+  const sexIcon = dogData.sex === 'male' ? '♂' : '♀'
   doc.setFontSize(12)
   doc.setTextColor(...sexColor)
-  doc.text(sexIcon, pw / 2 + nameW / 2, y + bannerH / 2 + 1)
+  const nameW = doc.getTextWidth(dogData.name.toUpperCase())
+  doc.setFontSize(16)
+  doc.setFontSize(11)
+  doc.text(sexIcon, 18 + nameW + 3, y + 9)
 
-  // Breed below name
-  if (dogData.breed) {
-    doc.setFontSize(8)
-    doc.setTextColor(...COLORS.slate400)
-    doc.setFont('helvetica', 'normal')
-    doc.text(dogData.breed, pw / 2, y + bannerH - 1.5, { align: 'center' })
-  }
+  // Breed + Color
+  doc.setFontSize(8)
+  doc.setFont('helvetica', 'normal')
+  doc.setTextColor(...C.muted)
+  const infoLine = [dogData.breed, dogData.color].filter(Boolean).join('  ·  ')
+  doc.text(infoLine, 18, y + 15)
 
-  y += bannerH + 4
+  // Right side info
+  const rightX = pw - 16
+  doc.setFontSize(6.5)
+  doc.setTextColor(...C.dim)
+  doc.text('Criadero', rightX, y + 6, { align: 'right' })
+  doc.setTextColor(...C.text)
+  doc.setFont('helvetica', 'bold')
+  doc.text(dogData.kennel || '—', rightX, y + 10, { align: 'right' })
 
-  // === INFO GRID ===
-  const gridRows = [
-    [
-      { lbl: 'Nacimiento', val: dogData.birth_date || '\u2014' },
-      { lbl: 'Sexo', val: dogData.sex === 'male' ? 'Macho' : 'Hembra' },
-      { lbl: 'Color', val: dogData.color || '\u2014' },
-    ],
-    [
-      { lbl: 'Padre', val: dogData.father || 'Desconocido' },
-      { lbl: 'Madre', val: dogData.mother || 'Desconocido' },
-      { lbl: 'Criadero', val: dogData.kennel || '\u2014' },
-    ],
-    [
-      { lbl: 'Propietario', val: dogData.owner, colspan: 2 },
-      { lbl: dogData.microchip ? 'Microchip' : 'Registro', val: dogData.microchip || docId },
-    ],
+  doc.setFont('helvetica', 'normal')
+  doc.setTextColor(...C.dim)
+  doc.text('Propietario', rightX, y + 15, { align: 'right' })
+  doc.setTextColor(...C.text)
+  doc.setFont('helvetica', 'bold')
+  doc.text(dogData.owner, rightX, y + 19, { align: 'right' })
+
+  y += 26
+
+  // === INFO CHIPS ===
+  const chips = [
+    { lbl: 'Nacimiento', val: dogData.birth_date || '—' },
+    { lbl: 'Padre', val: dogData.father },
+    { lbl: 'Madre', val: dogData.mother },
+    { lbl: dogData.microchip ? 'Microchip' : 'Registro', val: dogData.microchip || dogData.registration || docId },
   ]
-
-  const gridX = mx + 4
-  const gridW = cw - 8
-  const colW = gridW / 6
-  const rowH = 7
-  const lblW = 18
-
-  gridRows.forEach((row, ri) => {
-    let cx = gridX
-    row.forEach((cell, ci) => {
-      const span = (cell as any).colspan || 1
-      const cellW = span === 2 ? colW * 4 : colW * 2
-
-      // Label bg
-      doc.setFillColor(...COLORS.bgLight)
-      doc.setDrawColor(...COLORS.borderLight)
-      doc.setLineWidth(0.15)
-      doc.rect(cx, y, lblW, rowH, 'FD')
-
-      // Label text
-      doc.setFontSize(5.5)
-      doc.setFont('helvetica', 'bold')
-      doc.setTextColor(...COLORS.slate500)
-      doc.text(cell.lbl.toUpperCase(), cx + 2, y + rowH / 2 + 0.8)
-
-      // Value cell
-      doc.setFillColor(...COLORS.white)
-      doc.rect(cx + lblW, y, cellW - lblW, rowH, 'FD')
-
-      doc.setFontSize(7.5)
-      doc.setFont('helvetica', 'bold')
-      doc.setTextColor(...COLORS.dark)
-      doc.text(cell.val, cx + lblW + 2, y + rowH / 2 + 0.8)
-
-      cx += cellW
-    })
-    y += rowH
+  const chipW = (pw - 20 - 6) / 4
+  chips.forEach((chip, i) => {
+    const cx = 10 + i * (chipW + 2)
+    doc.setFillColor(...C.cardAlt)
+    roundRect(doc, cx, y, chipW, 10, 2)
+    doc.setFontSize(5)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...C.dim)
+    doc.text(chip.lbl.toUpperCase(), cx + 3, y + 3.5)
+    doc.setFontSize(7)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(...C.text)
+    const val = chip.val.length > 24 ? chip.val.slice(0, 22) + '…' : chip.val
+    doc.text(val, cx + 3, y + 8)
   })
 
-  y += 4
+  y += 14
 
   // === SECTION TITLE ===
   doc.setFontSize(6)
   doc.setFont('helvetica', 'bold')
-  doc.setTextColor(...COLORS.slate500)
-  doc.text('GENEALOGIA \u2014 4 GENERACIONES', mx + 4, y + 1)
-  y += 3
-  doc.setDrawColor(...COLORS.borderLight)
-  doc.setLineWidth(0.15)
-  doc.line(mx + 4, y, pw - mx - 4, y)
-  y += 2
+  doc.setTextColor(...C.primary)
+  doc.text('GENEALOGÍA — 4 GENERACIONES', 12, y + 1)
+  y += 4
 
   // === PEDIGREE TABLE ===
-  // 8 rows × 4 columns (root=col0 rowspan8, gen1=col1 rowspan4, gen2=col2 rowspan2, gen3=col3 rowspan1)
-  const tableX = mx + 4
-  const tableW = cw - 8
-  const tableH = ph - my - 1.5 - y - 10 // leave room for footer
+  const tableX = 10
+  const tableW = pw - 20
+  const tableH = ph - y - 14
   const numRows = 8
   const rh = tableH / numRows
 
-  // Column widths: root wider, then decreasing
-  const colWidths = [tableW * 0.18, tableW * 0.22, tableW * 0.28, tableW * 0.32]
+  const colWidths = [tableW * 0.17, tableW * 0.22, tableW * 0.28, tableW * 0.33]
 
-  // Build tree arrays
-  const gen1: (TreeNode | null)[] = [
-    tree?.father || null,
-    tree?.mother || null,
-  ]
+  // Build generations
+  const gen1: (TreeNode | null)[] = [tree?.father || null, tree?.mother || null]
   const gen2: (TreeNode | null)[] = [
     gen1[0]?.father || null, gen1[0]?.mother || null,
     gen1[1]?.father || null, gen1[1]?.mother || null,
@@ -223,140 +193,103 @@ export function generatePedigreePdf(dogData: DogData, tree: TreeNode | null) {
   for (let row = 0; row < 8; row++) {
     let cx = tableX
 
-    // Col 0 - root (only on row 0, spans 8)
-    if (row === 0) {
-      drawPedCell(doc, cx, y, colWidths[0], rh * 8, tree, 'root')
-    }
+    if (row === 0) drawCell(doc, cx, y, colWidths[0], rh * 8, tree, 0)
     cx += colWidths[0]
 
-    // Col 1 - gen1 (row 0 and 4, span 4)
-    if (row === 0) drawPedCell(doc, cx, y, colWidths[1], rh * 4, gen1[0], 'gen1')
-    if (row === 4) drawPedCell(doc, cx, y + rh * 4, colWidths[1], rh * 4, gen1[1], 'gen1')
+    if (row === 0) drawCell(doc, cx, y, colWidths[1], rh * 4, gen1[0], 1)
+    if (row === 4) drawCell(doc, cx, y + rh * 4, colWidths[1], rh * 4, gen1[1], 1)
     cx += colWidths[1]
 
-    // Col 2 - gen2 (rows 0,2,4,6, span 2)
-    if (row % 2 === 0) {
-      const idx = row / 2
-      drawPedCell(doc, cx, y + rh * row, colWidths[2], rh * 2, gen2[idx], 'gen2')
-    }
+    if (row % 2 === 0) drawCell(doc, cx, y + rh * row, colWidths[2], rh * 2, gen2[row / 2], 2)
     cx += colWidths[2]
 
-    // Col 3 - gen3 (every row, span 1)
-    drawPedCell(doc, cx, y + rh * row, colWidths[3], rh, gen3[row], 'gen3')
+    drawCell(doc, cx, y + rh * row, colWidths[3], rh, gen3[row], 3)
   }
 
-  y += tableH + 3
+  y += tableH + 4
 
   // === FOOTER ===
-  doc.setDrawColor(...COLORS.borderLight)
-  doc.setLineWidth(0.15)
-  doc.line(mx + 4, y, pw - mx - 4, y)
+  doc.setDrawColor(...C.border)
+  doc.setLineWidth(0.1)
+  doc.line(12, y, pw - 12, y)
   y += 3
 
   doc.setFontSize(5.5)
   doc.setFont('helvetica', 'normal')
 
-  // Left - legend
-  doc.setFillColor(...COLORS.male)
-  doc.rect(mx + 5, y - 1.2, 4, 1.5, 'F')
-  doc.setTextColor(...COLORS.slate400)
-  doc.text('Macho', mx + 11, y)
-  doc.setFillColor(...COLORS.female)
-  doc.rect(mx + 25, y - 1.2, 4, 1.5, 'F')
-  doc.text('Hembra', mx + 31, y)
+  // Legend
+  doc.setFillColor(...C.male)
+  doc.rect(12, y - 1.2, 3, 1.5, 'F')
+  doc.setTextColor(...C.muted)
+  doc.text('Macho', 17, y)
+  doc.setFillColor(...C.female)
+  doc.rect(30, y - 1.2, 3, 1.5, 'F')
+  doc.text('Hembra', 35, y)
 
   // Center
-  doc.setTextColor(...COLORS.slate400)
-  const footerCenter = `Generado por `
-  const footerCW = doc.getTextWidth(footerCenter)
-  doc.text(footerCenter, pw / 2 - footerCW / 2 - 5, y)
-  doc.setTextColor(...COLORS.primary)
+  doc.setTextColor(...C.dim)
+  doc.text('Generado por ', pw / 2 - 15, y)
+  doc.setTextColor(...C.primary)
   doc.setFont('helvetica', 'bold')
-  doc.text('Genealogic', pw / 2 - footerCW / 2 - 5 + footerCW, y)
-  const genW = doc.getTextWidth('Genealogic')
-  doc.setTextColor(...COLORS.slate400)
-  doc.setFont('helvetica', 'normal')
-  doc.text(` \u2014 ${dateGen}`, pw / 2 - footerCW / 2 - 5 + footerCW + genW, y)
+  doc.text('Genealogic', pw / 2 - 15 + doc.getTextWidth('Generado por '), y)
 
   // Right
-  doc.text('Documento informativo \u2014 No sustituye un pedigree oficial', pw - mx - 5, y, { align: 'right' })
+  doc.setFont('helvetica', 'normal')
+  doc.setTextColor(...C.dim)
+  doc.text('Documento informativo — No sustituye un pedigree oficial', pw - 12, y, { align: 'right' })
 
-  // Save
-  const filename = `Pedigree-${dogData.name.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`
-  doc.save(filename)
+  doc.save(`Pedigree-${dogData.name.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`)
 }
 
-function drawPedCell(
-  doc: jsPDF,
-  x: number, y: number, w: number, h: number,
-  node: TreeNode | null,
-  gen: 'root' | 'gen1' | 'gen2' | 'gen3'
-) {
-  const bgColors: Record<string, RGB> = {
-    root: COLORS.dark,
-    gen1: COLORS.bgMed,
-    gen2: COLORS.bgLight,
-    gen3: COLORS.white,
-  }
-
-  // Fill
-  doc.setFillColor(...bgColors[gen])
-  doc.setDrawColor(...COLORS.border)
-  doc.setLineWidth(0.15)
+function drawCell(doc: jsPDF, x: number, y: number, w: number, h: number, node: TreeNode | null, gen: number) {
+  const bgs: RGB[] = [C.card, C.cardAlt, [18, 25, 45], [14, 20, 38]]
+  doc.setFillColor(...bgs[gen])
+  doc.setDrawColor(...C.border)
+  doc.setLineWidth(0.1)
   doc.rect(x, y, w, h, 'FD')
 
   if (!node) {
-    // Unknown
-    doc.setFillColor(250, 250, 250)
-    doc.rect(x, y, w, h, 'FD')
-    doc.setFontSize(6.5)
+    doc.setFontSize(6)
     doc.setFont('helvetica', 'italic')
-    doc.setTextColor(203, 213, 225)
-    doc.text('\u2014', x + w / 2, y + h / 2 + 1, { align: 'center' })
+    doc.setTextColor(...C.dim)
+    doc.text('—', x + w / 2, y + h / 2 + 1, { align: 'center' })
     return
   }
 
-  // Sex indicator - left border
-  const sexColor: RGB = node.sex === 'Male' || node.sex === 'male' ? COLORS.male : COLORS.female
+  // Sex bar
+  const sexColor: RGB = node.sex === 'Male' || node.sex === 'male' ? C.male : C.female
   doc.setFillColor(...sexColor)
-  doc.rect(x, y, 0.8, h, 'F')
+  doc.rect(x, y, 0.7, h, 'F')
 
-  // Text
-  const isRoot = gen === 'root'
-  const nameColor: RGB = isRoot ? COLORS.white : COLORS.dark
-  const metaColor: RGB = isRoot ? COLORS.slate400 : COLORS.slate400
-  const nameFontSize = isRoot ? 8.5 : gen === 'gen3' ? 7 : 7.5
+  const isRoot = gen === 0
+  const fs = isRoot ? 9 : gen === 3 ? 6.5 : 7.5
+  const maxLen = gen === 3 ? 30 : 38
 
-  doc.setFontSize(nameFontSize)
+  doc.setFontSize(fs)
   doc.setFont('helvetica', 'bold')
-  doc.setTextColor(...nameColor)
+  doc.setTextColor(...C.white)
 
-  const nameText = node.name.length > (gen === 'gen3' ? 28 : 35)
-    ? node.name.slice(0, gen === 'gen3' ? 26 : 33) + '...'
-    : node.name
-
+  const name = node.name.length > maxLen ? node.name.slice(0, maxLen - 2) + '…' : node.name
   const textX = x + 3
-  const textY = y + h / 2 - (node.breed || node.born_date ? 1 : 0)
-  doc.text(nameText, textX, textY)
+  const textY = y + h / 2 - (node.breed || node.born_date ? 1.5 : 0)
+  doc.text(name, textX, textY)
 
-  // Meta line
-  const metaParts: string[] = []
-  if (node.breed) metaParts.push(node.breed)
-  if (node.born_date) metaParts.push(node.born_date)
-  if (metaParts.length > 0) {
-    const metaStr = metaParts.join(' \u00B7 ')
-    const maxMeta = gen === 'gen3' ? 35 : 45
-    doc.setFontSize(5.5)
+  const meta = [node.breed, node.born_date].filter(Boolean).join(' · ')
+  if (meta) {
+    doc.setFontSize(gen === 3 ? 4.5 : 5.5)
     doc.setFont('helvetica', 'normal')
-    doc.setTextColor(...metaColor)
-    doc.text(metaStr.length > maxMeta ? metaStr.slice(0, maxMeta - 2) + '...' : metaStr, textX, textY + 3.5)
+    doc.setTextColor(...C.muted)
+    const maxMeta = gen === 3 ? 38 : 50
+    doc.text(meta.length > maxMeta ? meta.slice(0, maxMeta - 2) + '…' : meta, textX, textY + (isRoot ? 4 : 3.5))
   }
+}
+
+function roundRect(doc: jsPDF, x: number, y: number, w: number, h: number, r: number) {
+  doc.roundedRect(x, y, w, h, r, r, 'F')
 }
 
 function hashStr(s: string): string {
   let h = 0
-  for (let i = 0; i < s.length; i++) {
-    h = ((h << 5) - h + s.charCodeAt(i)) | 0
-  }
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0
   return Math.abs(h).toString(16).padStart(8, '0')
 }
