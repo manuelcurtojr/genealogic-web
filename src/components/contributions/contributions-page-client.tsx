@@ -350,7 +350,9 @@ function ImportHistory({ imports, userId, onUndone }: { imports: ImportRecord[];
                 </div>
               </div>
             )
-      })}
+          })}
+        </div>
+      )}
     </div>
   )
 }
