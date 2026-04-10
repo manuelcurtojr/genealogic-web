@@ -166,10 +166,13 @@ Rules:
       .replace(/\s+/g, ' ') // collapse multiple spaces
   }
 
-  // Build a search pattern: "Faruk de Irema Curtó" → "%faruk%irema%curto%"
+  // Build a search pattern for ilike: truncate words to avoid accent mismatches
+  // "Faruk de Irema Curtó" → "%faruk%irem%curt%"
+  // Truncating to len-1 handles accented last chars (curto vs curtó)
   function toSearchPattern(name: string): string {
-    const words = normName(name).split(' ').filter(w => w.length > 1)
-    return `%${words.join('%')}%`
+    const words = normName(name).split(' ').filter(w => w.length > 2)
+    const truncated = words.map(w => w.length > 3 ? w.slice(0, -1) : w)
+    return `%${truncated.join('%')}%`
   }
 
   // After extraction, find all dogs that already exist in the DB and auto-link them
