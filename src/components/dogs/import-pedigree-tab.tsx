@@ -138,8 +138,8 @@ Rules:
     const stopReason = data.stop_reason
     if (!text) throw new Error('La IA no devolvió respuesta')
 
-    // If response was truncated, retry with more tokens
-    if (stopReason === 'max_tokens' && maxTokens < 8000) {
+    // If response was truncated (by stop_reason or malformed JSON), retry with more tokens
+    if (maxTokens < 8000 && (stopReason === 'max_tokens' || stopReason !== 'end_turn')) {
       return callClaude(apiKey, messages, 8000)
     }
 
@@ -151,9 +151,13 @@ Rules:
     try {
       return JSON.parse(jsonStr)
     } catch {
+      // If JSON is truncated and we haven't retried yet, retry with more tokens
+      if (maxTokens < 8000) {
+        return callClaude(apiKey, messages, 8000)
+      }
+      console.error('Claude stop_reason:', stopReason, 'max_tokens:', maxTokens)
       console.error('Claude raw response:', text.substring(0, 500))
-      console.error('Extracted jsonStr:', jsonStr.substring(0, 500))
-      throw new Error('No se pudo interpretar la respuesta de la IA. Abre la consola del navegador para ver detalles.')
+      throw new Error('No se pudo interpretar la respuesta de la IA')
     }
   }
 
