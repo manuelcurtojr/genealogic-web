@@ -16,7 +16,7 @@ const ADMIN_NAV: { section?: string; label: string; href: string; icon: any }[] 
   { label: 'Genealogías', href: '/admin/genealogy', icon: GitBranch },
   // Herramientas
   { section: 'Herramientas', label: 'Importar pedigrí', href: '/admin/import', icon: Globe },
-  { label: 'Genos God', href: '/admin/genos-god', icon: Sparkles },
+  { label: 'Optimizador', href: '/admin/genos-god', icon: Sparkles },
   { label: 'Catálogo', href: '/admin/catalog', icon: Palette },
   { label: 'Plantillas vet.', href: '/admin/vet-templates', icon: Stethoscope },
   // Sistema

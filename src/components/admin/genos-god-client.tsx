@@ -45,7 +45,7 @@ export default function GenosGodClient({ userId }: Props) {
           <Sparkles className="w-5 h-5 text-[#D74709]" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Genos God</h1>
+          <h1 className="text-xl font-bold">Optimizador</h1>
           <p className="text-xs text-white/40">Herramientas de IA para limpiar y organizar la base de datos</p>
         </div>
       </div>
