@@ -100,14 +100,14 @@ export default function VerificationTab({ dogId, userId }: Props) {
       {/* Microchip */}
       <DocCard
         icon={CreditCard} label="Documento del microchip" description="Foto del certificado de microchip"
-        url={v?.microchip_url} canUpload={canUpload} uploading={uploading === 'microchip'}
+        url={v?.microchip_url || null} canUpload={canUpload} uploading={uploading === 'microchip'}
         onUpload={file => handleUpload('microchip', file)}
       />
 
       {/* Pedigree */}
       <DocCard
         icon={FileText} label="Pedigri oficial" description="Documento de pedigri (FCI, UKC, etc.)"
-        url={v?.pedigree_url} canUpload={canUpload} uploading={uploading === 'pedigree'}
+        url={v?.pedigree_url || null} canUpload={canUpload} uploading={uploading === 'pedigree'}
         onUpload={file => handleUpload('pedigree', file)}
       />
 

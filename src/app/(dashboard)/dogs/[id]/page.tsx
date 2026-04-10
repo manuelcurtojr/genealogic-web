@@ -130,9 +130,12 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
           <h1 className="text-2xl sm:text-3xl font-bold">{dog.name}</h1>
           {dog.is_verified && (
-            <div className="inline-flex items-center gap-1 bg-blue-500/10 border border-blue-500/20 rounded-full px-2.5 py-1" title="Perro verificado">
+            <div className="inline-flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/20 rounded-full px-3 py-1 group relative cursor-default">
               <ShieldCheck className="w-4 h-4 text-blue-400" />
-              <span className="text-xs text-blue-400 font-semibold">Verificado</span>
+              <span className="text-sm text-blue-400 font-medium">Verificado</span>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-800 border border-white/10 rounded-lg text-[11px] text-white/70 whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-lg">
+                Este perro ha sido verificado usando microchip y pedigri oficial
+              </div>
             </div>
           )}
           {breedName && (
