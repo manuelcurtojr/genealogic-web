@@ -45,6 +45,7 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported }: Prop
 
   const [uploadingImage, setUploadingImage] = useState(false)
   const [scanPhase, setScanPhase] = useState('')
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null)
 
   const EXTRACTION_PROMPT = `You are a dog pedigree data extractor. Extract the complete pedigree information from this content.
 
@@ -240,6 +241,28 @@ Rules:
     return { autoSwaps, linked }
   }
 
+  // Save extraction as draft so it can be resumed if user closes without importing
+  async function saveDraft(pedigreeData: PedigreeData, sourceUrl?: string): Promise<string> {
+    const draftId = `draft_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+    const supabase = createClient()
+    await supabase.from('notifications').insert({
+      user_id: userId,
+      type: 'import_draft',
+      title: `Borrador: ${pedigreeData.main_dog.name}`,
+      message: JSON.stringify({ draftId, pedigreeData, sourceUrl: sourceUrl || null }),
+      is_read: false,
+    })
+    return draftId
+  }
+
+  async function deleteDraft(draftId: string) {
+    const supabase = createClient()
+    const { data: notifs } = await supabase.from('notifications').select('id, message').eq('user_id', userId).eq('type', 'import_draft').limit(50)
+    for (const n of (notifs || [])) {
+      try { const p = JSON.parse(n.message); if (p.draftId === draftId) { await supabase.from('notifications').delete().eq('id', n.id); break } } catch {}
+    }
+  }
+
   async function handleScan() {
     if (!url.trim()) return
     setScanning(true); setError(''); setData(null); setSwaps({}); setScanPhase('Accediendo a la web...')
@@ -274,6 +297,10 @@ Rules:
       // Post-processing: find existing dogs in DB and auto-link them
       setScanPhase('Verificando perros existentes...')
       const { autoSwaps, linked } = await findExistingDogs(pedigreeData)
+
+      // Save draft so it can be resumed
+      const draftId = await saveDraft(pedigreeData, url.trim())
+      setCurrentDraftId(draftId)
 
       setData(pedigreeData)
       setEditedMain(pedigreeData.main_dog)
@@ -312,6 +339,9 @@ Rules:
       // Post-processing: find existing dogs in DB
       setScanPhase('Verificando perros existentes...')
       const { autoSwaps, linked } = await findExistingDogs(pedigreeData)
+
+      const draftId = await saveDraft(pedigreeData)
+      setCurrentDraftId(draftId)
 
       setData(pedigreeData)
       setEditedMain(pedigreeData.main_dog)
@@ -370,6 +400,8 @@ Rules:
       if (!res.ok) throw new Error(result.error)
       setImportResult(result)
       setImported(true)
+      // Delete draft since import is confirmed
+      if (currentDraftId) { await deleteDraft(currentDraftId); setCurrentDraftId(null) }
     } catch (err: any) { setError(err.message || 'Error al importar') }
     setImporting(false)
   }
@@ -416,10 +448,17 @@ Rules:
             <button onClick={() => { setShowPreview(false); setSwaps({}) }} className="px-4 py-2 rounded-lg text-sm text-white/50 hover:text-white bg-white/5 hover:bg-white/10 transition">Volver</button>
             {imported ? (
               <div className="flex items-center gap-2">
-                <span className="text-green-400 font-semibold text-sm flex items-center gap-1"><Check className="w-4 h-4" /> Importado</span>
-                {importResult?.mainDogId && <a href={`/dogs/${importResult.mainDogId}`} className="text-xs text-[#D74709] hover:underline">Ver perro</a>}
-                <button onClick={handleUndo} className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1"><Undo2 className="w-3 h-3" /> Deshacer</button>
-                <button onClick={() => { setImported(false); setImportResult(null); setShowPreview(false); setData(null); setUrl('') }} className="text-xs text-white/40 hover:text-white">Importar otro</button>
+                <button onClick={handleUndo} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 transition">
+                  <Undo2 className="w-3.5 h-3.5" /> Deshacer
+                </button>
+                {importResult?.mainDogId && (
+                  <a href={`/dogs/${importResult.mainDogId}`} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-green-500/10 text-green-400 hover:bg-green-500/20 transition">
+                    <Check className="w-3.5 h-3.5" /> Ver perro
+                  </a>
+                )}
+                <button onClick={() => { setImported(false); setImportResult(null); setShowPreview(false); setData(null); setUrl(''); setLinkedAncestors(new Map()) }} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-white/5 text-white/50 hover:bg-white/10 transition">
+                  <Globe className="w-3.5 h-3.5" /> Importar otro
+                </button>
               </div>
             ) : (
               <button onClick={handleConfirm} disabled={importing} className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-6 py-2 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">

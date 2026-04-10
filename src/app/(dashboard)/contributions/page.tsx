@@ -12,8 +12,8 @@ export default async function ContributionsPage() {
       .order('created_at', { ascending: false }),
     supabase.from('breeds').select('id, name').order('name'),
     supabase.from('notifications')
-      .select('id, title, message, created_at')
-      .eq('user_id', user!.id).eq('type', 'import')
+      .select('id, title, message, created_at, type')
+      .eq('user_id', user!.id).in('type', ['import', 'import_draft'])
       .order('created_at', { ascending: false }),
   ])
 

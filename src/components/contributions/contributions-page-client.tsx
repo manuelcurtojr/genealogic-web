@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Grid3X3, List, Search, Plus, Eye, Edit, GitBranch, Clock, Undo2, Link2, Loader2, AlertTriangle, Dog } from 'lucide-react'
+import { Grid3X3, List, Search, Plus, Eye, Edit, GitBranch, Clock, Undo2, Link2, Loader2, AlertTriangle, Dog, Trash2, Play } from 'lucide-react'
 import DogCard from '@/components/dogs/dog-card'
 import DogFormPanel from '@/components/dogs/dog-form-panel'
 import PedigreeEditor from '@/components/pedigree/pedigree-editor'
@@ -15,7 +15,7 @@ interface DogItem {
 }
 
 interface ImportRecord {
-  id: string; title: string; message: string; created_at: string
+  id: string; title: string; message: string; created_at: string; type?: string
 }
 
 interface Props {
@@ -205,26 +205,30 @@ export default function ContributionsClient({ dogs, breeds, imports, userId }: P
 function ImportHistory({ imports, userId, onUndone }: { imports: ImportRecord[]; userId: string; onUndone: () => void }) {
   const [undoing, setUndoing] = useState<string | null>(null)
   const [confirming, setConfirming] = useState<string | null>(null)
-  const [undoneIds, setUndoneIds] = useState<Set<string>>(new Set())
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
   const [results, setResults] = useState<Record<string, { deleted: number; skipped: number; skippedNames: string[] }>>({})
 
   async function handleUndo(importId: string) {
     setUndoing(importId); setConfirming(null)
     try {
-      const res = await fetch('/api/confirm-import', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ importId, userId }),
-      })
+      const res = await fetch('/api/confirm-import', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ importId, userId }) })
       const result = await res.json()
       if (!res.ok) throw new Error(result.error)
-      setUndoneIds(prev => new Set(prev).add(importId))
+      setDeletedIds(prev => new Set(prev).add(importId))
       setResults(prev => ({ ...prev, [importId]: { deleted: result.deletedCount || 0, skipped: result.skippedCount || 0, skippedNames: result.skippedNames || [] } }))
       onUndone()
     } catch (err: any) {
       setResults(prev => ({ ...prev, [importId]: { deleted: 0, skipped: 0, skippedNames: [err.message] } }))
     }
     setUndoing(null)
+  }
+
+  async function handleDeleteDraft(notifId: string, draftId: string) {
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+    await supabase.from('notifications').delete().eq('id', notifId)
+    setDeletedIds(prev => new Set(prev).add(draftId))
+    onUndone()
   }
 
   if (imports.length === 0) {
@@ -236,77 +240,116 @@ function ImportHistory({ imports, userId, onUndone }: { imports: ImportRecord[];
     )
   }
 
+  const completedImports = imports.filter(i => i.type === 'import')
+  const drafts = imports.filter(i => i.type === 'import_draft')
+
   return (
-    <div className="space-y-3">
-      {imports.map((imp) => {
-        let parsed: { importId?: string; createdIds?: string[]; mainDogId?: string } = {}
-        try { parsed = JSON.parse(imp.message) } catch {}
-        const importId = parsed.importId || ''
-        const createdCount = parsed.createdIds?.length || 0
-        const mainDogId = parsed.mainDogId
-        const dogName = imp.title.replace('Pedigrí importado: ', '')
-        const date = new Date(imp.created_at)
-        const hoursAgo = (Date.now() - date.getTime()) / (1000 * 60 * 60)
-        const canUndo = hoursAgo <= 24
-        const isUndone = undoneIds.has(importId)
-        const result = results[importId]
-        const isUndoing = undoing === importId
-        const isConfirming = confirming === importId
+    <div className="space-y-4">
+      {/* Drafts section */}
+      {drafts.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-yellow-400/70 uppercase tracking-wider">Pendientes de completar</p>
+          {drafts.map((imp) => {
+            let parsed: { draftId?: string; pedigreeData?: any } = {}
+            try { parsed = JSON.parse(imp.message) } catch {}
+            const draftId = parsed.draftId || ''
+            const dogName = imp.title.replace('Borrador: ', '')
+            const ancestorCount = parsed.pedigreeData?.ancestors?.length || 0
+            const isDeleted = deletedIds.has(draftId)
+            const formatted = new Date(imp.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
-        const formatted = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-
-        return (
-          <div key={imp.id} className={`bg-white/5 border rounded-xl p-4 transition ${isUndone ? 'border-white/5 opacity-50' : 'border-white/10'}`}>
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#D74709]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Link2 className="w-4 h-4 text-[#D74709]" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold truncate">{dogName}</p>
-                  {mainDogId && !isUndone && (
-                    <Link href={`/dogs/${mainDogId}`} className="text-[10px] text-[#D74709] hover:underline flex-shrink-0">Ver perro</Link>
-                  )}
+            if (isDeleted) return null
+            return (
+              <div key={imp.id} className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-4 h-4 text-yellow-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{dogName}</p>
+                    <p className="text-xs text-white/40 mt-0.5">{formatted} · {ancestorCount} ancestros extraidos · Sin confirmar</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Link href="/dogs" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition">
+                      <Play className="w-3 h-3" /> Continuar
+                    </Link>
+                    <button onClick={() => handleDeleteDraft(imp.id, draftId)} className="p-1.5 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-                <p className="text-xs text-white/40 mt-0.5">
-                  {formatted} · {createdCount} perro{createdCount !== 1 ? 's' : ''} creado{createdCount !== 1 ? 's' : ''}
-                </p>
-                {result && (
-                  <div className="mt-2">
-                    {result.deleted > 0 && (
-                      <p className="text-xs text-green-400">Se eliminaron {result.deleted} perros</p>
-                    )}
-                    {result.skipped > 0 && (
-                      <p className="text-xs text-yellow-400">{result.skipped} perros no se pudieron eliminar (tienen datos vinculados): {result.skippedNames.join(', ')}</p>
-                    )}
-                    {result.deleted === 0 && result.skipped === 0 && result.skippedNames.length > 0 && (
-                      <p className="text-xs text-red-400">{result.skippedNames[0]}</p>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Completed imports */}
+      {completedImports.length > 0 && (
+        <div className="space-y-2">
+          {drafts.length > 0 && <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mt-4">Completadas</p>}
+          {completedImports.map((imp) => {
+            let parsed: { importId?: string; createdIds?: string[]; mainDogId?: string } = {}
+            try { parsed = JSON.parse(imp.message) } catch {}
+            const importId = parsed.importId || ''
+            const createdCount = parsed.createdIds?.length || 0
+            const mainDogId = parsed.mainDogId
+            const dogName = imp.title.replace('Pedigrí importado: ', '')
+            const date = new Date(imp.created_at)
+            const hoursAgo = (Date.now() - date.getTime()) / (1000 * 60 * 60)
+            const canUndo = hoursAgo <= 24
+            const isDeleted = deletedIds.has(importId)
+            const result = results[importId]
+            const isUndoing = undoing === importId
+            const isConfirming = confirming === importId
+            const formatted = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+
+            return (
+              <div key={imp.id} className={`bg-white/5 border rounded-xl p-4 transition ${isDeleted ? 'border-white/5 opacity-50' : 'border-white/10'}`}>
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-full bg-[#D74709]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Link2 className="w-4 h-4 text-[#D74709]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold truncate">{dogName}</p>
+                      {mainDogId && !isDeleted && (
+                        <Link href={`/dogs/${mainDogId}`} className="text-[10px] text-[#D74709] hover:underline flex-shrink-0">Ver perro</Link>
+                      )}
+                    </div>
+                    <p className="text-xs text-white/40 mt-0.5">
+                      {formatted} · {createdCount} perro{createdCount !== 1 ? 's' : ''} creado{createdCount !== 1 ? 's' : ''}
+                    </p>
+                    {result && (
+                      <div className="mt-2">
+                        {result.deleted > 0 && <p className="text-xs text-green-400">Se eliminaron {result.deleted} perros</p>}
+                        {result.skipped > 0 && <p className="text-xs text-yellow-400">{result.skipped} perros no se pudieron eliminar: {result.skippedNames.join(', ')}</p>}
+                        {result.deleted === 0 && result.skipped === 0 && result.skippedNames.length > 0 && <p className="text-xs text-red-400">{result.skippedNames[0]}</p>}
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
-              <div className="flex-shrink-0">
-                {isUndone ? (
-                  <span className="text-xs text-white/30 font-medium">Deshecho</span>
-                ) : isUndoing ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-white/30" />
-                ) : isConfirming ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-white/40">Confirmar?</span>
-                    <button onClick={() => handleUndo(importId)} className="px-2.5 py-1 rounded text-[10px] font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 transition">Si</button>
-                    <button onClick={() => setConfirming(null)} className="px-2.5 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/40 hover:bg-white/10 transition">No</button>
+                  <div className="flex-shrink-0">
+                    {isDeleted ? (
+                      <span className="text-xs text-white/30 font-medium">Deshecho</span>
+                    ) : isUndoing ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-white/30" />
+                    ) : isConfirming ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-white/40">Confirmar?</span>
+                        <button onClick={() => handleUndo(importId)} className="px-2.5 py-1 rounded text-[10px] font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 transition">Si</button>
+                        <button onClick={() => setConfirming(null)} className="px-2.5 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/40 hover:bg-white/10 transition">No</button>
+                      </div>
+                    ) : canUndo ? (
+                      <button onClick={() => setConfirming(importId)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 transition">
+                        <Undo2 className="w-3 h-3" /> Deshacer
+                      </button>
+                    ) : (
+                      <span className="text-[10px] text-white/20" title="Solo se puede deshacer en las primeras 24h">Hace mas de 24h</span>
+                    )}
                   </div>
-                ) : canUndo ? (
-                  <button onClick={() => setConfirming(importId)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 transition">
-                    <Undo2 className="w-3 h-3" /> Deshacer
-                  </button>
-                ) : (
-                  <span className="text-[10px] text-white/20" title="Solo se puede deshacer en las primeras 24h">Hace mas de 24h</span>
-                )}
+                </div>
               </div>
-            </div>
-          </div>
-        )
+            )
       })}
     </div>
   )
