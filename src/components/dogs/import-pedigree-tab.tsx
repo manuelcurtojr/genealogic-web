@@ -172,7 +172,11 @@ Rules:
       .ilike('name', parentName).limit(10)
     if (!candidates?.length) return null
 
+    const norm = (s: string | null) => s?.toLowerCase().trim() || ''
+
+    // First pass: try exact grandparent match (strongest verification)
     for (const c of candidates) {
+      if (!c.father_id && !c.mother_id) continue // skip candidates with no parents — handle in second pass
       let dbFatherName: string | null = null
       let dbMotherName: string | null = null
       if (c.father_id) {
@@ -183,13 +187,22 @@ Rules:
         const { data: m } = await supabase.from('dogs').select('name').eq('id', c.mother_id).single()
         dbMotherName = m?.name || null
       }
-      const norm = (s: string | null) => s?.toLowerCase().trim() || ''
       if (norm(grandFatherName) === norm(dbFatherName) && norm(grandMotherName) === norm(dbMotherName)) {
         return {
           id: c.id, name: c.name, sex: c.sex, photo: c.thumbnail_url, breed: (c.breed as any)?.name || null,
           father: c.father_id && dbFatherName ? { id: c.father_id, name: dbFatherName } : null,
           mother: c.mother_id && dbMotherName ? { id: c.mother_id, name: dbMotherName } : null,
         }
+      }
+    }
+
+    // Second pass: if only one candidate exists with that name and has no parents in DB, accept it
+    // (no grandparent data to verify against, but name is unique enough)
+    if (candidates.length === 1 && !candidates[0].father_id && !candidates[0].mother_id) {
+      const c = candidates[0]
+      return {
+        id: c.id, name: c.name, sex: c.sex, photo: c.thumbnail_url, breed: (c.breed as any)?.name || null,
+        father: null, mother: null,
       }
     }
     return null
