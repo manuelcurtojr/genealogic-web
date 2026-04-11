@@ -106,7 +106,11 @@ export async function POST(request: NextRequest) {
 
       let imported = 0
       for (let i = 0; i < photoUrls.length; i++) {
-        const photoUrl = photoUrls[i]
+        // Convert to highest quality available (1000x1000) — presadb doesn't serve originals
+        let photoUrl = photoUrls[i]
+        if (photoUrl.includes('presadb.com') && !photoUrl.includes('/tn/')) {
+          photoUrl = photoUrl.replace('/dogs/', '/tn/1000x1000/dogs/')
+        }
         try {
           // Download image
           const imgRes = await fetch(photoUrl, {
