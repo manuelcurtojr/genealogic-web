@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Sparkles, Store, GitMerge, Loader2, Search, ChevronDown, ChevronRight, Check, AlertTriangle, Trash2 } from 'lucide-react'
+import { Sparkles, Store, GitMerge, Loader2, Search, ChevronDown, ChevronRight, Check, AlertTriangle, Trash2, Camera, Download, Eye } from 'lucide-react'
 
 interface Props { userId: string }
 
@@ -36,7 +36,7 @@ function coreName(s: string): string {
 }
 
 export default function GenosGodClient({ userId }: Props) {
-  const [activeTab, setActiveTab] = useState<'kennels' | 'kennel-dupes' | 'duplicates'>('kennels')
+  const [activeTab, setActiveTab] = useState<'kennels' | 'kennel-dupes' | 'duplicates' | 'photos'>('kennels')
 
   return (
     <div className="p-6 lg:p-8">
@@ -60,9 +60,12 @@ export default function GenosGodClient({ userId }: Props) {
         <button onClick={() => setActiveTab('duplicates')} className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 -mb-px transition ${activeTab === 'duplicates' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40 hover:text-white/60'}`}>
           <GitMerge className="w-4 h-4" /> Perros Duplicados
         </button>
+        <button onClick={() => setActiveTab('photos')} className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 -mb-px transition ${activeTab === 'photos' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40 hover:text-white/60'}`}>
+          <Camera className="w-4 h-4" /> Buscador de Fotos
+        </button>
       </div>
 
-      {activeTab === 'kennels' ? <KennelDetector /> : activeTab === 'kennel-dupes' ? <KennelDuplicateDetector /> : <DuplicateDetector />}
+      {activeTab === 'kennels' ? <KennelDetector /> : activeTab === 'kennel-dupes' ? <KennelDuplicateDetector /> : activeTab === 'photos' ? <PhotoFinder /> : <DuplicateDetector />}
     </div>
   )
 }
@@ -667,6 +670,126 @@ function DuplicateDetector() {
             </div>
           </div>
         </>
+      )}
+    </div>
+  )
+}
+
+// ============================
+// TAB 4: PHOTO FINDER
+// ============================
+interface PhotoDog { id: string; name: string; thumbnail_url: string | null; breed: any }
+interface PhotoResult { profileUrl: string; photos: string[] }
+
+function PhotoFinder() {
+  const [dogs, setDogs] = useState<PhotoDog[]>([])
+  const [loading, setLoading] = useState(true)
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(0)
+  const [searching, setSearching] = useState<string | null>(null)
+  const [results, setResults] = useState<Record<string, PhotoResult | null>>({})
+  const [importing, setImporting] = useState<string | null>(null)
+  const [imported, setImported] = useState<Set<string>>(new Set())
+
+  useEffect(() => { loadDogs() }, [page])
+
+  async function loadDogs() {
+    setLoading(true)
+    const res = await fetch('/api/admin/photo-finder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'list-dogs-without-photos', limit: 20, offset: page * 20 }) })
+    const data = await res.json()
+    setDogs(data.dogs || []); setTotal(data.total || 0); setLoading(false)
+  }
+
+  async function searchPhotos(dog: PhotoDog) {
+    setSearching(dog.id)
+    try {
+      const res = await fetch('/api/admin/photo-finder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'search', dogName: dog.name }) })
+      const data = await res.json()
+      setResults(prev => ({ ...prev, [dog.id]: data.result || null }))
+    } catch { setResults(prev => ({ ...prev, [dog.id]: null })) }
+    setSearching(null)
+  }
+
+  async function importPhotos(dogId: string, photoUrls: string[]) {
+    setImporting(dogId)
+    try {
+      const res = await fetch('/api/admin/photo-finder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'import-photos', dogId, photoUrls }) })
+      const data = await res.json()
+      if (data.imported > 0) setImported(prev => new Set(prev).add(dogId))
+    } catch {}
+    setImporting(null)
+  }
+
+  async function searchAll() {
+    for (const dog of dogs) {
+      if (results[dog.id] !== undefined || imported.has(dog.id)) continue
+      await searchPhotos(dog)
+      await new Promise(r => setTimeout(r, 1000))
+    }
+  }
+
+  const totalPages = Math.ceil(total / 20)
+  if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-4">
+        <p className="text-xs text-white/40">{total} perros sin foto o con foto de baja calidad</p>
+        <button onClick={searchAll} className="ml-auto px-4 py-2 rounded-lg text-xs font-semibold bg-[#D74709] text-white hover:bg-[#c03d07] transition flex items-center gap-1.5">
+          <Search className="w-3.5 h-3.5" /> Buscar fotos en lote
+        </button>
+      </div>
+      <div className="space-y-2">
+        {dogs.map(dog => {
+          const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : (dog.breed as any)?.name
+          const result = results[dog.id]; const isSearching = searching === dog.id; const isImporting = importing === dog.id; const isImported = imported.has(dog.id); const hasResult = result !== undefined
+          return (
+            <div key={dog.id} className={`border rounded-xl p-4 transition ${isImported ? 'border-green-500/20 bg-green-500/5' : 'border-white/10'}`}>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/5 flex-shrink-0">
+                  {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <Camera className="w-5 h-5 text-white/10 m-auto" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">{dog.name}</p>
+                  <p className="text-xs text-white/30">{breedName || 'Sin raza'} · {dog.thumbnail_url ? 'Foto de baja calidad' : 'Sin foto'}</p>
+                </div>
+                {isImported ? <span className="text-xs text-green-400 flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Importado</span>
+                  : isSearching ? <Loader2 className="w-4 h-4 animate-spin text-white/30" />
+                  : !hasResult ? <button onClick={() => searchPhotos(dog)} className="px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-white/5 text-white/40 hover:bg-white/10 transition flex items-center gap-1"><Search className="w-3 h-3" /> Buscar</button>
+                  : result === null ? <span className="text-[10px] text-white/20">No encontrado</span> : null}
+              </div>
+              {result && result.photos.length > 0 && !isImported && (
+                <div className="mt-3 pt-3 border-t border-white/5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs text-white/40">{result.photos.length} foto{result.photos.length !== 1 ? 's' : ''}</span>
+                    <a href={result.profileUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#D74709] hover:underline flex items-center gap-0.5"><Eye className="w-3 h-3" /> Ver en presadb</a>
+                    <button onClick={() => importPhotos(dog.id, result.photos)} disabled={isImporting} className="ml-auto px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition flex items-center gap-1 disabled:opacity-50">
+                      {isImporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+                      {isImporting ? 'Importando...' : 'Importar todas'}
+                    </button>
+                  </div>
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {result.photos.map((url, i) => (
+                      <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="w-20 h-20 rounded-lg overflow-hidden bg-white/5 flex-shrink-0 hover:ring-2 ring-[#D74709] transition">
+                        <img src={url.replace('/dogs/', '/tn/200x200/dogs/')} alt="" className="w-full h-full object-cover" loading="lazy" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-xs text-white/30">{page * 20 + 1}–{Math.min((page + 1) * 20, total)} de {total}</p>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} className="px-3 py-1.5 rounded-lg text-xs text-white/30 bg-white/5 hover:bg-white/10 disabled:opacity-20 transition">Anterior</button>
+            <span className="text-xs text-white/40 px-2">{page + 1} / {totalPages}</span>
+            <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="px-3 py-1.5 rounded-lg text-xs text-white/30 bg-white/5 hover:bg-white/10 disabled:opacity-20 transition">Siguiente</button>
+          </div>
+        </div>
       )}
     </div>
   )
