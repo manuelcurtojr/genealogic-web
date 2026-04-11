@@ -743,15 +743,15 @@ function PhotoFinder() {
   async function importPhotos(dogId: string, photoUrls: { original: string; thumb: string }[]) {
     setImporting(dogId)
     try {
-      // Download each photo from browser (bypasses Vercel IP blocks) and send as base64
+      // Download each photo via proxy (bypasses CORS and Vercel IP blocks)
       const photoData: { base64: string; ext: string }[] = []
       for (const photo of photoUrls) {
         try {
-          // Use 1000x1000 (best quality available on presadb)
           const downloadUrl = photo.original.includes('/tn/') ? photo.original : photo.original.replace('/dogs/', '/tn/1000x1000/dogs/')
-          const imgRes = await fetch(downloadUrl)
-          if (!imgRes.ok) continue
-          const blob = await imgRes.blob()
+          // Fetch image bytes through proxy-fetch as binary
+          const proxyRes = await fetch(`/api/proxy-image?url=${encodeURIComponent(downloadUrl)}`)
+          if (!proxyRes.ok) continue
+          const blob = await proxyRes.blob()
           const base64 = await new Promise<string>((resolve) => {
             const reader = new FileReader()
             reader.onload = () => resolve((reader.result as string).split(',')[1])
