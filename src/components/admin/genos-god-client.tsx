@@ -691,11 +691,11 @@ function PhotoFinder() {
   const [importing, setImporting] = useState<string | null>(null)
   const [imported, setImported] = useState<Set<string>>(new Set())
 
-  useEffect(() => { loadDogs() }, [page])
+  useEffect(() => { loadDogs() }, [])
 
   async function loadDogs() {
     setLoading(true)
-    const res = await fetch('/api/admin/photo-finder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'list-dogs-without-photos', limit: 20, offset: page * 20 }) })
+    const res = await fetch('/api/admin/photo-finder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'list-dogs-without-photos', limit: 5000, offset: 0 }) })
     const data = await res.json()
     setDogs(data.dogs || []); setTotal(data.total || 0); setLoading(false)
   }
@@ -828,14 +828,9 @@ function PhotoFinder() {
           )
         })}
       </div>
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
-          <p className="text-xs text-white/30">{page * 20 + 1}–{Math.min((page + 1) * 20, total)} de {total}</p>
-          <div className="flex items-center gap-1">
-            <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} className="px-3 py-1.5 rounded-lg text-xs text-white/30 bg-white/5 hover:bg-white/10 disabled:opacity-20 transition">Anterior</button>
-            <span className="text-xs text-white/40 px-2">{page + 1} / {totalPages}</span>
-            <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="px-3 py-1.5 rounded-lg text-xs text-white/30 bg-white/5 hover:bg-white/10 disabled:opacity-20 transition">Siguiente</button>
-          </div>
+      {dogs.length > 0 && (
+        <div className="mt-4">
+          <p className="text-xs text-white/30 text-center">{dogs.length} de {total} perros mostrados</p>
         </div>
       )}
     </div>
