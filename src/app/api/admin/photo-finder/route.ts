@@ -152,6 +152,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, imported })
     }
 
+    if (body.action === 'save-photo-urls') {
+      // Save external URLs directly (no download — presadb URLs are stable)
+      const { dogId, urls } = body
+      if (!dogId || !urls?.length) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
+
+      let imported = 0
+      for (let i = 0; i < urls.length; i++) {
+        try {
+          if (i === 0) {
+            await sb.from('dogs').update({ thumbnail_url: urls[0] }).eq('id', dogId)
+          }
+          const { data: maxPos } = await sb.from('dog_photos').select('position').eq('dog_id', dogId).order('position', { ascending: false }).limit(1)
+          await sb.from('dog_photos').insert({
+            dog_id: dogId, url: urls[i], storage_path: null, position: (maxPos?.[0]?.position || 0) + 1,
+          })
+          imported++
+        } catch {}
+      }
+      return NextResponse.json({ success: true, imported })
+    }
+
     if (body.action === 'import-photos-base64') {
       // Photos already downloaded by client browser, received as base64
       const { dogId, photos } = body

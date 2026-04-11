@@ -743,30 +743,11 @@ function PhotoFinder() {
   async function importPhotos(dogId: string, photoUrls: { original: string; thumb: string }[]) {
     setImporting(dogId)
     try {
-      // Download each photo via proxy (bypasses CORS and Vercel IP blocks)
-      const photoData: { base64: string; ext: string }[] = []
-      for (const photo of photoUrls) {
-        try {
-          const downloadUrl = photo.original.includes('/tn/') ? photo.original : photo.original.replace('/dogs/', '/tn/1000x1000/dogs/')
-          // Fetch image bytes through proxy-fetch as binary
-          const proxyRes = await fetch(`/api/proxy-image?url=${encodeURIComponent(downloadUrl)}`)
-          if (!proxyRes.ok) continue
-          const blob = await proxyRes.blob()
-          const base64 = await new Promise<string>((resolve) => {
-            const reader = new FileReader()
-            reader.onload = () => resolve((reader.result as string).split(',')[1])
-            reader.readAsDataURL(blob)
-          })
-          const ext = photo.original.match(/\.(jpg|jpeg|png)/i)?.[1] || 'jpg'
-          photoData.push({ base64, ext })
-        } catch {}
-      }
-
-      if (photoData.length === 0) { setImporting(null); return }
-
+      // Save presadb URLs directly (no download needed — stable external URLs)
+      const urls = photoUrls.map(p => p.original.includes('/tn/') ? p.original : p.original.replace('/dogs/', '/tn/1000x1000/dogs/'))
       const res = await fetch('/api/admin/photo-finder', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'import-photos-base64', dogId, photos: photoData }),
+        body: JSON.stringify({ action: 'save-photo-urls', dogId, urls }),
       })
       const data = await res.json()
       if (data.imported > 0) setImported(prev => new Set(prev).add(dogId))
