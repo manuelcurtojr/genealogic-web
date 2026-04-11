@@ -751,24 +751,38 @@ function PhotoFinder() {
     setImporting(null)
   }
 
+  async function searchAll() {
+    for (const dog of dogs) {
+      if (results[dog.id] !== undefined || imported.has(dog.id)) continue
+      await searchPhotos(dog)
+      await new Promise(r => setTimeout(r, 1000))
+    }
+  }
+
   async function searchAndImportAll() {
     for (const dog of dogs) {
       if (imported.has(dog.id)) continue
+      // Search
       setSearching(dog.id)
+      let photoList: { original: string; thumb: string }[] = []
       try {
         const slug = buildSlug(dog.name)
         const proxyRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(`https://presadb.com/dogocanario/${slug}`)}`, { signal: AbortSignal.timeout(10000) })
-        if (!proxyRes.ok) { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null); continue }
-        const html = await proxyRes.text()
-        const firstWord = dog.name.replace(/[''`']/g, '').split(' ')[0]
-        if (!html.toLowerCase().includes(firstWord.toLowerCase())) { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null); continue }
-        const photoList = extractPhotosFromHtml(html)
-        if (photoList.length === 0) { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null); continue }
-        setResults(prev => ({ ...prev, [dog.id]: { profileUrl: `https://presadb.com/dogocanario/${slug}`, photos: photoList } }))
-        setSearching(null)
-        // Auto-import
-        await importPhotos(dog.id, photoList)
-      } catch { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null) }
+        if (proxyRes.ok) {
+          const html = await proxyRes.text()
+          const firstWord = dog.name.replace(/[''`']/g, '').split(' ')[0]
+          if (html.toLowerCase().includes(firstWord.toLowerCase())) {
+            photoList = extractPhotosFromHtml(html)
+            if (photoList.length > 0) {
+              setResults(prev => ({ ...prev, [dog.id]: { profileUrl: `https://presadb.com/dogocanario/${slug}`, photos: photoList } }))
+            }
+          }
+        }
+      } catch {}
+      if (photoList.length === 0) { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null); await new Promise(r => setTimeout(r, 500)); continue }
+      setSearching(null)
+      // Auto-import
+      await importPhotos(dog.id, photoList)
       await new Promise(r => setTimeout(r, 500))
     }
   }
@@ -780,8 +794,11 @@ function PhotoFinder() {
     <div>
       <div className="flex items-center gap-3 mb-4">
         <p className="text-xs text-white/40">{total} perros sin foto o con foto de baja calidad</p>
-        <button onClick={searchAndImportAll} className="ml-auto px-4 py-2 rounded-lg text-xs font-semibold bg-[#D74709] text-white hover:bg-[#c03d07] transition flex items-center gap-1.5">
-          <Download className="w-3.5 h-3.5" /> Buscar e importar en lote
+        <button onClick={searchAll} className="ml-auto px-4 py-2 rounded-lg text-xs font-semibold bg-white/5 text-white/50 hover:bg-white/10 transition flex items-center gap-1.5">
+          <Search className="w-3.5 h-3.5" /> Solo buscar
+        </button>
+        <button onClick={searchAndImportAll} className="px-4 py-2 rounded-lg text-xs font-semibold bg-[#D74709] text-white hover:bg-[#c03d07] transition flex items-center gap-1.5">
+          <Download className="w-3.5 h-3.5" /> Buscar e importar
         </button>
       </div>
       <div className="space-y-2">
