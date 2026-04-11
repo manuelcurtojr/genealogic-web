@@ -15,29 +15,27 @@ async function getAdminSupabase() {
 
 // Search presadb for a dog by name and return photo URLs
 async function searchPresadb(dogName: string): Promise<{ profileUrl: string; photos: string[] } | null> {
-  // Normalize name for search
-  const searchName = dogName.toLowerCase().replace(/[''`]/g, "'").trim()
+  // Normalize name for search — strip accents and apostrophes for slug
+  const searchName = dogName.toLowerCase().replace(/[''`']/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
   const slug = searchName.replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-')
 
   // Try direct URL patterns for presadb
   const patterns = [
     `https://presadb.com/dogocanario/${slug}`,
-    `https://presadb.com/dogocanario/${slug.replace(/-de-/g, '-')}`,
   ]
-
-  // Also try search
-  const searchUrl = `https://presadb.com/search?q=${encodeURIComponent(dogName)}`
 
   // Try direct URLs first
   for (const url of patterns) {
     try {
       const res = await fetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-        signal: AbortSignal.timeout(5000), redirect: 'follow',
+        signal: AbortSignal.timeout(8000), redirect: 'follow',
       })
       if (res.ok) {
         const html = await res.text()
-        if (html.includes(dogName.split(' ')[0].toUpperCase()) || html.includes(dogName.split(' ')[0])) {
+        // Verify it's the right dog — check first significant word of name
+        const firstWord = dogName.replace(/[''`']/g, '').split(' ')[0]
+        if (html.toLowerCase().includes(firstWord.toLowerCase())) {
           const photos = extractPhotos(html)
           if (photos.length > 0) return { profileUrl: url, photos }
         }
@@ -75,12 +73,12 @@ async function searchPresadb(dogName: string): Promise<{ profileUrl: string; pho
 
 function extractPhotos(html: string): string[] {
   const photos: string[] = []
-  // Find all photo URLs — presadb stores them as /tn/XXXxXXX/dogs/photo_XXXXX.jpg
-  const regex = /(?:src|href)=["']((?:https?:\/\/presadb\.com)?\/(?:tn\/\d+x\d+\/)?dogs\/photo_\d+\.(?:jpg|jpeg|png))["']/gi
+  // Find gallery/main photos (350x350 or 1000x1000 — NOT 100x100 pedigree thumbs)
+  const regex = /(?:src|href|data-src|data-image)=["']((?:https?:\/\/presadb\.com)?\/tn\/(?:350x350|1000x1000)\/dogs\/photo_\d+\.(?:jpg|jpeg|png))["']/gi
   let match
   while ((match = regex.exec(html)) !== null) {
     let url = match[1]
-    // Convert to full-quality URL (remove /tn/XXXxXXX/ prefix)
+    // Convert to full-quality URL (remove /tn/XXXxXXX/)
     url = url.replace(/\/tn\/\d+x\d+\//, '/')
     if (!url.startsWith('http')) url = `https://presadb.com${url}`
     if (!photos.includes(url)) photos.push(url)
