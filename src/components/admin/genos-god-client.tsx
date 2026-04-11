@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Sparkles, Store, GitMerge, Loader2, Search, ChevronDown, ChevronRight, Check, AlertTriangle, Trash2, Camera, Download, Eye } from 'lucide-react'
+import { Sparkles, Store, GitMerge, Loader2, Search, ChevronDown, ChevronRight, Check, AlertTriangle, Trash2, Camera, Download, Eye, Globe, X } from 'lucide-react'
 
 interface Props { userId: string }
 
@@ -36,7 +36,7 @@ function coreName(s: string): string {
 }
 
 export default function GenosGodClient({ userId }: Props) {
-  const [activeTab, setActiveTab] = useState<'kennels' | 'kennel-dupes' | 'duplicates' | 'photos'>('kennels')
+  const [activeTab, setActiveTab] = useState<'kennels' | 'kennel-dupes' | 'duplicates' | 'photos' | 'kennel-import'>('kennels')
 
   return (
     <div className="p-6 lg:p-8">
@@ -63,9 +63,12 @@ export default function GenosGodClient({ userId }: Props) {
         <button onClick={() => setActiveTab('photos')} className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 -mb-px transition ${activeTab === 'photos' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40 hover:text-white/60'}`}>
           <Camera className="w-4 h-4" /> Buscador de Fotos
         </button>
+        <button onClick={() => setActiveTab('kennel-import')} className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 -mb-px transition ${activeTab === 'kennel-import' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40 hover:text-white/60'}`}>
+          <Globe className="w-4 h-4" /> Importar Criadero
+        </button>
       </div>
 
-      {activeTab === 'kennels' ? <KennelDetector /> : activeTab === 'kennel-dupes' ? <KennelDuplicateDetector /> : activeTab === 'photos' ? <PhotoFinder /> : <DuplicateDetector />}
+      {activeTab === 'kennels' ? <KennelDetector /> : activeTab === 'kennel-dupes' ? <KennelDuplicateDetector /> : activeTab === 'photos' ? <PhotoFinder /> : activeTab === 'kennel-import' ? <KennelImporter userId={userId} /> : <DuplicateDetector />}
     </div>
   )
 }
@@ -882,6 +885,289 @@ function PhotoFinder() {
             <span className="text-xs text-white/40 px-2">{page + 1} / {totalPages}</span>
             <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="px-3 py-1.5 rounded-lg text-xs text-white/30 bg-white/5 hover:bg-white/10 disabled:opacity-20 transition">Siguiente</button>
           </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ============================
+// TAB 5: KENNEL IMPORTER
+// ============================
+const EXTRACTION_PROMPT = `You are a dog pedigree data extractor. Extract the complete pedigree information from this content.
+
+Return a JSON object with this EXACT structure:
+{
+  "main_dog": {
+    "name": "string", "sex": "Male" or "Female", "registration": "string or null",
+    "breed": "string or null", "color": "string or null", "birth_date": "YYYY-MM-DD or YYYY or null",
+    "health": "string (HD, ED results) or null", "breeder": "string or null", "owner": "string or null",
+    "photo_url": "string or null", "father_name": "exact name or null", "mother_name": "exact name or null"
+  },
+  "ancestors": [
+    {
+      "name": "string", "sex": "Male" or "Female", "registration": "string or null",
+      "breed": "string or null", "color": "string or null", "birth_date": "YYYY-MM-DD or YYYY or null",
+      "health": "string or null", "photo_url": "string or null",
+      "father_name": "string or null", "mother_name": "string or null",
+      "generation": number (1=parents, 2=grandparents, 3=great-grandparents, etc)
+    }
+  ]
+}
+
+Rules:
+- Extract ALL dogs in the pedigree (main dog + ALL ancestors up to whatever generation is available)
+- Names must be EXACT as shown (preserve capitalization, accents, special chars)
+- father_name and mother_name must match the exact name of another dog in the tree
+- Sex: determine from context (sire/father = Male, dam/mother = Female)
+- If data is not available, use null
+- Return ONLY the JSON, no markdown, no explanation`
+
+interface KennelDog { name: string; url: string; exists: boolean; status: 'pending' | 'scanning' | 'importing' | 'photos' | 'done' | 'error' | 'skipped'; error?: string }
+
+function KennelImporter({ userId }: { userId: string }) {
+  const [kennelSlug, setKennelSlug] = useState('')
+  const [searching, setSearching] = useState(false)
+  const [kennelName, setKennelName] = useState('')
+  const [dogs, setDogs] = useState<KennelDog[]>([])
+  const [importing, setImporting] = useState(false)
+  const [progress, setProgress] = useState({ done: 0, total: 0 })
+
+  async function searchKennel() {
+    if (!kennelSlug.trim()) return
+    setSearching(true); setDogs([]); setKennelName('')
+    try {
+      const slug = kennelSlug.trim().toLowerCase().replace(/\s+/g, '-')
+      const res = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(`https://presadb.com/${slug}`)}`, { signal: AbortSignal.timeout(15000) })
+      if (!res.ok) throw new Error('Criadero no encontrado')
+      const html = await res.text()
+
+      // Extract kennel name from title
+      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
+      const kName = titleMatch?.[1]?.replace(/\s*→.*/, '').replace('Kennel ', '').trim() || slug
+      setKennelName(kName)
+
+      // Extract dog links from kennel page
+      const dogLinks: { name: string; url: string }[] = []
+      const linkRegex = /href=["'](\/dogocanario\/[^"']+)["'][^>]*>[\s\S]*?<b>([^<]+)<\/b>/gi
+      let m
+      while ((m = linkRegex.exec(html)) !== null) {
+        const url = `https://presadb.com${m[1]}`
+        const name = m[2].trim()
+        if (name && !dogLinks.find(d => d.url === url)) dogLinks.push({ name, url })
+      }
+
+      // If regex didn't work, try simpler pattern
+      if (dogLinks.length === 0) {
+        const simpleRegex = /href=["'](\/dogocanario\/[^"']+)["']/gi
+        const seen = new Set<string>()
+        while ((m = simpleRegex.exec(html)) !== null) {
+          const path = m[1]
+          if (seen.has(path)) continue
+          seen.add(path)
+          const url = `https://presadb.com${path}`
+          // Extract name from slug
+          const nameFromSlug = path.replace('/dogocanario/', '').replace(/-\d+$/, '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+          dogLinks.push({ name: nameFromSlug, url })
+        }
+      }
+
+      // Check which exist in DB
+      const supabase = createClient()
+      const kennelDogs: KennelDog[] = []
+      for (const d of dogLinks) {
+        const pattern = `%${normName(d.name).split(' ').filter(w => w.length > 2).map(w => w.slice(0, -1)).join('%')}%`
+        const { data } = await supabase.from('dogs').select('id').ilike('name', pattern).limit(1)
+        kennelDogs.push({ name: d.name, url: d.url, exists: !!data?.length, status: data?.length ? 'skipped' : 'pending' })
+      }
+
+      setDogs(kennelDogs)
+    } catch (err: any) { alert(err.message) }
+    setSearching(false)
+  }
+
+  function cleanHtml(html: string): string {
+    const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
+    const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)
+    const mainDogContext = `MAIN DOG PAGE: ${titleMatch?.[1] || ''} ${h1Match?.[1]?.replace(/<[^>]+>/g, '') || ''}`
+    const tables = [...html.matchAll(/<table[^>]*>([\s\S]*?)<\/table>/gi)]
+    if (tables.length > 0) {
+      const largest = tables.reduce((a, b) => a[0].length > b[0].length ? a : b)
+      if (largest[0].length > 5000) {
+        const tableHtml = largest[0].replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi, '[IMG:$1]').replace(/\s(class|style|width|height|bgcolor|align|valign|border|cellpadding|cellspacing)=["'][^"']*["']/gi, (mm, attr) => (attr === 'rowspan' || attr === 'colspan') ? mm : '').replace(/\s{2,}/g, ' ')
+        const bodyStart = html.indexOf('<body')
+        const tableStart = html.indexOf(largest[0])
+        let dogInfoHtml = ''
+        if (bodyStart >= 0 && tableStart > bodyStart) {
+          dogInfoHtml = html.substring(bodyStart, tableStart).replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '').replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi, '[PHOTO:$1]').replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim().slice(0, 3000)
+        }
+        if (tableHtml.length < 120000) return `${mainDogContext}\n\nDOG INFO: ${dogInfoHtml}\n\nPEDIGREE TABLE:\n${tableHtml}`
+      }
+    }
+    return html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '').replace(/\s{2,}/g, ' ').slice(0, 60000)
+  }
+
+  function extractPhotos(html: string): string[] {
+    const photos: string[] = []
+    const seen = new Set<string>()
+    const regex = /(?:src|href|data-src|data-image)=["']((?:https?:\/\/presadb\.com)?\/tn\/(?:350x350|1000x1000)\/dogs\/photo_\d+\.(?:jpg|jpeg|png))["']/gi
+    let m
+    while ((m = regex.exec(html)) !== null) {
+      let url = m[1]
+      if (!url.startsWith('http')) url = `https://presadb.com${url}`
+      url = url.replace(/\/tn\/\d+x\d+\//, '/tn/1000x1000/')
+      if (!seen.has(url)) { seen.add(url); photos.push(url) }
+    }
+    return photos
+  }
+
+  async function importAll() {
+    setImporting(true)
+    const missing = dogs.filter(d => d.status === 'pending')
+    setProgress({ done: 0, total: missing.length })
+
+    // Get API key
+    let apiKey = ''
+    try {
+      const res = await fetch('/api/import-pedigree')
+      const data = await res.json()
+      apiKey = data.key
+    } catch { setImporting(false); return }
+
+    for (let i = 0; i < missing.length; i++) {
+      const dog = missing[i]
+      setDogs(prev => prev.map(d => d.url === dog.url ? { ...d, status: 'scanning' } : d))
+
+      try {
+        // 1. Fetch dog page
+        const pageRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(dog.url)}`, { signal: AbortSignal.timeout(15000) })
+        if (!pageRes.ok) throw new Error('Page not found')
+        const rawHtml = await pageRes.text()
+        const html = cleanHtml(rawHtml)
+
+        // 2. Call Claude for pedigree extraction
+        const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+          body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 8000, messages: [{ role: 'user', content: `${EXTRACTION_PROMPT}\n\n--- PAGE HTML ---\n${html}` }] }),
+        })
+        if (!claudeRes.ok) {
+          if (claudeRes.status === 529) {
+            // Overloaded — wait and retry
+            await new Promise(r => setTimeout(r, 10000))
+            setDogs(prev => prev.map(d => d.url === dog.url ? { ...d, status: 'pending' } : d))
+            i-- // retry this dog
+            continue
+          }
+          throw new Error(`Claude ${claudeRes.status}`)
+        }
+        const claudeData = await claudeRes.json()
+        const text = claudeData.content?.[0]?.text || ''
+        let jsonStr = text
+        const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+        if (jsonMatch) jsonStr = jsonMatch[1]
+        const objMatch = jsonStr.match(/\{[\s\S]*\}/)
+        if (objMatch) jsonStr = objMatch[0]
+        const pedigreeData = JSON.parse(jsonStr)
+
+        if (!pedigreeData?.main_dog?.name) throw new Error('No data extracted')
+
+        // 3. Auto-confirm import (admin mode, no owner)
+        setDogs(prev => prev.map(d => d.url === dog.url ? { ...d, status: 'importing' } : d))
+        const confirmRes = await fetch('/api/confirm-import', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mainDog: pedigreeData.main_dog, ancestors: pedigreeData.ancestors || [], userId, swaps: {}, importPhotos: true, isAdmin: true }),
+        })
+        if (!confirmRes.ok) throw new Error('Import failed')
+
+        // 4. Import photos
+        setDogs(prev => prev.map(d => d.url === dog.url ? { ...d, status: 'photos' } : d))
+        const photoUrls = extractPhotos(rawHtml)
+        if (photoUrls.length > 0) {
+          // Find the dog ID we just created
+          const supabase = createClient()
+          const { data: created } = await supabase.from('dogs').select('id').ilike('name', `%${pedigreeData.main_dog.name.split(' ')[0]}%`).order('created_at', { ascending: false }).limit(1)
+          if (created?.[0]) {
+            await fetch('/api/admin/photo-finder', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'save-photo-urls', dogId: created[0].id, urls: photoUrls }),
+            })
+          }
+        }
+
+        setDogs(prev => prev.map(d => d.url === dog.url ? { ...d, status: 'done' } : d))
+      } catch (err: any) {
+        setDogs(prev => prev.map(d => d.url === dog.url ? { ...d, status: 'error', error: err.message } : d))
+      }
+
+      setProgress({ done: i + 1, total: missing.length })
+      // Delay between dogs
+      await new Promise(r => setTimeout(r, 2000))
+    }
+    setImporting(false)
+  }
+
+  const existCount = dogs.filter(d => d.exists).length
+  const missingCount = dogs.filter(d => !d.exists).length
+  const doneCount = dogs.filter(d => d.status === 'done').length
+  const errorCount = dogs.filter(d => d.status === 'error').length
+
+  return (
+    <div>
+      <div className="mb-4">
+        <p className="text-xs text-white/40 mb-3">Busca un criadero en Presa Database e importa todos sus perros con genealogias y fotos</p>
+        <div className="flex gap-2">
+          <input value={kennelSlug} onChange={e => setKennelSlug(e.target.value)} placeholder="Slug del criadero (ej: irema-curto)" onKeyDown={e => e.key === 'Enter' && searchKennel()}
+            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+          <button onClick={searchKennel} disabled={searching || !kennelSlug.trim()} className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-[#D74709] text-white hover:bg-[#c03d07] transition disabled:opacity-50 flex items-center gap-1.5">
+            {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            Buscar
+          </button>
+        </div>
+      </div>
+
+      {kennelName && (
+        <div className="mb-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold">{kennelName}</h3>
+              <p className="text-xs text-white/40 mt-0.5">{dogs.length} perros · {existCount} ya existen · {missingCount} por importar</p>
+              {doneCount > 0 && <p className="text-xs text-green-400 mt-0.5">{doneCount} importados{errorCount > 0 ? ` · ${errorCount} errores` : ''}</p>}
+            </div>
+            {missingCount > 0 && !importing && (
+              <button onClick={importAll} className="px-4 py-2 rounded-lg text-xs font-semibold bg-[#D74709] text-white hover:bg-[#c03d07] transition flex items-center gap-1.5">
+                <Download className="w-3.5 h-3.5" /> Importar {missingCount} perros
+              </button>
+            )}
+            {importing && (
+              <div className="flex items-center gap-2 text-xs text-white/40">
+                <Loader2 className="w-4 h-4 animate-spin text-[#D74709]" />
+                {progress.done}/{progress.total}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {dogs.length > 0 && (
+        <div className="space-y-1 max-h-[500px] overflow-y-auto">
+          {dogs.map(dog => (
+            <div key={dog.url} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${dog.status === 'done' ? 'bg-green-500/5' : dog.status === 'error' ? 'bg-red-500/5' : dog.exists ? 'opacity-40' : ''}`}>
+              {dog.status === 'done' ? <Check className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
+                : dog.status === 'error' ? <X className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                : dog.status === 'scanning' ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D74709] flex-shrink-0" />
+                : dog.status === 'importing' ? <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400 flex-shrink-0" />
+                : dog.status === 'photos' ? <Camera className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
+                : dog.exists ? <Check className="w-3.5 h-3.5 text-white/20 flex-shrink-0" />
+                : <div className="w-3.5 h-3.5 rounded-full border border-white/20 flex-shrink-0" />}
+              <span className="flex-1 truncate">{dog.name}</span>
+              {dog.status === 'scanning' && <span className="text-[10px] text-[#D74709]">Analizando pedigri...</span>}
+              {dog.status === 'importing' && <span className="text-[10px] text-blue-400">Importando...</span>}
+              {dog.status === 'photos' && <span className="text-[10px] text-yellow-400">Fotos...</span>}
+              {dog.status === 'error' && <span className="text-[10px] text-red-400">{dog.error}</span>}
+              {dog.exists && dog.status === 'skipped' && <span className="text-[10px] text-white/20">Ya existe</span>}
+            </div>
+          ))}
         </div>
       )}
     </div>
