@@ -152,6 +152,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, imported })
     }
 
+    if (body.action === 'import-photos-base64') {
+      // Photos already downloaded by client browser, received as base64
+      const { dogId, photos } = body
+      if (!dogId || !photos?.length) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
+
+      let imported = 0
+      for (let i = 0; i < photos.length; i++) {
+        const { base64, ext } = photos[i]
+        try {
+          const buffer = Buffer.from(base64, 'base64')
+          const fileName = `${dogId}/${Date.now()}-${i}.${ext}`
+
+          const { error: uploadErr } = await sb.storage.from('dog-photos').upload(fileName, buffer, {
+            contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}`, upsert: true,
+          })
+          if (uploadErr) continue
+
+          const { data: urlData } = sb.storage.from('dog-photos').getPublicUrl(fileName)
+          const publicUrl = urlData.publicUrl
+
+          if (i === 0) {
+            await sb.from('dogs').update({ thumbnail_url: publicUrl }).eq('id', dogId)
+          }
+
+          const { data: maxPos } = await sb.from('dog_photos').select('position').eq('dog_id', dogId).order('position', { ascending: false }).limit(1)
+          await sb.from('dog_photos').insert({
+            dog_id: dogId, url: publicUrl, storage_path: fileName, position: (maxPos?.[0]?.position || 0) + 1,
+          })
+          imported++
+        } catch {}
+      }
+      return NextResponse.json({ success: true, imported })
+    }
+
     if (body.action === 'list-dogs-without-photos') {
       // Get dogs that need photos
       const { limit = 50, offset = 0 } = body

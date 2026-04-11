@@ -743,7 +743,31 @@ function PhotoFinder() {
   async function importPhotos(dogId: string, photoUrls: { original: string; thumb: string }[]) {
     setImporting(dogId)
     try {
-      const res = await fetch('/api/admin/photo-finder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'import-photos', dogId, photoUrls: photoUrls.map(p => p.original) }) })
+      // Download each photo from browser (bypasses Vercel IP blocks) and send as base64
+      const photoData: { base64: string; ext: string }[] = []
+      for (const photo of photoUrls) {
+        try {
+          // Use 1000x1000 (best quality available on presadb)
+          const downloadUrl = photo.original.includes('/tn/') ? photo.original : photo.original.replace('/dogs/', '/tn/1000x1000/dogs/')
+          const imgRes = await fetch(downloadUrl)
+          if (!imgRes.ok) continue
+          const blob = await imgRes.blob()
+          const base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve((reader.result as string).split(',')[1])
+            reader.readAsDataURL(blob)
+          })
+          const ext = photo.original.match(/\.(jpg|jpeg|png)/i)?.[1] || 'jpg'
+          photoData.push({ base64, ext })
+        } catch {}
+      }
+
+      if (photoData.length === 0) { setImporting(null); return }
+
+      const res = await fetch('/api/admin/photo-finder', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'import-photos-base64', dogId, photos: photoData }),
+      })
       const data = await res.json()
       if (data.imported > 0) setImported(prev => new Set(prev).add(dogId))
     } catch {}
