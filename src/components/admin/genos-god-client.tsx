@@ -679,7 +679,7 @@ function DuplicateDetector() {
 // TAB 4: PHOTO FINDER
 // ============================
 interface PhotoDog { id: string; name: string; thumbnail_url: string | null; breed: any }
-interface PhotoResult { profileUrl: string; photos: string[] }
+interface PhotoResult { profileUrl: string; photos: { original: string; thumb: string }[] }
 
 function PhotoFinder() {
   const [dogs, setDogs] = useState<PhotoDog[]>([])
@@ -704,14 +704,21 @@ function PhotoFinder() {
     return name.toLowerCase().replace(/[''`']/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-')
   }
 
-  function extractPhotosFromHtml(html: string): string[] {
-    const photos: string[] = []
+  function extractPhotosFromHtml(html: string): { original: string; thumb: string }[] {
+    const photos: { original: string; thumb: string }[] = []
+    const seen = new Set<string>()
     const regex = /(?:src|href|data-src|data-image)=["']((?:https?:\/\/presadb\.com)?\/tn\/(?:350x350|1000x1000)\/dogs\/photo_\d+\.(?:jpg|jpeg|png))["']/gi
     let m
     while ((m = regex.exec(html)) !== null) {
-      let url = m[1].replace(/\/tn\/\d+x\d+\//, '/')
-      if (!url.startsWith('http')) url = `https://presadb.com${url}`
-      if (!photos.includes(url)) photos.push(url)
+      let thumbUrl = m[1]
+      if (!thumbUrl.startsWith('http')) thumbUrl = `https://presadb.com${thumbUrl}`
+      const originalUrl = thumbUrl.replace(/\/tn\/\d+x\d+\//, '/')
+      if (!seen.has(originalUrl)) {
+        seen.add(originalUrl)
+        // Use 350x350 for preview
+        const previewUrl = originalUrl.replace('/dogs/', '/tn/350x350/dogs/')
+        photos.push({ original: originalUrl, thumb: previewUrl })
+      }
     }
     return photos
   }
@@ -727,16 +734,16 @@ function PhotoFinder() {
       const html = await proxyRes.text()
       const firstWord = dog.name.replace(/[''`']/g, '').split(' ')[0]
       if (!html.toLowerCase().includes(firstWord.toLowerCase())) { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null); return }
-      const photos = extractPhotosFromHtml(html)
-      setResults(prev => ({ ...prev, [dog.id]: photos.length > 0 ? { profileUrl: presadbUrl, photos } : null }))
+      const photoList = extractPhotosFromHtml(html)
+      setResults(prev => ({ ...prev, [dog.id]: photoList.length > 0 ? { profileUrl: presadbUrl, photos: photoList } : null }))
     } catch { setResults(prev => ({ ...prev, [dog.id]: null })) }
     setSearching(null)
   }
 
-  async function importPhotos(dogId: string, photoUrls: string[]) {
+  async function importPhotos(dogId: string, photoUrls: { original: string; thumb: string }[]) {
     setImporting(dogId)
     try {
-      const res = await fetch('/api/admin/photo-finder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'import-photos', dogId, photoUrls }) })
+      const res = await fetch('/api/admin/photo-finder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'import-photos', dogId, photoUrls: photoUrls.map(p => p.original) }) })
       const data = await res.json()
       if (data.imported > 0) setImported(prev => new Set(prev).add(dogId))
     } catch {}
@@ -792,9 +799,9 @@ function PhotoFinder() {
                     </button>
                   </div>
                   <div className="flex gap-2 overflow-x-auto pb-1">
-                    {result.photos.map((url, i) => (
-                      <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="w-20 h-20 rounded-lg overflow-hidden bg-white/5 flex-shrink-0 hover:ring-2 ring-[#D74709] transition">
-                        <img src={url.replace('/dogs/', '/tn/200x200/dogs/')} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    {result.photos.map((photo, i) => (
+                      <a key={i} href={photo.original} target="_blank" rel="noopener noreferrer" className="w-20 h-20 rounded-lg overflow-hidden bg-white/5 flex-shrink-0 hover:ring-2 ring-[#D74709] transition">
+                        <img src={photo.thumb} alt="" className="w-full h-full object-cover" loading="lazy" />
                       </a>
                     ))}
                   </div>
