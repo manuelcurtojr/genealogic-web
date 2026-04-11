@@ -823,11 +823,13 @@ function PhotoFinder() {
                     </button>
                   </div>
                   <div className="flex gap-2 overflow-x-auto pb-1">
-                    {result.photos.map((photo, i) => (
-                      <a key={i} href={photo.original} target="_blank" rel="noopener noreferrer" className="w-20 h-20 rounded-lg overflow-hidden bg-white/5 flex-shrink-0 hover:ring-2 ring-[#D74709] transition">
+                    {result.photos.map((photo, i) => {
+                      const fullUrl = photo.original.includes('/tn/') ? photo.original : photo.original.replace('/dogs/', '/tn/1000x1000/dogs/')
+                      return (
+                      <a key={i} href={fullUrl} target="_blank" rel="noopener noreferrer" className="w-20 h-20 rounded-lg overflow-hidden bg-white/5 flex-shrink-0 hover:ring-2 ring-[#D74709] transition">
                         <img src={photo.thumb} alt="" className="w-full h-full object-cover" loading="lazy" />
                       </a>
-                    ))}
+                      )})}
                   </div>
                 </div>
               )}
