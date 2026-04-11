@@ -700,12 +700,35 @@ function PhotoFinder() {
     setDogs(data.dogs || []); setTotal(data.total || 0); setLoading(false)
   }
 
+  function buildSlug(name: string): string {
+    return name.toLowerCase().replace(/[''`']/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-')
+  }
+
+  function extractPhotosFromHtml(html: string): string[] {
+    const photos: string[] = []
+    const regex = /(?:src|href|data-src|data-image)=["']((?:https?:\/\/presadb\.com)?\/tn\/(?:350x350|1000x1000)\/dogs\/photo_\d+\.(?:jpg|jpeg|png))["']/gi
+    let m
+    while ((m = regex.exec(html)) !== null) {
+      let url = m[1].replace(/\/tn\/\d+x\d+\//, '/')
+      if (!url.startsWith('http')) url = `https://presadb.com${url}`
+      if (!photos.includes(url)) photos.push(url)
+    }
+    return photos
+  }
+
   async function searchPhotos(dog: PhotoDog) {
     setSearching(dog.id)
     try {
-      const res = await fetch('/api/admin/photo-finder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'search', dogName: dog.name }) })
-      const data = await res.json()
-      setResults(prev => ({ ...prev, [dog.id]: data.result || null }))
+      const slug = buildSlug(dog.name)
+      const presadbUrl = `https://presadb.com/dogocanario/${slug}`
+      // Fetch via proxy (from browser, bypasses IP blocks)
+      const proxyRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(presadbUrl)}`, { signal: AbortSignal.timeout(10000) })
+      if (!proxyRes.ok) { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null); return }
+      const html = await proxyRes.text()
+      const firstWord = dog.name.replace(/[''`']/g, '').split(' ')[0]
+      if (!html.toLowerCase().includes(firstWord.toLowerCase())) { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null); return }
+      const photos = extractPhotosFromHtml(html)
+      setResults(prev => ({ ...prev, [dog.id]: photos.length > 0 ? { profileUrl: presadbUrl, photos } : null }))
     } catch { setResults(prev => ({ ...prev, [dog.id]: null })) }
     setSearching(null)
   }
