@@ -43,9 +43,9 @@ async function searchPresadb(dogName: string): Promise<{ profileUrl: string; pho
     } catch {}
   }
 
-  // Try search page
+  // Try search page fallback
   try {
-    const res = await fetch(searchUrl, {
+    const res = await fetch(`https://presadb.com/search?q=${encodeURIComponent(dogName)}`, {
       headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
       signal: AbortSignal.timeout(5000), redirect: 'follow',
     })
