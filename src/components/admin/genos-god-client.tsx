@@ -947,29 +947,17 @@ function KennelImporter({ userId }: { userId: string }) {
       const kName = titleMatch?.[1]?.replace(/\s*→.*/, '').replace('Kennel ', '').trim() || slug
       setKennelName(kName)
 
-      // Extract dog links from kennel page
+      // Extract dog links from kennel page — pattern: <a href="/dogocanario/slug">DOG NAME</a>
       const dogLinks: { name: string; url: string }[] = []
-      const linkRegex = /href=["'](\/dogocanario\/[^"']+)["'][^>]*>[\s\S]*?<b>([^<]+)<\/b>/gi
+      const linkRegex = /href=["'](\/dogocanario\/[^"']+)["'][^>]*>([^<]+)<\/a>/gi
+      const seen = new Set<string>()
       let m
       while ((m = linkRegex.exec(html)) !== null) {
-        const url = `https://presadb.com${m[1]}`
+        const path = m[1]
         const name = m[2].trim()
-        if (name && !dogLinks.find(d => d.url === url)) dogLinks.push({ name, url })
-      }
-
-      // If regex didn't work, try simpler pattern
-      if (dogLinks.length === 0) {
-        const simpleRegex = /href=["'](\/dogocanario\/[^"']+)["']/gi
-        const seen = new Set<string>()
-        while ((m = simpleRegex.exec(html)) !== null) {
-          const path = m[1]
-          if (seen.has(path)) continue
-          seen.add(path)
-          const url = `https://presadb.com${path}`
-          // Extract name from slug
-          const nameFromSlug = path.replace('/dogocanario/', '').replace(/-\d+$/, '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-          dogLinks.push({ name: nameFromSlug, url })
-        }
+        if (!name || name.length < 2 || seen.has(path)) continue
+        seen.add(path)
+        dogLinks.push({ name, url: `https://presadb.com${path}` })
       }
 
       // Check which exist in DB
