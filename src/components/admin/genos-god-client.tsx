@@ -744,27 +744,6 @@ function PhotoFinder() {
     setImporting(dogId)
     try {
       const urls = photoUrls.map(p => p.original.includes('/tn/') ? p.original : p.original.replace('/dogs/', '/tn/1000x1000/dogs/'))
-
-      // Try downloading via proxy-image first (uploads to Storage permanently)
-      const photoData: { base64: string; ext: string }[] = []
-      for (const url of urls) {
-        try {
-          const res = await fetch(`/api/proxy-image?url=${encodeURIComponent(url)}&format=base64`, { signal: AbortSignal.timeout(10000) })
-          if (!res.ok) continue
-          const data = await res.json()
-          if (!data.base64) continue
-          photoData.push({ base64: data.base64, ext: url.match(/\.(jpg|jpeg|png)/i)?.[1] || 'jpg' })
-        } catch {}
-      }
-
-      if (photoData.length > 0) {
-        // Upload to Supabase Storage (permanent)
-        const res = await fetch('/api/admin/photo-finder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'import-photos-base64', dogId, photos: photoData }) })
-        const data = await res.json()
-        if (data.imported > 0) { setImported(prev => new Set(prev).add(dogId)); setImporting(null); return }
-      }
-
-      // Fallback: save external URLs directly
       const res = await fetch('/api/admin/photo-finder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save-photo-urls', dogId, urls }) })
       const data = await res.json()
       if (data.imported > 0) setImported(prev => new Set(prev).add(dogId))
