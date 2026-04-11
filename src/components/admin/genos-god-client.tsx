@@ -727,13 +727,36 @@ function PhotoFinder() {
     setSearching(dog.id)
     try {
       const slug = buildSlug(dog.name)
-      const presadbUrl = `https://presadb.com/dogocanario/${slug}`
-      // Fetch via proxy (from browser, bypasses IP blocks)
-      const proxyRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(presadbUrl)}`, { signal: AbortSignal.timeout(10000) })
-      if (!proxyRes.ok) { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null); return }
-      const html = await proxyRes.text()
+      // If dog already has a presadb thumbnail, extract its photo page ID
+      let presadbUrl = `https://presadb.com/dogocanario/${slug}`
+
+      // Try slug-based URL first
+      let proxyRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(presadbUrl)}`, { signal: AbortSignal.timeout(10000) })
+      let html = proxyRes.ok ? await proxyRes.text() : ''
       const firstWord = dog.name.replace(/[''`']/g, '').split(' ')[0]
-      if (!html.toLowerCase().includes(firstWord.toLowerCase())) { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null); return }
+
+      // If 404 or wrong page, try searching presadb with the dog ID from thumbnail
+      if (!html || !html.toLowerCase().includes(firstWord.toLowerCase())) {
+        // Try search via presadb search page
+        const searchUrl = `https://presadb.com/search?q=${encodeURIComponent(dog.name)}`
+        proxyRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(searchUrl)}`, { signal: AbortSignal.timeout(10000) })
+        if (proxyRes.ok) {
+          const searchHtml = await proxyRes.text()
+          // Find a link matching the dog name
+          const nameSlug = slug.split('-').slice(0, 3).join('-') // first 3 words
+          const linkMatch = searchHtml.match(new RegExp(`href=["'](/dogocanario/${nameSlug}[^"']*)["']`, 'i'))
+          if (linkMatch) {
+            presadbUrl = `https://presadb.com${linkMatch[1]}`
+            proxyRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(presadbUrl)}`, { signal: AbortSignal.timeout(10000) })
+            html = proxyRes.ok ? await proxyRes.text() : ''
+          }
+        }
+      }
+
+      if (!html || !html.toLowerCase().includes(firstWord.toLowerCase())) {
+        setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null); return
+      }
+
       const photoList = extractPhotosFromHtml(html)
       setResults(prev => ({ ...prev, [dog.id]: photoList.length > 0 ? { profileUrl: presadbUrl, photos: photoList } : null }))
     } catch { setResults(prev => ({ ...prev, [dog.id]: null })) }
@@ -754,21 +777,44 @@ function PhotoFinder() {
   async function searchAndImportAll() {
     for (const dog of dogs) {
       if (imported.has(dog.id)) continue
+      // Search
       setSearching(dog.id)
+      let photoList: { original: string; thumb: string }[] = []
       try {
         const slug = buildSlug(dog.name)
-        const proxyRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(`https://presadb.com/dogocanario/${slug}`)}`, { signal: AbortSignal.timeout(10000) })
-        if (!proxyRes.ok) { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null); continue }
-        const html = await proxyRes.text()
+        let presadbUrl = `https://presadb.com/dogocanario/${slug}`
+        let proxyRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(presadbUrl)}`, { signal: AbortSignal.timeout(10000) })
+        let html = proxyRes.ok ? await proxyRes.text() : ''
         const firstWord = dog.name.replace(/[''`']/g, '').split(' ')[0]
-        if (!html.toLowerCase().includes(firstWord.toLowerCase())) { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null); continue }
-        const photoList = extractPhotosFromHtml(html)
-        if (photoList.length === 0) { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null); continue }
-        setResults(prev => ({ ...prev, [dog.id]: { profileUrl: `https://presadb.com/dogocanario/${slug}`, photos: photoList } }))
+
+        if (!html || !html.toLowerCase().includes(firstWord.toLowerCase())) {
+          const searchUrl = `https://presadb.com/search?q=${encodeURIComponent(dog.name)}`
+          proxyRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(searchUrl)}`, { signal: AbortSignal.timeout(10000) })
+          if (proxyRes.ok) {
+            const searchHtml = await proxyRes.text()
+            const nameSlug = slug.split('-').slice(0, 3).join('-')
+            const linkMatch = searchHtml.match(new RegExp(`href=["'](/dogocanario/${nameSlug}[^"']*)["']`, 'i'))
+            if (linkMatch) {
+              presadbUrl = `https://presadb.com${linkMatch[1]}`
+              proxyRes = await fetch(`/api/proxy-fetch?url=${encodeURIComponent(presadbUrl)}`, { signal: AbortSignal.timeout(10000) })
+              html = proxyRes.ok ? await proxyRes.text() : ''
+            }
+          }
+        }
+
+        if (html && html.toLowerCase().includes(firstWord.toLowerCase())) {
+          photoList = extractPhotosFromHtml(html)
+        }
+      } catch {}
+
+      if (photoList.length > 0) {
+        setResults(prev => ({ ...prev, [dog.id]: { profileUrl: `https://presadb.com/dogocanario/${buildSlug(dog.name)}`, photos: photoList } }))
         setSearching(null)
-        // Auto-import
         await importPhotos(dog.id, photoList)
-      } catch { setResults(prev => ({ ...prev, [dog.id]: null })); setSearching(null) }
+      } else {
+        setResults(prev => ({ ...prev, [dog.id]: null }))
+        setSearching(null)
+      }
       await new Promise(r => setTimeout(r, 500))
     }
   }
