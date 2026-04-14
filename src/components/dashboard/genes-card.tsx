@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { isNativeApp } from '@/lib/is-native'
 import { Dna, ArrowDownCircle, ArrowUpCircle, ShoppingCart, History, X, Loader2 } from 'lucide-react'
 
 interface Transaction {
@@ -29,6 +30,12 @@ export default function GenesCard({ balance, userId }: Props) {
   const [showBuy, setShowBuy] = useState(false)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loadingTx, setLoadingTx] = useState(false)
+  const [native, setNative] = useState(false)
+
+  useEffect(() => { setNative(isNativeApp()) }, [])
+
+  // Hide entire genes card in native iOS app (App Store compliance)
+  if (native) return null
 
   async function openHistory() {
     setShowHistory(true)

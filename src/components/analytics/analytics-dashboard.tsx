@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { isNativeApp } from '@/lib/is-native'
 import {
   BarChart3, Dog, Baby, HandCoins, Users, TrendingUp, TrendingDown, Target,
   Heart, Globe, MapPin, Trophy, Stethoscope, Gem, Clock, ArrowRightLeft,
@@ -38,6 +39,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, contacts, kennel, pipelines, vetCount, awardsCount, submissions, profile, genesTransactions, userId }: Props) {
   const [activeSection, setActiveSection] = useState('resumen')
+  const [native, setNative] = useState(false)
+  useEffect(() => { setNative(isNativeApp()) }, [])
 
   const stats = useMemo(() => {
     // Flatten all stages from all pipelines
@@ -475,10 +478,11 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
             <Card icon={Stethoscope} label="Vet records" value={stats.vetCount} color="#3B82F6" />
             <Card icon={Trophy} label="Premios" value={stats.awardsCount} color="#F59E0B" />
-            <Card icon={Gem} label="Genes" value={stats.genesBalance} color="#8B5CF6" />
+            {!native && <Card icon={Gem} label="Genes" value={stats.genesBalance} color="#8B5CF6" />}
             <Card icon={Clock} label="Antiguedad" value={`${stats.accountAge}a`} color="#06B6D4" />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {!native && (
             <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
               <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Genes</h3>
               <div className="flex gap-4 mb-4">
@@ -496,6 +500,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, deals, c
                 </div>
               </div>
             </div>
+            )}
             <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4">
               <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Resumen</h3>
               <div className="space-y-2">
