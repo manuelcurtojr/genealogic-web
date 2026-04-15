@@ -1,11 +1,26 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Check, X, Loader2 } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Check, X, Loader2, RotateCcw } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { PRICING, getRoleLabel } from '@/lib/permissions'
 import ToggleSwitch from '@/components/ui/toggle'
 import { isNativeApp } from '@/lib/is-native'
+
+// Apple product IDs
+const APPLE_PRODUCT_IDS: Record<string, { plan: string; period: string }> = {
+  'com.genealogic.app.amateur.monthly': { plan: 'amateur', period: 'monthly' },
+  'com.genealogic.app.amateur.yearly': { plan: 'amateur', period: 'yearly' },
+  'com.genealogic.app.pro.monthly': { plan: 'pro', period: 'monthly' },
+  'com.genealogic.app.pro.yearly': { plan: 'pro', period: 'yearly' },
+}
+
+interface AppleProduct {
+  id: string
+  displayName: string
+  displayPrice: string
+  price: string
+}
 
 const PLANS = [
   {
@@ -75,21 +90,115 @@ const PLANS = [
 export default function PricingPage() {
   const [annual, setAnnual] = useState(true)
   const [userRole, setUserRole] = useState('free')
+  const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState<string | null>(null)
-
   const [native, setNative] = useState(false)
+  const [appleProducts, setAppleProducts] = useState<AppleProduct[]>([])
+  const [appleLoading, setAppleLoading] = useState(false)
+  const [storePlatform, setStorePlatform] = useState<string | null>(null)
+
+  // Handle StoreKit events from native
+  const handleStoreKitEvent = useCallback((event: any) => {
+    switch (event.type) {
+      case 'productsLoaded':
+        setAppleProducts(event.products || [])
+        setAppleLoading(false)
+        break
+      case 'purchaseSuccess':
+        // Reload user to reflect new role
+        window.location.reload()
+        break
+      case 'purchaseError':
+        alert(event.error || 'Error al procesar la compra')
+        setLoading(null)
+        break
+      case 'purchaseCancelled':
+        setLoading(null)
+        break
+      case 'purchasePending':
+        alert('Tu compra está pendiente de aprobación.')
+        setLoading(null)
+        break
+      case 'restoreComplete':
+        if (event.productId) {
+          window.location.reload()
+        } else {
+          alert('No se encontraron compras anteriores.')
+        }
+        setLoading(null)
+        break
+      case 'restoreError':
+        alert(event.error || 'Error al restaurar compras')
+        setLoading(null)
+        break
+    }
+  }, [])
 
   useEffect(() => {
-    setNative(isNativeApp())
+    const isNat = isNativeApp()
+    setNative(isNat)
+
+    // Register StoreKit event handler for native
+    if (isNat) {
+      ;(window as any).handleStoreKitEvent = handleStoreKitEvent
+      // Request products from StoreKit
+      setAppleLoading(true)
+      ;(window as any).webkit?.messageHandlers?.storeKit?.postMessage({ action: 'loadProducts' })
+    }
+
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {
+        setUserId(user.id)
         const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
         if (data?.role) setUserRole(data.role)
+        // Check store platform
+        const { data: sub } = await supabase.from('subscriptions').select('store_platform').eq('user_id', user.id).single()
+        if (sub?.store_platform) setStorePlatform(sub.store_platform)
       }
     })
-  }, [])
 
+    return () => {
+      if (isNat) delete (window as any).handleStoreKitEvent
+    }
+  }, [handleStoreKitEvent])
+
+  // Get Apple price for a plan
+  function getApplePrice(planId: string, period: string): string | null {
+    const productId = Object.entries(APPLE_PRODUCT_IDS).find(
+      ([, v]) => v.plan === planId && v.period === period
+    )?.[0]
+    if (!productId) return null
+    const product = appleProducts.find(p => p.id === productId)
+    return product?.displayPrice || null
+  }
+
+  function getAppleProductId(planId: string, period: string): string | null {
+    return Object.entries(APPLE_PRODUCT_IDS).find(
+      ([, v]) => v.plan === planId && v.period === period
+    )?.[0] || null
+  }
+
+  // Native IAP purchase
+  function handleNativePurchase(planId: string) {
+    const period = annual ? 'yearly' : 'monthly'
+    const productId = getAppleProductId(planId, period)
+    if (!productId || !userId) return
+    setLoading(planId)
+    ;(window as any).webkit?.messageHandlers?.storeKit?.postMessage({
+      action: 'purchase',
+      productId,
+      userId,
+    })
+  }
+
+  // Native restore
+  function handleRestore() {
+    setLoading('restore')
+    ;(window as any).webkit?.messageHandlers?.storeKit?.postMessage({ action: 'restore' })
+  }
+
+  // Stripe checkout
   async function handleUpgrade(plan: string) {
     if (plan === 'free' || plan === userRole) return
     setLoading(plan)
@@ -109,6 +218,11 @@ export default function PricingPage() {
   }
 
   async function handleManageSubscription() {
+    if (native && storePlatform === 'apple') {
+      // Open iOS subscription management
+      window.location.href = 'https://apps.apple.com/account/subscriptions'
+      return
+    }
     setLoading('manage')
     try {
       const res = await fetch('/api/stripe/portal', { method: 'POST' })
@@ -125,6 +239,10 @@ export default function PricingPage() {
   const userRoleIdx = roleOrder.indexOf(userRole)
 
   async function handleDiscountUpgrade(plan: string) {
+    if (native) {
+      handleNativePurchase(plan)
+      return
+    }
     setLoading(plan)
     try {
       const res = await fetch('/api/stripe/checkout', {
@@ -141,16 +259,7 @@ export default function PricingPage() {
 
   return (
     <div>
-      {/* Native app: redirect to web for payments */}
-      {native && (
-        <div className="max-w-5xl mx-auto mb-6">
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
-            <p className="text-sm text-white/60">Para gestionar tu suscripción, visita <strong className="text-white">genealogic.io/pricing</strong> desde tu navegador.</p>
-          </div>
-        </div>
-      )}
-
-      {/* First month discount banner */}
+      {/* First month discount banner — only web */}
       {!native && userRole === 'free' && !annual && (
         <div className="max-w-5xl mx-auto mb-6">
           <div className="bg-gradient-to-r from-[#D74709]/20 to-purple-500/20 border border-[#D74709]/30 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
@@ -171,7 +280,9 @@ export default function PricingPage() {
         <h1 className="text-2xl font-bold mb-2">Planes y precios</h1>
         <p className="text-white/40 text-sm">Elige el plan que mejor se adapte a tus necesidades</p>
         {userRole === 'free' && (
-          <p className="text-xs text-green-400 mt-1">Prueba gratis 14 días — sin compromiso, cancela cuando quieras</p>
+          <p className="text-xs text-green-400 mt-1">
+            {native ? 'Suscríbete directamente desde la app' : 'Prueba gratis 14 días — sin compromiso, cancela cuando quieras'}
+          </p>
         )}
 
         {/* Toggle */}
@@ -191,6 +302,10 @@ export default function PricingPage() {
           const isCurrent = userRole === plan.id || (userRole === 'admin' && plan.id === 'pro')
           const isDowngrade = planIdx < userRoleIdx
           const isUpgrade = planIdx > userRoleIdx && !isCurrent
+
+          // Get Apple price if native
+          const appleMonthlyPrice = native ? getApplePrice(plan.id, 'monthly') : null
+          const appleYearlyPrice = native ? getApplePrice(plan.id, 'yearly') : null
 
           return (
             <div
@@ -213,6 +328,15 @@ export default function PricingPage() {
               <div className="mt-4 mb-5">
                 {plan.price.monthly === 0 ? (
                   <div className="text-3xl font-bold">Gratis</div>
+                ) : native && (appleMonthlyPrice || appleYearlyPrice) ? (
+                  <>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-bold">
+                        {annual ? appleYearlyPrice : appleMonthlyPrice}
+                      </span>
+                      <span className="text-white/40 text-sm">/{annual ? 'año' : 'mes'}</span>
+                    </div>
+                  </>
                 ) : (
                   <>
                     <div className="flex items-baseline gap-1">
@@ -238,14 +362,10 @@ export default function PricingPage() {
                 >
                   Plan actual
                 </button>
-              ) : native ? (
-                <p className="w-full py-2.5 text-center text-xs text-white/30">
-                  Disponible en genealogic.io
-                </p>
               ) : isUpgrade ? (
                 <button
-                  onClick={() => handleUpgrade(plan.id)}
-                  disabled={loading === plan.id}
+                  onClick={() => native ? handleNativePurchase(plan.id) : handleUpgrade(plan.id)}
+                  disabled={loading === plan.id || (native && appleLoading)}
                   className={`w-full py-2.5 rounded-lg text-sm font-semibold transition ${
                     plan.highlighted
                       ? 'bg-[#D74709] hover:bg-[#c03d07] text-white'
@@ -291,17 +411,27 @@ export default function PricingPage() {
         })}
       </div>
 
-      {/* Manage subscription link */}
-      {userRole !== 'free' && userRole !== 'admin' && (
-        <div className="text-center mt-6">
+      {/* Manage subscription / Restore purchases */}
+      <div className="text-center mt-6 space-y-2">
+        {userRole !== 'free' && userRole !== 'admin' && (
           <button
             onClick={handleManageSubscription}
             className="text-sm text-white/40 hover:text-white transition underline"
           >
             Gestionar suscripción y facturación
           </button>
-        </div>
-      )}
+        )}
+        {native && (
+          <button
+            onClick={handleRestore}
+            disabled={loading === 'restore'}
+            className="flex items-center justify-center gap-1.5 mx-auto text-sm text-white/30 hover:text-white/60 transition"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            {loading === 'restore' ? 'Restaurando...' : 'Restaurar compras'}
+          </button>
+        )}
+      </div>
     </div>
   )
 }

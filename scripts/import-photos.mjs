@@ -7,11 +7,14 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { config } from 'dotenv'
-config({ path: '.env.local' })
+import { readFileSync } from 'fs'
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+// Read .env.local manually (no dotenv dependency needed)
+const envFile = readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
+const envVars = Object.fromEntries(envFile.split('\n').filter(l => l && !l.startsWith('#')).map(l => { const [k, ...v] = l.split('='); return [k.trim(), v.join('=').trim()] }))
+
+const SUPABASE_URL = envVars.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_KEY = envVars.SUPABASE_SERVICE_ROLE_KEY
 if (!SUPABASE_URL || !SUPABASE_KEY) { console.error('Missing SUPABASE env vars in .env.local'); process.exit(1) }
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY)
 

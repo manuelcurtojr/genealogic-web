@@ -34,10 +34,10 @@ export default function UpgradeModal({ open, onClose, title, message, currentPla
           <p className="text-sm text-white/50 mb-6">{message}</p>
 
           <button
-            onClick={() => { onClose(); if (!isNativeApp()) router.push('/pricing') }}
+            onClick={() => { onClose(); router.push('/pricing') }}
             className="w-full bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold py-3 rounded-lg transition"
           >
-            {isNativeApp() ? 'Mejora en genealogic.io' : 'Ver planes'}
+            Ver planes
           </button>
           <button
             onClick={onClose}
