@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogOut, X,
   GitCompareArrows, LayoutDashboard, Menu, Home, Store, BarChart3, Search,
-  Stethoscope, Shield, Inbox, Lock
+  Stethoscope, Shield, Inbox, Lock, Key
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -16,7 +16,7 @@ import { getTranslator } from '@/lib/i18n'
 const iconMap: Record<string, React.ElementType> = {
   Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings,
   LayoutDashboard, GitCompareArrows, Home, Store, BarChart3, Search,
-  Stethoscope, Inbox,
+  Stethoscope, Inbox, Key,
 }
 
 interface SidebarProps {

@@ -76,6 +76,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Mi Criadero', href: '/kennel', icon: 'Store' },
       { label: 'Analíticas', href: '/analytics', icon: 'BarChart3' },
+      { label: 'API', href: '/kennel/api', icon: 'Key' },
     ],
   },
 ]

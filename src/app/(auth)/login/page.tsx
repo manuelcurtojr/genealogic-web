@@ -33,74 +33,100 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 relative">
-      <Link href="/" className="absolute top-6 left-6 w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white transition">
-        <ArrowLeft className="w-5 h-5" />
+    <main className="flex min-h-screen items-center justify-center bg-ink-900 px-6 text-fg">
+      <Link
+        href="/"
+        className="absolute top-6 left-6 flex h-9 w-9 items-center justify-center rounded-full text-fg-mute transition hover:text-fg hover:bg-chip"
+      >
+        <ArrowLeft className="h-4 w-4" />
       </Link>
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <img src="/logo.svg" alt="Genealogic" className="h-10 mx-auto mb-2" />
-          <p className="text-white/50 text-sm">Inicia sesion en tu cuenta</p>
+
+      <div className="w-full max-w-[440px]">
+        <div className="flex items-center gap-[9px]">
+          <span className="flex h-[24px] w-[24px] items-center justify-center rounded-[6px] bg-paper-50 font-sans text-[13px] font-extrabold text-ink-900">
+            G
+          </span>
+          <span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-fg">
+            Genealogic
+          </span>
+        </div>
+        <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
+          Pedigrees verificables
+        </p>
+        <h1 className="mt-8 font-display text-5xl font-normal leading-[1] tracking-[-0.025em] text-fg">
+          Bienvenido
+          <br />
+          <span className="italic font-light">de vuelta.</span>
+        </h1>
+        <p className="mt-5 max-w-[380px] text-[15px] leading-[1.55] text-fg-dim">
+          Accede a tu cuenta para gestionar tus perros, criadero y camadas.
+        </p>
+
+        <div className="mt-10 rounded-card border border-hair-strong bg-ink-800 p-6 sm:p-8">
+          <form onSubmit={handleLogin} className="space-y-5">
+            {error && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.12em] text-fg-mute">
+                Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-mute" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  required
+                  className="w-full rounded-lg border border-hair-strong bg-chip py-3 pl-10 pr-4 text-sm text-fg placeholder:text-fg-mute focus:border-fg-dim focus:outline-none transition"
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label className="font-mono text-[10px] uppercase tracking-[0.12em] text-fg-mute">
+                  Contraseña
+                </label>
+                <Link href="/forgot-password" className="text-xs text-fg-dim hover:text-fg transition">
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-mute" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Tu contraseña"
+                  required
+                  className="w-full rounded-lg border border-hair-strong bg-chip py-3 pl-10 pr-4 text-sm text-fg placeholder:text-fg-mute focus:border-fg-dim focus:outline-none transition"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-paper-50 py-3 text-sm font-medium text-ink-900 transition hover:opacity-90 disabled:opacity-50"
+            >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {loading ? 'Entrando…' : 'Iniciar sesión'}
+            </button>
+          </form>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Email</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@email.com"
-                required
-                className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition"
-              />
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider">Contraseña</label>
-              <Link href="/forgot-password" className="text-xs text-[#D74709] hover:underline">
-                ¿Olvidaste tu contraseña?
-              </Link>
-            </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Tu contraseña"
-                required
-                className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {loading ? 'Entrando...' : 'Iniciar sesion'}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-white/40 mt-6">
-          No tienes cuenta?{' '}
-          <Link href="/register" className="text-[#D74709] hover:underline">Registrate</Link>
+        <p className="mt-8 text-center text-sm text-fg-dim">
+          ¿No tienes cuenta?{' '}
+          <Link href="/register" className="text-fg underline decoration-fg-mute underline-offset-4 transition hover:decoration-fg">
+            Regístrate
+          </Link>
         </p>
       </div>
-
-    </div>
+    </main>
   )
 }

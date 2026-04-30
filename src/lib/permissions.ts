@@ -1,7 +1,7 @@
 // Centralized permissions for Genealogic
 // Genealogic is FREE for everyone. Roles are simplified:
 //   - 'owner'   = default (a user with dogs but no kennel)
-//   - 'breeder' = a user who has created a kennel (auto-detected by having a kennel row)
+//   - 'breeder' = a user who has created a kennel (auto-promoted via DB trigger)
 //   - 'admin'   = internal admin role
 // Monetization happens in Pawdoq Breeders, not here.
 
@@ -11,15 +11,19 @@ export function isAdmin(role: string | null | undefined): boolean {
   return role === 'admin'
 }
 
-export function getRoleLabel(role: string | null | undefined, isBreeder = false): string {
+export function isBreederRole(role: string | null | undefined): boolean {
+  return role === 'breeder'
+}
+
+export function getRoleLabel(role: string | null | undefined): string {
   if (role === 'admin') return 'Admin'
-  if (isBreeder) return 'Criador'
+  if (role === 'breeder') return 'Criador'
   return 'Propietario'
 }
 
-export function getRoleBadge(role: string | null | undefined, isBreeder = false): { label: string; bg: string } {
+export function getRoleBadge(role: string | null | undefined): { label: string; bg: string } {
   if (role === 'admin') return { label: 'Admin', bg: 'bg-red-500/15 text-red-400' }
-  if (isBreeder) return { label: 'Criador', bg: 'bg-[#D74709]/15 text-[#D74709]' }
+  if (role === 'breeder') return { label: 'Criador', bg: 'bg-[#D74709]/15 text-[#D74709]' }
   return { label: 'Propietario', bg: 'bg-white/10 text-white/40' }
 }
 
