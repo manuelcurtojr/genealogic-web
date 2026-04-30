@@ -31,7 +31,7 @@ interface SidebarProps {
 export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const userRole = user?.role || 'free'
+  const userRole = user?.role || 'owner'
   const isBreeder = !!kennel
   const lang = typeof window !== 'undefined' ? localStorage.getItem('genealogic-lang') || 'es' : 'es'
   const t = getTranslator(lang)

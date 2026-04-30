@@ -40,14 +40,6 @@ export async function POST(request: NextRequest) {
     case 'kennels': {
       // Unlink dogs from kennel
       await adminSupabase.from('dogs').update({ kennel_id: null }).eq('kennel_id', id)
-      // Delete forms and submissions
-      const { data: forms } = await adminSupabase.from('kennel_forms').select('id').eq('kennel_id', id)
-      if (forms?.length) {
-        for (const f of forms) {
-          await adminSupabase.from('form_submissions').delete().eq('form_id', f.id)
-        }
-        await adminSupabase.from('kennel_forms').delete().eq('kennel_id', id)
-      }
       const { error } = await adminSupabase.from('kennels').delete().eq('id', id)
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
       break

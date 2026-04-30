@@ -12,9 +12,8 @@ interface Props {
 }
 
 const ROLE_OPTIONS = [
-  { value: 'free', label: 'Free', color: '#6B7280' },
-  { value: 'amateur', label: 'Amateur', color: '#3B82F6' },
-  { value: 'pro', label: 'Pro', color: '#D74709' },
+  { value: 'owner', label: 'Propietario', color: '#6B7280' },
+  { value: 'breeder', label: 'Criador', color: '#D74709' },
   { value: 'admin', label: 'Admin', color: '#EF4444' },
 ]
 
@@ -37,8 +36,8 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
   const [form, setForm] = useState({
     display_name: '', email: '', phone: '', country: '', city: '', bio: '',
     language: 'es', currency: 'EUR', timezone: '', date_format: 'DD/MM/YYYY',
-    role: 'free', status: 'active',
-    pro_started_at: '', pro_expires_at: '', stripe_customer_id: '', admin_notes: '',
+    role: 'owner', status: 'active',
+    admin_notes: '',
     public_profile: true, show_email: false, show_phone: false,
     notif_email: true, notif_submissions: true, notif_vet: true,
   })
@@ -58,10 +57,8 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
         country: p.country || '', city: p.city || '', bio: p.bio || '',
         language: p.language || 'es', currency: p.currency || 'EUR', timezone: p.timezone || '',
         date_format: p.date_format || 'DD/MM/YYYY',
-        role: p.role || 'free', status: p.status || 'active',
-        pro_started_at: p.pro_started_at ? p.pro_started_at.split('T')[0] : '',
-        pro_expires_at: p.pro_expires_at ? p.pro_expires_at.split('T')[0] : '',
-        stripe_customer_id: p.stripe_customer_id || '', admin_notes: p.admin_notes || '',
+        role: p.role || 'owner', status: p.status || 'active',
+        admin_notes: p.admin_notes || '',
         public_profile: p.public_profile ?? true, show_email: p.show_email ?? false, show_phone: p.show_phone ?? false,
         notif_email: p.notif_email ?? true, notif_submissions: p.notif_submissions ?? true,
         notif_vet: p.notif_vet ?? true,
@@ -100,8 +97,6 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
       city: form.city.trim() || null, bio: form.bio.trim() || null,
       language: form.language, currency: form.currency, timezone: form.timezone.trim() || null,
       date_format: form.date_format, role: form.role, status: form.status,
-      pro_started_at: form.pro_started_at || null, pro_expires_at: form.pro_expires_at || null,
-      stripe_customer_id: form.stripe_customer_id.trim() || null,
       admin_notes: form.admin_notes.trim() || null,
       public_profile: form.public_profile, show_email: form.show_email, show_phone: form.show_phone,
       notif_email: form.notif_email, notif_submissions: form.notif_submissions,
@@ -270,17 +265,6 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
                     {t.label}
                   </label>
                 ))}
-              </div>
-            </Section>
-
-            {/* Section: Suscripción */}
-            <Section title="Suscripción" icon={Calendar}>
-              <div className="grid grid-cols-2 gap-3">
-                <Input label="Inicio plan Pro" value={form.pro_started_at} onChange={v => set('pro_started_at', v)} type="date" />
-                <Input label="Expiración Pro" value={form.pro_expires_at} onChange={v => set('pro_expires_at', v)} type="date" />
-                <div className="col-span-2">
-                  <Input label="Stripe Customer ID" value={form.stripe_customer_id} onChange={v => set('stripe_customer_id', v)} placeholder="cus_..." />
-                </div>
               </div>
             </Section>
 

@@ -1,12 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, Baby, Eye, EyeOff, Dog, FileText, Check, Circle } from 'lucide-react'
+import { ArrowLeft, Calendar, Baby, Eye, EyeOff, Dog, Check, Circle } from 'lucide-react'
 import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 import { BRAND } from '@/lib/constants'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import LitterEditButton from '@/components/litters/litter-edit-button'
-import LitterWaitingList from '@/components/litters/litter-waiting-list'
 
 export default async function LitterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -28,13 +27,6 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
 
   const { data: kennelArr } = await supabase.from('kennels').select('id, name, logo_url, whatsapp_enabled, whatsapp_phone, whatsapp_text, affix_format').eq('owner_id', litter.owner_id).limit(1)
   const kennel = kennelArr?.[0]
-
-  // Check if form exists for this kennel
-  let hasForm = false
-  if (kennel?.id) {
-    const { data: forms } = await supabase.from('kennel_forms').select('id').eq('kennel_id', kennel.id).eq('is_active', true).limit(1)
-    hasForm = (forms?.length || 0) > 0
-  }
 
   let puppies: any[] = []
   if (father?.id && mother?.id) {
@@ -86,11 +78,6 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {hasForm && kennel && (
-            <Link href={`/form/${kennel.id}`} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition">
-              <FileText className="w-4 h-4" /> Pedir info
-            </Link>
-          )}
           {kennel?.whatsapp_enabled && kennel.whatsapp_phone && (
             <a href={`https://wa.me/${kennel.whatsapp_phone.replace(/\D/g, '')}?text=${encodeURIComponent(kennel.whatsapp_text || `Hola, me interesa la camada de ${father?.name || ''} x ${mother?.name || ''}`)}`}
               target="_blank" rel="noopener" className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition">
@@ -175,9 +162,6 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
           </div>
         </div>
       )}
-
-      {/* Waiting list — only for owner */}
-      {isOwner && <LitterWaitingList litterId={id} isOwner={isOwner} />}
 
       {/* Pedigree — full bleed on mobile */}
       {pedigreeData.length > 1 && pedigreeRootId && (

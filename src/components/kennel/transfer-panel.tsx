@@ -72,12 +72,6 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
 
     if (err) { setError(err.message); setTransferring(false); return }
 
-    // Record transfer in dog_changes history
-    await supabase.from('dog_changes').insert([
-      { dog_id: dog.id, user_id: user.id, field_name: 'owner_id', old_value: user.id, new_value: foundUser.id },
-      { dog_id: dog.id, user_id: user.id, field_name: 'transfer', old_value: user.email || user.id, new_value: foundUser.email || foundUser.id },
-    ])
-
     // Notify new owner
     const notifTitle = 'Has recibido un perro'
     const notifMessage = `${kennelName || 'Un criador'} te ha transferido el perro "${dog.name}"`

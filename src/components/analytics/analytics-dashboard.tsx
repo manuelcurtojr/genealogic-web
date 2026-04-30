@@ -4,17 +4,17 @@ import { useEffect, useMemo, useState } from 'react'
 import { isNativeApp } from '@/lib/is-native'
 import {
   BarChart3, Dog, Baby, Trophy, Stethoscope,
-  Tag, FileText
+  Tag
 } from 'lucide-react'
 import {
-  BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area,
+  BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend
 } from 'recharts'
 
 interface Props {
   dogs: any[]; kennelDogs: any[]; litters: any[]
   kennel: any; vetCount: number; awardsCount: number
-  submissions: any[]; profile: any; userId: string
+  profile: any; userId: string
 }
 
 const COLORS = ['#D74709', '#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EC4899', '#06B6D4', '#EF4444']
@@ -33,7 +33,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   )
 }
 
-export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, vetCount, awardsCount, submissions, profile, userId }: Props) {
+export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, vetCount, awardsCount, profile, userId }: Props) {
   const [activeSection, setActiveSection] = useState('resumen')
   const [native, setNative] = useState(false)
   useEffect(() => { setNative(isNativeApp()) }, [])
@@ -67,23 +67,6 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
     })
     const topReproducers = Object.values(parentCounts).sort((a, b) => b.count - a.count).slice(0, 6)
 
-    // Submissions monthly for area chart
-    const subMonthly: any[] = []
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(); d.setMonth(d.getMonth() - i)
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      const label = d.toLocaleDateString('es-ES', { month: 'short' })
-      subMonthly.push({ name: label, Solicitudes: submissions.filter((s: any) => s.created_at?.startsWith(key)).length })
-    }
-
-    // Breed demand
-    const breedDemand: Record<string, number> = {}
-    submissions.forEach((s: any) => {
-      const names = s.data?.breed_interest_names
-      if (names) names.split(',').forEach((n: string) => { const t = n.trim(); if (t) breedDemand[t] = (breedDemand[t] || 0) + 1 })
-    })
-    const demandChart = Object.entries(breedDemand).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, value]) => ({ name, Solicitudes: value }))
-
     const transferred = kennelDogs.filter((d: any) => d.owner_id !== userId).length
     const withPedigree = dogs.filter((d: any) => d.father_id && d.mother_id).length
     const ages = dogs.filter((d: any) => d.birth_date).map((d: any) => (Date.now() - new Date(d.birth_date).getTime()) / (365.25 * 86400000))
@@ -100,17 +83,15 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
       totalKennelDogs: kennelDogs.length, transferred,
       retained: kennelDogs.filter((d: any) => d.owner_id === userId).length,
       withPedigree, avgAge,
-      totalSubmissions: submissions.length, subMonthly, demandChart,
       vetCount, awardsCount,
       accountAge: profile?.created_at ? ((Date.now() - new Date(profile.created_at).getTime()) / (365.25 * 86400000)).toFixed(1) : '0',
     }
-  }, [dogs, kennelDogs, litters, submissions, userId, profile, vetCount, awardsCount])
+  }, [dogs, kennelDogs, litters, userId, profile, vetCount, awardsCount])
 
   const sections = [
     { key: 'resumen', label: 'Resumen', icon: BarChart3 },
     { key: 'reproduccion', label: 'Reproducción', icon: Baby },
     { key: 'criadero', label: 'Criadero', icon: Dog },
-    { key: 'formularios', label: 'Formularios', icon: FileText },
   ]
 
   function Card({ icon: Icon, label, value, color }: any) {
@@ -230,43 +211,6 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
         </div>
       )}
 
-      {activeSection === 'formularios' && (
-        <div className="space-y-4 sm:space-y-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-            <Card icon={FileText} label="Solicitudes totales" value={stats.totalSubmissions} color="#EC4899" />
-          </div>
-
-          {stats.subMonthly.some(m => m.Solicitudes > 0) && (
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-              <h3 className="text-sm font-semibold mb-3">Solicitudes mensuales</h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <AreaChart data={stats.subMonthly}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#fff6' }} />
-                  <YAxis tick={{ fontSize: 11, fill: '#fff6' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="Solicitudes" stroke="#EC4899" fill="#EC4899" fillOpacity={0.3} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {stats.demandChart.length > 0 && (
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-              <h3 className="text-sm font-semibold mb-3">Demanda por raza</h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={stats.demandChart} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: '#fff6' }} />
-                  <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: '#fff6' }} width={100} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="Solicitudes" fill="#EC4899" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   )
 }

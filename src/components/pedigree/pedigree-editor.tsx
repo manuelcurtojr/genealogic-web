@@ -320,7 +320,6 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
             onClose={() => setDogFormOpen(false)}
             onSaved={handleNewAncestorSaved}
             userId={userId}
-            asContribution
           />
         </div>
       )}

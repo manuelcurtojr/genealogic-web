@@ -28,8 +28,8 @@ export default async function AdminStatsPage() {
 
   // Users by role
   const roleDistribution = [
-    { name: 'Free', value: profiles.filter(p => p.role === 'free').length, color: '#6B7280' },
-    { name: 'Pro', value: profiles.filter(p => p.role === 'pro').length, color: '#8B5CF6' },
+    { name: 'Propietario', value: profiles.filter(p => p.role === 'owner').length, color: '#6B7280' },
+    { name: 'Criador', value: profiles.filter(p => p.role === 'breeder').length, color: '#D74709' },
     { name: 'Admin', value: profiles.filter(p => p.role === 'admin').length, color: '#EF4444' },
   ]
 

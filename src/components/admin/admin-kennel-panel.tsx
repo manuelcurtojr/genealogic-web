@@ -18,7 +18,7 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
   const [error, setError] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [activity, setActivity] = useState({ dogs: 0, litters: 0, forms: 0, submissions: 0 })
+  const [activity, setActivity] = useState({ dogs: 0, litters: 0 })
   const [ownerInfo, setOwnerInfo] = useState<any>(null)
   const [breeds, setBreeds] = useState<any[]>([])
 
@@ -65,15 +65,12 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
       }
 
       // Load activity stats
-      const [dogsRes, littersRes, formsRes, subsRes] = await Promise.all([
+      const [dogsRes, littersRes] = await Promise.all([
         supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('kennel_id', kennelId),
         supabase.from('litters').select('id', { count: 'exact', head: true }).eq('owner_id', k.owner_id),
-        supabase.from('kennel_forms').select('id', { count: 'exact', head: true }).eq('kennel_id', kennelId),
-        supabase.from('form_submissions').select('id', { count: 'exact', head: true }).eq('kennel_id', kennelId),
       ])
       setActivity({
         dogs: dogsRes.count || 0, litters: littersRes.count || 0,
-        forms: formsRes.count || 0, submissions: subsRes.count || 0,
       })
       setLoading(false)
     }
@@ -151,12 +148,10 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
             {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
             {/* Activity */}
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {[
                 { label: 'Perros', value: activity.dogs, icon: Dog },
                 { label: 'Camadas', value: activity.litters, icon: Users },
-                { label: 'Formularios', value: activity.forms, icon: Globe },
-                { label: 'Solicitudes', value: activity.submissions, icon: MessageCircle },
               ].map(s => (
                 <div key={s.label} className="bg-white/5 rounded-lg p-2 text-center">
                   <p className="text-sm font-bold">{s.value}</p>

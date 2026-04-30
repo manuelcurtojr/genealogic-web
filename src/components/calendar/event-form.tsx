@@ -34,19 +34,16 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
 
   const [dogs, setDogs] = useState<{ value: string; label: string }[]>([])
   const [litters, setLitters] = useState<{ value: string; label: string }[]>([])
-  const [contacts, setContacts] = useState<{ value: string; label: string }[]>([])
 
   useEffect(() => {
     async function loadEntities() {
       const supabase = createClient()
-      const [d, l, c] = await Promise.all([
+      const [d, l] = await Promise.all([
         supabase.from('dogs').select('id, name').eq('owner_id', userId).order('name'),
         supabase.from('litters').select('id, breed:breeds(name)').eq('owner_id', userId),
-        supabase.from('contacts').select('id, name').eq('owner_id', userId).order('name'),
       ])
       setDogs((d.data || []).map((x: any) => ({ value: x.id, label: x.name, image: null })))
       setLitters((l.data || []).map((x: any) => ({ value: x.id, label: `Camada ${x.breed?.name || ''}` })))
-      setContacts((c.data || []).map((x: any) => ({ value: x.id, label: x.name })))
     }
     if (open && userId) loadEntities()
   }, [open, userId])
@@ -62,7 +59,6 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
     is_completed: initialData?.is_completed ?? false,
     dog_id: initialData?.dog_id || '',
     litter_id: initialData?.litter_id || '',
-    contact_id: initialData?.contact_id || '',
   }))
 
   const set = (field: string, value: any) => setForm(prev => ({ ...prev, [field]: value }))
@@ -90,7 +86,6 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
       is_completed: form.is_completed,
       dog_id: form.dog_id || null,
       litter_id: form.litter_id || null,
-      contact_id: form.contact_id || null,
     }
 
     if (isEdit) {
@@ -231,9 +226,6 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
               )}
               {litters.length > 0 && (
                 <SearchableSelect options={litters} value={form.litter_id} onChange={v => set('litter_id', v)} placeholder="Camada..." label="Camada" />
-              )}
-              {contacts.length > 0 && (
-                <SearchableSelect options={contacts} value={form.contact_id} onChange={v => set('contact_id', v)} placeholder="Contacto..." label="Contacto" />
               )}
             </div>
           </div>

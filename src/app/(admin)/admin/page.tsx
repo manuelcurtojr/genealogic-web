@@ -57,7 +57,7 @@ export default async function AdminDashboard() {
                 <p className="text-[10px] text-white/30 truncate">{u.email}</p>
               </div>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                u.role === 'admin' ? 'bg-red-500/15 text-red-400' : u.role === 'pro' ? 'bg-purple-500/15 text-purple-400' : 'bg-white/5 text-white/30'
+                u.role === 'admin' ? 'bg-red-500/15 text-red-400' : u.role === 'breeder' ? 'bg-[#D74709]/15 text-[#D74709]' : 'bg-white/5 text-white/40'
               }`}>{u.role}</span>
               <span className="text-[10px] text-white/20">{new Date(u.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}</span>
             </div>

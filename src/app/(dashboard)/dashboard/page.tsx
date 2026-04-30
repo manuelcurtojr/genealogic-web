@@ -1,8 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Dog, Baby, PawPrint, Tag, FileText, Plus, Stethoscope, ArrowRight, Search, Crown } from 'lucide-react'
+import { Dog, Baby, PawPrint, Tag, Plus, Stethoscope, ArrowRight, Search, Crown } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
-import { roleAtLeast } from '@/lib/permissions'
 import StatCard from '@/components/dashboard/stat-card'
 import Link from 'next/link'
 
@@ -14,8 +13,6 @@ export default async function DashboardPage() {
   // Admins go to admin panel
   const { data: roleCheck } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (roleCheck?.role === 'admin') redirect('/admin')
-  const userRole = roleCheck?.role || 'free'
-  const isAmateur = roleAtLeast(userRole, 'amateur')
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -30,7 +27,7 @@ export default async function DashboardPage() {
 
   // Fetch dashboard data in parallel
   const [
-    dogsRes, littersRes, vetRes, recentDogsRes, submissionsRes,
+    dogsRes, littersRes, vetRes, recentDogsRes,
     activeLittersRes, forSaleRes, vetRemindersRes,
   ] = await Promise.all([
     supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
@@ -38,8 +35,6 @@ export default async function DashboardPage() {
     supabase.from('vet_records').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
     // Recent dogs (with photos first)
     supabase.from('dogs').select('id, name, sex, thumbnail_url, slug, breed:breeds(name)').eq('owner_id', user.id).not('thumbnail_url', 'is', null).order('created_at', { ascending: false }).limit(6),
-    // Recent submissions (interest in dogs/puppies)
-    kennel ? supabase.from('form_submissions').select('id, data, created_at').eq('kennel_id', kennel.id).order('created_at', { ascending: false }).limit(5) : Promise.resolve({ data: [] }),
     // Active litters
     supabase.from('litters').select('id, status, birth_date, mating_date, father:dogs!litters_father_id_fkey(name), mother:dogs!litters_mother_id_fkey(name)').eq('owner_id', user.id).in('status', ['planned', 'mated']).order('created_at', { ascending: false }).limit(3),
     // Dogs for sale
@@ -65,7 +60,7 @@ export default async function DashboardPage() {
           <Link href="/dogs" className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-[#D74709] hover:bg-[#c03d07] text-white text-xs sm:text-sm font-semibold transition">
             <Plus className="w-4 h-4" /> Perro
           </Link>
-          {isAmateur && isBreeder && (
+          {isBreeder && (
             <Link href="/litters" className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 text-xs sm:text-sm font-medium hover:bg-white/10 transition">
               <Baby className="w-4 h-4" /> Camada
             </Link>
@@ -78,11 +73,10 @@ export default async function DashboardPage() {
 
       {/* Stats — different for breeder vs owner */}
       {isBreeder ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-5 sm:mb-6">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5 sm:mb-6">
           <StatCard icon={Dog} label="Perros" value={dogCount} accentColor={BRAND.primary} />
           <StatCard icon={Tag} label="En venta" value={forSaleCount} accentColor="#10B981" />
           <StatCard icon={Baby} label="Camadas" value={littersRes.count || 0} accentColor={BRAND.info} />
-          <StatCard icon={FileText} label="Solicitudes" value={(submissionsRes as any).data?.length || 0} accentColor="#EC4899" />
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 mb-5 sm:mb-6">
@@ -92,10 +86,9 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Breeder: Active litters + Submissions */}
+      {/* Breeder: Active litters */}
       {isBreeder ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-5 sm:mb-6">
-          {/* Active litters */}
+        <div className="mb-5 sm:mb-6">
           <div className="bg-white/5 border border-white/10 rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold">Camadas activas</h2>
@@ -115,32 +108,6 @@ export default async function DashboardPage() {
                       <p className="text-[10px] text-purple-400">{litter.status === 'mated' ? 'En gestación' : 'Planificada'}</p>
                     </div>
                   </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Recent submissions */}
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <h2 className="text-sm font-semibold mb-3">Solicitudes recientes</h2>
-            {((submissionsRes as any).data || []).length === 0 ? (
-              <p className="text-xs text-white/25 text-center py-6">Sin solicitudes</p>
-            ) : (
-              <div className="space-y-2">
-                {((submissionsRes as any).data || []).map((sub: any) => (
-                  <div key={sub.id} className="flex items-center gap-3 bg-pink-500/5 rounded-lg p-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-4 h-4 text-pink-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold truncate">{sub.data?.first_name} {sub.data?.last_name || ''}</p>
-                      <div className="flex items-center gap-2 text-[10px] text-white/30">
-                        {sub.data?.country_name && <span>{sub.data.country_name}</span>}
-                        {sub.data?.breed_interest_names && <span className="text-pink-400">{sub.data.breed_interest_names}</span>}
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-white/20">{new Date(sub.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</span>
-                  </div>
                 ))}
               </div>
             )}

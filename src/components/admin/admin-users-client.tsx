@@ -9,8 +9,8 @@ interface Props { initialUsers: any[] }
 
 const ROLE_CONFIG: Record<string, { label: string; color: string }> = {
   admin: { label: 'Admin', color: '#EF4444' },
-  pro: { label: 'Pro', color: '#8B5CF6' },
-  free: { label: 'Free', color: '#6B7280' },
+  breeder: { label: 'Criador', color: '#D74709' },
+  owner: { label: 'Propietario', color: '#6B7280' },
 }
 
 export default function AdminUsersClient({ initialUsers }: Props) {
@@ -75,7 +75,7 @@ export default function AdminUsersClient({ initialUsers }: Props) {
           </thead>
           <tbody>
             {filtered.map(u => {
-              const rc = ROLE_CONFIG[u.role] || ROLE_CONFIG.free
+              const rc = ROLE_CONFIG[u.role] || ROLE_CONFIG.owner
               return (
                 <tr key={u.id} className="border-b border-white/5 hover:bg-white/[0.02] transition cursor-pointer" onClick={() => setPanelUserId(u.id)}>
                   <td className="px-4 py-3">
@@ -93,7 +93,7 @@ export default function AdminUsersClient({ initialUsers }: Props) {
                   <td className="px-4 py-3">
                     {editingRole === u.id ? (
                       <div className="flex gap-1">
-                        {['free', 'pro', 'admin'].map(r => (
+                        {['owner', 'breeder', 'admin'].map(r => (
                           <button key={r} onClick={() => updateRole(u.id, r)}
                             className={`text-[10px] font-bold px-2 py-1 rounded-full transition ${
                               u.role === r ? 'ring-2 ring-white/30' : ''

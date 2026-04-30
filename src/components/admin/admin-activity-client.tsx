@@ -20,7 +20,6 @@ const PAGE_SIZE = 50
 
 const ACTION_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
   dog_created: { icon: Dog, color: 'text-green-400 bg-green-500/10', label: 'Perro creado' },
-  dog_edited: { icon: Edit, color: 'text-blue-400 bg-blue-500/10', label: 'Perro editado' },
   dog_imported: { icon: Link2, color: 'text-[#D74709] bg-[#D74709]/10', label: 'Pedigri importado' },
   kennel_created: { icon: Store, color: 'text-purple-400 bg-purple-500/10', label: 'Criadero creado' },
   litter_created: { icon: Baby, color: 'text-pink-400 bg-pink-500/10', label: 'Camada creada' },
@@ -45,11 +44,9 @@ export default function AdminActivityClient() {
     const all: ActivityItem[] = []
 
     // Fetch from multiple sources in parallel
-    const [dogsRes, changesRes, kennelsRes, littersRes, vetRes, awardsRes, importsRes, usersRes] = await Promise.all([
+    const [dogsRes, kennelsRes, littersRes, vetRes, awardsRes, importsRes, usersRes] = await Promise.all([
       // Dogs created
-      supabase.from('dogs').select('id, name, owner_id, contributor_id, created_at', { count: 'exact' }).order('created_at', { ascending: false }).limit(200),
-      // Dog changes
-      supabase.from('dog_changes').select('id, dog_id, user_id, field_name, old_value, new_value, created_at').order('created_at', { ascending: false }).limit(200),
+      supabase.from('dogs').select('id, name, owner_id, created_at', { count: 'exact' }).order('created_at', { ascending: false }).limit(200),
       // Kennels created
       supabase.from('kennels').select('id, name, owner_id, created_at').order('created_at', { ascending: false }).limit(100),
       // Litters created
@@ -67,8 +64,7 @@ export default function AdminActivityClient() {
     // Get all user IDs for name resolution
     const allUserIds = new Set<string>()
     const addUid = (uid: string | null) => { if (uid) allUserIds.add(uid) }
-    ;(dogsRes.data || []).forEach(d => { addUid(d.owner_id); addUid(d.contributor_id) })
-    ;(changesRes.data || []).forEach(d => addUid(d.user_id))
+    ;(dogsRes.data || []).forEach(d => addUid(d.owner_id))
     ;(kennelsRes.data || []).forEach(d => addUid(d.owner_id))
     ;(littersRes.data || []).forEach(d => addUid(d.owner_id))
     ;(vetRes.data || []).forEach(d => addUid(d.owner_id))
@@ -80,9 +76,8 @@ export default function AdminActivityClient() {
       : { data: [] }
     const nameMap = new Map((profiles || []).map(p => [p.id, p.display_name || 'Sin nombre']))
 
-    // Get dog names for changes/vet/awards
+    // Get dog names for vet/awards
     const dogIds = new Set<string>()
-    ;(changesRes.data || []).forEach(d => dogIds.add(d.dog_id))
     ;(vetRes.data || []).forEach(d => dogIds.add(d.dog_id))
     ;(awardsRes.data || []).forEach(d => dogIds.add(d.dog_id))
     const { data: dogNames } = dogIds.size > 0
@@ -92,10 +87,7 @@ export default function AdminActivityClient() {
 
     // Build activity items
     for (const d of (dogsRes.data || [])) {
-      all.push({ id: `dog-${d.id}`, type: 'dog_created', action: 'dog_created', entityName: d.name, entityId: d.id, userName: nameMap.get(d.owner_id || d.contributor_id || '') || '', userId: d.owner_id || d.contributor_id || '', timestamp: d.created_at })
-    }
-    for (const c of (changesRes.data || [])) {
-      all.push({ id: `change-${c.id}`, type: 'dog_edited', action: 'dog_edited', entityName: dogNameMap.get(c.dog_id) || c.dog_id, entityId: c.dog_id, userName: nameMap.get(c.user_id) || '', userId: c.user_id, timestamp: c.created_at, details: `${c.field_name}: ${c.old_value || '—'} → ${c.new_value || '—'}` })
+      all.push({ id: `dog-${d.id}`, type: 'dog_created', action: 'dog_created', entityName: d.name, entityId: d.id, userName: nameMap.get(d.owner_id || '') || '', userId: d.owner_id || '', timestamp: d.created_at })
     }
     for (const k of (kennelsRes.data || [])) {
       all.push({ id: `kennel-${k.id}`, type: 'kennel_created', action: 'kennel_created', entityName: k.name, entityId: k.id, userName: nameMap.get(k.owner_id || '') || '', userId: k.owner_id || '', timestamp: k.created_at })
@@ -154,7 +146,6 @@ export default function AdminActivityClient() {
           className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none appearance-none cursor-pointer min-w-[180px]">
           <option value="">Todas las acciones</option>
           <option value="dog_created">Perros creados</option>
-          <option value="dog_edited">Perros editados</option>
           <option value="dog_imported">Importaciones</option>
           <option value="kennel_created">Criaderos creados</option>
           <option value="litter_created">Camadas creadas</option>

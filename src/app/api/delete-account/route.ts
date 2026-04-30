@@ -63,27 +63,10 @@ export async function POST() {
 
     // === EXECUTE DELETIONS ===
 
-    // Delete private data (always safe to delete)
+    // Delete private data
     await supabase.from('notifications').delete().eq('user_id', userId)
-
-    // Delete device tokens
     await supabase.from('device_tokens').delete().eq('user_id', userId)
-
-    // Delete subscriptions
-    await supabase.from('subscriptions').delete().eq('user_id', userId)
-
-    // Delete contacts
-    await supabase.from('contacts').delete().eq('owner_id', userId)
-    if (kennelIds.length > 0) {
-      await supabase.from('form_submissions').delete().in('kennel_id', kennelIds)
-      await supabase.from('kennel_forms').delete().eq('owner_id', userId)
-    }
-    const { data: pipelineData } = await supabase.from('pipelines').select('id').eq('owner_id', userId)
-    const pipelineIds = (pipelineData || []).map(p => p.id)
-    if (pipelineIds.length > 0) {
-      await supabase.from('pipeline_stages').delete().in('pipeline_id', pipelineIds)
-    }
-    await supabase.from('pipelines').delete().eq('owner_id', userId)
+    await supabase.from('kennel_api_keys').delete().in('kennel_id', kennelIds)
 
     // Delete vet records and awards for deletable dogs
     if (deletableDogIds.length > 0) {

@@ -17,7 +17,7 @@ interface Props {
 interface DogRow {
   id: string; name: string; slug: string | null; sex: string | null; birth_date: string | null
   thumbnail_url: string | null; registration: string | null; owner_id: string | null
-  contributor_id: string | null; kennel_id: string | null
+  kennel_id: string | null
   breed: any; kennel: any; owner_name?: string
 }
 
@@ -52,7 +52,7 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
     setLoading(true)
     const supabase = createClient()
     let query = supabase.from('dogs')
-      .select('id, name, slug, sex, birth_date, thumbnail_url, registration, owner_id, contributor_id, kennel_id, breed:breeds(name), kennel:kennels(name)', { count: 'exact' })
+      .select('id, name, slug, sex, birth_date, thumbnail_url, registration, owner_id, kennel_id, breed:breeds(name), kennel:kennels(name)', { count: 'exact' })
 
     if (search.trim()) query = query.ilike('name', `%${search.trim()}%`)
     if (breedFilter) query = query.eq('breed_id', breedFilter)
@@ -62,14 +62,14 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
     const { data, count } = await query.order('name').range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
 
     // Get owner names
-    const ownerIds = [...new Set((data || []).map(d => d.owner_id || d.contributor_id).filter(Boolean))]
+    const ownerIds = [...new Set((data || []).map(d => d.owner_id).filter(Boolean))]
     let ownerMap = new Map<string, string>()
     if (ownerIds.length > 0) {
       const { data: profiles } = await supabase.from('profiles').select('id, display_name').in('id', ownerIds)
       ownerMap = new Map((profiles || []).map(p => [p.id, p.display_name || 'Sin nombre']))
     }
 
-    setDogs((data || []).map(d => ({ ...d, owner_name: ownerMap.get(d.owner_id || d.contributor_id || '') || '' })))
+    setDogs((data || []).map(d => ({ ...d, owner_name: ownerMap.get(d.owner_id || '') || '' })))
     setTotal(count || 0)
     setLoading(false)
   }
@@ -147,7 +147,7 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
                   <td className="px-4 py-2.5 text-xs text-white/40 hidden lg:table-cell">{breedName || '—'}</td>
                   <td className="px-4 py-2.5 text-xs text-white/40 hidden lg:table-cell">{kennelName || '—'}</td>
                   <td className="px-4 py-2.5 text-xs text-white/40 hidden md:table-cell">
-                    {dog.owner_name || (dog.contributor_id ? 'Contribucion' : '—')}
+                    {dog.owner_name || '—'}
                   </td>
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-1 justify-end">

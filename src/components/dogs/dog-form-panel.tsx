@@ -4,14 +4,13 @@ import { useState, useEffect, useRef } from 'react'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Lock, Globe, Shield } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, Lock, Globe, Shield } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { formatDogName, type AffixFormat } from '@/lib/affix'
 import { generateSlug } from '@/lib/slug'
 import GalleryTab from './edit-tabs/gallery-tab'
 import SaludTab from './edit-tabs/salud-tab'
 import PalmaresTab from './edit-tabs/palmares-tab'
-import HistorialTab from './edit-tabs/historial-tab'
 import PedigreePdfTab from './edit-tabs/pedigree-pdf-tab'
 import ImportPedigreeTab from './import-pedigree-tab'
 import VerificationTab from './edit-tabs/verification-tab'
@@ -29,7 +28,6 @@ interface DogFormPanelProps {
   defaultKennelId?: string | null
   defaultKennelName?: string | null
   defaultAffixFormat?: string | null
-  asContribution?: boolean
 }
 
 const TABS = [
@@ -37,13 +35,12 @@ const TABS = [
   { key: 'salud', label: 'Salud', icon: Stethoscope },
   { key: 'palmares', label: 'Palmarés', icon: Trophy },
   { key: 'pedigree-pdf', label: 'Pedigree PDF', icon: FileText },
-  { key: 'historial', label: 'Historial', icon: History },
   { key: 'verificacion', label: 'Verificación', icon: Shield },
 ] as const
 
 type TabKey = typeof TABS[number]['key']
 
-export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId, defaultLitterId, defaultBreedId, defaultFatherId, defaultMotherId, defaultKennelId, defaultKennelName, defaultAffixFormat, asContribution }: DogFormPanelProps) {
+export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId, defaultLitterId, defaultBreedId, defaultFatherId, defaultMotherId, defaultKennelId, defaultKennelName, defaultAffixFormat }: DogFormPanelProps) {
   const router = useRouter()
   const isEdit = !!editDogId
   const [activeTab, setActiveTab] = useState<TabKey>('datos')
@@ -60,7 +57,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   const [femaleDogs, setFemaleDogs] = useState<any[]>([])
   const [allMaleDogs, setAllMaleDogs] = useState<any[]>([])
   const [allFemaleDogs, setAllFemaleDogs] = useState<any[]>([])
-  const [originalForm, setOriginalForm] = useState<any>(null)
 
   const [form, setForm] = useState({
     name: '', sex: 'male', birth_date: '', registration: '', microchip: '',
@@ -89,13 +85,11 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         if (dog) {
           const f = { name: dog.name || '', sex: dog.sex || 'male', birth_date: dog.birth_date || '', registration: dog.registration || '', microchip: dog.microchip || '', weight: dog.weight?.toString() || '', height: dog.height?.toString() || '', breed_id: dog.breed_id || '', color_id: dog.color_id || '', kennel_id: dog.kennel_id || '', father_id: dog.father_id || '', mother_id: dog.mother_id || '', is_public: dog.is_public ?? true }
           setForm(f)
-          setOriginalForm(f)
           if (dog.breed_id) filterByBreed(dog.breed_id, cRes.data || [], mRes.data || [], fRes.data || [])
         }
       } else {
         setForm({ name: '', sex: 'male', birth_date: '', registration: '', microchip: '', weight: '', height: '', breed_id: defaultBreedId || '', color_id: '', kennel_id: defaultKennelId || '', father_id: defaultFatherId || '', mother_id: defaultMotherId || '', is_public: true })
         if (defaultBreedId) filterByBreed(defaultBreedId, cRes.data || [], mRes.data || [], fRes.data || [])
-        setOriginalForm(null)
       }
       setDataLoading(false)
     }
@@ -148,15 +142,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       const { error: err } = await supabase.from('dogs').update(payload).eq('id', editDogId!)
       setLoading(false)
       if (err) { setError(err.message); return }
-      if (originalForm) {
-        const changes: { field_name: string; old_value: string | null; new_value: string | null }[] = []
-        const fields = ['name', 'sex', 'birth_date', 'registration', 'microchip', 'weight', 'height', 'breed_id', 'color_id', 'kennel_id', 'father_id', 'mother_id', 'is_public', 'is_for_sale', 'sale_price', 'sale_location', 'breeder_id']
-        for (const f of fields) {
-          const ov = String(originalForm[f] || ''), nv = String((form as any)[f] || '')
-          if (ov !== nv) changes.push({ field_name: f, old_value: ov || null, new_value: nv || null })
-        }
-        if (changes.length > 0) await supabase.from('dog_changes').insert(changes.map(c => ({ ...c, dog_id: editDogId!, user_id: userId })))
-      }
     } else {
       const slug = generateSlug(payload.name)
       const insertData = { ...payload, slug, owner_id: userId }
@@ -329,7 +314,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             {activeTab === 'salud' && editDogId && <SaludTab dogId={editDogId} userId={userId} />}
             {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
             {activeTab === 'pedigree-pdf' && editDogId && <PedigreePdfTab dogId={editDogId} dogName={form.name} userId={userId} />}
-            {activeTab === 'historial' && editDogId && <HistorialTab dogId={editDogId} />}
             {activeTab === 'verificacion' && editDogId && <VerificationTab dogId={editDogId} userId={userId} />}
           </div>
         )}
