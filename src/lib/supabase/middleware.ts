@@ -41,6 +41,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/kennel') ||
     request.nextUrl.pathname.startsWith('/litters') ||
     request.nextUrl.pathname.startsWith('/planner') ||
+    request.nextUrl.pathname.startsWith('/calendar') ||
     request.nextUrl.pathname.startsWith('/import') ||
     request.nextUrl.pathname.startsWith('/settings') ||
     request.nextUrl.pathname.startsWith('/analytics') ||

@@ -52,7 +52,7 @@ export default function SettingsPage() {
   const [form, setForm] = useState({
     display_name: '', phone: '', country: '', city: '', bio: '',
     language: 'es', date_format: 'DD/MM/YYYY', currency: 'EUR', timezone: '',
-    notif_email: true, notif_submissions: true, notif_vet: true,
+    notif_email: true, notif_submissions: true, notif_vet: true, notif_calendar: true,
     public_profile: true, show_email: false, show_phone: false,
   })
 
@@ -114,6 +114,7 @@ export default function SettingsPage() {
           notif_email: data.notif_email ?? true,
           notif_submissions: data.notif_submissions ?? true,
           notif_vet: data.notif_vet ?? true,
+          notif_calendar: data.notif_calendar ?? true,
           public_profile: data.public_profile ?? true,
           show_email: data.show_email ?? false,
           show_phone: data.show_phone ?? false,
@@ -137,7 +138,7 @@ export default function SettingsPage() {
       language: form.language, date_format: form.date_format,
       currency: form.currency, timezone: form.timezone,
       notif_email: form.notif_email, notif_submissions: form.notif_submissions,
-      notif_vet: form.notif_vet,
+      notif_vet: form.notif_vet, notif_calendar: form.notif_calendar,
       public_profile: form.public_profile, show_email: form.show_email,
       show_phone: form.show_phone,
     }).eq('id', profile.id)
@@ -426,6 +427,7 @@ export default function SettingsPage() {
                 <Toggle label="Notificaciones por email" desc="Recibir notificaciones importantes por correo" value={form.notif_email} onChange={v => set('notif_email', v)} />
                 <Toggle label="Nuevas solicitudes" desc="Cuando alguien rellena tu formulario de contacto" value={form.notif_submissions} onChange={v => set('notif_submissions', v)} />
                 <Toggle label="Recordatorios veterinarios" desc="Próximas citas y vacunas" value={form.notif_vet} onChange={v => set('notif_vet', v)} />
+                <Toggle label="Eventos del calendario" desc="Recordatorios de eventos próximos" value={form.notif_calendar} onChange={v => set('notif_calendar', v)} />
                 <SaveButton saving={saving} onClick={handleSave} />
               </div>
             </div>

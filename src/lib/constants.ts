@@ -59,8 +59,9 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     id: 'tools',
     label: 'Herramientas',
-    // This section only shows for free users — amateur+ see vet in 'breeding'
+    // This section only shows for free users — amateur+ see these in 'breeding'
     items: [
+      { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
       { label: 'Veterinario', href: '/vet', icon: 'Stethoscope' },
     ],
   },
@@ -71,6 +72,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Camadas', href: '/litters', icon: 'Baby' },
       { label: 'Planificador', href: '/planner', icon: 'GitCompareArrows' },
+      { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
       { label: 'Veterinario', href: '/vet', icon: 'Stethoscope' },
     ],
   },
@@ -91,6 +93,7 @@ export const NAV_ITEMS = [
   { label: 'Mis Perros', href: '/dogs', icon: 'Dog' },
   { label: 'Camadas', href: '/litters', icon: 'Baby' },
   { label: 'Planificador', href: '/planner', icon: 'GitCompareArrows' },
+  { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
   { label: 'Veterinario', href: '/vet', icon: 'Stethoscope' },
   { label: 'Buscar', href: '/search', icon: 'Search' },
   { label: 'Mi Criadero', href: '/kennel', icon: 'Store' },
