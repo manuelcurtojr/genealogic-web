@@ -50,7 +50,7 @@ export default function DogCard({ dog, onEdit, onTransfer, onEditPedigree }: Dog
           {dog.is_verified && (
             <div className="relative group/tip flex-shrink-0">
               <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-ink-800 border border-hair rounded text-[10px] text-fg whitespace-nowrap opacity-0 group-hover/tip:opacity-100 transition pointer-events-none shadow-lg z-50">Verificado con microchip y pedigri oficial</div>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-ink-800 border border-hair rounded text-[10px] text-fg whitespace-nowrap opacity-0 group-hover/tip:opacity-100 transition pointer-events-none shadow-lg z-50">Verificado con microchip y genealogía oficial</div>
             </div>
           )}
         </Link>

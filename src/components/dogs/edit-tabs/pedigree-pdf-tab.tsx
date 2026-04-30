@@ -109,7 +109,7 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
         <AlertTriangle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
         <p className="text-xs text-orange-400">
           Este PDF es una version digital de la genealogia registrada en Genealogic. No es un
-          pedigri oficial emitido por un club canofilo (FCI, AKC, KC, RSCE, etc.).
+          genealogía oficial emitido por un club canofilo (FCI, AKC, KC, RSCE, etc.).
         </p>
       </div>
       <button
@@ -127,7 +127,7 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
           </>
         ) : (
           <>
-            <Download className="w-5 h-5" /> Descargar Pedigree PDF
+            <Download className="w-5 h-5" /> Descargar Genealogía PDF
           </>
         )}
       </button>

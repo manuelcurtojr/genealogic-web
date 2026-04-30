@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Wordmark } from '@/components/ui/wordmark'
 import { Mail, Lock, Loader2, ArrowLeft } from 'lucide-react'
 
 export default function LoginPage() {
@@ -42,9 +43,9 @@ export default function LoginPage() {
       </Link>
 
       <div className="w-full max-w-[440px]">
-        <div className="flex items-center"><span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-fg">Genealogic</span></div>
+        <Wordmark size="text-2xl" />
         <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
-          Pedigrees verificables
+          Genealogías verificables
         </p>
         <h1 className="mt-8 font-display text-5xl font-normal leading-[1] tracking-[-0.025em] text-fg">
           Bienvenido

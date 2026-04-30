@@ -13,7 +13,7 @@ export default function AdminImportClient({ userId }: Props) {
           <Globe className="w-5 h-5 text-[#D74709]" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Importar pedigrí</h1>
+          <h1 className="text-xl font-bold">Importar genealogía</h1>
           <p className="text-xs text-fg-mute">Importa genealogías sin propietario para aumentar la base de datos de Genealogic</p>
         </div>
       </div>

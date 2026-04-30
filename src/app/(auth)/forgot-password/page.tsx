@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { Wordmark } from '@/components/ui/wordmark'
 import { Mail, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
@@ -41,7 +42,7 @@ export default function ForgotPasswordPage() {
       </Link>
 
       <div className="w-full max-w-[440px]">
-        <div className="flex items-center"><span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-fg">Genealogic</span></div>
+        <Wordmark size="text-2xl" />
         <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
           Recuperar contraseña
         </p>

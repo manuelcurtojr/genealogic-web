@@ -200,7 +200,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
             <Card icon={Dog} label="Total perros" value={stats.totalKennelDogs} color="#D74709" />
             <Card icon={Dog} label="Retenidos" value={stats.retained} color="#10B981" />
             <Card icon={Dog} label="Transferidos" value={stats.transferred} color="#F59E0B" />
-            <Card icon={Dog} label="Con pedigree" value={stats.withPedigree} color="#8B5CF6" />
+            <Card icon={Dog} label="Con genealogía" value={stats.withPedigree} color="#8B5CF6" />
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">

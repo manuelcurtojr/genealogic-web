@@ -12,7 +12,7 @@ const inter = Inter({
 
 const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["300", "400", "500", "600", "700"],
   style: ["normal", "italic"],
   variable: "--font-fraunces",
   display: "swap",
@@ -39,12 +39,12 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Genealogic — Pedigrees caninos verificables",
+    default: "Genealogic — Genealogías caninas verificables",
     template: "%s · Genealogic",
   },
   description:
-    "El registro público de pedigrees caninos. Cada criador serio tiene su escaparate. Cada perro tiene su árbol genealógico verificable.",
-  keywords: ["pedigree", "genealogía canina", "criadero", "perros", "camadas", "cachorros"],
+    "El registro público de genealogías caninas. Cada criador serio tiene su escaparate. Cada perro tiene su árbol genealógico verificable.",
+  keywords: ["genealogía canina", "criadero", "perros", "camadas", "cachorros"],
   authors: [{ name: "Manuel Curtó SL" }],
   creator: "Genealogic",
   metadataBase: new URL("https://genealogic.io"),
@@ -53,15 +53,15 @@ export const metadata: Metadata = {
     locale: "es_ES",
     url: "https://genealogic.io",
     siteName: "Genealogic",
-    title: "Genealogic — Pedigrees caninos verificables",
+    title: "Genealogic — Genealogías caninas verificables",
     description:
-      "El registro público de pedigrees caninos. Cada criador serio tiene su escaparate.",
+      "El registro público de genealogías caninas. Cada criador serio tiene su escaparate.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Genealogic" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Genealogic",
-    description: "El registro público de pedigrees caninos.",
+    description: "El registro público de genealogías caninas.",
     images: ["/og-image.png"],
   },
   robots: { index: true, follow: true },

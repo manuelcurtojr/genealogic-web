@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Wordmark } from '@/components/ui/wordmark'
 import { Lock, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react'
 
 export default function ResetPasswordPage() {
@@ -63,7 +64,7 @@ export default function ResetPasswordPage() {
       </Link>
 
       <div className="w-full max-w-[440px]">
-        <div className="flex items-center"><span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-fg">Genealogic</span></div>
+        <Wordmark size="text-2xl" />
         <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
           Nueva contraseña
         </p>

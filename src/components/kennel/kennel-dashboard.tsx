@@ -283,7 +283,7 @@ function DogCard({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; user
       <div className="p-2.5 sm:p-3">
         <Link href={`/dogs/${dog.slug || dog.id}`} className="flex items-center gap-1.5 group-hover:text-[#D74709] transition">
           <span className="text-sm font-semibold truncate">{dog.name}</span>
-          {(dog as any).is_verified && <div className="relative group/tip flex-shrink-0"><ShieldCheck className="w-3.5 h-3.5 text-blue-400" /><div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-ink-800 border border-hair rounded text-[10px] text-fg whitespace-nowrap opacity-0 group-hover/tip:opacity-100 transition pointer-events-none shadow-lg z-50">Verificado con microchip y pedigri oficial</div></div>}
+          {(dog as any).is_verified && <div className="relative group/tip flex-shrink-0"><ShieldCheck className="w-3.5 h-3.5 text-blue-400" /><div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-ink-800 border border-hair rounded text-[10px] text-fg whitespace-nowrap opacity-0 group-hover/tip:opacity-100 transition pointer-events-none shadow-lg z-50">Verificado con microchip y genealogía oficial</div></div>}
         </Link>
         <div className="flex items-center gap-3 mt-1.5 text-[11px] text-fg-mute">
           {dog.birth_date && <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}

@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import { NAV_SECTIONS, BRAND } from '@/lib/constants'
 import { isAdmin } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
+import { Wordmark } from '@/components/ui/wordmark'
 
 const iconMap: Record<string, React.ElementType> = {
   Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings,
@@ -71,13 +72,13 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-          <Link href="/dashboard" className="flex items-center gap-2 min-w-0" onClick={onClose}>
-            {(collapsed && !mobileOpen) ? (
-              <img src="/icon.svg" alt="Genealogic" className="h-7 w-auto" />
-            ) : (
-              <><img src="/logo.svg" alt="Genealogic" className="logo-dark h-5 w-auto" /><img src="/logo-dark.svg" alt="Genealogic" className="logo-light h-5 w-auto" /></>
-            )}
-          </Link>
+          {(collapsed && !mobileOpen) ? (
+            <Link href="/dashboard" className="flex items-center" onClick={onClose}>
+              <span className="font-display font-bold text-fg text-2xl tracking-[-0.025em] leading-none">G</span>
+            </Link>
+          ) : (
+            <Wordmark href="/dashboard" size="text-xl" onClick={onClose} />
+          )}
         </div>
 
         {/* Navigation by sections */}

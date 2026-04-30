@@ -15,8 +15,8 @@ interface Setting {
 interface Props { settings: Setting[] }
 
 const KNOWN_KEYS = [
-  { key: 'ANTHROPIC_API_KEY', label: 'Anthropic (Claude AI)', description: 'Necesaria para el importador de pedigrís con IA. Se obtiene en console.anthropic.com', placeholder: 'sk-ant-...' },
-  { key: 'APIFLASH_KEY', label: 'ApiFlash (Screenshots)', description: 'Para capturar screenshots de webs de pedigrís. Se obtiene en apiflash.com', placeholder: 'xxxxxxxxxxxxxxxx' },
+  { key: 'ANTHROPIC_API_KEY', label: 'Anthropic (Claude AI)', description: 'Necesaria para el importador de genealogías con IA. Se obtiene en console.anthropic.com', placeholder: 'sk-ant-...' },
+  { key: 'APIFLASH_KEY', label: 'ApiFlash (Screenshots)', description: 'Para capturar screenshots de webs de genealogías. Se obtiene en apiflash.com', placeholder: 'xxxxxxxxxxxxxxxx' },
   { key: 'STRIPE_SECRET_KEY', label: 'Stripe (Pagos)', description: 'Para procesar pagos de planes y genes. Se obtiene en dashboard.stripe.com', placeholder: 'sk_live_...' },
   { key: 'STRIPE_WEBHOOK_SECRET', label: 'Stripe Webhook Secret', description: 'Para verificar webhooks de Stripe', placeholder: 'whsec_...' },
   { key: 'SCRAPINGBEE_API_KEY', label: 'ScrapingBee (Proxy)', description: 'Proxy residencial para webs que bloquean IPs de datacenter (presadb.com, etc.). 1000 req/mes gratis en scrapingbee.com', placeholder: 'xxxxxxxxxxxxxxxx' },

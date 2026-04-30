@@ -34,7 +34,7 @@ const TABS = [
   { key: 'datos', label: 'Datos', icon: Dog },
   { key: 'salud', label: 'Salud', icon: Stethoscope },
   { key: 'palmares', label: 'Palmarés', icon: Trophy },
-  { key: 'pedigree-pdf', label: 'Pedigree PDF', icon: FileText },
+  { key: 'pedigree-pdf', label: 'Genealogía PDF', icon: FileText },
   { key: 'verificacion', label: 'Verificación', icon: Shield },
 ] as const
 
@@ -178,7 +178,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
               <Dog className="w-3.5 h-3.5" /> Manual
             </button>
             <button onClick={() => setCreateMode('import')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'import' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-fg-mute hover:text-fg-dim'}`}>
-              <Globe className="w-3.5 h-3.5" /> Importar pedigree
+              <Globe className="w-3.5 h-3.5" /> Importar genealogía
             </button>
           </div>
         )}

@@ -118,7 +118,7 @@ export default function ApiDocsPage() {
             <Endpoint
               method="GET"
               path="/api/v1/dogs/:slug"
-              desc="Un perro concreto con pedigree completo (5 generaciones) y galería de fotos."
+              desc="Un perro concreto con genealogía completa (5 generaciones) y galería de fotos."
             />
 
             <Endpoint

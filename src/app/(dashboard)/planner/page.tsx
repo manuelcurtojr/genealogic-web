@@ -80,7 +80,7 @@ export default function PlannerPage() {
     <div>
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl sm:text-2xl font-bold">Planificador de Cruces</h1>
-        <p className="text-xs sm:text-sm text-fg-mute mt-1">Selecciona un macho y una hembra para ver el pedigri combinado y calcular el COI</p>
+        <p className="text-xs sm:text-sm text-fg-mute mt-1">Selecciona un macho y una hembra para ver la genealogía combinada y calcular el COI</p>
       </div>
 
       {/* Parent selectors */}
@@ -107,14 +107,14 @@ export default function PlannerPage() {
 
       {/* Combined Pedigree */}
       {loading ? (
-        <div className="text-center py-12 text-fg-mute">Cargando pedigrí combinado...</div>
+        <div className="text-center py-12 text-fg-mute">Cargando genealogía combinada...</div>
       ) : pedigreeData.length > 1 ? (
         <div className="-mx-4 lg:mx-0">
           <h2 className="text-sm font-semibold text-fg-mute uppercase tracking-wider mb-3 px-4 lg:px-0">Genealogía</h2>
           <PedigreeTree data={pedigreeData} rootId="virtual-litter" />
         </div>
       ) : sireId && damId ? (
-        <div className="text-center py-12 text-fg-mute">No hay datos de pedigrí disponibles</div>
+        <div className="text-center py-12 text-fg-mute">No hay datos de genealogía disponibles</div>
       ) : (
         <div className="text-center py-20">
           <Heart className="w-12 h-12 mx-auto mb-4 text-fg-mute" />

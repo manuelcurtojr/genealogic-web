@@ -144,7 +144,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
               <ShieldCheck className="w-4 h-4 text-blue-400" />
               <span className="text-sm text-blue-400 font-medium">Verificado</span>
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-ink-800 border border-hair rounded-lg text-[11px] text-fg whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-lg">
-                Este perro ha sido verificado usando microchip y pedigri oficial
+                Este perro ha sido verificado usando microchip y genealogía oficial
               </div>
             </div>
           )}

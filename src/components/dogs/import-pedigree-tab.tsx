@@ -320,14 +320,14 @@ Rules:
       const imgUrls = extractImageUrls(html)
 
       // Single Claude call — full extraction
-      setScanPhase('Analizando pedigrí con IA...')
+      setScanPhase('Analizando genealogía con IA...')
       const pedigreeData = await callClaude(apiKey, [{
         role: 'user',
         content: `${EXTRACTION_PROMPT}\n\n--- PAGE HTML ---\n${html}\n\n--- IMAGE URLS FOUND ---\n${imgUrls.slice(0, 10).join('\n')}`,
       }])
 
       if (!pedigreeData?.main_dog?.name) {
-        setError('No se pudo extraer datos de esta web. Prueba a subir un screenshot manual del pedigrí.')
+        setError('No se pudo extraer datos de esta web. Prueba a subir un screenshot manual de la genealogía.')
         setScanning(false); setScanPhase(''); return
       }
 
@@ -525,7 +525,7 @@ Rules:
             ) : (
               <button onClick={handleConfirm} disabled={importing} className="bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-6 py-2 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
                 {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                {importing ? 'Importando...' : 'Importar pedigrí'}
+                {importing ? 'Importando...' : 'Importar genealogía'}
               </button>
             )}
           </div>
@@ -611,8 +611,8 @@ Rules:
     <div className="space-y-5">
       <div className="text-center">
         <div className="text-[#D74709] mx-auto w-14 h-14 rounded-2xl bg-[#D74709]/10 flex items-center justify-center mb-3"><Globe className="w-7 h-7" /></div>
-        <h3 className="text-lg font-bold">Importar pedigrí</h3>
-        <p className="text-sm text-fg-dim mt-1">Pega la URL de un pedigrí online y lo escanearemos automáticamente con IA</p>
+        <h3 className="text-lg font-bold">Importar genealogía</h3>
+        <p className="text-sm text-fg-dim mt-1">Pega la URL de una genealogía online y lo escanearemos automáticamente con IA</p>
       </div>
       <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 flex items-start gap-2">
         <AlertTriangle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
@@ -620,7 +620,7 @@ Rules:
       </div>
       {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
       <div>
-        <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">URL del pedigrí</label>
+        <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">URL de la genealogía</label>
         <div className="flex gap-2">
           <input type="url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://presadb.com/dogocanario/nombre-del-perro" onKeyDown={e => e.key === 'Enter' && handleScan()} className="flex-1 bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
           <button onClick={handleScan} disabled={scanning || !url.trim()} className="bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm flex-shrink-0">
@@ -638,7 +638,7 @@ Rules:
 
       {/* Image upload */}
       <div>
-        <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Subir screenshot del pedigrí</label>
+        <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Subir screenshot de la genealogía</label>
         <label className={`flex items-center justify-center gap-2 border-2 border-dashed border-hair rounded-lg py-4 cursor-pointer hover:border-hair-strong hover:bg-ink-800 transition ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}>
           {uploadingImage ? (
             <><Loader2 className="w-4 h-4 animate-spin text-[#D74709]" /><span className="text-sm text-fg-dim">Analizando imagen con IA...</span></>
@@ -647,13 +647,13 @@ Rules:
           )}
           <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
         </label>
-        <p className="text-[10px] text-fg-mute mt-1">Si la web bloquea el escaneo automático, haz un screenshot del pedigrí y súbelo aquí</p>
+        <p className="text-[10px] text-fg-mute mt-1">Si la web bloquea el escaneo automático, haz un screenshot de la genealogía y súbelo aquí</p>
       </div>
 
       {(scanning || uploadingImage) && (
         <div className="text-center py-8">
           <Loader2 className="w-8 h-8 animate-spin text-[#D74709] mx-auto mb-3" />
-          <p className="text-sm text-fg-dim">{scanPhase || 'Escaneando pedigrí con IA...'}</p>
+          <p className="text-sm text-fg-dim">{scanPhase || 'Escaneando genealogía con IA...'}</p>
           <p className="text-xs text-fg-mute mt-1">Esto puede tardar unos segundos</p>
         </div>
       )}

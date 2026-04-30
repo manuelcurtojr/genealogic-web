@@ -7,6 +7,7 @@ import SearchBar from '@/components/layout/search-bar'
 import { NebulaBg } from '@/components/ui/nebula-bg'
 import { SectionLabel } from '@/components/ui/section-label'
 import { Button } from '@/components/ui/button'
+import { Wordmark } from '@/components/ui/wordmark'
 
 interface Props {
   breeds: { id: string; name: string }[]
@@ -34,16 +35,9 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
 
   return (
     <main className="min-h-screen bg-ink-900 text-fg">
-      {/* ── Header ───────────────────────────────────────────────────── */}
-      <header
-        className="absolute top-0 left-0 right-0 z-50"
-      >
-        <div className="mx-auto flex h-[60px] max-w-page items-center justify-between px-6 sm:px-8 lg:px-12">
-          <Link href="/" className="flex items-center">
-            <span className="font-sans text-[17px] font-bold tracking-[-0.02em] text-fg">
-              Genealogic
-            </span>
-          </Link>
+      {/* ── Header (no logo on home — wordmark is the hero) ────────── */}
+      <header className="absolute top-0 left-0 right-0 z-50">
+        <div className="mx-auto flex h-[60px] max-w-page items-center justify-end px-6 sm:px-8 lg:px-12">
           <div className="flex items-center gap-[10px]">
             <button
               onClick={toggleTheme}
@@ -67,13 +61,13 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
         <NebulaBg />
         <div className="relative z-10 w-full max-w-2xl text-center">
           <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
-            Pedigrees verificables
+            Genealogías verificables
           </p>
-          <h1 className="mb-2 font-display text-5xl font-normal leading-[0.95] tracking-[-0.025em] sm:text-6xl md:text-7xl">
+          <span className="mb-2 inline-block font-sans text-5xl font-bold leading-[0.95] tracking-[-0.025em] text-fg sm:text-6xl md:text-7xl">
             Genealogic
-          </h1>
+          </span>
           <p className="mb-8 font-display text-xl italic font-light text-fg-dim sm:text-2xl">
-            el registro público de perros con pedigree
+            el registro público de perros con genealogía
           </p>
 
           {/* Search bar — protagonist */}
@@ -124,7 +118,7 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
             Tres capas. <span className="italic font-light">Una sola red.</span>
           </h2>
           <p className="mt-6 max-w-[560px] text-[17px] leading-[1.55] text-fg-dim">
-            El registro público mundial de pedigrees caninos. Cada criador serio tiene su
+            El registro público mundial de genealogías caninas. Cada criador serio tiene su
             escaparate. Cada perro su árbol genealógico verificable.
           </p>
 
@@ -132,7 +126,7 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
             <Pillar
               num="I"
               title="Datos"
-              desc="Cada perro registrado con genealogía 3-5 generaciones, fotos, datos sanitarios y pedigree verificable."
+              desc="Cada perro con su árbol genealógico de 3-5 generaciones, fotos, datos sanitarios y registro verificable."
             />
             <Pillar
               num="II"
@@ -157,7 +151,7 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
             <span className="italic font-light">Que el mundo encuentre tus perros.</span>
           </h2>
           <p className="mt-6 max-w-[560px] text-[17px] leading-[1.55] text-fg-dim">
-            Registra tus perros, importa pedigrees existentes con OCR de IA, crea perfil
+            Registra tus perros, importa genealogías existentes con OCR de IA, crea perfil
             público de tu criadero. Gratis. Conecta con Pawdoq Breeders cuando quieras
             automatizar la conversión.
           </p>
@@ -177,7 +171,7 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
         <div className="mx-auto max-w-page px-6 sm:px-8 lg:px-12">
           <SectionLabel num="03" label="PARA COMPRADORES" className="mb-6" />
           <h2 className="font-display text-3xl font-normal leading-[1.1] tracking-[-0.02em] sm:text-4xl md:text-5xl max-w-[22ch]">
-            Encuentra perros con pedigree real.{' '}
+            Encuentra perros con genealogía real.{' '}
             <span className="italic font-light">No fotos en Wallapop.</span>
           </h2>
           <p className="mt-6 max-w-[560px] text-[17px] leading-[1.55] text-fg-dim">
@@ -200,7 +194,7 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
         <div className="mx-auto max-w-page px-6 sm:px-8 lg:px-12">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-sans text-base font-bold tracking-[-0.02em] text-fg">Genealogic</p>
+              <Wordmark size="text-lg" asLink={false} />
               <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
                 Manuel Curtó SL · genealogic.io
               </p>
