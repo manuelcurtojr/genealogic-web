@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { Dog } from 'lucide-react'
+import { redirect } from 'next/navigation'
 import KennelDashboard from '@/components/kennel/kennel-dashboard'
-import KennelEmpty from '@/components/kennel/kennel-empty'
 
 export default async function KennelPage() {
   const supabase = await createClient()
@@ -17,7 +16,7 @@ export default async function KennelPage() {
   const kennel = kennels?.[0] || null
 
   if (!kennel) {
-    return <KennelEmpty userId={user.id} />
+    redirect('/kennel/new')
   }
 
   const { data: dogs } = await supabase

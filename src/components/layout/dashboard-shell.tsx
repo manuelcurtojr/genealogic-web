@@ -9,7 +9,6 @@ import { usePathname } from 'next/navigation'
 import Sidebar from './sidebar'
 import SearchBar from './search-bar'
 import NotificationsPanel from './notifications-panel'
-import UpgradePrompts from '../ui/upgrade-prompts'
 
 interface DashboardShellProps {
   user: { display_name: string; email: string; role: string; avatar_url: string | null } | null
@@ -35,15 +34,6 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
     supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('is_read', false)
       .then(({ count }) => setUnreadCount(count || 0))
   }, [notifOpen])
-
-  // Marketing notifications — check once per session
-  useEffect(() => {
-    const key = 'marketing-check'
-    const last = sessionStorage.getItem(key)
-    if (last) return
-    sessionStorage.setItem(key, '1')
-    fetch('/api/marketing-notifications', { method: 'POST' }).catch(() => {})
-  }, [])
 
   useEffect(() => {
     const savedCollapsed = localStorage.getItem('sidebar-collapsed')
@@ -234,7 +224,6 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
       {/* Main content */}
       <main className="p-4 pt-18 lg:pt-[74px] transition-all duration-300 relative z-0">
         <div className={`transition-all duration-300 ${collapsed ? 'lg:ml-[68px]' : 'lg:ml-64'} lg:px-[30px] lg:py-[30px]`}>
-          <UpgradePrompts userRole={user?.role || 'free'} />
           {children}
         </div>
       </main>

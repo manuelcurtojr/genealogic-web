@@ -1,32 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Loader2 } from 'lucide-react'
-import { roleAtLeast } from '@/lib/permissions'
-import PlanGate from '@/components/ui/plan-gate'
 
 export default function NewKennelPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [name, setName] = useState('')
-  const [userRole, setUserRole] = useState<string | null>(null)
-
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return
-      const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-      setUserRole(data?.role || 'free')
-    })
-  }, [])
-
-  if (userRole && !roleAtLeast(userRole, 'amateur')) {
-    return <PlanGate requiredPlan="amateur" featureName="Crear criadero" featureDescription="Crea tu perfil de criadero para gestionar camadas, recibir solicitudes y más." />
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,7 +54,7 @@ export default function NewKennelPage() {
           {loading ? 'Creando...' : 'Crear criadero'}
         </button>
 
-        <p className="text-xs text-white/30 text-center">Podras completar los detalles despues en la página de edicion.</p>
+        <p className="text-xs text-white/30 text-center">Podrás completar los detalles después en la página de edición.</p>
       </form>
     </div>
   )

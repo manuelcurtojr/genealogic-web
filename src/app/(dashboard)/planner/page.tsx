@@ -5,8 +5,6 @@ import { createClient } from '@/lib/supabase/client'
 import { Heart } from 'lucide-react'
 import SearchableSelect from '@/components/ui/searchable-select'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
-import { roleAtLeast } from '@/lib/permissions'
-import PlanGate from '@/components/ui/plan-gate'
 
 export default function PlannerPage() {
   const [males, setMales] = useState<{ value: string; label: string }[]>([])
@@ -15,7 +13,6 @@ export default function PlannerPage() {
   const [damId, setDamId] = useState('')
   const [pedigreeData, setPedigreeData] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
-  const [userRole, setUserRole] = useState<string | null>(null)
 
   // Load dogs
   useEffect(() => {
@@ -23,9 +20,6 @@ export default function PlannerPage() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-      setUserRole(profile?.role || 'free')
 
       const { data: allDogs } = await supabase
         .from('dogs')
@@ -81,10 +75,6 @@ export default function PlannerPage() {
     }
     loadPedigree()
   }, [sireId, damId])
-
-  if (userRole && !roleAtLeast(userRole, 'amateur')) {
-    return <PlanGate requiredPlan="amateur" featureName="Planificador de cruces" featureDescription="Planifica cruces visualizando el pedigree combinado del padre y la madre." />
-  }
 
   return (
     <div>

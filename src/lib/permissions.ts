@@ -1,139 +1,43 @@
-// Centralized permissions and plan limits for Genealogic
+// Centralized permissions for Genealogic
+// Genealogic is FREE for everyone. Roles are simplified:
+//   - 'owner'   = default (a user with dogs but no kennel)
+//   - 'breeder' = a user who has created a kennel (auto-detected by having a kennel row)
+//   - 'admin'   = internal admin role
+// Monetization happens in Pawdoq Breeders, not here.
 
-export type UserRole = 'free' | 'amateur' | 'pro' | 'admin'
+export type UserRole = 'owner' | 'breeder' | 'admin'
 
-export interface PlanLimits {
-  maxDogs: number | null       // null = unlimited
-  maxActiveLitters: number | null
-  hasKennel: boolean
-  hasCrm: boolean
-  hasInbox: boolean            // simple request inbox (amateur)
-  hasPlanner: boolean
-  hasAnalytics: boolean
-  hasAdvancedAnalytics: boolean
-  hasWaitingList: boolean
-  hasCustomForms: boolean
+export function isAdmin(role: string | null | undefined): boolean {
+  return role === 'admin'
 }
 
-// Static plan limits (mirrored from plan_limits table for client-side use)
-const PLAN_LIMITS: Record<UserRole, PlanLimits> = {
-  free: {
-    maxDogs: 5,
-    maxActiveLitters: 0,
-    hasKennel: false,
-    hasCrm: false,
-    hasInbox: false,
-    hasPlanner: false,
-    hasAnalytics: false,
-    hasAdvancedAnalytics: false,
-    hasWaitingList: false,
-    hasCustomForms: false,
-  },
-  amateur: {
-    maxDogs: 25,
-    maxActiveLitters: 3,
-    hasKennel: true,
-    hasCrm: false,
-    hasInbox: true,
-    hasPlanner: true,
-    hasAnalytics: true,
-    hasAdvancedAnalytics: false,
-    hasWaitingList: false,
-    hasCustomForms: false,
-  },
-  pro: {
-    maxDogs: null,
-    maxActiveLitters: null,
-    hasKennel: true,
-    hasCrm: true,
-    hasInbox: false,
-    hasPlanner: true,
-    hasAnalytics: true,
-    hasAdvancedAnalytics: true,
-    hasWaitingList: true,
-    hasCustomForms: true,
-  },
-  admin: {
-    maxDogs: null,
-    maxActiveLitters: null,
-    hasKennel: true,
-    hasCrm: true,
-    hasInbox: false,
-    hasPlanner: true,
-    hasAnalytics: true,
-    hasAdvancedAnalytics: true,
-    hasWaitingList: true,
-    hasCustomForms: true,
-  },
+export function getRoleLabel(role: string | null | undefined, isBreeder = false): string {
+  if (role === 'admin') return 'Admin'
+  if (isBreeder) return 'Criador'
+  return 'Propietario'
 }
 
-export function getPlanLimits(role: string): PlanLimits {
-  return PLAN_LIMITS[(role as UserRole)] || PLAN_LIMITS.free
+export function getRoleBadge(role: string | null | undefined, isBreeder = false): { label: string; bg: string } {
+  if (role === 'admin') return { label: 'Admin', bg: 'bg-red-500/15 text-red-400' }
+  if (isBreeder) return { label: 'Criador', bg: 'bg-[#D74709]/15 text-[#D74709]' }
+  return { label: 'Propietario', bg: 'bg-white/10 text-white/40' }
 }
 
-export function canCreateDog(role: string, currentDogCount: number): boolean {
-  const limits = getPlanLimits(role)
-  if (limits.maxDogs === null) return true
-  return currentDogCount < limits.maxDogs
+// Legacy compatibility helpers (always return true / no plan gating).
+// These exist temporarily so existing code doesn't break while we clean up.
+// Once all references are removed, delete these.
+export function roleAtLeast(_role: string | null | undefined, _minRole: string): boolean {
+  return true
 }
 
-export function canCreateLitter(role: string, activeLitterCount: number): boolean {
-  const limits = getPlanLimits(role)
-  if (limits.maxActiveLitters === null) return true
-  return activeLitterCount < limits.maxActiveLitters
+export function canCreateDog(_role: string, _currentDogCount: number): boolean {
+  return true
 }
 
-export function hasFeature(role: string, feature: keyof PlanLimits): boolean {
-  const limits = getPlanLimits(role)
-  return !!limits[feature]
+export function canCreateLitter(_role: string, _activeLitterCount: number): boolean {
+  return true
 }
 
-// Role hierarchy: free < amateur < pro < admin
-const ROLE_ORDER: UserRole[] = ['free', 'amateur', 'pro', 'admin']
-
-export function roleAtLeast(role: string, minRole: UserRole): boolean {
-  const userIdx = ROLE_ORDER.indexOf((role as UserRole) || 'free')
-  const minIdx = ROLE_ORDER.indexOf(minRole)
-  return userIdx >= minIdx
+export function hasFeature(_role: string, _feature: string): boolean {
+  return true
 }
-
-export function getRoleLabel(role: string): string {
-  switch (role) {
-    case 'amateur': return 'Amateur'
-    case 'pro': return 'Profesional'
-    case 'admin': return 'Admin'
-    default: return 'Propietario'
-  }
-}
-
-export function getRoleColor(role: string): string {
-  switch (role) {
-    case 'amateur': return 'text-blue-400'
-    case 'pro': return 'text-[#D74709]'
-    case 'admin': return 'text-red-400'
-    default: return 'text-white/40'
-  }
-}
-
-export function getRoleBadge(role: string): { label: string; bg: string } {
-  switch (role) {
-    case 'amateur': return { label: 'Amateur', bg: 'bg-blue-500/15 text-blue-400' }
-    case 'pro': return { label: 'PRO', bg: 'bg-[#D74709]/15 text-[#D74709]' }
-    case 'admin': return { label: 'Admin', bg: 'bg-red-500/15 text-red-400' }
-    default: return { label: 'Free', bg: 'bg-white/10 text-white/40' }
-  }
-}
-
-// Pricing info
-export const PRICING = {
-  amateur: {
-    monthly: 7.99,
-    yearly: 79,
-    currency: 'EUR',
-  },
-  pro: {
-    monthly: 14.99,
-    yearly: 139,
-    currency: 'EUR',
-  },
-} as const

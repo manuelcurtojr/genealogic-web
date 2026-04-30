@@ -146,6 +146,18 @@ export default function EditKennelPage() {
           {loading ? 'Guardando...' : 'Guardar cambios'}
         </button>
       </form>
+
+      {/* API keys link */}
+      <div className="mt-8 pt-6 border-t border-white/10">
+        <Link href="/kennel/api"
+          className="flex items-center justify-between bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 transition group">
+          <div>
+            <p className="text-sm font-semibold">API keys</p>
+            <p className="text-xs text-white/40">Conecta Pawdoq Breeders u otras apps externas a tu criadero.</p>
+          </div>
+          <ExternalLink className="w-4 h-4 text-white/30 group-hover:text-white/60" />
+        </Link>
+      </div>
     </div>
   )
 }

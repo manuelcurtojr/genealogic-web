@@ -6,8 +6,6 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, History, Lock, Globe, Shield } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
-import { canCreateDog, getPlanLimits } from '@/lib/permissions'
-import UpgradeModal from '@/components/ui/upgrade-modal'
 import { formatDogName, type AffixFormat } from '@/lib/affix'
 import { generateSlug } from '@/lib/slug'
 import GalleryTab from './edit-tabs/gallery-tab'
@@ -53,8 +51,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   const [loading, setLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
   const [error, setError] = useState('')
-  const [showUpgrade, setShowUpgrade] = useState(false)
-  const [userRole, setUserRole] = useState('free')
 
   const [breeds, setBreeds] = useState<any[]>([])
   const [colors, setColors] = useState<any[]>([])
@@ -162,23 +158,8 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         if (changes.length > 0) await supabase.from('dog_changes').insert(changes.map(c => ({ ...c, dog_id: editDogId!, user_id: userId })))
       }
     } else {
-      // Check dog limit (only for owned dogs, not contributions)
-      if (!asContribution) {
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single()
-        const role = profile?.role || 'free'
-        const { count } = await supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('owner_id', userId)
-        if (!canCreateDog(role, count || 0)) {
-          setLoading(false)
-          setShowUpgrade(true)
-          setUserRole(role)
-          return
-        }
-      }
-
       const slug = generateSlug(payload.name)
-      const insertData = asContribution
-        ? { ...payload, slug, contributor_id: userId, owner_id: null, is_public: true }
-        : { ...payload, slug, owner_id: userId }
+      const insertData = { ...payload, slug, owner_id: userId }
       const { data: newDog, error: err } = await supabase.from('dogs').insert(insertData).select('id, slug').single()
       setLoading(false)
       if (err) { setError(err.message); return }
@@ -366,12 +347,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         )}
       </div>
 
-      <UpgradeModal
-        open={showUpgrade}
-        onClose={() => setShowUpgrade(false)}
-        title="Límite de perros alcanzado"
-        message={`Tu plan ${userRole === 'free' ? 'Propietario' : 'Amateur'} permite hasta ${getPlanLimits(userRole).maxDogs} perros. Mejora tu plan para añadir más.`}
-      />
     </>
   )
 }

@@ -14,9 +14,8 @@ export const BRAND = {
 } as const
 
 export const ROLES = {
-  FREE: 'free' as UserRole,
-  AMATEUR: 'amateur' as UserRole,
-  PRO: 'pro' as UserRole,
+  OWNER: 'owner' as UserRole,
+  BREEDER: 'breeder' as UserRole,
   ADMIN: 'admin' as UserRole,
 } as const
 
@@ -30,16 +29,13 @@ export interface NavItem {
 export interface NavSection {
   id: string
   label: string
-  minRole?: UserRole          // minimum role to see this section
-  requiresKennel?: boolean    // only show if user has a kennel
+  requiresKennel?: boolean    // only show if user has a kennel (= breeder)
   items: NavItem[]
 }
 
 // Sections visible per role:
-// Free:     Principal | Perros | Herramientas (Vet)
-// Amateur:  Principal | Perros | Crianza (Camadas, Vet) | Criadero (Mi Criadero, Analíticas)
-// Pro:      Same as Amateur
-
+// Owner (no kennel):  Principal | Perros | Herramientas (Calendar, Vet)
+// Breeder (kennel):   Principal | Perros | Crianza | Criadero
 export const NAV_SECTIONS: NavSection[] = [
   {
     id: 'main',
@@ -59,7 +55,6 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     id: 'tools',
     label: 'Herramientas',
-    // This section only shows for free users — amateur+ see these in 'breeding'
     items: [
       { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
       { label: 'Veterinario', href: '/vet', icon: 'Stethoscope' },
@@ -68,18 +63,16 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     id: 'breeding',
     label: 'Crianza',
-    minRole: 'amateur',
+    requiresKennel: true,
     items: [
       { label: 'Camadas', href: '/litters', icon: 'Baby' },
       { label: 'Planificador', href: '/planner', icon: 'GitCompareArrows' },
-      { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
-      { label: 'Veterinario', href: '/vet', icon: 'Stethoscope' },
     ],
   },
   {
     id: 'kennel',
     label: 'Criadero',
-    minRole: 'amateur',
+    requiresKennel: true,
     items: [
       { label: 'Mi Criadero', href: '/kennel', icon: 'Store' },
       { label: 'Analíticas', href: '/analytics', icon: 'BarChart3' },
@@ -87,7 +80,7 @@ export const NAV_SECTIONS: NavSection[] = [
   },
 ]
 
-// Legacy flat nav items (kept for backward compatibility during migration)
+// Legacy flat nav items (kept for backward compatibility)
 export const NAV_ITEMS = [
   { label: 'Escritorio', href: '/dashboard', icon: 'LayoutDashboard' },
   { label: 'Mis Perros', href: '/dogs', icon: 'Dog' },
@@ -99,5 +92,3 @@ export const NAV_ITEMS = [
   { label: 'Mi Criadero', href: '/kennel', icon: 'Store' },
   { label: 'Analíticas', href: '/analytics', icon: 'BarChart3' },
 ] as const
-
-export const PRO_NAV_ITEMS: ReadonlyArray<{ label: string; href: string; icon: string }> = []

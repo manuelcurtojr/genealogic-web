@@ -10,7 +10,7 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { NAV_SECTIONS, BRAND } from '@/lib/constants'
-import { roleAtLeast } from '@/lib/permissions'
+import { isAdmin } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 
 const iconMap: Record<string, React.ElementType> = {
@@ -42,21 +42,16 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
     window.location.href = '/login'
   }
 
-  // Determine which sections are visible vs locked
+  // Determine which sections are visible
+  // - 'breeding' and 'kennel' only for breeders (users with a kennel)
+  // - 'tools' (Calendar, Vet) shown to everyone
   const allSections = NAV_SECTIONS.filter(section => {
-    // 'tools' section: only for free users (amateur+ see cal/vet in 'breeding')
-    if (section.id === 'tools' && roleAtLeast(userRole, 'amateur')) return false
-    // inbox is now in 'main' section — no separate section needed
-    // 'kennel' requires having a kennel (for users who have access)
-    if (section.requiresKennel && !isBreeder && (!section.minRole || roleAtLeast(userRole, section.minRole))) return false
+    if (section.requiresKennel && !isBreeder) return false
     return true
   })
 
-  // Determine if section is locked (user doesn't have required role)
-  const isSectionLocked = (section: typeof NAV_SECTIONS[number]) => {
-    if (!section.minRole) return false
-    return !roleAtLeast(userRole, section.minRole)
-  }
+  // No locked sections in this model — show or hide
+  const isSectionLocked = (_section: typeof NAV_SECTIONS[number]) => false
 
   return (
     <>

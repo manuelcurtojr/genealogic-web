@@ -11,7 +11,7 @@ import {
   ChevronRight, AlertTriangle
 } from 'lucide-react'
 import AvatarUpload from '@/components/settings/avatar-upload'
-import { getRoleLabel, getRoleBadge, getPlanLimits } from '@/lib/permissions'
+import { getRoleLabel, getRoleBadge } from '@/lib/permissions'
 import { getLocalizedCountries, searchCities } from '@/lib/countries'
 import { getTranslator } from '@/lib/i18n'
 
@@ -39,7 +39,7 @@ const CURRENCIES = [
 
 // Plan info is now in lib/permissions.ts
 
-type Section = 'perfil' | 'seguridad' | 'plan' | 'idioma' | 'notificaciones' | 'privacidad' | 'datos'
+type Section = 'perfil' | 'seguridad' | 'idioma' | 'notificaciones' | 'privacidad' | 'datos'
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -169,14 +169,10 @@ export default function SettingsPage() {
 
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
 
-  const userRole = profile?.role || 'free'
-  const planBadge = getRoleBadge(userRole)
-  const planLimits = getPlanLimits(userRole)
-  const planLabel = getRoleLabel(userRole)
+  const userRole = profile?.role || 'owner'
   const sections: { key: Section; label: string; icon: React.ElementType }[] = [
     { key: 'perfil', label: 'Perfil', icon: User },
     { key: 'seguridad', label: 'Seguridad', icon: Lock },
-    { key: 'plan', label: 'Plan', icon: Crown },
     { key: 'idioma', label: 'Idioma y región', icon: Globe },
     { key: 'notificaciones', label: 'Notificaciones', icon: Bell },
     { key: 'privacidad', label: 'Privacidad', icon: Eye },
@@ -225,7 +221,7 @@ export default function SettingsPage() {
                   <div>
                     <p className="font-semibold">{form.display_name || 'Sin nombre'}</p>
                     <p className="text-xs text-white/40">{profile?.email}</p>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${planBadge.bg}`}>{planLabel}</span>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getRoleBadge(userRole).bg}`}>{getRoleLabel(userRole)}</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -339,49 +335,6 @@ export default function SettingsPage() {
                 </button>
                 <p className="text-[10px] text-white/25 mt-2">Esto cerrará tu sesión en todos los dispositivos, incluyendo este.</p>
               </div>
-            </div>
-          )}
-
-          {/* === PLAN === */}
-          {activeSection === 'plan' && (
-            <div className="space-y-4">
-              <SectionHeader title="Plan y suscripción" desc="Gestiona tu plan actual" />
-              {/* Current plan */}
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${planBadge.bg}`}><Crown className="w-5 h-5" /></div>
-                    <div>
-                      <p className="font-semibold">Plan {planLabel}</p>
-                      <p className="text-xs text-white/40">
-                        {userRole === 'free' ? 'Gratis' : userRole === 'amateur' ? '7,99 €/mes' : userRole === 'pro' ? '14,99 €/mes' : 'Admin'}
-                      </p>
-                    </div>
-                  </div>
-                  <Link href="/pricing" className="text-sm text-[#D74709] hover:text-[#c03d07] font-medium flex items-center gap-1 transition">
-                    {userRole === 'free' ? 'Mejorar plan' : 'Cambiar plan'} <ChevronRight className="w-4 h-4" />
-                  </Link>
-                </div>
-
-                {/* Usage meters */}
-                <PlanUsage userId={profile?.id} limits={planLimits} />
-              </div>
-              {/* Manage subscription (paid users only) */}
-              {userRole !== 'free' && userRole !== 'admin' && (
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div><p className="text-sm font-medium">Gestionar suscripción</p><p className="text-xs text-white/40">Cambiar método de pago, cancelar o ver facturas</p></div>
-                    <button onClick={async () => {
-                      const res = await fetch('/api/stripe/portal', { method: 'POST' })
-                      const data = await res.json()
-                      if (data.url) window.location.href = data.url
-                    }} className="text-sm text-[#D74709] hover:text-[#c03d07] font-medium flex items-center gap-1 transition whitespace-nowrap">
-                      Abrir portal <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
-
             </div>
           )}
 
@@ -508,55 +461,6 @@ function Toggle({ label, desc, value, onChange }: { label: string; desc: string;
     <div className="flex items-center justify-between py-1">
       <div><p className="text-sm font-medium">{label}</p><p className="text-xs text-white/40">{desc}</p></div>
       <ToggleSwitch value={value} onChange={onChange} />
-    </div>
-  )
-}
-
-function PlanUsage({ userId, limits }: { userId: string; limits: any }) {
-  const [dogCount, setDogCount] = useState(0)
-  const [litterCount, setLitterCount] = useState(0)
-
-  useEffect(() => {
-    if (!userId) return
-    const supabase = createClient()
-    supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('owner_id', userId)
-      .then(({ count }) => setDogCount(count || 0))
-    supabase.from('litters').select('id', { count: 'exact', head: true }).eq('owner_id', userId).in('status', ['planned', 'mated', 'born'])
-      .then(({ count }) => setLitterCount(count || 0))
-  }, [userId])
-
-  const maxDogs = limits.maxDogs
-  const maxLitters = limits.maxActiveLitters
-
-  return (
-    <div className="space-y-3">
-      {maxDogs !== null && (
-        <div>
-          <div className="flex items-center justify-between text-xs mb-1">
-            <span className="text-white/50">Perros</span>
-            <span className={`font-medium ${dogCount >= maxDogs ? 'text-red-400' : 'text-white/70'}`}>{dogCount}/{maxDogs}</span>
-          </div>
-          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div className={`h-full rounded-full transition-all ${dogCount >= maxDogs ? 'bg-red-400' : dogCount >= maxDogs * 0.8 ? 'bg-yellow-400' : 'bg-[#D74709]'}`}
-              style={{ width: `${Math.min(100, (dogCount / maxDogs) * 100)}%` }} />
-          </div>
-        </div>
-      )}
-      {maxLitters !== null && maxLitters > 0 && (
-        <div>
-          <div className="flex items-center justify-between text-xs mb-1">
-            <span className="text-white/50">Camadas activas</span>
-            <span className={`font-medium ${litterCount >= maxLitters ? 'text-red-400' : 'text-white/70'}`}>{litterCount}/{maxLitters}</span>
-          </div>
-          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div className={`h-full rounded-full transition-all ${litterCount >= maxLitters ? 'bg-red-400' : 'bg-[#D74709]'}`}
-              style={{ width: `${Math.min(100, (litterCount / maxLitters) * 100)}%` }} />
-          </div>
-        </div>
-      )}
-      {maxDogs === null && (
-        <p className="text-xs text-white/30">Perros y camadas ilimitados</p>
-      )}
     </div>
   )
 }
