@@ -26,10 +26,10 @@ export default function SlidePanel({ open, onClose, title, children }: SlidePane
         onClick={onClose}
       />
       {/* Panel */}
-      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 flex-shrink-0">
+      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-hair flex-shrink-0">
           <h2 className="text-lg font-semibold">{title}</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition">
+          <button onClick={onClose} className="text-fg-mute hover:text-fg transition">
             <X className="w-5 h-5" />
           </button>
         </div>

@@ -135,14 +135,14 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
 
-      <div className={`fixed top-0 right-0 h-full w-full max-w-xl z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+      <div className={`fixed top-0 right-0 h-full w-full max-w-xl z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex items-center justify-between px-6 py-3 border-b border-hair flex-shrink-0">
           <h2 className="text-lg font-semibold">Editar criadero</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-fg-mute hover:text-fg transition"><X className="w-5 h-5" /></button>
         </div>
 
         {loading ? (
-          <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+          <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-fg-mute" /></div>
         ) : (
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
             {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
@@ -153,24 +153,24 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
                 { label: 'Perros', value: activity.dogs, icon: Dog },
                 { label: 'Camadas', value: activity.litters, icon: Users },
               ].map(s => (
-                <div key={s.label} className="bg-white/5 rounded-lg p-2 text-center">
+                <div key={s.label} className="bg-chip rounded-lg p-2 text-center">
                   <p className="text-sm font-bold">{s.value}</p>
-                  <p className="text-[9px] text-white/30">{s.label}</p>
+                  <p className="text-[9px] text-fg-mute">{s.label}</p>
                 </div>
               ))}
             </div>
 
             {/* Owner */}
             {ownerInfo && (
-              <div className="bg-white/5 border border-white/10 rounded-lg p-3 flex items-center gap-3">
+              <div className="bg-chip border border-hair rounded-lg p-3 flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-[#D74709]/20 flex items-center justify-center text-[#D74709] text-xs font-bold flex-shrink-0">
                   {(ownerInfo.display_name || '?')[0].toUpperCase()}
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-medium truncate">{ownerInfo.display_name}</p>
-                  <p className="text-[10px] text-white/30 truncate">{ownerInfo.email}</p>
+                  <p className="text-[10px] text-fg-mute truncate">{ownerInfo.email}</p>
                 </div>
-                <span className="text-[9px] text-white/20 ml-auto">Propietario</span>
+                <span className="text-[9px] text-fg-mute ml-auto">Propietario</span>
               </div>
             )}
 
@@ -179,9 +179,9 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
               <div className="space-y-3">
                 <Input label="Nombre *" value={form.name} onChange={v => set('name', v)} />
                 <div>
-                  <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">Descripción</label>
+                  <label className="text-[10px] font-semibold text-fg-mute uppercase tracking-wider mb-1 block">Descripción</label>
                   <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none resize-none" />
+                    className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none resize-none" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Input label="Sitio web" value={form.website} onChange={v => set('website', v)} placeholder="https://..." />
@@ -189,9 +189,9 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
                 </div>
                 <Input label="URL del logo" value={form.logo_url} onChange={v => set('logo_url', v)} placeholder="https://..." />
                 <div>
-                  <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">Formato de afijo</label>
+                  <label className="text-[10px] font-semibold text-fg-mute uppercase tracking-wider mb-1 block">Formato de afijo</label>
                   <select value={form.affix_format} onChange={e => set('affix_format', e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none appearance-none">
+                    className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none appearance-none">
                     {AFFIX_FORMATS.map(f => <option key={f.value} value={f.value}>{f.example}</option>)}
                   </select>
                 </div>
@@ -206,7 +206,7 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
                   return (
                     <button key={b.id} onClick={() => toggleBreed(b.id)}
                       className={`text-[10px] font-medium px-2.5 py-1 rounded-full transition ${
-                        selected ? 'bg-[#D74709]/15 text-[#D74709] border border-[#D74709]/30' : 'bg-white/5 text-white/40 border border-white/10 hover:border-white/20'
+                        selected ? 'bg-[#D74709]/15 text-[#D74709] border border-[#D74709]/30' : 'bg-chip text-fg-mute border border-hair hover:border-hair-strong'
                       }`}>
                       {b.name}
                     </button>
@@ -227,19 +227,19 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
 
             {/* WhatsApp */}
             <Section title="WhatsApp" icon={MessageCircle}>
-              <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer mb-3">
+              <label className="flex items-center gap-2 text-sm text-fg-dim cursor-pointer mb-3">
                 <input type="checkbox" checked={form.whatsapp_enabled} onChange={e => set('whatsapp_enabled', e.target.checked)}
-                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-[#D74709] focus:ring-[#D74709] focus:ring-offset-0" />
+                  className="w-4 h-4 rounded border-hair-strong bg-chip text-[#D74709] focus:ring-[#D74709] focus:ring-offset-0" />
                 Activar botón de WhatsApp
               </label>
               {form.whatsapp_enabled && (
                 <div className="space-y-3 pl-6 border-l-2 border-green-500/30">
                   <Input label="Número (con prefijo)" value={form.whatsapp_phone} onChange={v => set('whatsapp_phone', v)} placeholder="+34612345678" />
                   <div>
-                    <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">Mensaje predeterminado</label>
+                    <label className="text-[10px] font-semibold text-fg-mute uppercase tracking-wider mb-1 block">Mensaje predeterminado</label>
                     <textarea value={form.whatsapp_text} onChange={e => set('whatsapp_text', e.target.value)} rows={2}
                       placeholder="Hola, me interesa información sobre..."
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 focus:border-[#D74709] focus:outline-none resize-none" />
+                      className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none resize-none" />
                   </div>
                 </div>
               )}
@@ -249,7 +249,7 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
             <Section title="Acciones" icon={Eye}>
               <div className="space-y-2">
                 <a href={`/kennels/${kennelId}`} target="_blank"
-                  className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white/60 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10 transition">
+                  className="w-full flex items-center justify-center gap-2 bg-chip border border-hair text-fg-dim px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-chip transition">
                   <ExternalLink className="w-4 h-4" /> Ver perfil público
                 </a>
               </div>
@@ -260,14 +260,14 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
               {showDeleteConfirm ? (
                 <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 space-y-3">
                   <p className="text-sm text-red-400 font-medium">¿Eliminar este criadero permanentemente?</p>
-                  <p className="text-xs text-white/30">Se desvincularán todos los perros del criadero y se eliminarán los formularios y solicitudes.</p>
+                  <p className="text-xs text-fg-mute">Se desvincularán todos los perros del criadero y se eliminarán los formularios y solicitudes.</p>
                   <div className="flex gap-2">
                     <button onClick={deleteKennel} disabled={deleting}
                       className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center gap-1.5">
                       {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                       {deleting ? 'Eliminando...' : 'Confirmar'}
                     </button>
-                    <button onClick={() => setShowDeleteConfirm(false)} className="text-white/50 hover:text-white px-4 py-2 text-sm">Cancelar</button>
+                    <button onClick={() => setShowDeleteConfirm(false)} className="text-fg-dim hover:text-fg px-4 py-2 text-sm">Cancelar</button>
                   </div>
                 </div>
               ) : (
@@ -281,8 +281,8 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-white/10 flex-shrink-0">
-          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">Cancelar</button>
+        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-hair flex-shrink-0">
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-fg-dim hover:text-fg hover:bg-chip transition">Cancelar</button>
           <button onClick={handleSave} disabled={saving || loading || !form.name.trim()}
             className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
@@ -297,9 +297,9 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
 function Section({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) {
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
+      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-hair">
         <Icon className="w-4 h-4 text-[#D74709]" />
-        <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider">{title}</h3>
+        <h3 className="text-xs font-semibold text-fg-dim uppercase tracking-wider">{title}</h3>
       </div>
       {children}
     </div>
@@ -309,9 +309,9 @@ function Section({ title, icon: Icon, children }: { title: string; icon: any; ch
 function Input({ label, value, onChange, type, placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
   return (
     <div>
-      <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1 block">{label}</label>
+      <label className="text-[10px] font-semibold text-fg-mute uppercase tracking-wider mb-1 block">{label}</label>
       <input type={type || 'text'} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 focus:border-[#D74709] focus:outline-none transition" />
+        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
     </div>
   )
 }

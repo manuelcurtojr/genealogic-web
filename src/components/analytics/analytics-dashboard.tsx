@@ -24,8 +24,8 @@ function fmt(n: number) { return n.toLocaleString('es-ES') }
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-gray-900 border border-white/10 rounded-lg px-3 py-2 shadow-xl">
-      <p className="text-xs text-white/50 mb-1">{label}</p>
+    <div className="bg-ink-800 border border-hair rounded-lg px-3 py-2 shadow-xl">
+      <p className="text-xs text-fg-dim mb-1">{label}</p>
       {payload.map((p: any, i: number) => (
         <p key={i} className="text-xs font-semibold" style={{ color: p.color }}>{p.name}: {p.value}</p>
       ))}
@@ -96,14 +96,14 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
 
   function Card({ icon: Icon, label, value, color }: any) {
     return (
-      <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+      <div className="bg-chip border border-hair rounded-xl p-4">
         <div className="flex items-center justify-between mb-2">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: color + '15' }}>
             <Icon className="w-4 h-4" style={{ color }} />
           </div>
         </div>
         <p className="text-xl sm:text-2xl font-bold">{typeof value === 'number' ? fmt(value) : value}</p>
-        <p className="text-xs text-white/40 mt-1">{label}</p>
+        <p className="text-xs text-fg-mute mt-1">{label}</p>
       </div>
     )
   }
@@ -116,7 +116,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
           const Icon = s.icon
           return (
             <button key={s.key} onClick={() => setActiveSection(s.key)}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition ${activeSection === s.key ? 'bg-[#D74709]/15 text-[#D74709] border border-[#D74709]/30' : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'}`}>
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition ${activeSection === s.key ? 'bg-[#D74709]/15 text-[#D74709] border border-[#D74709]/30' : 'bg-chip text-fg-dim border border-hair hover:bg-chip'}`}>
               <Icon className="w-3.5 h-3.5" /> {s.label}
             </button>
           )
@@ -134,7 +134,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
           </div>
 
           {stats.breedPie.length > 0 && (
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-chip border border-hair rounded-xl p-4">
               <h3 className="text-sm font-semibold mb-3">Distribución por raza</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
@@ -159,7 +159,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
           </div>
 
           {stats.littersChart.length > 0 && (
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-chip border border-hair rounded-xl p-4">
               <h3 className="text-sm font-semibold mb-3">Camadas por año</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={stats.littersChart}>
@@ -174,7 +174,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
           )}
 
           {stats.topReproducers.length > 0 && (
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-chip border border-hair rounded-xl p-4">
               <h3 className="text-sm font-semibold mb-3">Top reproductores</h3>
               <div className="space-y-2">
                 {stats.topReproducers.map((r: any) => (
@@ -184,7 +184,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
                     </div>
                     <div className="flex-1">
                       <p className="text-xs font-semibold">{r.name}</p>
-                      <p className="text-[10px] text-white/40">{r.count} camadas</p>
+                      <p className="text-[10px] text-fg-mute">{r.count} camadas</p>
                     </div>
                   </div>
                 ))}

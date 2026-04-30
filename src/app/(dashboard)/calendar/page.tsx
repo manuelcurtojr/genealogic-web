@@ -207,17 +207,17 @@ export default function CalendarPage() {
   const EventDot = ({ ev, compact }: { ev: CalendarEvent; compact?: boolean }) => (
     <div
       onClick={(e) => handleEventClick(ev, e)}
-      className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs bg-white/5 hover:bg-white/10 transition cursor-pointer ${ev.is_completed ? 'opacity-50' : ''}`}
+      className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs bg-chip hover:bg-chip transition cursor-pointer ${ev.is_completed ? 'opacity-50' : ''}`}
     >
       <button
         onClick={(e) => { e.stopPropagation(); toggleCompleted(ev) }}
-        className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center transition ${ev.is_completed ? 'bg-green-500 border-green-500' : 'border border-white/20 hover:border-white/40'}`}
+        className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center transition ${ev.is_completed ? 'bg-green-500 border-green-500' : 'border border-hair-strong hover:border-white/40'}`}
       >
         {ev.is_completed && <Check className="w-2.5 h-2.5 text-white" />}
       </button>
       <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: ev.color || '#D74709' }} />
-      <span className={`truncate text-white/70 ${ev.is_completed ? 'line-through' : ''}`}>
-        {!compact && !ev.all_day && ev.start_date && <span className="text-white/30 mr-1">{new Date(ev.start_date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>}
+      <span className={`truncate text-fg ${ev.is_completed ? 'line-through' : ''}`}>
+        {!compact && !ev.all_day && ev.start_date && <span className="text-fg-mute mr-1">{new Date(ev.start_date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>}
         {ev.title}
       </span>
     </div>
@@ -241,7 +241,7 @@ export default function CalendarPage() {
         { label: 'Salud', color: '#27ae60' },
         { label: 'Otro', color: '#95a5a6' },
       ].map(t => (
-        <div key={t.label} className="flex items-center gap-1 lg:gap-1.5 text-[10px] lg:text-xs text-white/40">
+        <div key={t.label} className="flex items-center gap-1 lg:gap-1.5 text-[10px] lg:text-xs text-fg-mute">
           <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full" style={{ backgroundColor: t.color }} />
           <span className="hidden lg:inline">{'labelFull' in t ? t.labelFull : t.label}</span>
           <span className="lg:hidden">{t.label}</span>
@@ -259,12 +259,12 @@ export default function CalendarPage() {
         {/* Month header */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1">
-            <button onClick={() => goToMonth(-1)} className="text-white/50 hover:text-white transition p-1.5"><ChevronLeft className="w-5 h-5" /></button>
+            <button onClick={() => goToMonth(-1)} className="text-fg-dim hover:text-fg transition p-1.5"><ChevronLeft className="w-5 h-5" /></button>
             <h2 className="text-base font-bold min-w-[160px] text-center">{MONTH_NAMES[month]} {year}</h2>
-            <button onClick={() => goToMonth(1)} className="text-white/50 hover:text-white transition p-1.5"><ChevronRight className="w-5 h-5" /></button>
+            <button onClick={() => goToMonth(1)} className="text-fg-dim hover:text-fg transition p-1.5"><ChevronRight className="w-5 h-5" /></button>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={goToday} className="text-[11px] text-white/50 hover:text-white bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 transition">Hoy</button>
+            <button onClick={goToday} className="text-[11px] text-fg-dim hover:text-fg bg-chip border border-hair rounded-lg px-2.5 py-1.5 transition">Hoy</button>
             <button onClick={() => handleNewEvent()} className="bg-[#D74709] hover:bg-[#c03d07] text-white p-2 rounded-full transition">
               <Plus className="w-4 h-4" />
             </button>
@@ -276,7 +276,7 @@ export default function CalendarPage() {
           {/* Day initials */}
           <div className="grid grid-cols-7">
             {DAY_NAMES_SHORT.map(d => (
-              <div key={d} className="text-center text-[11px] font-semibold text-white/40 py-1">{d}</div>
+              <div key={d} className="text-center text-[11px] font-semibold text-fg-mute py-1">{d}</div>
             ))}
           </div>
 
@@ -314,15 +314,15 @@ export default function CalendarPage() {
 
         {/* ─── Mobile Day Panel (slide from right) ─── */}
         <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${dayPanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setDayPanelOpen(false)} />
-        <div className={`fixed top-0 right-0 h-full w-full max-w-sm z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${dayPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className={`fixed top-0 right-0 h-full w-full max-w-sm z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${dayPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           {/* Panel header */}
-          <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-hair">
             <h3 className="text-base font-semibold">{dayPanelLabel}</h3>
             <div className="flex items-center gap-2">
               <button onClick={() => handleNewEvent(dayPanelDate)} className="bg-[#D74709] hover:bg-[#c03d07] text-white p-1.5 rounded-full transition">
                 <Plus className="w-4 h-4" />
               </button>
-              <button onClick={() => setDayPanelOpen(false)} className="text-white/40 hover:text-white transition p-1">
+              <button onClick={() => setDayPanelOpen(false)} className="text-fg-mute hover:text-fg transition p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -331,19 +331,19 @@ export default function CalendarPage() {
           {/* Panel events */}
           <div className="flex-1 overflow-y-auto p-4">
             {dayPanelEvents.length === 0 ? (
-              <p className="text-center text-white/30 text-sm py-8">Sin eventos este día</p>
+              <p className="text-center text-fg-mute text-sm py-8">Sin eventos este día</p>
             ) : (
               <div className="space-y-2">
                 {dayPanelEvents.map(ev => (
                   <div
                     key={ev.id}
                     onClick={() => handleEventClick(ev)}
-                    className={`flex items-start gap-3 p-3 rounded-xl transition cursor-pointer ${ev.is_completed ? 'opacity-50' : ''} bg-white/[0.04] border border-white/10 hover:border-white/20`}
+                    className={`flex items-start gap-3 p-3 rounded-xl transition cursor-pointer ${ev.is_completed ? 'opacity-50' : ''} bg-ink-800 border border-hair hover:border-hair-strong`}
                   >
                     <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ background: ev.color || '#D74709' }} />
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${ev.is_completed ? 'line-through text-white/40' : ''}`}>{ev.title}</p>
-                      <span className="text-[11px] text-white/40 flex items-center gap-1 mt-1">
+                      <p className={`text-sm font-medium ${ev.is_completed ? 'line-through text-fg-mute' : ''}`}>{ev.title}</p>
+                      <span className="text-[11px] text-fg-mute flex items-center gap-1 mt-1">
                         <Clock className="w-3 h-3" />
                         {ev.all_day ? 'Todo el día' : (
                           <>
@@ -356,7 +356,7 @@ export default function CalendarPage() {
                     {!ev.id.startsWith('vet-') && (
                       <button
                         onClick={(e) => { e.stopPropagation(); toggleCompleted(ev) }}
-                        className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition mt-0.5 ${ev.is_completed ? 'bg-green-500' : 'border-2 border-white/20 hover:border-white/40'}`}
+                        className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition mt-0.5 ${ev.is_completed ? 'bg-green-500' : 'border-2 border-hair-strong hover:border-white/40'}`}
                       >
                         {ev.is_completed && <Check className="w-3 h-3 text-white" />}
                       </button>
@@ -376,15 +376,15 @@ export default function CalendarPage() {
         {/* Controls */}
         <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate(-1)} className="text-white/50 hover:text-white transition p-2"><ChevronLeft className="w-5 h-5" /></button>
+            <button onClick={() => navigate(-1)} className="text-fg-dim hover:text-fg transition p-2"><ChevronLeft className="w-5 h-5" /></button>
             <h2 className="text-lg font-semibold min-w-[240px] text-center">{headerTitle}</h2>
-            <button onClick={() => navigate(1)} className="text-white/50 hover:text-white transition p-2"><ChevronRight className="w-5 h-5" /></button>
-            <button onClick={goToday} className="text-xs text-white/40 hover:text-white bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 ml-2 transition">Hoy</button>
+            <button onClick={() => navigate(1)} className="text-fg-dim hover:text-fg transition p-2"><ChevronRight className="w-5 h-5" /></button>
+            <button onClick={goToday} className="text-xs text-fg-mute hover:text-fg bg-chip border border-hair rounded-lg px-2.5 py-1.5 ml-2 transition">Hoy</button>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+            <div className="flex bg-chip border border-hair rounded-lg overflow-hidden">
               {(['month', 'week', 'day'] as ViewMode[]).map(v => (
-                <button key={v} onClick={() => setView(v)} className={`px-4 py-1.5 text-xs font-medium transition ${view === v ? 'bg-[#D74709] text-white' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
+                <button key={v} onClick={() => setView(v)} className={`px-4 py-1.5 text-xs font-medium transition ${view === v ? 'bg-[#D74709] text-white' : 'text-fg-dim hover:text-fg hover:bg-chip'}`}>
                   {v === 'month' ? 'Mes' : v === 'week' ? 'Semana' : 'Día'}
                 </button>
               ))}
@@ -397,26 +397,26 @@ export default function CalendarPage() {
 
         {/* MONTH VIEW */}
         {view === 'month' && (
-          <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+          <div className="bg-chip border border-hair rounded-xl overflow-hidden">
             <div className="grid grid-cols-7">
               {DAY_NAMES.map(d => (
-                <div key={d} className="py-3 text-center text-xs font-semibold text-white/40 border-b border-white/10">{d}</div>
+                <div key={d} className="py-3 text-center text-xs font-semibold text-fg-mute border-b border-hair">{d}</div>
               ))}
             </div>
             <div className="grid grid-cols-7">
               {Array.from({ length: (new Date(year, month, 1).getDay() + 6) % 7 }).map((_, i) => (
-                <div key={`e-${i}`} className="min-h-[120px] border-b border-r border-white/5" />
+                <div key={`e-${i}`} className="min-h-[120px] border-b border-r border-hair" />
               ))}
               {Array.from({ length: new Date(year, month + 1, 0).getDate() }).map((_, i) => {
                 const day = i + 1
                 const dateStr = formatDateStr(new Date(year, month, day))
                 const dayEvents = getEventsForDate(dateStr)
                 return (
-                  <div key={day} className="min-h-[120px] border-b border-r border-white/5 p-1.5 cursor-pointer hover:bg-white/[0.03] transition" onClick={() => handleDesktopDayClick(dateStr)}>
-                    <span className={`inline-flex w-7 h-7 items-center justify-center rounded-full text-xs font-semibold ${isToday(new Date(year, month, day)) ? 'bg-[#D74709] text-white' : 'text-white/60'}`}>{day}</span>
+                  <div key={day} className="min-h-[120px] border-b border-r border-hair p-1.5 cursor-pointer hover:bg-chip transition" onClick={() => handleDesktopDayClick(dateStr)}>
+                    <span className={`inline-flex w-7 h-7 items-center justify-center rounded-full text-xs font-semibold ${isToday(new Date(year, month, day)) ? 'bg-[#D74709] text-white' : 'text-fg-dim'}`}>{day}</span>
                     <div className="mt-1 space-y-1">
                       {dayEvents.slice(0, 4).map(ev => <EventDot key={ev.id} ev={ev} compact />)}
-                      {dayEvents.length > 4 && <span className="text-[10px] text-white/30 pl-1">+{dayEvents.length - 4} más</span>}
+                      {dayEvents.length > 4 && <span className="text-[10px] text-fg-mute pl-1">+{dayEvents.length - 4} más</span>}
                     </div>
                   </div>
                 )
@@ -427,21 +427,21 @@ export default function CalendarPage() {
 
         {/* WEEK VIEW */}
         {view === 'week' && (
-          <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+          <div className="bg-chip border border-hair rounded-xl overflow-hidden">
             <div className="grid grid-cols-[60px_repeat(7,1fr)]">
-              <div className="border-b border-r border-white/10 py-3" />
+              <div className="border-b border-r border-hair py-3" />
               {weekDays.map((d, i) => (
-                <div key={i} className={`py-3 text-center border-b border-white/10 cursor-pointer ${isToday(d) ? 'bg-[#D74709]/10' : ''}`} onClick={() => { setCurrentDate(d); setView('day') }}>
-                  <p className="text-[10px] text-white/40 uppercase">{DAY_NAMES[i]}</p>
-                  <p className={`text-sm font-bold ${isToday(d) ? 'text-[#D74709]' : 'text-white/70'}`}>{d.getDate()}</p>
+                <div key={i} className={`py-3 text-center border-b border-hair cursor-pointer ${isToday(d) ? 'bg-[#D74709]/10' : ''}`} onClick={() => { setCurrentDate(d); setView('day') }}>
+                  <p className="text-[10px] text-fg-mute uppercase">{DAY_NAMES[i]}</p>
+                  <p className={`text-sm font-bold ${isToday(d) ? 'text-[#D74709]' : 'text-fg'}`}>{d.getDate()}</p>
                 </div>
               ))}
             </div>
             <div className="max-h-[65vh] overflow-y-auto">
               {HOURS.map(h => (
                 <div key={h} className="grid grid-cols-[60px_repeat(7,1fr)] min-h-[56px]">
-                  <div className="border-r border-b border-white/5 pr-2 pt-1 text-right">
-                    <span className="text-[10px] text-white/25">{String(h).padStart(2, '0')}:00</span>
+                  <div className="border-r border-b border-hair pr-2 pt-1 text-right">
+                    <span className="text-[10px] text-fg-mute">{String(h).padStart(2, '0')}:00</span>
                   </div>
                   {weekDays.map((d, di) => {
                     const dateStr = formatDateStr(d)
@@ -451,7 +451,7 @@ export default function CalendarPage() {
                       return e.all_day ? h === 0 : eHour === h
                     })
                     return (
-                      <div key={di} className={`border-b border-r border-white/5 p-0.5 cursor-pointer hover:bg-white/[0.03] transition ${isToday(d) ? 'bg-[#D74709]/[0.02]' : ''}`} onClick={() => handleDesktopDayClick(dateStr)}>
+                      <div key={di} className={`border-b border-r border-hair p-0.5 cursor-pointer hover:bg-chip transition ${isToday(d) ? 'bg-[#D74709]/[0.02]' : ''}`} onClick={() => handleDesktopDayClick(dateStr)}>
                         {hourEvents.map(ev => (
                           <div key={ev.id} onClick={e => handleEventClick(ev, e)} className="text-xs px-1.5 py-1 rounded-md truncate cursor-pointer hover:opacity-80 mb-0.5"
                             style={{ background: (ev.color || '#D74709') + '25', color: ev.color || '#D74709', borderLeft: `3px solid ${ev.color || '#D74709'}` }}>
@@ -469,15 +469,15 @@ export default function CalendarPage() {
 
         {/* DAY VIEW */}
         {view === 'day' && (
-          <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+          <div className="bg-chip border border-hair rounded-xl overflow-hidden">
             <div className="max-h-[72vh] overflow-y-auto">
               {(() => {
                 const dateStr = formatDateStr(currentDate)
                 const allDayEvs = events.filter(e => e.start_date?.startsWith(dateStr) && e.all_day)
                 if (allDayEvs.length === 0) return null
                 return (
-                  <div className="px-4 py-2 border-b border-white/10 bg-white/[0.02]">
-                    <p className="text-[10px] text-white/30 mb-1">TODO EL DIA</p>
+                  <div className="px-4 py-2 border-b border-hair bg-ink-800">
+                    <p className="text-[10px] text-fg-mute mb-1">TODO EL DIA</p>
                     <div className="space-y-1">{allDayEvs.map(ev => <EventDot key={ev.id} ev={ev} />)}</div>
                   </div>
                 )
@@ -489,18 +489,18 @@ export default function CalendarPage() {
                   return new Date(e.start_date).getHours() === h
                 })
                 return (
-                  <div key={h} className="flex min-h-[60px] border-b border-white/5">
-                    <div className="w-16 flex-shrink-0 pr-3 pt-2 text-right border-r border-white/5">
-                      <span className="text-xs text-white/25">{String(h).padStart(2, '0')}:00</span>
+                  <div key={h} className="flex min-h-[60px] border-b border-hair">
+                    <div className="w-16 flex-shrink-0 pr-3 pt-2 text-right border-r border-hair">
+                      <span className="text-xs text-fg-mute">{String(h).padStart(2, '0')}:00</span>
                     </div>
-                    <div className="flex-1 p-1 cursor-pointer hover:bg-white/[0.03] transition" onClick={() => handleDesktopDayClick(dateStr)}>
+                    <div className="flex-1 p-1 cursor-pointer hover:bg-chip transition" onClick={() => handleDesktopDayClick(dateStr)}>
                       {hourEvents.map(ev => (
                         <div key={ev.id} onClick={e => handleEventClick(ev, e)}
                           className="flex items-center gap-2 px-3 py-2 rounded-lg mb-1 cursor-pointer hover:opacity-80 transition"
                           style={{ background: (ev.color || '#D74709') + '15', borderLeft: `3px solid ${ev.color || '#D74709'}` }}>
                           <div className="min-w-0">
                             <p className="text-sm font-medium truncate">{ev.title}</p>
-                            <p className="text-[11px] text-white/40">
+                            <p className="text-[11px] text-fg-mute">
                               {new Date(ev.start_date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                               {ev.end_date && ` - ${new Date(ev.end_date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`}
                             </p>

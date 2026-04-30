@@ -60,14 +60,14 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
         <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={onClose} />
       )}
 
-      <aside className={`fixed left-0 top-0 h-screen bg-gray-950 border-r border-white/10 flex flex-col z-50 w-64 ${collapsed ? 'lg:w-[68px]' : 'lg:w-64'} lg:transition-all lg:duration-300 ${
+      <aside className={`fixed left-0 top-0 h-screen bg-ink-900 border-r border-hair flex flex-col z-50 w-64 ${collapsed ? 'lg:w-[68px]' : 'lg:w-64'} lg:transition-all lg:duration-300 ${
         mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
         {/* Logo + toggle */}
-        <div className="h-14 border-b border-white/10 flex items-center px-3 gap-2 flex-shrink-0">
+        <div className="h-14 border-b border-hair flex items-center px-3 gap-2 flex-shrink-0">
           <button
             onClick={mobileOpen ? onClose : onToggleCollapse}
-            className="w-10 h-10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 rounded-lg transition flex-shrink-0"
+            className="w-10 h-10 flex items-center justify-center text-fg-mute hover:text-fg hover:bg-chip rounded-lg transition flex-shrink-0"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -88,12 +88,12 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
             <div key={section.id}>
               {/* Section title */}
               {(!collapsed || mobileOpen) ? (
-                <p className={`text-[11px] font-semibold uppercase tracking-wider px-3 ${sIdx > 0 ? 'mt-5' : ''} mb-2 flex items-center gap-1.5 ${locked ? 'text-white/15' : 'text-white/30'}`}>
+                <p className={`text-[11px] font-semibold uppercase tracking-wider px-3 ${sIdx > 0 ? 'mt-5' : ''} mb-2 flex items-center gap-1.5 ${locked ? 'text-fg-mute' : 'text-fg-mute'}`}>
                   {t(section.label)}
                   {locked && <Lock className="w-2.5 h-2.5" />}
                 </p>
               ) : sIdx > 0 ? (
-                <div className="my-3 mx-3 border-t border-white/10" />
+                <div className="my-3 mx-3 border-t border-hair" />
               ) : null}
 
               {/* Section items */}
@@ -108,7 +108,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
                       href="/pricing"
                       onClick={() => onClose()}
                       title={collapsed && !mobileOpen ? `${t(item.label)} (Premium)` : undefined}
-                      className={`flex items-center gap-3 rounded-lg text-sm font-medium transition mb-0.5 text-white/15 hover:text-white/25 hover:bg-white/[0.02] ${
+                      className={`flex items-center gap-3 rounded-lg text-sm font-medium transition mb-0.5 text-fg-mute hover:text-fg-mute hover:bg-ink-800 ${
                         collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
                       }`}
                     >
@@ -134,7 +134,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
                     } ${
                       active
                         ? 'bg-[#D74709]/15 text-[#D74709]'
-                        : 'text-white/60 hover:text-white hover:bg-white/5'
+                        : 'text-fg-dim hover:text-fg hover:bg-chip'
                     }`}
                   >
                     {Icon && <Icon className="w-[18px] h-[18px] flex-shrink-0" />}
@@ -148,7 +148,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
         </nav>
 
         {/* Bottom: Admin + Settings + Logout */}
-        <div className="border-t border-white/10 p-2">
+        <div className="border-t border-hair p-2">
           {userRole === 'admin' && (
             <a
               href="/admin"
@@ -164,7 +164,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
           <a
             href="/settings"
             title={collapsed && !mobileOpen ? t('Ajustes') : undefined}
-            className={`flex items-center gap-3 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition ${
+            className={`flex items-center gap-3 rounded-lg text-sm text-fg-dim hover:text-fg hover:bg-chip transition ${
               collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
             }`}
           >
@@ -174,7 +174,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
           <button
             onClick={handleLogout}
             title={collapsed && !mobileOpen ? 'Cerrar sesion' : undefined}
-            className={`flex items-center gap-3 rounded-lg text-sm text-white/60 hover:text-red-400 hover:bg-white/5 transition w-full ${
+            className={`flex items-center gap-3 rounded-lg text-sm text-fg-dim hover:text-red-400 hover:bg-chip transition w-full ${
               collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
             }`}
           >
@@ -185,8 +185,8 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
 
         {/* User avatar at bottom (collapsed only) */}
         {collapsed && !mobileOpen && user && (
-          <div className="border-t border-white/10 p-2 flex justify-center">
-            <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/10">
+          <div className="border-t border-hair p-2 flex justify-center">
+            <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-hair">
               {user.avatar_url ? (
                 <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
               ) : (

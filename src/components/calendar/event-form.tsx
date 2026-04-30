@@ -127,11 +127,11 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
       />
 
       {/* Slide panel */}
-      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-lg z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-lg z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Fixed header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hair flex-shrink-0">
           <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar evento' : 'Nuevo evento'}</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition p-1">
+          <button onClick={onClose} className="text-fg-mute hover:text-fg transition p-1">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -142,23 +142,23 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
 
           {/* Title */}
           <div>
-            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Titulo *</label>
+            <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Titulo *</label>
             <input
               type="text" value={form.title} onChange={(e) => set('title', e.target.value)} autoFocus
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition"
+              className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition"
               placeholder="Ej: Visita al veterinario"
             />
           </div>
 
           {/* Event type */}
           <div>
-            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-2 block">Tipo</label>
+            <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-2 block">Tipo</label>
             <div className="flex flex-wrap gap-2">
               {EVENT_TYPES.map((t) => (
                 <button
                   key={t.value} type="button" onClick={() => handleTypeChange(t.value)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
-                    form.event_type === t.value ? 'text-white' : 'border-white/10 bg-white/5 text-white/50 hover:bg-white/10'
+                    form.event_type === t.value ? 'text-white' : 'border-hair bg-chip text-fg-dim hover:bg-chip'
                   }`}
                   style={form.event_type === t.value ? { borderColor: t.color, backgroundColor: t.color + '25', color: t.color } : undefined}
                 >
@@ -171,32 +171,32 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
           {/* Date */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Inicio</label>
+              <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Inicio</label>
               <input
                 type={form.all_day ? 'date' : 'datetime-local'} value={form.all_day ? form.start_date?.slice(0, 10) : form.start_date}
                 onChange={(e) => set('start_date', e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition"
+                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Fin (opcional)</label>
+              <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Fin (opcional)</label>
               <input
                 type={form.all_day ? 'date' : 'datetime-local'} value={form.all_day ? form.end_date?.slice(0, 10) : form.end_date}
                 onChange={(e) => set('end_date', e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition"
+                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition"
               />
             </div>
           </div>
 
           {/* All day toggle */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-white/70">Todo el dia</span>
+            <span className="text-sm text-fg">Todo el dia</span>
             <ToggleSwitch value={form.all_day} onChange={(v) => set('all_day', v)} />
           </div>
 
           {/* Color */}
           <div>
-            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-2 block">Color</label>
+            <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-2 block">Color</label>
             <div className="flex gap-2">
               {['#D74709', '#9b59b6', '#e84393', '#3498db', '#f39c12', '#27ae60', '#95a5a6', '#e74c3c'].map((c) => (
                 <button key={c} type="button" onClick={() => set('color', c)}
@@ -209,17 +209,17 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
 
           {/* Notes */}
           <div>
-            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1 block">Notas</label>
+            <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Notas</label>
             <textarea
               value={form.notes} onChange={(e) => set('notes', e.target.value)} rows={3}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition resize-none"
+              className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition resize-none"
               placeholder="Notas adicionales..."
             />
           </div>
 
           {/* Entity linking */}
           <div>
-            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-2 block">Vincular a (opcional)</label>
+            <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-2 block">Vincular a (opcional)</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {dogs.length > 0 && (
                 <SearchableSelect options={dogs} value={form.dog_id} onChange={v => set('dog_id', v)} placeholder="Perro..." label="Perro" />
@@ -233,14 +233,14 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
           {/* Completed (edit only) */}
           {isEdit && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-white/70">Completado</span>
+              <span className="text-sm text-fg">Completado</span>
               <ToggleSwitch value={form.is_completed} onChange={(v) => set('is_completed', v)} color="bg-green-500" />
             </div>
           )}
         </div>
 
         {/* Fixed footer */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t border-white/10 flex-shrink-0 gap-2">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t border-hair flex-shrink-0 gap-2">
           {isEdit ? (
             <button type="button" onClick={() => setShowDelete(true)} className="text-sm text-red-400 hover:text-red-300 transition flex items-center gap-1.5 py-2">
               <Trash2 className="w-4 h-4" />
@@ -248,7 +248,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
             </button>
           ) : <div />}
           <div className="flex gap-2">
-            <button type="button" onClick={onClose} className="px-3 sm:px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">
+            <button type="button" onClick={onClose} className="px-3 sm:px-4 py-2.5 rounded-lg text-sm text-fg-dim hover:text-fg hover:bg-chip transition">
               Cancelar
             </button>
             <button onClick={handleSubmit} disabled={loading || !form.title.trim()}

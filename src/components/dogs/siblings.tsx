@@ -51,12 +51,12 @@ export default function Siblings({ dogId, fatherId, motherId }: SiblingsProps) {
   }, [dogId, fatherId, motherId])
 
   if (loading) {
-    return <div className="text-white/30 text-sm py-8 text-center">Cargando hermanos...</div>
+    return <div className="text-fg-mute text-sm py-8 text-center">Cargando hermanos...</div>
   }
 
   if (!fatherId && !motherId) {
     return (
-      <div className="text-center py-12 text-white/30">
+      <div className="text-center py-12 text-fg-mute">
         <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
         <p className="text-sm">No se pueden buscar hermanos sin padres registrados</p>
       </div>
@@ -65,7 +65,7 @@ export default function Siblings({ dogId, fatherId, motherId }: SiblingsProps) {
 
   if (siblings.length === 0) {
     return (
-      <div className="text-center py-12 text-white/30">
+      <div className="text-center py-12 text-fg-mute">
         <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
         <p className="text-sm">No se encontraron hermanos</p>
       </div>
@@ -74,7 +74,7 @@ export default function Siblings({ dogId, fatherId, motherId }: SiblingsProps) {
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-4">
+      <h3 className="text-sm font-semibold text-fg-mute uppercase tracking-wider mb-4">
         {siblings.length} hermano{siblings.length !== 1 ? 's' : ''} encontrado{siblings.length !== 1 ? 's' : ''}
       </h3>
       <div className="-mx-4 lg:mx-0">
@@ -93,13 +93,13 @@ function MiniDogCard({ dog }: { dog: SiblingDog }) {
   return (
     <Link
       href={`/dogs/${dog.slug || dog.id}`}
-      className="w-[140px] flex-shrink-0 bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:bg-white/10 transition group"
+      className="w-[140px] flex-shrink-0 bg-chip border border-hair rounded-lg overflow-hidden hover:bg-chip transition group"
     >
-      <div className="relative w-[140px] h-[140px] bg-white/5">
+      <div className="relative w-[140px] h-[140px] bg-chip">
         {dog.thumbnail_url ? (
           <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-white/15 text-3xl">
+          <div className="w-full h-full flex items-center justify-center text-fg-mute text-3xl">
             {dog.sex === 'male' ? '♂' : '♀'}
           </div>
         )}
@@ -108,7 +108,7 @@ function MiniDogCard({ dog }: { dog: SiblingDog }) {
       <div className="p-2.5">
         <p className="text-sm font-semibold text-white truncate">{dog.name}</p>
         {(dog.breed as any)?.name && (
-          <p className="text-xs text-white/40 truncate">{(dog.breed as any).name}</p>
+          <p className="text-xs text-fg-mute truncate">{(dog.breed as any).name}</p>
         )}
       </div>
     </Link>

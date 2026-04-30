@@ -92,17 +92,17 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
   return (
     <div>
       {/* Header banner */}
-      <div className="relative bg-gradient-to-r from-[#D74709]/20 to-[#D74709]/5 border border-white/10 rounded-2xl overflow-hidden mb-6">
+      <div className="relative bg-gradient-to-r from-[#D74709]/20 to-[#D74709]/5 border border-hair rounded-2xl overflow-hidden mb-6">
         <div className="px-4 py-4 sm:px-6 sm:py-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
           {/* Logo */}
           <button
             onClick={() => fileRef.current?.click()}
-            className="relative w-24 h-24 rounded-2xl overflow-hidden bg-white/10 flex items-center justify-center group flex-shrink-0"
+            className="relative w-24 h-24 rounded-2xl overflow-hidden bg-chip flex items-center justify-center group flex-shrink-0"
           >
             {kennel.logo_url ? (
               <img src={kennel.logo_url} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-4xl font-bold text-white/20">{kennel.name[0]}</span>
+              <span className="text-4xl font-bold text-fg-mute">{kennel.name[0]}</span>
             )}
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
               {uploading ? <Loader2 className="w-6 h-6 text-white animate-spin" /> : <Camera className="w-6 h-6 text-white" />}
@@ -114,39 +114,39 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-xl sm:text-2xl font-bold truncate">{kennel.name}</h1>
-              <button onClick={() => setShowEdit(true)} className="text-white/40 hover:text-[#D74709] transition" title="Editar criadero">
+              <button onClick={() => setShowEdit(true)} className="text-fg-mute hover:text-[#D74709] transition" title="Editar criadero">
                 <Settings className="w-5 h-5" />
               </button>
             </div>
-            {kennel.description && <p className="text-sm text-white/50 line-clamp-2 mb-2">{kennel.description}</p>}
+            {kennel.description && <p className="text-sm text-fg-dim line-clamp-2 mb-2">{kennel.description}</p>}
             <div className="flex flex-wrap gap-4">
               {kennel.foundation_date && (
-                <span className="flex items-center gap-1.5 text-xs text-white/40">
+                <span className="flex items-center gap-1.5 text-xs text-fg-mute">
                   <Calendar className="w-3.5 h-3.5" /> Fundado en {new Date(kennel.foundation_date).getFullYear()}
                 </span>
               )}
               {kennel.website && (
-                <a href={kennel.website} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-xs text-white/40 hover:text-[#D74709] transition">
+                <a href={kennel.website} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-xs text-fg-mute hover:text-[#D74709] transition">
                   <Globe className="w-3.5 h-3.5" /> Sitio web
                 </a>
               )}
               {kennel.social_instagram && (
-                <a href={kennel.social_instagram} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-xs text-white/40 hover:text-pink-400 transition">
+                <a href={kennel.social_instagram} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-xs text-fg-mute hover:text-pink-400 transition">
                   <ExternalLink className="w-3.5 h-3.5" /> Instagram
                 </a>
               )}
               {kennel.social_facebook && (
-                <a href={kennel.social_facebook} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-xs text-white/40 hover:text-blue-400 transition">
+                <a href={kennel.social_facebook} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-xs text-fg-mute hover:text-blue-400 transition">
                   <ExternalLink className="w-3.5 h-3.5" /> Facebook
                 </a>
               )}
               {kennel.social_youtube && (
-                <a href={kennel.social_youtube} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-xs text-white/40 hover:text-red-400 transition">
+                <a href={kennel.social_youtube} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-xs text-fg-mute hover:text-red-400 transition">
                   <ExternalLink className="w-3.5 h-3.5" /> YouTube
                 </a>
               )}
               {kennel.whatsapp_enabled && kennel.whatsapp_phone && (
-                <a href={`https://wa.me/${kennel.whatsapp_phone.replace(/\D/g, '')}?text=${encodeURIComponent(kennel.whatsapp_text || '')}`} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-xs text-white/40 hover:text-green-400 transition">
+                <a href={`https://wa.me/${kennel.whatsapp_phone.replace(/\D/g, '')}?text=${encodeURIComponent(kennel.whatsapp_text || '')}`} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-xs text-fg-mute hover:text-green-400 transition">
                   <WhatsAppIcon className="w-3.5 h-3.5" /> WhatsApp
                 </a>
               )}
@@ -157,38 +157,38 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
           <div className="grid grid-cols-4 sm:flex gap-3 sm:gap-4 flex-shrink-0 w-full sm:w-auto">
             <div className="text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
-              <p className="text-[10px] text-white/40 uppercase">Perros</p>
+              <p className="text-[10px] text-fg-mute uppercase">Perros</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-green-400">{stats.visible}</p>
-              <p className="text-[10px] text-white/40 uppercase">Visibles</p>
+              <p className="text-[10px] text-fg-mute uppercase">Visibles</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-pink-400">{stats.reproductive}</p>
-              <p className="text-[10px] text-white/40 uppercase">Reproductores</p>
+              <p className="text-[10px] text-fg-mute uppercase">Reproductores</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-purple-400">{stats.litters}</p>
-              <p className="text-[10px] text-white/40 uppercase">Camadas</p>
+              <p className="text-[10px] text-fg-mute uppercase">Camadas</p>
             </div>
           </div>
         </div>
 
         {/* Quick actions */}
-        <div className="px-4 sm:px-6 py-3 bg-white/[0.03] border-t border-white/5 flex items-center gap-3 overflow-x-auto">
-          <button onClick={() => setShowEdit(true)} className="text-xs text-white/50 hover:text-[#D74709] flex items-center gap-1.5 transition">
+        <div className="px-4 sm:px-6 py-3 bg-chip border-t border-hair flex items-center gap-3 overflow-x-auto">
+          <button onClick={() => setShowEdit(true)} className="text-xs text-fg-dim hover:text-[#D74709] flex items-center gap-1.5 transition">
             <Edit className="w-3.5 h-3.5" /> Editar perfil
           </button>
-          <span className="text-white/10">|</span>
-          <Link href={`/kennels/${kennel.id}`} className="text-xs text-white/50 hover:text-[#D74709] flex items-center gap-1.5 transition">
+          <span className="text-fg-mute">|</span>
+          <Link href={`/kennels/${kennel.id}`} className="text-xs text-fg-dim hover:text-[#D74709] flex items-center gap-1.5 transition">
             <ExternalLink className="w-3.5 h-3.5" /> Ver perfil publico
           </Link>
-          <span className="text-white/10">|</span>
-          <Link href="/dogs" className="text-xs text-white/50 hover:text-[#D74709] flex items-center gap-1.5 transition">
+          <span className="text-fg-mute">|</span>
+          <Link href="/dogs" className="text-xs text-fg-dim hover:text-[#D74709] flex items-center gap-1.5 transition">
             <Dog className="w-3.5 h-3.5" /> Todos mis perros
           </Link>
-          <span className="text-white/10">|</span>
-          <Link href="/litters" className="text-xs text-white/50 hover:text-[#D74709] flex items-center gap-1.5 transition">
+          <span className="text-fg-mute">|</span>
+          <Link href="/litters" className="text-xs text-fg-dim hover:text-[#D74709] flex items-center gap-1.5 transition">
             <Baby className="w-3.5 h-3.5" /> Mis camadas
           </Link>
         </div>
@@ -198,34 +198,34 @@ export default function KennelDashboard({ kennel, dogs: initialDogs, litters, us
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-3">
           <h2 className="text-base sm:text-lg font-semibold">Perros del criadero</h2>
-          <span className="text-xs text-white/30 bg-white/5 rounded-full px-2.5 py-0.5">{filtered.length}</span>
+          <span className="text-xs text-fg-mute bg-chip rounded-full px-2.5 py-0.5">{filtered.length}</span>
         </div>
         <div className="flex items-center gap-2">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar perro..."
-              className="bg-white/5 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition w-full sm:w-48"
+              className="bg-chip border border-hair rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition w-full sm:w-48"
             />
           </div>
           <SortSelect value={sortBy} onChange={setSortBy} storageKey="kennel-sort" />
           {/* View toggle */}
-          <div className="flex bg-white/5 border border-white/10 rounded-lg overflow-hidden">
-            <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'text-white/40 hover:text-white'}`}><Grid3X3 className="w-4 h-4" /></button>
-            <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'text-white/40 hover:text-white'}`}><List className="w-4 h-4" /></button>
+          <div className="flex bg-chip border border-hair rounded-lg overflow-hidden">
+            <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'text-fg-mute hover:text-fg'}`}><Grid3X3 className="w-4 h-4" /></button>
+            <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'text-fg-mute hover:text-fg'}`}><List className="w-4 h-4" /></button>
           </div>
         </div>
       </div>
 
       {/* Dogs grid/list */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 bg-white/5 border border-white/10 rounded-xl">
-          <Dog className="w-12 h-12 text-white/15 mx-auto mb-3" />
-          <p className="text-white/40">{search ? 'Sin resultados' : 'No hay perros en este criadero'}</p>
+        <div className="text-center py-16 bg-chip border border-hair rounded-xl">
+          <Dog className="w-12 h-12 text-fg-mute mx-auto mb-3" />
+          <p className="text-fg-mute">{search ? 'Sin resultados' : 'No hay perros en este criadero'}</p>
           {!search && (
             <Link href="/dogs" className="text-sm text-[#D74709] hover:underline mt-2 inline-block">
               Ir a mis perros
@@ -269,12 +269,12 @@ function DogCard({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; user
   const isOwner = dog.owner_id === userId
   const isTransferred = !isOwner
   return (
-    <div className="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden hover:border-[#D74709]/30 transition group">
-      <Link href={`/dogs/${dog.slug || dog.id}`} className="block relative aspect-[3/2] sm:aspect-[4/3] bg-white/5">
+    <div className="bg-ink-800 border border-hair rounded-xl overflow-hidden hover:border-[#D74709]/30 transition group">
+      <Link href={`/dogs/${dog.slug || dog.id}`} className="block relative aspect-[3/2] sm:aspect-[4/3] bg-chip">
         {dog.thumbnail_url ? (
           <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center"><Dog className="w-12 h-12 text-white/10" /></div>
+          <div className="w-full h-full flex items-center justify-center"><Dog className="w-12 h-12 text-fg-mute" /></div>
         )}
         {dog.breed?.name && <span className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-2 py-0.5 rounded-full">{dog.breed.name}</span>}
         {isTransferred && <span className="absolute top-2 left-2 bg-purple-500/80 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">Transferido</span>}
@@ -283,34 +283,34 @@ function DogCard({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; user
       <div className="p-2.5 sm:p-3">
         <Link href={`/dogs/${dog.slug || dog.id}`} className="flex items-center gap-1.5 group-hover:text-[#D74709] transition">
           <span className="text-sm font-semibold truncate">{dog.name}</span>
-          {(dog as any).is_verified && <div className="relative group/tip flex-shrink-0"><ShieldCheck className="w-3.5 h-3.5 text-blue-400" /><div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-gray-800 border border-white/10 rounded text-[10px] text-white/70 whitespace-nowrap opacity-0 group-hover/tip:opacity-100 transition pointer-events-none shadow-lg z-50">Verificado con microchip y pedigri oficial</div></div>}
+          {(dog as any).is_verified && <div className="relative group/tip flex-shrink-0"><ShieldCheck className="w-3.5 h-3.5 text-blue-400" /><div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-ink-800 border border-hair rounded text-[10px] text-fg whitespace-nowrap opacity-0 group-hover/tip:opacity-100 transition pointer-events-none shadow-lg z-50">Verificado con microchip y pedigri oficial</div></div>}
         </Link>
-        <div className="flex items-center gap-3 mt-1.5 text-[11px] text-white/35">
+        <div className="flex items-center gap-3 mt-1.5 text-[11px] text-fg-mute">
           {dog.birth_date && <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
           {dog.color?.name && <span>{dog.color.name}</span>}
         </div>
-        <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-white/5 flex-wrap">
+        <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-hair flex-wrap">
           <button onClick={() => onToggle(dog.id, 'show_in_kennel', dog.show_in_kennel !== false)}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.show_in_kennel !== false ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20' : 'bg-white/5 text-white/30 hover:bg-white/10'}`}
+            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.show_in_kennel !== false ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20' : 'bg-chip text-fg-mute hover:bg-chip'}`}
             title={dog.show_in_kennel !== false ? 'Visible en perfil publico' : 'Oculto del perfil publico'}>
             {dog.show_in_kennel !== false ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
             Visible
           </button>
           <button onClick={() => onToggle(dog.id, 'is_reproductive', !!dog.is_reproductive)}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.is_reproductive ? 'bg-pink-500/10 text-pink-400 hover:bg-pink-500/20' : 'bg-white/5 text-white/30 hover:bg-white/10'}`}
+            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.is_reproductive ? 'bg-pink-500/10 text-pink-400 hover:bg-pink-500/20' : 'bg-chip text-fg-mute hover:bg-chip'}`}
             title={dog.is_reproductive ? 'Reproductor' : 'No reproductor'}>
             <Heart className="w-3 h-3" /> Reproductor
           </button>
           {isOwner && (
             <button onClick={() => onSale({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
-              className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.is_for_sale ? 'bg-[#D74709]/10 text-[#D74709]' : 'bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709]'}`}
+              className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.is_for_sale ? 'bg-[#D74709]/10 text-[#D74709]' : 'bg-chip text-fg-mute hover:bg-[#D74709]/10 hover:text-[#D74709]'}`}
               title={dog.is_for_sale ? 'Editar anuncio' : 'Poner en venta'}>
               <Tag className="w-3 h-3" /> {dog.is_for_sale ? 'En venta' : 'Vender'}
             </button>
           )}
           {isOwner && (
             <button onClick={() => onTransfer({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709] transition ml-auto"
+              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-chip text-fg-mute hover:bg-[#D74709]/10 hover:text-[#D74709] transition ml-auto"
               title="Transferir a otro propietario">
               <ArrowRightLeft className="w-3 h-3" />
             </button>
@@ -325,10 +325,10 @@ function DogRow({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; userI
   const sexColor = dog.sex === 'male' ? '#017DFA' : '#e84393'
   const isOwner = dog.owner_id === userId
   return (
-    <div className="flex items-center gap-3 sm:gap-4 bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition">
+    <div className="flex items-center gap-3 sm:gap-4 bg-chip border border-hair rounded-xl p-3 sm:p-4 hover:border-[#D74709]/50 hover:bg-chip transition">
       <Link href={`/dogs/${dog.slug || dog.id}`} className="flex-shrink-0">
-        <div className="w-10 h-10 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: sexColor }}>
-          {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-4 h-4 text-white/15" /></div>}
+        <div className="w-10 h-10 rounded-full border-2 overflow-hidden bg-chip" style={{ borderColor: sexColor }}>
+          {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-4 h-4 text-fg-mute" /></div>}
         </div>
       </Link>
       <Link href={`/dogs/${dog.slug || dog.id}`} className="flex-1 min-w-0">
@@ -336,29 +336,29 @@ function DogRow({ dog, userId, onToggle, onTransfer, onSale }: { dog: any; userI
           <p className="font-semibold text-sm truncate hover:text-[#D74709] transition">{dog.name}</p>
           {!isOwner && <span className="text-[9px] font-bold text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">Transferido</span>}
         </div>
-        <div className="flex items-center gap-3 mt-0.5 text-xs text-white/40">
+        <div className="flex items-center gap-3 mt-0.5 text-xs text-fg-mute">
           {dog.breed?.name && <span>{dog.breed.name}</span>}
           {dog.color?.name && <span>{dog.color.name}</span>}
         </div>
       </Link>
       <div className="flex items-center gap-1.5 flex-shrink-0">
         <button onClick={() => onToggle(dog.id, 'show_in_kennel', dog.show_in_kennel !== false)}
-          className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.show_in_kennel !== false ? 'bg-green-500/10 text-green-400' : 'bg-white/5 text-white/30'}`}>
+          className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.show_in_kennel !== false ? 'bg-green-500/10 text-green-400' : 'bg-chip text-fg-mute'}`}>
           {dog.show_in_kennel !== false ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
         </button>
         <button onClick={() => onToggle(dog.id, 'is_reproductive', !!dog.is_reproductive)}
-          className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.is_reproductive ? 'bg-pink-500/10 text-pink-400' : 'bg-white/5 text-white/30'}`}>
+          className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold transition ${dog.is_reproductive ? 'bg-pink-500/10 text-pink-400' : 'bg-chip text-fg-mute'}`}>
           <Heart className="w-3 h-3" />
         </button>
         {isOwner && (
           <button onClick={() => onSale({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
-            className={`px-2 py-1 rounded text-[10px] font-semibold transition ${dog.is_for_sale ? 'bg-[#D74709]/10 text-[#D74709]' : 'bg-white/5 text-white/30 hover:text-[#D74709]'}`}>
+            className={`px-2 py-1 rounded text-[10px] font-semibold transition ${dog.is_for_sale ? 'bg-[#D74709]/10 text-[#D74709]' : 'bg-chip text-fg-mute hover:text-[#D74709]'}`}>
             <Tag className="w-3 h-3" />
           </button>
         )}
         {isOwner && (
           <button onClick={() => onTransfer({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: dog.breed?.name })}
-            className="px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:text-[#D74709] transition">
+            className="px-2 py-1 rounded text-[10px] font-semibold bg-chip text-fg-mute hover:text-[#D74709] transition">
             <ArrowRightLeft className="w-3 h-3" />
           </button>
         )}

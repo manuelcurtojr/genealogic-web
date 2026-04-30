@@ -9,7 +9,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // For unauthenticated users (public pages like dog detail, kennel profile)
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-950 text-[var(--foreground)]">
+      <div className="min-h-screen bg-ink-900 text-[var(--foreground)]">
         <PublicHeader />
         <main className="px-4 sm:px-[30px] py-4 sm:py-6 max-w-7xl mx-auto">{children}</main>
       </div>

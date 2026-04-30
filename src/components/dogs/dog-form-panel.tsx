@@ -163,21 +163,21 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   return (
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
-      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hair flex-shrink-0">
           <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar perro' : defaultLitterId ? 'Añadir cachorro' : 'Añadir perro'}</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition p-1"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-fg-mute hover:text-fg transition p-1"><X className="w-5 h-5" /></button>
         </div>
 
         {/* Create mode toggle */}
         {!isEdit && !isFromLitter && (
-          <div className="flex border-b border-white/10 px-4 flex-shrink-0">
-            <button onClick={() => setCreateMode('manual')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'manual' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40 hover:text-white/60'}`}>
+          <div className="flex border-b border-hair px-4 flex-shrink-0">
+            <button onClick={() => setCreateMode('manual')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'manual' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-fg-mute hover:text-fg-dim'}`}>
               <Dog className="w-3.5 h-3.5" /> Manual
             </button>
-            <button onClick={() => setCreateMode('import')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'import' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40 hover:text-white/60'}`}>
+            <button onClick={() => setCreateMode('import')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'import' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-fg-mute hover:text-fg-dim'}`}>
               <Globe className="w-3.5 h-3.5" /> Importar pedigree
             </button>
           </div>
@@ -185,12 +185,12 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
 
         {/* Edit tabs */}
         {isEdit && (
-          <div className="flex border-b border-white/10 px-4 overflow-x-auto flex-shrink-0">
+          <div className="flex border-b border-hair px-4 overflow-x-auto flex-shrink-0">
             {TABS.map(t => {
               const Icon = t.icon
               return (
                 <button key={t.key} onClick={() => setActiveTab(t.key)}
-                  className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${activeTab === t.key ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40 hover:text-white/60'}`}>
+                  className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${activeTab === t.key ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-fg-mute hover:text-fg-dim'}`}>
                   <Icon className="w-3.5 h-3.5" /><span className="hidden sm:inline">{t.label}</span>
                 </button>
               )
@@ -204,7 +204,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             <ImportPedigreeTab userId={userId} kennelId={defaultKennelId || undefined} onImported={() => { onClose(); onSaved?.(); router.refresh() }} />
           </div>
         ) : dataLoading ? (
-          <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+          <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-fg-mute" /></div>
         ) : (
           <div className="flex-1 overflow-y-auto p-4 sm:p-6">
             {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400 mb-4">{error}</div>}
@@ -222,13 +222,13 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                         )}
                       </div>
                       <div>
-                        <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Sexo *</label>
+                        <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1.5 block">Sexo *</label>
                         <div className="flex gap-2">
                           {(['male', 'female'] as const).map(s => (
                             <button key={s} type="button" onClick={() => set('sex', s)}
                               className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border transition ${form.sex === s
                                 ? (s === 'male' ? 'border-blue-400 bg-blue-400/10 text-blue-400' : 'border-pink-400 bg-pink-400/10 text-pink-400')
-                                : 'border-white/10 bg-white/5 text-white/50 hover:bg-white/10'}`}>
+                                : 'border-hair bg-chip text-fg-dim hover:bg-chip'}`}>
                               {s === 'male' ? '♂ Macho' : '♀ Hembra'}
                             </button>
                           ))}
@@ -291,19 +291,19 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                   {editDogId ? (
                     <GalleryTab dogId={editDogId} userId={userId} />
                   ) : (
-                    <p className="text-xs text-white/30 text-center py-4">
+                    <p className="text-xs text-fg-mute text-center py-4">
                       {isFromLitter ? 'Guarda el cachorro para subir fotos' : 'Guarda el perro primero para subir fotos'}
                     </p>
                   )}
                 </Section>
 
                 {/* Visibility */}
-                <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl p-4">
+                <div className="flex items-center justify-between bg-chip border border-hair rounded-xl p-4">
                   <div className="flex items-center gap-3">
-                    {form.is_public ? <Eye className="w-5 h-5 text-green-400" /> : <EyeOff className="w-5 h-5 text-white/30" />}
+                    {form.is_public ? <Eye className="w-5 h-5 text-green-400" /> : <EyeOff className="w-5 h-5 text-fg-mute" />}
                     <div>
                       <p className="text-sm font-medium">{form.is_public ? 'Público' : 'Privado'}</p>
-                      <p className="text-xs text-white/40">{form.is_public ? 'Visible para otros' : 'Solo tú'}</p>
+                      <p className="text-xs text-fg-mute">{form.is_public ? 'Visible para otros' : 'Solo tú'}</p>
                     </div>
                   </div>
                   <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
@@ -320,8 +320,8 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
 
         {/* Footer */}
         {activeTab === 'datos' && createMode === 'manual' && (
-          <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-white/10 flex-shrink-0">
-            <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">Cancelar</button>
+          <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hair flex-shrink-0">
+            <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-fg-dim hover:text-fg hover:bg-chip transition">Cancelar</button>
             <button onClick={handleSubmit} disabled={loading || !form.name.trim() || dataLoading}
               className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -352,9 +352,9 @@ function Section({ icon: Icon, title, children }: { icon: React.ElementType; tit
 function Field({ label, value, onChange, type = 'text', placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
   return (
     <div>
-      <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">{label}</label>
+      <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1.5 block">{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition" />
+        className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
     </div>
   )
 }
@@ -370,22 +370,22 @@ function SelectCard({ label, name, image, sexColor, onClear, selector, disabled 
 
   return (
     <div ref={ref} className="relative">
-      <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">{label}</label>
+      <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1.5 block">{label}</label>
       <div onClick={() => { if (!disabled) setOpen(!open) }}
-        className={`w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 flex items-center gap-3 cursor-pointer transition ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:border-white/20'} ${open ? 'border-[#D74709]' : ''}`}>
+        className={`w-full bg-chip border border-hair rounded-lg px-3 py-2.5 flex items-center gap-3 cursor-pointer transition ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:border-hair-strong'} ${open ? 'border-[#D74709]' : ''}`}>
         {image && (
-          <div className="w-8 h-8 rounded-full border-2 overflow-hidden flex-shrink-0 bg-white/5" style={{ borderColor: sexColor || 'rgba(255,255,255,0.1)' }}>
+          <div className="w-8 h-8 rounded-full border-2 overflow-hidden flex-shrink-0 bg-chip" style={{ borderColor: sexColor || 'rgba(255,255,255,0.1)' }}>
             <img src={image} alt="" className="w-full h-full object-cover" />
           </div>
         )}
         {sexColor && !image && <div className="w-1 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: sexColor }} />}
-        <span className={`flex-1 text-sm ${name ? 'text-white font-medium' : 'text-white/30'}`}>{name || 'Seleccionar...'}</span>
-        <ChevronDown className={`w-4 h-4 text-white/30 transition ${open ? 'rotate-180' : ''}`} />
+        <span className={`flex-1 text-sm ${name ? 'text-white font-medium' : 'text-fg-mute'}`}>{name || 'Seleccionar...'}</span>
+        <ChevronDown className={`w-4 h-4 text-fg-mute transition ${open ? 'rotate-180' : ''}`} />
       </div>
       {open && !disabled && (
-        <div className="absolute z-[80] top-full mt-1 left-0 right-0 bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-56 overflow-hidden">
+        <div className="absolute z-[80] top-full mt-1 left-0 right-0 bg-ink-800 border border-hair rounded-lg shadow-xl max-h-56 overflow-hidden">
           {selector}
-          {name && <button onClick={() => { onClear(); setOpen(false) }} className="w-full text-left px-3 py-2.5 text-xs text-red-400 hover:bg-red-500/10 border-t border-white/5">Quitar selección</button>}
+          {name && <button onClick={() => { onClear(); setOpen(false) }} className="w-full text-left px-3 py-2.5 text-xs text-red-400 hover:bg-red-500/10 border-t border-hair">Quitar selección</button>}
         </div>
       )}
     </div>
@@ -400,21 +400,21 @@ function SearchList({ items, value, onChange, placeholder, sexColor }: { items: 
 
   return (
     <>
-      <div className="p-2.5 border-b border-white/5">
+      <div className="p-2.5 border-b border-hair">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fg-mute" />
           <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)} placeholder={placeholder || 'Buscar...'}
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-8 pr-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+            className="w-full bg-chip border border-hair rounded-lg pl-8 pr-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
         </div>
       </div>
       <div className="overflow-y-auto max-h-44">
         {filtered.length === 0 ? (
-          <p className="text-sm text-white/30 p-4 text-center">Sin resultados</p>
+          <p className="text-sm text-fg-mute p-4 text-center">Sin resultados</p>
         ) : filtered.map(item => (
           <button key={item.id} type="button" onClick={() => { onChange(item.id); setSearch('') }}
-            className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2.5 transition ${item.id === value ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/70 hover:bg-white/5'}`}>
+            className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2.5 transition ${item.id === value ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg hover:bg-chip'}`}>
             {item.image !== null && (
-              <div className="w-7 h-7 rounded-full border-2 overflow-hidden flex-shrink-0 bg-white/5" style={{ borderColor: sexColor || 'rgba(255,255,255,0.1)' }}>
+              <div className="w-7 h-7 rounded-full border-2 overflow-hidden flex-shrink-0 bg-chip" style={{ borderColor: sexColor || 'rgba(255,255,255,0.1)' }}>
                 {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-3 h-3 opacity-30" /></div>}
               </div>
             )}
@@ -438,17 +438,17 @@ function DropdownSearch({ label, items, value, onChange, placeholder }: { label:
 
   return (
     <div ref={ref} className="relative">
-      <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">{label}</label>
+      <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1.5 block">{label}</label>
       <div onClick={() => setOpen(!open)}
-        className={`w-full bg-white/5 border rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 cursor-pointer transition hover:border-white/20 ${open ? 'border-[#D74709]' : 'border-white/10'}`}>
-        <span className={sel ? 'text-white' : 'text-white/30'}>{sel?.name || placeholder}</span>
+        className={`w-full bg-chip border rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 cursor-pointer transition hover:border-hair-strong ${open ? 'border-[#D74709]' : 'border-hair'}`}>
+        <span className={sel ? 'text-white' : 'text-fg-mute'}>{sel?.name || placeholder}</span>
         <div className="ml-auto flex items-center gap-1.5">
-          {value && <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="text-white/30 hover:text-white/60"><X className="w-3.5 h-3.5" /></span>}
-          <ChevronDown className={`w-4 h-4 text-white/30 transition ${open ? 'rotate-180' : ''}`} />
+          {value && <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="text-fg-mute hover:text-fg-dim"><X className="w-3.5 h-3.5" /></span>}
+          <ChevronDown className={`w-4 h-4 text-fg-mute transition ${open ? 'rotate-180' : ''}`} />
         </div>
       </div>
       {open && (
-        <div className="absolute z-[80] mt-1 w-full bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-48 flex flex-col">
+        <div className="absolute z-[80] mt-1 w-full bg-ink-800 border border-hair rounded-lg shadow-xl max-h-48 flex flex-col">
           <SearchList items={items} value={value} onChange={v => { onChange(v); setOpen(false) }} placeholder={placeholder} />
         </div>
       )}
@@ -458,13 +458,13 @@ function DropdownSearch({ label, items, value, onChange, placeholder }: { label:
 
 function LockedCard({ label, name, sexColor }: { label: string; name?: string; sexColor?: string }) {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 flex items-center gap-2.5 opacity-60">
+    <div className="bg-chip border border-hair rounded-lg px-3 py-2.5 flex items-center gap-2.5 opacity-60">
       {sexColor && <div className="w-1 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: sexColor }} />}
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] text-white/30 uppercase font-semibold">{label}</p>
+        <p className="text-[10px] text-fg-mute uppercase font-semibold">{label}</p>
         <p className="text-sm font-medium text-white truncate">{name || '—'}</p>
       </div>
-      <Lock className="w-3.5 h-3.5 text-white/20 flex-shrink-0" />
+      <Lock className="w-3.5 h-3.5 text-fg-mute flex-shrink-0" />
     </div>
   )
 }

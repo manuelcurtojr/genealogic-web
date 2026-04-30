@@ -79,13 +79,13 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     <div className="space-y-3">
       <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={e => handleUpload(e.target.files)} />
 
-      <p className="text-[11px] text-white/30">Arrastra para reordenar. La primera foto sera la de perfil.</p>
+      <p className="text-[11px] text-fg-mute">Arrastra para reordenar. La primera foto sera la de perfil.</p>
 
       <div className="flex gap-2 flex-wrap">
         {/* Upload button */}
         <button onClick={() => fileRef.current?.click()} disabled={uploading}
           className="w-[88px] h-[88px] border-2 border-dashed border-white/15 rounded-lg flex flex-col items-center justify-center hover:border-[#D74709]/40 transition cursor-pointer flex-shrink-0">
-          {uploading ? <Loader2 className="w-5 h-5 animate-spin text-white/30" /> : <Plus className="w-5 h-5 text-white/30" />}
+          {uploading ? <Loader2 className="w-5 h-5 animate-spin text-fg-mute" /> : <Plus className="w-5 h-5 text-fg-mute" />}
         </button>
 
         {/* Photos — draggable */}
@@ -109,7 +109,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
             {/* Drag handle + delete */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
               <div className="opacity-0 group-hover:opacity-100 transition flex items-center gap-1">
-                <GripVertical className="w-4 h-4 text-white/70" />
+                <GripVertical className="w-4 h-4 text-fg" />
               </div>
             </div>
             <button onClick={() => deletePhoto(photo)}
@@ -121,7 +121,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
       </div>
 
       {photos.length === 0 && !uploading && (
-        <p className="text-xs text-white/30 text-center py-2">Haz clic en + para subir fotos</p>
+        <p className="text-xs text-fg-mute text-center py-2">Haz clic en + para subir fotos</p>
       )}
     </div>
   )

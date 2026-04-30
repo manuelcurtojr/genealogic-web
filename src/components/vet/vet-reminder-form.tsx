@@ -206,15 +206,15 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
 
-      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 flex-shrink-0">
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hair flex-shrink-0">
           <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar recordatorio' : 'Nuevo recordatorio'}</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-fg-mute hover:text-fg transition"><X className="w-5 h-5" /></button>
         </div>
 
         {selfLoading ? (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-white/30" />
+            <Loader2 className="w-6 h-6 animate-spin text-fg-mute" />
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
@@ -230,9 +230,9 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
 
             {/* Dog */}
             <div>
-              <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Perro *</label>
+              <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Perro *</label>
               <select value={form.dog_id} onChange={e => set('dog_id', e.target.value)} disabled={isCompleted}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition appearance-none disabled:opacity-50">
+                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition appearance-none disabled:opacity-50">
                 <option value="">Seleccionar perro...</option>
                 {dogs.map(d => <option key={d.id} value={d.id}>{d.name} {d.sex === 'male' ? '♂' : '♀'}</option>)}
               </select>
@@ -240,9 +240,9 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
 
             {/* Template (optional) */}
             <div>
-              <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Plantilla (opcional)</label>
+              <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Plantilla (opcional)</label>
               <select value={form.template_id} onChange={e => selectTemplate(e.target.value)} disabled={isCompleted}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition appearance-none disabled:opacity-50">
+                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition appearance-none disabled:opacity-50">
                 <option value="">Personalizado</option>
                 <optgroup label="Vacunas">
                   {templates.filter(t => t.type === 'vaccine').map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -258,18 +258,18 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
 
             {/* Title */}
             <div>
-              <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Título *</label>
+              <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Título *</label>
               <input type="text" value={form.title} onChange={e => set('title', e.target.value)} disabled={isCompleted}
                 placeholder="Ej: Vacuna anual polivalente"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition disabled:opacity-50" />
+                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition disabled:opacity-50" />
             </div>
 
             {/* Type + Date */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Tipo</label>
+                <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Tipo</label>
                 <select value={form.type} onChange={e => set('type', e.target.value)} disabled={isCompleted}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition appearance-none disabled:opacity-50">
+                  className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition appearance-none disabled:opacity-50">
                   <option value="vaccine">🩺 Vacuna</option>
                   <option value="deworming">🪱 Desparasitación</option>
                   <option value="checkup">🔍 Revisión</option>
@@ -277,33 +277,33 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
                 </select>
               </div>
               <div>
-                <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Fecha *</label>
+                <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Fecha *</label>
                 <input type="date" value={form.due_date} onChange={e => set('due_date', e.target.value)} disabled={isCompleted}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition disabled:opacity-50" />
+                  className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition disabled:opacity-50" />
               </div>
             </div>
 
             {/* Recurrence */}
             <div>
-              <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Repetir cada (días)</label>
+              <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Repetir cada (días)</label>
               <input type="number" min="0" value={form.recurrence_days} onChange={e => set('recurrence_days', e.target.value)} disabled={isCompleted}
                 placeholder="0 = sin repetición"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition disabled:opacity-50" />
-              <p className="text-[10px] text-white/25 mt-1">Al completar un recordatorio recurrente, se creará el siguiente automáticamente</p>
+                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition disabled:opacity-50" />
+              <p className="text-[10px] text-fg-mute mt-1">Al completar un recordatorio recurrente, se creará el siguiente automáticamente</p>
             </div>
 
             {/* Notes */}
             <div>
-              <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Notas</label>
+              <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Notas</label>
               <textarea value={form.notes} onChange={e => set('notes', e.target.value)} disabled={isCompleted}
                 rows={3} placeholder="Notas adicionales..."
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition resize-none disabled:opacity-50" />
+                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition resize-none disabled:opacity-50" />
             </div>
           </div>
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t border-hair flex-shrink-0">
           <div className="flex items-center gap-2">
             {isEdit && (
               <button onClick={handleDelete} disabled={deleting}
@@ -329,7 +329,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
               </button>
             )}
             {isCompleted && (
-              <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">Cerrar</button>
+              <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-fg-dim hover:text-fg hover:bg-chip transition">Cerrar</button>
             )}
           </div>
         </div>

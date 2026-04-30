@@ -14,7 +14,7 @@ export default function AdminImportClient({ userId }: Props) {
         </div>
         <div>
           <h1 className="text-xl font-bold">Importar pedigrí</h1>
-          <p className="text-xs text-white/40">Importa genealogías sin propietario para aumentar la base de datos de Genealogic</p>
+          <p className="text-xs text-fg-mute">Importa genealogías sin propietario para aumentar la base de datos de Genealogic</p>
         </div>
       </div>
 

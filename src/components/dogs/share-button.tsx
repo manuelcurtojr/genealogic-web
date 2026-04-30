@@ -147,7 +147,7 @@ export default function ShareButton({ dog, dogUrl }: Props) {
   return (
     <>
       <button onClick={shareNative}
-        className="w-10 h-10 rounded-full backdrop-blur-sm bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition"
+        className="w-10 h-10 rounded-full backdrop-blur-sm bg-chip border border-hair-strong flex items-center justify-center text-white hover:bg-white/20 transition"
         title="Compartir">
         <Share2 className="w-5 h-5" />
       </button>
@@ -155,16 +155,16 @@ export default function ShareButton({ dog, dogUrl }: Props) {
       {showModal && (
         <>
           <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-          <div className="fixed z-[101] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] max-w-[90vw] bg-gray-900 border border-white/10 rounded-2xl shadow-2xl">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
+          <div className="fixed z-[101] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] max-w-[90vw] bg-ink-800 border border-hair rounded-2xl shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-hair">
               <h3 className="text-sm font-semibold">Compartir {dog.name}</h3>
-              <button onClick={() => setShowModal(false)} className="text-white/30 hover:text-white"><X className="w-5 h-5" /></button>
+              <button onClick={() => setShowModal(false)} className="text-fg-mute hover:text-fg"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-5 space-y-3">
               {/* Copy link */}
               <div className="flex gap-2">
                 <input type="text" readOnly value={fullUrl}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/50 focus:outline-none" />
+                  className="flex-1 bg-chip border border-hair rounded-lg px-3 py-2 text-xs text-fg-dim focus:outline-none" />
                 <button onClick={copyLink} className="px-3 py-2 rounded-lg text-xs font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition flex items-center gap-1">
                   {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                   {copied ? 'Copiado' : 'Copiar'}
@@ -173,7 +173,7 @@ export default function ShareButton({ dog, dogUrl }: Props) {
 
               {/* Download social card */}
               <button onClick={downloadCard} disabled={generating}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white/60 hover:bg-white/10 transition disabled:opacity-50">
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-chip border border-hair text-sm text-fg-dim hover:bg-chip transition disabled:opacity-50">
                 <Download className="w-4 h-4" />
                 {generating ? 'Generando...' : 'Descargar tarjeta para redes sociales'}
               </button>

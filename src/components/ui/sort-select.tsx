@@ -71,7 +71,7 @@ export default function SortSelect({ value, onChange }: SortSelectProps) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/60 hover:text-white hover:bg-white/10 transition cursor-pointer whitespace-nowrap"
+        className="flex items-center gap-1.5 bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-fg-dim hover:text-fg hover:bg-chip transition cursor-pointer whitespace-nowrap"
       >
         <ArrowDownUp className="w-3.5 h-3.5 flex-shrink-0" />
         <span className="hidden sm:inline">{SORT_LABELS[value]}</span>
@@ -79,7 +79,7 @@ export default function SortSelect({ value, onChange }: SortSelectProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 bg-gray-900 border border-white/10 rounded-lg shadow-xl overflow-hidden min-w-[180px]">
+        <div className="absolute right-0 top-full mt-1 z-50 bg-ink-800 border border-hair rounded-lg shadow-xl overflow-hidden min-w-[180px]">
           {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(([k, label]) => (
             <button
               key={k}
@@ -87,7 +87,7 @@ export default function SortSelect({ value, onChange }: SortSelectProps) {
               className={`w-full text-left px-3 py-2.5 text-sm transition ${
                 value === k
                   ? 'bg-[#D74709]/15 text-[#D74709] font-medium'
-                  : 'text-white/60 hover:bg-white/5 hover:text-white'
+                  : 'text-fg-dim hover:bg-chip hover:text-fg'
               }`}
             >
               {label}

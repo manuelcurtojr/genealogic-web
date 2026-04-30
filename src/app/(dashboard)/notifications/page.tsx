@@ -32,7 +32,7 @@ function getNotifColor(type: string) {
     case 'contact': return 'bg-green-500/15 text-green-400'
     case 'deal': return 'bg-orange-500/15 text-orange-400'
     case 'award': return 'bg-yellow-500/15 text-yellow-400'
-    default: return 'bg-white/10 text-white/40'
+    default: return 'bg-chip text-fg-mute'
   }
 }
 
@@ -105,16 +105,16 @@ export default function NotificationsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-white/10 mb-4">
+      <div className="flex border-b border-hair mb-4">
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${filter === 'all' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40'}`}
+          className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${filter === 'all' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-fg-mute'}`}
         >
           Todas
         </button>
         <button
           onClick={() => setFilter('unread')}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${filter === 'unread' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-white/40'}`}
+          className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${filter === 'unread' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-fg-mute'}`}
         >
           No leidas ({unread})
         </button>
@@ -123,10 +123,10 @@ export default function NotificationsPage() {
       {/* List */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-5 h-5 animate-spin text-white/20" />
+          <Loader2 className="w-5 h-5 animate-spin text-fg-mute" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-white/30">
+        <div className="flex flex-col items-center justify-center py-16 text-fg-mute">
           <Bell className="w-12 h-12 mb-3 opacity-30" />
           <p className="text-sm">{filter === 'unread' ? 'No tienes notificaciones sin leer' : 'No tienes notificaciones'}</p>
         </div>
@@ -142,18 +142,18 @@ export default function NotificationsPage() {
                   if (!notif.is_read) markAsRead(notif.id)
                   if (notif.link) window.location.href = notif.link
                 }}
-                className={`flex items-start gap-3 p-3 rounded-xl transition cursor-pointer border ${!notif.is_read ? 'bg-white/[0.04] border-white/10' : 'bg-transparent border-transparent'} hover:bg-white/[0.06]`}
+                className={`flex items-start gap-3 p-3 rounded-xl transition cursor-pointer border ${!notif.is_read ? 'bg-ink-800 border-hair' : 'bg-transparent border-transparent'} hover:bg-chip`}
               >
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${iconClass}`}>
                   <Icon className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className={`text-sm font-medium ${notif.is_read ? 'text-white/60' : 'text-white'}`}>{notif.title}</p>
+                    <p className={`text-sm font-medium ${notif.is_read ? 'text-fg-dim' : 'text-white'}`}>{notif.title}</p>
                     {!notif.is_read && <div className="w-2 h-2 rounded-full bg-[#D74709] flex-shrink-0" />}
                   </div>
-                  <p className="text-xs text-white/40 mt-0.5">{notif.message}</p>
-                  <p className="text-[11px] text-white/25 mt-1">{timeAgo(notif.created_at)}</p>
+                  <p className="text-xs text-fg-mute mt-0.5">{notif.message}</p>
+                  <p className="text-[11px] text-fg-mute mt-1">{timeAgo(notif.created_at)}</p>
                 </div>
               </div>
             )

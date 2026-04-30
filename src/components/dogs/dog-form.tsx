@@ -86,7 +86,7 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
   return (
     <div className="max-w-2xl">
       <div className="flex items-center gap-4 mb-8">
-        <Link href={isEdit ? `/dogs/${initialData.id}` : '/dogs'} className="text-white/40 hover:text-white transition">
+        <Link href={isEdit ? `/dogs/${initialData.id}` : '/dogs'} className="text-fg-mute hover:text-fg transition">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <h1 className="text-2xl font-bold">{isEdit ? 'Editar perro' : 'Añadir perro'}</h1>
@@ -97,18 +97,18 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
 
         {/* Basic */}
         <section>
-          <h2 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-4">Datos basicos</h2>
+          <h2 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-4">Datos basicos</h2>
           <div className="space-y-4">
             <Field label="Nombre *" value={form.name} onChange={(v) => set('name', v)} required />
             <div>
-              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-2 block">Sexo *</label>
+              <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-2 block">Sexo *</label>
               <div className="flex gap-3">
                 {(['male', 'female'] as const).map((s) => (
                   <button key={s} type="button" onClick={() => set('sex', s)}
                     className={`flex-1 py-3 rounded-lg text-sm font-semibold border transition ${
                       form.sex === s
                         ? s === 'male' ? 'border-blue-400 bg-blue-400/10 text-blue-400' : 'border-pink-400 bg-pink-400/10 text-pink-400'
-                        : 'border-white/10 bg-white/5 text-white/50 hover:bg-white/10'
+                        : 'border-hair bg-chip text-fg-dim hover:bg-chip'
                     }`}>
                     {s === 'male' ? '♂ Macho' : '♀ Hembra'}
                   </button>
@@ -121,7 +121,7 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
 
         {/* Classification */}
         <section>
-          <h2 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-4">Clasificacion</h2>
+          <h2 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-4">Clasificacion</h2>
           <div className="grid grid-cols-2 gap-4">
             <SearchableSelect label="Raza" options={breedOptions} value={form.breed_id} onChange={(v) => set('breed_id', v)} placeholder="Seleccionar raza" />
             <SearchableSelect label="Color" options={colorOptions} value={form.color_id} onChange={(v) => set('color_id', v)} placeholder="Seleccionar color" />
@@ -133,7 +133,7 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
 
         {/* Identification */}
         <section>
-          <h2 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-4">Identificacion</h2>
+          <h2 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-4">Identificacion</h2>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Registro" value={form.registration} onChange={(v) => set('registration', v)} placeholder="UKC, FCI, etc." />
             <Field label="Microchip" value={form.microchip} onChange={(v) => set('microchip', v)} />
@@ -142,7 +142,7 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
 
         {/* Measurements */}
         <section>
-          <h2 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-4">Medidas</h2>
+          <h2 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-4">Medidas</h2>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Peso (kg)" value={form.weight} onChange={(v) => set('weight', v)} type="number" />
             <Field label="Altura (cm)" value={form.height} onChange={(v) => set('height', v)} type="number" />
@@ -151,7 +151,7 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
 
         {/* Parents */}
         <section>
-          <h2 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-4">Padres</h2>
+          <h2 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-4">Padres</h2>
           <div className="grid grid-cols-2 gap-4">
             <SearchableSelect label="Padre" options={fatherOptions} value={form.father_id} onChange={(v) => set('father_id', v)} placeholder="Seleccionar padre" />
             <SearchableSelect label="Madre" options={motherOptions} value={form.mother_id} onChange={(v) => set('mother_id', v)} placeholder="Seleccionar madre" />
@@ -159,10 +159,10 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
         </section>
 
         {/* Visibility */}
-        <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg p-4">
+        <div className="flex items-center justify-between bg-chip border border-hair rounded-lg p-4">
           <div>
             <p className="text-sm font-medium">Perfil publico</p>
-            <p className="text-xs text-white/40 mt-0.5">Otros usuarios podran ver este perro</p>
+            <p className="text-xs text-fg-mute mt-0.5">Otros usuarios podran ver este perro</p>
           </div>
           <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
         </div>
@@ -182,9 +182,9 @@ function Field({ label, value, onChange, type = 'text', placeholder, required }:
 }) {
   return (
     <div>
-      <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">{label}</label>
+      <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1.5 block">{label}</label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required}
-        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition" />
+        className="w-full bg-chip border border-hair rounded-lg px-4 py-3 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
     </div>
   )
 }

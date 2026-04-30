@@ -24,7 +24,7 @@ export function getRoleLabel(role: string | null | undefined): string {
 export function getRoleBadge(role: string | null | undefined): { label: string; bg: string } {
   if (role === 'admin') return { label: 'Admin', bg: 'bg-red-500/15 text-red-400' }
   if (role === 'breeder') return { label: 'Criador', bg: 'bg-[#D74709]/15 text-[#D74709]' }
-  return { label: 'Propietario', bg: 'bg-white/10 text-white/40' }
+  return { label: 'Propietario', bg: 'bg-chip text-fg-mute' }
 }
 
 // Legacy compatibility helpers (always return true / no plan gating).

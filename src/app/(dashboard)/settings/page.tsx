@@ -167,7 +167,7 @@ export default function SettingsPage() {
     setTimeout(() => setPasswordSuccess(false), 3000)
   }
 
-  if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+  if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-fg-mute" /></div>
 
   const userRole = profile?.role || 'owner'
   const sections: { key: Section; label: string; icon: React.ElementType }[] = [
@@ -191,7 +191,7 @@ export default function SettingsPage() {
               const Icon = s.icon
               return (
                 <button key={s.key} onClick={() => setActiveSection(s.key)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition text-left ${activeSection === s.key ? 'bg-[#D74709]/15 text-[#D74709] font-semibold' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition text-left ${activeSection === s.key ? 'bg-[#D74709]/15 text-[#D74709] font-semibold' : 'text-fg-dim hover:text-fg hover:bg-chip'}`}>
                   <Icon className="w-4 h-4" /> {s.label}
                 </button>
               )
@@ -205,7 +205,7 @@ export default function SettingsPage() {
           <div className="flex gap-2 overflow-x-auto pb-1 md:hidden">
             {sections.map(s => (
               <button key={s.key} onClick={() => setActiveSection(s.key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${activeSection === s.key ? 'bg-[#D74709]/15 text-[#D74709]' : 'bg-white/5 text-white/40'}`}>
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${activeSection === s.key ? 'bg-[#D74709]/15 text-[#D74709]' : 'bg-chip text-fg-mute'}`}>
                 {s.label}
               </button>
             ))}
@@ -215,12 +215,12 @@ export default function SettingsPage() {
           {activeSection === 'perfil' && (
             <div className="space-y-4">
               <SectionHeader title="Perfil personal" desc="Tu información personal y avatar" />
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5">
+              <div className="bg-chip border border-hair rounded-xl p-4 sm:p-5">
                 <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
                   <AvatarUpload userId={profile?.id} currentUrl={profile?.avatar_url} displayName={form.display_name} onUploaded={(url) => setProfile((prev: any) => ({ ...prev, avatar_url: url }))} />
                   <div>
                     <p className="font-semibold">{form.display_name || 'Sin nombre'}</p>
-                    <p className="text-xs text-white/40">{profile?.email}</p>
+                    <p className="text-xs text-fg-mute">{profile?.email}</p>
                     <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getRoleBadge(userRole).bg}`}>{getRoleLabel(userRole)}</span>
                   </div>
                 </div>
@@ -229,21 +229,21 @@ export default function SettingsPage() {
                   <Field label="Teléfono" value={form.phone} onChange={v => set('phone', v)} placeholder="+34 600 000 000" />
                   {/* Country selector */}
                   <div className="relative">
-                    <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">País</label>
+                    <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">País</label>
                     <button type="button" onClick={() => { setCountryOpen(!countryOpen); setCityOpen(false) }}
-                      className={`w-full bg-white/5 border rounded-lg px-3 py-2 text-sm flex items-center gap-2 transition text-left ${countryOpen ? 'border-[#D74709]' : 'border-white/10'}`}>
-                      {selectedCountry ? <><span className="text-base">{selectedCountry.flag}</span><span className="truncate flex-1">{selectedCountry.name}</span></> : <span className="text-white/25 flex-1">Seleccionar país</span>}
+                      className={`w-full bg-chip border rounded-lg px-3 py-2 text-sm flex items-center gap-2 transition text-left ${countryOpen ? 'border-[#D74709]' : 'border-hair'}`}>
+                      {selectedCountry ? <><span className="text-base">{selectedCountry.flag}</span><span className="truncate flex-1">{selectedCountry.name}</span></> : <span className="text-fg-mute flex-1">Seleccionar país</span>}
                     </button>
                     {countryOpen && (
-                      <div className="absolute z-30 mt-1 w-full bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-48 flex flex-col">
-                        <div className="p-2 border-b border-white/5">
+                      <div className="absolute z-30 mt-1 w-full bg-ink-800 border border-hair rounded-lg shadow-xl max-h-48 flex flex-col">
+                        <div className="p-2 border-b border-hair">
                           <input autoFocus value={countryQ} onChange={e => setCountryQ(e.target.value)} placeholder="Buscar país..."
-                            className="w-full bg-white/5 border border-white/10 rounded pl-3 pr-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+                            className="w-full bg-chip border border-hair rounded pl-3 pr-3 py-1.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
                         </div>
                         <div className="overflow-y-auto flex-1">
                           {filteredCountries.map(c => (
                             <button key={c.code} type="button" onClick={() => { set('country', c.name); set('city', ''); setCountryOpen(false); setCountryQ('') }}
-                              className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${c.name === form.country ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/70 hover:bg-white/5'}`}>
+                              className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${c.name === form.country ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg hover:bg-chip'}`}>
                               <span className="text-base">{c.flag}</span> {c.name}
                             </button>
                           ))}
@@ -253,27 +253,27 @@ export default function SettingsPage() {
                   </div>
                   {/* City selector */}
                   <div className="relative">
-                    <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Ciudad</label>
+                    <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Ciudad</label>
                     <input type="text" value={form.city || cityQ} readOnly={!!form.city}
                       onChange={e => { if (!form.city) handleCitySearch(e.target.value) }}
                       onClick={() => { if (form.city) { set('city', ''); setCityQ('') } }}
                       disabled={!selectedCountry}
                       placeholder={selectedCountry ? 'Buscar ciudad...' : 'Primero selecciona país'}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition disabled:opacity-40" />
+                      className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition disabled:opacity-40" />
                     {cityOpen && cityResults.length > 0 && (
-                      <div className="absolute z-30 mt-1 w-full bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-40 overflow-y-auto">
+                      <div className="absolute z-30 mt-1 w-full bg-ink-800 border border-hair rounded-lg shadow-xl max-h-40 overflow-y-auto">
                         {cityResults.map(c => (
                           <button key={c} type="button" onClick={() => { set('city', c); setCityOpen(false); setCityQ('') }}
-                            className="w-full text-left px-3 py-2 text-sm text-white/70 hover:bg-white/5">{c}</button>
+                            className="w-full text-left px-3 py-2 text-sm text-fg hover:bg-chip">{c}</button>
                         ))}
                       </div>
                     )}
                   </div>
                 </div>
                 <div className="mt-3">
-                  <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Biografía</label>
+                  <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Biografía</label>
                   <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={2} placeholder="Cuéntanos sobre ti..."
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition resize-none" />
+                    className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition resize-none" />
                 </div>
                 <SaveButton saving={saving} onClick={handleSave} />
               </div>
@@ -284,11 +284,11 @@ export default function SettingsPage() {
           {activeSection === 'seguridad' && (
             <div className="space-y-4">
               <SectionHeader title="Contraseña y seguridad" desc="Gestiona tu contraseña de acceso" />
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5">
+              <div className="bg-chip border border-hair rounded-xl p-4 sm:p-5">
                 {passwordSuccess && <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm text-green-400 mb-4 flex items-center gap-2"><Check className="w-4 h-4" /> Contraseña actualizada correctamente</div>}
                 {!showPassword ? (
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3"><Lock className="w-4 h-4 text-white/30" /><div><p className="text-sm font-medium">Contraseña</p><p className="text-xs text-white/40">••••••••</p></div></div>
+                    <div className="flex items-center gap-3"><Lock className="w-4 h-4 text-fg-mute" /><div><p className="text-sm font-medium">Contraseña</p><p className="text-xs text-fg-mute">••••••••</p></div></div>
                     <button onClick={() => setShowPassword(true)} className="text-sm text-[#D74709] hover:text-[#c03d07] transition font-medium">Cambiar</button>
                   </div>
                 ) : (
@@ -298,24 +298,24 @@ export default function SettingsPage() {
                     <Field label="Confirmar contraseña" value={confirmPassword} onChange={v => setConfirmPassword(v)} type="password" />
                     <div className="flex flex-col sm:flex-row gap-2">
                       <button type="submit" disabled={passwordLoading} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2">{passwordLoading && <Loader2 className="w-4 h-4 animate-spin" />}Cambiar contraseña</button>
-                      <button type="button" onClick={() => { setShowPassword(false); setPasswordError('') }} className="px-4 py-2 rounded-lg text-xs sm:text-sm bg-white/5 text-white/50 hover:bg-white/10 transition">Cancelar</button>
+                      <button type="button" onClick={() => { setShowPassword(false); setPasswordError('') }} className="px-4 py-2 rounded-lg text-xs sm:text-sm bg-chip text-fg-dim hover:bg-chip transition">Cancelar</button>
                     </div>
                   </form>
                 )}
               </div>
 
               {/* Sessions */}
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5">
+              <div className="bg-chip border border-hair rounded-xl p-4 sm:p-5">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold">Sesiones activas</h3>
                 </div>
-                <div className="bg-white/[0.03] rounded-lg p-3 flex items-center gap-3 mb-3">
+                <div className="bg-chip rounded-lg p-3 flex items-center gap-3 mb-3">
                   <div className="w-9 h-9 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
                     <Shield className="w-4 h-4 text-green-400" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium flex items-center gap-2">Sesión actual <span className="text-[9px] bg-green-500/10 text-green-400 px-1.5 py-0.5 rounded-full">Activa</span></p>
-                    <p className="text-xs text-white/40">{typeof navigator !== 'undefined' ? navigator.userAgent.split('(')[1]?.split(')')[0] || 'Navegador' : 'Navegador'}</p>
+                    <p className="text-xs text-fg-mute">{typeof navigator !== 'undefined' ? navigator.userAgent.split('(')[1]?.split(')')[0] || 'Navegador' : 'Navegador'}</p>
                   </div>
                 </div>
                 {sessionsSuccess && <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm text-green-400 mb-3 flex items-center gap-2"><Check className="w-4 h-4" /> Todas las sesiones han sido cerradas</div>}
@@ -333,7 +333,7 @@ export default function SettingsPage() {
                   {closingAllSessions && <Loader2 className="w-4 h-4 animate-spin" />}
                   Cerrar todas las sesiones
                 </button>
-                <p className="text-[10px] text-white/25 mt-2">Esto cerrará tu sesión en todos los dispositivos, incluyendo este.</p>
+                <p className="text-[10px] text-fg-mute mt-2">Esto cerrará tu sesión en todos los dispositivos, incluyendo este.</p>
               </div>
             </div>
           )}
@@ -342,26 +342,26 @@ export default function SettingsPage() {
           {activeSection === 'idioma' && (
             <div className="space-y-4">
               <SectionHeader title="Idioma y región" desc="Configura tu idioma, moneda y formato de fecha" />
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5 space-y-3">
+              <div className="bg-chip border border-hair rounded-xl p-4 sm:p-5 space-y-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Idioma</label>
+                  <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Idioma</label>
                   <select value={form.language} onChange={e => set('language', e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none transition appearance-none">
+                    className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none transition appearance-none">
                     {LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
                   </select>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Formato de fecha</label>
+                    <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Formato de fecha</label>
                     <select value={form.date_format} onChange={e => set('date_format', e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none transition appearance-none">
+                      className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none transition appearance-none">
                       {DATE_FORMATS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Moneda preferida</label>
+                    <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Moneda preferida</label>
                     <select value={form.currency} onChange={e => set('currency', e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none transition appearance-none">
+                      className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none transition appearance-none">
                       {CURRENCIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                     </select>
                   </div>
@@ -376,7 +376,7 @@ export default function SettingsPage() {
           {activeSection === 'notificaciones' && (
             <div className="space-y-4">
               <SectionHeader title="Notificaciones" desc="Elige qué notificaciones quieres recibir" />
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5 space-y-3">
+              <div className="bg-chip border border-hair rounded-xl p-4 sm:p-5 space-y-3">
                 <Toggle label="Notificaciones por email" desc="Recibir notificaciones importantes por correo" value={form.notif_email} onChange={v => set('notif_email', v)} />
                 <Toggle label="Nuevas solicitudes" desc="Cuando alguien rellena tu formulario de contacto" value={form.notif_submissions} onChange={v => set('notif_submissions', v)} />
                 <Toggle label="Recordatorios veterinarios" desc="Próximas citas y vacunas" value={form.notif_vet} onChange={v => set('notif_vet', v)} />
@@ -390,7 +390,7 @@ export default function SettingsPage() {
           {activeSection === 'privacidad' && (
             <div className="space-y-4">
               <SectionHeader title="Privacidad" desc="Controla qué información es visible para otros" />
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5 space-y-3">
+              <div className="bg-chip border border-hair rounded-xl p-4 sm:p-5 space-y-3">
                 <Toggle label="Perfil público visible" desc="Otros usuarios pueden ver tu perfil" value={form.public_profile} onChange={v => set('public_profile', v)} />
                 <Toggle label="Mostrar email en perfil" desc="Tu email será visible en tu perfil público" value={form.show_email} onChange={v => set('show_email', v)} />
                 <Toggle label="Mostrar teléfono en perfil" desc="Tu teléfono será visible en tu perfil público" value={form.show_phone} onChange={v => set('show_phone', v)} />
@@ -403,9 +403,9 @@ export default function SettingsPage() {
           {activeSection === 'datos' && (
             <div className="space-y-4">
               <SectionHeader title="Datos y exportación" desc="Exporta o elimina tu información" />
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5 space-y-4">
+              <div className="bg-chip border border-hair rounded-xl p-4 sm:p-5 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3"><Download className="w-5 h-5 text-blue-400 flex-shrink-0" /><div><p className="text-sm font-medium">Exportar mis datos</p><p className="text-xs text-white/40">Descarga todos tus datos en formato JSON</p></div></div>
+                  <div className="flex items-center gap-3"><Download className="w-5 h-5 text-blue-400 flex-shrink-0" /><div><p className="text-sm font-medium">Exportar mis datos</p><p className="text-xs text-fg-mute">Descarga todos tus datos en formato JSON</p></div></div>
                   <button onClick={() => window.location.href = '/api/export-data'} className="text-sm text-blue-400 hover:text-blue-300 font-medium transition">Exportar</button>
                 </div>
               </div>
@@ -414,22 +414,22 @@ export default function SettingsPage() {
                 <h3 className="text-sm font-semibold text-red-400 flex items-center gap-2 mb-3"><AlertTriangle className="w-4 h-4" /> Zona de peligro</h3>
                 {!deleteConfirm ? (
                   <>
-                    <p className="text-xs text-white/40 mb-4">Eliminar tu cuenta es una acción permanente. Antes de proceder, ten en cuenta lo siguiente:</p>
+                    <p className="text-xs text-fg-mute mb-4">Eliminar tu cuenta es una acción permanente. Antes de proceder, ten en cuenta lo siguiente:</p>
                     <div className="space-y-2 mb-4 text-xs">
-                      <div className="flex items-start gap-2 text-white/50"><Trash2 className="w-3 h-3 mt-0.5 text-red-400 flex-shrink-0" /><span><strong className="text-white/70">Se eliminará:</strong> tu perfil, contactos, notificaciones, formularios</span></div>
-                      <div className="flex items-start gap-2 text-white/50"><Shield className="w-3 h-3 mt-0.5 text-yellow-400 flex-shrink-0" /><span><strong className="text-white/70">Se anonimizará:</strong> perros con descendientes o que aparezcan en pedigrees de otros usuarios se mantendrán como &quot;Propietario eliminado&quot;</span></div>
-                      <div className="flex items-start gap-2 text-white/50"><Shield className="w-3 h-3 mt-0.5 text-yellow-400 flex-shrink-0" /><span><strong className="text-white/70">Criadero histórico:</strong> si tu criadero tiene perros o camadas, se mantendrá como perfil público sin datos de contacto</span></div>
-                      <div className="flex items-start gap-2 text-white/50"><Check className="w-3 h-3 mt-0.5 text-green-400 flex-shrink-0" /><span><strong className="text-white/70">Sí se eliminan:</strong> perros sin descendientes ni camadas, camadas sin cachorros, criaderos vacíos</span></div>
+                      <div className="flex items-start gap-2 text-fg-dim"><Trash2 className="w-3 h-3 mt-0.5 text-red-400 flex-shrink-0" /><span><strong className="text-fg">Se eliminará:</strong> tu perfil, contactos, notificaciones, formularios</span></div>
+                      <div className="flex items-start gap-2 text-fg-dim"><Shield className="w-3 h-3 mt-0.5 text-yellow-400 flex-shrink-0" /><span><strong className="text-fg">Se anonimizará:</strong> perros con descendientes o que aparezcan en pedigrees de otros usuarios se mantendrán como &quot;Propietario eliminado&quot;</span></div>
+                      <div className="flex items-start gap-2 text-fg-dim"><Shield className="w-3 h-3 mt-0.5 text-yellow-400 flex-shrink-0" /><span><strong className="text-fg">Criadero histórico:</strong> si tu criadero tiene perros o camadas, se mantendrá como perfil público sin datos de contacto</span></div>
+                      <div className="flex items-start gap-2 text-fg-dim"><Check className="w-3 h-3 mt-0.5 text-green-400 flex-shrink-0" /><span><strong className="text-fg">Sí se eliminan:</strong> perros sin descendientes ni camadas, camadas sin cachorros, criaderos vacíos</span></div>
                     </div>
                     <button onClick={() => setDeleteConfirm(true)} className="text-sm text-red-400 border border-red-500/30 px-4 py-2 rounded-lg hover:bg-red-500/10 transition">Quiero eliminar mi cuenta</button>
                   </>
                 ) : (
                   <div className="space-y-3">
                     <p className="text-sm text-red-400 font-semibold">¿Estás completamente seguro?</p>
-                    <p className="text-xs text-white/40">Esta acción no se puede deshacer. La información genealógica importante se preservará de forma anónima.</p>
+                    <p className="text-xs text-fg-mute">Esta acción no se puede deshacer. La información genealógica importante se preservará de forma anónima.</p>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                       <button onClick={async () => { await fetch('/api/delete-account', { method: 'POST' }); window.location.href = '/' }} className="text-xs sm:text-sm text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition font-semibold">Confirmar eliminación</button>
-                      <button onClick={() => setDeleteConfirm(false)} className="text-xs sm:text-sm text-white/40 hover:text-white transition">Cancelar</button>
+                      <button onClick={() => setDeleteConfirm(false)} className="text-xs sm:text-sm text-fg-mute hover:text-fg transition">Cancelar</button>
                     </div>
                   </div>
                 )}
@@ -443,15 +443,15 @@ export default function SettingsPage() {
 }
 
 function SectionHeader({ title, desc }: { title: string; desc: string }) {
-  return <div><h2 className="text-lg font-semibold">{title}</h2><p className="text-xs text-white/40 mt-0.5">{desc}</p></div>
+  return <div><h2 className="text-lg font-semibold">{title}</h2><p className="text-xs text-fg-mute mt-0.5">{desc}</p></div>
 }
 
 function Field({ label, value, onChange, type = 'text', placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
   return (
     <div>
-      <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">{label}</label>
+      <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition" />
+        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
     </div>
   )
 }
@@ -459,7 +459,7 @@ function Field({ label, value, onChange, type = 'text', placeholder }: { label: 
 function Toggle({ label, desc, value, onChange }: { label: string; desc: string; value: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className="flex items-center justify-between py-1">
-      <div><p className="text-sm font-medium">{label}</p><p className="text-xs text-white/40">{desc}</p></div>
+      <div><p className="text-sm font-medium">{label}</p><p className="text-xs text-fg-mute">{desc}</p></div>
       <ToggleSwitch value={value} onChange={onChange} />
     </div>
   )

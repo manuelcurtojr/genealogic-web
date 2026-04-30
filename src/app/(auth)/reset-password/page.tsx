@@ -63,14 +63,7 @@ export default function ResetPasswordPage() {
       </Link>
 
       <div className="w-full max-w-[440px]">
-        <div className="flex items-center gap-[9px]">
-          <span className="flex h-[24px] w-[24px] items-center justify-center rounded-[6px] bg-paper-50 font-sans text-[13px] font-extrabold text-ink-900">
-            G
-          </span>
-          <span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-fg">
-            Genealogic
-          </span>
-        </div>
+        <div className="flex items-center"><span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-fg">Genealogic</span></div>
         <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
           Nueva contraseña
         </p>

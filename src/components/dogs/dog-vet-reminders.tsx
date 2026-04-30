@@ -81,7 +81,7 @@ export default function DogVetReminders({ dogId, isOwner }: Props) {
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider flex items-center gap-1.5">
+        <h3 className="text-xs font-semibold text-fg-mute uppercase tracking-wider flex items-center gap-1.5">
           <Clock className="w-3.5 h-3.5" /> Recordatorios pendientes ({pending.length})
         </h3>
         {isOwner && (
@@ -92,7 +92,7 @@ export default function DogVetReminders({ dogId, isOwner }: Props) {
       </div>
 
       {pending.length === 0 ? (
-        <p className="text-xs text-white/20 py-3">Sin recordatorios pendientes</p>
+        <p className="text-xs text-fg-mute py-3">Sin recordatorios pendientes</p>
       ) : (
         <div className="space-y-1.5">
           {pending.map(r => {
@@ -104,14 +104,14 @@ export default function DogVetReminders({ dogId, isOwner }: Props) {
             return (
               <div key={r.id}
                 className={`flex items-center gap-2.5 rounded-lg p-2.5 ${
-                  isOverdue ? 'bg-red-500/5 border border-red-500/20' : 'bg-white/5 border border-white/10'
+                  isOverdue ? 'bg-red-500/5 border border-red-500/20' : 'bg-chip border border-hair'
                 }`}>
                 <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: typeConf.color + '15' }}>
                   <TypeIcon className="w-3.5 h-3.5" style={{ color: typeConf.color }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold truncate">{r.title}</p>
-                  <p className={`text-[10px] ${isOverdue ? 'text-red-400' : isDueToday ? 'text-[#D74709]' : 'text-white/30'}`}>
+                  <p className={`text-[10px] ${isOverdue ? 'text-red-400' : isDueToday ? 'text-[#D74709]' : 'text-fg-mute'}`}>
                     {isOverdue ? 'Vencido · ' : isDueToday ? 'Hoy · ' : ''}
                     {new Date(r.due_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
                     {r.recurrence_days ? ` · ↻ ${r.recurrence_days}d` : ''}

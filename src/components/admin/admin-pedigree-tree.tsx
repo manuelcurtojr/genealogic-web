@@ -44,34 +44,34 @@ export default function AdminPedigreeTree({ data, rootId, onClickDog, onClickEmp
       <div className="absolute bottom-4 left-4 z-30 flex items-center gap-2">
         <div className="relative">
           <button onClick={e => { e.stopPropagation(); setZoomMenu(!zoomMenu); setGenMenu(false) }}
-            className="w-11 h-11 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-white/60 shadow-lg hover:border-white/30 transition">
+            className="w-11 h-11 rounded-full bg-ink-800 border border-hair flex items-center justify-center text-fg-dim shadow-lg hover:border-hair-strong transition">
             <Search className="w-4 h-4" />
           </button>
           {zoomMenu && (
-            <div className="absolute bottom-14 left-0 bg-gray-800 border border-white/10 rounded-lg shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="absolute bottom-14 left-0 bg-ink-800 border border-hair rounded-lg shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
               {[150, 130, 110, 100, 90, 80, 70, 60, 50].map(z => (
                 <button key={z} onClick={() => { setZoom(z); setZoomMenu(false) }}
-                  className={`block w-full px-4 py-1.5 text-xs text-center transition ${zoom === z ? 'bg-[#D74709] text-white' : 'text-white/60 hover:bg-white/10'}`}>{z}%</button>
+                  className={`block w-full px-4 py-1.5 text-xs text-center transition ${zoom === z ? 'bg-[#D74709] text-white' : 'text-fg-dim hover:bg-chip'}`}>{z}%</button>
               ))}
             </div>
           )}
         </div>
         <div className="relative">
           <button onClick={e => { e.stopPropagation(); setGenMenu(!genMenu); setZoomMenu(false) }}
-            className="w-11 h-11 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-white/60 shadow-lg hover:border-white/30 font-bold text-xs transition">x{maxGen}</button>
+            className="w-11 h-11 rounded-full bg-ink-800 border border-hair flex items-center justify-center text-fg-dim shadow-lg hover:border-hair-strong font-bold text-xs transition">x{maxGen}</button>
           {genMenu && (
-            <div className="absolute bottom-14 left-0 bg-gray-800 border border-white/10 rounded-lg shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="absolute bottom-14 left-0 bg-ink-800 border border-hair rounded-lg shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
               {[10, 9, 8, 7, 6, 5, 4, 3].map(g => (
                 <button key={g} onClick={() => { setMaxGen(g); setGenMenu(false) }}
-                  className={`block w-full px-4 py-1.5 text-xs text-center transition ${maxGen === g ? 'bg-[#D74709] text-white' : 'text-white/60 hover:bg-white/10'}`}>x{g}</button>
+                  className={`block w-full px-4 py-1.5 text-xs text-center transition ${maxGen === g ? 'bg-[#D74709] text-white' : 'text-fg-dim hover:bg-chip'}`}>x{g}</button>
               ))}
             </div>
           )}
         </div>
-        <button onClick={() => setVert(!vert)} className={`w-11 h-11 rounded-full border flex items-center justify-center shadow-lg transition ${vert ? 'bg-[#D74709] border-[#D74709] text-white' : 'bg-gray-900 border-white/10 text-white/60 hover:border-white/30'}`}>
+        <button onClick={() => setVert(!vert)} className={`w-11 h-11 rounded-full border flex items-center justify-center shadow-lg transition ${vert ? 'bg-[#D74709] border-[#D74709] text-white' : 'bg-ink-800 border-hair text-fg-dim hover:border-hair-strong'}`}>
           <ArrowLeftRight className="w-4 h-4" />
         </button>
-        <button onClick={e => { e.stopPropagation(); }} className="w-11 h-11 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-white/60 shadow-lg hover:border-white/30 transition">
+        <button onClick={e => { e.stopPropagation(); }} className="w-11 h-11 rounded-full bg-ink-800 border border-hair flex items-center justify-center text-fg-dim shadow-lg hover:border-hair-strong transition">
           <GitBranch className="w-4 h-4" />
         </button>
       </div>
@@ -83,9 +83,9 @@ function Card({ n, isRoot, onClickDog }: { n: PN; isRoot?: boolean; onClickDog: 
   const sc = n.sex === 'male' ? '#017DFA' : '#e84393'
   return (
     <button onClick={() => onClickDog(n.id)}
-      className={`flex items-stretch bg-white/[0.04] border ${isRoot ? 'border-[#D74709]' : 'border-white/10'} rounded-xl overflow-hidden hover:bg-white/[0.07] hover:border-white/20 transition relative text-left`}
+      className={`flex items-stretch bg-ink-800 border ${isRoot ? 'border-[#D74709]' : 'border-hair'} rounded-xl overflow-hidden hover:bg-chip hover:border-hair-strong transition relative text-left`}
       style={{ width: CW, height: CH, flexShrink: 0 }}>
-      <div className="flex-shrink-0 bg-white/5 relative" style={{ width: PH }}>
+      <div className="flex-shrink-0 bg-chip relative" style={{ width: PH }}>
         {n.photo_url ? <img src={n.photo_url} alt="" className="w-full h-full object-cover" /> :
           <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-5 h-5 opacity-20" /></div>}
         <div className="absolute top-0 right-0 bottom-0 w-[3px]" style={{ backgroundColor: sc }} />
@@ -93,7 +93,7 @@ function Card({ n, isRoot, onClickDog }: { n: PN; isRoot?: boolean; onClickDog: 
       <div className="flex-1 min-w-0 px-2.5 py-1.5 flex flex-col justify-center overflow-hidden">
         <p className="text-[12px] font-bold text-white leading-tight whitespace-nowrap"
           style={{ maskImage: 'linear-gradient(to right,black 80%,transparent)', WebkitMaskImage: 'linear-gradient(to right,black 80%,transparent)' }}>{n.name}</p>
-        {n.breed_name && <p className="text-[10px] text-white/35 truncate mt-0.5">{n.breed_name}</p>}
+        {n.breed_name && <p className="text-[10px] text-fg-mute truncate mt-0.5">{n.breed_name}</p>}
       </div>
     </button>
   )

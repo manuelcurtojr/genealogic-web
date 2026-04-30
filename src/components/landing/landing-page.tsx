@@ -105,16 +105,16 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
       )}
 
       {/* Header */}
-      <header className={`relative z-10 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b ${darkMode ? 'border-white/5' : 'border-gray-200'}`}>
+      <header className={`relative z-10 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b ${darkMode ? 'border-hair' : 'border-gray-200'}`}>
         <Link href="/" className="flex items-center gap-2">
           <img src="/icon.svg" alt="Genealogic" className="h-5" />
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
           <button onClick={toggleTheme}
-            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center transition ${darkMode ? 'border-white/10 text-yellow-400 hover:bg-white/5' : 'border-gray-200 text-yellow-500 hover:bg-gray-100'}`}>
+            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center transition ${darkMode ? 'border-hair text-yellow-400 hover:bg-chip' : 'border-gray-200 text-yellow-500 hover:bg-gray-100'}`}>
             {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
           </button>
-          <Link href="/login" className={`hidden sm:inline-flex px-5 py-2.5 rounded-lg border text-sm font-medium transition ${darkMode ? 'border-white/20 text-white hover:bg-white/5' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>
+          <Link href="/login" className={`hidden sm:inline-flex px-5 py-2.5 rounded-lg border text-sm font-medium transition ${darkMode ? 'border-hair-strong text-white hover:bg-chip' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>
             Iniciar sesion
           </Link>
           <Link href="/register" className="px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg bg-[#D74709] hover:bg-[#c03d07] text-xs sm:text-sm font-semibold text-white transition">
@@ -133,15 +133,15 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
         <div className="flex items-center gap-3 mt-6">
           {breedThumbs.map(dog => (
             <Link key={dog.id} href={`/dogs/${dog.slug || dog.id}`}
-              className={`w-10 h-10 rounded-lg overflow-hidden border hover:border-[#D74709]/50 transition hover:scale-110 ${darkMode ? 'bg-white/5 border-white/10' : 'bg-gray-100 border-gray-200'}`}>
+              className={`w-10 h-10 rounded-lg overflow-hidden border hover:border-[#D74709]/50 transition hover:scale-110 ${darkMode ? 'bg-chip border-hair' : 'bg-gray-100 border-gray-200'}`}>
               {dog.thumbnail_url ? (
                 <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-white/20 text-xs">{dog.name?.[0]}</div>
+                <div className="w-full h-full flex items-center justify-center text-fg-mute text-xs">{dog.name?.[0]}</div>
               )}
             </Link>
           ))}
-          <Link href="/search" className={`h-10 px-3 rounded-lg flex items-center justify-center border hover:border-[#D74709]/50 transition text-xs font-medium ${darkMode ? 'bg-white/5 border-white/10 text-white/40 hover:text-white' : 'bg-gray-100 border-gray-200 text-gray-500 hover:text-gray-700'}`}>
+          <Link href="/search" className={`h-10 px-3 rounded-lg flex items-center justify-center border hover:border-[#D74709]/50 transition text-xs font-medium ${darkMode ? 'bg-chip border-hair text-fg-mute hover:text-fg' : 'bg-gray-100 border-gray-200 text-gray-500 hover:text-gray-700'}`}>
             Ver todos →
           </Link>
         </div>

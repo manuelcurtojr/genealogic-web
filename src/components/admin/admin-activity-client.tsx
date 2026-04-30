@@ -133,17 +133,17 @@ export default function AdminActivityClient() {
     <div className="p-6 lg:p-8">
       <div className="mb-4">
         <h1 className="text-xl font-bold">Actividad</h1>
-        <p className="text-xs text-white/40">Historial de acciones en la plataforma</p>
+        <p className="text-xs text-fg-mute">Historial de acciones en la plataforma</p>
       </div>
 
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />
           <input value={search} onChange={e => { setSearch(e.target.value); setPage(0) }} onKeyDown={e => e.key === 'Enter' && fetchActivity()} placeholder="Buscar por nombre..."
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+            className="w-full bg-chip border border-hair rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
         </div>
         <select value={typeFilter} onChange={e => { setTypeFilter(e.target.value); setPage(0) }}
-          className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none appearance-none cursor-pointer min-w-[180px]">
+          className="bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-fg focus:border-[#D74709] focus:outline-none appearance-none cursor-pointer min-w-[180px]">
           <option value="">Todas las acciones</option>
           <option value="dog_created">Perros creados</option>
           <option value="dog_imported">Importaciones</option>
@@ -153,35 +153,35 @@ export default function AdminActivityClient() {
           <option value="award_added">Premios</option>
           <option value="user_registered">Usuarios registrados</option>
         </select>
-        <button onClick={() => fetchActivity()} className="px-4 py-2.5 rounded-lg text-sm bg-white/5 text-white/50 hover:bg-white/10 transition">Actualizar</button>
+        <button onClick={() => fetchActivity()} className="px-4 py-2.5 rounded-lg text-sm bg-chip text-fg-dim hover:bg-chip transition">Actualizar</button>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+        <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-fg-mute" /></div>
       ) : (
         <>
           <div className="space-y-1">
             {items.map(item => {
-              const config = ACTION_CONFIG[item.type] || { icon: Edit, color: 'text-white/40 bg-white/5', label: item.type }
+              const config = ACTION_CONFIG[item.type] || { icon: Edit, color: 'text-fg-mute bg-chip', label: item.type }
               const Icon = config.icon
               const date = new Date(item.timestamp)
               const formatted = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
               return (
-                <div key={item.id} className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/[0.02] transition">
+                <div key={item.id} className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-ink-800 transition">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${config.color}`}>
                     <Icon className="w-3.5 h-3.5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm truncate">
                       <span className="font-medium">{item.userName || 'Sistema'}</span>
-                      <span className="text-white/30"> — </span>
-                      <span className="text-white/60">{config.label}: </span>
+                      <span className="text-fg-mute"> — </span>
+                      <span className="text-fg-dim">{config.label}: </span>
                       <span className="text-white/80">{item.entityName}</span>
                     </p>
-                    {item.details && <p className="text-[10px] text-white/25 truncate">{item.details}</p>}
+                    {item.details && <p className="text-[10px] text-fg-mute truncate">{item.details}</p>}
                   </div>
-                  <span className="text-[10px] text-white/20 flex-shrink-0 whitespace-nowrap">{formatted}</span>
+                  <span className="text-[10px] text-fg-mute flex-shrink-0 whitespace-nowrap">{formatted}</span>
                 </div>
               )
             })}
@@ -189,11 +189,11 @@ export default function AdminActivityClient() {
 
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">
-              <p className="text-xs text-white/30">{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} de {total}</p>
+              <p className="text-xs text-fg-mute">{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} de {total}</p>
               <div className="flex items-center gap-1">
-                <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} className="p-2 rounded-lg text-white/30 hover:text-white hover:bg-white/5 disabled:opacity-20 transition"><ChevronLeft className="w-4 h-4" /></button>
-                <span className="text-xs text-white/40 px-2">{page + 1} / {totalPages}</span>
-                <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="p-2 rounded-lg text-white/30 hover:text-white hover:bg-white/5 disabled:opacity-20 transition"><ChevronRight className="w-4 h-4" /></button>
+                <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} className="p-2 rounded-lg text-fg-mute hover:text-fg hover:bg-chip disabled:opacity-20 transition"><ChevronLeft className="w-4 h-4" /></button>
+                <span className="text-xs text-fg-mute px-2">{page + 1} / {totalPages}</span>
+                <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="p-2 rounded-lg text-fg-mute hover:text-fg hover:bg-chip disabled:opacity-20 transition"><ChevronRight className="w-4 h-4" /></button>
               </div>
             </div>
           )}

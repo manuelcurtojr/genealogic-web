@@ -149,10 +149,10 @@ export default function AvatarUpload({ userId, currentUrl, displayName, onUpload
       {modalOpen && imgSrc && (
         <>
           <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm" onClick={() => { setModalOpen(false); setImgSrc(null) }} />
-          <div className="fixed z-[101] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] max-w-[90vw] bg-gray-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
+          <div className="fixed z-[101] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] max-w-[90vw] bg-ink-800 border border-hair rounded-2xl shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-hair">
               <h3 className="text-sm font-semibold">Recortar avatar</h3>
-              <button onClick={() => { setModalOpen(false); setImgSrc(null) }} className="text-white/30 hover:text-white">
+              <button onClick={() => { setModalOpen(false); setImgSrc(null) }} className="text-fg-mute hover:text-fg">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -190,7 +190,7 @@ export default function AvatarUpload({ userId, currentUrl, displayName, onUpload
 
               {/* Zoom slider */}
               <div className="flex items-center gap-3 w-full px-4">
-                <ZoomOut className="w-4 h-4 text-white/30" />
+                <ZoomOut className="w-4 h-4 text-fg-mute" />
                 <input
                   type="range"
                   min={0.5}
@@ -200,14 +200,14 @@ export default function AvatarUpload({ userId, currentUrl, displayName, onUpload
                   onChange={e => setZoom(parseFloat(e.target.value))}
                   className="flex-1 accent-[#D74709]"
                 />
-                <ZoomIn className="w-4 h-4 text-white/30" />
+                <ZoomIn className="w-4 h-4 text-fg-mute" />
               </div>
 
               {/* Actions */}
               <div className="flex gap-2 w-full">
                 <button
                   onClick={() => { setModalOpen(false); setImgSrc(null) }}
-                  className="flex-1 py-2.5 rounded-lg text-sm text-white/50 bg-white/5 hover:bg-white/10 transition"
+                  className="flex-1 py-2.5 rounded-lg text-sm text-fg-dim bg-chip hover:bg-chip transition"
                 >
                   Cancelar
                 </button>

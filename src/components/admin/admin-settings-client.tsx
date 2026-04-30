@@ -113,10 +113,10 @@ export default function AdminSettingsClient({ settings: initSettings }: Props) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Configuración de plataforma</h1>
-          <p className="text-white/40 text-sm">API keys y configuración de servicios externos</p>
+          <p className="text-fg-mute text-sm">API keys y configuración de servicios externos</p>
         </div>
         <button onClick={() => setShowAddCustom(!showAddCustom)}
-          className="flex items-center gap-1.5 bg-white/5 border border-white/10 text-white/60 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10 transition">
+          className="flex items-center gap-1.5 bg-chip border border-hair text-fg-dim px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-chip transition">
           <Plus className="w-4 h-4" /> Clave personalizada
         </button>
       </div>
@@ -126,26 +126,26 @@ export default function AdminSettingsClient({ settings: initSettings }: Props) {
         <Shield className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-medium text-amber-400">Las API keys se almacenan cifradas en la base de datos</p>
-          <p className="text-xs text-white/30 mt-0.5">Solo los administradores pueden ver y modificar estas claves. Se usan en el servidor, nunca se envían al navegador del usuario.</p>
+          <p className="text-xs text-fg-mute mt-0.5">Solo los administradores pueden ver y modificar estas claves. Se usan en el servidor, nunca se envían al navegador del usuario.</p>
         </div>
       </div>
 
       {/* Add custom key form */}
       {showAddCustom && (
-        <div className="bg-white/5 border border-[#D74709]/20 rounded-xl p-5 mb-4 space-y-3">
+        <div className="bg-chip border border-[#D74709]/20 rounded-xl p-5 mb-4 space-y-3">
           <p className="text-sm font-semibold">Añadir clave personalizada</p>
           <div className="grid grid-cols-3 gap-3">
             <input type="text" value={customKey} onChange={e => setCustomKey(e.target.value)}
-              placeholder="NOMBRE_CLAVE" className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none font-mono" />
+              placeholder="NOMBRE_CLAVE" className="bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none font-mono" />
             <input type="text" value={customValue} onChange={e => setCustomValue(e.target.value)}
-              placeholder="Valor" className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+              placeholder="Valor" className="bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
             <input type="text" value={customDesc} onChange={e => setCustomDesc(e.target.value)}
-              placeholder="Descripción (opcional)" className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+              placeholder="Descripción (opcional)" className="bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
           </div>
           <div className="flex gap-2">
             <button onClick={addCustom} disabled={!customKey.trim() || !customValue.trim() || saving === 'custom'}
               className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">Añadir</button>
-            <button onClick={() => setShowAddCustom(false)} className="text-white/50 hover:text-white px-4 py-2 text-sm transition">Cancelar</button>
+            <button onClick={() => setShowAddCustom(false)} className="text-fg-dim hover:text-fg px-4 py-2 text-sm transition">Cancelar</button>
           </div>
         </div>
       )}
@@ -160,18 +160,18 @@ export default function AdminSettingsClient({ settings: initSettings }: Props) {
           const isConfigured = !!currentValue
 
           return (
-            <div key={k.key} className={`bg-white/5 border rounded-xl p-5 transition ${isConfigured ? 'border-green-500/20' : 'border-white/10'}`}>
+            <div key={k.key} className={`bg-chip border rounded-xl p-5 transition ${isConfigured ? 'border-green-500/20' : 'border-hair'}`}>
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <Key className={`w-4 h-4 ${isConfigured ? 'text-green-400' : 'text-white/30'}`} />
+                    <Key className={`w-4 h-4 ${isConfigured ? 'text-green-400' : 'text-fg-mute'}`} />
                     <h3 className="text-sm font-semibold">{k.label}</h3>
                     {isConfigured && <span className="text-[9px] font-bold bg-green-500/15 text-green-400 px-1.5 py-0.5 rounded-full">CONFIGURADA</span>}
                   </div>
-                  <p className="text-xs text-white/30 mt-1">{k.description}</p>
+                  <p className="text-xs text-fg-mute mt-1">{k.description}</p>
                 </div>
                 {isConfigured && !KNOWN_KEYS.find(kk => kk.key === k.key) && (
-                  <button onClick={() => deleteSetting(k.key)} className="text-white/20 hover:text-red-400 transition">
+                  <button onClick={() => deleteSetting(k.key)} className="text-fg-mute hover:text-red-400 transition">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
@@ -184,10 +184,10 @@ export default function AdminSettingsClient({ settings: initSettings }: Props) {
                     value={editValue}
                     onChange={e => setEditValues(prev => ({ ...prev, [k.key]: e.target.value }))}
                     placeholder={k.placeholder}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:border-[#D74709] focus:outline-none transition font-mono pr-10"
+                    className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition font-mono pr-10"
                   />
                   <button onClick={() => toggleVisible(k.key)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition">
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-mute hover:text-fg-dim transition">
                     {isVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
@@ -199,7 +199,7 @@ export default function AdminSettingsClient({ settings: initSettings }: Props) {
               </div>
 
               {currentValue && (
-                <p className="text-[10px] text-white/20 mt-2">
+                <p className="text-[10px] text-fg-mute mt-2">
                   Valor actual: {isVisible ? currentValue : maskValue(currentValue)}
                   {settings.find(s => s.key === k.key)?.updated_at && (
                     <> · Actualizado: {new Date(settings.find(s => s.key === k.key)!.updated_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</>
@@ -207,7 +207,7 @@ export default function AdminSettingsClient({ settings: initSettings }: Props) {
                 </p>
               )}
 
-              <p className="text-[10px] text-white/15 mt-1 font-mono">{k.key}</p>
+              <p className="text-[10px] text-fg-mute mt-1 font-mono">{k.key}</p>
             </div>
           )
         })}

@@ -32,7 +32,7 @@ export default function NewKennelPage() {
   return (
     <div className="max-w-md mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <Link href="/kennel" className="text-white/40 hover:text-white transition">
+        <Link href="/kennel" className="text-fg-mute hover:text-fg transition">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <h1 className="text-2xl font-bold">Crear criadero</h1>
@@ -42,10 +42,10 @@ export default function NewKennelPage() {
         {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
         <div>
-          <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Nombre del criadero *</label>
+          <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1.5 block">Nombre del criadero *</label>
           <input type="text" value={name} onChange={(e) => setName(e.target.value)} required autoFocus
             placeholder="Ej: Irema Curtó"
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition" />
+            className="w-full bg-chip border border-hair rounded-lg px-4 py-3 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
         </div>
 
         <button type="submit" disabled={loading || !name.trim()}
@@ -54,7 +54,7 @@ export default function NewKennelPage() {
           {loading ? 'Creando...' : 'Crear criadero'}
         </button>
 
-        <p className="text-xs text-white/30 text-center">Podrás completar los detalles después en la página de edición.</p>
+        <p className="text-xs text-fg-mute text-center">Podrás completar los detalles después en la página de edición.</p>
       </form>
     </div>
   )

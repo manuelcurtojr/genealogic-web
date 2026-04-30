@@ -99,7 +99,7 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
       </div>
       <div>
         <h3 className="text-xl font-bold">Exportar Pedigree en PDF</h3>
-        <p className="text-sm text-white/50 mt-2">
+        <p className="text-sm text-fg-dim mt-2">
           Genera un documento PDF con la genealogia digital de{' '}
           <strong className="text-white">{dogName || 'este perro'}</strong>, incluyendo los datos
           del perro, propietario y arbol genealogico de 4 generaciones.

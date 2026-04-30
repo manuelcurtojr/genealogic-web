@@ -42,12 +42,12 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
   }, [dogId, dogSex])
 
   if (loading) {
-    return <div className="text-white/30 text-sm py-8 text-center">Cargando descendientes...</div>
+    return <div className="text-fg-mute text-sm py-8 text-center">Cargando descendientes...</div>
   }
 
   if (offspring.length === 0) {
     return (
-      <div className="text-center py-12 text-white/30">
+      <div className="text-center py-12 text-fg-mute">
         <GitBranch className="w-10 h-10 mx-auto mb-3 opacity-30" />
         <p className="text-sm">No se encontraron descendientes</p>
       </div>
@@ -56,7 +56,7 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-4">
+      <h3 className="text-sm font-semibold text-fg-mute uppercase tracking-wider mb-4">
         {offspring.length} descendiente{offspring.length !== 1 ? 's' : ''}
       </h3>
       <div className="-mx-4 lg:mx-0">
@@ -67,13 +67,13 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
             <Link
               key={dog.id}
               href={`/dogs/${dog.slug || dog.id}`}
-              className="w-[140px] flex-shrink-0 bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:bg-white/10 transition"
+              className="w-[140px] flex-shrink-0 bg-chip border border-hair rounded-lg overflow-hidden hover:bg-chip transition"
             >
-              <div className="relative w-[140px] h-[140px] bg-white/5">
+              <div className="relative w-[140px] h-[140px] bg-chip">
                 {dog.thumbnail_url ? (
                   <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white/15 text-3xl">
+                  <div className="w-full h-full flex items-center justify-center text-fg-mute text-3xl">
                     {dog.sex === 'male' ? '♂' : '♀'}
                   </div>
                 )}
@@ -83,10 +83,10 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
                 <p className="text-sm font-semibold text-white truncate">{dog.name}</p>
                 <div className="flex items-center gap-1 mt-0.5">
                   {(dog.breed as any)?.name && (
-                    <span className="text-xs text-white/40 truncate">{(dog.breed as any).name}</span>
+                    <span className="text-xs text-fg-mute truncate">{(dog.breed as any).name}</span>
                   )}
                   {dog.birth_date && (
-                    <span className="text-xs text-white/30">
+                    <span className="text-xs text-fg-mute">
                       &middot; {new Date(dog.birth_date).toLocaleDateString('es-ES', { year: 'numeric', month: 'short' })}
                     </span>
                   )}

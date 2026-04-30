@@ -150,7 +150,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold">Recordatorios veterinarios</h1>
-          <p className="text-white/40 text-xs sm:text-sm mt-0.5">Gestiona vacunas, desparasitaciones y revisiones de tus perros</p>
+          <p className="text-fg-mute text-xs sm:text-sm mt-0.5">Gestiona vacunas, desparasitaciones y revisiones de tus perros</p>
         </div>
         <button onClick={() => { setEditingReminder(null); setShowForm(true) }}
           className="flex items-center gap-1.5 bg-[#D74709] hover:bg-[#c03d07] text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition self-start sm:self-auto">
@@ -160,47 +160,47 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+        <div className="bg-chip border border-hair rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
           <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
             <Stethoscope className="w-5 h-5 text-blue-400" />
           </div>
           <div>
             <p className="text-xl font-bold">{reminders.length}</p>
-            <p className="text-[10px] text-white/30">Total</p>
+            <p className="text-[10px] text-fg-mute">Total</p>
           </div>
         </div>
-        <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+        <div className="bg-chip border border-hair rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
           <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
             <Clock className="w-5 h-5 text-amber-400" />
           </div>
           <div>
             <p className="text-xl font-bold">{pendingCount}</p>
-            <p className="text-[10px] text-white/30">Pendientes</p>
+            <p className="text-[10px] text-fg-mute">Pendientes</p>
           </div>
         </div>
-        <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+        <div className="bg-chip border border-hair rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
           <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
             <AlertTriangle className="w-5 h-5 text-red-400" />
           </div>
           <div>
             <p className="text-xl font-bold">{overdueCount}</p>
-            <p className="text-[10px] text-white/30">Vencidos</p>
+            <p className="text-[10px] text-fg-mute">Vencidos</p>
           </div>
         </div>
-        <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+        <div className="bg-chip border border-hair rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
           <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
             <Check className="w-5 h-5 text-green-400" />
           </div>
           <div>
             <p className="text-xl font-bold">{reminders.filter(r => r.completed_date).length}</p>
-            <p className="text-[10px] text-white/30">Completados</p>
+            <p className="text-[10px] text-fg-mute">Completados</p>
           </div>
         </div>
       </div>
 
       {/* Filters + Dog search + Auto-generate */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
-        <div className="flex bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+        <div className="flex bg-chip border border-hair rounded-lg overflow-hidden">
           {[
             { key: 'pending', label: 'Pendientes' },
             { key: 'overdue', label: 'Vencidos' },
@@ -208,7 +208,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
             { key: 'all', label: 'Todos' },
           ].map(f => (
             <button key={f.key} onClick={() => setFilter(f.key as any)}
-              className={`px-3 py-2 text-xs font-medium transition ${filter === f.key ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/40 hover:text-white/60'}`}>
+              className={`px-3 py-2 text-xs font-medium transition ${filter === f.key ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg-mute hover:text-fg-dim'}`}>
               {f.label}
             </button>
           ))}
@@ -232,10 +232,10 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
 
       {/* Reminders list */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 bg-white/5 border border-white/10 rounded-xl">
-          <Stethoscope className="w-12 h-12 text-white/10 mx-auto mb-3" />
-          <p className="text-white/40 text-sm">No hay recordatorios {filter !== 'all' ? 'en esta categoría' : ''}</p>
-          <p className="text-xs text-white/25 mt-1">Añade un recordatorio o usa auto-generar</p>
+        <div className="text-center py-16 bg-chip border border-hair rounded-xl">
+          <Stethoscope className="w-12 h-12 text-fg-mute mx-auto mb-3" />
+          <p className="text-fg-mute text-sm">No hay recordatorios {filter !== 'all' ? 'en esta categoría' : ''}</p>
+          <p className="text-xs text-fg-mute mt-1">Añade un recordatorio o usa auto-generar</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -250,8 +250,8 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
 
             return (
               <div key={r.id}
-                className={`bg-white/5 border rounded-xl p-2 sm:p-3 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 transition ${
-                  r.completed_date ? 'border-white/5 opacity-50' : isOverdue ? 'border-red-500/30 bg-red-500/5' : isDueSoon ? 'border-amber-500/20' : 'border-white/10'
+                className={`bg-chip border rounded-xl p-2 sm:p-3 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 transition ${
+                  r.completed_date ? 'border-hair opacity-50' : isOverdue ? 'border-red-500/30 bg-red-500/5' : isDueSoon ? 'border-amber-500/20' : 'border-hair'
                 }`}>
                 {/* Type icon */}
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: typeConf.color + '15' }}>
@@ -260,7 +260,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
 
                 {/* Dog avatar + name */}
                 <div className="flex items-center gap-2 min-w-0 sm:min-w-[140px] flex-shrink-0">
-                  <div className="w-7 h-7 rounded-full overflow-hidden bg-white/5 border flex-shrink-0" style={{ borderColor: sexColor }}>
+                  <div className="w-7 h-7 rounded-full overflow-hidden bg-chip border flex-shrink-0" style={{ borderColor: sexColor }}>
                     {dog?.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
                   </div>
                   <span className="text-xs font-medium truncate">{dog?.name || '?'}</span>
@@ -269,7 +269,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
                 {/* Reminder info */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{r.title}</p>
-                  <div className="flex items-center gap-2 text-[10px] text-white/30">
+                  <div className="flex items-center gap-2 text-[10px] text-fg-mute">
                     <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold" style={{ background: typeConf.color + '15', color: typeConf.color }}>
                       {typeConf.label}
                     </span>
@@ -282,14 +282,14 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
                 {/* Date */}
                 <div className="text-right flex-shrink-0">
                   <p className={`text-xs font-semibold ${
-                    r.completed_date ? 'text-green-400' : isOverdue ? 'text-red-400' : isDueToday ? 'text-[#D74709]' : isDueSoon ? 'text-amber-400' : 'text-white/50'
+                    r.completed_date ? 'text-green-400' : isOverdue ? 'text-red-400' : isDueToday ? 'text-[#D74709]' : isDueSoon ? 'text-amber-400' : 'text-fg-dim'
                   }`}>
                     {r.completed_date
                       ? new Date(r.completed_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
                       : new Date(r.due_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })
                     }
                   </p>
-                  <p className="text-[9px] text-white/20">
+                  <p className="text-[9px] text-fg-mute">
                     {r.completed_date ? 'Completado' : isOverdue ? 'Vencido' : isDueToday ? 'Hoy' : isDueSoon ? 'Próximo' : ''}
                   </p>
                 </div>
@@ -304,12 +304,12 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
                     </button>
                   )}
                   <button onClick={() => { setEditingReminder(r); setShowForm(true) }}
-                    className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/30 hover:bg-white/10 hover:text-white/60 transition"
+                    className="w-8 h-8 rounded-lg bg-chip flex items-center justify-center text-fg-mute hover:bg-chip hover:text-fg-dim transition"
                     title="Editar">
                     <Calendar className="w-3.5 h-3.5" />
                   </button>
                   <button onClick={() => deleteReminder(r.id)}
-                    className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20 hover:bg-red-500/10 hover:text-red-400 transition"
+                    className="w-8 h-8 rounded-lg bg-chip flex items-center justify-center text-fg-mute hover:bg-red-500/10 hover:text-red-400 transition"
                     title="Eliminar">
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -358,43 +358,43 @@ function DogSearchFilter({ dogs, value, onChange, placeholder }: {
     <div ref={ref} className="relative">
       <button onClick={() => { setOpen(!open); setSearch('') }}
         className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition ${
-          value ? 'bg-[#D74709]/10 text-[#D74709] border-[#D74709]/20' : 'bg-white/5 text-white/50 border-white/10 hover:bg-white/10'
+          value ? 'bg-[#D74709]/10 text-[#D74709] border-[#D74709]/20' : 'bg-chip text-fg-dim border-hair hover:bg-chip'
         }`}>
         <Dog className="w-3.5 h-3.5" />
         {selectedDog ? selectedDog.name : (placeholder || 'Todos los perros')}
         {value && (
-          <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="ml-1 hover:text-white transition">
+          <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="ml-1 hover:text-fg transition">
             <X className="w-3 h-3" />
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full mt-1 w-72 bg-gray-800 border border-white/10 rounded-lg shadow-xl z-30 flex flex-col">
-          <div className="p-2 border-b border-white/5">
+        <div className="absolute left-0 top-full mt-1 w-72 bg-ink-800 border border-hair rounded-lg shadow-xl z-30 flex flex-col">
+          <div className="p-2 border-b border-hair">
             <div className="relative">
-              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fg-mute" />
               <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar perro..." className="w-full bg-white/5 border border-white/10 rounded pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+                placeholder="Buscar perro..." className="w-full bg-chip border border-hair rounded pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
             </div>
           </div>
           <div className="max-h-56 overflow-y-auto">
             <button onClick={() => { onChange(''); setOpen(false) }}
-              className={`w-full text-left px-3 py-2 text-xs transition ${!value ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/50 hover:bg-white/5'}`}>
+              className={`w-full text-left px-3 py-2 text-xs transition ${!value ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg-dim hover:bg-chip'}`}>
               Todos los perros
             </button>
             {filtered.map(d => (
               <button key={d.id} onClick={() => { onChange(d.id); setOpen(false); setSearch('') }}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition text-left ${
-                  d.id === value ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/60 hover:bg-white/5'
+                  d.id === value ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg-dim hover:bg-chip'
                 }`}>
-                <div className="w-5 h-5 rounded-full overflow-hidden bg-white/5 flex-shrink-0 border" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
+                <div className="w-5 h-5 rounded-full overflow-hidden bg-chip flex-shrink-0 border" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
                   {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
                 </div>
                 <span className="truncate">{d.name}</span>
               </button>
             ))}
-            {filtered.length === 0 && <p className="text-[10px] text-white/20 px-3 py-3 text-center">Sin resultados</p>}
+            {filtered.length === 0 && <p className="text-[10px] text-fg-mute px-3 py-3 text-center">Sin resultados</p>}
           </div>
         </div>
       )}
@@ -429,28 +429,28 @@ function AutoGenerateButton({ dogs, generatingFor, onGenerate }: {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-72 bg-gray-800 border border-white/10 rounded-lg shadow-xl z-30 flex flex-col">
-          <p className="text-[10px] text-white/30 px-3 pt-2 pb-1">Busca un perro para generar recordatorios automáticos según su edad</p>
-          <div className="p-2 border-b border-white/5">
+        <div className="absolute right-0 top-full mt-1 w-72 bg-ink-800 border border-hair rounded-lg shadow-xl z-30 flex flex-col">
+          <p className="text-[10px] text-fg-mute px-3 pt-2 pb-1">Busca un perro para generar recordatorios automáticos según su edad</p>
+          <div className="p-2 border-b border-hair">
             <div className="relative">
-              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fg-mute" />
               <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar perro..." className="w-full bg-white/5 border border-white/10 rounded pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-purple-500 focus:outline-none" />
+                placeholder="Buscar perro..." className="w-full bg-chip border border-hair rounded pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-fg-mute focus:border-purple-500 focus:outline-none" />
             </div>
           </div>
           <div className="max-h-56 overflow-y-auto">
             {filtered.map(d => (
               <button key={d.id} onClick={() => { onGenerate(d.id); setOpen(false) }}
                 disabled={generatingFor === d.id}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-white/60 hover:bg-white/5 transition text-left disabled:opacity-50">
-                <div className="w-5 h-5 rounded-full overflow-hidden bg-white/5 flex-shrink-0 border" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-fg-dim hover:bg-chip transition text-left disabled:opacity-50">
+                <div className="w-5 h-5 rounded-full overflow-hidden bg-chip flex-shrink-0 border" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
                   {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
                 </div>
                 <span className="truncate flex-1">{d.name}</span>
                 {generatingFor === d.id && <Loader2 className="w-3 h-3 animate-spin" />}
               </button>
             ))}
-            {filtered.length === 0 && <p className="text-[10px] text-white/20 px-3 py-3 text-center">{dogs.length === 0 ? 'Tus perros necesitan fecha de nacimiento' : 'Sin resultados'}</p>}
+            {filtered.length === 0 && <p className="text-[10px] text-fg-mute px-3 py-3 text-center">{dogs.length === 0 ? 'Tus perros necesitan fecha de nacimiento' : 'Sin resultados'}</p>}
           </div>
         </div>
       )}

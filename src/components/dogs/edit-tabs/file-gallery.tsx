@@ -52,19 +52,19 @@ export default function FileGallery({ files, onChange, folder }: FileGalleryProp
       <div className="flex gap-2 flex-wrap">
         <button onClick={() => fileRef.current?.click()} disabled={uploading}
           className="w-16 h-16 border-2 border-dashed border-white/15 rounded-lg flex items-center justify-center hover:border-[#D74709]/40 transition cursor-pointer flex-shrink-0">
-          {uploading ? <Loader2 className="w-4 h-4 animate-spin text-white/30" /> : <Plus className="w-4 h-4 text-white/30" />}
+          {uploading ? <Loader2 className="w-4 h-4 animate-spin text-fg-mute" /> : <Plus className="w-4 h-4 text-fg-mute" />}
         </button>
 
         {files.map((url, idx) => (
-          <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden group flex-shrink-0 bg-white/5 border border-white/10">
+          <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden group flex-shrink-0 bg-chip border border-hair">
             {isImage(url) ? (
               <a href={url} target="_blank" rel="noopener noreferrer">
                 <img src={url} alt="" className="w-full h-full object-cover" />
               </a>
             ) : (
-              <a href={url} target="_blank" rel="noopener noreferrer" className="w-full h-full flex flex-col items-center justify-center gap-1 hover:bg-white/10 transition">
+              <a href={url} target="_blank" rel="noopener noreferrer" className="w-full h-full flex flex-col items-center justify-center gap-1 hover:bg-chip transition">
                 <FileText className="w-5 h-5 text-[#D74709]" />
-                <span className="text-[8px] text-white/40 uppercase">{url.split('.').pop()?.split('?')[0]}</span>
+                <span className="text-[8px] text-fg-mute uppercase">{url.split('.').pop()?.split('?')[0]}</span>
               </a>
             )}
             <button onClick={() => removeFile(idx)}

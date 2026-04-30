@@ -54,18 +54,18 @@ export default async function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 sm:mb-6">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold">Hola, {profile?.display_name || (isBreeder ? 'Criador' : 'Propietario')}</h1>
-          <p className="text-white/40 text-xs sm:text-sm mt-0.5 capitalize">{today}</p>
+          <p className="text-fg-mute text-xs sm:text-sm mt-0.5 capitalize">{today}</p>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/dogs" className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-[#D74709] hover:bg-[#c03d07] text-white text-xs sm:text-sm font-semibold transition">
             <Plus className="w-4 h-4" /> Perro
           </Link>
           {isBreeder && (
-            <Link href="/litters" className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 text-xs sm:text-sm font-medium hover:bg-white/10 transition">
+            <Link href="/litters" className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-chip border border-hair text-fg-dim text-xs sm:text-sm font-medium hover:bg-chip transition">
               <Baby className="w-4 h-4" /> Camada
             </Link>
           )}
-          <Link href="/search" className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 text-xs sm:text-sm font-medium hover:bg-white/10 transition">
+          <Link href="/search" className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-chip border border-hair text-fg-dim text-xs sm:text-sm font-medium hover:bg-chip transition">
             <Search className="w-4 h-4" /> Buscar
           </Link>
         </div>
@@ -89,13 +89,13 @@ export default async function DashboardPage() {
       {/* Breeder: Active litters */}
       {isBreeder ? (
         <div className="mb-5 sm:mb-6">
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+          <div className="bg-chip border border-hair rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold">Camadas activas</h2>
               <Link href="/litters" className="text-xs text-[#D74709] hover:text-[#c03d07] transition">Ver todas</Link>
             </div>
             {(activeLittersRes.data || []).length === 0 ? (
-              <p className="text-xs text-white/25 text-center py-6">Sin camadas activas</p>
+              <p className="text-xs text-fg-mute text-center py-6">Sin camadas activas</p>
             ) : (
               <div className="space-y-2">
                 {(activeLittersRes.data || []).map((litter: any) => (
@@ -116,7 +116,7 @@ export default async function DashboardPage() {
       ) : (
         /* Owner view: simpler layout */
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-5 sm:mb-6">
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+          <div className="bg-chip border border-hair rounded-xl p-4">
             <h2 className="text-sm font-semibold mb-3">Acciones rápidas</h2>
             <div className="space-y-2.5">
               {[
@@ -124,12 +124,12 @@ export default async function DashboardPage() {
                 { icon: Search, label: 'Buscar perros', color: '#8B5CF6', href: '/search' },
                 { icon: Stethoscope, label: 'Veterinario', color: BRAND.info, href: '/vet' },
               ].map(item => (
-                <Link key={item.label} href={item.href} className="flex items-center gap-3 hover:bg-white/[0.03] rounded-lg p-1.5 -mx-1.5 transition">
+                <Link key={item.label} href={item.href} className="flex items-center gap-3 hover:bg-chip rounded-lg p-1.5 -mx-1.5 transition">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: item.color + '15' }}>
                     <item.icon className="w-4 h-4" style={{ color: item.color }} />
                   </div>
-                  <span className="text-xs text-white/60 flex-1">{item.label}</span>
-                  <ArrowRight className="w-3 h-3 text-white/20" />
+                  <span className="text-xs text-fg-dim flex-1">{item.label}</span>
+                  <ArrowRight className="w-3 h-3 text-fg-mute" />
                 </Link>
               ))}
             </div>
@@ -137,7 +137,7 @@ export default async function DashboardPage() {
             {/* CTA to upgrade */}
             <div className="mt-4 p-3 bg-[#D74709]/5 border border-[#D74709]/15 rounded-lg">
               <p className="text-xs font-semibold text-[#D74709] mb-1">¿Eres criador?</p>
-              <p className="text-[11px] text-white/40 mb-2">Mejora tu plan para gestionar tu criadero, camadas y más.</p>
+              <p className="text-[11px] text-fg-mute mb-2">Mejora tu plan para gestionar tu criadero, camadas y más.</p>
               <Link href="/pricing" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#D74709] hover:text-[#c03d07] transition">
                 <Crown className="w-3.5 h-3.5" /> Ver planes <ArrowRight className="w-3 h-3" />
               </Link>
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
 
       {/* Vet reminders widget */}
       {(vetRemindersRes.data || []).length > 0 && (
-        <div className="bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 mb-5 sm:mb-6">
+        <div className="bg-chip border border-hair rounded-xl p-3 sm:p-4 mb-5 sm:mb-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs sm:text-sm font-semibold flex items-center gap-1.5">
               <Stethoscope className="w-4 h-4 text-blue-400" /> <span className="hidden sm:inline">Próximos recordatorios vet.</span><span className="sm:hidden">Recordatorios vet.</span>
@@ -162,15 +162,15 @@ export default async function DashboardPage() {
               const typeColors: Record<string, string> = { vaccine: '#10B981', deworming: '#F59E0B', checkup: '#3B82F6', custom: '#8B5CF6' }
               const color = typeColors[r.type] || '#8B5CF6'
               return (
-                <div key={r.id} className={`flex items-center gap-3 rounded-lg p-2.5 ${isOverdue ? 'bg-red-500/5' : 'bg-white/[0.03]'}`}>
+                <div key={r.id} className={`flex items-center gap-3 rounded-lg p-2.5 ${isOverdue ? 'bg-red-500/5' : 'bg-chip'}`}>
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: color + '15' }}>
                     <Stethoscope className="w-4 h-4" style={{ color }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold truncate">{r.title}</p>
-                    <p className="text-[10px] text-white/30">{dog?.name || '?'}</p>
+                    <p className="text-[10px] text-fg-mute">{dog?.name || '?'}</p>
                   </div>
-                  <span className={`text-xs font-semibold ${isOverdue ? 'text-red-400' : 'text-white/40'}`}>
+                  <span className={`text-xs font-semibold ${isOverdue ? 'text-red-400' : 'text-fg-mute'}`}>
                     {new Date(r.due_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
                   </span>
                 </div>
@@ -192,22 +192,22 @@ export default async function DashboardPage() {
               const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
               return (
                 <Link key={dog.id} href={`/dogs/${dog.slug || dog.id}`}
-                  className="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden hover:border-[#D74709]/50 transition group">
-                  <div className="aspect-square bg-white/5 relative">
-                    {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/10"><PawPrint className="w-10 h-10" /></div>}
+                  className="bg-ink-800 border border-hair rounded-xl overflow-hidden hover:border-[#D74709]/50 transition group">
+                  <div className="aspect-square bg-chip relative">
+                    {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-fg-mute"><PawPrint className="w-10 h-10" /></div>}
                     <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: sexColor }} />
                   </div>
                   <div className="p-2">
                     <p className="text-xs font-semibold truncate group-hover:text-[#D74709] transition">{dog.name}</p>
-                    {dog.breed && <p className="text-[10px] text-white/40 truncate">{(dog.breed as any).name}</p>}
+                    {dog.breed && <p className="text-[10px] text-fg-mute truncate">{(dog.breed as any).name}</p>}
                   </div>
                 </Link>
               )
             })}
           </div>
         ) : (
-          <div className="text-center py-12 bg-white/5 border border-white/10 rounded-xl">
-            <p className="text-white/40">No tienes perros aún</p>
+          <div className="text-center py-12 bg-chip border border-hair rounded-xl">
+            <p className="text-fg-mute">No tienes perros aún</p>
             <Link href="/dogs" className="text-sm text-[#D74709] hover:underline mt-2 inline-block">Añade tu primer perro</Link>
           </div>
         )}

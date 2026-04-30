@@ -166,10 +166,10 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
     }
   }
 
-  const shellBg = darkMode ? 'bg-gray-950 text-white' : 'bg-gray-50 text-gray-900'
-  const headerBg = darkMode ? 'bg-gray-950 border-white/10' : 'bg-white border-gray-200'
-  const iconColor = darkMode ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-700'
-  const avatarBg = darkMode ? 'border-white/10' : 'border-gray-200'
+  const shellBg = darkMode ? 'bg-ink-900 text-white' : 'bg-gray-50 text-gray-900'
+  const headerBg = darkMode ? 'bg-ink-900 border-hair' : 'bg-white border-gray-200'
+  const iconColor = darkMode ? 'text-fg-mute hover:text-fg' : 'text-gray-400 hover:text-gray-700'
+  const avatarBg = darkMode ? 'border-hair' : 'border-gray-200'
 
   return (
     <div className={`min-h-screen ${shellBg} transition-colors duration-300`} style={{ '--sidebar-width': `${sidebarWidth}px`, '--tab-bar-height': isNative ? '90px' : '0px' } as React.CSSProperties}>
@@ -202,10 +202,10 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          <button onClick={toggleTheme} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-white/5 transition`} title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
+          <button onClick={toggleTheme} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-chip transition`} title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
             {darkMode ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
           </button>
-          <button onClick={() => setNotifOpen(true)} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-white/5 transition relative`}>
+          <button onClick={() => setNotifOpen(true)} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-chip transition relative`}>
             <Bell className="w-[18px] h-[18px]" />
             {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#D74709]" />}
           </button>

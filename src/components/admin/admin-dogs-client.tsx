@@ -80,79 +80,79 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
     <>
       <div className="mb-4">
         <h1 className="text-xl font-bold">Perros</h1>
-        <p className="text-xs text-white/40">{total} perros en la plataforma</p>
+        <p className="text-xs text-fg-mute">{total} perros en la plataforma</p>
       </div>
 
       {/* Filters */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nombre..."
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+            className="w-full bg-chip border border-hair rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
         </div>
         <select value={sexFilter} onChange={e => { setSexFilter(e.target.value); setPage(0) }}
-          className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none appearance-none cursor-pointer min-w-[120px]">
+          className="bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-fg focus:border-[#D74709] focus:outline-none appearance-none cursor-pointer min-w-[120px]">
           <option value="">Todos sexos</option>
           <option value="male">Machos</option>
           <option value="female">Hembras</option>
         </select>
         <select value={breedFilter} onChange={e => { setBreedFilter(e.target.value); setPage(0) }}
-          className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none appearance-none cursor-pointer min-w-[150px]">
+          className="bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-fg focus:border-[#D74709] focus:outline-none appearance-none cursor-pointer min-w-[150px]">
           <option value="">Todas razas</option>
           {breeds.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
         <select value={kennelFilter} onChange={e => { setKennelFilter(e.target.value); setPage(0) }}
-          className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none appearance-none cursor-pointer min-w-[150px]">
+          className="bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-fg focus:border-[#D74709] focus:outline-none appearance-none cursor-pointer min-w-[150px]">
           <option value="">Todos criaderos</option>
           {kennels.map(k => <option key={k.id} value={k.id}>{k.name}</option>)}
         </select>
       </div>
 
       {/* Table */}
-      <div className="border border-white/10 rounded-xl overflow-hidden">
+      <div className="border border-hair rounded-xl overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-white/10 bg-white/[0.02]">
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-white/40 uppercase">Perro</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-white/40 uppercase hidden lg:table-cell">Raza</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-white/40 uppercase hidden lg:table-cell">Criadero</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-white/40 uppercase hidden md:table-cell">Propietario</th>
-              <th className="px-4 py-3 text-right text-[11px] font-semibold text-white/40 uppercase">Acciones</th>
+            <tr className="border-b border-hair bg-ink-800">
+              <th className="px-4 py-3 text-left text-[11px] font-semibold text-fg-mute uppercase">Perro</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold text-fg-mute uppercase hidden lg:table-cell">Raza</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold text-fg-mute uppercase hidden lg:table-cell">Criadero</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold text-fg-mute uppercase hidden md:table-cell">Propietario</th>
+              <th className="px-4 py-3 text-right text-[11px] font-semibold text-fg-mute uppercase">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
             {loading && (
-              <tr><td colSpan={5} className="py-10 text-center"><Loader2 className="w-5 h-5 animate-spin text-white/30 mx-auto" /></td></tr>
+              <tr><td colSpan={5} className="py-10 text-center"><Loader2 className="w-5 h-5 animate-spin text-fg-mute mx-auto" /></td></tr>
             )}
             {!loading && dogs.length === 0 && (
-              <tr><td colSpan={5} className="py-10 text-center text-sm text-white/30">Sin resultados</td></tr>
+              <tr><td colSpan={5} className="py-10 text-center text-sm text-fg-mute">Sin resultados</td></tr>
             )}
             {!loading && dogs.map(dog => {
               const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : (dog.breed as any)?.name
               const kennelName = Array.isArray(dog.kennel) ? dog.kennel[0]?.name : (dog.kennel as any)?.name
               const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
               return (
-                <tr key={dog.id} className="hover:bg-white/[0.02] transition">
+                <tr key={dog.id} className="hover:bg-ink-800 transition">
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full border-2 overflow-hidden flex-shrink-0 bg-white/5" style={{ borderColor: sexColor }}>
-                        {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/15 text-xs">{dog.sex === 'male' ? '♂' : '♀'}</div>}
+                      <div className="w-9 h-9 rounded-full border-2 overflow-hidden flex-shrink-0 bg-chip" style={{ borderColor: sexColor }}>
+                        {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-fg-mute text-xs">{dog.sex === 'male' ? '♂' : '♀'}</div>}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate max-w-[250px]">{dog.name}</p>
-                        {dog.registration && <p className="text-[10px] text-white/25">{dog.registration}</p>}
+                        {dog.registration && <p className="text-[10px] text-fg-mute">{dog.registration}</p>}
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-2.5 text-xs text-white/40 hidden lg:table-cell">{breedName || '—'}</td>
-                  <td className="px-4 py-2.5 text-xs text-white/40 hidden lg:table-cell">{kennelName || '—'}</td>
-                  <td className="px-4 py-2.5 text-xs text-white/40 hidden md:table-cell">
+                  <td className="px-4 py-2.5 text-xs text-fg-mute hidden lg:table-cell">{breedName || '—'}</td>
+                  <td className="px-4 py-2.5 text-xs text-fg-mute hidden lg:table-cell">{kennelName || '—'}</td>
+                  <td className="px-4 py-2.5 text-xs text-fg-mute hidden md:table-cell">
                     {dog.owner_name || '—'}
                   </td>
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-1 justify-end">
-                      <Link href={`/dogs/${dog.slug || dog.id}`} className="p-1.5 rounded text-white/20 hover:text-white/50 hover:bg-white/5 transition"><Eye className="w-3.5 h-3.5" /></Link>
-                      <button onClick={() => { setPedigreeDogId(dog.id); setPedigreeOpen(true) }} className="p-1.5 rounded text-white/20 hover:text-white/50 hover:bg-white/5 transition"><GitBranch className="w-3.5 h-3.5" /></button>
+                      <Link href={`/dogs/${dog.slug || dog.id}`} className="p-1.5 rounded text-fg-mute hover:text-fg-dim hover:bg-chip transition"><Eye className="w-3.5 h-3.5" /></Link>
+                      <button onClick={() => { setPedigreeDogId(dog.id); setPedigreeOpen(true) }} className="p-1.5 rounded text-fg-mute hover:text-fg-dim hover:bg-chip transition"><GitBranch className="w-3.5 h-3.5" /></button>
                       <button onClick={() => { setEditDogId(dog.id); setPanelOpen(true) }} className="p-1.5 rounded text-[#D74709]/60 hover:text-[#D74709] hover:bg-[#D74709]/10 transition"><Edit className="w-3.5 h-3.5" /></button>
                     </div>
                   </td>
@@ -166,11 +166,11 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4">
-          <p className="text-xs text-white/30">{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} de {total}</p>
+          <p className="text-xs text-fg-mute">{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} de {total}</p>
           <div className="flex items-center gap-1">
-            <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} className="p-2 rounded-lg text-white/30 hover:text-white hover:bg-white/5 disabled:opacity-20 transition"><ChevronLeft className="w-4 h-4" /></button>
-            <span className="text-xs text-white/40 px-2">{page + 1} / {totalPages}</span>
-            <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="p-2 rounded-lg text-white/30 hover:text-white hover:bg-white/5 disabled:opacity-20 transition"><ChevronRight className="w-4 h-4" /></button>
+            <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} className="p-2 rounded-lg text-fg-mute hover:text-fg hover:bg-chip disabled:opacity-20 transition"><ChevronLeft className="w-4 h-4" /></button>
+            <span className="text-xs text-fg-mute px-2">{page + 1} / {totalPages}</span>
+            <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="p-2 rounded-lg text-fg-mute hover:text-fg hover:bg-chip disabled:opacity-20 transition"><ChevronRight className="w-4 h-4" /></button>
           </div>
         </div>
       )}

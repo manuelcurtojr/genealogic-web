@@ -108,32 +108,32 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
     <>
       <div className="mb-4 sm:mb-6">
         <h1 className="text-xl sm:text-2xl font-bold">Camadas</h1>
-        <p className="text-white/50 text-xs sm:text-sm mt-1">{litters.length} camadas</p>
+        <p className="text-fg-dim text-xs sm:text-sm mt-1">{litters.length} camadas</p>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
         <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por padre, madre o raza..."
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
+            className="w-full bg-chip border border-hair rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
         </div>
         <SortSelect value={sortBy} onChange={setSortBy} storageKey="litters-sort" />
-        <div className="flex rounded-lg border border-white/10 overflow-hidden shrink-0">
-          <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}><Grid3X3 className="w-4 h-4" /></button>
-          <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30'}`}><List className="w-4 h-4" /></button>
+        <div className="flex rounded-lg border border-hair overflow-hidden shrink-0">
+          <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-chip text-fg-mute'}`}><Grid3X3 className="w-4 h-4" /></button>
+          <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-chip text-fg-mute'}`}><List className="w-4 h-4" /></button>
         </div>
       </div>
 
-      <p className="text-xs text-white/30 mb-3">{sorted.length} camada{sorted.length !== 1 ? 's' : ''}</p>
+      <p className="text-xs text-fg-mute mb-3">{sorted.length} camada{sorted.length !== 1 ? 's' : ''}</p>
 
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
           <button onClick={openAdd}
-            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer min-h-[160px] sm:min-h-[200px] p-4">
-            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
-              <Plus className="w-6 h-6 text-white/30 group-hover:text-[#D74709] transition" />
+            className="border-2 border-dashed border-hair rounded-xl flex flex-col items-center justify-center hover:border-[#D74709]/40 hover:bg-ink-800 transition group cursor-pointer min-h-[160px] sm:min-h-[200px] p-4">
+            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-chip group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-3">
+              <Plus className="w-6 h-6 text-fg-mute group-hover:text-[#D74709] transition" />
             </div>
-            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir camada</p>
+            <p className="text-sm text-fg-mute group-hover:text-fg-dim transition font-medium">Añadir camada</p>
           </button>
 
           {sorted.map(litter => {
@@ -144,14 +144,14 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
             const hasPuppies = litter.puppy_count && litter.puppy_count > 0
 
             return (
-              <div key={litter.id} className="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition group">
+              <div key={litter.id} className="bg-ink-800 border border-hair rounded-xl overflow-hidden hover:border-hair-strong transition group">
                 {/* Split parent photos */}
-                <div className="relative flex h-32 bg-white/5">
+                <div className="relative flex h-32 bg-chip">
                   <div className="flex-1 relative overflow-hidden">
                     {father?.thumbnail_url ? <img src={father.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-blue-400/30 text-2xl">♂</div>}
                     <div className="absolute bottom-1.5 left-1.5 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-1.5 py-0.5 rounded">{father?.name || '?'}</div>
                   </div>
-                  <div className="w-px bg-white/10" />
+                  <div className="w-px bg-chip" />
                   <div className="flex-1 relative overflow-hidden">
                     {mother?.thumbnail_url ? <img src={mother.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-pink-400/30 text-2xl">♀</div>}
                     <div className="absolute bottom-1.5 right-1.5 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-1.5 py-0.5 rounded">{mother?.name || '?'}</div>
@@ -167,29 +167,29 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
                 {/* Info */}
                 <div className="p-3">
                   <div className="flex items-center gap-2 flex-wrap">
-                    {breed?.name && <span className="text-[10px] text-white/50 bg-white/5 rounded-full px-2 py-0.5">{breed.name}</span>}
-                    <button onClick={() => toggleVisibility(litter)} className={`text-[10px] font-semibold px-2 py-0.5 rounded-full transition ${litter.is_public ? 'text-green-400 bg-green-500/10' : 'text-white/30 bg-white/5'}`}>
+                    {breed?.name && <span className="text-[10px] text-fg-dim bg-chip rounded-full px-2 py-0.5">{breed.name}</span>}
+                    <button onClick={() => toggleVisibility(litter)} className={`text-[10px] font-semibold px-2 py-0.5 rounded-full transition ${litter.is_public ? 'text-green-400 bg-green-500/10' : 'text-fg-mute bg-chip'}`}>
                       {litter.is_public ? <Globe className="w-3 h-3 inline mr-0.5" /> : <Lock className="w-3 h-3 inline mr-0.5" />}
                       {litter.is_public ? 'Publica' : 'Privada'}
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-3 mt-2 text-[11px] text-white/40">
+                  <div className="flex items-center gap-3 mt-2 text-[11px] text-fg-mute">
                     {litter.birth_date && <span>{new Date(litter.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
                     {litter.mating_date && !litter.birth_date && <span>Cruce: {new Date(litter.mating_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</span>}
                     {hasPuppies && <span>{litter.puppy_count} cachorros</span>}
                   </div>
 
                   {/* Action buttons */}
-                  <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-white/5">
+                  <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-hair">
                     <Link href={`/litters/${litter.id}`} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition">
                       <Eye className="w-3.5 h-3.5" /> Ver
                     </Link>
-                    <button onClick={() => openEdit(litter.id)} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition">
+                    <button onClick={() => openEdit(litter.id)} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-chip text-fg-mute hover:bg-chip transition">
                       <Edit className="w-3.5 h-3.5" /> Editar
                     </button>
                     {!hasPuppies && (
-                      <button onClick={() => { setDeleteError(''); setDeleteId(litter.id) }} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-white/5 text-red-400/50 hover:bg-red-500/10 hover:text-red-400 transition ml-auto">
+                      <button onClick={() => { setDeleteError(''); setDeleteId(litter.id) }} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-chip text-red-400/50 hover:bg-red-500/10 hover:text-red-400 transition ml-auto">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
@@ -202,11 +202,11 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
       ) : (
         <div className="space-y-2">
           <button onClick={openAdd}
-            className="w-full flex items-center gap-3 border-2 border-dashed border-white/10 rounded-xl p-3 sm:p-4 hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition shrink-0">
-              <Plus className="w-5 h-5 text-white/30 group-hover:text-[#D74709] transition" />
+            className="w-full flex items-center gap-3 border-2 border-dashed border-hair rounded-xl p-3 sm:p-4 hover:border-[#D74709]/40 hover:bg-ink-800 transition group cursor-pointer">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-chip group-hover:bg-[#D74709]/10 flex items-center justify-center transition shrink-0">
+              <Plus className="w-5 h-5 text-fg-mute group-hover:text-[#D74709] transition" />
             </div>
-            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir camada</p>
+            <p className="text-sm text-fg-mute group-hover:text-fg-dim transition font-medium">Añadir camada</p>
           </button>
           {sorted.map(litter => {
             const father = litter.father as any
@@ -214,19 +214,19 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
             const status = statusConfig[litter.status] || statusConfig.planned
             const hasPuppies = litter.puppy_count && litter.puppy_count > 0
             return (
-              <div key={litter.id} className="flex items-center gap-2.5 sm:gap-4 bg-white/5 border border-white/10 rounded-xl p-2.5 sm:p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition cursor-pointer" onClick={() => window.location.href = `/litters/${litter.id}`}>
+              <div key={litter.id} className="flex items-center gap-2.5 sm:gap-4 bg-chip border border-hair rounded-xl p-2.5 sm:p-4 hover:border-[#D74709]/50 hover:bg-chip transition cursor-pointer" onClick={() => window.location.href = `/litters/${litter.id}`}>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.male }}>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 overflow-hidden bg-chip" style={{ borderColor: BRAND.male }}>
                     {father?.thumbnail_url ? <img src={father.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-blue-400/30 text-xs">♂</div>}
                   </div>
-                  <span className="text-white/20 text-xs">x</span>
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 overflow-hidden bg-white/5" style={{ borderColor: BRAND.female }}>
+                  <span className="text-fg-mute text-xs">x</span>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 overflow-hidden bg-chip" style={{ borderColor: BRAND.female }}>
                     {mother?.thumbnail_url ? <img src={mother.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-pink-400/30 text-xs">♀</div>}
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm truncate">{father?.name || '?'} x {mother?.name || '?'}</p>
-                  <div className="flex items-center gap-3 mt-0.5 text-xs text-white/40">
+                  <div className="flex items-center gap-3 mt-0.5 text-xs text-fg-mute">
                     {litter.birth_date && <span>{new Date(litter.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
                     {hasPuppies && <span>{litter.puppy_count} cachorros</span>}
                   </div>
@@ -234,7 +234,7 @@ export default function LittersPageClient({ litters, userId, userKennelId, userK
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   <span className="text-[10px] font-semibold rounded-full px-2 py-0.5" style={{ backgroundColor: status.color + '20', color: status.color }}>{status.label}</span>
                   <Link href={`/litters/${litter.id}`} onClick={e => e.stopPropagation()} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition"><Eye className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Ver</span></Link>
-                  <button onClick={e => { e.stopPropagation(); openEdit(litter.id) }} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition"><Edit className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Editar</span></button>
+                  <button onClick={e => { e.stopPropagation(); openEdit(litter.id) }} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-chip text-fg-mute hover:bg-chip transition"><Edit className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Editar</span></button>
                 </div>
               </div>
             )

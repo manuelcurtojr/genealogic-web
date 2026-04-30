@@ -27,7 +27,7 @@ export default function AdminStatsClient({
   return (
     <div>
       <h1 className="text-2xl font-bold mb-1">Estadísticas</h1>
-      <p className="text-white/40 text-sm mb-6">Métricas y análisis de la plataforma</p>
+      <p className="text-fg-mute text-sm mb-6">Métricas y análisis de la plataforma</p>
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
@@ -39,13 +39,13 @@ export default function AdminStatsClient({
           { icon: Eye, label: 'Perros públicos', value: totals.dogsPublic, color: '#14B8A6' },
           { icon: Tag, label: 'En venta', value: totals.dogsForSale, color: '#EC4899' },
         ].map(s => (
-          <div key={s.label} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-3">
+          <div key={s.label} className="bg-chip border border-hair rounded-xl p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: s.color + '15' }}>
               <s.icon className="w-5 h-5" style={{ color: s.color }} />
             </div>
             <div>
               <p className="text-lg font-bold">{typeof s.value === 'number' ? s.value.toLocaleString('es-ES') : s.value}</p>
-              <p className="text-[10px] text-white/30">{s.label}</p>
+              <p className="text-[10px] text-fg-mute">{s.label}</p>
             </div>
           </div>
         ))}
@@ -150,7 +150,7 @@ export default function AdminStatsClient({
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+    <div className="bg-chip border border-hair rounded-xl p-5">
       <h3 className="text-sm font-semibold mb-4">{title}</h3>
       {children}
     </div>

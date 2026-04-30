@@ -41,20 +41,20 @@ export default function AdminUsersClient({ initialUsers }: Props) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Usuarios</h1>
-          <p className="text-white/40 text-sm">{users.length} usuarios registrados</p>
+          <p className="text-fg-mute text-sm">{users.length} usuarios registrados</p>
         </div>
       </div>
 
       {/* Filters */}
       <div className="flex gap-3 mb-4">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Buscar por nombre o email..."
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
+            className="w-full bg-chip border border-hair rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
         </div>
         <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)}
-          className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/60 focus:border-[#D74709] focus:outline-none transition appearance-none">
+          className="bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-fg-dim focus:border-[#D74709] focus:outline-none transition appearance-none">
           <option value="">Todos los roles</option>
           <option value="admin">Admin</option>
           <option value="pro">Pro</option>
@@ -63,30 +63,30 @@ export default function AdminUsersClient({ initialUsers }: Props) {
       </div>
 
       {/* Table */}
-      <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+      <div className="bg-chip border border-hair rounded-xl overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-white/10">
-              <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-3">Usuario</th>
-              <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-3">Rol</th>
-              <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-3">País</th>
-              <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-3">Registro</th>
+            <tr className="border-b border-hair">
+              <th className="text-left text-[10px] font-semibold text-fg-mute uppercase tracking-wider px-4 py-3">Usuario</th>
+              <th className="text-left text-[10px] font-semibold text-fg-mute uppercase tracking-wider px-4 py-3">Rol</th>
+              <th className="text-left text-[10px] font-semibold text-fg-mute uppercase tracking-wider px-4 py-3">País</th>
+              <th className="text-left text-[10px] font-semibold text-fg-mute uppercase tracking-wider px-4 py-3">Registro</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map(u => {
               const rc = ROLE_CONFIG[u.role] || ROLE_CONFIG.owner
               return (
-                <tr key={u.id} className="border-b border-white/5 hover:bg-white/[0.02] transition cursor-pointer" onClick={() => setPanelUserId(u.id)}>
+                <tr key={u.id} className="border-b border-hair hover:bg-ink-800 transition cursor-pointer" onClick={() => setPanelUserId(u.id)}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full overflow-hidden bg-white/5 border border-white/10 flex-shrink-0">
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-chip border border-hair flex-shrink-0">
                         {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-full h-full object-cover" /> :
                           <div className="w-full h-full flex items-center justify-center text-[#D74709] text-xs font-bold">{(u.display_name || u.email || '?')[0].toUpperCase()}</div>}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate">{u.display_name || 'Sin nombre'}</p>
-                        <p className="text-[10px] text-white/30 truncate">{u.email}</p>
+                        <p className="text-[10px] text-fg-mute truncate">{u.email}</p>
                       </div>
                     </div>
                   </td>
@@ -110,8 +110,8 @@ export default function AdminUsersClient({ initialUsers }: Props) {
                       </button>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-xs text-white/40">{u.country || '—'}</td>
-                  <td className="px-4 py-3 text-[10px] text-white/30">
+                  <td className="px-4 py-3 text-xs text-fg-mute">{u.country || '—'}</td>
+                  <td className="px-4 py-3 text-[10px] text-fg-mute">
                     {new Date(u.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
                   </td>
                 </tr>
@@ -119,7 +119,7 @@ export default function AdminUsersClient({ initialUsers }: Props) {
             })}
           </tbody>
         </table>
-        {filtered.length === 0 && <p className="text-center py-8 text-white/30 text-sm">Sin resultados</p>}
+        {filtered.length === 0 && <p className="text-center py-8 text-fg-mute text-sm">Sin resultados</p>}
       </div>
 
       <AdminUserPanel

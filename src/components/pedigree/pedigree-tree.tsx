@@ -46,22 +46,22 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
       </PedigreeCtx.Provider>
       </div>
       {/* COI Panel — outside transform context */}
-      <div className={`fixed top-[56px] right-0 bottom-0 w-[300px] z-[45] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${coiPanel?'translate-x-0':'translate-x-full'}`}>
-        <button onClick={()=>setCoiPanel(!coiPanel)} className="absolute -left-7 top-1/2 -translate-y-1/2 w-7 h-14 bg-gray-900 border border-r-0 border-white/10 rounded-l-lg flex items-center justify-center text-white/40 hover:text-white transition">{coiPanel?<ChevronRight className="w-3.5 h-3.5"/>:<ChevronLeft className="w-3.5 h-3.5"/>}</button>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10"><div className="flex items-center gap-2"><Dna className="w-4 h-4 text-[#D74709]"/><h3 className="text-sm font-semibold">Salud Genetica</h3></div><button onClick={()=>setCoiPanel(false)} className="text-white/40 hover:text-white"><ChevronRight className="w-4 h-4"/></button></div>
+      <div className={`fixed top-[56px] right-0 bottom-0 w-[300px] z-[45] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${coiPanel?'translate-x-0':'translate-x-full'}`}>
+        <button onClick={()=>setCoiPanel(!coiPanel)} className="absolute -left-7 top-1/2 -translate-y-1/2 w-7 h-14 bg-ink-800 border border-r-0 border-hair rounded-l-lg flex items-center justify-center text-fg-mute hover:text-fg transition">{coiPanel?<ChevronRight className="w-3.5 h-3.5"/>:<ChevronLeft className="w-3.5 h-3.5"/>}</button>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-hair"><div className="flex items-center gap-2"><Dna className="w-4 h-4 text-[#D74709]"/><h3 className="text-sm font-semibold">Salud Genetica</h3></div><button onClick={()=>setCoiPanel(false)} className="text-fg-mute hover:text-fg"><ChevronRight className="w-4 h-4"/></button></div>
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <div className="text-center"><p className={`text-4xl font-bold ${cc[coiLvl].text}`}>{coi}%</p><p className="text-xs text-white/40 mt-1">Coeficiente de Consanguinidad</p></div>
-          <div><div className="h-3 rounded-full overflow-hidden flex"><div className="bg-green-500 flex-1"/><div className="bg-yellow-500 flex-1"/><div className="bg-orange-500 flex-1"/><div className="bg-red-500 flex-1"/></div><div className="relative h-3 -mt-0.5"><div className="absolute w-2.5 h-2.5 bg-white rounded-full border-2 border-gray-900 -translate-x-1 shadow" style={{left:`${Math.min((coi/25)*100,100)}%`}}/></div><div className="flex justify-between text-[9px] text-white/25 mt-1"><span>0%</span><span>6.25%</span><span>12.5%</span><span>25%+</span></div></div>
+          <div className="text-center"><p className={`text-4xl font-bold ${cc[coiLvl].text}`}>{coi}%</p><p className="text-xs text-fg-mute mt-1">Coeficiente de Consanguinidad</p></div>
+          <div><div className="h-3 rounded-full overflow-hidden flex"><div className="bg-green-500 flex-1"/><div className="bg-yellow-500 flex-1"/><div className="bg-orange-500 flex-1"/><div className="bg-red-500 flex-1"/></div><div className="relative h-3 -mt-0.5"><div className="absolute w-2.5 h-2.5 bg-white rounded-full border-2 border-gray-900 -translate-x-1 shadow" style={{left:`${Math.min((coi/25)*100,100)}%`}}/></div><div className="flex justify-between text-[9px] text-fg-mute mt-1"><span>0%</span><span>6.25%</span><span>12.5%</span><span>25%+</span></div></div>
           <div className={`${cc[coiLvl].bg} rounded-lg p-3 flex items-start gap-2`}><CheckCircle className={`w-4 h-4 ${cc[coiLvl].text} mt-0.5 flex-shrink-0`}/><p className={`text-xs ${cc[coiLvl].text}`}>{coiTxt}</p></div>
-          <p className="text-[10px] text-white/20 text-center">Calculado con 10 generaciones</p>
+          <p className="text-[10px] text-fg-mute text-center">Calculado con 10 generaciones</p>
         </div>
       </div>
       {/* Floating buttons — outside transform context so fixed works */}
       <div className="fixed z-50 flex items-center gap-1.5 lg:gap-2" style={{left: 'max(16px, calc(var(--sidebar-width, 0px) + 30px))', bottom: isNative ? '106px' : '16px'}} onClick={close}>
-        <div className="relative"><button onClick={e=>{e.stopPropagation();setZoomMenu(!zoomMenu);setGenMenu(false)}} className="w-11 h-11 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-white/60 shadow-lg hover:border-white/30 transition"><Search className="w-4 h-4"/></button>{zoomMenu&&<div className="absolute bottom-14 left-0 bg-gray-800 border border-white/10 rounded-lg shadow-xl overflow-hidden" onClick={e=>e.stopPropagation()}>{[150,130,110,100,90,80,70,60,50].map(z=><button key={z} onClick={()=>{setZoom(z);setZoomMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${zoom===z?'bg-[#D74709] text-white':'text-white/60 hover:bg-white/10'}`}>{z}%</button>)}</div>}</div>
-        <div className="relative"><button onClick={e=>{e.stopPropagation();setGenMenu(!genMenu);setZoomMenu(false)}} className="w-11 h-11 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-white/60 shadow-lg hover:border-white/30 font-bold text-xs transition">x{maxGen}</button>{genMenu&&<div className="absolute bottom-14 left-0 bg-gray-800 border border-white/10 rounded-lg shadow-xl overflow-hidden" onClick={e=>e.stopPropagation()}>{[10,9,8,7,6,5,4,3].map(g=><button key={g} onClick={()=>{setMaxGen(g);setGenMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${maxGen===g?'bg-[#D74709] text-white':'text-white/60 hover:bg-white/10'}`}>x{g}</button>)}</div>}</div>
-        <button onClick={()=>setVert(!vert)} className={`w-11 h-11 rounded-full border flex items-center justify-center shadow-lg transition ${vert?'bg-[#D74709] border-[#D74709] text-white':'bg-gray-900 border-white/10 text-white/60 hover:border-white/30'}`}><ArrowLeftRight className="w-4 h-4"/></button>
-        <button onClick={toggleIB} className={`w-11 h-11 rounded-full border flex items-center justify-center shadow-lg transition ${showIB?'bg-[#D74709] border-[#D74709] text-white':'bg-gray-900 border-white/10 text-white/60 hover:border-white/30'}`}><GitBranch className="w-4 h-4"/></button>
+        <div className="relative"><button onClick={e=>{e.stopPropagation();setZoomMenu(!zoomMenu);setGenMenu(false)}} className="w-11 h-11 rounded-full bg-ink-800 border border-hair flex items-center justify-center text-fg-dim shadow-lg hover:border-hair-strong transition"><Search className="w-4 h-4"/></button>{zoomMenu&&<div className="absolute bottom-14 left-0 bg-ink-800 border border-hair rounded-lg shadow-xl overflow-hidden" onClick={e=>e.stopPropagation()}>{[150,130,110,100,90,80,70,60,50].map(z=><button key={z} onClick={()=>{setZoom(z);setZoomMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${zoom===z?'bg-[#D74709] text-white':'text-fg-dim hover:bg-chip'}`}>{z}%</button>)}</div>}</div>
+        <div className="relative"><button onClick={e=>{e.stopPropagation();setGenMenu(!genMenu);setZoomMenu(false)}} className="w-11 h-11 rounded-full bg-ink-800 border border-hair flex items-center justify-center text-fg-dim shadow-lg hover:border-hair-strong font-bold text-xs transition">x{maxGen}</button>{genMenu&&<div className="absolute bottom-14 left-0 bg-ink-800 border border-hair rounded-lg shadow-xl overflow-hidden" onClick={e=>e.stopPropagation()}>{[10,9,8,7,6,5,4,3].map(g=><button key={g} onClick={()=>{setMaxGen(g);setGenMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${maxGen===g?'bg-[#D74709] text-white':'text-fg-dim hover:bg-chip'}`}>x{g}</button>)}</div>}</div>
+        <button onClick={()=>setVert(!vert)} className={`w-11 h-11 rounded-full border flex items-center justify-center shadow-lg transition ${vert?'bg-[#D74709] border-[#D74709] text-white':'bg-ink-800 border-hair text-fg-dim hover:border-hair-strong'}`}><ArrowLeftRight className="w-4 h-4"/></button>
+        <button onClick={toggleIB} className={`w-11 h-11 rounded-full border flex items-center justify-center shadow-lg transition ${showIB?'bg-[#D74709] border-[#D74709] text-white':'bg-ink-800 border-hair text-fg-dim hover:border-hair-strong'}`}><GitBranch className="w-4 h-4"/></button>
       </div>
     </>
   )
@@ -70,15 +70,15 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
 function Card({n,isRoot,si,rc}:{n:PN;isRoot?:boolean;si:boolean;rc:Map<string,number>}){
   const{onClickDog}=useContext(PedigreeCtx)
   const sc=n.sex==='male'?'#017DFA':'#e84393',reps=rc.get(n.id)||0,repC=reps>=2?(RC[Math.min(reps,RC.length-1)]||'#e74c3c'):''
-  const cls=`flex items-stretch bg-white/[0.04] border ${isRoot?'border-[#D74709]':'border-white/10'} rounded-xl overflow-hidden hover:bg-white/[0.07] transition relative cursor-pointer`
+  const cls=`flex items-stretch bg-ink-800 border ${isRoot?'border-[#D74709]':'border-hair'} rounded-xl overflow-hidden hover:bg-chip transition relative cursor-pointer`
   const inner=<>
-    <div className="flex-shrink-0 bg-white/5 relative" style={{width:PH}}>
+    <div className="flex-shrink-0 bg-chip relative" style={{width:PH}}>
       {n.photo_url?<img src={n.photo_url} alt="" className="w-full h-full object-cover"/>:<div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-5 h-5 opacity-20"/></div>}
       <div className="absolute top-0 right-0 bottom-0 w-[3px]" style={{backgroundColor:sc}}/>
     </div>
     <div className="flex-1 min-w-0 px-2.5 py-1.5 flex flex-col justify-center overflow-hidden">
       <p className="text-[12px] font-bold text-white leading-tight whitespace-nowrap" style={{maskImage:'linear-gradient(to right,black 80%,transparent)',WebkitMaskImage:'linear-gradient(to right,black 80%,transparent)'}}>{n.name}</p>
-      {n.breed_name&&<p className="text-[10px] text-white/35 truncate mt-0.5">{n.breed_name}</p>}
+      {n.breed_name&&<p className="text-[10px] text-fg-mute truncate mt-0.5">{n.breed_name}</p>}
     </div>
     {si&&reps>=2&&<span className="absolute bottom-1 right-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{backgroundColor:repC}}>{reps}x</span>}
   </>
@@ -196,7 +196,7 @@ function Empty({sex,parentDogId}:{sex:string;parentDogId?:string}){
   const role=sex==='male'?'father' as const:'mother' as const
   const clickable=!!onClickEmpty&&!!parentDogId
   return<div onClick={clickable?()=>onClickEmpty(parentDogId!,role):undefined}
-    className={`border-2 border-dashed ${bc} flex items-center justify-center text-white/20 rounded-xl ${clickable?'cursor-pointer hover:bg-white/5 hover:border-white/20 transition':''}`} style={{width:CW,height:CH}}>
-    {clickable?<Plus className="w-4 h-4 text-white/30"/>:<span className="text-xs">?</span>}
+    className={`border-2 border-dashed ${bc} flex items-center justify-center text-fg-mute rounded-xl ${clickable?'cursor-pointer hover:bg-chip hover:border-hair-strong transition':''}`} style={{width:CW,height:CH}}>
+    {clickable?<Plus className="w-4 h-4 text-fg-mute"/>:<span className="text-xs">?</span>}
   </div>
 }

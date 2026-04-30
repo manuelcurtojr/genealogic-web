@@ -90,45 +90,45 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
       {/* Title */}
       <div className="mb-4 sm:mb-6">
         <h1 className="text-xl sm:text-2xl font-bold">Mis Perros</h1>
-        <p className="text-white/50 text-xs sm:text-sm mt-1">{dogs.length} perros registrados</p>
+        <p className="text-fg-dim text-xs sm:text-sm mt-1">{dogs.length} perros registrados</p>
       </div>
 
       {/* Search + filters + toggle — 1 row desktop, 2 rows mobile */}
       <div className="flex items-center gap-2 mb-2 lg:mb-3">
         <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />
           <input type="text" placeholder="Buscar por nombre, raza, color..." value={search} onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
+            className="w-full bg-chip border border-hair rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
         </div>
         <select value={sexFilter} onChange={(e) => { setSexFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
-          className="hidden lg:block bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-[130px]">
+          className="hidden lg:block bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-fg focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-[130px]">
           <option value="">Todos los sexos</option>
           <option value="male">Machos</option>
           <option value="female">Hembras</option>
         </select>
         <select value={breedFilter} onChange={(e) => { setBreedFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
-          className="hidden lg:block bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-[160px]">
+          className="hidden lg:block bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-fg focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer min-w-[160px]">
           <option value="">Todas las razas</option>
           {breeds.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
         <div className="hidden lg:block">
           <SortSelect value={sortBy} onChange={setSortBy} storageKey="dogs-sort" />
         </div>
-        <div className="flex rounded-lg border border-white/10 overflow-hidden shrink-0">
-          <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><Grid3X3 className="w-4 h-4" /></button>
-          <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-white/5 text-white/30 hover:text-white/50'}`}><List className="w-4 h-4" /></button>
+        <div className="flex rounded-lg border border-hair overflow-hidden shrink-0">
+          <button onClick={() => changeView('grid')} className={`p-2 transition ${viewMode === 'grid' ? 'bg-[#D74709] text-white' : 'bg-chip text-fg-mute hover:text-fg-dim'}`}><Grid3X3 className="w-4 h-4" /></button>
+          <button onClick={() => changeView('list')} className={`p-2 transition ${viewMode === 'list' ? 'bg-[#D74709] text-white' : 'bg-chip text-fg-mute hover:text-fg-dim'}`}><List className="w-4 h-4" /></button>
         </div>
       </div>
       {/* Mobile filters */}
       <div className="flex items-center gap-2 mb-3 lg:hidden">
         <select value={sexFilter} onChange={(e) => { setSexFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
-          className="bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-xs text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer flex-1 min-w-0">
+          className="bg-chip border border-hair rounded-lg px-2 py-2 text-xs text-fg focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer flex-1 min-w-0">
           <option value="">Todos los sexos</option>
           <option value="male">Machos</option>
           <option value="female">Hembras</option>
         </select>
         <select value={breedFilter} onChange={(e) => { setBreedFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
-          className="bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-xs text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer flex-1 min-w-0">
+          className="bg-chip border border-hair rounded-lg px-2 py-2 text-xs text-fg focus:border-[#D74709] focus:outline-none transition appearance-none cursor-pointer flex-1 min-w-0">
           <option value="">Todas las razas</option>
           {breeds.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
@@ -136,7 +136,7 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
       </div>
 
       {/* Count */}
-      <p className="text-xs text-white/30 mb-3">{filtered.length} perro{filtered.length !== 1 ? 's' : ''}</p>
+      <p className="text-xs text-fg-mute mb-3">{filtered.length} perro{filtered.length !== 1 ? 's' : ''}</p>
 
       {/* Grid view */}
       {viewMode === 'grid' ? (
@@ -144,12 +144,12 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
           {/* Add new dog card */}
           <button
             onClick={openAdd}
-            className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center min-h-[160px] sm:min-h-[200px] hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer"
+            className="border-2 border-dashed border-hair rounded-xl flex flex-col items-center justify-center min-h-[160px] sm:min-h-[200px] hover:border-[#D74709]/40 hover:bg-ink-800 transition group cursor-pointer"
           >
-            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-2 sm:mb-3">
-              <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-white/30 group-hover:text-[#D74709] transition" />
+            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-chip group-hover:bg-[#D74709]/10 flex items-center justify-center transition mb-2 sm:mb-3">
+              <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-fg-mute group-hover:text-[#D74709] transition" />
             </div>
-            <p className="text-xs sm:text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir perro</p>
+            <p className="text-xs sm:text-sm text-fg-mute group-hover:text-fg-dim transition font-medium">Añadir perro</p>
           </button>
 
           {paged.map((dog) => (
@@ -159,24 +159,24 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
       ) : (
         <div className="space-y-2">
           <button onClick={openAdd}
-            className="w-full flex items-center gap-3 border-2 border-dashed border-white/10 rounded-xl p-3 sm:p-4 hover:border-[#D74709]/40 hover:bg-white/[0.02] transition group cursor-pointer">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 group-hover:bg-[#D74709]/10 flex items-center justify-center transition shrink-0">
-              <Plus className="w-5 h-5 text-white/30 group-hover:text-[#D74709] transition" />
+            className="w-full flex items-center gap-3 border-2 border-dashed border-hair rounded-xl p-3 sm:p-4 hover:border-[#D74709]/40 hover:bg-ink-800 transition group cursor-pointer">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-chip group-hover:bg-[#D74709]/10 flex items-center justify-center transition shrink-0">
+              <Plus className="w-5 h-5 text-fg-mute group-hover:text-[#D74709] transition" />
             </div>
-            <p className="text-sm text-white/40 group-hover:text-white/60 transition font-medium">Añadir perro</p>
+            <p className="text-sm text-fg-mute group-hover:text-fg-dim transition font-medium">Añadir perro</p>
           </button>
           {paged.map((dog) => {
             const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
             const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
             const colorName = Array.isArray(dog.color) ? dog.color[0]?.name : dog.color?.name
             return (
-              <div key={dog.id} className="flex items-center gap-2.5 sm:gap-4 bg-white/5 border border-white/10 rounded-xl p-2.5 sm:p-4 hover:border-[#D74709]/50 hover:bg-white/[0.07] transition cursor-pointer" onClick={() => window.location.href = `/dogs/${dog.slug || dog.id}`}>
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 overflow-hidden flex-shrink-0 bg-white/5" style={{ borderColor: sexColor }}>
-                  {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/20 text-sm">{dog.sex === 'male' ? '♂' : '♀'}</div>}
+              <div key={dog.id} className="flex items-center gap-2.5 sm:gap-4 bg-chip border border-hair rounded-xl p-2.5 sm:p-4 hover:border-[#D74709]/50 hover:bg-chip transition cursor-pointer" onClick={() => window.location.href = `/dogs/${dog.slug || dog.id}`}>
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 overflow-hidden flex-shrink-0 bg-chip" style={{ borderColor: sexColor }}>
+                  {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-fg-mute text-sm">{dog.sex === 'male' ? '♂' : '♀'}</div>}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-xs sm:text-sm truncate">{dog.name}</p>
-                  <div className="flex items-center gap-2 sm:gap-3 mt-0.5 text-[10px] sm:text-xs text-white/40">
+                  <div className="flex items-center gap-2 sm:gap-3 mt-0.5 text-[10px] sm:text-xs text-fg-mute">
                     {breedName && <span className="truncate">{breedName}</span>}
                     {colorName && <span className="hidden sm:inline">{colorName}</span>}
                     {dog.birth_date && <span className="hidden sm:inline">{new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
@@ -194,14 +194,14 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
                   <button
                     onClick={e => { e.stopPropagation(); openEdit(dog.id) }}
                     title="Editar"
-                    className="flex items-center gap-1 px-2 py-1.5 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/70 transition"
+                    className="flex items-center gap-1 px-2 py-1.5 rounded text-[10px] font-semibold bg-chip text-fg-mute hover:bg-chip hover:text-fg transition"
                   >
                     <Edit className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Editar</span>
                   </button>
                   <button
                     onClick={e => { e.stopPropagation(); openPedigree(dog.id) }}
                     title="Constructor de genealogía"
-                    className="flex items-center gap-1 px-2 py-1.5 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-green-500/10 hover:text-green-400 transition"
+                    className="flex items-center gap-1 px-2 py-1.5 rounded text-[10px] font-semibold bg-chip text-fg-mute hover:bg-green-500/10 hover:text-green-400 transition"
                   >
                     <GitBranch className="w-3.5 h-3.5" /> <span className="hidden md:inline">Constructor</span>
                   </button>
@@ -216,7 +216,7 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
                       })
                     }}
                     title="Transferir a otro dueño"
-                    className="flex items-center gap-1 px-2 py-1.5 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709] transition"
+                    className="flex items-center gap-1 px-2 py-1.5 rounded text-[10px] font-semibold bg-chip text-fg-mute hover:bg-[#D74709]/10 hover:text-[#D74709] transition"
                   >
                     <ArrowRightLeft className="w-3.5 h-3.5" /> <span className="hidden md:inline">Transferir</span>
                   </button>

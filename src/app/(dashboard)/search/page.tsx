@@ -15,16 +15,16 @@ export default function SearchPage() {
   return (
     <div>
       <h1 className="text-xl sm:text-2xl font-bold mb-2">Buscar</h1>
-      <p className="text-white/40 text-xs sm:text-sm mb-4 sm:mb-6">Encuentra perros y criaderos registrados</p>
+      <p className="text-fg-mute text-xs sm:text-sm mb-4 sm:mb-6">Encuentra perros y criaderos registrados</p>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-white/5 rounded-xl mb-4 sm:mb-6 w-fit">
+      <div className="flex gap-1 p-1 bg-chip rounded-xl mb-4 sm:mb-6 w-fit">
         <button onClick={() => setTab('dogs')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition ${tab === 'dogs' ? 'bg-[#D74709] text-white shadow' : 'text-white/40 hover:text-white/60'}`}>
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition ${tab === 'dogs' ? 'bg-[#D74709] text-white shadow' : 'text-fg-mute hover:text-fg-dim'}`}>
           <Dog className="w-4 h-4" /> Perros
         </button>
         <button onClick={() => setTab('kennels')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition ${tab === 'kennels' ? 'bg-[#D74709] text-white shadow' : 'text-white/40 hover:text-white/60'}`}>
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition ${tab === 'kennels' ? 'bg-[#D74709] text-white shadow' : 'text-fg-mute hover:text-fg-dim'}`}>
           <Home className="w-4 h-4" /> Criaderos
         </button>
       </div>
@@ -83,34 +83,34 @@ function DogsSearch() {
       {/* Search bar + filter toggle */}
       <div className="flex items-center gap-2 mb-3">
         <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />
           <input type="text" value={query} onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
             placeholder="Buscar por nombre..."
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
+            className="w-full bg-chip border border-hair rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
         </div>
         <button onClick={() => setFiltersOpen(!filtersOpen)}
-          className={`p-2.5 rounded-lg border transition shrink-0 ${hasActiveFilters ? 'bg-[#D74709]/15 text-[#D74709] border-[#D74709]/30' : filtersOpen ? 'bg-white/10 text-white border-white/20' : 'bg-white/5 text-white/40 border-white/10'}`}>
+          className={`p-2.5 rounded-lg border transition shrink-0 ${hasActiveFilters ? 'bg-[#D74709]/15 text-[#D74709] border-[#D74709]/30' : filtersOpen ? 'bg-chip text-white border-hair-strong' : 'bg-chip text-fg-mute border-hair'}`}>
           <Filter className="w-4 h-4" />
         </button>
       </div>
 
       {/* Collapsible filters */}
       {filtersOpen && (
-        <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 mb-4 p-3 bg-white/[0.03] border border-white/10 rounded-xl">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 mb-4 p-3 bg-chip border border-hair rounded-xl">
           <select value={breedFilter} onChange={e => setBreedFilter(e.target.value)}
-            className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none flex-1 min-w-0 sm:min-w-[160px]">
+            className="bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-fg focus:border-[#D74709] focus:outline-none transition appearance-none flex-1 min-w-0 sm:min-w-[160px]">
             <option value="">Todas las razas</option>
             {breeds.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
           <select value={sexFilter} onChange={e => setSexFilter(e.target.value)}
-            className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white/70 focus:border-[#D74709] focus:outline-none transition appearance-none flex-1 min-w-0 sm:min-w-[130px]">
+            className="bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-fg focus:border-[#D74709] focus:outline-none transition appearance-none flex-1 min-w-0 sm:min-w-[130px]">
             <option value="">Ambos sexos</option>
             <option value="male">Macho</option>
             <option value="female">Hembra</option>
           </select>
           <button onClick={() => setForSaleOnly(!forSaleOnly)}
-            className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium border transition ${forSaleOnly ? 'bg-[#D74709]/15 text-[#D74709] border-[#D74709]/30' : 'bg-white/5 text-white/50 border-white/10 hover:bg-white/10'}`}>
+            className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium border transition ${forSaleOnly ? 'bg-[#D74709]/15 text-[#D74709] border-[#D74709]/30' : 'bg-chip text-fg-dim border-hair hover:bg-chip'}`}>
             <Tag className="w-4 h-4" /> En venta
           </button>
           <button onClick={handleSearch}
@@ -120,15 +120,15 @@ function DogsSearch() {
         </div>
       )}
 
-      {loaded && <p className="text-xs text-white/30 mb-4">{results.length} resultado{results.length !== 1 ? 's' : ''}</p>}
+      {loaded && <p className="text-xs text-fg-mute mb-4">{results.length} resultado{results.length !== 1 ? 's' : ''}</p>}
 
       {loading ? (
-        <div className="text-center py-20 text-white/30">Buscando...</div>
+        <div className="text-center py-20 text-fg-mute">Buscando...</div>
       ) : results.length === 0 && loaded ? (
         <div className="text-center py-20">
-          <Dog className="w-16 h-16 text-white/15 mx-auto mb-4" />
-          <p className="text-white/40">No se encontraron resultados</p>
-          <p className="text-xs text-white/25 mt-1">Prueba con otros filtros</p>
+          <Dog className="w-16 h-16 text-fg-mute mx-auto mb-4" />
+          <p className="text-fg-mute">No se encontraron resultados</p>
+          <p className="text-xs text-fg-mute mt-1">Prueba con otros filtros</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
@@ -141,12 +141,12 @@ function DogsSearch() {
 
             return (
               <Link key={dog.id} href={`/dogs/${dog.slug || dog.id}`}
-                className={`bg-white/[0.04] border rounded-xl overflow-hidden hover:border-[#D74709]/30 transition group ${dog.is_for_sale ? 'border-[#D74709]/20' : 'border-white/10'}`}>
-                <div className="relative aspect-[4/3] bg-white/5">
+                className={`bg-ink-800 border rounded-xl overflow-hidden hover:border-[#D74709]/30 transition group ${dog.is_for_sale ? 'border-[#D74709]/20' : 'border-hair'}`}>
+                <div className="relative aspect-[4/3] bg-chip">
                   {dog.thumbnail_url ? (
                     <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center"><Dog className="w-12 h-12 text-white/10" /></div>
+                    <div className="w-full h-full flex items-center justify-center"><Dog className="w-12 h-12 text-fg-mute" /></div>
                   )}
                   {breedName && <span className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-2 py-0.5 rounded-full">{breedName}</span>}
                   {dog.is_for_sale && (
@@ -161,7 +161,7 @@ function DogsSearch() {
                     <span className="text-xs sm:text-sm font-semibold truncate group-hover:text-[#D74709] transition">{dog.name}</span>
                     {(dog as any).is_verified && <ShieldCheck className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />}
                   </div>
-                  <div className="flex items-center gap-2 mt-1 text-[11px] text-white/35">
+                  <div className="flex items-center gap-2 mt-1 text-[11px] text-fg-mute">
                     {dog.birth_date && <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })}</span>}
                     {kennelName && <span className="truncate">{kennelName}</span>}
                   </div>
@@ -170,9 +170,9 @@ function DogsSearch() {
                       {dog.sale_price ? (
                         <span className="text-sm font-bold text-[#D74709]">{Number(dog.sale_price).toLocaleString('es-ES')} {symbol}</span>
                       ) : (
-                        <span className="text-xs text-white/30">Consultar precio</span>
+                        <span className="text-xs text-fg-mute">Consultar precio</span>
                       )}
-                      {dog.sale_location && <span className="text-[10px] text-white/25 flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{dog.sale_location}</span>}
+                      {dog.sale_location && <span className="text-[10px] text-fg-mute flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{dog.sale_location}</span>}
                     </div>
                   )}
                 </div>
@@ -255,11 +255,11 @@ function KennelsSearch() {
     <>
       {/* Search bar */}
       <div className="relative mb-3">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />
         <input type="text" value={query} onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSearch()}
           placeholder="Buscar criadero por nombre..."
-          className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none transition" />
+          className="w-full bg-chip border border-hair rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
       </div>
 
       {/* Filters row */}
@@ -267,27 +267,27 @@ function KennelsSearch() {
         {/* Country multi-select */}
         <div className="relative flex-1 min-w-0" onClick={e => e.stopPropagation()}>
           <button onClick={() => { setCountryDropdown(!countryDropdown); setBreedDropdown(false); setCountryQ('') }}
-            className={`w-full bg-white/5 border rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 transition text-left ${countryDropdown ? 'border-[#D74709]' : selectedCountries.length > 0 ? 'border-[#D74709]/30' : 'border-white/10'}`}>
-            <MapPin className="w-3.5 h-3.5 text-white/30 shrink-0" />
+            className={`w-full bg-chip border rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 transition text-left ${countryDropdown ? 'border-[#D74709]' : selectedCountries.length > 0 ? 'border-[#D74709]/30' : 'border-hair'}`}>
+            <MapPin className="w-3.5 h-3.5 text-fg-mute shrink-0" />
             {selectedCountries.length > 0 ? (
-              <span className="truncate flex-1 text-white/70">{selectedCountries.length} {selectedCountries.length === 1 ? 'país' : 'países'}</span>
+              <span className="truncate flex-1 text-fg">{selectedCountries.length} {selectedCountries.length === 1 ? 'país' : 'países'}</span>
             ) : (
-              <span className="truncate flex-1 text-white/30">Filtrar por país</span>
+              <span className="truncate flex-1 text-fg-mute">Filtrar por país</span>
             )}
-            <ChevronDown className="w-3.5 h-3.5 text-white/20 shrink-0" />
+            <ChevronDown className="w-3.5 h-3.5 text-fg-mute shrink-0" />
           </button>
           {countryDropdown && (
-            <div className="absolute z-40 mt-1 w-full bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-56 flex flex-col">
-              <div className="p-2 border-b border-white/5">
+            <div className="absolute z-40 mt-1 w-full bg-ink-800 border border-hair rounded-lg shadow-xl max-h-56 flex flex-col">
+              <div className="p-2 border-b border-hair">
                 <input autoFocus value={countryQ} onChange={e => setCountryQ(e.target.value)} placeholder="Buscar país..."
-                  className="w-full bg-white/5 border border-white/10 rounded pl-3 pr-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+                  className="w-full bg-chip border border-hair rounded pl-3 pr-3 py-1.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
               </div>
               <div className="overflow-y-auto flex-1">
                 {filteredCountries.map(c => {
                   const selected = selectedCountries.includes(c.name)
                   return (
                     <button key={c.code} type="button" onClick={() => toggleCountry(c.name)}
-                      className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${selected ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/70 hover:bg-white/5'}`}>
+                      className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${selected ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg hover:bg-chip'}`}>
                       <span className="text-base">{c.flag}</span>
                       <span className="flex-1 truncate">{c.name}</span>
                       {selected && <X className="w-3 h-3 shrink-0" />}
@@ -296,7 +296,7 @@ function KennelsSearch() {
                 })}
               </div>
               {selectedCountries.length > 0 && (
-                <button onClick={() => setSelectedCountries([])} className="px-3 py-2 text-xs text-white/30 hover:text-white/50 border-t border-white/5 text-center">
+                <button onClick={() => setSelectedCountries([])} className="px-3 py-2 text-xs text-fg-mute hover:text-fg-dim border-t border-hair text-center">
                   Limpiar selección
                 </button>
               )}
@@ -307,27 +307,27 @@ function KennelsSearch() {
         {/* Breed multi-select */}
         <div className="relative flex-1 min-w-0" onClick={e => e.stopPropagation()}>
           <button onClick={() => { setBreedDropdown(!breedDropdown); setCountryDropdown(false); setBreedQ('') }}
-            className={`w-full bg-white/5 border rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 transition text-left ${breedDropdown ? 'border-[#D74709]' : selectedBreeds.length > 0 ? 'border-[#D74709]/30' : 'border-white/10'}`}>
-            <Dog className="w-3.5 h-3.5 text-white/30 shrink-0" />
+            className={`w-full bg-chip border rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 transition text-left ${breedDropdown ? 'border-[#D74709]' : selectedBreeds.length > 0 ? 'border-[#D74709]/30' : 'border-hair'}`}>
+            <Dog className="w-3.5 h-3.5 text-fg-mute shrink-0" />
             {selectedBreeds.length > 0 ? (
-              <span className="truncate flex-1 text-white/70">{selectedBreeds.length} {selectedBreeds.length === 1 ? 'raza' : 'razas'}</span>
+              <span className="truncate flex-1 text-fg">{selectedBreeds.length} {selectedBreeds.length === 1 ? 'raza' : 'razas'}</span>
             ) : (
-              <span className="truncate flex-1 text-white/30">Filtrar por raza</span>
+              <span className="truncate flex-1 text-fg-mute">Filtrar por raza</span>
             )}
-            <ChevronDown className="w-3.5 h-3.5 text-white/20 shrink-0" />
+            <ChevronDown className="w-3.5 h-3.5 text-fg-mute shrink-0" />
           </button>
           {breedDropdown && (
-            <div className="absolute z-40 mt-1 w-full bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-56 flex flex-col">
-              <div className="p-2 border-b border-white/5">
+            <div className="absolute z-40 mt-1 w-full bg-ink-800 border border-hair rounded-lg shadow-xl max-h-56 flex flex-col">
+              <div className="p-2 border-b border-hair">
                 <input autoFocus value={breedQ} onChange={e => setBreedQ(e.target.value)} placeholder="Buscar raza..."
-                  className="w-full bg-white/5 border border-white/10 rounded pl-3 pr-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-[#D74709] focus:outline-none" />
+                  className="w-full bg-chip border border-hair rounded pl-3 pr-3 py-1.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
               </div>
               <div className="overflow-y-auto flex-1">
                 {filteredBreedOptions.map(b => {
                   const selected = selectedBreeds.includes(b.id)
                   return (
                     <button key={b.id} type="button" onClick={() => toggleBreed(b.id)}
-                      className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${selected ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-white/70 hover:bg-white/5'}`}>
+                      className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${selected ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg hover:bg-chip'}`}>
                       <span className="flex-1 truncate">{b.name}</span>
                       {selected && <X className="w-3 h-3 shrink-0" />}
                     </button>
@@ -335,7 +335,7 @@ function KennelsSearch() {
                 })}
               </div>
               {selectedBreeds.length > 0 && (
-                <button onClick={() => setSelectedBreeds([])} className="px-3 py-2 text-xs text-white/30 hover:text-white/50 border-t border-white/5 text-center">
+                <button onClick={() => setSelectedBreeds([])} className="px-3 py-2 text-xs text-fg-mute hover:text-fg-dim border-t border-hair text-center">
                   Limpiar selección
                 </button>
               )}
@@ -371,21 +371,21 @@ function KennelsSearch() {
             )
           })}
           <button onClick={() => { setSelectedCountries([]); setSelectedBreeds([]) }}
-            className="text-xs text-white/30 hover:text-white/50 px-2 py-1 transition">
+            className="text-xs text-fg-mute hover:text-fg-dim px-2 py-1 transition">
             Limpiar todo
           </button>
         </div>
       )}
 
-      {loaded && <p className="text-xs text-white/30 mb-4">{results.length} criadero{results.length !== 1 ? 's' : ''}</p>}
+      {loaded && <p className="text-xs text-fg-mute mb-4">{results.length} criadero{results.length !== 1 ? 's' : ''}</p>}
 
       {loading ? (
-        <div className="text-center py-20 text-white/30">Buscando...</div>
+        <div className="text-center py-20 text-fg-mute">Buscando...</div>
       ) : results.length === 0 && loaded ? (
         <div className="text-center py-20">
-          <Home className="w-16 h-16 text-white/15 mx-auto mb-4" />
-          <p className="text-white/40">No se encontraron criaderos</p>
-          <p className="text-xs text-white/25 mt-1">Prueba con otros filtros</p>
+          <Home className="w-16 h-16 text-fg-mute mx-auto mb-4" />
+          <p className="text-fg-mute">No se encontraron criaderos</p>
+          <p className="text-xs text-fg-mute mt-1">Prueba con otros filtros</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
@@ -397,7 +397,7 @@ function KennelsSearch() {
 
             return (
               <Link key={kennel.id} href={`/kennels/${kennel.slug || kennel.id}`}
-                className="bg-white/[0.04] border border-white/10 rounded-xl p-4 sm:p-5 hover:border-[#D74709]/30 hover:bg-white/[0.06] transition group">
+                className="bg-ink-800 border border-hair rounded-xl p-4 sm:p-5 hover:border-[#D74709]/30 hover:bg-chip transition group">
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="w-14 h-14 rounded-xl bg-[#D74709]/10 flex items-center justify-center flex-shrink-0 border border-[#D74709]/20 overflow-hidden">
                     {kennel.logo_url ? (
@@ -408,7 +408,7 @@ function KennelsSearch() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-white group-hover:text-[#D74709] transition truncate">{kennel.name}</p>
-                    <div className="flex items-center gap-2 mt-0.5 text-xs text-white/35">
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-fg-mute">
                       {co && <span className="flex items-center gap-1">{co.flag} {kennel.city ? `${kennel.city}, ${co.name}` : co.name}</span>}
                       {kennel.foundation_date && <span>Desde {new Date(kennel.foundation_date).getFullYear()}</span>}
                     </div>
@@ -417,13 +417,13 @@ function KennelsSearch() {
                 {kennelBreeds.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-3">
                     {kennelBreeds.slice(0, 3).map(name => (
-                      <span key={name} className="bg-white/5 text-white/50 text-[10px] font-semibold px-2 py-0.5 rounded-full">{name}</span>
+                      <span key={name} className="bg-chip text-fg-dim text-[10px] font-semibold px-2 py-0.5 rounded-full">{name}</span>
                     ))}
-                    {kennelBreeds.length > 3 && <span className="text-[10px] text-white/25 px-1 py-0.5">+{kennelBreeds.length - 3}</span>}
+                    {kennelBreeds.length > 3 && <span className="text-[10px] text-fg-mute px-1 py-0.5">+{kennelBreeds.length - 3}</span>}
                   </div>
                 )}
                 {kennel.description && (
-                  <p className="text-xs text-white/30 mt-2 line-clamp-2">{kennel.description}</p>
+                  <p className="text-xs text-fg-mute mt-2 line-clamp-2">{kennel.description}</p>
                 )}
               </Link>
             )

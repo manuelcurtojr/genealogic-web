@@ -32,7 +32,7 @@ export default function DogTabs({ dogId, ownerId, isOwner, fatherId, motherId, d
   return (
     <div className="mt-8">
       {/* Tab headers */}
-      <div className="flex gap-1 border-b border-white/10 mb-6">
+      <div className="flex gap-1 border-b border-hair mb-6">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -40,7 +40,7 @@ export default function DogTabs({ dogId, ownerId, isOwner, fatherId, motherId, d
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition border-b-2 -mb-px ${
               active === key
                 ? 'border-[#D74709] text-[#D74709]'
-                : 'border-transparent text-white/40 hover:text-white/70'
+                : 'border-transparent text-fg-mute hover:text-fg'
             }`}
           >
             <Icon className="w-4 h-4" />

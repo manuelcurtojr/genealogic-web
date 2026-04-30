@@ -16,11 +16,11 @@ interface ConfirmDialogProps {
 export default function ConfirmDialog({ open, onConfirm, onCancel, title, message, confirmLabel = 'Confirmar', destructive = false, loading = false }: ConfirmDialogProps) {
   return (
     <Modal open={open} onClose={onCancel} title={title} maxWidth="max-w-sm">
-      <p className="text-sm text-white/60 mb-6">{message}</p>
+      <p className="text-sm text-fg-dim mb-6">{message}</p>
       <div className="flex gap-3 justify-end">
         <button
           onClick={onCancel}
-          className="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/15 text-white transition"
+          className="px-4 py-2 rounded-lg text-sm font-medium bg-chip hover:bg-white/15 text-white transition"
         >
           Cancelar
         </button>

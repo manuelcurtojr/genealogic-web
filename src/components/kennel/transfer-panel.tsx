@@ -108,29 +108,29 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
   return (
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
-      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-gray-900 border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hair flex-shrink-0">
           <div className="flex items-center gap-2">
             <ArrowRightLeft className="w-4 h-4 text-[#D74709]" />
             <h2 className="text-base sm:text-lg font-semibold">Transferir perro</h2>
           </div>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-fg-mute hover:text-fg transition"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
           {/* Dog info */}
-          <div className="flex items-center gap-3 bg-white/[0.03] border border-white/5 rounded-xl p-3">
-            <div className="w-14 h-14 rounded-lg overflow-hidden bg-white/5 flex-shrink-0">
+          <div className="flex items-center gap-3 bg-chip border border-hair rounded-xl p-3">
+            <div className="w-14 h-14 rounded-lg overflow-hidden bg-chip flex-shrink-0">
               {dog.thumbnail_url ? (
                 <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center"><Dog className="w-6 h-6 text-white/15" /></div>
+                <div className="w-full h-full flex items-center justify-center"><Dog className="w-6 h-6 text-fg-mute" /></div>
               )}
             </div>
             <div>
               <p className="text-sm font-semibold">{dog.name}</p>
-              {dog.breed_name && <p className="text-xs text-white/40">{dog.breed_name}</p>}
+              {dog.breed_name && <p className="text-xs text-fg-mute">{dog.breed_name}</p>}
             </div>
           </div>
 
@@ -142,20 +142,20 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
 
           {/* Email search */}
           <div>
-            <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1 block">Email del nuevo propietario</label>
+            <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Email del nuevo propietario</label>
             <div className="flex gap-2">
               <input
                 type="email"
                 value={email}
                 onChange={e => { setEmail(e.target.value); setFoundUser(null); setNotFound(false) }}
                 placeholder="cliente@email.com"
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-[#D74709] focus:outline-none transition"
+                className="flex-1 bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition"
                 onKeyDown={e => e.key === 'Enter' && handleSearch()}
               />
               <button
                 onClick={handleSearch}
                 disabled={searching || !email.trim()}
-                className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white/60 hover:bg-white/10 transition disabled:opacity-30 flex items-center gap-1.5"
+                className="px-4 py-2 bg-chip border border-hair rounded-lg text-sm text-fg-dim hover:bg-chip transition disabled:opacity-30 flex items-center gap-1.5"
               >
                 {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                 Buscar
@@ -171,7 +171,7 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
               </div>
               <div className="flex-1">
                 <p className="text-sm font-semibold text-green-400">{foundUser.display_name || 'Usuario'}</p>
-                <p className="text-xs text-white/40">{foundUser.email}</p>
+                <p className="text-xs text-fg-mute">{foundUser.email}</p>
               </div>
               <Check className="w-5 h-5 text-green-400" />
             </div>
@@ -181,7 +181,7 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
           {notFound && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-center">
               <p className="text-sm text-red-400">No se encontro ningun usuario con ese email</p>
-              <p className="text-xs text-white/30 mt-1">El usuario debe estar registrado en Genealogic</p>
+              <p className="text-xs text-fg-mute mt-1">El usuario debe estar registrado en Genealogic</p>
             </div>
           )}
 
@@ -196,8 +196,8 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-white/10 flex-shrink-0">
-          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition">Cancelar</button>
+        <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hair flex-shrink-0">
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-fg-dim hover:text-fg hover:bg-chip transition">Cancelar</button>
           <button
             onClick={handleTransfer}
             disabled={!foundUser || transferring || done}

@@ -56,7 +56,7 @@ export default function VerificationTab({ dogId, userId }: Props) {
     setSubmitting(false)
   }
 
-  if (loading) return <div className="flex items-center justify-center py-10"><Loader2 className="w-5 h-5 animate-spin text-white/30" /></div>
+  if (loading) return <div className="flex items-center justify-center py-10"><Loader2 className="w-5 h-5 animate-spin text-fg-mute" /></div>
 
   const v = verification
   const isVerified = v?.status === 'approved'
@@ -74,7 +74,7 @@ export default function VerificationTab({ dogId, userId }: Props) {
           <Shield className="w-6 h-6 text-green-400" />
           <div>
             <p className="text-sm font-semibold text-green-400">Perro verificado</p>
-            <p className="text-xs text-white/40">Verificado por el equipo de Genealogic</p>
+            <p className="text-xs text-fg-mute">Verificado por el equipo de Genealogic</p>
           </div>
         </div>
       )}
@@ -83,7 +83,7 @@ export default function VerificationTab({ dogId, userId }: Props) {
         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
           <p className="text-sm font-semibold text-red-400 mb-1">Solicitud rechazada</p>
           <p className="text-xs text-red-300">{v.admin_notes}</p>
-          <p className="text-[10px] text-white/30 mt-2">Sube los documentos corregidos y vuelve a enviar la solicitud</p>
+          <p className="text-[10px] text-fg-mute mt-2">Sube los documentos corregidos y vuelve a enviar la solicitud</p>
         </div>
       )}
 
@@ -92,7 +92,7 @@ export default function VerificationTab({ dogId, userId }: Props) {
           <Clock className="w-5 h-5 text-yellow-400" />
           <div>
             <p className="text-sm font-semibold text-yellow-400">Solicitud en revision</p>
-            <p className="text-xs text-white/40">El equipo de Genealogic esta revisando tus documentos</p>
+            <p className="text-xs text-fg-mute">El equipo de Genealogic esta revisando tus documentos</p>
           </div>
         </div>
       )}
@@ -121,7 +121,7 @@ export default function VerificationTab({ dogId, userId }: Props) {
       )}
 
       {isDraft && !hasBothDocs && (
-        <p className="text-xs text-white/20 text-center">Sube ambos documentos para poder enviar la solicitud</p>
+        <p className="text-xs text-fg-mute text-center">Sube ambos documentos para poder enviar la solicitud</p>
       )}
     </div>
   )
@@ -132,18 +132,18 @@ function DocCard({ icon: Icon, label, description, url, canUpload, uploading, on
   canUpload: boolean; uploading: boolean; onUpload: (file: File) => void
 }) {
   return (
-    <div className={`border rounded-xl p-4 ${url ? 'border-green-500/20 bg-green-500/5' : 'border-white/10'}`}>
+    <div className={`border rounded-xl p-4 ${url ? 'border-green-500/20 bg-green-500/5' : 'border-hair'}`}>
       <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${url ? 'bg-green-500/10' : 'bg-white/5'}`}>
-          <Icon className={`w-5 h-5 ${url ? 'text-green-400' : 'text-white/30'}`} />
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${url ? 'bg-green-500/10' : 'bg-chip'}`}>
+          <Icon className={`w-5 h-5 ${url ? 'text-green-400' : 'text-fg-mute'}`} />
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold">{label}</p>
-          <p className="text-xs text-white/40">{description}</p>
+          <p className="text-xs text-fg-mute">{description}</p>
           {url && <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs text-[#D74709] hover:underline flex items-center gap-1 mt-1"><FileText className="w-3 h-3" /> Ver documento</a>}
         </div>
         {canUpload && (
-          <label className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition flex-shrink-0 ${uploading ? 'bg-white/5 text-white/30' : 'bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20'}`}>
+          <label className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition flex-shrink-0 ${uploading ? 'bg-chip text-fg-mute' : 'bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20'}`}>
             {uploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
             {url ? 'Cambiar' : 'Subir'}
             <input type="file" accept="image/*,.pdf" onChange={e => { if (e.target.files?.[0]) onUpload(e.target.files[0]) }} className="hidden" disabled={uploading} />

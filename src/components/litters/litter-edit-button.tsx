@@ -23,7 +23,7 @@ export default function LitterEditButton({ litterId, userId, userKennelId, userK
   return (
     <>
       <button onClick={() => setShowPanel(true)}
-        className="bg-white/10 hover:bg-white/15 text-white/60 px-3 py-2 rounded-lg text-sm flex items-center gap-1.5 transition">
+        className="bg-chip hover:bg-white/15 text-fg-dim px-3 py-2 rounded-lg text-sm flex items-center gap-1.5 transition">
         <Edit className="w-4 h-4" />
       </button>
 

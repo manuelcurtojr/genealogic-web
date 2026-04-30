@@ -69,7 +69,7 @@ export default function LitterForm({ initialData, breeds, maleDogs, femaleDogs, 
   return (
     <div className="max-w-xl">
       <div className="flex items-center gap-4 mb-8">
-        <Link href={isEdit ? `/litters/${initialData.id}` : '/litters'} className="text-white/40 hover:text-white transition">
+        <Link href={isEdit ? `/litters/${initialData.id}` : '/litters'} className="text-fg-mute hover:text-fg transition">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <h1 className="text-2xl font-bold">{isEdit ? 'Editar camada' : 'Nueva camada'}</h1>
@@ -80,7 +80,7 @@ export default function LitterForm({ initialData, breeds, maleDogs, femaleDogs, 
 
         {/* Parents */}
         <section>
-          <h2 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-4">Padres</h2>
+          <h2 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-4">Padres</h2>
           <div className="grid grid-cols-2 gap-4">
             <SearchableSelect label="Padre ♂" options={fatherOptions} value={form.father_id} onChange={(v) => set('father_id', v)} placeholder="Seleccionar padre" />
             <SearchableSelect label="Madre ♀" options={motherOptions} value={form.mother_id} onChange={(v) => set('mother_id', v)} placeholder="Seleccionar madre" />
@@ -89,19 +89,19 @@ export default function LitterForm({ initialData, breeds, maleDogs, femaleDogs, 
 
         {/* Details */}
         <section>
-          <h2 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-4">Detalles</h2>
+          <h2 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-4">Detalles</h2>
           <div className="space-y-4">
             <SearchableSelect label="Raza" options={breedOptions} value={form.breed_id} onChange={(v) => set('breed_id', v)} placeholder="Seleccionar raza" />
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Fecha de nacimiento</label>
+                <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1.5 block">Fecha de nacimiento</label>
                 <input type="date" value={form.birth_date} onChange={(e) => set('birth_date', e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
+                  className="w-full bg-chip border border-hair rounded-lg px-4 py-3 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5 block">Número de cachorros</label>
+                <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1.5 block">Número de cachorros</label>
                 <input type="number" min="0" value={form.puppy_count} onChange={(e) => set('puppy_count', e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
+                  className="w-full bg-chip border border-hair rounded-lg px-4 py-3 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
               </div>
             </div>
           </div>
@@ -109,7 +109,7 @@ export default function LitterForm({ initialData, breeds, maleDogs, femaleDogs, 
 
         {/* Status */}
         <section>
-          <h2 className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-4">Estado</h2>
+          <h2 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-4">Estado</h2>
           <div className="flex gap-3">
             {[
               { value: 'pending', label: 'Pendiente', color: '#f39c12' },
@@ -118,7 +118,7 @@ export default function LitterForm({ initialData, breeds, maleDogs, femaleDogs, 
               <button key={s.value} type="button" onClick={() => set('status', s.value)}
                 className={`flex-1 py-3 rounded-lg text-sm font-semibold border transition ${
                   form.status === s.value
-                    ? 'text-white' : 'border-white/10 bg-white/5 text-white/50 hover:bg-white/10'
+                    ? 'text-white' : 'border-hair bg-chip text-fg-dim hover:bg-chip'
                 }`}
                 style={form.status === s.value ? { borderColor: s.color, backgroundColor: s.color + '15', color: s.color } : undefined}
               >
@@ -129,10 +129,10 @@ export default function LitterForm({ initialData, breeds, maleDogs, femaleDogs, 
         </section>
 
         {/* Visibility */}
-        <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg p-4">
+        <div className="flex items-center justify-between bg-chip border border-hair rounded-lg p-4">
           <div>
             <p className="text-sm font-medium">Camada publica</p>
-            <p className="text-xs text-white/40 mt-0.5">Visible para otros usuarios</p>
+            <p className="text-xs text-fg-mute mt-0.5">Visible para otros usuarios</p>
           </div>
           <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
         </div>

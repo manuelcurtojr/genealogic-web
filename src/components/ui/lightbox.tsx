@@ -35,12 +35,12 @@ export default function Lightbox({ files, startIndex, onClose }: LightboxProps) 
     <div className="fixed inset-0 z-[90] bg-black/95 flex flex-col" onClick={onClose}>
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
-        <span className="text-sm text-white/50">{current + 1} / {files.length}</span>
+        <span className="text-sm text-fg-dim">{current + 1} / {files.length}</span>
         <div className="flex items-center gap-2">
-          <a href={url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition" title="Descargar">
+          <a href={url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-chip flex items-center justify-center text-fg-dim hover:text-fg transition" title="Descargar">
             <Download className="w-4 h-4" />
           </a>
-          <button onClick={onClose} className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition">
+          <button onClick={onClose} className="w-9 h-9 rounded-full bg-chip flex items-center justify-center text-fg-dim hover:text-fg transition">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -54,8 +54,8 @@ export default function Lightbox({ files, startIndex, onClose }: LightboxProps) 
           <iframe src={url} className="w-full h-full max-w-4xl rounded-lg bg-white" />
         ) : (
           <div className="flex flex-col items-center gap-4">
-            <FileText className="w-16 h-16 text-white/30" />
-            <p className="text-white/50 text-sm">Vista previa no disponible</p>
+            <FileText className="w-16 h-16 text-fg-mute" />
+            <p className="text-fg-dim text-sm">Vista previa no disponible</p>
             <a href={url} target="_blank" rel="noopener noreferrer" className="bg-[#D74709] hover:bg-[#c03d07] text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition flex items-center gap-2">
               <Download className="w-4 h-4" /> Descargar archivo
             </a>
@@ -67,11 +67,11 @@ export default function Lightbox({ files, startIndex, onClose }: LightboxProps) 
       {hasMultiple && (
         <>
           <button onClick={e => { e.stopPropagation(); setCurrent(c => c <= 0 ? files.length - 1 : c - 1) }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 flex items-center justify-center text-white/70 hover:text-white transition">
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 flex items-center justify-center text-fg hover:text-fg transition">
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button onClick={e => { e.stopPropagation(); setCurrent(c => c >= files.length - 1 ? 0 : c + 1) }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 flex items-center justify-center text-white/70 hover:text-white transition">
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 flex items-center justify-center text-fg hover:text-fg transition">
             <ChevronRight className="w-6 h-6" />
           </button>
         </>
@@ -86,7 +86,7 @@ export default function Lightbox({ files, startIndex, onClose }: LightboxProps) 
               {isImage(f) ? (
                 <img src={f} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-white/10 flex items-center justify-center">
+                <div className="w-full h-full bg-chip flex items-center justify-center">
                   <FileText className="w-4 h-4 text-[#D74709]" />
                 </div>
               )}

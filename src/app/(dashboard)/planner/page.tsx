@@ -80,12 +80,12 @@ export default function PlannerPage() {
     <div>
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl sm:text-2xl font-bold">Planificador de Cruces</h1>
-        <p className="text-xs sm:text-sm text-white/40 mt-1">Selecciona un macho y una hembra para ver el pedigri combinado y calcular el COI</p>
+        <p className="text-xs sm:text-sm text-fg-mute mt-1">Selecciona un macho y una hembra para ver el pedigri combinado y calcular el COI</p>
       </div>
 
       {/* Parent selectors */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
-        <div className="bg-white/5 border border-blue-400/30 rounded-xl p-3 sm:p-5">
+        <div className="bg-chip border border-blue-400/30 rounded-xl p-3 sm:p-5">
           <h3 className="text-xs sm:text-sm font-semibold text-blue-400 uppercase tracking-wider mb-2 sm:mb-3">Padre (Macho)</h3>
           <SearchableSelect
             options={males}
@@ -94,7 +94,7 @@ export default function PlannerPage() {
             placeholder="Seleccionar macho..."
           />
         </div>
-        <div className="bg-white/5 border border-pink-400/30 rounded-xl p-3 sm:p-5">
+        <div className="bg-chip border border-pink-400/30 rounded-xl p-3 sm:p-5">
           <h3 className="text-xs sm:text-sm font-semibold text-pink-400 uppercase tracking-wider mb-2 sm:mb-3">Madre (Hembra)</h3>
           <SearchableSelect
             options={females}
@@ -107,18 +107,18 @@ export default function PlannerPage() {
 
       {/* Combined Pedigree */}
       {loading ? (
-        <div className="text-center py-12 text-white/30">Cargando pedigrí combinado...</div>
+        <div className="text-center py-12 text-fg-mute">Cargando pedigrí combinado...</div>
       ) : pedigreeData.length > 1 ? (
         <div className="-mx-4 lg:mx-0">
-          <h2 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-3 px-4 lg:px-0">Genealogía</h2>
+          <h2 className="text-sm font-semibold text-fg-mute uppercase tracking-wider mb-3 px-4 lg:px-0">Genealogía</h2>
           <PedigreeTree data={pedigreeData} rootId="virtual-litter" />
         </div>
       ) : sireId && damId ? (
-        <div className="text-center py-12 text-white/30">No hay datos de pedigrí disponibles</div>
+        <div className="text-center py-12 text-fg-mute">No hay datos de pedigrí disponibles</div>
       ) : (
         <div className="text-center py-20">
-          <Heart className="w-12 h-12 mx-auto mb-4 text-white/10" />
-          <p className="text-white/30">Selecciona un macho y una hembra para comenzar</p>
+          <Heart className="w-12 h-12 mx-auto mb-4 text-fg-mute" />
+          <p className="text-fg-mute">Selecciona un macho y una hembra para comenzar</p>
         </div>
       )}
     </div>
