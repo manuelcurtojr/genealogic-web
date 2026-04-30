@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
   const { data: breeds, error } = await supabase
     .from('breeds')
-    .select('id, name, slug')
+    .select("id, name")
     .in('id', breedIds)
     .order('name')
 

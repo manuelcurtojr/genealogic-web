@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       sale_price, sale_currency, sale_description, sale_location, sale_zipcode, sale_reservation_price,
       is_reproductive, breeding_rights, verification, is_verified,
       health_data, father_id, mother_id, created_at, updated_at,
-      breed:breeds(id, name, slug),
+      breed:breeds(id, name),
       color:colors(id, name)
     `)
     .eq('kennel_id', auth.auth.kennelId)

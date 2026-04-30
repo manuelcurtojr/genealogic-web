@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     .select(`
       id, name, slug, sex, birth_date, thumbnail_url,
       sale_price, sale_currency, sale_description, sale_location,
-      breed:breeds(id, name, slug),
+      breed:breeds(id, name),
       color:colors(id, name)
     `)
     .eq('kennel_id', auth.auth.kennelId)

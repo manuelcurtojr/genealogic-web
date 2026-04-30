@@ -107,7 +107,7 @@ export default function ApiDocsPage() {
       "thumbnail_url": "https://…",
       "is_for_sale": false,
       "is_reproductive": true,
-      "breed": { "id": "...", "name": "Galgo Italiano", "slug": "galgo-italiano" },
+      "breed": { "id": "...", "name": "Galgo Italiano" },
       "color": { "id": "...", "name": "Leonado" }
     }
   ],

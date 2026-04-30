@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     .from('litters')
     .select(`
       id, status, mating_date, birth_date, puppy_count,
-      breed:breeds(id, name, slug),
+      breed:breeds(id, name),
       father:dogs!litters_father_id_fkey(id, name, slug, sex, thumbnail_url),
       mother:dogs!litters_mother_id_fkey(id, name, slug, sex, thumbnail_url)
     `)

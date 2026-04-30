@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       sale_price, sale_currency, sale_description, sale_location,
       is_reproductive, breeding_rights, verification, is_verified,
       father_id, mother_id, created_at, updated_at,
-      breed:breeds(id, name, slug),
+      breed:breeds(id, name),
       color:colors(id, name)
     `, { count: 'exact' })
     .eq('kennel_id', auth.auth.kennelId)
