@@ -34,7 +34,7 @@ export default function CookieBanner() {
           <button onClick={reject} className="text-xs text-fg-mute hover:text-fg px-3 py-2 transition">
             Rechazar
           </button>
-          <button onClick={accept} className="text-xs bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-4 py-2 rounded-lg transition">
+          <button onClick={accept} className="text-xs bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-4 py-2 rounded-lg transition">
             Aceptar
           </button>
         </div>

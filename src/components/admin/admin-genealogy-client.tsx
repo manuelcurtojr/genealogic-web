@@ -330,7 +330,7 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
                     </select>
                   </div>
                   <button onClick={createAndLink} disabled={saving || !newAncestor.name.trim()}
-                    className="w-full bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-1.5">
+                    className="w-full bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2.5 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-1.5">
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                     {saving ? 'Creando...' : 'Crear y vincular'}
                   </button>

@@ -252,7 +252,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
               Cancelar
             </button>
             <button onClick={handleSubmit} disabled={loading || !form.title.trim()}
-              className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-4 sm:px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+              className="bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-4 sm:px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEdit ? 'Guardar' : 'Crear'}
             </button>

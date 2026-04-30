@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Sun, Moon } from 'lucide-react'
 import SearchBar from '@/components/layout/search-bar'
-import Particles, { initParticlesEngine } from '@tsparticles/react'
-import { loadSlim } from '@tsparticles/slim'
+import { NebulaBg } from '@/components/ui/nebula-bg'
+import { SectionLabel } from '@/components/ui/section-label'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   breeds: { id: string; name: string }[]
@@ -14,8 +15,7 @@ interface Props {
 
 export default function LandingPage({ breeds, featuredDogs }: Props) {
   const [darkMode, setDarkMode] = useState(true)
-  const [particlesReady, setParticlesReady] = useState(false)
-  const breedThumbs = featuredDogs.slice(0, 5)
+  const breedThumbs = featuredDogs.slice(0, 6)
 
   useEffect(() => {
     const saved = localStorage.getItem('theme')
@@ -25,12 +25,6 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
     }
   }, [])
 
-  useEffect(() => {
-    initParticlesEngine(async (engine) => {
-      await loadSlim(engine)
-    }).then(() => setParticlesReady(true))
-  }, [])
-
   const toggleTheme = () => {
     const next = !darkMode
     setDarkMode(next)
@@ -38,132 +32,193 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
     document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light')
   }
 
-  const particlesOptions = useMemo<any>(() => ({
-    fullScreen: false,
-    background: { color: { value: 'transparent' } },
-    fpsLimit: 60,
-    particles: {
-      number: { value: 80, density: { enable: true, width: 1920, height: 1080 } },
-      color: { value: darkMode ? ['#D74709', '#ffffff', '#1a56db', '#8B5CF6'] : ['#D74709', '#94a3b8', '#1a56db', '#8B5CF6'] },
-      shape: { type: 'circle' },
-      opacity: {
-        value: { min: 0.1, max: 0.5 },
-        animation: { enable: true, speed: 0.5, startValue: 'random', sync: false },
-      },
-      size: {
-        value: { min: 0.5, max: 2.5 },
-        animation: { enable: true, speed: 1, startValue: 'random', sync: false },
-      },
-      move: {
-        enable: true,
-        speed: { min: 0.2, max: 0.8 },
-        direction: 'none' as const,
-        random: true,
-        straight: false,
-        outModes: { default: 'out' as const },
-      },
-      links: {
-        enable: true,
-        distance: 150,
-        color: '#D74709',
-        opacity: 0.06,
-        width: 0.5,
-      },
-      twinkle: {
-        particles: { enable: true, frequency: 0.03, opacity: darkMode ? 0.8 : 0.5, color: { value: '#D74709' } },
-      },
-    },
-    interactivity: {
-      events: {
-        onHover: { enable: true, mode: 'grab' },
-      },
-      modes: {
-        grab: { distance: 200, links: { opacity: 0.15, color: '#D74709' } },
-      },
-    },
-    detectRetina: true,
-  }), [darkMode])
-
   return (
-    <div className={`min-h-screen relative overflow-hidden ${darkMode ? 'bg-[#0a0f1a] text-white' : 'bg-[#f8fafc] text-gray-900'}`}>
-      {/* Nebula gradient orbs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className={`absolute w-[600px] h-[600px] rounded-full blur-[120px] ${darkMode ? 'opacity-[0.08]' : 'opacity-[0.15]'}`}
-          style={{ background: 'radial-gradient(circle, #D74709, transparent 70%)', top: '-10%', left: '10%', animation: 'drift1 25s ease-in-out infinite' }} />
-        <div className={`absolute w-[500px] h-[500px] rounded-full blur-[100px] ${darkMode ? 'opacity-[0.05]' : 'opacity-[0.1]'}`}
-          style={{ background: 'radial-gradient(circle, #1a56db, transparent 70%)', top: '40%', right: '-5%', animation: 'drift2 30s ease-in-out infinite' }} />
-        <div className={`absolute w-[550px] h-[550px] rounded-full blur-[110px] ${darkMode ? 'opacity-[0.04]' : 'opacity-[0.08]'}`}
-          style={{ background: 'radial-gradient(circle, #8B5CF6, transparent 70%)', bottom: '-15%', left: '30%', animation: 'drift3 35s ease-in-out infinite' }} />
-      </div>
-
-      {/* Particles */}
-      {particlesReady && (
-        <Particles
-          className="absolute inset-0 pointer-events-auto"
-          options={particlesOptions as any}
-        />
-      )}
-
-      {/* Header */}
-      <header className={`relative z-10 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b ${darkMode ? 'border-hair' : 'border-gray-200'}`}>
-        <Link href="/" className="flex items-center gap-2">
-          <img src="/icon.svg" alt="Genealogic" className="h-5" />
-        </Link>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button onClick={toggleTheme}
-            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center transition ${darkMode ? 'border-hair text-yellow-400 hover:bg-chip' : 'border-gray-200 text-yellow-500 hover:bg-gray-100'}`}>
-            {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-          </button>
-          <Link href="/login" className={`hidden sm:inline-flex px-5 py-2.5 rounded-lg border text-sm font-medium transition ${darkMode ? 'border-hair-strong text-white hover:bg-chip' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>
-            Iniciar sesion
+    <main className="min-h-screen bg-ink-900 text-fg">
+      {/* ── Header ───────────────────────────────────────────────────── */}
+      <header
+        className="sticky top-0 z-50 border-b border-hair backdrop-blur-xl"
+        style={{ backgroundColor: 'color-mix(in srgb, var(--surface) 85%, transparent)' }}
+      >
+        <div className="mx-auto flex h-[60px] max-w-page items-center justify-between px-6 sm:px-8 lg:px-12">
+          <Link href="/" className="flex items-center">
+            <span className="font-sans text-[17px] font-bold tracking-[-0.02em] text-fg">
+              Genealogic
+            </span>
           </Link>
-          <Link href="/register" className="px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg bg-[#D74709] hover:bg-[#c03d07] text-xs sm:text-sm font-semibold text-white transition">
-            Registrarse
-          </Link>
+          <div className="flex items-center gap-[10px]">
+            <button
+              onClick={toggleTheme}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-hair-strong text-fg-mute transition hover:text-fg"
+              title={darkMode ? 'Modo claro' : 'Modo oscuro'}
+            >
+              {darkMode ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+            </button>
+            <Button href="/login" variant="secondary" size="sm" className="hidden sm:inline-flex">
+              Iniciar sesión
+            </Button>
+            <Button href="/register" variant="primary" size="sm">
+              Registrarse
+            </Button>
+          </div>
         </div>
       </header>
 
-      {/* Hero */}
-      <main className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-70px)] px-4">
-        <div className="w-full max-w-2xl">
-          <SearchBar />
-        </div>
+      {/* ── Hero ─────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden border-b border-hair pb-20 pt-16 sm:pb-24 sm:pt-20 lg:pb-[88px] lg:pt-[88px]">
+        <NebulaBg />
+        <div className="relative z-10 mx-auto max-w-page px-6 sm:px-8 lg:px-12">
+          <SectionLabel num="01" label="EL REGISTRO" className="mb-8" />
+          <h1 className="font-display text-5xl font-normal leading-[0.95] tracking-[-0.035em] sm:text-6xl md:text-7xl lg:text-[88px] lg:tracking-[-3px] max-w-[12ch]">
+            Pedigrees
+            <br />
+            <span className="italic font-light">verificables</span>
+            <br />
+            de cualquier
+            <br />
+            criador.
+          </h1>
+          <p className="mt-8 max-w-[560px] text-[19px] leading-[1.5] tracking-[-0.1px] text-fg-dim">
+            El registro público de perros con pedigree del mundo. Cada criador serio tiene
+            su escaparate. Cada perro su árbol genealógico verificable. Indexado en Google,
+            consultable por API.
+          </p>
+          <div className="mt-10 flex flex-wrap gap-[10px]">
+            <Button href="/register" variant="primary">
+              Crear cuenta gratis →
+            </Button>
+            <Button href="/search" variant="secondary">
+              Buscar perros y criaderos
+            </Button>
+          </div>
 
-        {/* Featured dogs */}
-        <div className="flex items-center gap-3 mt-6">
-          {breedThumbs.map(dog => (
-            <Link key={dog.id} href={`/dogs/${dog.slug || dog.id}`}
-              className={`w-10 h-10 rounded-lg overflow-hidden border hover:border-[#D74709]/50 transition hover:scale-110 ${darkMode ? 'bg-chip border-hair' : 'bg-gray-100 border-gray-200'}`}>
-              {dog.thumbnail_url ? (
-                <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-fg-mute text-xs">{dog.name?.[0]}</div>
-              )}
-            </Link>
-          ))}
-          <Link href="/search" className={`h-10 px-3 rounded-lg flex items-center justify-center border hover:border-[#D74709]/50 transition text-xs font-medium ${darkMode ? 'bg-chip border-hair text-fg-mute hover:text-fg' : 'bg-gray-100 border-gray-200 text-gray-500 hover:text-gray-700'}`}>
-            Ver todos →
-          </Link>
+          {/* Featured dogs row */}
+          {breedThumbs.length > 0 && (
+            <div className="mt-14 flex flex-wrap items-center gap-3">
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
+                Recién registrados
+              </span>
+              <div className="flex items-center gap-2">
+                {breedThumbs.map((dog: any) => (
+                  <Link
+                    key={dog.id}
+                    href={`/dogs/${dog.slug || dog.id}`}
+                    className="block h-10 w-10 overflow-hidden rounded-lg border border-hair bg-chip transition hover:border-paper-50/40 hover:scale-105"
+                    title={dog.name}
+                  >
+                    {dog.thumbnail_url && (
+                      <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover" />
+                    )}
+                  </Link>
+                ))}
+                <Link
+                  href="/search"
+                  className="flex h-10 items-center rounded-lg border border-hair-strong px-3 text-xs font-medium text-fg-dim transition hover:text-fg hover:border-paper-50/40"
+                >
+                  Ver todos →
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
-      </main>
+      </section>
 
-      <style jsx>{`
-        @keyframes drift1 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(80px, 40px) scale(1.1); }
-          66% { transform: translate(-40px, 80px) scale(0.9); }
-        }
-        @keyframes drift2 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(-60px, 50px) scale(1.15); }
-          66% { transform: translate(50px, -30px) scale(0.85); }
-        }
-        @keyframes drift3 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(50px, -60px) scale(1.1); }
-          66% { transform: translate(-80px, 20px) scale(0.95); }
-        }
-      `}</style>
+      {/* ── Search section ───────────────────────────────────────────── */}
+      <section className="border-b border-hair py-16 sm:py-20">
+        <div className="mx-auto max-w-page px-6 sm:px-8 lg:px-12">
+          <SectionLabel num="02" label="BUSCAR" className="mb-6" />
+          <h2 className="font-display text-3xl font-normal leading-[1.1] tracking-[-0.02em] sm:text-4xl max-w-[20ch]">
+            Encuentra el perro o criadero <span className="italic font-light">que buscas.</span>
+          </h2>
+          <div className="mt-8 max-w-2xl">
+            <SearchBar />
+          </div>
+        </div>
+      </section>
+
+      {/* ── Three pillars ────────────────────────────────────────────── */}
+      <section className="border-b border-hair py-16 sm:py-20">
+        <div className="mx-auto max-w-page px-6 sm:px-8 lg:px-12">
+          <SectionLabel num="03" label="QUÉ ES" className="mb-6" />
+          <h2 className="font-display text-3xl font-normal leading-[1.1] tracking-[-0.02em] sm:text-4xl max-w-[24ch]">
+            Tres capas. <span className="italic font-light">Una sola red.</span>
+          </h2>
+          <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <Pillar
+              num="I"
+              title="Datos"
+              desc="Cada perro registrado con genealogía 3-5 generaciones, fotos, datos sanitarios y pedigree verificable."
+            />
+            <Pillar
+              num="II"
+              title="Identidad"
+              desc="Cada criadero con perfil público profesional. Afijo en el nombre de los perros, branding propio, página indexable."
+            />
+            <Pillar
+              num="III"
+              title="Red"
+              desc="Que un comprador busque «Galgo Italiano» y encuentre criadores reales con sus perros, sus camadas y su trayectoria."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ── For breeders / API ──────────────────────────────────────── */}
+      <section className="relative overflow-hidden border-b border-hair py-20 sm:py-24">
+        <div className="relative z-10 mx-auto max-w-page px-6 sm:px-8 lg:px-12">
+          <SectionLabel num="04" label="PARA CRIADORES" className="mb-6" />
+          <h2 className="font-display text-3xl font-normal leading-[1.1] tracking-[-0.02em] sm:text-4xl md:text-5xl max-w-[20ch]">
+            Sube tu catálogo en una tarde.{' '}
+            <span className="italic font-light">Que el mundo encuentre tus perros.</span>
+          </h2>
+          <p className="mt-6 max-w-[560px] text-[17px] leading-[1.55] text-fg-dim">
+            Registra todos tus perros, importa pedigrees existentes con OCR de IA,
+            crea perfil público de tu criadero. Gratis. Conecta con Pawdoq Breeders cuando
+            quieras automatizar la conversión.
+          </p>
+          <div className="mt-10 flex flex-wrap gap-[10px]">
+            <Button href="/register" variant="primary">
+              Empezar →
+            </Button>
+            <Button href="/api-docs" variant="secondary">
+              Ver API
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Footer ───────────────────────────────────────────────────── */}
+      <footer className="py-10 sm:py-12">
+        <div className="mx-auto max-w-page px-6 sm:px-8 lg:px-12">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-sans text-base font-bold tracking-[-0.02em] text-fg">Genealogic</p>
+              <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
+                Manuel Curtó SL · genealogic.io
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-6 text-sm text-fg-dim">
+              <Link href="/login" className="transition hover:text-fg">Iniciar sesión</Link>
+              <Link href="/register" className="transition hover:text-fg">Registrarse</Link>
+              <Link href="/api-docs" className="transition hover:text-fg">API</Link>
+              <Link href="/legal" className="transition hover:text-fg">Legal</Link>
+              <Link href="/privacy" className="transition hover:text-fg">Privacidad</Link>
+              <Link href="/terms" className="transition hover:text-fg">Términos</Link>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </main>
+  )
+}
+
+function Pillar({ num, title, desc }: { num: string; title: string; desc: string }) {
+  return (
+    <div>
+      <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">{num}</span>
+      <h3 className="mt-3 font-display text-[28px] font-normal leading-[1.1] tracking-[-0.015em] text-fg">
+        {title}
+      </h3>
+      <p className="mt-3 text-[15px] leading-[1.55] text-fg-dim">{desc}</p>
     </div>
   )
 }

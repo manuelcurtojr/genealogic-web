@@ -265,7 +265,7 @@ export default function CalendarPage() {
           </div>
           <div className="flex items-center gap-2">
             <button onClick={goToday} className="text-[11px] text-fg-dim hover:text-fg bg-chip border border-hair rounded-lg px-2.5 py-1.5 transition">Hoy</button>
-            <button onClick={() => handleNewEvent()} className="bg-[#D74709] hover:bg-[#c03d07] text-white p-2 rounded-full transition">
+            <button onClick={() => handleNewEvent()} className="bg-paper-50 text-ink-900 hover:opacity-90 p-2 rounded-full transition">
               <Plus className="w-4 h-4" />
             </button>
           </div>
@@ -319,7 +319,7 @@ export default function CalendarPage() {
           <div className="flex items-center justify-between px-4 py-4 border-b border-hair">
             <h3 className="text-base font-semibold">{dayPanelLabel}</h3>
             <div className="flex items-center gap-2">
-              <button onClick={() => handleNewEvent(dayPanelDate)} className="bg-[#D74709] hover:bg-[#c03d07] text-white p-1.5 rounded-full transition">
+              <button onClick={() => handleNewEvent(dayPanelDate)} className="bg-paper-50 text-ink-900 hover:opacity-90 p-1.5 rounded-full transition">
                 <Plus className="w-4 h-4" />
               </button>
               <button onClick={() => setDayPanelOpen(false)} className="text-fg-mute hover:text-fg transition p-1">
@@ -389,7 +389,7 @@ export default function CalendarPage() {
                 </button>
               ))}
             </div>
-            <button onClick={() => handleNewEvent()} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+            <button onClick={() => handleNewEvent()} className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
               <Plus className="w-3.5 h-3.5" /> Evento
             </button>
           </div>

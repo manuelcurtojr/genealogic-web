@@ -144,7 +144,7 @@ export default function AdminSettingsClient({ settings: initSettings }: Props) {
           </div>
           <div className="flex gap-2">
             <button onClick={addCustom} disabled={!customKey.trim() || !customValue.trim() || saving === 'custom'}
-              className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">Añadir</button>
+              className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">Añadir</button>
             <button onClick={() => setShowAddCustom(false)} className="text-fg-dim hover:text-fg px-4 py-2 text-sm transition">Cancelar</button>
           </div>
         </div>
@@ -192,7 +192,7 @@ export default function AdminSettingsClient({ settings: initSettings }: Props) {
                   </button>
                 </div>
                 <button onClick={() => saveSetting(k.key)} disabled={!hasChanged && isConfigured || saving === k.key}
-                  className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition disabled:opacity-30 flex items-center gap-1.5 flex-shrink-0">
+                  className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2.5 rounded-lg text-sm font-semibold transition disabled:opacity-30 flex items-center gap-1.5 flex-shrink-0">
                   {saving === k.key ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                   Guardar
                 </button>

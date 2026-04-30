@@ -114,7 +114,7 @@ function DogsSearch() {
             <Tag className="w-4 h-4" /> En venta
           </button>
           <button onClick={handleSearch}
-            className="bg-[#D74709] hover:bg-[#c03d07] text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition">
+            className="bg-paper-50 text-ink-900 hover:opacity-90 px-5 py-2.5 rounded-lg text-sm font-semibold transition">
             Buscar
           </button>
         </div>
@@ -344,7 +344,7 @@ function KennelsSearch() {
         </div>
 
         <button onClick={handleSearch}
-          className="bg-[#D74709] hover:bg-[#c03d07] text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition shrink-0">
+          className="bg-paper-50 text-ink-900 hover:opacity-90 px-5 py-2.5 rounded-lg text-sm font-semibold transition shrink-0">
           Buscar
         </button>
       </div>

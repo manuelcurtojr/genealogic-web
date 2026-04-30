@@ -56,7 +56,7 @@ export default function Lightbox({ files, startIndex, onClose }: LightboxProps) 
           <div className="flex flex-col items-center gap-4">
             <FileText className="w-16 h-16 text-fg-mute" />
             <p className="text-fg-dim text-sm">Vista previa no disponible</p>
-            <a href={url} target="_blank" rel="noopener noreferrer" className="bg-[#D74709] hover:bg-[#c03d07] text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+            <a href={url} target="_blank" rel="noopener noreferrer" className="bg-paper-50 text-ink-900 hover:opacity-90 px-6 py-2.5 rounded-lg text-sm font-semibold transition flex items-center gap-2">
               <Download className="w-4 h-4" /> Descargar archivo
             </a>
           </div>

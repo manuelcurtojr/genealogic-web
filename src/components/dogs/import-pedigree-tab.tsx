@@ -523,7 +523,7 @@ Rules:
                 </button>
               </div>
             ) : (
-              <button onClick={handleConfirm} disabled={importing} className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-6 py-2 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+              <button onClick={handleConfirm} disabled={importing} className="bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-6 py-2 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
                 {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 {importing ? 'Importando...' : 'Importar pedigrí'}
               </button>
@@ -623,7 +623,7 @@ Rules:
         <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">URL del pedigrí</label>
         <div className="flex gap-2">
           <input type="url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://presadb.com/dogocanario/nombre-del-perro" onKeyDown={e => e.key === 'Enter' && handleScan()} className="flex-1 bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
-          <button onClick={handleScan} disabled={scanning || !url.trim()} className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm flex-shrink-0">
+          <button onClick={handleScan} disabled={scanning || !url.trim()} className="bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm flex-shrink-0">
             {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             {scanning ? 'Escaneando...' : 'Escanear'}
           </button>

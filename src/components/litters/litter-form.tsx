@@ -138,7 +138,7 @@ export default function LitterForm({ initialData, breeds, maleDogs, femaleDogs, 
         </div>
 
         <button type="submit" disabled={loading}
-          className="w-full bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2">
+          className="w-full bg-paper-50 text-ink-900 hover:opacity-90 font-semibold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2">
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           {loading ? (isEdit ? 'Guardando...' : 'Creando...') : (isEdit ? 'Guardar cambios' : 'Crear camada')}
         </button>

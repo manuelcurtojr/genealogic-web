@@ -83,7 +83,7 @@ export default function AdminVetTemplatesClient({ templates: init }: Props) {
           <p className="text-fg-mute text-sm">Plantillas del sistema para auto-generar recordatorios</p>
         </div>
         <button onClick={() => { setShowAdd(true); setEditId(null); setForm({ name: '', description: '', type: 'vaccine', default_interval_days: '365', applies_to: 'both' }) }}
-          className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition">
+          className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition">
           <Plus className="w-4 h-4" /> Nueva plantilla
         </button>
       </div>
@@ -111,7 +111,7 @@ export default function AdminVetTemplatesClient({ templates: init }: Props) {
           </div>
           <div className="flex gap-2">
             <button onClick={editId ? saveEdit : addTemplate} disabled={!form.name.trim()}
-              className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">
+              className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">
               {editId ? 'Guardar' : 'Crear'}
             </button>
             <button onClick={() => { setShowAdd(false); setEditId(null) }}

@@ -214,7 +214,7 @@ export default function AvatarUpload({ userId, currentUrl, displayName, onUpload
                 <button
                   onClick={handleSave}
                   disabled={uploading}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-[#D74709] hover:bg-[#c03d07] text-white transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-paper-50 text-ink-900 hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : 'Guardar avatar'}
                 </button>

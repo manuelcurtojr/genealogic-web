@@ -171,7 +171,7 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
                 <Check className="w-3.5 h-3.5" /> Guardado
               </span>
             )}
-            <button onClick={onClose} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1.5">
+            <button onClick={onClose} className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1.5">
               <Check className="w-4 h-4" /> Listo
             </button>
           </div>
@@ -240,7 +240,7 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
                 {/* Create new — fixed at bottom */}
                 <div className="px-4 sm:px-5 py-3 sm:py-4 border-t border-hair flex-shrink-0">
                   <button onClick={openNewAncestorForm}
-                    className="w-full bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-1.5">
+                    className="w-full bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-1.5">
                     <Plus className="w-4 h-4" /> Crear nuevo {panelTarget.role === 'father' ? 'perro' : 'perra'}
                   </button>
                 </div>

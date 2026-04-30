@@ -161,7 +161,7 @@ export default function KennelApiKeysPage() {
           />
           <div className="flex items-center gap-2">
             <button type="submit" disabled={creating || !newKeyName.trim()}
-              className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center gap-2">
+              className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center gap-2">
               {creating && <Loader2 className="w-4 h-4 animate-spin" />}
               Generar
             </button>
@@ -173,7 +173,7 @@ export default function KennelApiKeysPage() {
         </form>
       ) : (
         <button onClick={() => setShowCreate(true)}
-          className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 mb-6">
+          className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 mb-6">
           <Plus className="w-4 h-4" /> Nueva API key
         </button>
       )}

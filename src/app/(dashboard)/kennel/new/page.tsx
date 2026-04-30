@@ -49,7 +49,7 @@ export default function NewKennelPage() {
         </div>
 
         <button type="submit" disabled={loading || !name.trim()}
-          className="w-full bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2">
+          className="w-full bg-paper-50 text-ink-900 hover:opacity-90 font-semibold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2">
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           {loading ? 'Creando...' : 'Crear criadero'}
         </button>

@@ -14,8 +14,6 @@
     "@capacitor/push-notifications": "^8.0.3",
     "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.101.1",
-    "@tsparticles/react": "^3.0.0",
-    "@tsparticles/slim": "^3.9.1",
     "html2canvas": "^1.4.1",
     "jose": "^6.2.2",
     "jspdf": "^4.2.1",

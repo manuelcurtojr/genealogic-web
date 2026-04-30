@@ -57,7 +57,7 @@ export default async function DashboardPage() {
           <p className="text-fg-mute text-xs sm:text-sm mt-0.5 capitalize">{today}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/dogs" className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-[#D74709] hover:bg-[#c03d07] text-white text-xs sm:text-sm font-semibold transition">
+          <Link href="/dogs" className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-paper-50 text-ink-900 hover:opacity-90 text-xs sm:text-sm font-semibold transition">
             <Plus className="w-4 h-4" /> Perro
           </Link>
           {isBreeder && (

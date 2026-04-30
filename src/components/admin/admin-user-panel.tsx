@@ -291,7 +291,7 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
                       const data = await res.json()
                       if (data.ok) { alert('Contraseña actualizada'); (document.getElementById('admin-pw') as HTMLInputElement).value = '' }
                       else alert('Error: ' + (data.error || 'Desconocido'))
-                    }} className="bg-[#D74709] hover:bg-[#c03d07] text-white text-xs font-semibold px-3 py-2 rounded-lg transition whitespace-nowrap">
+                    }} className="bg-paper-50 text-ink-900 hover:opacity-90 text-xs font-semibold px-3 py-2 rounded-lg transition whitespace-nowrap">
                       Guardar
                     </button>
                   </div>
@@ -361,7 +361,7 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
         <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-hair flex-shrink-0">
           <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-fg-dim hover:text-fg hover:bg-chip transition">Cancelar</button>
           <button onClick={handleSave} disabled={saving || loading}
-            className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+            className="bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
             {saving ? 'Guardando...' : 'Guardar'}
           </button>

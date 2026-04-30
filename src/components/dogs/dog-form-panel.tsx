@@ -323,7 +323,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hair flex-shrink-0">
             <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-fg-dim hover:text-fg hover:bg-chip transition">Cancelar</button>
             <button onClick={handleSubmit} disabled={loading || !form.name.trim() || dataLoading}
-              className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+              className="bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {loading ? 'Guardando...' : isEdit ? 'Actualizar' : 'Crear perro'}
             </button>

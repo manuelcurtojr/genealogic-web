@@ -98,7 +98,7 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
           </div>
           <div className="flex justify-end gap-2">
             <button onClick={() => setShowForm(false)} className="px-3 py-1.5 text-xs text-fg-dim hover:text-fg transition">Cancelar</button>
-            <button onClick={handleSave} disabled={saving || !form.title.trim()} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition disabled:opacity-50 flex items-center gap-1">
+            <button onClick={handleSave} disabled={saving || !form.title.trim()} className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-1.5 rounded-lg text-xs font-semibold transition disabled:opacity-50 flex items-center gap-1">
               {saving && <Loader2 className="w-3 h-3 animate-spin" />}{editRecord ? 'Guardar' : 'Añadir'}
             </button>
           </div>

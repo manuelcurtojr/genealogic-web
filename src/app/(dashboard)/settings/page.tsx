@@ -297,7 +297,7 @@ export default function SettingsPage() {
                     <Field label="Nueva contraseña" value={newPassword} onChange={v => setNewPassword(v)} type="password" placeholder="Mínimo 6 caracteres" />
                     <Field label="Confirmar contraseña" value={confirmPassword} onChange={v => setConfirmPassword(v)} type="password" />
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <button type="submit" disabled={passwordLoading} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2">{passwordLoading && <Loader2 className="w-4 h-4 animate-spin" />}Cambiar contraseña</button>
+                      <button type="submit" disabled={passwordLoading} className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2">{passwordLoading && <Loader2 className="w-4 h-4 animate-spin" />}Cambiar contraseña</button>
                       <button type="button" onClick={() => { setShowPassword(false); setPasswordError('') }} className="px-4 py-2 rounded-lg text-xs sm:text-sm bg-chip text-fg-dim hover:bg-chip transition">Cancelar</button>
                     </div>
                   </form>
@@ -468,7 +468,7 @@ function Toggle({ label, desc, value, onChange }: { label: string; desc: string;
 function SaveButton({ saving, onClick }: { saving: boolean; onClick: () => void }) {
   return (
     <div className="pt-3 flex justify-end">
-      <button onClick={onClick} disabled={saving} className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition disabled:opacity-50 flex items-center gap-2">
+      <button onClick={onClick} disabled={saving} className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition disabled:opacity-50 flex items-center gap-2">
         {saving && <Loader2 className="w-4 h-4 animate-spin" />}{saving ? 'Guardando...' : 'Guardar cambios'}
       </button>
     </div>

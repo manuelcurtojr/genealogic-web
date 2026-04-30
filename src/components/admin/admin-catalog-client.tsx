@@ -130,7 +130,7 @@ export default function AdminCatalogClient({ breeds: initBreeds, colors: initCol
           placeholder={`Añadir ${tab === 'breeds' ? 'raza' : 'color'}...`}
           className="bg-chip border border-hair rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
         <button onClick={tab === 'breeds' ? addBreed : addColor} disabled={!newName.trim()}
-          className="bg-[#D74709] hover:bg-[#c03d07] text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center gap-1.5">
+          className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2.5 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center gap-1.5">
           <Plus className="w-4 h-4" /> Añadir
         </button>
       </div>
@@ -258,7 +258,7 @@ export default function AdminCatalogClient({ breeds: initBreeds, colors: initCol
                 <p className="text-[10px] text-fg-mute mt-1">Esta foto aparecerá en el selector de colores al añadir un perro</p>
               </div>
               <button onClick={saveColor} disabled={saving || !colorForm.name.trim()}
-                className="w-full bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-4 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-1.5 text-sm">
+                className="w-full bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-4 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-1.5 text-sm">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 {saving ? 'Guardando...' : 'Guardar color'}
               </button>

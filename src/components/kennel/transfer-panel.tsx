@@ -201,7 +201,7 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
           <button
             onClick={handleTransfer}
             disabled={!foundUser || transferring || done}
-            className="bg-[#D74709] hover:bg-[#c03d07] text-white font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm"
+            className="bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm"
           >
             {transferring ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRightLeft className="w-4 h-4" />}
             {transferring ? 'Transfiriendo...' : 'Transferir perro'}

@@ -12,7 +12,7 @@ export default function DashboardError({ error, reset }: { error: Error; reset: 
       </p>
       <button
         onClick={reset}
-        className="bg-[#D74709] hover:bg-[#c03d07] text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition"
+        className="bg-paper-50 text-ink-900 hover:opacity-90 px-6 py-2.5 rounded-lg text-sm font-semibold transition"
       >
         Intentar de nuevo
       </button>

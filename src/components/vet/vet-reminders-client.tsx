@@ -153,7 +153,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
           <p className="text-fg-mute text-xs sm:text-sm mt-0.5">Gestiona vacunas, desparasitaciones y revisiones de tus perros</p>
         </div>
         <button onClick={() => { setEditingReminder(null); setShowForm(true) }}
-          className="flex items-center gap-1.5 bg-[#D74709] hover:bg-[#c03d07] text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition self-start sm:self-auto">
+          className="flex items-center gap-1.5 bg-paper-50 text-ink-900 hover:opacity-90 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition self-start sm:self-auto">
           <Plus className="w-4 h-4" /> Nuevo recordatorio
         </button>
       </div>
