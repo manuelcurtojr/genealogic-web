@@ -8,7 +8,6 @@ import { isUUID } from '@/lib/slug'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import DogGallery from '@/components/dogs/dog-gallery'
 import DogTabs from '@/components/dogs/dog-tabs'
-import FavoriteButton from '@/components/dogs/favorite-button'
 import DogEditButton from '@/components/dogs/dog-edit-button'
 import ShareButton from '@/components/dogs/share-button'
 import type { Metadata } from 'next'
@@ -79,10 +78,6 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   const father = fatherRes.data
   const mother = motherRes.data
 
-  // Check if favorited
-  const { data: favData } = user ? await supabase.from('favorites').select('id').eq('dog_id', dog.id).eq('user_id', user.id).limit(1) : { data: null }
-  const isFavorited = (favData?.length || 0) > 0
-
   const isOwner = user?.id === dog.owner_id
   const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
   const breedName = (dog.breed as any)?.name
@@ -131,7 +126,6 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         <div className="absolute top-4 right-4 flex items-center gap-2">
           {isOwner && user && <DogEditButton dogId={dog.id} userId={user.id} />}
           <ShareButton dog={{ name: dog.name, sex: dog.sex, breed_name: breedName, kennel_name: kennel?.name, thumbnail_url: dog.thumbnail_url, birth_date: dog.birth_date }} dogUrl={`/dogs/${dog.slug || dog.id}`} />
-          <FavoriteButton dogId={dog.id} initialFavorited={isFavorited} />
         </div>
 
         {/* Back button top-left */}

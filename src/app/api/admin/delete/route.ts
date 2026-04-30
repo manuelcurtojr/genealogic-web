@@ -26,16 +26,12 @@ export async function POST(request: NextRequest) {
       // Remove parent references first
       await adminSupabase.from('dogs').update({ father_id: null }).eq('father_id', id)
       await adminSupabase.from('dogs').update({ mother_id: null }).eq('mother_id', id)
-      // Remove from deals
-      await adminSupabase.from('deal_dogs').delete().eq('dog_id', id)
-      // Delete photos, vet records, awards, changes, favorites
+      // Delete photos, vet records, awards
       await Promise.all([
         adminSupabase.from('dog_photos').delete().eq('dog_id', id),
         adminSupabase.from('vet_records').delete().eq('dog_id', id),
         adminSupabase.from('vet_reminders').delete().eq('dog_id', id),
         adminSupabase.from('awards').delete().eq('dog_id', id),
-        adminSupabase.from('dog_changes').delete().eq('dog_id', id),
-        adminSupabase.from('favorites').delete().eq('dog_id', id),
       ])
       const { error } = await adminSupabase.from('dogs').delete().eq('id', id)
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -61,21 +57,11 @@ export async function POST(request: NextRequest) {
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
       break
     }
-    case 'deals': {
-      await adminSupabase.from('deal_dogs').delete().eq('deal_id', id)
-      await adminSupabase.from('deal_activities').delete().eq('deal_id', id)
-      const { error } = await adminSupabase.from('deals').delete().eq('id', id)
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-      break
-    }
     case 'profiles': {
       // Delete user account — use Supabase Admin API
       // First clean up user data
       await Promise.all([
-        adminSupabase.from('favorites').delete().eq('user_id', id),
         adminSupabase.from('notifications').delete().eq('user_id', id),
-        adminSupabase.from('genes_transactions').delete().eq('user_id', id),
-        adminSupabase.from('events').delete().eq('owner_id', id),
         adminSupabase.from('vet_reminders').delete().eq('owner_id', id),
       ])
       // Delete user from auth

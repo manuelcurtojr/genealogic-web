@@ -104,18 +104,5 @@ export default function UpgradePrompts({ userRole }: UpgradePromptsProps) {
     )
   }
 
-  // CRM inbox: upsell to full CRM
-  if (pathname === '/crm/inbox' && userRole === 'amateur') {
-    return (
-      <UpgradeBanner
-        message="¿Necesitas gestionar tus clientes con pipelines? Mejora a Profesional para tener el CRM completo."
-        plan="pro"
-        variant="subtle"
-        dismissKey="inbox-pro"
-        className="mb-4"
-      />
-    )
-  }
-
   return null
 }

@@ -1,31 +1,25 @@
 import { createClient } from '@/lib/supabase/server'
-import { Users, Dog, Store, Baby, HandCoins, Coins, Stethoscope, FileText } from 'lucide-react'
+import { Users, Dog, Store, Baby, Stethoscope, FileText } from 'lucide-react'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
 
-  const [usersRes, dogsRes, kennelsRes, littersRes, dealsRes, genesRes, vetRes, breedsRes, recentUsersRes] = await Promise.all([
+  const [usersRes, dogsRes, kennelsRes, littersRes, vetRes, breedsRes, recentUsersRes] = await Promise.all([
     supabase.from('profiles').select('id', { count: 'exact', head: true }),
     supabase.from('dogs').select('id', { count: 'exact', head: true }),
     supabase.from('kennels').select('id', { count: 'exact', head: true }),
     supabase.from('litters').select('id', { count: 'exact', head: true }),
-    supabase.from('deals').select('id', { count: 'exact', head: true }),
-    supabase.from('genes_transactions').select('id, amount, type', { count: 'exact' }),
     supabase.from('vet_reminders').select('id', { count: 'exact', head: true }),
     supabase.from('breeds').select('id', { count: 'exact', head: true }),
     supabase.from('profiles').select('id, display_name, email, role, created_at').order('created_at', { ascending: false }).limit(10),
   ])
-
-  const totalGenesPurchased = (genesRes.data || []).filter((t: any) => t.type === 'purchase').reduce((s: number, t: any) => s + (t.amount || 0), 0)
 
   const stats = [
     { label: 'Usuarios', value: usersRes.count || 0, icon: Users, color: '#D74709' },
     { label: 'Perros', value: dogsRes.count || 0, icon: Dog, color: '#3B82F6' },
     { label: 'Criaderos', value: kennelsRes.count || 0, icon: Store, color: '#10B981' },
     { label: 'Camadas', value: littersRes.count || 0, icon: Baby, color: '#8B5CF6' },
-    { label: 'Negocios', value: dealsRes.count || 0, icon: HandCoins, color: '#F59E0B' },
     { label: 'Razas', value: breedsRes.count || 0, icon: FileText, color: '#EC4899' },
-    { label: 'Genes vendidos', value: totalGenesPurchased, icon: Coins, color: '#14B8A6' },
     { label: 'Recordatorios vet.', value: vetRes.count || 0, icon: Stethoscope, color: '#6366F1' },
   ]
 
@@ -35,7 +29,7 @@ export default async function AdminDashboard() {
       <p className="text-white/40 text-sm mb-6">Vista general de la plataforma Genealogic</p>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
         {stats.map(s => (
           <div key={s.label} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: s.color + '15' }}>

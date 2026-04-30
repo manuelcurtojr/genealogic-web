@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Store, Palette, Coins, GitBranch, Stethoscope, ArrowLeft, Shield, Menu, X, Key, BarChart3, Sparkles, Dog, Activity, Globe, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, Users, Store, Palette, GitBranch, Stethoscope, ArrowLeft, Shield, Menu, X, Key, BarChart3, Dog, Activity, Globe, ShieldCheck } from 'lucide-react'
 
 const ADMIN_NAV: { section?: string; label: string; href: string; icon: any }[] = [
   // General
@@ -17,12 +17,10 @@ const ADMIN_NAV: { section?: string; label: string; href: string; icon: any }[] 
   { label: 'Verificaciones', href: '/admin/verifications', icon: ShieldCheck },
   // Herramientas
   { section: 'Herramientas', label: 'Importar pedigrí', href: '/admin/import', icon: Globe },
-  { label: 'Optimizador', href: '/admin/genos-god', icon: Sparkles },
   { label: 'Catálogo', href: '/admin/catalog', icon: Palette },
   { label: 'Plantillas vet.', href: '/admin/vet-templates', icon: Stethoscope },
   // Sistema
-  { section: 'Sistema', label: 'Genes', href: '/admin/genes', icon: Coins },
-  { label: 'Configuración', href: '/admin/settings', icon: Key },
+  { section: 'Sistema', label: 'Configuración', href: '/admin/settings', icon: Key },
 ]
 
 interface Props {

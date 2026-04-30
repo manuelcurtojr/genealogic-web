@@ -7,13 +7,11 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-    const [profileRes, dogsRes, littersRes, dealsRes, contactsRes, eventsRes, vetRes, awardsRes] = await Promise.all([
+    const [profileRes, dogsRes, littersRes, contactsRes, vetRes, awardsRes] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', user.id).single(),
       supabase.from('dogs').select('*').eq('owner_id', user.id),
       supabase.from('litters').select('*').eq('owner_id', user.id),
-      supabase.from('deals').select('*').eq('owner_id', user.id),
       supabase.from('contacts').select('*').eq('owner_id', user.id),
-      supabase.from('events').select('*').eq('owner_id', user.id),
       supabase.from('vet_records').select('*').eq('owner_id', user.id),
       supabase.from('awards').select('*').eq('owner_id', user.id),
     ])
@@ -25,9 +23,7 @@ export async function GET() {
       profile: profileRes.data,
       dogs: dogsRes.data || [],
       litters: littersRes.data || [],
-      deals: dealsRes.data || [],
       contacts: contactsRes.data || [],
-      events: eventsRes.data || [],
       vet_records: vetRes.data || [],
       awards: awardsRes.data || [],
     }

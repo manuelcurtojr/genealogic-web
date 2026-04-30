@@ -209,10 +209,8 @@ export async function DELETE(request: NextRequest) {
     // Delete related data and dogs
     for (const id of deletable) {
       await supabase.from('dog_photos').delete().eq('dog_id', id)
-      await supabase.from('favorites').delete().eq('dog_id', id)
       await supabase.from('vet_records').delete().eq('dog_id', id)
       await supabase.from('awards').delete().eq('dog_id', id)
-      await supabase.from('dog_changes').delete().eq('dog_id', id)
       await supabase.from('dogs').delete().eq('id', id)
     }
 

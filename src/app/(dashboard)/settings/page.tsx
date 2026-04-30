@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   User, Mail, Shield, Loader2, Check, Lock, Globe, Bell, Eye, EyeOff,
-  Download, Trash2, CreditCard, Calendar, Phone, MapPin, Crown, Gem,
+  Download, Trash2, CreditCard, Calendar, Phone, MapPin, Crown,
   ChevronRight, AlertTriangle
 } from 'lucide-react'
 import AvatarUpload from '@/components/settings/avatar-upload'
@@ -52,7 +52,7 @@ export default function SettingsPage() {
   const [form, setForm] = useState({
     display_name: '', phone: '', country: '', city: '', bio: '',
     language: 'es', date_format: 'DD/MM/YYYY', currency: 'EUR', timezone: '',
-    notif_email: true, notif_submissions: true, notif_deals: true, notif_vet: true, notif_calendar: true,
+    notif_email: true, notif_submissions: true, notif_vet: true,
     public_profile: true, show_email: false, show_phone: false,
   })
 
@@ -113,9 +113,7 @@ export default function SettingsPage() {
           timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
           notif_email: data.notif_email ?? true,
           notif_submissions: data.notif_submissions ?? true,
-          notif_deals: data.notif_deals ?? true,
           notif_vet: data.notif_vet ?? true,
-          notif_calendar: data.notif_calendar ?? true,
           public_profile: data.public_profile ?? true,
           show_email: data.show_email ?? false,
           show_phone: data.show_phone ?? false,
@@ -139,8 +137,7 @@ export default function SettingsPage() {
       language: form.language, date_format: form.date_format,
       currency: form.currency, timezone: form.timezone,
       notif_email: form.notif_email, notif_submissions: form.notif_submissions,
-      notif_deals: form.notif_deals, notif_vet: form.notif_vet,
-      notif_calendar: form.notif_calendar,
+      notif_vet: form.notif_vet,
       public_profile: form.public_profile, show_email: form.show_email,
       show_phone: form.show_phone,
     }).eq('id', profile.id)
@@ -384,13 +381,6 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* Genes */}
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3"><Gem className="w-5 h-5 text-purple-400" /><div><p className="font-semibold">{profile?.genes?.toLocaleString() || 0} Genes</p><p className="text-xs text-white/40">Tu saldo actual</p></div></div>
-                  <Link href="/pricing" className="text-sm text-purple-400 hover:text-purple-300 font-medium transition">Comprar genes</Link>
-                </div>
-              </div>
             </div>
           )}
 
@@ -435,9 +425,7 @@ export default function SettingsPage() {
               <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-5 space-y-3">
                 <Toggle label="Notificaciones por email" desc="Recibir notificaciones importantes por correo" value={form.notif_email} onChange={v => set('notif_email', v)} />
                 <Toggle label="Nuevas solicitudes" desc="Cuando alguien rellena tu formulario de contacto" value={form.notif_submissions} onChange={v => set('notif_submissions', v)} />
-                <Toggle label="Negocios actualizados" desc="Cuando un negocio cambia de etapa" value={form.notif_deals} onChange={v => set('notif_deals', v)} />
                 <Toggle label="Recordatorios veterinarios" desc="Próximas citas y vacunas" value={form.notif_vet} onChange={v => set('notif_vet', v)} />
-                <Toggle label="Eventos del calendario" desc="Recordatorios de eventos próximos" value={form.notif_calendar} onChange={v => set('notif_calendar', v)} />
                 <SaveButton saving={saving} onClick={handleSave} />
               </div>
             </div>
@@ -473,7 +461,7 @@ export default function SettingsPage() {
                   <>
                     <p className="text-xs text-white/40 mb-4">Eliminar tu cuenta es una acción permanente. Antes de proceder, ten en cuenta lo siguiente:</p>
                     <div className="space-y-2 mb-4 text-xs">
-                      <div className="flex items-start gap-2 text-white/50"><Trash2 className="w-3 h-3 mt-0.5 text-red-400 flex-shrink-0" /><span><strong className="text-white/70">Se eliminará:</strong> tu perfil, datos de CRM (contactos, negocios), calendario, favoritos, notificaciones, genes, formularios</span></div>
+                      <div className="flex items-start gap-2 text-white/50"><Trash2 className="w-3 h-3 mt-0.5 text-red-400 flex-shrink-0" /><span><strong className="text-white/70">Se eliminará:</strong> tu perfil, contactos, notificaciones, formularios</span></div>
                       <div className="flex items-start gap-2 text-white/50"><Shield className="w-3 h-3 mt-0.5 text-yellow-400 flex-shrink-0" /><span><strong className="text-white/70">Se anonimizará:</strong> perros con descendientes o que aparezcan en pedigrees de otros usuarios se mantendrán como &quot;Propietario eliminado&quot;</span></div>
                       <div className="flex items-start gap-2 text-white/50"><Shield className="w-3 h-3 mt-0.5 text-yellow-400 flex-shrink-0" /><span><strong className="text-white/70">Criadero histórico:</strong> si tu criadero tiene perros o camadas, se mantendrá como perfil público sin datos de contacto</span></div>
                       <div className="flex items-start gap-2 text-white/50"><Check className="w-3 h-3 mt-0.5 text-green-400 flex-shrink-0" /><span><strong className="text-white/70">Sí se eliminan:</strong> perros sin descendientes ni camadas, camadas sin cachorros, criaderos vacíos</span></div>

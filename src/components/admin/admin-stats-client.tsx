@@ -1,7 +1,7 @@
 'use client'
 
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
-import { Users, Dog, Store, Baby, HandCoins, Coins, Eye, Tag, TrendingUp, TrendingDown } from 'lucide-react'
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { Users, Dog, Store, Baby, Eye, Tag } from 'lucide-react'
 
 interface Props {
   usersByMonth: any[]
@@ -12,11 +12,9 @@ interface Props {
   topBreeds: any[]
   topCountries: any[]
   litterStatus: any[]
-  genesMonthly: any[]
-  dealsMonthly: any[]
   totals: {
-    users: number; dogs: number; kennels: number; litters: number; deals: number
-    totalDealValue: number; dogsPublic: number; dogsForSale: number; genesIn: number; genesOut: number
+    users: number; dogs: number; kennels: number; litters: number
+    dogsPublic: number; dogsForSale: number
   }
 }
 
@@ -24,7 +22,7 @@ const COLORS = ['#D74709', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'
 
 export default function AdminStatsClient({
   usersByMonth, dogsByMonth, kennelsByMonth, roleDistribution, sexDistribution,
-  topBreeds, topCountries, litterStatus, genesMonthly, dealsMonthly, totals,
+  topBreeds, topCountries, litterStatus, totals,
 }: Props) {
   return (
     <div>
@@ -32,18 +30,14 @@ export default function AdminStatsClient({
       <p className="text-white/40 text-sm mb-6">Métricas y análisis de la plataforma</p>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
         {[
           { icon: Users, label: 'Usuarios', value: totals.users, color: '#D74709' },
           { icon: Dog, label: 'Perros', value: totals.dogs, color: '#3B82F6' },
           { icon: Store, label: 'Criaderos', value: totals.kennels, color: '#10B981' },
           { icon: Baby, label: 'Camadas', value: totals.litters, color: '#8B5CF6' },
-          { icon: HandCoins, label: 'Negocios', value: totals.deals, color: '#F59E0B' },
           { icon: Eye, label: 'Perros públicos', value: totals.dogsPublic, color: '#14B8A6' },
           { icon: Tag, label: 'En venta', value: totals.dogsForSale, color: '#EC4899' },
-          { icon: TrendingUp, label: 'Genes entrada', value: totals.genesIn, color: '#10B981' },
-          { icon: TrendingDown, label: 'Genes gasto', value: totals.genesOut, color: '#EF4444' },
-          { icon: Coins, label: 'Valor negocios', value: `${totals.totalDealValue.toLocaleString('es-ES')} €`, color: '#F59E0B' },
         ].map(s => (
           <div key={s.label} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: s.color + '15' }}>
@@ -147,38 +141,6 @@ export default function AdminStatsClient({
                 {topCountries.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
               </Bar>
             </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
-
-      {/* Row 4: Genes + Deals economy */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <ChartCard title="Economía de genes (mensual)">
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={genesMonthly}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="month" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
-              <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
-              <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="entrada" fill="#10B981" name="Entrada" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="gasto" fill="#EF4444" name="Gasto" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        <ChartCard title="Negocios (mensual)">
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={dealsMonthly}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="month" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
-              <YAxis yAxisId="left" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
-              <YAxis yAxisId="right" orientation="right" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
-              <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line yAxisId="left" type="monotone" dataKey="valor" stroke="#F59E0B" strokeWidth={2} dot={{ r: 3 }} name="Valor (€)" />
-              <Line yAxisId="right" type="monotone" dataKey="cantidad" stroke="#8B5CF6" strokeWidth={2} dot={{ r: 3 }} name="Cantidad" />
-            </LineChart>
           </ResponsiveContainer>
         </ChartCard>
       </div>

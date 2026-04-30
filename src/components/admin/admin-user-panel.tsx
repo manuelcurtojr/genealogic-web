@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { X, Loader2, User, Shield, Coins, Calendar, Globe, Bell, FileText, AlertTriangle, Check, Eye, Trash2, ExternalLink, Key, Mail } from 'lucide-react'
+import { X, Loader2, User, Shield, Calendar, Globe, Bell, FileText, AlertTriangle, Check, Eye, Trash2, ExternalLink, Key, Mail } from 'lucide-react'
 
 interface Props {
   open: boolean
@@ -29,9 +29,7 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [profile, setProfile] = useState<any>(null)
-  const [activity, setActivity] = useState({ dogs: 0, kennels: 0, litters: 0, deals: 0, genesSpent: 0, genesPurchased: 0 })
-  const [genesAdjust, setGenesAdjust] = useState('')
-  const [showGenesForm, setShowGenesForm] = useState(false)
+  const [activity, setActivity] = useState({ dogs: 0, kennels: 0, litters: 0 })
   const [impersonating, setImpersonating] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -39,10 +37,10 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
   const [form, setForm] = useState({
     display_name: '', email: '', phone: '', country: '', city: '', bio: '',
     language: 'es', currency: 'EUR', timezone: '', date_format: 'DD/MM/YYYY',
-    role: 'free', status: 'active', genes: 0,
+    role: 'free', status: 'active',
     pro_started_at: '', pro_expires_at: '', stripe_customer_id: '', admin_notes: '',
     public_profile: true, show_email: false, show_phone: false,
-    notif_email: true, notif_submissions: true, notif_deals: true, notif_vet: true, notif_calendar: true,
+    notif_email: true, notif_submissions: true, notif_vet: true,
   })
 
   useEffect(() => {
@@ -60,29 +58,24 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
         country: p.country || '', city: p.city || '', bio: p.bio || '',
         language: p.language || 'es', currency: p.currency || 'EUR', timezone: p.timezone || '',
         date_format: p.date_format || 'DD/MM/YYYY',
-        role: p.role || 'free', status: p.status || 'active', genes: p.genes || 0,
+        role: p.role || 'free', status: p.status || 'active',
         pro_started_at: p.pro_started_at ? p.pro_started_at.split('T')[0] : '',
         pro_expires_at: p.pro_expires_at ? p.pro_expires_at.split('T')[0] : '',
         stripe_customer_id: p.stripe_customer_id || '', admin_notes: p.admin_notes || '',
         public_profile: p.public_profile ?? true, show_email: p.show_email ?? false, show_phone: p.show_phone ?? false,
         notif_email: p.notif_email ?? true, notif_submissions: p.notif_submissions ?? true,
-        notif_deals: p.notif_deals ?? true, notif_vet: p.notif_vet ?? true, notif_calendar: p.notif_calendar ?? true,
+        notif_vet: p.notif_vet ?? true,
       })
 
       // Load activity stats
-      const [dogsRes, kennelsRes, littersRes, dealsRes, txRes] = await Promise.all([
+      const [dogsRes, kennelsRes, littersRes] = await Promise.all([
         supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('owner_id', userId),
         supabase.from('kennels').select('id', { count: 'exact', head: true }).eq('owner_id', userId),
         supabase.from('litters').select('id', { count: 'exact', head: true }).eq('owner_id', userId),
-        supabase.from('deals').select('id', { count: 'exact', head: true }).eq('owner_id', userId),
-        supabase.from('genes_transactions').select('amount, type').eq('user_id', userId),
       ])
-      const txs = txRes.data || []
       setActivity({
         dogs: dogsRes.count || 0, kennels: kennelsRes.count || 0,
-        litters: littersRes.count || 0, deals: dealsRes.count || 0,
-        genesPurchased: txs.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0),
-        genesSpent: txs.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0),
+        litters: littersRes.count || 0,
       })
       setLoading(false)
     }
@@ -106,33 +99,18 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
       phone: form.phone.trim() || null, country: form.country.trim() || null,
       city: form.city.trim() || null, bio: form.bio.trim() || null,
       language: form.language, currency: form.currency, timezone: form.timezone.trim() || null,
-      date_format: form.date_format, role: form.role, status: form.status, genes: form.genes,
+      date_format: form.date_format, role: form.role, status: form.status,
       pro_started_at: form.pro_started_at || null, pro_expires_at: form.pro_expires_at || null,
       stripe_customer_id: form.stripe_customer_id.trim() || null,
       admin_notes: form.admin_notes.trim() || null,
       public_profile: form.public_profile, show_email: form.show_email, show_phone: form.show_phone,
       notif_email: form.notif_email, notif_submissions: form.notif_submissions,
-      notif_deals: form.notif_deals, notif_vet: form.notif_vet, notif_calendar: form.notif_calendar,
+      notif_vet: form.notif_vet,
     }).eq('id', userId)
     if (err) setError(err.message)
     setSaving(false)
     onSaved()
     onClose()
-  }
-
-  const adjustGenes = async () => {
-    const amount = parseInt(genesAdjust)
-    if (!amount || !userId) return
-    const supabase = createClient()
-    const newBalance = form.genes + amount
-    await supabase.from('profiles').update({ genes: newBalance }).eq('id', userId)
-    await supabase.from('genes_transactions').insert({
-      user_id: userId, amount, type: amount > 0 ? 'admin_grant' : 'admin_deduct',
-      description: `Ajuste manual por admin (${amount > 0 ? '+' : ''}${amount})`,
-    })
-    set('genes', newBalance)
-    setGenesAdjust('')
-    setShowGenesForm(false)
   }
 
   const impersonate = async () => {
@@ -210,9 +188,6 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
                 { label: 'Perros', value: activity.dogs },
                 { label: 'Criaderos', value: activity.kennels },
                 { label: 'Camadas', value: activity.litters },
-                { label: 'Negocios', value: activity.deals },
-                { label: 'Genes comprados', value: activity.genesPurchased },
-                { label: 'Genes gastados', value: activity.genesSpent },
               ].map(s => (
                 <div key={s.label} className="bg-white/5 rounded-lg p-2 text-center">
                   <p className="text-sm font-bold">{s.value}</p>
@@ -246,24 +221,6 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
                     ))}
                   </div>
                 </Field>
-              </div>
-              {/* Genes */}
-              <div className="flex items-center gap-3 mt-3">
-                <div className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 flex items-center gap-2">
-                  <Coins className="w-4 h-4 text-[#D74709]" />
-                  <span className="text-sm font-bold">{form.genes}</span>
-                  <span className="text-[10px] text-white/30">genes</span>
-                </div>
-                {showGenesForm ? (
-                  <div className="flex items-center gap-1">
-                    <input type="number" value={genesAdjust} onChange={e => setGenesAdjust(e.target.value)}
-                      placeholder="+100" className="w-20 bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white focus:border-[#D74709] focus:outline-none" />
-                    <button onClick={adjustGenes} className="text-green-400 hover:text-green-300 text-xs font-bold">OK</button>
-                    <button onClick={() => setShowGenesForm(false)} className="text-white/30 text-xs">✕</button>
-                  </div>
-                ) : (
-                  <button onClick={() => setShowGenesForm(true)} className="text-xs text-[#D74709] hover:text-[#c03d07] font-medium">Ajustar</button>
-                )}
               </div>
             </Section>
 
@@ -305,9 +262,7 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
                   { key: 'show_phone', label: 'Mostrar teléfono' },
                   { key: 'notif_email', label: 'Notificaciones email' },
                   { key: 'notif_submissions', label: 'Notif. solicitudes' },
-                  { key: 'notif_deals', label: 'Notif. negocios' },
                   { key: 'notif_vet', label: 'Notif. veterinario' },
-                  { key: 'notif_calendar', label: 'Notif. calendario' },
                 ].map(t => (
                   <label key={t.key} className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
                     <input type="checkbox" checked={(form as any)[t.key]} onChange={e => set(t.key, e.target.checked)}

@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: ['/', '/dogs/', '/kennels/', '/search', '/privacy', '/terms', '/legal', '/cookies'],
-        disallow: ['/admin/', '/dashboard/', '/settings', '/crm/', '/planner', '/calendar', '/vet', '/inbox', '/notifications', '/api/', '/kennel/', '/contributions', '/favorites', '/litters/'],
+        disallow: ['/admin/', '/dashboard/', '/settings', '/vet', '/notifications', '/api/', '/kennel/', '/litters/'],
       },
     ],
     sitemap: 'https://genealogic.io/sitemap.xml',

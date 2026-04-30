@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Search, Users, Shield, Crown, User, Coins, ChevronDown } from 'lucide-react'
+import { Search } from 'lucide-react'
 import AdminUserPanel from './admin-user-panel'
 
 interface Props { initialUsers: any[] }
@@ -18,8 +18,6 @@ export default function AdminUsersClient({ initialUsers }: Props) {
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('')
   const [editingRole, setEditingRole] = useState<string | null>(null)
-  const [editingGenes, setEditingGenes] = useState<string | null>(null)
-  const [genesAmount, setGenesAmount] = useState('')
   const [panelUserId, setPanelUserId] = useState<string | null>(null)
 
   const filtered = users.filter(u => {
@@ -36,24 +34,6 @@ export default function AdminUsersClient({ initialUsers }: Props) {
     await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u))
     setEditingRole(null)
-  }
-
-  const addGenes = async (userId: string) => {
-    const amount = parseInt(genesAmount)
-    if (!amount || amount === 0) return
-    const supabase = createClient()
-    const user = users.find(u => u.id === userId)
-    const newBalance = (user?.genes || 0) + amount
-    await supabase.from('profiles').update({ genes: newBalance }).eq('id', userId)
-    await supabase.from('genes_transactions').insert({
-      user_id: userId,
-      amount: amount,
-      type: amount > 0 ? 'admin_grant' : 'admin_deduct',
-      description: `Ajuste manual por admin (${amount > 0 ? '+' : ''}${amount})`,
-    })
-    setUsers(prev => prev.map(u => u.id === userId ? { ...u, genes: newBalance } : u))
-    setEditingGenes(null)
-    setGenesAmount('')
   }
 
   return (
@@ -89,7 +69,6 @@ export default function AdminUsersClient({ initialUsers }: Props) {
             <tr className="border-b border-white/10">
               <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-3">Usuario</th>
               <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-3">Rol</th>
-              <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-3">Genes</th>
               <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-3">País</th>
               <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-3">Registro</th>
             </tr>
@@ -131,21 +110,6 @@ export default function AdminUsersClient({ initialUsers }: Props) {
                       </button>
                     )}
                   </td>
-                  <td className="px-4 py-3">
-                    {editingGenes === u.id ? (
-                      <div className="flex items-center gap-1">
-                        <input type="number" value={genesAmount} onChange={e => setGenesAmount(e.target.value)}
-                          placeholder="+100 / -50"
-                          className="w-20 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white focus:border-[#D74709] focus:outline-none" />
-                        <button onClick={() => addGenes(u.id)} className="text-[10px] text-green-400 hover:text-green-300 font-semibold">OK</button>
-                        <button onClick={() => { setEditingGenes(null); setGenesAmount('') }} className="text-[10px] text-white/30 hover:text-white/60">✕</button>
-                      </div>
-                    ) : (
-                      <button onClick={() => setEditingGenes(u.id)} className="text-sm font-medium text-white/60 hover:text-[#D74709] transition flex items-center gap-1">
-                        <Coins className="w-3 h-3" /> {u.genes || 0}
-                      </button>
-                    )}
-                  </td>
                   <td className="px-4 py-3 text-xs text-white/40">{u.country || '—'}</td>
                   <td className="px-4 py-3 text-[10px] text-white/30">
                     {new Date(u.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
@@ -163,7 +127,7 @@ export default function AdminUsersClient({ initialUsers }: Props) {
         onClose={() => setPanelUserId(null)}
         onSaved={async () => {
           const supabase = createClient()
-          const { data } = await supabase.from('profiles').select('id, display_name, email, role, genes, created_at, country, city, avatar_url, status').order('created_at', { ascending: false })
+          const { data } = await supabase.from('profiles').select('id, display_name, email, role, created_at, country, city, avatar_url, status').order('created_at', { ascending: false })
           setUsers(data || [])
         }}
         userId={panelUserId}
