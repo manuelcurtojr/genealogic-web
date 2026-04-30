@@ -59,21 +59,37 @@ export default function DogCard({ dog, onEdit, onTransfer, onEditPedigree }: Dog
           {colorName && <span className="truncate">{colorName}</span>}
         </div>
 
-        {/* Action buttons */}
-        <div className="flex items-center gap-1.5 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-white/5">
-          <Link href={`/dogs/${dog.slug || dog.id}`} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition">
-            <Eye className="w-3.5 h-3.5" /> Ver
+        {/* Action buttons — icon-only on grid to avoid overflow */}
+        <div className="flex items-center gap-1 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-white/5">
+          <Link
+            href={`/dogs/${dog.slug || dog.id}`}
+            title="Ver perfil"
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition"
+          >
+            <Eye className="w-3.5 h-3.5" />
           </Link>
-          <button onClick={onEdit} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition">
-            <Edit className="w-3.5 h-3.5" /> <span className="hidden lg:inline">Editar</span>
+          <button
+            onClick={onEdit}
+            title="Editar"
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/70 transition"
+          >
+            <Edit className="w-3.5 h-3.5" />
           </button>
           {onEditPedigree && (
-            <button onClick={onEditPedigree} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-white/5 text-white/30 hover:bg-green-500/10 hover:text-green-400 transition">
-              <GitBranch className="w-3.5 h-3.5" /> <span className="hidden lg:inline">Constructor</span>
+            <button
+              onClick={onEditPedigree}
+              title="Constructor de genealogía"
+              className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white/40 hover:bg-green-500/10 hover:text-green-400 transition"
+            >
+              <GitBranch className="w-3.5 h-3.5" />
             </button>
           )}
-          <button onClick={onTransfer} className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709] transition ml-auto">
-            <ArrowRightLeft className="w-3.5 h-3.5" /> <span className="hidden lg:inline">Transferir</span>
+          <button
+            onClick={onTransfer}
+            title="Transferir a otro dueño"
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white/40 hover:bg-[#D74709]/10 hover:text-[#D74709] transition ml-auto"
+          >
+            <ArrowRightLeft className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

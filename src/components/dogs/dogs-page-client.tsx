@@ -183,8 +183,43 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <Link href={`/dogs/${dog.slug || dog.id}`} onClick={e => e.stopPropagation()} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition"><Eye className="w-3 h-3" /> <span className="hidden sm:inline">Ver</span></Link>
-                  <button onClick={e => { e.stopPropagation(); openEdit(dog.id) }} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 transition"><Edit className="w-3 h-3" /> <span className="hidden sm:inline">Editar</span></button>
+                  <Link
+                    href={`/dogs/${dog.slug || dog.id}`}
+                    onClick={e => e.stopPropagation()}
+                    title="Ver perfil"
+                    className="flex items-center gap-1 px-2 py-1.5 rounded text-[10px] font-semibold bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition"
+                  >
+                    <Eye className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Ver</span>
+                  </Link>
+                  <button
+                    onClick={e => { e.stopPropagation(); openEdit(dog.id) }}
+                    title="Editar"
+                    className="flex items-center gap-1 px-2 py-1.5 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/70 transition"
+                  >
+                    <Edit className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Editar</span>
+                  </button>
+                  <button
+                    onClick={e => { e.stopPropagation(); openPedigree(dog.id) }}
+                    title="Constructor de genealogía"
+                    className="flex items-center gap-1 px-2 py-1.5 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-green-500/10 hover:text-green-400 transition"
+                  >
+                    <GitBranch className="w-3.5 h-3.5" /> <span className="hidden md:inline">Constructor</span>
+                  </button>
+                  <button
+                    onClick={e => {
+                      e.stopPropagation()
+                      setTransferDog({
+                        id: dog.id,
+                        name: dog.name,
+                        thumbnail_url: dog.thumbnail_url,
+                        breed_name: Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name,
+                      })
+                    }}
+                    title="Transferir a otro dueño"
+                    className="flex items-center gap-1 px-2 py-1.5 rounded text-[10px] font-semibold bg-white/5 text-white/30 hover:bg-[#D74709]/10 hover:text-[#D74709] transition"
+                  >
+                    <ArrowRightLeft className="w-3.5 h-3.5" /> <span className="hidden md:inline">Transferir</span>
+                  </button>
                 </div>
               </div>
             )
