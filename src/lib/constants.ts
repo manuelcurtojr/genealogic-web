@@ -70,6 +70,7 @@ export const NAV_SECTIONS: NavSection[] = [
     minRole: 'amateur',
     items: [
       { label: 'Camadas', href: '/litters', icon: 'Baby' },
+      { label: 'Planificador', href: '/planner', icon: 'GitCompareArrows' },
       { label: 'Veterinario', href: '/vet', icon: 'Stethoscope' },
     ],
   },
@@ -89,6 +90,7 @@ export const NAV_ITEMS = [
   { label: 'Escritorio', href: '/dashboard', icon: 'LayoutDashboard' },
   { label: 'Mis Perros', href: '/dogs', icon: 'Dog' },
   { label: 'Camadas', href: '/litters', icon: 'Baby' },
+  { label: 'Planificador', href: '/planner', icon: 'GitCompareArrows' },
   { label: 'Veterinario', href: '/vet', icon: 'Stethoscope' },
   { label: 'Buscar', href: '/search', icon: 'Search' },
   { label: 'Mi Criadero', href: '/kennel', icon: 'Store' },
