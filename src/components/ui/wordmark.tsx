@@ -28,7 +28,7 @@ export function Wordmark({
   onClick,
 }: WordmarkProps) {
   const classes = cn(
-    'font-display font-bold tracking-[-0.025em] leading-none text-fg select-none',
+    'font-sans font-bold tracking-[-0.025em] leading-none text-fg select-none',
     size,
     className,
   )

@@ -74,7 +74,7 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
           </button>
           {(collapsed && !mobileOpen) ? (
             <Link href="/dashboard" className="flex items-center" onClick={onClose}>
-              <span className="font-display font-bold text-fg text-2xl tracking-[-0.025em] leading-none">G</span>
+              <span className="font-sans font-bold text-fg text-2xl tracking-[-0.025em] leading-none">G</span>
             </Link>
           ) : (
             <Wordmark href="/dashboard" size="text-xl" onClick={onClose} />
