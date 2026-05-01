@@ -63,9 +63,12 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
           <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
             Genealogías verificables
           </p>
-          <span className="mb-2 inline-block font-sans text-5xl font-bold leading-[0.95] tracking-[-0.025em] text-fg sm:text-6xl md:text-7xl">
+          <Link
+            href="/"
+            className="mb-2 inline-block font-sans text-5xl font-bold leading-[0.95] tracking-[-0.025em] text-fg transition hover:opacity-90 sm:text-6xl md:text-7xl"
+          >
             Genealogic
-          </span>
+          </Link>
           <p className="mb-8 font-display text-xl italic font-light text-fg-dim sm:text-2xl">
             el registro público de perros con genealogía
           </p>
@@ -194,7 +197,7 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
         <div className="mx-auto max-w-page px-6 sm:px-8 lg:px-12">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <Wordmark size="text-lg" asLink={false} />
+              <Wordmark size="text-lg" />
               <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
                 Diseñado e integrado por{' '}
                 <a
