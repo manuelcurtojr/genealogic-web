@@ -196,7 +196,15 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
             <div>
               <Wordmark size="text-lg" asLink={false} />
               <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
-                Manuel Curtó SL · genealogic.io
+                Diseñado e integrado por{' '}
+                <a
+                  href="https://pawdoq.com"
+                  target="_blank"
+                  rel="noopener"
+                  className="underline decoration-fg-mute underline-offset-[3px] transition hover:text-fg hover:decoration-fg"
+                >
+                  Pawdoq
+                </a>
               </p>
             </div>
             <div className="flex flex-wrap gap-6 text-sm text-fg-dim">
