@@ -14,7 +14,6 @@ const ADMIN_NAV: { section?: string; label: string; href: string; icon: any }[] 
   { label: 'Perros', href: '/admin/dogs', icon: Dog },
   { label: 'Criaderos', href: '/admin/kennels', icon: Store },
   { label: 'Genealogías', href: '/admin/genealogy', icon: GitBranch },
-  { label: 'Verificaciones', href: '/admin/verifications', icon: ShieldCheck },
   // Herramientas
   { section: 'Herramientas', label: 'Importar genealogía', href: '/admin/import', icon: Globe },
   { label: 'Catálogo', href: '/admin/catalog', icon: Palette },

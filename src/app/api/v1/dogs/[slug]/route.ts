@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       id, name, slug, sex, birth_date, registration, microchip,
       thumbnail_url, weight, height, is_public, is_for_sale,
       sale_price, sale_currency, sale_description, sale_location, sale_zipcode, sale_reservation_price,
-      is_reproductive, breeding_rights, verification, is_verified,
+      is_reproductive, breeding_rights,
       health_data, father_id, mother_id, created_at, updated_at,
       breed:breeds(id, name),
       color:colors(id, name)

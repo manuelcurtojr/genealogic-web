@@ -13,7 +13,6 @@ import SaludTab from './edit-tabs/salud-tab'
 import PalmaresTab from './edit-tabs/palmares-tab'
 import PedigreePdfTab from './edit-tabs/pedigree-pdf-tab'
 import ImportPedigreeTab from './import-pedigree-tab'
-import VerificationTab from './edit-tabs/verification-tab'
 
 interface DogFormPanelProps {
   open: boolean
@@ -35,7 +34,6 @@ const TABS = [
   { key: 'salud', label: 'Salud', icon: Stethoscope },
   { key: 'palmares', label: 'Palmarés', icon: Trophy },
   { key: 'pedigree-pdf', label: 'Genealogía PDF', icon: FileText },
-  { key: 'verificacion', label: 'Verificación', icon: Shield },
 ] as const
 
 type TabKey = typeof TABS[number]['key']
@@ -314,7 +312,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             {activeTab === 'salud' && editDogId && <SaludTab dogId={editDogId} userId={userId} />}
             {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
             {activeTab === 'pedigree-pdf' && editDogId && <PedigreePdfTab dogId={editDogId} dogName={form.name} userId={userId} />}
-            {activeTab === 'verificacion' && editDogId && <VerificationTab dogId={editDogId} userId={userId} />}
           </div>
         )}
 

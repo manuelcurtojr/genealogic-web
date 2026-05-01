@@ -58,7 +58,7 @@ function DogsSearch() {
     setLoading(true)
     const supabase = createClient()
     let q = supabase.from('dogs')
-      .select('id, name, sex, thumbnail_url, birth_date, is_verified, sale_price, sale_currency, sale_location, is_for_sale, breed:breeds(name), kennel:kennels(name)')
+      .select('id, name, sex, thumbnail_url, birth_date, sale_price, sale_currency, sale_location, is_for_sale, breed:breeds(name), kennel:kennels(name)')
       .eq('is_public', true)
       .order('created_at', { ascending: false })
       .limit(50)
@@ -159,7 +159,7 @@ function DogsSearch() {
                 <div className="p-2 sm:p-3">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs sm:text-sm font-semibold truncate group-hover:text-[#D74709] transition">{dog.name}</span>
-                    {(dog as any).is_verified && <ShieldCheck className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />}
+                    
                   </div>
                   <div className="flex items-center gap-2 mt-1 text-[11px] text-fg-mute">
                     {dog.birth_date && <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })}</span>}

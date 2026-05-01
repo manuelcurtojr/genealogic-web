@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette, ShieldCheck } from 'lucide-react'
+import { Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette } from 'lucide-react'
 import BackButton from '@/components/ui/back-button'
 import { BRAND } from '@/lib/constants'
 import { isUUID } from '@/lib/slug'
@@ -139,15 +139,6 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         {/* Name + badges */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
           <h1 className="text-2xl sm:text-3xl font-bold">{dog.name}</h1>
-          {dog.is_verified && (
-            <div className="inline-flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/20 rounded-full px-3 py-1 group relative cursor-default">
-              <ShieldCheck className="w-4 h-4 text-blue-400" />
-              <span className="text-sm text-blue-400 font-medium">Verificado</span>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-ink-800 border border-hair rounded-lg text-[11px] text-fg whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-lg">
-                Este perro ha sido verificado usando microchip y genealogía oficial
-              </div>
-            </div>
-          )}
           {breedName && (
             <div className="inline-flex items-center gap-1.5 bg-chip border border-hair rounded-full px-3 py-1">
               <img src="/icon.svg" alt="" className="w-4 h-4" />
