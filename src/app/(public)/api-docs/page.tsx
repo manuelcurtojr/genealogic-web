@@ -149,6 +149,42 @@ export default function ApiDocsPage() {
               path="/api/v1/breeds"
               desc="Razas que cría este kennel (basado en los perros que tiene registrados)."
             />
+
+            <Endpoint
+              method="PATCH"
+              path="/api/v1/dogs/:slug"
+              desc='Actualiza datos de venta o reproducción de un perro. Pensado para que apps externas (Pawdoq) marquen un perro como vendido al cobrar la seña.'
+              body={[
+                ['is_for_sale', 'boolean'],
+                ['sale_price', 'number | null'],
+                ['sale_currency', 'string | null'],
+                ['sale_description', 'string | null'],
+                ['sale_location', 'string | null'],
+                ['sale_zipcode', 'string | null'],
+                ['sale_reservation_price', 'number | null'],
+                ['is_reproductive', 'boolean'],
+                ['breeding_rights', 'boolean'],
+              ]}
+            />
+
+            <Endpoint
+              method="GET"
+              path="/api/v1/litters/:id"
+              desc="Una camada concreta del criadero."
+            />
+
+            <Endpoint
+              method="PATCH"
+              path="/api/v1/litters/:id"
+              desc="Avanza el estado de una camada (planificada → cubrición → nacimiento → confirmada) o ajusta fechas y nº de cachorros."
+              body={[
+                ['status', `'planned' | 'mated' | 'born' | 'confirmed'`],
+                ['mating_date', 'ISO date | null'],
+                ['birth_date', 'ISO date | null'],
+                ['puppy_count', 'number | null'],
+                ['is_public', 'boolean'],
+              ]}
+            />
           </div>
         </Section>
 
@@ -238,18 +274,31 @@ function Endpoint({
   path,
   desc,
   params,
+  body,
   example,
 }: {
   method: string
   path: string
   desc: string
   params?: [string, string][]
+  body?: [string, string][]
   example?: string
 }) {
+  const methodColor =
+    method === 'GET'
+      ? 'bg-emerald-500/15 text-emerald-400'
+      : method === 'PATCH'
+        ? 'bg-amber-500/15 text-amber-400'
+        : method === 'POST'
+          ? 'bg-blue-500/15 text-blue-400'
+          : method === 'DELETE'
+            ? 'bg-red-500/15 text-red-400'
+            : 'bg-emerald-500/15 text-emerald-400'
+
   return (
     <div className="rounded-card border border-hair bg-ink-800 p-5 sm:p-6">
       <div className="flex items-center gap-3">
-        <span className="rounded bg-emerald-500/15 px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.06em] text-emerald-400">
+        <span className={`rounded px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.06em] ${methodColor}`}>
           {method}
         </span>
         <code className="font-mono text-sm text-fg">{path}</code>
@@ -263,6 +312,22 @@ function Endpoint({
           </p>
           <ul className="space-y-1">
             {params.map(([k, v]) => (
+              <li key={k} className="font-mono text-[13px]">
+                <span className="text-fg">{k}</span>{' '}
+                <span className="text-fg-mute">— {v}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {body && body.length > 0 && (
+        <div className="mt-4">
+          <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-fg-mute">
+            Body (JSON, todos opcionales)
+          </p>
+          <ul className="space-y-1">
+            {body.map(([k, v]) => (
               <li key={k} className="font-mono text-[13px]">
                 <span className="text-fg">{k}</span>{' '}
                 <span className="text-fg-mute">— {v}</span>
