@@ -85,23 +85,39 @@ export async function GET(request: NextRequest) {
     })
   }
 
-  // 1b. Profiles de los owners en una query aparte (evita problemas de
-  //     join cuando el FK no está nombrado con el patrón Postgrest espera)
+  // 1b. Profiles de los owners. Email puede estar en profiles.email o solo en
+  //     auth.users (depende de cómo se haya creado el user). Hacemos primero
+  //     el lookup en profiles y rellenamos los huecos desde auth.admin.
   const ownerIds = Array.from(
     new Set((kennels ?? []).map((k) => k.owner_id as string).filter(Boolean))
   )
-  const { data: profiles } = ownerIds.length
-    ? await supabase
-        .from('profiles')
-        .select('id, email, full_name')
-        .in('id', ownerIds)
-    : { data: [] as { id: string; email: string | null; full_name: string | null }[] }
   const profileById = new Map<string, { email: string | null; full_name: string | null }>()
-  for (const p of profiles ?? []) {
-    profileById.set(p.id as string, {
-      email: (p.email as string | null) ?? null,
-      full_name: (p.full_name as string | null) ?? null,
-    })
+  if (ownerIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, email, display_name')
+      .in('id', ownerIds)
+    for (const p of profiles ?? []) {
+      profileById.set(p.id as string, {
+        email: (p.email as string | null) ?? null,
+        full_name: (p.display_name as string | null) ?? null,
+      })
+    }
+    // Para los que no tienen email en profiles, lo buscamos en auth.users
+    const missingEmail = ownerIds.filter(
+      (id) => !profileById.get(id)?.email,
+    )
+    for (const userId of missingEmail) {
+      try {
+        const { data: u } = await supabase.auth.admin.getUserById(userId)
+        if (u?.user?.email) {
+          const cur = profileById.get(userId) ?? { email: null, full_name: null }
+          profileById.set(userId, { ...cur, email: u.user.email })
+        }
+      } catch {
+        // ignore — sin email simplemente
+      }
+    }
   }
 
   // 2. Stats agregados en queries paralelas: dogs, litters, api keys.
