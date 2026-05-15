@@ -221,8 +221,9 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
         </div>
       </div>
 
-      {/* Main content */}
-      <main className="p-4 pt-18 lg:pt-[74px] transition-all duration-300 relative z-0">
+      {/* Main content — NO stacking context here, so slide panels rendered
+          inside `children` can layer above the sidebar (z-50) and top bar (z-40). */}
+      <main className="p-4 pt-18 lg:pt-[74px] transition-all duration-300">
         <div className={`transition-all duration-300 ${collapsed ? 'lg:ml-[68px]' : 'lg:ml-64'} lg:px-[30px] lg:py-[30px]`}>
           {children}
         </div>
