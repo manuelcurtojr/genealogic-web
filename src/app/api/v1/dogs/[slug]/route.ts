@@ -37,7 +37,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     .single()
 
   if (error || !dog) return jsonResponse({ error: 'Dog not found' }, 404)
-  if (!dog.is_public) return jsonResponse({ error: 'Dog is not public' }, 403)
 
   // Pedigree (5 generations)
   const { data: pedigree } = await supabase.rpc('get_pedigree', { dog_uuid: dog.id, max_gen: 5 })

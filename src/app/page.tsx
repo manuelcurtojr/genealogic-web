@@ -23,7 +23,6 @@ export default async function Home() {
   const { data: featuredDogs } = await supabase
     .from('dogs')
     .select('id, name, thumbnail_url, breed:breeds(id, name)')
-    .eq('is_public', true)
     .not('thumbnail_url', 'is', null)
     .order('created_at', { ascending: false })
     .limit(8)

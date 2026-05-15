@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
         kennel_id: (isMainDog && !isAdmin) ? (kennelId || null) : null,
         owner_id: (isMainDog && !isAdmin) ? safeUserId : null,
         contributor_id: (isMainDog && !isAdmin) ? undefined : safeUserId,
-        is_public: false,
+        is_public: true,
         thumbnail_url: importPhotos !== false ? (dog.photo_url || null) : null,
       }).select('id').single()
 

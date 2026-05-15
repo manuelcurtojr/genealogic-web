@@ -59,7 +59,6 @@ function DogsSearch() {
     const supabase = createClient()
     let q = supabase.from('dogs')
       .select('id, name, sex, thumbnail_url, birth_date, sale_price, sale_currency, sale_location, is_for_sale, breed:breeds(name), kennel:kennels(name)')
-      .eq('is_public', true)
       .order('created_at', { ascending: false })
       .limit(50)
 

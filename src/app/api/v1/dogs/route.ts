@@ -39,7 +39,6 @@ export async function GET(request: NextRequest) {
       color:colors(id, name)
     `, { count: 'exact' })
     .eq('kennel_id', auth.auth.kennelId)
-    .eq('is_public', true)
 
   if (sex === 'male' || sex === 'female') query = query.eq('sex', sex)
   if (forSale === 'true') query = query.eq('is_for_sale', true)

@@ -56,7 +56,7 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
     .from('litters')
     .select('id, status, birth_date, mating_date, breed:breeds(name), father:dogs!litters_father_id_fkey(id, name, thumbnail_url), mother:dogs!litters_mother_id_fkey(id, name, thumbnail_url)')
     .eq('owner_id', kennel.owner_id)
-    .eq('is_public', true)
+    .eq('show_in_kennel', true)
     .order('created_at', { ascending: false })
 
   const dogs = allDogs || []
