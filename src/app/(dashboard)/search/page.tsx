@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Search, Dog, Filter, X, Tag, MapPin, Home, ChevronDown, ShieldCheck } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { getLocalizedCountries } from '@/lib/countries'
+import { DogImage } from '@/components/ui/dog-image'
 
 type Tab = 'dogs' | 'kennels'
 
@@ -142,12 +143,16 @@ function DogsSearch() {
               <Link key={dog.id} href={`/dogs/${dog.slug || dog.id}`}
                 className={`bg-ink-800 border rounded-xl overflow-hidden hover:border-[#D74709]/30 transition group ${dog.is_for_sale ? 'border-[#D74709]/20' : 'border-hair'}`}>
                 <div className="relative aspect-[4/3] bg-chip">
-                  {dog.thumbnail_url ? (
-                    <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center"><Dog className="w-12 h-12 text-fg-mute" /></div>
-                  )}
-                  {breedName && <span className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-2 py-0.5 rounded-full">{breedName}</span>}
+                  <DogImage
+                    src={dog.thumbnail_url}
+                    alt={dog.name}
+                    fill
+                    width={0}
+                    height={0}
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    className="absolute inset-0 w-full h-full"
+                  />
+                  {breedName && <span className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-2 py-0.5 rounded-full z-10">{breedName}</span>}
                   {dog.is_for_sale && (
                     <span className="absolute top-2 left-2 bg-[#D74709] text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                       <Tag className="w-2.5 h-2.5" /> EN VENTA

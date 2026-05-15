@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Lightbox from '@/components/ui/lightbox'
 
@@ -28,10 +29,13 @@ export default function DogGallery({ photos, name, sex }: DogGalleryProps) {
         {hasPhotos ? (
           <>
             <div className="relative w-full aspect-square">
-              <img
+              <Image
                 src={photos[mobileIdx]}
                 alt={`${name} ${mobileIdx + 1}`}
-                className="w-full h-full object-cover cursor-pointer"
+                fill
+                sizes="100vw"
+                priority
+                className="object-cover cursor-pointer"
                 onClick={() => setLightboxIdx(mobileIdx)}
               />
               {/* Photo counter */}
@@ -68,9 +72,12 @@ export default function DogGallery({ photos, name, sex }: DogGalleryProps) {
         {hasPhotos ? (
           <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${desktopOffset * 25}%)` }}>
             {photos.map((url, i) => (
-              <div key={i} className="w-1/4 flex-shrink-0 aspect-square">
-                <img src={url} alt={`${name} ${i + 1}`}
-                  className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition"
+              <div key={i} className="relative w-1/4 flex-shrink-0 aspect-square">
+                <Image src={url} alt={`${name} ${i + 1}`}
+                  fill
+                  sizes="(max-width: 1024px) 25vw, 320px"
+                  priority={i < 4}
+                  className="object-cover cursor-pointer hover:opacity-90 transition"
                   onClick={() => setLightboxIdx(i)} />
               </div>
             ))}

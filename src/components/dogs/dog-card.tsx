@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { Eye, Edit, ArrowRightLeft, Dog, GitBranch } from 'lucide-react'
+import { Eye, Edit, ArrowRightLeft, GitBranch } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
+import { DogImage } from '@/components/ui/dog-image'
 
 interface DogCardProps {
   dog: {
@@ -31,15 +32,19 @@ export default function DogCard({ dog, onEdit, onTransfer, onEditPedigree }: Dog
     <div className="bg-ink-800 border border-hair rounded-xl hover:border-[#D74709]/30 transition group relative">
       {/* Photo */}
       <Link href={`/dogs/${dog.slug || dog.id}`} className="block relative aspect-[4/3] bg-chip rounded-t-xl overflow-hidden">
-        {dog.thumbnail_url ? (
-          <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center"><Dog className="w-12 h-12 text-fg-mute" /></div>
-        )}
+        <DogImage
+          src={dog.thumbnail_url}
+          alt={dog.name}
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          width={0}
+          height={0}
+          className="absolute inset-0 w-full h-full"
+        />
         {breedName && (
-          <span className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-2 py-0.5 rounded-full">{breedName}</span>
+          <span className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-2 py-0.5 rounded-full z-10">{breedName}</span>
         )}
-        <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: sexColor }} />
+        <div className="absolute bottom-0 left-0 right-0 h-1 z-10" style={{ background: sexColor }} />
       </Link>
 
       {/* Info */}
