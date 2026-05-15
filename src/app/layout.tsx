@@ -64,20 +64,6 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-// Theme bootstrap — Cal.com-inspired system is light-first.
-// Respect an explicit 'dark' preference if the user set one.
-const themeBootstrap = `
-(function() {
-  try {
-    var stored = localStorage.getItem('theme');
-    if (stored === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-    else document.documentElement.setAttribute('data-theme', 'light');
-  } catch (e) {
-    document.documentElement.setAttribute('data-theme', 'light');
-  }
-})();
-`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -87,11 +73,7 @@ export default function RootLayout({
     <html
       lang="es"
       className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable} h-full antialiased`}
-      suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
-      </head>
       <body className="font-sans min-h-full flex flex-col bg-white text-ink">
         {children}
         <CookieBanner />

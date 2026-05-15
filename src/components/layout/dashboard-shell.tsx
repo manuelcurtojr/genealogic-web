@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Menu, Bell, Sun, Moon, LayoutDashboard, Dog, Calendar, Settings, Sparkles } from 'lucide-react'
+import { Menu, Bell, LayoutDashboard, Dog, Calendar, Settings, Sparkles } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -22,10 +22,6 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [isNative, setIsNative] = useState(false)
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('theme') === 'dark'
-    return false
-  })
   const [notifOpen, setNotifOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
@@ -45,29 +41,12 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
       // Register push notifications
       initPushNotifications()
     }
-
-    // Diseño Cal: light por defecto, mantenemos toggle opt-in para data-heavy.
-    const savedTheme = localStorage.getItem('theme')
-    if (savedTheme === 'dark') {
-      setDarkMode(true)
-      document.documentElement.setAttribute('data-theme', 'dark')
-    } else {
-      setDarkMode(false)
-      document.documentElement.setAttribute('data-theme', 'light')
-    }
   }, [])
 
   const toggleCollapse = () => {
     const next = !collapsed
     setCollapsed(next)
     localStorage.setItem('sidebar-collapsed', String(next))
-  }
-
-  const toggleTheme = () => {
-    const next = !darkMode
-    setDarkMode(next)
-    localStorage.setItem('theme', next ? 'dark' : 'light')
-    document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light')
   }
 
   const sidebarWidth = collapsed ? 68 : 256
@@ -161,8 +140,7 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
   }
 
   // Diseño Cal.com unificado con Pawdoq Breeders: canvas blanco puro,
-  // hairlines #e5e7eb, sin tonos grises de fondo. Los tokens cambian valor
-  // con data-theme; las clases nunca cambian → consistencia con admin/marketing.
+  // hairlines #e5e7eb, sin tonos grises de fondo. Solo light mode.
   const shellBg = 'bg-canvas text-ink'
   const headerBg = 'bg-canvas border-hairline'
   const iconColor = 'text-muted hover:text-ink'
@@ -199,10 +177,7 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          <button onClick={toggleTheme} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-chip transition`} title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
-            {darkMode ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
-          </button>
-          <button onClick={() => setNotifOpen(true)} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-chip transition relative`}>
+          <button onClick={() => setNotifOpen(true)} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-surface-card transition relative`}>
             <Bell className="w-[18px] h-[18px]" />
             {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#D74709]" />}
           </button>

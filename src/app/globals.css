@@ -56,25 +56,6 @@
   --pedigree-line: rgba(17, 17, 17, 0.14);
 }
 
-/* Optional dark variant (kept for /admin and footer-style sections that
-   explicitly want the inversion). Default is LIGHT — not dark. */
-[data-theme="dark"] {
-  --surface: #101010;
-  --surface-soft: #1a1a1a;
-  --surface-card: #1f1f1f;
-  --surface-strong: #2a2a2a;
-  --surface-dark: #0a0a0a;
-  --surface-inverse: #ffffff;
-  --ink: #ffffff;
-  --body: #e5e7eb;
-  --muted: #a1a1aa;
-  --muted-soft: #71717a;
-  --on-primary: #111111;
-  --hairline: rgba(255, 255, 255, 0.10);
-  --hairline-soft: rgba(255, 255, 255, 0.05);
-  --pedigree-line: rgba(255, 255, 255, 0.14);
-}
-
 /* Tailwind v4 theme: expose tokens as utility classes.
  * The legacy class names (bg-ink-900, text-fg, border-hair…) are mapped
  * onto the new Cal.com values so existing components don't need rewrites. */
@@ -180,7 +161,6 @@ html {
   text-rendering: optimizeLegibility;
   color-scheme: light;
 }
-[data-theme="dark"] { color-scheme: dark; }
 
 body {
   background-color: var(--surface);
