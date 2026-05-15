@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Search, Home } from 'lucide-react'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
+import { pastelByName } from '@/lib/avatars'
 
 interface Kennel {
   id: string
@@ -50,11 +51,14 @@ export default function KennelsClient({ kennels }: { kennels: Kennel[] }) {
               className="bg-chip border border-hair rounded-xl p-5 hover:bg-chip transition group"
             >
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-[#D74709]/10 flex items-center justify-center flex-shrink-0 border border-[#D74709]/20">
+                <div
+                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+                  style={kennel.logo_url ? undefined : { backgroundColor: pastelByName(kennel.name) }}
+                >
                   {kennel.logo_url ? (
-                    <img src={kennel.logo_url} alt="" className="w-full h-full object-cover rounded-xl" />
+                    <img src={kennel.logo_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-xl font-bold text-[#D74709]">{kennel.name[0]}</span>
+                    <span className="text-xl font-bold text-white">{kennel.name[0]?.toUpperCase()}</span>
                   )}
                 </div>
                 <div className="min-w-0">

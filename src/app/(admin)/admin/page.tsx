@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { Users, Dog, Store, Baby, Stethoscope, FileText } from 'lucide-react'
+import { pastelByName } from '@/lib/avatars'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
@@ -49,7 +50,10 @@ export default async function AdminDashboard() {
         <div className="space-y-2">
           {(recentUsersRes.data || []).map((u: any) => (
             <div key={u.id} className="flex items-center gap-3 bg-chip rounded-lg p-3">
-              <div className="w-8 h-8 rounded-full bg-[#D74709]/20 flex items-center justify-center text-[#D74709] text-xs font-bold flex-shrink-0">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                style={{ backgroundColor: pastelByName(u.display_name || u.email) }}
+              >
                 {(u.display_name || u.email || '?')[0].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">

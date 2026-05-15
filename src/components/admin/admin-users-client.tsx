@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Search } from 'lucide-react'
 import AdminUserPanel from './admin-user-panel'
+import { pastelByName } from '@/lib/avatars'
 
 interface Props { initialUsers: any[] }
 
@@ -80,9 +81,12 @@ export default function AdminUsersClient({ initialUsers }: Props) {
                 <tr key={u.id} className="border-b border-hair hover:bg-ink-800 transition cursor-pointer" onClick={() => setPanelUserId(u.id)}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full overflow-hidden bg-chip border border-hair flex-shrink-0">
+                      <div
+                        className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
+                        style={u.avatar_url ? undefined : { backgroundColor: pastelByName(u.display_name || u.email) }}
+                      >
                         {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-full h-full object-cover" /> :
-                          <div className="w-full h-full flex items-center justify-center text-[#D74709] text-xs font-bold">{(u.display_name || u.email || '?')[0].toUpperCase()}</div>}
+                          <span className="text-white text-xs font-bold">{(u.display_name || u.email || '?')[0].toUpperCase()}</span>}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate">{u.display_name || 'Sin nombre'}</p>
