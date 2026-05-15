@@ -137,7 +137,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
 
-      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-lg z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-lg z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hair flex-shrink-0">
           <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar camada' : 'Nueva camada'}</h2>
           <button onClick={onClose} className="text-fg-mute hover:text-fg transition"><X className="w-5 h-5" /></button>
@@ -361,7 +361,7 @@ function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fg-mute" />
               <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..."
-                className="w-full bg-chip border border-hair rounded pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+                className="w-full bg-chip border border-hair rounded pl-8 pr-3 py-1.5 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
             </div>
           </div>
           <div className="overflow-y-auto flex-1">

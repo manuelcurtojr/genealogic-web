@@ -206,7 +206,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
 
-      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hair flex-shrink-0">
           <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar recordatorio' : 'Nuevo recordatorio'}</h2>
           <button onClick={onClose} className="text-fg-mute hover:text-fg transition"><X className="w-5 h-5" /></button>
@@ -261,7 +261,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
               <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Título *</label>
               <input type="text" value={form.title} onChange={e => set('title', e.target.value)} disabled={isCompleted}
                 placeholder="Ej: Vacuna anual polivalente"
-                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition disabled:opacity-50" />
+                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition disabled:opacity-50" />
             </div>
 
             {/* Type + Date */}
@@ -288,7 +288,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
               <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Repetir cada (días)</label>
               <input type="number" min="0" value={form.recurrence_days} onChange={e => set('recurrence_days', e.target.value)} disabled={isCompleted}
                 placeholder="0 = sin repetición"
-                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition disabled:opacity-50" />
+                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition disabled:opacity-50" />
               <p className="text-[10px] text-fg-mute mt-1">Al completar un recordatorio recurrente, se creará el siguiente automáticamente</p>
             </div>
 
@@ -297,7 +297,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
               <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Notas</label>
               <textarea value={form.notes} onChange={e => set('notes', e.target.value)} disabled={isCompleted}
                 rows={3} placeholder="Notas adicionales..."
-                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition resize-none disabled:opacity-50" />
+                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition resize-none disabled:opacity-50" />
             </div>
           </div>
         )}

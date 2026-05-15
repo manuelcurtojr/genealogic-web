@@ -108,7 +108,7 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
   return (
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
-      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hair flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
                 value={email}
                 onChange={e => { setEmail(e.target.value); setFoundUser(null); setNotFound(false) }}
                 placeholder="cliente@email.com"
-                className="flex-1 bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition"
+                className="flex-1 bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition"
                 onKeyDown={e => e.key === 'Enter' && handleSearch()}
               />
               <button

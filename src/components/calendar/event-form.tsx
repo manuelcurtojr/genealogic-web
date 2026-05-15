@@ -127,7 +127,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
       />
 
       {/* Slide panel */}
-      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-lg z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-lg z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Fixed header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hair flex-shrink-0">
           <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar evento' : 'Nuevo evento'}</h2>
@@ -145,7 +145,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
             <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Titulo *</label>
             <input
               type="text" value={form.title} onChange={(e) => set('title', e.target.value)} autoFocus
-              className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition"
+              className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition"
               placeholder="Ej: Visita al veterinario"
             />
           </div>
@@ -212,7 +212,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
             <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Notas</label>
             <textarea
               value={form.notes} onChange={(e) => set('notes', e.target.value)} rows={3}
-              className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition resize-none"
+              className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition resize-none"
               placeholder="Notas adicionales..."
             />
           </div>

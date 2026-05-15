@@ -114,7 +114,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
   return (
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
-      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hair flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -167,13 +167,13 @@ export default function SalePanel({ open, onClose, dog }: Props) {
                       <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Precio total</label>
                       <input type="number" step="0.01" value={form.sale_price} onChange={e => set('sale_price', e.target.value)}
                         placeholder="0.00"
-                        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
+                        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
                     </div>
                     <div>
                       <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Reserva</label>
                       <input type="number" step="0.01" value={form.sale_reservation_price} onChange={e => set('sale_reservation_price', e.target.value)}
                         placeholder="0.00"
-                        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
+                        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
                     </div>
                   </div>
                 </div>
@@ -187,13 +187,13 @@ export default function SalePanel({ open, onClose, dog }: Props) {
                       <input type="text" value={form.sale_zipcode} onChange={e => set('sale_zipcode', e.target.value)}
                         onBlur={lookupZipcode}
                         placeholder="28001"
-                        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
+                        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
                     </div>
                     <div>
                       <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Ciudad, Pais</label>
                       <input type="text" value={form.sale_location} onChange={e => set('sale_location', e.target.value)}
                         placeholder="Madrid, Spain"
-                        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
+                        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
                     </div>
                   </div>
                   <p className="text-[10px] text-fg-mute">Introduce el código postal para autocompletar la ubicacion</p>
@@ -204,7 +204,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
                   <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Descripcion del anuncio</label>
                   <textarea value={form.sale_description} onChange={e => set('sale_description', e.target.value)} rows={4}
                     placeholder="Describe el caracter, morfologia, vacunas incluidas, por que es especial..."
-                    className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition resize-none" />
+                    className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition resize-none" />
                 </div>
               </>
             )}

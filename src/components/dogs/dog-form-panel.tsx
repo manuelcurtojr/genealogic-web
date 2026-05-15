@@ -161,7 +161,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   return (
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
-      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
 
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hair flex-shrink-0">
@@ -351,7 +351,7 @@ function Field({ label, value, onChange, type = 'text', placeholder }: { label: 
     <div>
       <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1.5 block">{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
+        className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
     </div>
   )
 }
@@ -380,7 +380,7 @@ function SelectCard({ label, name, image, sexColor, onClear, selector, disabled 
         <ChevronDown className={`w-4 h-4 text-fg-mute transition ${open ? 'rotate-180' : ''}`} />
       </div>
       {open && !disabled && (
-        <div className="absolute z-[80] top-full mt-1 left-0 right-0 bg-ink-800 border border-hair rounded-lg shadow-xl max-h-56 overflow-hidden">
+        <div className="absolute z-[80] top-full mt-1 left-0 right-0 bg-white border border-hairline rounded-lg shadow-lg max-h-56 overflow-hidden">
           {selector}
           {name && <button onClick={() => { onClear(); setOpen(false) }} className="w-full text-left px-3 py-2.5 text-xs text-red-400 hover:bg-red-500/10 border-t border-hair">Quitar selección</button>}
         </div>
@@ -401,7 +401,7 @@ function SearchList({ items, value, onChange, placeholder, sexColor }: { items: 
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fg-mute" />
           <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)} placeholder={placeholder || 'Buscar...'}
-            className="w-full bg-chip border border-hair rounded-lg pl-8 pr-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+            className="w-full bg-chip border border-hair rounded-lg pl-8 pr-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
         </div>
       </div>
       <div className="overflow-y-auto max-h-44">
@@ -445,7 +445,7 @@ function DropdownSearch({ label, items, value, onChange, placeholder }: { label:
         </div>
       </div>
       {open && (
-        <div className="absolute z-[80] mt-1 w-full bg-ink-800 border border-hair rounded-lg shadow-xl max-h-48 flex flex-col">
+        <div className="absolute z-[80] mt-1 w-full bg-white border border-hairline rounded-lg shadow-lg max-h-48 flex flex-col">
           <SearchList items={items} value={value} onChange={v => { onChange(v); setOpen(false) }} placeholder={placeholder} />
         </div>
       )}

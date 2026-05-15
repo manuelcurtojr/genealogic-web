@@ -135,7 +135,7 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
     <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
 
-      <div className={`fixed top-0 right-0 h-full w-full max-w-xl z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex items-center justify-between px-6 py-3 border-b border-hair flex-shrink-0">
           <h2 className="text-lg font-semibold">Editar criadero</h2>
           <button onClick={onClose} className="text-fg-mute hover:text-fg transition"><X className="w-5 h-5" /></button>
@@ -239,7 +239,7 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
                     <label className="text-[10px] font-semibold text-fg-mute uppercase tracking-wider mb-1 block">Mensaje predeterminado</label>
                     <textarea value={form.whatsapp_text} onChange={e => set('whatsapp_text', e.target.value)} rows={2}
                       placeholder="Hola, me interesa información sobre..."
-                      className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none resize-none" />
+                      className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none resize-none" />
                   </div>
                 </div>
               )}
@@ -311,7 +311,7 @@ function Input({ label, value, onChange, type, placeholder }: { label: string; v
     <div>
       <label className="text-[10px] font-semibold text-fg-mute uppercase tracking-wider mb-1 block">{label}</label>
       <input type={type || 'text'} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
+        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
     </div>
   )
 }

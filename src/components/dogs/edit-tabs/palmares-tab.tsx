@@ -68,10 +68,10 @@ export default function PalmaresTab({ dogId, userId }: { dogId: string; userId: 
           <div className="flex gap-1.5 flex-wrap">
             {AWARD_TYPES.map(t => <button key={t.key} onClick={() => setForm(p => ({ ...p, award_type: t.key }))} className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition ${form.award_type === t.key ? 'text-white' : 'border-hair text-fg-mute'}`} style={form.award_type === t.key ? { backgroundColor: t.color, borderColor: t.color } : undefined}>{t.label}</button>)}
           </div>
-          <input value={form.event_name} onChange={e => setForm(p => ({ ...p, event_name: e.target.value }))} placeholder="Nombre del evento" className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+          <input value={form.event_name} onChange={e => setForm(p => ({ ...p, event_name: e.target.value }))} placeholder="Nombre del evento" className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
           <div className="grid grid-cols-2 gap-2">
             <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none" />
-            <input value={form.judge} onChange={e => setForm(p => ({ ...p, judge: e.target.value }))} placeholder="Juez" className="bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+            <input value={form.judge} onChange={e => setForm(p => ({ ...p, judge: e.target.value }))} placeholder="Juez" className="bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
           </div>
           {/* Files */}
           <div>
