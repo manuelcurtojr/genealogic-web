@@ -31,10 +31,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f5f3" },
-    { media: "(prefers-color-scheme: dark)", color: "#131316" },
-  ],
+  themeColor: "#ffffff",
 };
 
 export const metadata: Metadata = {
@@ -67,16 +64,16 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-// Theme bootstrap — runs before first paint to avoid flash.
-// Default to dark (Studio Mono grafito), respect explicit user choice.
+// Theme bootstrap — Cal.com-inspired system is light-first.
+// Respect an explicit 'dark' preference if the user set one.
 const themeBootstrap = `
 (function() {
   try {
     var stored = localStorage.getItem('theme');
-    var t = stored === 'light' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', t);
+    if (stored === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    else document.documentElement.setAttribute('data-theme', 'light');
   } catch (e) {
-    document.documentElement.setAttribute('data-theme', 'dark');
+    document.documentElement.setAttribute('data-theme', 'light');
   }
 })();
 `;
@@ -95,7 +92,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
       </head>
-      <body className="font-sans min-h-full flex flex-col bg-ink-900 text-fg">
+      <body className="font-sans min-h-full flex flex-col bg-white text-ink">
         {children}
         <CookieBanner />
       </body>

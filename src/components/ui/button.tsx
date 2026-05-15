@@ -27,13 +27,14 @@ const sizes: Record<Size, string> = {
 }
 
 const variants: Record<Variant, string> = {
-  // Pawdoq primary: paper (inverse of surface) — white in dark, near-black in light
-  primary: 'bg-paper-50 text-ink-900 hover:opacity-90',
-  // Outlined neutral
-  secondary: 'border border-hair-strong text-fg hover:border-paper-50/40 hover:bg-chip',
-  // Subtle text-only
-  ghost: 'text-fg-dim hover:text-fg hover:bg-chip',
-  // Brand orange (Genealogic's accent — used for "Registrarse", urgent CTAs)
+  // Cal.com primary: near-black (#111) bg, white text, no hover beyond press
+  primary: 'bg-[#111111] text-white hover:bg-[#242424]',
+  // White button with hairline outline
+  secondary: 'bg-white text-[#111111] border border-hairline hover:bg-surface-card',
+  // Text-only link/button
+  ghost: 'text-body hover:text-ink hover:bg-surface-card',
+  // Brand orange — Genealogic's accent (where Cal uses blue). Reserved for
+  // brand-tinted moments, not the default CTA.
   brand: 'bg-[#D74709] text-white hover:bg-[#c03d07]',
 }
 

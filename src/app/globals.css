@@ -1,75 +1,114 @@
 @import "tailwindcss";
 
-/* ─── Theme tokens (shared with Pawdoq ecosystem) ─────────────────────────
- * Tipografía:  Inter (sans) · Fraunces (display serif) · JetBrains Mono
- * Paleta brand: #D74709 (compartido con Pawdoq)
- * Surfaces / fg / hair via CSS vars — light + dark
+/* ─── Theme tokens — Cal.com-inspired light system ────────────────────────
+ * White canvas with black primary CTAs, light-gray cards (#f5f5f5),
+ * dark footer (#101010). Inter for everything (display 600 + tracking).
+ * Genealogic brand orange (#D74709) reserved for brand-accent / inline links.
+ *
+ * Existing class names from previous Pawdoq-style system (ink-900, fg,
+ * hair…) are kept on purpose so the migration is value-only — every
+ * component flips colours by changing the token value, not the class.
  * ────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* Light theme — cream editorial */
-  --surface: #f5f5f3;
-  --surface-alt: #eceae4;
-  --surface-soft: #ffffff;
-  --surface-inverse: #131316;
-  --fg: rgb(14 14 17 / 0.96);
-  --fg-dim: rgb(14 14 17 / 0.60);
-  --fg-mute: rgb(14 14 17 / 0.40);
-  --hair: rgb(0 0 0 / 0.08);
-  --hair-strong: rgb(0 0 0 / 0.14);
-  --chip: rgb(0 0 0 / 0.04);
+  /* Cal.com surfaces */
+  --surface: #ffffff;          /* canvas — page floor */
+  --surface-soft: #f8f9fa;     /* nav-pill-group bg, subtle dividers */
+  --surface-card: #f5f5f5;     /* feature cards, testimonials, badges */
+  --surface-strong: #e5e7eb;   /* hairline-strong alternative; disabled */
+  --surface-dark: #101010;     /* footer + featured pricing tier */
+  --surface-dark-elevated: #1a1a1a; /* nested cards inside dark surfaces */
+  --surface-inverse: #111111;  /* primary button bg, headlines */
 
-  /* Brand (no se invierte) */
+  /* Cal.com text */
+  --ink: #111111;
+  --body: #374151;
+  --muted: #6b7280;
+  --muted-soft: #898989;
+  --on-primary: #ffffff;
+  --on-dark: #ffffff;
+  --on-dark-soft: #a1a1aa;
+
+  /* Hairlines */
+  --hairline: #e5e7eb;
+  --hairline-soft: #f3f4f6;
+
+  /* Brand — Genealogic orange, used as brand-accent (where Cal uses blue) */
   --brand: #D74709;
   --brand-hover: #c03d07;
   --brand-soft: rgba(215, 71, 9, 0.10);
   --brand-strong: rgba(215, 71, 9, 0.20);
 
+  /* Badge pastels (avatars, category tags) */
+  --badge-orange: #fb923c;
+  --badge-pink: #ec4899;
+  --badge-violet: #8b5cf6;
+  --badge-emerald: #34d399;
+
   /* Semantic */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
   --male: #017DFA;
   --female: #e84393;
 
-  /* Pedigree connector lines (legacy) */
-  --pedigree-line: rgba(0, 0, 0, 0.12);
+  /* Pedigree connector lines */
+  --pedigree-line: rgba(17, 17, 17, 0.14);
 }
 
-/* Dark theme — grafito Studio Mono (default) */
-[data-theme="dark"], html:not([data-theme]) {
-  --surface: #131316;
-  --surface-alt: #0e0e11;
-  --surface-soft: #1a1a1e;
-  --surface-inverse: #f5f5f7;
-  --fg: rgb(245 245 247 / 0.96);
-  --fg-dim: rgb(245 245 247 / 0.60);
-  --fg-mute: rgb(245 245 247 / 0.38);
-  --hair: rgb(255 255 255 / 0.08);
-  --hair-strong: rgb(255 255 255 / 0.14);
-  --chip: rgb(255 255 255 / 0.05);
-  --pedigree-line: rgba(255, 255, 255, 0.12);
+/* Optional dark variant (kept for /admin and footer-style sections that
+   explicitly want the inversion). Default is LIGHT — not dark. */
+[data-theme="dark"] {
+  --surface: #101010;
+  --surface-soft: #1a1a1a;
+  --surface-card: #1f1f1f;
+  --surface-strong: #2a2a2a;
+  --surface-dark: #0a0a0a;
+  --surface-inverse: #ffffff;
+  --ink: #ffffff;
+  --body: #e5e7eb;
+  --muted: #a1a1aa;
+  --muted-soft: #71717a;
+  --on-primary: #111111;
+  --hairline: rgba(255, 255, 255, 0.10);
+  --hairline-soft: rgba(255, 255, 255, 0.05);
+  --pedigree-line: rgba(255, 255, 255, 0.14);
 }
 
-/* Tailwind v4 theme tokens — surfaced as classes (bg-ink-900, text-fg, etc.) */
+/* Tailwind v4 theme: expose tokens as utility classes.
+ * The legacy class names (bg-ink-900, text-fg, border-hair…) are mapped
+ * onto the new Cal.com values so existing components don't need rewrites. */
 @theme inline {
-  /* Fonts (cargadas via next/font en layout.tsx) */
+  /* Fonts — Inter does it all. Fraunces and JetBrains Mono stay loaded
+     for legacy callers but design system is single-family. */
   --font-sans: var(--font-inter), 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-fraunces), 'Fraunces', 'Times New Roman', Georgia, serif;
-  --font-mono: var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --font-display: var(--font-inter), 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, monospace;
 
-  /* Surfaces (semantic) */
-  --color-ink-950: var(--surface-alt);
-  --color-ink-900: var(--surface);
-  --color-ink-800: var(--surface-soft);
-  --color-paper-50: var(--surface-inverse);
+  /* Surfaces — legacy aliases mapped to Cal tokens */
+  --color-ink-950: var(--surface-soft);     /* slight off-white */
+  --color-ink-900: var(--surface);           /* canvas */
+  --color-ink-800: var(--surface-card);      /* light-gray card */
+  --color-paper-50: var(--surface-inverse);  /* near-black (for inverted buttons) */
+  --color-canvas: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+  --color-surface-card: var(--surface-card);
+  --color-surface-dark: var(--surface-dark);
 
   /* Foreground */
-  --color-fg: var(--fg);
-  --color-fg-dim: var(--fg-dim);
-  --color-fg-mute: var(--fg-mute);
+  --color-fg: var(--ink);
+  --color-fg-dim: var(--body);
+  --color-fg-mute: var(--muted);
+  --color-ink: var(--ink);
+  --color-body: var(--body);
+  --color-muted: var(--muted);
 
   /* Lines */
-  --color-hair: var(--hair);
-  --color-hair-strong: var(--hair-strong);
-  --color-chip: var(--chip);
+  --color-hair: var(--hairline);
+  --color-hair-strong: var(--hairline);
+  --color-chip: var(--surface-card);
+  --color-hairline: var(--hairline);
+  --color-hairline-soft: var(--hairline-soft);
 
   /* Brand */
   --color-brand: var(--brand);
@@ -77,37 +116,61 @@
   --color-brand-soft: var(--brand-soft);
   --color-brand-strong: var(--brand-strong);
 
-  /* Sex colors */
+  /* Semantic / accents */
   --color-male: var(--male);
   --color-female: var(--female);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
 
-  /* Display sizes (editorial Pawdoq) */
-  --text-display-xl: 88px;
-  --text-display-xl--line-height: 0.95;
-  --text-display-xl--letter-spacing: -3px;
-  --text-display-lg: 72px;
-  --text-display-lg--line-height: 1;
-  --text-display-lg--letter-spacing: -2.8px;
-  --text-display-md: 64px;
-  --text-display-md--line-height: 1;
-  --text-display-md--letter-spacing: -2.5px;
-  --text-display-sm: 44px;
-  --text-display-sm--line-height: 1.15;
-  --text-display-sm--letter-spacing: -1.4px;
-  --text-display-xs: 32px;
-  --text-display-xs--line-height: 1.1;
-  --text-display-xs--letter-spacing: -1px;
+  /* Cal.com display sizes — Inter 600 + negative letter-spacing */
+  --text-display-xl: 64px;
+  --text-display-xl--line-height: 1.05;
+  --text-display-xl--letter-spacing: -2px;
+  --text-display-xl--font-weight: 600;
+  --text-display-lg: 48px;
+  --text-display-lg--line-height: 1.1;
+  --text-display-lg--letter-spacing: -1.5px;
+  --text-display-lg--font-weight: 600;
+  --text-display-md: 36px;
+  --text-display-md--line-height: 1.15;
+  --text-display-md--letter-spacing: -1px;
+  --text-display-md--font-weight: 600;
+  --text-display-sm: 28px;
+  --text-display-sm--line-height: 1.2;
+  --text-display-sm--letter-spacing: -0.5px;
+  --text-display-sm--font-weight: 600;
+  --text-display-xs: 22px;
+  --text-display-xs--line-height: 1.3;
+  --text-display-xs--letter-spacing: -0.3px;
+  --text-display-xs--font-weight: 600;
+
+  /* Cal.com spacing scale (4px base) */
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  --spacing-section: 96px;
+
+  /* Cal.com radius scale */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 9999px;
+  --radius-card: 12px;
+  --radius-card-lg: 16px;
+
+  /* Container */
+  --container-page: 1200px;
+  --container-prose-lg: 1100px;
 
   /* Tracking */
   --tracking-mono-label: 1px;
-
-  /* Radii */
-  --radius-card: 12px;
-  --radius-card-lg: 14px;
-
-  /* Container */
-  --container-page: 1344px;
-  --container-prose-lg: 1100px;
 }
 
 /* ─── Base ──────────────────────────────────────────────────────────────── */
@@ -116,161 +179,72 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  color-scheme: dark;
-}
-[data-theme="light"] {
   color-scheme: light;
 }
+[data-theme="dark"] { color-scheme: dark; }
 
 body {
   background-color: var(--surface);
-  color: var(--fg);
+  color: var(--ink);
   font-family: var(--font-inter), 'Inter', ui-sans-serif, system-ui, sans-serif;
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
-  transition: background-color 200ms ease, color 200ms ease;
 }
 
 ::selection {
-  background-color: var(--hair-strong);
+  background-color: var(--surface-card);
 }
 
-/* Prevent iOS auto-zoom on input focus (font-size < 16px triggers it) */
+/* Prevent iOS auto-zoom on input focus */
 @supports (-webkit-touch-callout: none) {
-  input, select, textarea {
-    font-size: 16px !important;
-  }
+  input, select, textarea { font-size: 16px !important; }
 }
 
-/* Mobile: easier tap targets */
+/* Mobile tap targets */
 @media (max-width: 1023px) {
-  button, a[class*="rounded"], a[class*="px-"] {
-    min-height: 36px;
-  }
+  button, a[class*="rounded"], a[class*="px-"] { min-height: 36px; }
   button:has(> svg:only-child) {
-    min-width: 36px;
-    min-height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    min-width: 36px; min-height: 36px;
+    display: flex; align-items: center; justify-content: center;
   }
 }
 
-/* Hide scrollbars (iOS/desktop visual cleanup) */
+/* Hide scrollbars */
 .scrollbar-hide,
-::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-* {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+::-webkit-scrollbar { display: none; }
+.scrollbar-hide, * { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Native select option (Windows/Linux) */
 select option {
-  background-color: var(--surface-soft);
-  color: var(--fg);
+  background-color: var(--surface);
+  color: var(--ink);
 }
 
-/* ─── Logo theme switching ─────────────────────────────────────────────── */
-.logo-light { display: none; }
-.logo-dark { display: block; }
-[data-theme="light"] .logo-light { display: block; }
-[data-theme="light"] .logo-dark { display: none; }
-
-/* ─── Editorial prose (legales, blog, docs) ────────────────────────────── */
-.legal-prose {
-  font-size: 16px;
-  line-height: 1.7;
-  color: var(--fg-dim);
-}
+/* Editorial prose (legal, blog) */
+.legal-prose { font-size: 16px; line-height: 1.5; color: var(--body); }
 .legal-prose h2 {
   margin-top: 3.5rem;
-  font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  color: var(--fg);
-  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -1px;
+  color: var(--ink);
+  font-size: 28px;
+  line-height: 1.2;
 }
 .legal-prose h3 {
   margin-top: 2.5rem;
   font-weight: 600;
-  letter-spacing: -0.2px;
-  color: var(--fg);
-  font-size: 17px;
+  letter-spacing: -0.3px;
+  color: var(--ink);
+  font-size: 18px;
 }
 .legal-prose p { margin-top: 1rem; }
-.legal-prose strong { font-weight: 500; color: var(--fg); }
+.legal-prose strong { font-weight: 600; color: var(--ink); }
 .legal-prose code {
-  background: var(--chip);
+  background: var(--surface-card);
   padding: 2px 6px;
   border-radius: 4px;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
 }
 
-/* ─── Compatibility shims (old white/* classes used everywhere) ─────────
- * Keep existing components working until migrated to ink/fg/hair tokens.
- * Light mode overrides: convert white-on-dark assumptions to dark-on-light.
- * ────────────────────────────────────────────────────────────────────── */
-
-[data-theme="light"] .bg-gray-950 { background-color: var(--surface) !important; }
-[data-theme="light"] .bg-gray-900 { background-color: var(--surface-soft) !important; }
-[data-theme="light"] .bg-gray-800 { background-color: var(--surface-alt) !important; }
-
-[data-theme="light"] .text-white { color: var(--fg) !important; }
-[data-theme="light"] .text-white\/70 { color: var(--fg) !important; }
-[data-theme="light"] .text-white\/60 { color: var(--fg-dim) !important; }
-[data-theme="light"] .text-white\/50 { color: var(--fg-dim) !important; }
-[data-theme="light"] .text-white\/40 { color: var(--fg-mute) !important; }
-[data-theme="light"] .text-white\/35 { color: var(--fg-mute) !important; }
-[data-theme="light"] .text-white\/30 { color: var(--fg-mute) !important; }
-[data-theme="light"] .text-white\/25 { color: var(--fg-mute) !important; }
-[data-theme="light"] .text-white\/20 { color: var(--fg-mute) !important; }
-[data-theme="light"] .text-white\/15 { color: var(--fg-mute) !important; }
-[data-theme="light"] .text-white\/10 { color: var(--fg-mute) !important; }
-
-[data-theme="light"] .border-white\/10 { border-color: var(--hair) !important; }
-[data-theme="light"] .border-white\/5 { border-color: var(--hair) !important; }
-[data-theme="light"] .border-white\/20 { border-color: var(--hair-strong) !important; }
-
-[data-theme="light"] .bg-white\/5 { background-color: var(--chip) !important; }
-[data-theme="light"] .bg-white\/10 { background-color: var(--chip) !important; }
-[data-theme="light"] .bg-white\/\[0\.02\] { background-color: var(--surface-soft) !important; }
-[data-theme="light"] .bg-white\/\[0\.03\] { background-color: var(--surface-soft) !important; }
-[data-theme="light"] .bg-white\/\[0\.04\] { background-color: var(--surface-soft) !important; }
-[data-theme="light"] .bg-white\/\[0\.06\] { background-color: var(--chip) !important; }
-[data-theme="light"] .bg-white\/\[0\.07\] { background-color: var(--chip) !important; }
-[data-theme="light"] .bg-black\/50 { background-color: rgba(0, 0, 0, 0.4) !important; }
-[data-theme="light"] .bg-black\/60 { background-color: rgba(0, 0, 0, 0.5) !important; }
-
-[data-theme="light"] .placeholder\:text-white\/30::placeholder { color: var(--fg-mute) !important; }
-[data-theme="light"] .placeholder\:text-white\/25::placeholder { color: var(--fg-mute) !important; }
-
-[data-theme="light"] .hover\:bg-white\/5:hover { background-color: var(--chip) !important; }
-[data-theme="light"] .hover\:bg-white\/10:hover { background-color: var(--hair) !important; }
-[data-theme="light"] .hover\:bg-white\/\[0\.07\]:hover { background-color: var(--chip) !important; }
-[data-theme="light"] .hover\:bg-white\/\[0\.03\]:hover { background-color: var(--surface-soft) !important; }
-[data-theme="light"] .hover\:text-white:hover { color: var(--fg) !important; }
-[data-theme="light"] .hover\:border-white\/20:hover { border-color: var(--hair-strong) !important; }
-[data-theme="light"] .hover\:border-white\/30:hover { border-color: var(--hair-strong) !important; }
-
-[data-theme="light"] .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.12) !important; }
-[data-theme="light"] .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08) !important; }
-[data-theme="light"] .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.06) !important; }
-
-[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"]):not([type="range"]),
-[data-theme="light"] textarea,
-[data-theme="light"] select {
-  background-color: var(--surface-soft) !important;
-  border-color: var(--hair-strong) !important;
-  color: var(--fg) !important;
-}
-[data-theme="light"] input:focus, [data-theme="light"] textarea:focus, [data-theme="light"] select:focus {
-  border-color: var(--brand) !important;
-}
-[data-theme="light"] select { color-scheme: light; }
+/* Logo theme switching (legacy, unused now since Wordmark is text) */
+.logo-light, .logo-dark { display: none; }
