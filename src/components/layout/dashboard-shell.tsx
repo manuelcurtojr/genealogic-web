@@ -23,8 +23,8 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
   const [collapsed, setCollapsed] = useState(false)
   const [isNative, setIsNative] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('theme') !== 'light'
-    return true
+    if (typeof window !== 'undefined') return localStorage.getItem('theme') === 'dark'
+    return false
   })
   const [notifOpen, setNotifOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
@@ -46,20 +46,14 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
       initPushNotifications()
     }
 
-    // Force dark mode on mobile
-    const isMobile = window.innerWidth < 1024
-    if (isMobile) {
+    // Diseño Cal: light por defecto, mantenemos toggle opt-in para data-heavy.
+    const savedTheme = localStorage.getItem('theme')
+    if (savedTheme === 'dark') {
       setDarkMode(true)
-      localStorage.setItem('theme', 'dark')
       document.documentElement.setAttribute('data-theme', 'dark')
     } else {
-      const savedTheme = localStorage.getItem('theme')
-      if (savedTheme === 'light') {
-        setDarkMode(false)
-        document.documentElement.setAttribute('data-theme', 'light')
-      } else {
-        document.documentElement.setAttribute('data-theme', 'dark')
-      }
+      setDarkMode(false)
+      document.documentElement.setAttribute('data-theme', 'light')
     }
   }, [])
 
@@ -166,10 +160,13 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
     }
   }
 
-  const shellBg = darkMode ? 'bg-ink-900 text-white' : 'bg-gray-50 text-gray-900'
-  const headerBg = darkMode ? 'bg-ink-900 border-hair' : 'bg-white border-gray-200'
-  const iconColor = darkMode ? 'text-fg-mute hover:text-fg' : 'text-gray-400 hover:text-gray-700'
-  const avatarBg = darkMode ? 'border-hair' : 'border-gray-200'
+  // Diseño Cal.com unificado con Pawdoq Breeders: canvas blanco puro,
+  // hairlines #e5e7eb, sin tonos grises de fondo. Los tokens cambian valor
+  // con data-theme; las clases nunca cambian → consistencia con admin/marketing.
+  const shellBg = 'bg-canvas text-ink'
+  const headerBg = 'bg-canvas border-hairline'
+  const iconColor = 'text-muted hover:text-ink'
+  const avatarBg = 'border-hairline'
 
   return (
     <div className={`min-h-screen ${shellBg} transition-colors duration-300`} style={{ '--sidebar-width': `${sidebarWidth}px`, '--tab-bar-height': isNative ? '90px' : '0px' } as React.CSSProperties}>

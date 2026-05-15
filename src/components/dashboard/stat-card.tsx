@@ -5,18 +5,37 @@ interface StatCardProps {
   label: string
   value: number | string
   accentColor: string
+  sub?: string
+  href?: string
 }
 
-export default function StatCard({ icon: Icon, label, value, accentColor }: StatCardProps) {
-  return (
-    <div className="bg-chip border border-hair rounded-xl p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3" style={{ borderLeftWidth: 3, borderLeftColor: accentColor }}>
-      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: accentColor + '15' }}>
-        <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: accentColor }} />
+/**
+ * KPI card — diseño Cal.com unificado con Pawdoq Breeders:
+ * border + canvas + icon arriba con label en gris + número grande tabular.
+ * Sin barras laterales coloreadas, sin fondos pastel: cromia solo en el icon.
+ */
+export default function StatCard({ icon: Icon, label, value, accentColor, sub, href }: StatCardProps) {
+  const content = (
+    <>
+      <div className="flex items-center gap-2">
+        <Icon className="h-4 w-4" style={{ color: accentColor }} />
+        <span className="text-[13px] font-medium text-muted">{label}</span>
       </div>
-      <div className="min-w-0">
-        <p className="text-sm sm:text-lg font-bold truncate">{value}</p>
-        <p className="text-[9px] sm:text-[10px] text-fg-mute truncate">{label}</p>
-      </div>
-    </div>
+      <p className="mt-3 text-[28px] font-semibold tabular-nums tracking-[-0.04em] text-ink leading-none">
+        {value}
+      </p>
+      {sub && <p className="mt-2 text-[12.5px] text-muted">{sub}</p>}
+    </>
   )
+
+  const className = 'block rounded-xl border border-hairline bg-canvas p-5 transition-colors hover:bg-surface-soft'
+
+  if (href) {
+    return (
+      <a href={href} className={className}>
+        {content}
+      </a>
+    )
+  }
+  return <div className={className}>{content}</div>
 }
