@@ -145,25 +145,24 @@
   --text-display-xs--letter-spacing: -0.3px;
   --text-display-xs--font-weight: 600;
 
-  /* Cal.com spacing scale (4px base) */
-  --spacing-xxs: 4px;
-  --spacing-xs: 8px;
-  --spacing-sm: 12px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --spacing-xxl: 48px;
-  --spacing-section: 96px;
+  /* Cal.com spacing tokens — namespaced as --cal-space-* so they don't
+     collide with Tailwind v4's built-in scale (e.g. --spacing-xl would
+     hijack `max-w-xl` and resolve it to 32px instead of 36rem). */
+  --cal-space-xxs: 4px;
+  --cal-space-xs: 8px;
+  --cal-space-sm: 12px;
+  --cal-space-md: 16px;
+  --cal-space-lg: 24px;
+  --cal-space-xl: 32px;
+  --cal-space-xxl: 48px;
+  --cal-space-section: 96px;
 
-  /* Cal.com radius scale */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-pill: 9999px;
+  /* Cal.com radius scale — extra additions (Tailwind v4 already provides
+     rounded-sm/md/lg/xl/full; we only add namespaced tokens for the card
+     and pill cases used in the design spec). */
   --radius-card: 12px;
   --radius-card-lg: 16px;
+  --radius-pill: 9999px;
 
   /* Container */
   --container-page: 1200px;
