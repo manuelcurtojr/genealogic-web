@@ -32,18 +32,18 @@ export default function DogTabs({ dogId, ownerId, isOwner, fatherId, motherId, d
   return (
     <div className="mt-8">
       {/* Tab headers */}
-      <div className="flex gap-1 border-b border-hair mb-6">
+      <div className="-mb-px flex gap-1 overflow-x-auto border-b border-hairline mb-6 scrollbar-hide">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setActive(key)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition border-b-2 -mb-px ${
+            className={`flex shrink-0 items-center gap-2 border-b-2 px-4 py-2.5 text-[13px] font-medium transition-colors ${
               active === key
-                ? 'border-[#D74709] text-[#D74709]'
-                : 'border-transparent text-fg-mute hover:text-fg'
+                ? 'border-ink text-ink'
+                : 'border-transparent text-muted hover:text-ink'
             }`}
           >
-            <Icon className="w-4 h-4" />
+            <Icon className="h-4 w-4" />
             {label}
           </button>
         ))}

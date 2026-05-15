@@ -135,26 +135,32 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
       </div>
 
       {/* Content */}
-      <div className="lg:px-[30px] pt-4 sm:pt-5 pb-6 sm:pb-8">
+      <div className="lg:px-[30px] pt-6 sm:pt-8 pb-8 sm:pb-10 space-y-6 sm:space-y-8">
         {/* Name + badges */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-          <h1 className="text-2xl sm:text-3xl font-bold">{dog.name}</h1>
-          {breedName && (
-            <div className="inline-flex items-center gap-1.5 bg-chip border border-hair rounded-full px-3 py-1">
-              <img src="/icon.svg" alt="" className="w-4 h-4" />
-              <span className="text-sm text-fg font-medium">{breedName}</span>
-            </div>
-          )}
-          {kennel?.name && (
-            <Link href={`/kennels/${kennel.slug || kennel.id}`} className="inline-flex items-center gap-1.5 bg-chip border border-hair rounded-full px-3 py-1 hover:border-[#D74709]/30 hover:bg-chip transition">
-              {kennel.logo_url ? <img src={kennel.logo_url} alt="" className="w-4 h-4 rounded-full object-cover" /> : <img src="/icon.svg" alt="" className="w-4 h-4" />}
-              <span className="text-sm text-fg font-medium">{kennel.name}</span>
-            </Link>
-          )}
+        <div>
+          <h1 className="text-[32px] sm:text-[44px] font-semibold leading-[1.05] tracking-[-0.04em] text-ink">
+            {dog.name}
+          </h1>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {breedName && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-3 py-1 text-[13px] font-medium text-body">
+                {breedName}
+              </span>
+            )}
+            {kennel?.name && (
+              <Link
+                href={`/kennels/${kennel.slug || kennel.id}`}
+                className="inline-flex items-center gap-2 rounded-full border border-hairline bg-canvas px-3 py-1 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
+              >
+                {kennel.logo_url && <img src={kennel.logo_url} alt="" className="h-4 w-4 rounded-full object-cover" />}
+                {kennel.name}
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Info chips */}
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-4 sm:mb-5">
+        <div className="flex flex-wrap items-center gap-2">
           <Chip icon={dog.sex === 'male' ? Mars : Venus} label="Sexo" value={dog.sex === 'male' ? 'Macho' : 'Hembra'} color={sexColor} />
           {colorName && <Chip icon={Palette} label="Color" value={colorName} />}
           {dog.birth_date && <Chip icon={Calendar} label="Nacimiento" value={new Date(dog.birth_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })} />}
@@ -164,21 +170,22 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
 
         {/* Parents */}
         {(father || mother) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <ParentCard parent={father} role="Padre" />
             <ParentCard parent={mother} role="Madre" />
           </div>
         )}
 
-        {/* Tabs — right after parents */}
+        {/* Tabs */}
         <DogTabs dogId={dog.id} ownerId={dog.owner_id} isOwner={isOwner} fatherId={dog.father_id} motherId={dog.mother_id} dogSex={dog.sex} />
-
       </div>
 
       {/* Pedigree — full bleed on mobile, padding inside scroll */}
       {pedigree && pedigree.length > 1 && (
         <div className="-mx-4 lg:mx-0 mt-4 sm:mt-8">
-          <h2 className="text-lg font-bold mb-4 sm:mb-6 px-4 lg:px-0">Pedigri</h2>
+          <h2 className="mb-5 px-4 text-[22px] font-semibold tracking-[-0.04em] text-ink lg:px-0 sm:mb-6">
+            Pedigrí
+          </h2>
           <PedigreeTree data={pedigree} rootId={dog.id} />
         </div>
       )}
@@ -188,10 +195,10 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
 
 function Chip({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string; color?: string }) {
   return (
-    <div className="inline-flex items-center gap-1.5 bg-chip border border-hair rounded-lg px-2.5 py-1.5">
-      <Icon className="w-3.5 h-3.5 text-fg-mute flex-shrink-0" style={color ? { color } : undefined} />
-      <span className="text-[11px] text-fg-mute font-semibold">{label}:</span>
-      <span className="text-[13px] text-white font-medium">{value}</span>
+    <div className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-canvas px-3 py-2">
+      <Icon className="h-3.5 w-3.5 flex-shrink-0 text-muted" style={color ? { color } : undefined} />
+      <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{label}</span>
+      <span className="text-[13px] font-medium text-ink">{value}</span>
     </div>
   )
 }
@@ -199,22 +206,30 @@ function Chip({ icon: Icon, label, value, color }: { icon: React.ElementType; la
 function ParentCard({ parent, role }: { parent: any; role: string }) {
   const isFather = role === 'Padre'
   const sexColor = isFather ? BRAND.male : BRAND.female
-  const borderClass = isFather ? 'border-blue-400/40' : 'border-pink-400/40'
 
   if (!parent) return (
-    <div className={`border-2 border-dashed ${borderClass} rounded-xl p-3 text-center text-fg-mute text-sm`}>{role} desconocido</div>
+    <div className="rounded-xl border border-dashed border-hairline bg-surface-soft p-4 text-center">
+      <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{role}</p>
+      <p className="mt-1 text-[14px] text-body">Desconocido</p>
+    </div>
   )
 
   return (
-    <Link href={`/dogs/${parent.slug || parent.id}`} className={`border ${borderClass} bg-chip rounded-xl p-2.5 sm:p-3 hover:bg-chip transition flex items-center gap-2 sm:gap-3`}>
-      <div className="w-10 h-10 rounded-full border-2 overflow-hidden flex-shrink-0 bg-chip" style={{ borderColor: sexColor }}>
+    <Link
+      href={`/dogs/${parent.slug || parent.id}`}
+      className="flex items-center gap-3 rounded-xl border border-hairline bg-canvas p-3 transition-colors hover:bg-surface-soft sm:p-4"
+    >
+      <div
+        className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border-2 bg-surface-card"
+        style={{ borderColor: sexColor }}
+      >
         {parent.thumbnail_url
-          ? <img src={parent.thumbnail_url} alt="" className="w-full h-full object-cover" />
-          : <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-5 h-5 opacity-20" /></div>}
+          ? <img src={parent.thumbnail_url} alt="" className="h-full w-full object-cover" />
+          : <div className="flex h-full w-full items-center justify-center"><img src="/icon.svg" alt="" className="h-5 w-5 opacity-20" /></div>}
       </div>
-      <div>
-        <p className="text-[11px] text-fg-mute uppercase tracking-wider font-semibold">{role}</p>
-        <p className="text-sm font-bold text-white">{parent.name}</p>
+      <div className="min-w-0">
+        <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{role}</p>
+        <p className="text-[15px] font-medium text-ink truncate">{parent.name}</p>
       </div>
     </Link>
   )

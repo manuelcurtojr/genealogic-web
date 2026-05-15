@@ -22,16 +22,19 @@ interface DogCardProps {
   onEditPedigree?: () => void
 }
 
+/**
+ * Dog card Cal.com — canvas blanco + hairline + foto 4:3.
+ * Sex bar inferior como único acento cromático. Sin orange brand.
+ */
 export default function DogCard({ dog, onEdit, onTransfer, onEditPedigree }: DogCardProps) {
-  const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
-  const sexIcon = dog.sex === 'male' ? '♂' : '♀'
+  const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#888'
   const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
   const colorName = Array.isArray(dog.color) ? dog.color[0]?.name : dog.color?.name
 
   return (
-    <div className="bg-ink-800 border border-hair rounded-xl hover:border-[#D74709]/30 transition group relative">
+    <div className="group relative overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft">
       {/* Photo */}
-      <Link href={`/dogs/${dog.slug || dog.id}`} className="block relative aspect-[4/3] bg-chip rounded-t-xl overflow-hidden">
+      <Link href={`/dogs/${dog.slug || dog.id}`} className="relative block aspect-[4/3] overflow-hidden bg-surface-card">
         <DogImage
           src={dog.thumbnail_url}
           alt={dog.name}
@@ -39,55 +42,64 @@ export default function DogCard({ dog, onEdit, onTransfer, onEditPedigree }: Dog
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           width={0}
           height={0}
-          className="absolute inset-0 w-full h-full"
+          className="absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-105"
         />
         {breedName && (
-          <span className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-2 py-0.5 rounded-full z-10">{breedName}</span>
+          <span className="absolute right-2 top-2 z-10 rounded-full bg-canvas px-2 py-0.5 text-[10.5px] font-medium text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+            {breedName}
+          </span>
         )}
-        <div className="absolute bottom-0 left-0 right-0 h-1 z-10" style={{ background: sexColor }} />
+        <div className="absolute bottom-0 left-0 right-0 z-10 h-1" style={{ background: sexColor }} />
       </Link>
 
       {/* Info */}
-      <div className="p-2 sm:p-3">
-        <Link href={`/dogs/${dog.slug || dog.id}`} className="flex items-center gap-1 sm:gap-1.5 group-hover:text-[#D74709] transition">
-          <span className="text-xs sm:text-sm font-semibold truncate">{dog.name}</span>
+      <div className="p-3">
+        <Link href={`/dogs/${dog.slug || dog.id}`} className="block">
+          <p className="truncate text-[14px] font-medium text-ink">{dog.name}</p>
         </Link>
-        <div className="flex items-center gap-2 sm:gap-3 mt-1 sm:mt-1.5 text-[10px] sm:text-[11px] text-fg-mute">
-          {dog.birth_date && <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
-          {colorName && <span className="truncate">{colorName}</span>}
+        <div className="mt-1 flex items-center gap-2 text-[11.5px] text-muted">
+          {dog.birth_date && (
+            <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+          )}
+          {colorName && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span className="truncate">{colorName}</span>
+            </>
+          )}
         </div>
 
-        {/* Action buttons — icon-only on grid to avoid overflow */}
-        <div className="flex items-center gap-1 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-hair">
+        {/* Actions */}
+        <div className="mt-3 flex items-center gap-1 border-t border-hairline pt-3">
           <Link
             href={`/dogs/${dog.slug || dog.id}`}
             title="Ver perfil"
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#D74709]/10 text-[#D74709] hover:bg-[#D74709]/20 transition"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-ink text-on-primary transition-colors hover:opacity-90"
           >
-            <Eye className="w-3.5 h-3.5" />
+            <Eye className="h-3.5 w-3.5" />
           </Link>
           <button
             onClick={onEdit}
             title="Editar"
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-chip text-fg-mute hover:bg-chip hover:text-fg transition"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-card hover:text-ink"
           >
-            <Edit className="w-3.5 h-3.5" />
+            <Edit className="h-3.5 w-3.5" />
           </button>
           {onEditPedigree && (
             <button
               onClick={onEditPedigree}
               title="Constructor de genealogía"
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-chip text-fg-mute hover:bg-green-500/10 hover:text-green-400 transition"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-card hover:text-ink"
             >
-              <GitBranch className="w-3.5 h-3.5" />
+              <GitBranch className="h-3.5 w-3.5" />
             </button>
           )}
           <button
             onClick={onTransfer}
             title="Transferir a otro dueño"
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-chip text-fg-mute hover:bg-[#D74709]/10 hover:text-[#D74709] transition ml-auto"
+            className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-card hover:text-ink"
           >
-            <ArrowRightLeft className="w-3.5 h-3.5" />
+            <ArrowRightLeft className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
