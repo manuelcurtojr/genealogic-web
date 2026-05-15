@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2, X, Trash2 } from 'lucide-react'
+import { Portal } from '@/components/ui/portal'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
 import SearchableSelect from '@/components/ui/searchable-select'
 
@@ -119,7 +120,8 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
   }, [open, onClose])
 
   return (
-    <>
+    <Portal>
+      <>
       {/* Backdrop */}
       <div
         className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
@@ -270,6 +272,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
         destructive
         loading={deleting}
       />
-    </>
+      </>
+    </Portal>
   )
 }

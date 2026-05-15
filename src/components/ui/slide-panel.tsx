@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { X } from 'lucide-react'
+import { Portal } from '@/components/ui/portal'
 
 interface SlidePanelProps {
   open: boolean
@@ -19,7 +20,8 @@ export default function SlidePanel({ open, onClose, title, children }: SlidePane
   }, [open, onClose])
 
   return (
-    <>
+    <Portal>
+      <>
       {/* Backdrop */}
       <div
         className={`fixed inset-0 z-[60] bg-black/40 transition-opacity ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
@@ -37,6 +39,7 @@ export default function SlidePanel({ open, onClose, title, children }: SlidePane
           {children}
         </div>
       </div>
-    </>
+      </>
+    </Portal>
   )
 }
