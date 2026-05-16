@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Globe, Calendar, Dog, ExternalLink, Heart, Tag, Baby } from 'lucide-react'
+import { ArrowLeft, Globe, Calendar, ExternalLink } from 'lucide-react'
 import WhatsAppIcon from '@/components/ui/whatsapp-icon'
-import { BRAND } from '@/lib/constants'
 import { isUUID } from '@/lib/slug'
 import { pastelByName } from '@/lib/avatars'
+import KennelPublicTabs from '@/components/kennel/kennel-public-tabs'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -73,8 +73,6 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
     ...(kennel.foundation_date && { foundingDate: kennel.foundation_date }),
     numberOfEmployees: dogs.length,
   }
-
-  const empty = forSale.length === 0 && litters.length === 0 && reproductores.length === 0 && criados.length === 0
 
   return (
     <div className="space-y-8">
@@ -149,180 +147,15 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      {/* Empty state */}
-      {empty && (
-        <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
-          <Dog className="mx-auto h-10 w-10 text-muted" />
-          <p className="mt-3 text-[14px] text-body">No hay perros visibles en este criadero.</p>
-        </div>
-      )}
-
-      {/* 1. En venta */}
-      {forSale.length > 0 && (
-        <Section icon={Tag} iconColor="#f59e0b" title="En venta" count={forSale.length}>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {forSale.map((dog: any) => <SaleDogCard key={dog.id} dog={dog} currencySymbol={currencySymbol} />)}
-          </div>
-        </Section>
-      )}
-
-      {/* 2. Camadas */}
-      {litters.length > 0 && (
-        <Section icon={Baby} iconColor="#8b5cf6" title="Próximas camadas" count={litters.length}>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {litters.map((litter: any) => {
-              const father = litter.father
-              const mother = litter.mother
-              const breedName = litter.breed?.name
-              const title = father && mother ? `${father.name} × ${mother.name}` : father?.name || mother?.name || 'Camada'
-              const statusCfg: Record<string, { label: string; color: string }> = {
-                born: { label: 'Nacida', color: '#34d399' },
-                confirmed: { label: 'Nacida', color: '#34d399' },
-                mated: { label: 'Cubrición', color: '#f59e0b' },
-                planned: { label: 'Planificada', color: '#3b82f6' },
-                pending: { label: 'Cubrición', color: '#f59e0b' },
-              }
-              const cfg = statusCfg[litter.status] || statusCfg.planned
-              return (
-                <Link key={litter.id} href={`/litters/${litter.id}`} className="group overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft">
-                  <div className="flex h-24 bg-surface-card">
-                    <div className="relative flex-1 overflow-hidden">
-                      {father?.thumbnail_url
-                        ? <img src={father.thumbnail_url} alt="" className="h-full w-full object-cover" />
-                        : <div className="flex h-full w-full items-center justify-center text-lg text-muted">♂</div>
-                      }
-                    </div>
-                    <div className="w-px bg-hairline" />
-                    <div className="relative flex-1 overflow-hidden">
-                      {mother?.thumbnail_url
-                        ? <img src={mother.thumbnail_url} alt="" className="h-full w-full object-cover" />
-                        : <div className="flex h-full w-full items-center justify-center text-lg text-muted">♀</div>
-                      }
-                    </div>
-                  </div>
-                  <div className="p-3">
-                    <p className="truncate text-[13px] font-medium text-ink">{title}</p>
-                    {breedName && <p className="mt-0.5 text-[11px] text-muted">{breedName}</p>}
-                    <div className="mt-2 flex items-center gap-2">
-                      <span
-                        className="inline-block rounded-full px-2 py-0.5 text-[10.5px] font-medium text-white"
-                        style={{ backgroundColor: cfg.color }}
-                      >
-                        {cfg.label}
-                      </span>
-                      {litter.birth_date && (
-                        <span className="text-[11px] text-muted">
-                          {new Date(litter.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        </Section>
-      )}
-
-      {/* 3. Reproductores */}
-      {reproductores.length > 0 && (
-        <Section icon={Heart} iconColor="#ec4899" title="Reproductores" count={reproductores.length}>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {reproductores.map((dog: any) => <PublicDogCard key={dog.id} dog={dog} />)}
-          </div>
-        </Section>
-      )}
-
-      {/* 4. Criados */}
-      {criados.length > 0 && (
-        <Section icon={Dog} iconColor="#fb923c" title={`Criados por ${kennel.name}`} count={criados.length}>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {criados.map((dog: any) => <PublicDogCard key={dog.id} dog={dog} />)}
-          </div>
-        </Section>
-      )}
+      {/* Tabs Cal — Reproductores / En venta / Camadas / Producido */}
+      <KennelPublicTabs
+        kennelName={kennel.name}
+        reproductores={reproductores}
+        forSale={forSale}
+        litters={litters}
+        criados={criados}
+        currencySymbol={currencySymbol}
+      />
     </div>
-  )
-}
-
-function Section({ icon: Icon, iconColor, title, count, children }: { icon: any; iconColor: string; title: string; count: number; children: React.ReactNode }) {
-  return (
-    <section>
-      <div className="mb-4 flex items-center gap-2">
-        <Icon className="h-5 w-5" style={{ color: iconColor }} />
-        <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">{title}</h2>
-        <span className="inline-flex h-6 items-center rounded-full bg-surface-card px-2 text-[11px] font-medium text-body">
-          {count}
-        </span>
-      </div>
-      {children}
-    </section>
-  )
-}
-
-function SaleDogCard({ dog, currencySymbol }: { dog: any; currencySymbol: Record<string, string> }) {
-  const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
-  const symbol = currencySymbol[dog.sale_currency] || '€'
-  return (
-    <Link
-      href={`/dogs/${dog.slug || dog.id}`}
-      className="group relative overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft"
-    >
-      <span className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-full bg-[#f59e0b] px-2 py-0.5 text-[10.5px] font-medium text-white shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
-        <Tag className="h-2.5 w-2.5" /> En venta
-      </span>
-      <div className="relative aspect-square overflow-hidden bg-surface-card">
-        {dog.thumbnail_url
-          ? <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-          : <div className="flex h-full w-full items-center justify-center"><Dog className="h-10 w-10 text-muted" /></div>
-        }
-        {dog.breed?.name && (
-          <span className="absolute right-2 top-2 rounded-full bg-canvas px-2 py-0.5 text-[10.5px] font-medium text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-            {dog.breed.name}
-          </span>
-        )}
-        <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: sexColor }} />
-      </div>
-      <div className="p-3">
-        <p className="truncate text-[14px] font-medium text-ink">{dog.name}</p>
-        <div className="mt-1 flex items-center justify-between gap-2">
-          {dog.sale_price ? (
-            <p className="text-[14px] font-semibold text-ink tabular-nums">
-              {Number(dog.sale_price).toLocaleString('es-ES')} {symbol}
-            </p>
-          ) : (
-            <p className="text-[12px] text-muted">Consultar precio</p>
-          )}
-          {dog.sale_location && <p className="truncate text-[10.5px] text-muted">{dog.sale_location}</p>}
-        </div>
-      </div>
-    </Link>
-  )
-}
-
-function PublicDogCard({ dog }: { dog: any }) {
-  const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
-  return (
-    <Link
-      href={`/dogs/${dog.slug || dog.id}`}
-      className="group overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft"
-    >
-      <div className="relative aspect-square overflow-hidden bg-surface-card">
-        {dog.thumbnail_url
-          ? <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-          : <div className="flex h-full w-full items-center justify-center"><Dog className="h-10 w-10 text-muted" /></div>
-        }
-        {dog.breed?.name && (
-          <span className="absolute right-2 top-2 rounded-full bg-canvas px-2 py-0.5 text-[10.5px] font-medium text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-            {dog.breed.name}
-          </span>
-        )}
-        <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: sexColor }} />
-      </div>
-      <div className="p-3">
-        <p className="truncate text-[14px] font-medium text-ink">{dog.name}</p>
-        {dog.breed?.name && <p className="mt-0.5 truncate text-[11.5px] text-muted">{dog.breed.name}</p>}
-      </div>
-    </Link>
   )
 }
