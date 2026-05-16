@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Heart } from 'lucide-react'
+import { Heart, Mars, Venus } from 'lucide-react'
 import SearchableSelect from '@/components/ui/searchable-select'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
+import { BRAND } from '@/lib/constants'
 
 export default function PlannerPage() {
   const [males, setMales] = useState<{ value: string; label: string }[]>([])
@@ -14,7 +15,6 @@ export default function PlannerPage() {
   const [pedigreeData, setPedigreeData] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
 
-  // Load dogs
   useEffect(() => {
     async function load() {
       const supabase = createClient()
@@ -34,7 +34,6 @@ export default function PlannerPage() {
     load()
   }, [])
 
-  // Load pedigree when both selected
   useEffect(() => {
     if (!sireId || !damId) { setPedigreeData([]); return }
 
@@ -42,7 +41,6 @@ export default function PlannerPage() {
       setLoading(true)
       const supabase = createClient()
 
-      // Get pedigree for both parents
       const [sireRes, damRes] = await Promise.all([
         supabase.rpc('get_pedigree', { dog_uuid: sireId, max_gen: 5 }),
         supabase.rpc('get_pedigree', { dog_uuid: damId, max_gen: 5 }),
@@ -51,14 +49,12 @@ export default function PlannerPage() {
       const sireData = sireRes.data || []
       const damData = damRes.data || []
 
-      // Merge unique nodes
       const nodeMap = new Map<string, any>()
       ;[...sireData, ...damData].forEach(n => nodeMap.set(n.id, n))
 
-      // Create a virtual root
       const virtualRoot = {
         id: 'virtual-litter',
-        name: 'Camada Hipotetica',
+        name: 'Camada hipotética',
         sex: 'unknown',
         registration: null,
         father_id: sireId,
@@ -77,16 +73,26 @@ export default function PlannerPage() {
   }, [sireId, damId])
 
   return (
-    <div>
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-xl sm:text-2xl font-bold">Planificador de Cruces</h1>
-        <p className="text-xs sm:text-sm text-fg-mute mt-1">Selecciona un macho y una hembra para ver la genealogía combinada y calcular el COI</p>
+    <div className="space-y-6 sm:space-y-8">
+      <div>
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Crianza</p>
+        <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
+          Planificador de cruces
+        </h1>
+        <p className="mt-2 text-[14px] text-body">
+          Selecciona un macho y una hembra para ver la genealogía combinada de la camada hipotética.
+        </p>
       </div>
 
       {/* Parent selectors */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
-        <div className="bg-chip border border-blue-400/30 rounded-xl p-3 sm:p-5">
-          <h3 className="text-xs sm:text-sm font-semibold text-blue-400 uppercase tracking-wider mb-2 sm:mb-3">Padre (Macho)</h3>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="rounded-xl border border-hairline bg-canvas p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md" style={{ backgroundColor: BRAND.male }}>
+              <Mars className="h-4 w-4 text-white" />
+            </div>
+            <h3 className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Padre (macho)</h3>
+          </div>
           <SearchableSelect
             options={males}
             value={sireId}
@@ -94,8 +100,13 @@ export default function PlannerPage() {
             placeholder="Seleccionar macho..."
           />
         </div>
-        <div className="bg-chip border border-pink-400/30 rounded-xl p-3 sm:p-5">
-          <h3 className="text-xs sm:text-sm font-semibold text-pink-400 uppercase tracking-wider mb-2 sm:mb-3">Madre (Hembra)</h3>
+        <div className="rounded-xl border border-hairline bg-canvas p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md" style={{ backgroundColor: BRAND.female }}>
+              <Venus className="h-4 w-4 text-white" />
+            </div>
+            <h3 className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Madre (hembra)</h3>
+          </div>
           <SearchableSelect
             options={females}
             value={damId}
@@ -105,20 +116,26 @@ export default function PlannerPage() {
         </div>
       </div>
 
-      {/* Combined Pedigree */}
+      {/* Combined pedigree */}
       {loading ? (
-        <div className="text-center py-12 text-fg-mute">Cargando genealogía combinada...</div>
-      ) : pedigreeData.length > 1 ? (
-        <div className="-mx-4 lg:mx-0">
-          <h2 className="text-sm font-semibold text-fg-mute uppercase tracking-wider mb-3 px-4 lg:px-0">Genealogía</h2>
-          <PedigreeTree data={pedigreeData} rootId="virtual-litter" />
+        <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center text-[14px] text-muted">
+          Cargando genealogía combinada...
         </div>
+      ) : pedigreeData.length > 1 ? (
+        <section className="-mx-4 lg:mx-0">
+          <h2 className="mb-4 px-4 text-[22px] font-semibold tracking-[-0.04em] text-ink lg:px-0">
+            Genealogía combinada
+          </h2>
+          <PedigreeTree data={pedigreeData} rootId="virtual-litter" />
+        </section>
       ) : sireId && damId ? (
-        <div className="text-center py-12 text-fg-mute">No hay datos de genealogía disponibles</div>
+        <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
+          <p className="text-[14px] text-body">No hay datos de genealogía disponibles para este cruce.</p>
+        </div>
       ) : (
-        <div className="text-center py-20">
-          <Heart className="w-12 h-12 mx-auto mb-4 text-fg-mute" />
-          <p className="text-fg-mute">Selecciona un macho y una hembra para comenzar</p>
+        <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-20 text-center">
+          <Heart className="mx-auto h-10 w-10 text-muted" />
+          <p className="mt-3 text-[14px] text-body">Selecciona un macho y una hembra para comenzar.</p>
         </div>
       )}
     </div>

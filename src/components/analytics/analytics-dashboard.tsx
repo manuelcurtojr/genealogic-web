@@ -17,17 +17,18 @@ interface Props {
   profile: any; userId: string
 }
 
-const COLORS = ['#D74709', '#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EC4899', '#06B6D4', '#EF4444']
+// Pastels Cal — más sutiles que primarios fuertes
+const COLORS = ['#fb923c', '#3b82f6', '#8b5cf6', '#34d399', '#f59e0b', '#ec4899', '#06b6d4', '#ef4444']
 
 function fmt(n: number) { return n.toLocaleString('es-ES') }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-ink-800 border border-hair rounded-lg px-3 py-2 shadow-xl">
-      <p className="text-xs text-fg-dim mb-1">{label}</p>
+    <div className="rounded-lg border border-hairline bg-canvas px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+      <p className="mb-1 text-[11.5px] text-muted">{label}</p>
       {payload.map((p: any, i: number) => (
-        <p key={i} className="text-xs font-semibold" style={{ color: p.color }}>{p.name}: {p.value}</p>
+        <p key={i} className="text-[12.5px] font-medium" style={{ color: p.color }}>{p.name}: {p.value}</p>
       ))}
     </div>
   )
@@ -96,28 +97,40 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
 
   function Card({ icon: Icon, label, value, color }: any) {
     return (
-      <div className="bg-chip border border-hair rounded-xl p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: color + '15' }}>
-            <Icon className="w-4 h-4" style={{ color }} />
-          </div>
+      <div className="rounded-xl border border-hairline bg-canvas p-5">
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4" style={{ color }} />
+          <span className="text-[12px] font-medium text-muted">{label}</span>
         </div>
-        <p className="text-xl sm:text-2xl font-bold">{typeof value === 'number' ? fmt(value) : value}</p>
-        <p className="text-xs text-fg-mute mt-1">{label}</p>
+        <p className="mt-3 text-[28px] font-semibold tabular-nums tracking-[-0.04em] text-ink leading-none">
+          {typeof value === 'number' ? fmt(value) : value}
+        </p>
       </div>
     )
   }
 
   return (
-    <div>
-      <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Analíticas</h1>
-      <div className="flex gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1 -mx-1 px-1">
+    <div className="space-y-6 sm:space-y-8">
+      <div>
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Métricas</p>
+        <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
+          Analíticas
+        </h1>
+      </div>
+
+      <div className="inline-flex gap-1 rounded-lg bg-surface-card p-1">
         {sections.map(s => {
           const Icon = s.icon
+          const active = activeSection === s.key
           return (
-            <button key={s.key} onClick={() => setActiveSection(s.key)}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition ${activeSection === s.key ? 'bg-[#D74709]/15 text-[#D74709] border border-[#D74709]/30' : 'bg-chip text-fg-dim border border-hair hover:bg-chip'}`}>
-              <Icon className="w-3.5 h-3.5" /> {s.label}
+            <button
+              key={s.key}
+              onClick={() => setActiveSection(s.key)}
+              className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-4 py-1.5 text-[13px] font-medium transition-colors ${
+                active ? 'bg-canvas text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)]' : 'text-muted hover:text-ink'
+              }`}
+            >
+              <Icon className="h-4 w-4" /> {s.label}
             </button>
           )
         })}
@@ -126,16 +139,16 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
       {activeSection === 'resumen' && (
         <div className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
-            <Card icon={Dog} label="Perros" value={stats.totalDogs} color="#D74709" />
-            <Card icon={Baby} label="Camadas" value={stats.totalLitters} color="#8B5CF6" />
-            <Card icon={Tag} label="En venta" value={stats.forSale} color="#10B981" />
-            <Card icon={Stethoscope} label="Registros vet." value={stats.vetCount} color="#3B82F6" />
-            <Card icon={Trophy} label="Logros" value={stats.awardsCount} color="#F59E0B" />
+            <Card icon={Dog} label="Perros" value={stats.totalDogs} color="#fb923c" />
+            <Card icon={Baby} label="Camadas" value={stats.totalLitters} color="#8b5cf6" />
+            <Card icon={Tag} label="En venta" value={stats.forSale} color="#34d399" />
+            <Card icon={Stethoscope} label="Registros vet." value={stats.vetCount} color="#3b82f6" />
+            <Card icon={Trophy} label="Logros" value={stats.awardsCount} color="#f59e0b" />
           </div>
 
           {stats.breedPie.length > 0 && (
-            <div className="bg-chip border border-hair rounded-xl p-4">
-              <h3 className="text-sm font-semibold mb-3">Distribución por raza</h3>
+            <div className="rounded-xl border border-hairline bg-canvas p-5">
+              <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-ink mb-4">Distribución por raza</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
                   <Pie data={stats.breedPie} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={(e: any) => e.name}>
@@ -152,30 +165,30 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
       {activeSection === 'reproduccion' && (
         <div className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-            <Card icon={Baby} label="Camadas totales" value={stats.totalLitters} color="#8B5CF6" />
-            <Card icon={Dog} label="Cachorros" value={stats.totalPuppies} color="#10B981" />
-            <Card icon={BarChart3} label="Promedio cachorros" value={stats.avgPuppies} color="#3B82F6" />
-            <Card icon={Dog} label="Reproductores" value={stats.reproductors} color="#D74709" />
+            <Card icon={Baby} label="Camadas totales" value={stats.totalLitters} color="#8b5cf6" />
+            <Card icon={Dog} label="Cachorros" value={stats.totalPuppies} color="#34d399" />
+            <Card icon={BarChart3} label="Promedio cachorros" value={stats.avgPuppies} color="#3b82f6" />
+            <Card icon={Dog} label="Reproductores" value={stats.reproductors} color="#fb923c" />
           </div>
 
           {stats.littersChart.length > 0 && (
-            <div className="bg-chip border border-hair rounded-xl p-4">
-              <h3 className="text-sm font-semibold mb-3">Camadas por año</h3>
+            <div className="rounded-xl border border-hairline bg-canvas p-5">
+              <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-ink mb-4">Camadas por año</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={stats.littersChart}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#fff6' }} />
-                  <YAxis tick={{ fontSize: 11, fill: '#fff6' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} />
+                  <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="Camadas" fill="#8B5CF6" />
+                  <Bar dataKey="Camadas" fill="#8b5cf6" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           )}
 
           {stats.topReproducers.length > 0 && (
-            <div className="bg-chip border border-hair rounded-xl p-4">
-              <h3 className="text-sm font-semibold mb-3">Top reproductores</h3>
+            <div className="rounded-xl border border-hairline bg-canvas p-5">
+              <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-ink mb-4">Top reproductores</h3>
               <div className="space-y-2">
                 {stats.topReproducers.map((r: any) => (
                   <div key={r.name} className="flex items-center gap-3">
@@ -183,8 +196,8 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
                       <Dog className="w-4 h-4" style={{ color: r.sex === 'male' ? '#017DFA' : '#e84393' }} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs font-semibold">{r.name}</p>
-                      <p className="text-[10px] text-fg-mute">{r.count} camadas</p>
+                      <p className="text-[14px] font-medium text-ink">{r.name}</p>
+                      <p className="text-[10px] text-muted">{r.count} camadas</p>
                     </div>
                   </div>
                 ))}
@@ -197,16 +210,16 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
       {activeSection === 'criadero' && (
         <div className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-            <Card icon={Dog} label="Total perros" value={stats.totalKennelDogs} color="#D74709" />
-            <Card icon={Dog} label="Retenidos" value={stats.retained} color="#10B981" />
-            <Card icon={Dog} label="Transferidos" value={stats.transferred} color="#F59E0B" />
-            <Card icon={Dog} label="Con genealogía" value={stats.withPedigree} color="#8B5CF6" />
+            <Card icon={Dog} label="Total perros" value={stats.totalKennelDogs} color="#fb923c" />
+            <Card icon={Dog} label="Retenidos" value={stats.retained} color="#34d399" />
+            <Card icon={Dog} label="Transferidos" value={stats.transferred} color="#f59e0b" />
+            <Card icon={Dog} label="Con genealogía" value={stats.withPedigree} color="#8b5cf6" />
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             <Card icon={Dog} label="Machos" value={stats.males} color="#017DFA" />
             <Card icon={Dog} label="Hembras" value={stats.females} color="#e84393" />
-            <Card icon={BarChart3} label="Edad promedio" value={`${stats.avgAge} años`} color="#3B82F6" />
+            <Card icon={BarChart3} label="Edad promedio" value={`${stats.avgAge} años`} color="#3b82f6" />
           </div>
         </div>
       )}

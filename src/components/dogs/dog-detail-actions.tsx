@@ -22,7 +22,7 @@ export default function DogDetailActions({ dogId }: { dogId: string }) {
     <>
       <button
         onClick={() => setShowDelete(true)}
-        className="bg-chip hover:bg-red-500/20 text-fg-dim hover:text-red-400 px-3 py-2 rounded-lg transition"
+        className="bg-surface-card hover:bg-red-500/20 text-body hover:text-red-400 px-3 py-2 rounded-lg transition"
       >
         <Trash2 className="w-4 h-4" />
       </button>

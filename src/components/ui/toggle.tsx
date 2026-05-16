@@ -7,7 +7,7 @@ interface ToggleProps {
   className?: string
 }
 
-export default function Toggle({ value, onChange, color = 'bg-[#D74709]', className = '' }: ToggleProps) {
+export default function Toggle({ value, onChange, color = 'bg-ink', className = '' }: ToggleProps) {
   return (
     <button
       type="button"

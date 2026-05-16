@@ -35,7 +35,7 @@ const variants: Record<Variant, string> = {
   ghost: 'text-body hover:text-ink hover:bg-surface-card',
   // Brand orange — Genealogic's accent (where Cal uses blue). Reserved for
   // brand-tinted moments, not the default CTA.
-  brand: 'bg-[#D74709] text-white hover:bg-[#c03d07]',
+  brand: 'bg-ink text-on-primary hover:opacity-90',
 }
 
 export function Button({

@@ -179,13 +179,13 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
         <div className="flex items-center gap-2 flex-shrink-0">
           <button onClick={() => setNotifOpen(true)} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-surface-card transition relative`}>
             <Bell className="w-[18px] h-[18px]" />
-            {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#D74709]" />}
+            {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-ink" />}
           </button>
           <Link href="/settings" className={`w-9 h-9 rounded-full overflow-hidden border-2 ${avatarBg} cursor-pointer block`}>
             {user?.avatar_url ? (
               <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-[#D74709]/20 flex items-center justify-center text-[#D74709] text-xs font-bold">
+              <div className="w-full h-full bg-surface-card flex items-center justify-center text-ink text-xs font-bold">
                 {(user?.display_name || '?')[0].toUpperCase()}
               </div>
             )}

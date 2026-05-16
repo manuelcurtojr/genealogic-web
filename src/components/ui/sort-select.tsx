@@ -71,7 +71,7 @@ export default function SortSelect({ value, onChange }: SortSelectProps) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-fg-dim hover:text-fg hover:bg-chip transition cursor-pointer whitespace-nowrap"
+        className="flex items-center gap-1.5 bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-body hover:text-ink hover:bg-surface-card transition cursor-pointer whitespace-nowrap"
       >
         <ArrowDownUp className="w-3.5 h-3.5 flex-shrink-0" />
         <span className="hidden sm:inline">{SORT_LABELS[value]}</span>
@@ -79,15 +79,15 @@ export default function SortSelect({ value, onChange }: SortSelectProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 bg-ink-800 border border-hair rounded-lg shadow-xl overflow-hidden min-w-[180px]">
+        <div className="absolute right-0 top-full mt-1 z-50 bg-surface-card border border-hairline rounded-lg shadow-xl overflow-hidden min-w-[180px]">
           {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(([k, label]) => (
             <button
               key={k}
               onClick={() => { onChange(k); setOpen(false) }}
               className={`w-full text-left px-3 py-2.5 text-sm transition ${
                 value === k
-                  ? 'bg-[#D74709]/15 text-[#D74709] font-medium'
-                  : 'text-fg-dim hover:bg-chip hover:text-fg'
+                  ? 'bg-surface-card text-ink font-medium'
+                  : 'text-body hover:bg-surface-card hover:text-ink'
               }`}
             >
               {label}

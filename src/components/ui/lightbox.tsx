@@ -35,12 +35,12 @@ export default function Lightbox({ files, startIndex, onClose }: LightboxProps) 
     <div className="fixed inset-0 z-[90] bg-black/95 flex flex-col" onClick={onClose}>
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
-        <span className="text-sm text-fg-dim">{current + 1} / {files.length}</span>
+        <span className="text-sm text-body">{current + 1} / {files.length}</span>
         <div className="flex items-center gap-2">
-          <a href={url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-chip flex items-center justify-center text-fg-dim hover:text-fg transition" title="Descargar">
+          <a href={url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-surface-card flex items-center justify-center text-body hover:text-ink transition" title="Descargar">
             <Download className="w-4 h-4" />
           </a>
-          <button onClick={onClose} className="w-9 h-9 rounded-full bg-chip flex items-center justify-center text-fg-dim hover:text-fg transition">
+          <button onClick={onClose} className="w-9 h-9 rounded-full bg-surface-card flex items-center justify-center text-body hover:text-ink transition">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -54,9 +54,9 @@ export default function Lightbox({ files, startIndex, onClose }: LightboxProps) 
           <iframe src={url} className="w-full h-full max-w-4xl rounded-lg bg-white" />
         ) : (
           <div className="flex flex-col items-center gap-4">
-            <FileText className="w-16 h-16 text-fg-mute" />
-            <p className="text-fg-dim text-sm">Vista previa no disponible</p>
-            <a href={url} target="_blank" rel="noopener noreferrer" className="bg-paper-50 text-ink-900 hover:opacity-90 px-6 py-2.5 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+            <FileText className="w-16 h-16 text-muted" />
+            <p className="text-body text-sm">Vista previa no disponible</p>
+            <a href={url} target="_blank" rel="noopener noreferrer" className="bg-ink text-on-primary hover:opacity-90 px-6 py-2.5 rounded-lg text-sm font-semibold transition flex items-center gap-2">
               <Download className="w-4 h-4" /> Descargar archivo
             </a>
           </div>
@@ -67,11 +67,11 @@ export default function Lightbox({ files, startIndex, onClose }: LightboxProps) 
       {hasMultiple && (
         <>
           <button onClick={e => { e.stopPropagation(); setCurrent(c => c <= 0 ? files.length - 1 : c - 1) }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 flex items-center justify-center text-fg hover:text-fg transition">
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 flex items-center justify-center text-ink hover:text-ink transition">
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button onClick={e => { e.stopPropagation(); setCurrent(c => c >= files.length - 1 ? 0 : c + 1) }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 flex items-center justify-center text-fg hover:text-fg transition">
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 flex items-center justify-center text-ink hover:text-ink transition">
             <ChevronRight className="w-6 h-6" />
           </button>
         </>
@@ -82,12 +82,12 @@ export default function Lightbox({ files, startIndex, onClose }: LightboxProps) 
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2" onClick={e => e.stopPropagation()}>
           {files.map((f, i) => (
             <button key={i} onClick={() => setCurrent(i)}
-              className={`w-12 h-12 rounded-lg overflow-hidden transition flex-shrink-0 ${i === current ? 'ring-2 ring-[#D74709] opacity-100' : 'opacity-40 hover:opacity-70'}`}>
+              className={`w-12 h-12 rounded-lg overflow-hidden transition flex-shrink-0 ${i === current ? 'ring-2 ring-ink opacity-100' : 'opacity-40 hover:opacity-70'}`}>
               {isImage(f) ? (
                 <img src={f} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-chip flex items-center justify-center">
-                  <FileText className="w-4 h-4 text-[#D74709]" />
+                <div className="w-full h-full bg-surface-card flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-ink" />
                 </div>
               )}
             </button>

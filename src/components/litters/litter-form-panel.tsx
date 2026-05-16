@@ -140,20 +140,20 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
 
       <div className={`fixed top-0 right-0 h-full w-full sm:max-w-lg z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hair flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
           <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar camada' : 'Nueva camada'}</h2>
-          <button onClick={onClose} className="text-fg-mute hover:text-fg transition"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-muted hover:text-ink transition"><X className="w-5 h-5" /></button>
         </div>
 
         {dataLoading ? (
-          <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-fg-mute" /></div>
+          <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-muted" /></div>
         ) : (
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
             {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
             {/* Breed — searchable like header */}
             <div>
-              <h3 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-3">Raza</h3>
+              <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Raza</h3>
               <DogSearch
                 label="Raza"
                 items={breeds.map(b => ({ id: b.id, name: b.name, image: null }))}
@@ -165,8 +165,8 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
 
             {/* Parents */}
             <div>
-              <h3 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-3">
-                Padres {isEdit && <span className="text-fg-mute normal-case">(no editables)</span>}
+              <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">
+                Padres {isEdit && <span className="text-muted normal-case">(no editables)</span>}
               </h3>
               {isEdit ? (
                 <div className="space-y-2">
@@ -197,7 +197,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
 
             {/* Status — 3 cards with inline fields */}
             <div>
-              <h3 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-3">Estado actual</h3>
+              <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Estado actual</h3>
               <div className="space-y-2">
                 {STATUSES.map(s => {
                   const Icon = s.icon
@@ -206,46 +206,46 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                     <div key={s.value}>
                       <button type="button" onClick={() => set('status', s.value)}
                         className={`w-full text-left flex items-center gap-3 p-3 rounded-lg border transition ${
-                          active ? 'border-[#D74709] bg-[#D74709]/5' : 'border-hair bg-ink-800 hover:bg-chip'
+                          active ? 'border-ink bg-surface-soft' : 'border-hairline bg-surface-card hover:bg-surface-card'
                         }`}>
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? 'bg-[#D74709]/15' : 'bg-chip'}`}>
-                          <Icon className="w-5 h-5" style={{ color: active ? '#D74709' : s.color }} />
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? 'bg-surface-card' : 'bg-surface-card'}`}>
+                          <Icon className="w-5 h-5" style={{ color: active ? '#fb923c' : s.color }} />
                         </div>
                         <div>
-                          <p className={`text-sm font-semibold ${active ? 'text-[#D74709]' : 'text-fg'}`}>{s.label}</p>
-                          <p className="text-xs text-fg-mute">{s.desc}</p>
+                          <p className={`text-sm font-semibold ${active ? 'text-ink' : 'text-ink'}`}>{s.label}</p>
+                          <p className="text-xs text-muted">{s.desc}</p>
                         </div>
                       </button>
 
                       {/* Mated fields — inline below its card */}
                       {active && s.value === 'mated' && (
-                        <div className="mt-2 ml-4 pl-4 border-l-2 border-[#D74709]/30 space-y-3 pb-1">
+                        <div className="mt-2 ml-4 pl-4 border-l-2 border-hairline space-y-3 pb-1">
                           <div>
-                            <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Fecha del cruce</label>
+                            <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">Fecha del cruce</label>
                             <input type="date" value={form.mating_date} onChange={e => set('mating_date', e.target.value)}
-                              className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
+                              className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white focus:border-ink focus:outline-none transition" />
                           </div>
                         </div>
                       )}
 
                       {/* Born fields — inline below its card */}
                       {active && s.value === 'born' && (
-                        <div className="mt-2 ml-4 pl-4 border-l-2 border-[#D74709]/30 space-y-3 pb-1">
+                        <div className="mt-2 ml-4 pl-4 border-l-2 border-hairline space-y-3 pb-1">
                           <div>
-                            <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Fecha del cruce</label>
+                            <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">Fecha del cruce</label>
                             <input type="date" value={form.mating_date} onChange={e => set('mating_date', e.target.value)}
-                              className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
+                              className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white focus:border-ink focus:outline-none transition" />
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Nacimiento</label>
+                              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">Nacimiento</label>
                               <input type="date" value={form.birth_date} onChange={e => set('birth_date', e.target.value)}
-                                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
+                                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white focus:border-ink focus:outline-none transition" />
                             </div>
                             <div>
-                              <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Cachorros</label>
+                              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">Cachorros</label>
                               <input type="number" min="0" value={form.puppy_count} onChange={e => set('puppy_count', e.target.value)}
-                                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D74709] focus:outline-none transition" />
+                                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white focus:border-ink focus:outline-none transition" />
                             </div>
                           </div>
                         </div>
@@ -257,10 +257,10 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
             </div>
 
             {/* Visibility */}
-            <div className="flex items-center justify-between bg-chip border border-hair rounded-lg p-3">
+            <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-lg p-3">
               <div>
                 <p className="text-sm font-medium">Camada publica</p>
-                <p className="text-xs text-fg-mute">Visible para otros usuarios</p>
+                <p className="text-xs text-muted">Visible para otros usuarios</p>
               </div>
               <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
             </div>
@@ -268,8 +268,8 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
             {/* Puppies section (edit mode only) */}
             {isEdit && (
               <div>
-                <h3 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-3">
-                  Cachorros {puppies.length > 0 && <span className="text-fg-mute">({puppies.length})</span>}
+                <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">
+                  Cachorros {puppies.length > 0 && <span className="text-muted">({puppies.length})</span>}
                 </h3>
                 {puppies.length > 0 ? (
                   <div className="space-y-1.5 mb-3">
@@ -277,9 +277,9 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                       const sexColor = pup.sex === 'male' ? '#017DFA' : '#e84393'
                       return (
                         <Link key={pup.id} href={`/dogs/${pup.slug || pup.id}`}
-                          className="flex items-center gap-2.5 bg-chip border border-hair rounded-lg px-3 py-2 hover:border-white/15 transition">
-                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-chip flex-shrink-0 border" style={{ borderColor: sexColor }}>
-                            {pup.thumbnail_url ? <img src={pup.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-4 h-4 text-fg-mute" /></div>}
+                          className="flex items-center gap-2.5 bg-surface-card border border-hairline rounded-lg px-3 py-2 hover:border-white/15 transition">
+                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-surface-card flex-shrink-0 border" style={{ borderColor: sexColor }}>
+                            {pup.thumbnail_url ? <img src={pup.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-4 h-4 text-muted" /></div>}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold truncate">{pup.name}</p>
@@ -290,12 +290,12 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                     })}
                   </div>
                 ) : (
-                  <p className="text-xs text-fg-mute mb-3">No hay cachorros asignados a esta camada</p>
+                  <p className="text-xs text-muted mb-3">No hay cachorros asignados a esta camada</p>
                 )}
                 <button
                   type="button"
                   onClick={() => onAddPuppy?.(editLitterId!, form.breed_id || null, form.father_id || null, form.mother_id || null)}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-hair text-xs text-fg-mute hover:text-[#D74709] hover:border-[#D74709]/30 transition"
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-hairline text-xs text-muted hover:text-ink hover:border-hairline transition"
                 >
                   <Plus className="w-3.5 h-3.5" /> Añadir cachorro
                 </button>
@@ -304,10 +304,10 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hair flex-shrink-0">
-          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-fg-dim hover:text-fg hover:bg-chip transition">Cancelar</button>
+        <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hairline flex-shrink-0">
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">Cancelar</button>
           <button onClick={handleSubmit} disabled={loading || dataLoading}
-            className="bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+            className="bg-ink text-on-primary hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {loading ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear camada'}
           </button>
@@ -338,41 +338,41 @@ function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
 
   return (
     <div ref={ref} className="relative">
-      <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1 block">{label}</label>
+      <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{label}</label>
       <div onClick={() => { setOpen(!open); setSearch('') }}
-        className={`w-full bg-chip border rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 cursor-pointer transition hover:border-hair-strong ${open ? 'border-[#D74709]' : 'border-hair'}`}>
+        className={`w-full bg-surface-card border rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 cursor-pointer transition hover:border-hairline ${open ? 'border-ink' : 'border-hairline'}`}>
         {selected ? (
           <>
             {selected.image && (
-              <div className="w-6 h-6 rounded-full border-2 overflow-hidden flex-shrink-0 bg-chip" style={{ borderColor: sexColor || BRAND.primary }}>
+              <div className="w-6 h-6 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor || BRAND.primary }}>
                 <img src={selected.image} alt="" className="w-full h-full object-cover" />
               </div>
             )}
             <span className="text-white flex-1 truncate">{selected.name}</span>
           </>
         ) : (
-          <span className="text-fg-mute flex-1">{placeholder}</span>
+          <span className="text-muted flex-1">{placeholder}</span>
         )}
         <div className="flex items-center gap-1 flex-shrink-0">
-          {value && <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="text-fg-mute hover:text-fg-dim"><X className="w-3.5 h-3.5" /></span>}
-          <ChevronDown className={`w-4 h-4 text-fg-mute transition ${open ? 'rotate-180' : ''}`} />
+          {value && <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="text-muted hover:text-body"><X className="w-3.5 h-3.5" /></span>}
+          <ChevronDown className={`w-4 h-4 text-muted transition ${open ? 'rotate-180' : ''}`} />
         </div>
       </div>
       {open && (
-        <div className="absolute z-[80] mt-1 w-full bg-ink-800 border border-hair rounded-lg shadow-xl max-h-52 flex flex-col">
-          <div className="p-2 border-b border-hair">
+        <div className="absolute z-[80] mt-1 w-full bg-surface-card border border-hairline rounded-lg shadow-xl max-h-52 flex flex-col">
+          <div className="p-2 border-b border-hairline">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fg-mute" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
               <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..."
-                className="w-full bg-chip border border-hair rounded pl-8 pr-3 py-1.5 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+                className="w-full bg-surface-card border border-hairline rounded pl-8 pr-3 py-1.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
             </div>
           </div>
           <div className="overflow-y-auto flex-1">
-            {filtered.length === 0 ? <p className="text-sm text-fg-mute p-3 text-center">Sin resultados</p> : filtered.map(item => (
+            {filtered.length === 0 ? <p className="text-sm text-muted p-3 text-center">Sin resultados</p> : filtered.map(item => (
               <button key={item.id} type="button" onClick={() => { onChange(item.id); setOpen(false); setSearch('') }}
-                className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2.5 transition ${item.id === value ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg hover:bg-chip'}`}>
+                className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2.5 transition ${item.id === value ? 'bg-surface-card text-ink' : 'text-ink hover:bg-surface-card'}`}>
                 {item.image !== null && (
-                  <div className="w-7 h-7 rounded-full border-2 overflow-hidden flex-shrink-0 bg-chip" style={{ borderColor: sexColor || BRAND.primary }}>
+                  <div className="w-7 h-7 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor || BRAND.primary }}>
                     {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-3.5 h-3.5 opacity-30" /></div>}
                   </div>
                 )}
@@ -391,19 +391,19 @@ function LockedField({ label, dogs, value, sex }: { label: string; dogs: any[]; 
   const sexColor = sex === 'male' ? BRAND.male : BRAND.female
   return (
     <div>
-      <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1 block">{label}</label>
-      <div className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 opacity-60 cursor-not-allowed">
+      <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{label}</label>
+      <div className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 opacity-60 cursor-not-allowed">
         {dog ? (
           <>
-            <div className="w-6 h-6 rounded-full border-2 overflow-hidden flex-shrink-0 bg-chip" style={{ borderColor: sexColor }}>
-              {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-fg-mute text-[10px]">{sex === 'male' ? '♂' : '♀'}</div>}
+            <div className="w-6 h-6 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor }}>
+              {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted text-[10px]">{sex === 'male' ? '♂' : '♀'}</div>}
             </div>
             <span className="text-white truncate">{dog.name}</span>
           </>
         ) : (
-          <span className="text-fg-mute">No asignado</span>
+          <span className="text-muted">No asignado</span>
         )}
-        <Lock className="w-3.5 h-3.5 text-fg-mute ml-auto flex-shrink-0" />
+        <Lock className="w-3.5 h-3.5 text-muted ml-auto flex-shrink-0" />
       </div>
     </div>
   )

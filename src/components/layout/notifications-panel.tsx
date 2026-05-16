@@ -39,9 +39,9 @@ function getNotifColor(type: string) {
     case 'contact': return 'bg-green-500/15 text-green-400'
     case 'deal': return 'bg-orange-500/15 text-orange-400'
     case 'award': return 'bg-yellow-500/15 text-yellow-400'
-    case 'import': return 'bg-[#D74709]/15 text-[#D74709]'
+    case 'import': return 'bg-surface-card text-ink'
     case 'import_draft': return 'bg-yellow-500/15 text-yellow-400'
-    default: return 'bg-chip text-fg-mute'
+    default: return 'bg-surface-card text-muted'
   }
 }
 
@@ -111,31 +111,31 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
         onClick={onClose}
       />
 
-      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-ink-800 border-l border-hair shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-surface-card border-l border-hairline shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-hair flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-hairline flex-shrink-0">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold">Notificaciones</h2>
             {unread > 0 && (
-              <span className="bg-[#D74709] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{unread}</span>
+              <span className="bg-ink text-on-primary text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{unread}</span>
             )}
           </div>
-          <button onClick={onClose} className="text-fg-mute hover:text-fg transition">
+          <button onClick={onClose} className="text-muted hover:text-ink transition">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-hair px-6">
+        <div className="flex border-b border-hairline px-6">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${filter === 'all' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-fg-mute hover:text-fg-dim'}`}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${filter === 'all' ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}
           >
             Todas
           </button>
           <button
             onClick={() => setFilter('unread')}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${filter === 'unread' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-fg-mute hover:text-fg-dim'}`}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${filter === 'unread' ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}
           >
             No leidas ({unread})
           </button>
@@ -145,10 +145,10 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-5 h-5 animate-spin text-fg-mute" />
+              <Loader2 className="w-5 h-5 animate-spin text-muted" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-fg-mute">
+            <div className="flex flex-col items-center justify-center h-full text-muted">
               <Bell className="w-10 h-10 mb-3 opacity-30" />
               <p className="text-sm">{filter === 'unread' ? 'No tienes notificaciones sin leer' : 'No tienes notificaciones'}</p>
             </div>
@@ -164,7 +164,7 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
                       if (!notif.is_read) markAsRead(notif.id)
                       if (notif.link) window.location.href = notif.link
                     }}
-                    className={`px-6 py-4 hover:bg-chip transition cursor-pointer ${!notif.is_read ? 'bg-ink-800' : ''}`}
+                    className={`px-6 py-4 hover:bg-surface-card transition cursor-pointer ${!notif.is_read ? 'bg-surface-card' : ''}`}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${iconClass}`}>
@@ -172,11 +172,11 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className={`text-sm font-medium ${notif.is_read ? 'text-fg-dim' : 'text-white'}`}>{notif.title}</p>
-                          {!notif.is_read && <div className="w-2 h-2 rounded-full bg-[#D74709] flex-shrink-0" />}
+                          <p className={`text-sm font-medium ${notif.is_read ? 'text-body' : 'text-white'}`}>{notif.title}</p>
+                          {!notif.is_read && <div className="w-2 h-2 rounded-full bg-ink flex-shrink-0" />}
                         </div>
-                        <p className="text-xs text-fg-mute mt-0.5">{notif.type === 'import' ? (() => { try { const p = JSON.parse(notif.message); return `${p.createdIds?.length || 0} perros importados` } catch { return '' } })() : notif.type === 'import_draft' ? 'Borrador pendiente de confirmar' : notif.message}</p>
-                        <p className="text-[11px] text-fg-mute mt-1">{timeAgo(notif.created_at)}</p>
+                        <p className="text-xs text-muted mt-0.5">{notif.type === 'import' ? (() => { try { const p = JSON.parse(notif.message); return `${p.createdIds?.length || 0} perros importados` } catch { return '' } })() : notif.type === 'import_draft' ? 'Borrador pendiente de confirmar' : notif.message}</p>
+                        <p className="text-[11px] text-muted mt-1">{timeAgo(notif.created_at)}</p>
                       </div>
                     </div>
                   </div>
@@ -187,11 +187,11 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-hair flex-shrink-0">
+        <div className="px-6 py-3 border-t border-hairline flex-shrink-0">
           <button
             onClick={markAllRead}
             disabled={unread === 0}
-            className="text-xs text-[#D74709] hover:text-[#c03d07] transition font-medium disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
+            className="text-xs text-ink hover:opacity-80 transition font-medium disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
           >
             <Check className="w-3 h-3" /> Marcar todas como leidas
           </button>

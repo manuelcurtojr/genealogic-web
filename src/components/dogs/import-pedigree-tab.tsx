@@ -490,24 +490,24 @@ Rules:
   // ===== PREVIEW (portal to escape panel's transform containing block) =====
   if (showPreview && editedMain) {
     return createPortal(
-      <div className="fixed inset-0 z-[200] bg-ink-900 flex flex-col">
-        <div className="flex items-center justify-between px-6 py-3 border-b border-hair bg-ink-800 flex-shrink-0">
+      <div className="fixed inset-0 z-[200] bg-canvas flex flex-col">
+        <div className="flex items-center justify-between px-6 py-3 border-b border-hairline bg-surface-card flex-shrink-0">
           <div>
             <h2 className="text-lg font-bold">{editedMain.name}</h2>
-            <p className="text-xs text-fg-mute">{totalDogs} perros · {totalDogs - swappedCount} nuevos · {swappedCount} existentes</p>
+            <p className="text-xs text-muted">{totalDogs} perros · {totalDogs - swappedCount} nuevos · {swappedCount} existentes</p>
           </div>
           <div className="flex items-center gap-3">
-            <select value={overrideBreed} onChange={e => setOverrideBreed(e.target.value)} className="bg-chip border border-hair rounded-lg px-2 py-1.5 text-xs text-fg focus:border-[#D74709] focus:outline-none appearance-none cursor-pointer max-w-[160px]">
+            <select value={overrideBreed} onChange={e => setOverrideBreed(e.target.value)} className="bg-surface-card border border-hairline rounded-lg px-2 py-1.5 text-xs text-ink focus:border-ink focus:outline-none appearance-none cursor-pointer max-w-[160px]">
               <option value="">Sin raza</option>
               {allBreeds.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
             </select>
-            <label className="flex items-center gap-1.5 text-xs text-fg-dim cursor-pointer">
-              <input type="checkbox" checked={importPhotos} onChange={e => setImportPhotos(e.target.checked)} className="w-3.5 h-3.5 rounded border-hair-strong bg-chip text-[#D74709] focus:ring-0" />Fotos
+            <label className="flex items-center gap-1.5 text-xs text-body cursor-pointer">
+              <input type="checkbox" checked={importPhotos} onChange={e => setImportPhotos(e.target.checked)} className="w-3.5 h-3.5 rounded border-hairline bg-surface-card text-ink focus:ring-0" />Fotos
             </label>
-            <label className="flex items-center gap-1.5 text-xs text-fg-dim cursor-pointer">
-              <input type="checkbox" checked={importAncestors} onChange={e => setImportAncestors(e.target.checked)} className="w-3.5 h-3.5 rounded border-hair-strong bg-chip text-[#D74709] focus:ring-0" />Ancestros
+            <label className="flex items-center gap-1.5 text-xs text-body cursor-pointer">
+              <input type="checkbox" checked={importAncestors} onChange={e => setImportAncestors(e.target.checked)} className="w-3.5 h-3.5 rounded border-hairline bg-surface-card text-ink focus:ring-0" />Ancestros
             </label>
-            <button onClick={() => { setShowPreview(false); setSwaps({}) }} className="px-4 py-2 rounded-lg text-sm text-fg-dim hover:text-fg bg-chip hover:bg-chip transition">Volver</button>
+            <button onClick={() => { setShowPreview(false); setSwaps({}) }} className="px-4 py-2 rounded-lg text-sm text-body hover:text-ink bg-surface-card hover:bg-surface-card transition">Volver</button>
             {imported ? (
               <div className="flex items-center gap-2">
                 <button onClick={handleUndo} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 transition">
@@ -518,12 +518,12 @@ Rules:
                     <Check className="w-3.5 h-3.5" /> Ver perro
                   </a>
                 )}
-                <button onClick={() => { setImported(false); setImportResult(null); setShowPreview(false); setData(null); setUrl(''); setLinkedAncestors(new Map()) }} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-chip text-fg-dim hover:bg-chip transition">
+                <button onClick={() => { setImported(false); setImportResult(null); setShowPreview(false); setData(null); setUrl(''); setLinkedAncestors(new Map()) }} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-surface-card text-body hover:bg-surface-card transition">
                   <Globe className="w-3.5 h-3.5" /> Importar otro
                 </button>
               </div>
             ) : (
-              <button onClick={handleConfirm} disabled={importing} className="bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-6 py-2 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+              <button onClick={handleConfirm} disabled={importing} className="bg-ink text-on-primary hover:opacity-90 font-semibold px-6 py-2 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
                 {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 {importing ? 'Importando...' : 'Importar genealogía'}
               </button>
@@ -531,20 +531,20 @@ Rules:
           </div>
         </div>
         {/* Legend */}
-        <div className="flex items-center gap-5 px-6 py-2 border-b border-hair bg-ink-800/50 flex-shrink-0">
+        <div className="flex items-center gap-5 px-6 py-2 border-b border-hairline bg-surface-card/50 flex-shrink-0">
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded border-2 border-[#D74709] bg-[#D74709]/20 flex items-center justify-center"><Link2 className="w-2 h-2 text-[#D74709]" /></div>
-            <span className="text-[10px] text-fg-mute">Registrado — ya existe, su genealogia es la de la plataforma</span>
+            <div className="w-3 h-3 rounded border-2 border-ink bg-surface-card flex items-center justify-center"><Link2 className="w-2 h-2 text-ink" /></div>
+            <span className="text-[10px] text-muted">Registrado — ya existe, su genealogia es la de la plataforma</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded border-2 border-blue-400/60 bg-blue-400/10" />
-            <span className="text-[10px] text-fg-mute">Cambiado — sustituido manualmente por otro perro</span>
+            <span className="text-[10px] text-muted">Cambiado — sustituido manualmente por otro perro</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded border border-hair-strong bg-chip" />
-            <span className="text-[10px] text-fg-mute">Nuevo — se creara como contribucion al importar</span>
+            <div className="w-3 h-3 rounded border border-hairline bg-surface-card" />
+            <span className="text-[10px] text-muted">Nuevo — se creara como contribucion al importar</span>
           </div>
-          <span className="text-[10px] text-fg-mute ml-auto">Haz clic en cualquier perro para cambiarlo</span>
+          <span className="text-[10px] text-muted ml-auto">Haz clic en cualquier perro para cambiarlo</span>
         </div>
         {error && <div className="mx-6 mt-3 bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
         <div className="flex-1 overflow-auto relative" onClick={() => { setGenMenu(false); setZoomMenu(false) }}>
@@ -555,48 +555,48 @@ Rules:
           </div>
           <div className="absolute bottom-4 left-4 z-30 flex items-center gap-2">
             <div className="relative">
-              <button onClick={e => { e.stopPropagation(); setZoomMenu(!zoomMenu); setGenMenu(false) }} className="w-11 h-11 rounded-full bg-ink-800 border border-hair flex items-center justify-center text-fg-dim shadow-lg hover:border-hair-strong transition"><Search className="w-4 h-4" /></button>
-              {zoomMenu && <div className="absolute bottom-14 left-0 bg-ink-800 border border-hair rounded-lg shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>{[150,130,110,100,90,80,70,60,50].map(z=><button key={z} onClick={()=>{setZoom(z);setZoomMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${zoom===z?'bg-[#D74709] text-white':'text-fg-dim hover:bg-chip'}`}>{z}%</button>)}</div>}
+              <button onClick={e => { e.stopPropagation(); setZoomMenu(!zoomMenu); setGenMenu(false) }} className="w-11 h-11 rounded-full bg-surface-card border border-hairline flex items-center justify-center text-body shadow-lg hover:border-hairline transition"><Search className="w-4 h-4" /></button>
+              {zoomMenu && <div className="absolute bottom-14 left-0 bg-surface-card border border-hairline rounded-lg shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>{[150,130,110,100,90,80,70,60,50].map(z=><button key={z} onClick={()=>{setZoom(z);setZoomMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${zoom===z?'bg-ink text-on-primary':'text-body hover:bg-surface-card'}`}>{z}%</button>)}</div>}
             </div>
             <div className="relative">
-              <button onClick={e => { e.stopPropagation(); setGenMenu(!genMenu); setZoomMenu(false) }} className="w-11 h-11 rounded-full bg-ink-800 border border-hair flex items-center justify-center text-fg-dim shadow-lg hover:border-hair-strong font-bold text-xs transition">x{maxGen}</button>
-              {genMenu && <div className="absolute bottom-14 left-0 bg-ink-800 border border-hair rounded-lg shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>{[10,8,6,5,4,3].map(g=><button key={g} onClick={()=>{setMaxGen(g);setGenMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${maxGen===g?'bg-[#D74709] text-white':'text-fg-dim hover:bg-chip'}`}>x{g}</button>)}</div>}
+              <button onClick={e => { e.stopPropagation(); setGenMenu(!genMenu); setZoomMenu(false) }} className="w-11 h-11 rounded-full bg-surface-card border border-hairline flex items-center justify-center text-body shadow-lg hover:border-hairline font-bold text-xs transition">x{maxGen}</button>
+              {genMenu && <div className="absolute bottom-14 left-0 bg-surface-card border border-hairline rounded-lg shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>{[10,8,6,5,4,3].map(g=><button key={g} onClick={()=>{setMaxGen(g);setGenMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${maxGen===g?'bg-ink text-on-primary':'text-body hover:bg-surface-card'}`}>x{g}</button>)}</div>}
             </div>
           </div>
         </div>
         {/* Swap modal */}
         {swapTarget && (<>
           <div className="fixed inset-0 z-[210] bg-black/60" onClick={() => setSwapTarget(null)} />
-          <div className="fixed z-[211] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] max-w-[90vw] bg-ink-800 border border-hair rounded-2xl shadow-2xl">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-hair">
-              <div><h3 className="text-sm font-semibold">Cambiar perro</h3><p className="text-[10px] text-fg-mute">{swapTarget}</p></div>
-              <button onClick={() => setSwapTarget(null)} className="text-fg-mute hover:text-fg"><X className="w-5 h-5" /></button>
+          <div className="fixed z-[211] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] max-w-[90vw] bg-surface-card border border-hairline rounded-2xl shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-hairline">
+              <div><h3 className="text-sm font-semibold">Cambiar perro</h3><p className="text-[10px] text-muted">{swapTarget}</p></div>
+              <button onClick={() => setSwapTarget(null)} className="text-muted hover:text-ink"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-5 space-y-3">
               {swaps[swapTarget] && (
                 <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full overflow-hidden bg-chip flex-shrink-0">{swaps[swapTarget].photo ? <img src={swaps[swapTarget].photo} alt="" className="w-full h-full object-cover" /> : null}</div>
-                  <div className="flex-1"><p className="text-xs font-semibold text-green-400">{swaps[swapTarget].name}</p><p className="text-[10px] text-fg-mute">{swaps[swapTarget].breed || 'Existente'}</p></div>
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-surface-card flex-shrink-0">{swaps[swapTarget].photo ? <img src={swaps[swapTarget].photo} alt="" className="w-full h-full object-cover" /> : null}</div>
+                  <div className="flex-1"><p className="text-xs font-semibold text-green-400">{swaps[swapTarget].name}</p><p className="text-[10px] text-muted">{swaps[swapTarget].breed || 'Existente'}</p></div>
                   <button onClick={() => removeSwap(swapTarget)} className="text-xs text-red-400 hover:text-red-300">Quitar</button>
                 </div>
               )}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />
-                <input type="text" value={swapSearch} onChange={e => { setSwapSearch(e.target.value); searchSwap(e.target.value) }} placeholder="Buscar perro existente..." autoFocus className="w-full bg-chip border border-hair rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                <input type="text" value={swapSearch} onChange={e => { setSwapSearch(e.target.value); searchSwap(e.target.value) }} placeholder="Buscar perro existente..." autoFocus className="w-full bg-surface-card border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
               </div>
               <div className="max-h-48 overflow-y-auto space-y-1">
-                {swapSearching && <div className="text-center py-3"><Loader2 className="w-4 h-4 animate-spin text-fg-mute mx-auto" /></div>}
+                {swapSearching && <div className="text-center py-3"><Loader2 className="w-4 h-4 animate-spin text-muted mx-auto" /></div>}
                 {swapResults.map(d => (
-                  <button key={d.id} onClick={() => applySwap(swapTarget, d)} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-fg-dim hover:bg-chip transition text-left">
-                    <div className="w-7 h-7 rounded-full overflow-hidden bg-chip border flex-shrink-0" style={{ borderColor: d.sex === 'male' ? '#017DFA' : '#e84393' }}>{d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}</div>
+                  <button key={d.id} onClick={() => applySwap(swapTarget, d)} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-body hover:bg-surface-card transition text-left">
+                    <div className="w-7 h-7 rounded-full overflow-hidden bg-surface-card border flex-shrink-0" style={{ borderColor: d.sex === 'male' ? '#017DFA' : '#e84393' }}>{d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}</div>
                     <span className="truncate flex-1 font-medium">{d.name}</span>
-                    <span className="text-[10px] text-fg-mute">{(d.breed as any)?.name}</span>
+                    <span className="text-[10px] text-muted">{(d.breed as any)?.name}</span>
                   </button>
                 ))}
               </div>
-              <div className="flex gap-2 pt-2 border-t border-hair">
-                <button onClick={() => setSwapTarget(null)} className="flex-1 px-3 py-2 rounded-lg text-xs text-fg-dim bg-chip hover:bg-chip transition">Mantener original</button>
-                {swaps[swapTarget] && <button onClick={() => setSwapTarget(null)} className="flex-1 px-3 py-2 rounded-lg text-xs text-white font-medium bg-[#D74709] hover:bg-[#c03d07] transition">Usar seleccionado</button>}
+              <div className="flex gap-2 pt-2 border-t border-hairline">
+                <button onClick={() => setSwapTarget(null)} className="flex-1 px-3 py-2 rounded-lg text-xs text-body bg-surface-card hover:bg-surface-card transition">Mantener original</button>
+                {swaps[swapTarget] && <button onClick={() => setSwapTarget(null)} className="flex-1 px-3 py-2 rounded-lg text-xs text-white font-medium bg-ink hover:opacity-90 transition">Usar seleccionado</button>}
               </div>
             </div>
           </div>
@@ -610,9 +610,9 @@ Rules:
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <div className="text-[#D74709] mx-auto w-14 h-14 rounded-2xl bg-[#D74709]/10 flex items-center justify-center mb-3"><Globe className="w-7 h-7" /></div>
+        <div className="text-ink mx-auto w-14 h-14 rounded-2xl bg-surface-card flex items-center justify-center mb-3"><Globe className="w-7 h-7" /></div>
         <h3 className="text-lg font-bold">Importar genealogía</h3>
-        <p className="text-sm text-fg-dim mt-1">Pega la URL de una genealogía online y lo escanearemos automáticamente con IA</p>
+        <p className="text-sm text-body mt-1">Pega la URL de una genealogía online y lo escanearemos automáticamente con IA</p>
       </div>
       <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 flex items-start gap-2">
         <AlertTriangle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
@@ -620,10 +620,10 @@ Rules:
       </div>
       {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
       <div>
-        <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">URL de la genealogía</label>
+        <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">URL de la genealogía</label>
         <div className="flex gap-2">
-          <input type="url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://presadb.com/dogocanario/nombre-del-perro" onKeyDown={e => e.key === 'Enter' && handleScan()} className="flex-1 bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
-          <button onClick={handleScan} disabled={scanning || !url.trim()} className="bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm flex-shrink-0">
+          <input type="url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://presadb.com/dogocanario/nombre-del-perro" onKeyDown={e => e.key === 'Enter' && handleScan()} className="flex-1 bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none transition" />
+          <button onClick={handleScan} disabled={scanning || !url.trim()} className="bg-ink text-on-primary hover:opacity-90 font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm flex-shrink-0">
             {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             {scanning ? 'Escaneando...' : 'Escanear'}
           </button>
@@ -631,30 +631,30 @@ Rules:
       </div>
       {/* Divider */}
       <div className="flex items-center gap-3">
-        <div className="flex-1 border-t border-hair" />
-        <span className="text-xs text-fg-mute">o</span>
-        <div className="flex-1 border-t border-hair" />
+        <div className="flex-1 border-t border-hairline" />
+        <span className="text-xs text-muted">o</span>
+        <div className="flex-1 border-t border-hairline" />
       </div>
 
       {/* Image upload */}
       <div>
-        <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Subir screenshot de la genealogía</label>
-        <label className={`flex items-center justify-center gap-2 border-2 border-dashed border-hair rounded-lg py-4 cursor-pointer hover:border-hair-strong hover:bg-ink-800 transition ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}>
+        <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Subir screenshot de la genealogía</label>
+        <label className={`flex items-center justify-center gap-2 border-2 border-dashed border-hairline rounded-lg py-4 cursor-pointer hover:border-hairline hover:bg-surface-card transition ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}>
           {uploadingImage ? (
-            <><Loader2 className="w-4 h-4 animate-spin text-[#D74709]" /><span className="text-sm text-fg-dim">Analizando imagen con IA...</span></>
+            <><Loader2 className="w-4 h-4 animate-spin text-ink" /><span className="text-sm text-body">Analizando imagen con IA...</span></>
           ) : (
-            <><Globe className="w-4 h-4 text-fg-mute" /><span className="text-sm text-fg-mute">Arrastra o haz clic para subir una imagen</span></>
+            <><Globe className="w-4 h-4 text-muted" /><span className="text-sm text-muted">Arrastra o haz clic para subir una imagen</span></>
           )}
           <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
         </label>
-        <p className="text-[10px] text-fg-mute mt-1">Si la web bloquea el escaneo automático, haz un screenshot de la genealogía y súbelo aquí</p>
+        <p className="text-[10px] text-muted mt-1">Si la web bloquea el escaneo automático, haz un screenshot de la genealogía y súbelo aquí</p>
       </div>
 
       {(scanning || uploadingImage) && (
         <div className="text-center py-8">
-          <Loader2 className="w-8 h-8 animate-spin text-[#D74709] mx-auto mb-3" />
-          <p className="text-sm text-fg-dim">{scanPhase || 'Escaneando genealogía con IA...'}</p>
-          <p className="text-xs text-fg-mute mt-1">Esto puede tardar unos segundos</p>
+          <Loader2 className="w-8 h-8 animate-spin text-ink mx-auto mb-3" />
+          <p className="text-sm text-body">{scanPhase || 'Escaneando genealogía con IA...'}</p>
+          <p className="text-xs text-muted mt-1">Esto puede tardar unos segundos</p>
         </div>
       )}
     </div>
@@ -667,7 +667,7 @@ function TN({ name, byName, swaps, g, mx, isRoot, zoomScale, onSwap, onRemoveSwa
   onSwap: (n: string) => void; onRemoveSwap: (n: string) => void
 }) {
   const dog = byName.get(name)
-  if (!dog) return <div className="w-8 h-8 rounded-full border-2 border-dashed border-hair flex items-center justify-center text-fg-mute text-xs">?</div>
+  if (!dog) return <div className="w-8 h-8 rounded-full border-2 border-dashed border-hairline flex items-center justify-center text-muted text-xs">?</div>
   if (g >= mx) return <Card dog={dog} swaps={swaps} isRoot={isRoot} onSwap={onSwap} onRemoveSwap={onRemoveSwap} />
   // If this dog is swapped/linked, use DB parent names instead of imported ones
   const swap = swaps[dog.name]
@@ -721,36 +721,36 @@ function Card({ dog, swaps, isRoot, onSwap, onRemoveSwap }: { dog: ImportDog; sw
   const isLinked = swap?.linked // Existing in DB — orange border + chain icon
   const isSwapped = !!swap && !isLinked // Manually swapped — blue border
   const borderClass = isLinked
-    ? 'border-2 border-[#D74709] bg-[#D74709]/5'
+    ? 'border-2 border-ink bg-surface-soft'
     : isSwapped
       ? 'border-2 border-blue-400/60 bg-blue-400/5'
       : isRoot
-        ? 'border-2 border-hair-strong bg-chip'
-        : 'border border-hair bg-ink-800'
+        ? 'border-2 border-hairline bg-surface-card'
+        : 'border border-hairline bg-surface-card'
   return (
     <div className="relative" style={{ width: CW, flexShrink: 0 }}>
       {/* Chain icon for linked dogs — outside the card, top-right */}
       {isLinked && (
-        <div className="absolute -top-2 -right-2 z-10 w-5 h-5 rounded-full bg-[#D74709] flex items-center justify-center shadow-lg">
+        <div className="absolute -top-2 -right-2 z-10 w-5 h-5 rounded-full bg-ink flex items-center justify-center shadow-lg">
           <Link2 className="w-3 h-3 text-white" />
         </div>
       )}
       <div className={`relative group rounded-xl overflow-hidden transition ${borderClass}`} style={{ minHeight: CH }}>
         <div className="flex items-stretch" style={{ minHeight: CH }}>
-          <div className="flex-shrink-0 bg-chip relative" style={{ width: 48 }}>
-            {swap?.photo ? <img src={swap.photo} alt="" className="w-full h-full object-cover" /> : dog.photo_url ? <img src={dog.photo_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-fg-mute text-sm">{dog.sex === 'Female' ? '♀' : '♂'}</div>}
+          <div className="flex-shrink-0 bg-surface-card relative" style={{ width: 48 }}>
+            {swap?.photo ? <img src={swap.photo} alt="" className="w-full h-full object-cover" /> : dog.photo_url ? <img src={dog.photo_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted text-sm">{dog.sex === 'Female' ? '♀' : '♂'}</div>}
             <div className="absolute top-0 right-0 bottom-0 w-[3px]" style={{ backgroundColor: sc }} />
           </div>
           <div className="flex-1 min-w-0 px-2 py-1.5 flex flex-col justify-center">
             <p className="text-[11px] font-bold text-white leading-tight truncate">{swap ? swap.name : dog.name}</p>
             {isLinked ? (
-              <span className="text-[9px] font-bold text-[#D74709] flex items-center gap-0.5 mt-0.5"><Link2 className="w-2.5 h-2.5" /> Registrado</span>
+              <span className="text-[9px] font-bold text-ink flex items-center gap-0.5 mt-0.5"><Link2 className="w-2.5 h-2.5" /> Registrado</span>
             ) : isSwapped ? (
               <span className="text-[9px] font-bold text-blue-400 flex items-center gap-0.5 mt-0.5"><ArrowLeftRight className="w-2.5 h-2.5" /> Cambiado</span>
             ) : (
               <div className="flex flex-wrap gap-0.5 mt-0.5">
-                {dog.breed && <span className="text-[8px] bg-chip text-fg-mute px-1 py-0.5 rounded">{dog.breed}</span>}
-                {dog.birth_date && <span className="text-[8px] bg-chip text-fg-mute px-1 py-0.5 rounded">{dog.birth_date}</span>}
+                {dog.breed && <span className="text-[8px] bg-surface-card text-muted px-1 py-0.5 rounded">{dog.breed}</span>}
+                {dog.birth_date && <span className="text-[8px] bg-surface-card text-muted px-1 py-0.5 rounded">{dog.birth_date}</span>}
                 {dog.health && <span className="text-[8px] bg-green-500/10 text-green-400 px-1 py-0.5 rounded">{dog.health}</span>}
               </div>
             )}

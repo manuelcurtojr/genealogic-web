@@ -51,20 +51,20 @@ export default function FileGallery({ files, onChange, folder }: FileGalleryProp
 
       <div className="flex gap-2 flex-wrap">
         <button onClick={() => fileRef.current?.click()} disabled={uploading}
-          className="w-16 h-16 border-2 border-dashed border-white/15 rounded-lg flex items-center justify-center hover:border-[#D74709]/40 transition cursor-pointer flex-shrink-0">
-          {uploading ? <Loader2 className="w-4 h-4 animate-spin text-fg-mute" /> : <Plus className="w-4 h-4 text-fg-mute" />}
+          className="w-16 h-16 border-2 border-dashed border-white/15 rounded-lg flex items-center justify-center hover:border-hairline transition cursor-pointer flex-shrink-0">
+          {uploading ? <Loader2 className="w-4 h-4 animate-spin text-muted" /> : <Plus className="w-4 h-4 text-muted" />}
         </button>
 
         {files.map((url, idx) => (
-          <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden group flex-shrink-0 bg-chip border border-hair">
+          <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden group flex-shrink-0 bg-surface-card border border-hairline">
             {isImage(url) ? (
               <a href={url} target="_blank" rel="noopener noreferrer">
                 <img src={url} alt="" className="w-full h-full object-cover" />
               </a>
             ) : (
-              <a href={url} target="_blank" rel="noopener noreferrer" className="w-full h-full flex flex-col items-center justify-center gap-1 hover:bg-chip transition">
-                <FileText className="w-5 h-5 text-[#D74709]" />
-                <span className="text-[8px] text-fg-mute uppercase">{url.split('.').pop()?.split('?')[0]}</span>
+              <a href={url} target="_blank" rel="noopener noreferrer" className="w-full h-full flex flex-col items-center justify-center gap-1 hover:bg-surface-card transition">
+                <FileText className="w-5 h-5 text-ink" />
+                <span className="text-[8px] text-muted uppercase">{url.split('.').pop()?.split('?')[0]}</span>
               </a>
             )}
             <button onClick={() => removeFile(idx)}

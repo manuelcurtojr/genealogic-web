@@ -253,8 +253,8 @@ export default function SettingsPage() {
                       {selectedCountry ? <><span className="text-base">{selectedCountry.flag}</span><span className="truncate flex-1">{selectedCountry.name}</span></> : <span className="text-muted flex-1">Seleccionar país</span>}
                     </button>
                     {countryOpen && (
-                      <div className="absolute z-30 mt-1 w-full bg-ink-800 border border-hair rounded-lg shadow-xl max-h-48 flex flex-col">
-                        <div className="p-2 border-b border-hair">
+                      <div className="absolute z-30 mt-1 w-full bg-surface-card border border-hairline rounded-lg shadow-xl max-h-48 flex flex-col">
+                        <div className="p-2 border-b border-hairline">
                           <input autoFocus value={countryQ} onChange={e => setCountryQ(e.target.value)} placeholder="Buscar país..."
                             className="w-full rounded border border-hairline bg-canvas px-3 py-1.5 text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
                         </div>
@@ -279,7 +279,7 @@ export default function SettingsPage() {
                       placeholder={selectedCountry ? 'Buscar ciudad...' : 'Primero selecciona país'}
                       className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition disabled:opacity-40" />
                     {cityOpen && cityResults.length > 0 && (
-                      <div className="absolute z-30 mt-1 w-full bg-ink-800 border border-hair rounded-lg shadow-xl max-h-40 overflow-y-auto">
+                      <div className="absolute z-30 mt-1 w-full bg-surface-card border border-hairline rounded-lg shadow-xl max-h-40 overflow-y-auto">
                         {cityResults.map(c => (
                           <button key={c} type="button" onClick={() => { set('city', c); setCityOpen(false); setCityQ('') }}
                             className="w-full text-left px-3 py-2 text-sm text-body hover:bg-surface-soft">{c}</button>
@@ -315,7 +315,7 @@ export default function SettingsPage() {
                     <Field label="Nueva contraseña" value={newPassword} onChange={v => setNewPassword(v)} type="password" placeholder="Mínimo 6 caracteres" />
                     <Field label="Confirmar contraseña" value={confirmPassword} onChange={v => setConfirmPassword(v)} type="password" />
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <button type="submit" disabled={passwordLoading} className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2">{passwordLoading && <Loader2 className="w-4 h-4 animate-spin" />}Cambiar contraseña</button>
+                      <button type="submit" disabled={passwordLoading} className="bg-ink text-on-primary hover:opacity-90 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2">{passwordLoading && <Loader2 className="w-4 h-4 animate-spin" />}Cambiar contraseña</button>
                       <button type="button" onClick={() => { setShowPassword(false); setPasswordError('') }} className="px-4 py-2 rounded-lg text-xs sm:text-sm border border-hairline bg-canvas text-body hover:bg-surface-soft transition">Cancelar</button>
                     </div>
                   </form>

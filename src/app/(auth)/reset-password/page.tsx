@@ -55,37 +55,37 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-ink-900 px-6 text-fg">
+    <main className="flex min-h-screen items-center justify-center bg-canvas px-6 text-ink">
       <Link
         href="/login"
-        className="absolute top-6 left-6 flex h-9 w-9 items-center justify-center rounded-full text-fg-mute transition hover:text-fg hover:bg-chip"
+        className="absolute top-6 left-6 flex h-9 w-9 items-center justify-center rounded-full text-muted transition hover:text-ink hover:bg-surface-card"
       >
         <ArrowLeft className="h-4 w-4" />
       </Link>
 
       <div className="w-full max-w-[440px]">
         <Wordmark size="text-2xl" />
-        <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
+        <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
           Nueva contraseña
         </p>
-        <h1 className="mt-8 font-display text-5xl font-normal leading-[1] tracking-[-0.025em] text-fg">
+        <h1 className="mt-8 font-display text-5xl font-normal leading-[1] tracking-[-0.025em] text-ink">
           Cambia
           <br />
           <span className="italic font-light">tu contraseña.</span>
         </h1>
 
-        <div className="mt-10 rounded-card border border-hair-strong bg-ink-800 p-6 sm:p-8">
+        <div className="mt-10 rounded-card border border-hairline bg-surface-card p-6 sm:p-8">
           {checking ? (
-            <div className="flex items-center justify-center gap-2 py-4 text-sm text-fg-mute">
+            <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted">
               <Loader2 className="h-4 w-4 animate-spin" /> Verificando enlace…
             </div>
           ) : !authorized ? (
             <div className="text-center">
-              <p className="text-base font-medium text-fg">Enlace no válido o expirado</p>
-              <p className="mt-2 text-sm text-fg-dim">Solicita un nuevo enlace de recuperación.</p>
+              <p className="text-base font-medium text-ink">Enlace no válido o expirado</p>
+              <p className="mt-2 text-sm text-body">Solicita un nuevo enlace de recuperación.</p>
               <Link
                 href="/forgot-password"
-                className="mt-5 inline-block text-sm text-fg underline decoration-fg-mute underline-offset-4 hover:decoration-fg"
+                className="mt-5 inline-block text-sm text-ink underline decoration-fg-mute underline-offset-4 hover:decoration-fg"
               >
                 Recuperar contraseña
               </Link>
@@ -93,8 +93,8 @@ export default function ResetPasswordPage() {
           ) : done ? (
             <div className="text-center">
               <CheckCircle2 className="mx-auto mb-3 h-10 w-10 text-emerald-400" />
-              <p className="text-base font-medium text-fg">Contraseña actualizada</p>
-              <p className="mt-2 text-sm text-fg-dim">Redirigiendo…</p>
+              <p className="text-base font-medium text-ink">Contraseña actualizada</p>
+              <p className="mt-2 text-sm text-body">Redirigiendo…</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -105,11 +105,11 @@ export default function ResetPasswordPage() {
               )}
 
               <div>
-                <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.12em] text-fg-mute">
+                <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
                   Nueva contraseña
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-mute" />
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
                   <input
                     type="password"
                     value={password}
@@ -117,17 +117,17 @@ export default function ResetPasswordPage() {
                     placeholder="Mínimo 6 caracteres"
                     required
                     minLength={6}
-                    className="w-full rounded-lg border border-hair-strong bg-chip py-3 pl-10 pr-4 text-sm text-fg placeholder:text-fg-mute focus:border-fg-dim focus:outline-none transition"
+                    className="w-full rounded-lg border border-hairline bg-surface-card py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-fg-dim focus:outline-none transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.12em] text-fg-mute">
+                <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
                   Confirmar contraseña
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-mute" />
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
                   <input
                     type="password"
                     value={confirmPassword}
@@ -135,7 +135,7 @@ export default function ResetPasswordPage() {
                     placeholder="Repite tu contraseña"
                     required
                     minLength={6}
-                    className="w-full rounded-lg border border-hair-strong bg-chip py-3 pl-10 pr-4 text-sm text-fg placeholder:text-fg-mute focus:border-fg-dim focus:outline-none transition"
+                    className="w-full rounded-lg border border-hairline bg-surface-card py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-fg-dim focus:outline-none transition"
                   />
                 </div>
               </div>
@@ -143,7 +143,7 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-paper-50 py-3 text-sm font-medium text-ink-900 transition hover:opacity-90 disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-3 text-sm font-medium text-on-primary transition hover:opacity-90 disabled:opacity-50"
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                 {loading ? 'Guardando…' : 'Cambiar contraseña'}

@@ -29,8 +29,8 @@ export default async function AdminStatsPage() {
   // Users by role
   const roleDistribution = [
     { name: 'Propietario', value: profiles.filter(p => p.role === 'owner').length, color: '#6B7280' },
-    { name: 'Criador', value: profiles.filter(p => p.role === 'breeder').length, color: '#D74709' },
-    { name: 'Admin', value: profiles.filter(p => p.role === 'admin').length, color: '#EF4444' },
+    { name: 'Criador', value: profiles.filter(p => p.role === 'breeder').length, color: '#fb923c' },
+    { name: 'Admin', value: profiles.filter(p => p.role === 'admin').length, color: '#ef4444' },
   ]
 
   // Dogs by sex
@@ -59,8 +59,8 @@ export default async function AdminStatsPage() {
   // Litters by status
   const litterStatus = [
     { name: 'Planificada', value: litters.filter(l => l.status === 'planned').length, color: '#6B7280' },
-    { name: 'En gestación', value: litters.filter(l => l.status === 'mated').length, color: '#F59E0B' },
-    { name: 'Nacida', value: litters.filter(l => l.status === 'born').length, color: '#10B981' },
+    { name: 'En gestación', value: litters.filter(l => l.status === 'mated').length, color: '#f59e0b' },
+    { name: 'Nacida', value: litters.filter(l => l.status === 'born').length, color: '#34d399' },
   ]
 
   return (

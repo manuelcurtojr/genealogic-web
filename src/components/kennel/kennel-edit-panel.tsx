@@ -122,9 +122,9 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
       <div className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hair flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
           <h2 className="text-base sm:text-lg font-semibold">Editar criadero</h2>
-          <button onClick={onClose} className="text-fg-mute hover:text-fg transition"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-muted hover:text-ink transition"><X className="w-5 h-5" /></button>
         </div>
 
         {/* Content */}
@@ -135,9 +135,9 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
           <Sec title="Información basica">
             <Field label="Nombre del criadero *" value={form.name} onChange={v => set('name', v)} />
             <div>
-              <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Descripcion</label>
+              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Descripcion</label>
               <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3}
-                className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition resize-none"
+                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition resize-none"
                 placeholder="Describe tu criadero, tu filosofia de cria..." />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -148,26 +148,26 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
             {/* Country & City */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="relative">
-                <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">País</label>
+                <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">País</label>
                 <button type="button" onClick={() => { setCountryOpen(!countryOpen); setCityOpen(false) }}
-                  className={`w-full bg-chip border rounded-lg px-3 py-2 text-sm flex items-center gap-2 transition text-left ${countryOpen ? 'border-[#D74709]' : 'border-hair'}`}>
+                  className={`w-full bg-surface-card border rounded-lg px-3 py-2 text-sm flex items-center gap-2 transition text-left ${countryOpen ? 'border-ink' : 'border-hairline'}`}>
                   {selectedCountry ? (
                     <><span className="text-base">{selectedCountry.flag}</span><span className="truncate flex-1">{selectedCountry.name}</span></>
                   ) : (
-                    <span className="text-fg-mute flex-1">Seleccionar país</span>
+                    <span className="text-muted flex-1">Seleccionar país</span>
                   )}
-                  <ChevronDown className="w-3.5 h-3.5 text-fg-mute" />
+                  <ChevronDown className="w-3.5 h-3.5 text-muted" />
                 </button>
                 {countryOpen && (
-                  <div className="absolute z-30 mt-1 w-full bg-white border border-hair rounded-lg shadow-xl max-h-48 flex flex-col">
-                    <div className="p-2 border-b border-hair">
+                  <div className="absolute z-30 mt-1 w-full bg-white border border-hairline rounded-lg shadow-xl max-h-48 flex flex-col">
+                    <div className="p-2 border-b border-hairline">
                       <input autoFocus value={countryQ} onChange={e => setCountryQ(e.target.value)} placeholder="Buscar país..."
-                        className="w-full bg-chip border border-hair rounded pl-3 pr-3 py-1.5 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+                        className="w-full bg-surface-card border border-hairline rounded pl-3 pr-3 py-1.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
                     </div>
                     <div className="overflow-y-auto flex-1">
                       {filteredCountries.map(c => (
                         <button key={c.code} type="button" onClick={() => { set('country', c.name); set('city', ''); setCountryOpen(false); setCountryQ('') }}
-                          className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${c.name === form.country ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg hover:bg-chip'}`}>
+                          className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${c.name === form.country ? 'bg-surface-card text-ink' : 'text-ink hover:bg-surface-card'}`}>
                           <span className="text-base">{c.flag}</span> {c.name}
                         </button>
                       ))}
@@ -176,17 +176,17 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
                 )}
               </div>
               <div className="relative">
-                <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">Ciudad</label>
+                <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Ciudad</label>
                 <input type="text" value={cityOpen ? cityQ : form.city} placeholder={selectedCountry ? 'Buscar ciudad...' : 'Selecciona un país primero'}
                   disabled={!selectedCountry}
                   onFocus={() => { setCityOpen(true); setCityQ(form.city) }}
                   onChange={e => { setCityQ(e.target.value); setCityOpen(true) }}
-                  className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition disabled:opacity-40" />
+                  className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition disabled:opacity-40" />
                 {cityOpen && citySuggestions.length > 0 && (
-                  <div className="absolute z-30 mt-1 w-full bg-white border border-hair rounded-lg shadow-xl max-h-40 overflow-y-auto">
+                  <div className="absolute z-30 mt-1 w-full bg-white border border-hairline rounded-lg shadow-xl max-h-40 overflow-y-auto">
                     {citySuggestions.map(city => (
                       <button key={city} type="button" onClick={() => { set('city', city); setCityOpen(false); setCityQ('') }}
-                        className={`w-full text-left px-3 py-2 text-sm transition ${city === form.city ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg hover:bg-chip'}`}>
+                        className={`w-full text-left px-3 py-2 text-sm transition ${city === form.city ? 'bg-surface-card text-ink' : 'text-ink hover:bg-surface-card'}`}>
                         {city}
                       </button>
                     ))}
@@ -198,7 +198,7 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
 
           {/* Affix format */}
           <Sec title="Formato del nombre (afijo)">
-            <p className="text-[11px] text-fg-mute -mt-1 mb-2">Define como se formara el nombre de los cachorros de tu criadero</p>
+            <p className="text-[11px] text-muted -mt-1 mb-2">Define como se formara el nombre de los cachorros de tu criadero</p>
             <div className="space-y-1.5">
               {AFFIX_FORMATS.map(f => (
                 <button
@@ -207,12 +207,12 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
                   onClick={() => set('affix_format', f.value)}
                   className={`w-full text-left px-3 py-2 rounded-lg border transition flex items-center justify-between ${
                     form.affix_format === f.value
-                      ? 'border-[#D74709] bg-[#D74709]/5'
-                      : 'border-hair bg-ink-800 hover:bg-chip'
+                      ? 'border-ink bg-surface-soft'
+                      : 'border-hairline bg-surface-card hover:bg-surface-card'
                   }`}
                 >
-                  <span className="text-xs text-fg-dim">{f.label}</span>
-                  <span className={`text-xs font-semibold ${form.affix_format === f.value ? 'text-[#D74709]' : 'text-fg-mute'}`}>
+                  <span className="text-xs text-body">{f.label}</span>
+                  <span className={`text-xs font-semibold ${form.affix_format === f.value ? 'text-ink' : 'text-muted'}`}>
                     {getAffixPreview(f.value, form.name)}
                   </span>
                 </button>
@@ -222,14 +222,14 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
 
           {/* Breeds */}
           <Sec title="Razas que crias">
-            <p className="text-[11px] text-fg-mute -mt-1 mb-2">Selecciona las razas que apareceran en tu formulario de contacto</p>
+            <p className="text-[11px] text-muted -mt-1 mb-2">Selecciona las razas que apareceran en tu formulario de contacto</p>
             <div className="flex flex-wrap gap-1.5">
               {allBreeds.map(b => {
                 const selected = form.breed_ids.includes(b.id)
                 return (
                   <button key={b.id} type="button"
                     onClick={() => set('breed_ids', selected ? form.breed_ids.filter((id: string) => id !== b.id) : [...form.breed_ids, b.id])}
-                    className={`text-xs px-2.5 py-1 rounded-full border transition ${selected ? 'border-[#D74709] bg-[#D74709]/10 text-[#D74709]' : 'border-hair bg-ink-800 text-fg-mute hover:border-hair-strong'}`}>
+                    className={`text-xs px-2.5 py-1 rounded-full border transition ${selected ? 'border-ink bg-surface-card text-ink' : 'border-hairline bg-surface-card text-muted hover:border-hairline'}`}>
                     {b.name}
                   </button>
                 )
@@ -249,12 +249,12 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
 
           {/* WhatsApp */}
           <Sec title="WhatsApp">
-            <div className="flex items-center justify-between bg-chip border border-hair rounded-lg p-3">
+            <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-lg p-3">
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-green-400" />
                 <div>
                   <p className="text-sm font-medium">Activar WhatsApp</p>
-                  <p className="text-[11px] text-fg-mute">Boton de WhatsApp en tu perfil publico</p>
+                  <p className="text-[11px] text-muted">Boton de WhatsApp en tu perfil publico</p>
                 </div>
               </div>
               <ToggleSwitch value={form.whatsapp_enabled} onChange={(v) => set('whatsapp_enabled', v)} color="bg-green-500" />
@@ -269,10 +269,10 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hair flex-shrink-0">
-          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-fg-dim hover:text-fg hover:bg-chip transition">Cancelar</button>
+        <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hairline flex-shrink-0">
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">Cancelar</button>
           <button onClick={handleSave} disabled={saving || !form.name.trim()}
-            className="bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+            className="bg-ink text-on-primary hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {saving ? 'Guardando...' : 'Guardar cambios'}
           </button>
@@ -285,8 +285,8 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
 
 function Sec({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-ink-800 border border-hair rounded-xl p-4 space-y-3">
-      <h3 className="text-[11px] font-semibold text-fg-mute uppercase tracking-wider">{title}</h3>
+    <div className="bg-surface-card border border-hairline rounded-xl p-4 space-y-3">
+      <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wider">{title}</h3>
       {children}
     </div>
   )
@@ -297,9 +297,9 @@ function Field({ label, value, onChange, type = 'text', placeholder }: {
 }) {
   return (
     <div>
-      <label className="text-[11px] font-semibold text-fg-dim uppercase tracking-wider mb-1 block">{label}</label>
+      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
+        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
     </div>
   )
 }

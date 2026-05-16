@@ -78,13 +78,13 @@ export default function EditKennelPage() {
   }
 
   if (fetching) {
-    return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-fg-mute" /></div>
+    return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-muted" /></div>
   }
 
   return (
     <div className="max-w-2xl">
       <div className="flex items-center gap-4 mb-8">
-        <Link href="/kennel" className="text-fg-mute hover:text-fg transition">
+        <Link href="/kennel" className="text-muted hover:text-ink transition">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <h1 className="text-2xl font-bold">Editar criadero</h1>
@@ -95,13 +95,13 @@ export default function EditKennelPage() {
 
         {/* Basic */}
         <section>
-          <h2 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-4">Información basica</h2>
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">Información basica</h2>
           <div className="space-y-4">
             <Field label="Nombre del criadero *" value={form.name} onChange={(v) => set('name', v)} required />
             <div>
-              <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1.5 block">Descripcion</label>
+              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1.5 block">Descripcion</label>
               <textarea value={form.description} onChange={(e) => set('description', e.target.value)} rows={4}
-                className="w-full bg-chip border border-hair rounded-lg px-4 py-3 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition resize-none"
+                className="w-full bg-surface-card border border-hairline rounded-lg px-4 py-3 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none transition resize-none"
                 placeholder="Describe tu criadero..." />
             </div>
             <Field label="Fecha de fundacion" value={form.foundation_date} onChange={(v) => set('foundation_date', v)} type="date" />
@@ -111,7 +111,7 @@ export default function EditKennelPage() {
 
         {/* Social */}
         <section>
-          <h2 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-4">Redes sociales</h2>
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">Redes sociales</h2>
           <div className="space-y-4">
             <Field label="Instagram" value={form.social_instagram} onChange={(v) => set('social_instagram', v)} placeholder="https://instagram.com/..." icon={ExternalLink} />
             <Field label="Facebook" value={form.social_facebook} onChange={(v) => set('social_facebook', v)} placeholder="https://facebook.com/..." icon={ExternalLink} />
@@ -122,12 +122,12 @@ export default function EditKennelPage() {
 
         {/* WhatsApp */}
         <section>
-          <h2 className="text-xs font-semibold text-fg-mute uppercase tracking-wider mb-4">WhatsApp</h2>
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">WhatsApp</h2>
           <div className="space-y-4">
-            <div className="flex items-center justify-between bg-chip border border-hair rounded-lg p-4">
+            <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-lg p-4">
               <div>
                 <p className="text-sm font-medium">Activar WhatsApp</p>
-                <p className="text-xs text-fg-mute mt-0.5">Mostrar boton de WhatsApp en tu perfil</p>
+                <p className="text-xs text-muted mt-0.5">Mostrar boton de WhatsApp en tu perfil</p>
               </div>
               <ToggleSwitch value={form.whatsapp_enabled} onChange={(v) => set('whatsapp_enabled', v)} color="bg-green-500" />
             </div>
@@ -141,21 +141,21 @@ export default function EditKennelPage() {
         </section>
 
         <button type="submit" disabled={loading || !form.name.trim()}
-          className="w-full bg-paper-50 text-ink-900 hover:opacity-90 font-semibold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2">
+          className="w-full bg-ink text-on-primary hover:opacity-90 font-semibold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2">
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           {loading ? 'Guardando...' : 'Guardar cambios'}
         </button>
       </form>
 
       {/* API keys link */}
-      <div className="mt-8 pt-6 border-t border-hair">
+      <div className="mt-8 pt-6 border-t border-hairline">
         <Link href="/kennel/api"
-          className="flex items-center justify-between bg-chip hover:bg-chip border border-hair rounded-xl px-4 py-3 transition group">
+          className="flex items-center justify-between bg-surface-card hover:bg-surface-card border border-hairline rounded-xl px-4 py-3 transition group">
           <div>
             <p className="text-sm font-semibold">API keys</p>
-            <p className="text-xs text-fg-mute">Conecta Pawdoq Breeders u otras apps externas a tu criadero.</p>
+            <p className="text-xs text-muted">Conecta Pawdoq Breeders u otras apps externas a tu criadero.</p>
           </div>
-          <ExternalLink className="w-4 h-4 text-fg-mute group-hover:text-fg-dim" />
+          <ExternalLink className="w-4 h-4 text-muted group-hover:text-body" />
         </Link>
       </div>
     </div>
@@ -167,11 +167,11 @@ function Field({ label, value, onChange, type = 'text', placeholder, required, i
 }) {
   return (
     <div>
-      <label className="text-xs font-semibold text-fg-dim uppercase tracking-wider mb-1.5 block">{label}</label>
+      <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1.5 block">{label}</label>
       <div className="relative">
-        {Icon && <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />}
+        {Icon && <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />}
         <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required}
-          className={`w-full bg-chip border border-hair rounded-lg py-3 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition ${Icon ? 'pl-10 pr-4' : 'px-4'}`} />
+          className={`w-full bg-surface-card border border-hairline rounded-lg py-3 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none transition ${Icon ? 'pl-10 pr-4' : 'px-4'}`} />
       </div>
     </div>
   )

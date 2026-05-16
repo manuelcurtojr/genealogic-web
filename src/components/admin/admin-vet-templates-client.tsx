@@ -80,68 +80,68 @@ export default function AdminVetTemplatesClient({ templates: init }: Props) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Plantillas veterinarias</h1>
-          <p className="text-fg-mute text-sm">Plantillas del sistema para auto-generar recordatorios</p>
+          <p className="text-muted text-sm">Plantillas del sistema para auto-generar recordatorios</p>
         </div>
         <button onClick={() => { setShowAdd(true); setEditId(null); setForm({ name: '', description: '', type: 'vaccine', default_interval_days: '365', applies_to: 'both' }) }}
-          className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition">
+          className="bg-ink text-on-primary hover:opacity-90 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition">
           <Plus className="w-4 h-4" /> Nueva plantilla
         </button>
       </div>
 
       {/* Add form */}
       {(showAdd || editId) && (
-        <div className="bg-chip border border-[#D74709]/20 rounded-xl p-5 mb-4 space-y-3">
+        <div className="bg-surface-card border border-hairline rounded-xl p-5 mb-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <input type="text" value={form.name} onChange={e => set('name', e.target.value)} placeholder="Nombre *"
-              className="bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+              className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
             <input type="text" value={form.description} onChange={e => set('description', e.target.value)} placeholder="Descripción"
-              className="bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+              className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <select value={form.type} onChange={e => set('type', e.target.value)}
-              className="bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none appearance-none">
+              className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white focus:border-ink focus:outline-none appearance-none">
               {TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
             <input type="number" value={form.default_interval_days} onChange={e => set('default_interval_days', e.target.value)} placeholder="Intervalo (días)"
-              className="bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+              className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
             <select value={form.applies_to} onChange={e => set('applies_to', e.target.value)}
-              className="bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none appearance-none">
+              className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white focus:border-ink focus:outline-none appearance-none">
               {APPLIES_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
           <div className="flex gap-2">
             <button onClick={editId ? saveEdit : addTemplate} disabled={!form.name.trim()}
-              className="bg-paper-50 text-ink-900 hover:opacity-90 px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">
+              className="bg-ink text-on-primary hover:opacity-90 px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">
               {editId ? 'Guardar' : 'Crear'}
             </button>
             <button onClick={() => { setShowAdd(false); setEditId(null) }}
-              className="text-fg-dim hover:text-fg px-4 py-2 rounded-lg text-sm transition">Cancelar</button>
+              className="text-body hover:text-ink px-4 py-2 rounded-lg text-sm transition">Cancelar</button>
           </div>
         </div>
       )}
 
       {/* Templates list */}
-      <div className="bg-chip border border-hair rounded-xl overflow-hidden divide-y divide-white/5">
+      <div className="bg-surface-card border border-hairline rounded-xl overflow-hidden divide-y divide-white/5">
         {templates.map(t => {
           const typeConf = TYPE_OPTIONS.find(o => o.value === t.type) || TYPE_OPTIONS[3]
           const TypeIcon = typeConf.icon
           return (
-            <div key={t.id} className="flex items-center gap-3 px-4 py-3 hover:bg-ink-800 transition">
+            <div key={t.id} className="flex items-center gap-3 px-4 py-3 hover:bg-surface-card transition">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: typeConf.color + '15' }}>
                 <TypeIcon className="w-4 h-4" style={{ color: typeConf.color }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">{t.name}</p>
-                <p className="text-[10px] text-fg-mute">{t.description}</p>
+                <p className="text-[10px] text-muted">{t.description}</p>
               </div>
-              <span className="text-[10px] text-fg-mute bg-chip px-2 py-0.5 rounded-full">{t.applies_to === 'puppy' ? 'Cachorro' : t.applies_to === 'adult' ? 'Adulto' : 'Ambos'}</span>
-              <span className="text-xs text-fg-mute">{t.default_interval_days}d</span>
-              <button onClick={() => startEdit(t)} className="text-fg-mute hover:text-fg-dim transition"><Pencil className="w-3.5 h-3.5" /></button>
-              <button onClick={() => deleteTemplate(t.id)} className="text-fg-mute hover:text-red-400 transition"><Trash2 className="w-3.5 h-3.5" /></button>
+              <span className="text-[10px] text-muted bg-surface-card px-2 py-0.5 rounded-full">{t.applies_to === 'puppy' ? 'Cachorro' : t.applies_to === 'adult' ? 'Adulto' : 'Ambos'}</span>
+              <span className="text-xs text-muted">{t.default_interval_days}d</span>
+              <button onClick={() => startEdit(t)} className="text-muted hover:text-body transition"><Pencil className="w-3.5 h-3.5" /></button>
+              <button onClick={() => deleteTemplate(t.id)} className="text-muted hover:text-red-400 transition"><Trash2 className="w-3.5 h-3.5" /></button>
             </div>
           )
         })}
-        {templates.length === 0 && <p className="text-center py-8 text-fg-mute text-sm">Sin plantillas</p>}
+        {templates.length === 0 && <p className="text-center py-8 text-muted text-sm">Sin plantillas</p>}
       </div>
     </div>
   )

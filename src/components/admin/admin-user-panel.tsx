@@ -155,27 +155,27 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
 
       <div className={`fixed top-0 right-0 h-full w-full max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="flex items-center justify-between px-6 py-3 border-b border-hair flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-3 border-b border-hairline flex-shrink-0">
           <h2 className="text-lg font-semibold">Editar usuario</h2>
-          <button onClick={onClose} className="text-fg-mute hover:text-fg transition"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-muted hover:text-ink transition"><X className="w-5 h-5" /></button>
         </div>
 
         {loading ? (
-          <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-fg-mute" /></div>
+          <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-muted" /></div>
         ) : (
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
             {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
             {/* Header with avatar */}
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full overflow-hidden bg-chip border-2 border-hair flex-shrink-0">
+              <div className="w-14 h-14 rounded-full overflow-hidden bg-surface-card border-2 border-hairline flex-shrink-0">
                 {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> :
-                  <div className="w-full h-full flex items-center justify-center text-[#D74709] text-xl font-bold">{(form.display_name || '?')[0].toUpperCase()}</div>}
+                  <div className="w-full h-full flex items-center justify-center text-ink text-xl font-bold">{(form.display_name || '?')[0].toUpperCase()}</div>}
               </div>
               <div>
                 <p className="font-bold">{form.display_name || 'Sin nombre'}</p>
-                <p className="text-xs text-fg-mute">{form.email}</p>
-                <p className="text-[10px] text-fg-mute">Registrado: {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('es-ES') : '—'}</p>
+                <p className="text-xs text-muted">{form.email}</p>
+                <p className="text-[10px] text-muted">Registrado: {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('es-ES') : '—'}</p>
               </div>
             </div>
 
@@ -186,9 +186,9 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
                 { label: 'Criaderos', value: activity.kennels },
                 { label: 'Camadas', value: activity.litters },
               ].map(s => (
-                <div key={s.label} className="bg-chip rounded-lg p-2 text-center">
+                <div key={s.label} className="bg-surface-card rounded-lg p-2 text-center">
                   <p className="text-sm font-bold">{s.value}</p>
-                  <p className="text-[9px] text-fg-mute">{s.label}</p>
+                  <p className="text-[9px] text-muted">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -230,9 +230,9 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
                 <Input label="País" value={form.country} onChange={v => set('country', v)} />
                 <Input label="Ciudad" value={form.city} onChange={v => set('city', v)} />
                 <div className="col-span-2">
-                  <label className="text-[10px] font-semibold text-fg-mute uppercase tracking-wider mb-1 block">Bio</label>
+                  <label className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1 block">Bio</label>
                   <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={2}
-                    className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none resize-none" />
+                    className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white focus:border-ink focus:outline-none resize-none" />
                 </div>
               </div>
             </Section>
@@ -261,9 +261,9 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
                   { key: 'notif_submissions', label: 'Notif. solicitudes' },
                   { key: 'notif_vet', label: 'Notif. veterinario' },
                 ].map(t => (
-                  <label key={t.key} className="flex items-center gap-2 text-sm text-fg-dim cursor-pointer">
+                  <label key={t.key} className="flex items-center gap-2 text-sm text-body cursor-pointer">
                     <input type="checkbox" checked={(form as any)[t.key]} onChange={e => set(t.key, e.target.checked)}
-                      className="w-4 h-4 rounded border-hair-strong bg-chip text-[#D74709] focus:ring-[#D74709] focus:ring-offset-0" />
+                      className="w-4 h-4 rounded border-hairline bg-surface-card text-ink focus:ring-ink focus:ring-offset-0" />
                     {t.label}
                   </label>
                 ))}
@@ -274,17 +274,17 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
             <Section title="Notas del administrador" icon={FileText}>
               <textarea value={form.admin_notes} onChange={e => set('admin_notes', e.target.value)} rows={4}
                 placeholder="Notas internas sobre este usuario (solo visibles para admins)..."
-                className="w-full bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none resize-none" />
+                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none resize-none" />
             </Section>
 
             {/* Section: Contraseña */}
             <Section title="Contraseña" icon={Key}>
               <div className="space-y-3">
                 <div>
-                  <label className="text-[10px] font-semibold text-fg-mute uppercase tracking-wider mb-1 block">Establecer contraseña</label>
+                  <label className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1 block">Establecer contraseña</label>
                   <div className="flex gap-2">
                     <input id="admin-pw" type="text" placeholder="Nueva contraseña..."
-                      className="flex-1 bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+                      className="flex-1 bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
                     <button onClick={async () => {
                       const pw = (document.getElementById('admin-pw') as HTMLInputElement)?.value
                       if (!pw || pw.length < 6) { alert('Mínimo 6 caracteres'); return }
@@ -293,7 +293,7 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
                       const data = await res.json()
                       if (data.ok) { alert('Contraseña actualizada'); (document.getElementById('admin-pw') as HTMLInputElement).value = '' }
                       else alert('Error: ' + (data.error || 'Desconocido'))
-                    }} className="bg-paper-50 text-ink-900 hover:opacity-90 text-xs font-semibold px-3 py-2 rounded-lg transition whitespace-nowrap">
+                    }} className="bg-ink text-on-primary hover:opacity-90 text-xs font-semibold px-3 py-2 rounded-lg transition whitespace-nowrap">
                       Guardar
                     </button>
                   </div>
@@ -319,7 +319,7 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
                   {impersonating ? 'Generando enlace...' : 'Ver como este usuario'}
                 </button>
                 <a href={`/dogs?owner=${userId}`} target="_blank"
-                  className="w-full flex items-center justify-center gap-2 bg-chip border border-hair text-fg-dim px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-chip transition">
+                  className="w-full flex items-center justify-center gap-2 bg-surface-card border border-hairline text-body px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-surface-card transition">
                   <ExternalLink className="w-4 h-4" /> Ver perros del usuario
                 </a>
               </div>
@@ -332,21 +332,21 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
                   <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-red-400">Cuenta {form.status === 'suspended' ? 'suspendida' : 'baneada'}</p>
-                    <p className="text-xs text-fg-mute mt-0.5">Este usuario no puede acceder a la plataforma.</p>
+                    <p className="text-xs text-muted mt-0.5">Este usuario no puede acceder a la plataforma.</p>
                   </div>
                 </div>
               )}
               {showDeleteConfirm ? (
                 <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 space-y-3">
                   <p className="text-sm text-red-400 font-medium">¿Eliminar este usuario permanentemente?</p>
-                  <p className="text-xs text-fg-mute">Se eliminarán todos sus datos: perros, camadas, negocios, favoritos, notificaciones y transacciones de genes. Esta acción NO se puede deshacer.</p>
+                  <p className="text-xs text-muted">Se eliminarán todos sus datos: perros, camadas, negocios, favoritos, notificaciones y transacciones de genes. Esta acción NO se puede deshacer.</p>
                   <div className="flex gap-2">
                     <button onClick={deleteUser} disabled={deleting}
                       className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center gap-1.5">
                       {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                       {deleting ? 'Eliminando...' : 'Confirmar eliminación'}
                     </button>
-                    <button onClick={() => setShowDeleteConfirm(false)} className="text-fg-dim hover:text-fg px-4 py-2 text-sm transition">Cancelar</button>
+                    <button onClick={() => setShowDeleteConfirm(false)} className="text-body hover:text-ink px-4 py-2 text-sm transition">Cancelar</button>
                   </div>
                 </div>
               ) : (
@@ -360,10 +360,10 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-hair flex-shrink-0">
-          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-fg-dim hover:text-fg hover:bg-chip transition">Cancelar</button>
+        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-hairline flex-shrink-0">
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">Cancelar</button>
           <button onClick={handleSave} disabled={saving || loading}
-            className="bg-paper-50 text-ink-900 hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+            className="bg-ink text-on-primary hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
             {saving ? 'Guardando...' : 'Guardar'}
           </button>
@@ -378,9 +378,9 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
 function Section({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) {
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-hair">
-        <Icon className="w-4 h-4 text-[#D74709]" />
-        <h3 className="text-xs font-semibold text-fg-dim uppercase tracking-wider">{title}</h3>
+      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-hairline">
+        <Icon className="w-4 h-4 text-ink" />
+        <h3 className="text-xs font-semibold text-body uppercase tracking-wider">{title}</h3>
       </div>
       {children}
     </div>
@@ -390,9 +390,9 @@ function Section({ title, icon: Icon, children }: { title: string; icon: any; ch
 function Input({ label, value, onChange, type, placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
   return (
     <div>
-      <label className="text-[10px] font-semibold text-fg-mute uppercase tracking-wider mb-1 block">{label}</label>
+      <label className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1 block">{label}</label>
       <input type={type || 'text'} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-ink placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
+        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
     </div>
   )
 }
@@ -400,9 +400,9 @@ function Input({ label, value, onChange, type, placeholder }: { label: string; v
 function Select({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { v: string; l: string }[] }) {
   return (
     <div>
-      <label className="text-[10px] font-semibold text-fg-mute uppercase tracking-wider mb-1 block">{label}</label>
+      <label className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1 block">{label}</label>
       <select value={value} onChange={e => onChange(e.target.value)}
-        className="w-full bg-chip border border-hair rounded-lg px-3 py-2 text-sm text-white focus:border-[#D74709] focus:outline-none appearance-none">
+        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white focus:border-ink focus:outline-none appearance-none">
         {options.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
       </select>
     </div>
@@ -412,7 +412,7 @@ function Select({ label, value, onChange, options }: { label: string; value: str
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="text-[10px] font-semibold text-fg-mute uppercase tracking-wider mb-1 block">{label}</label>
+      <label className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1 block">{label}</label>
       {children}
     </div>
   )

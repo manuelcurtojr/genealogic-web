@@ -48,7 +48,7 @@ export function DogImage({
   const [errored, setErrored] = useState(false)
   const showFallback = !src || errored
 
-  const wrapper = `relative overflow-hidden bg-chip ${className ?? ''}`
+  const wrapper = `relative overflow-hidden bg-surface-card ${className ?? ''}`
   const objectFit = fit === 'contain' ? 'object-contain' : 'object-cover'
 
   if (showFallback) {
@@ -57,7 +57,7 @@ export function DogImage({
         className={`${wrapper} flex items-center justify-center`}
         style={fill ? undefined : { width, height }}
       >
-        <DogIcon className="h-1/2 w-1/2 max-h-12 max-w-12 text-fg-mute opacity-40" />
+        <DogIcon className="h-1/2 w-1/2 max-h-12 max-w-12 text-muted opacity-40" />
       </div>
     )
   }

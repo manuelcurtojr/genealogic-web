@@ -129,12 +129,12 @@ export default function AvatarUpload({ userId, currentUrl, displayName, onUpload
       {/* Avatar display */}
       <button
         onClick={() => fileRef.current?.click()}
-        className="relative w-16 h-16 rounded-full overflow-hidden bg-[#D74709]/20 flex items-center justify-center group"
+        className="relative w-16 h-16 rounded-full overflow-hidden bg-surface-card flex items-center justify-center group"
       >
         {currentUrl ? (
           <img src={currentUrl} alt="" className="w-full h-full object-cover" />
         ) : (
-          <span className="text-[#D74709] text-xl font-bold">
+          <span className="text-ink text-xl font-bold">
             {(displayName || '?')[0].toUpperCase()}
           </span>
         )}
@@ -149,10 +149,10 @@ export default function AvatarUpload({ userId, currentUrl, displayName, onUpload
       {modalOpen && imgSrc && (
         <>
           <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm" onClick={() => { setModalOpen(false); setImgSrc(null) }} />
-          <div className="fixed z-[101] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] max-w-[90vw] bg-ink-800 border border-hair rounded-2xl shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-hair">
+          <div className="fixed z-[101] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] max-w-[90vw] bg-surface-card border border-hairline rounded-2xl shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-hairline">
               <h3 className="text-sm font-semibold">Recortar avatar</h3>
-              <button onClick={() => { setModalOpen(false); setImgSrc(null) }} className="text-fg-mute hover:text-fg">
+              <button onClick={() => { setModalOpen(false); setImgSrc(null) }} className="text-muted hover:text-ink">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -190,7 +190,7 @@ export default function AvatarUpload({ userId, currentUrl, displayName, onUpload
 
               {/* Zoom slider */}
               <div className="flex items-center gap-3 w-full px-4">
-                <ZoomOut className="w-4 h-4 text-fg-mute" />
+                <ZoomOut className="w-4 h-4 text-muted" />
                 <input
                   type="range"
                   min={0.5}
@@ -200,21 +200,21 @@ export default function AvatarUpload({ userId, currentUrl, displayName, onUpload
                   onChange={e => setZoom(parseFloat(e.target.value))}
                   className="flex-1 accent-[#D74709]"
                 />
-                <ZoomIn className="w-4 h-4 text-fg-mute" />
+                <ZoomIn className="w-4 h-4 text-muted" />
               </div>
 
               {/* Actions */}
               <div className="flex gap-2 w-full">
                 <button
                   onClick={() => { setModalOpen(false); setImgSrc(null) }}
-                  className="flex-1 py-2.5 rounded-lg text-sm text-fg-dim bg-chip hover:bg-chip transition"
+                  className="flex-1 py-2.5 rounded-lg text-sm text-body bg-surface-card hover:bg-surface-card transition"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={uploading}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-paper-50 text-ink-900 hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-ink text-on-primary hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : 'Guardar avatar'}
                 </button>

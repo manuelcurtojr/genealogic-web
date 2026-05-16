@@ -9,23 +9,23 @@ export const metadata = {
 
 export default function ApiDocsPage() {
   return (
-    <main className="min-h-screen bg-ink-900 text-fg">
+    <main className="min-h-screen bg-canvas text-ink">
       <div className="mx-auto max-w-[820px] px-6 py-10 sm:px-8 sm:py-14">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm text-fg-dim transition hover:text-fg"
+          className="inline-flex items-center gap-2 text-sm text-body transition hover:text-ink"
         >
           <ArrowLeft className="h-4 w-4" /> Volver al inicio
         </Link>
 
         <div className="mt-10">
-          <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
+          <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
             API · Versión 1
           </p>
           <h1 className="mt-3 font-display text-5xl font-normal leading-[1] tracking-[-0.025em] sm:text-6xl">
             La <span className="italic font-light">API</span> de Genealogic.
           </h1>
-          <p className="mt-6 max-w-[560px] text-[17px] leading-[1.55] text-fg-dim">
+          <p className="mt-6 max-w-[560px] text-[17px] leading-[1.55] text-body">
             Accede a tus perros, camadas y datos del criadero en tiempo real desde
             aplicaciones externas como Pawdoq Breeders u otros chatbots / CRMs.
           </p>
@@ -33,10 +33,10 @@ export default function ApiDocsPage() {
 
         {/* Quick start */}
         <Section num="01" label="Quick start" title="Empieza en 3 pasos">
-          <ol className="space-y-3 text-[15px] leading-[1.6] text-fg-dim">
+          <ol className="space-y-3 text-[15px] leading-[1.6] text-body">
             <Step n={1}>
               Genera una API key en{' '}
-              <Link href="/kennel/api" className="text-fg underline decoration-fg-mute underline-offset-4 hover:decoration-fg">
+              <Link href="/kennel/api" className="text-ink underline decoration-fg-mute underline-offset-4 hover:decoration-fg">
                 Mi Criadero → API
               </Link>
               .
@@ -44,7 +44,7 @@ export default function ApiDocsPage() {
             <Step n={2}>Cópiala y guárdala (solo se muestra una vez).</Step>
             <Step n={3}>
               Llama a la API con header{' '}
-              <code className="rounded bg-chip px-1.5 py-0.5 font-mono text-[13px]">
+              <code className="rounded bg-surface-card px-1.5 py-0.5 font-mono text-[13px]">
                 Authorization: Bearer gnl_…
               </code>
               .
@@ -54,14 +54,14 @@ export default function ApiDocsPage() {
 
         {/* Auth */}
         <Section num="02" label="Autenticación" title="Bearer token por kennel">
-          <p className="text-[15px] leading-[1.6] text-fg-dim">
+          <p className="text-[15px] leading-[1.6] text-body">
             Todos los endpoints requieren una API key válida en el header HTTP:
           </p>
-          <pre className="mt-5 overflow-x-auto rounded-card border border-hair bg-ink-800 p-5 font-mono text-[13px] leading-[1.6] text-fg">
+          <pre className="mt-5 overflow-x-auto rounded-card border border-hairline bg-surface-card p-5 font-mono text-[13px] leading-[1.6] text-ink">
 {`curl https://www.genealogic.io/api/v1/kennel \\
   -H "Authorization: Bearer gnl_tu_api_key"`}
           </pre>
-          <p className="mt-4 text-sm leading-[1.55] text-fg-mute">
+          <p className="mt-4 text-sm leading-[1.55] text-muted">
             La API key está vinculada a un único criadero. Las respuestas se filtran
             automáticamente al criadero propietario de la key.
           </p>
@@ -192,26 +192,26 @@ export default function ApiDocsPage() {
         <Section num="04" label="Errores" title="Códigos HTTP">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-hair text-left">
-                <th className="pb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-fg-mute">Código</th>
-                <th className="pb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-fg-mute">Significado</th>
+              <tr className="border-b border-hairline text-left">
+                <th className="pb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Código</th>
+                <th className="pb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Significado</th>
               </tr>
             </thead>
-            <tbody className="text-fg-dim">
-              <tr className="border-b border-hair">
-                <td className="py-3 font-mono text-[13px] text-fg">401</td>
+            <tbody className="text-body">
+              <tr className="border-b border-hairline">
+                <td className="py-3 font-mono text-[13px] text-ink">401</td>
                 <td className="py-3">API key faltante, inválida o revocada</td>
               </tr>
-              <tr className="border-b border-hair">
-                <td className="py-3 font-mono text-[13px] text-fg">403</td>
+              <tr className="border-b border-hairline">
+                <td className="py-3 font-mono text-[13px] text-ink">403</td>
                 <td className="py-3">El recurso no es público o no pertenece al kennel</td>
               </tr>
-              <tr className="border-b border-hair">
-                <td className="py-3 font-mono text-[13px] text-fg">404</td>
+              <tr className="border-b border-hairline">
+                <td className="py-3 font-mono text-[13px] text-ink">404</td>
                 <td className="py-3">Recurso no encontrado</td>
               </tr>
               <tr>
-                <td className="py-3 font-mono text-[13px] text-fg">500</td>
+                <td className="py-3 font-mono text-[13px] text-ink">500</td>
                 <td className="py-3">Error del servidor</td>
               </tr>
             </tbody>
@@ -220,13 +220,13 @@ export default function ApiDocsPage() {
 
         {/* Rate limits */}
         <Section num="05" label="Rate limits" title="Sin límites estrictos por ahora">
-          <p className="text-[15px] leading-[1.6] text-fg-dim">
+          <p className="text-[15px] leading-[1.6] text-body">
             Si abusas, te capamos. Recomendado: cachear respuestas en Pawdoq (TTL 60s) y
             usar webhooks para tiempo real.
           </p>
         </Section>
 
-        <p className="mt-16 border-t border-hair pt-6 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute">
+        <p className="mt-16 border-t border-hairline pt-6 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
           Genealogic API v1 · 2026
         </p>
       </div>
@@ -246,8 +246,8 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <section className="mt-16 border-t border-hair pt-10">
-      <div className="flex items-center gap-[10px] font-mono text-xs tracking-[1px] text-fg-mute">
+    <section className="mt-16 border-t border-hairline pt-10">
+      <div className="flex items-center gap-[10px] font-mono text-xs tracking-[1px] text-muted">
         <span>{num}</span>
         <span className="h-px w-6 bg-hair-strong" />
         <span className="uppercase">{label}</span>
@@ -263,7 +263,7 @@ function Section({
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
     <li className="flex gap-3">
-      <span className="font-mono text-fg-mute">0{n}</span>
+      <span className="font-mono text-muted">0{n}</span>
       <span className="flex-1">{children}</span>
     </li>
   )
@@ -296,25 +296,25 @@ function Endpoint({
             : 'bg-emerald-500/15 text-emerald-400'
 
   return (
-    <div className="rounded-card border border-hair bg-ink-800 p-5 sm:p-6">
+    <div className="rounded-card border border-hairline bg-surface-card p-5 sm:p-6">
       <div className="flex items-center gap-3">
         <span className={`rounded px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.06em] ${methodColor}`}>
           {method}
         </span>
-        <code className="font-mono text-sm text-fg">{path}</code>
+        <code className="font-mono text-sm text-ink">{path}</code>
       </div>
-      <p className="mt-3 text-sm leading-[1.55] text-fg-dim">{desc}</p>
+      <p className="mt-3 text-sm leading-[1.55] text-body">{desc}</p>
 
       {params && params.length > 0 && (
         <div className="mt-4">
-          <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-fg-mute">
+          <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
             Query params
           </p>
           <ul className="space-y-1">
             {params.map(([k, v]) => (
               <li key={k} className="font-mono text-[13px]">
-                <span className="text-fg">{k}</span>{' '}
-                <span className="text-fg-mute">— {v}</span>
+                <span className="text-ink">{k}</span>{' '}
+                <span className="text-muted">— {v}</span>
               </li>
             ))}
           </ul>
@@ -323,14 +323,14 @@ function Endpoint({
 
       {body && body.length > 0 && (
         <div className="mt-4">
-          <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-fg-mute">
+          <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
             Body (JSON, todos opcionales)
           </p>
           <ul className="space-y-1">
             {body.map(([k, v]) => (
               <li key={k} className="font-mono text-[13px]">
-                <span className="text-fg">{k}</span>{' '}
-                <span className="text-fg-mute">— {v}</span>
+                <span className="text-ink">{k}</span>{' '}
+                <span className="text-muted">— {v}</span>
               </li>
             ))}
           </ul>
@@ -339,10 +339,10 @@ function Endpoint({
 
       {example && (
         <details className="mt-4">
-          <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.12em] text-fg-mute hover:text-fg-dim">
+          <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.12em] text-muted hover:text-body">
             Ver respuesta de ejemplo
           </summary>
-          <pre className="mt-3 overflow-x-auto rounded-lg border border-hair bg-ink-900 p-4 font-mono text-[12.5px] leading-[1.55] text-fg">
+          <pre className="mt-3 overflow-x-auto rounded-lg border border-hairline bg-canvas p-4 font-mono text-[12.5px] leading-[1.55] text-ink">
             {example}
           </pre>
         </details>

@@ -376,43 +376,43 @@ function DogSearchFilter({ dogs, value, onChange, placeholder }: {
     <div ref={ref} className="relative">
       <button onClick={() => { setOpen(!open); setSearch('') }}
         className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition ${
-          value ? 'bg-[#D74709]/10 text-[#D74709] border-[#D74709]/20' : 'bg-chip text-fg-dim border-hair hover:bg-chip'
+          value ? 'bg-surface-card text-ink border-hairline' : 'bg-surface-card text-body border-hairline hover:bg-surface-card'
         }`}>
         <Dog className="w-3.5 h-3.5" />
         {selectedDog ? selectedDog.name : (placeholder || 'Todos los perros')}
         {value && (
-          <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="ml-1 hover:text-fg transition">
+          <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="ml-1 hover:text-ink transition">
             <X className="w-3 h-3" />
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full mt-1 w-72 bg-ink-800 border border-hair rounded-lg shadow-xl z-30 flex flex-col">
-          <div className="p-2 border-b border-hair">
+        <div className="absolute left-0 top-full mt-1 w-72 bg-surface-card border border-hairline rounded-lg shadow-xl z-30 flex flex-col">
+          <div className="p-2 border-b border-hairline">
             <div className="relative">
-              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fg-mute" />
+              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
               <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar perro..." className="w-full bg-chip border border-hair rounded pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+                placeholder="Buscar perro..." className="w-full bg-surface-card border border-hairline rounded pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
             </div>
           </div>
           <div className="max-h-56 overflow-y-auto">
             <button onClick={() => { onChange(''); setOpen(false) }}
-              className={`w-full text-left px-3 py-2 text-xs transition ${!value ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg-dim hover:bg-chip'}`}>
+              className={`w-full text-left px-3 py-2 text-xs transition ${!value ? 'bg-surface-card text-ink' : 'text-body hover:bg-surface-card'}`}>
               Todos los perros
             </button>
             {filtered.map(d => (
               <button key={d.id} onClick={() => { onChange(d.id); setOpen(false); setSearch('') }}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition text-left ${
-                  d.id === value ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg-dim hover:bg-chip'
+                  d.id === value ? 'bg-surface-card text-ink' : 'text-body hover:bg-surface-card'
                 }`}>
-                <div className="w-5 h-5 rounded-full overflow-hidden bg-chip flex-shrink-0 border" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
+                <div className="w-5 h-5 rounded-full overflow-hidden bg-surface-card flex-shrink-0 border" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
                   {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
                 </div>
                 <span className="truncate">{d.name}</span>
               </button>
             ))}
-            {filtered.length === 0 && <p className="text-[10px] text-fg-mute px-3 py-3 text-center">Sin resultados</p>}
+            {filtered.length === 0 && <p className="text-[10px] text-muted px-3 py-3 text-center">Sin resultados</p>}
           </div>
         </div>
       )}
@@ -447,28 +447,28 @@ function AutoGenerateButton({ dogs, generatingFor, onGenerate }: {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-72 bg-ink-800 border border-hair rounded-lg shadow-xl z-30 flex flex-col">
-          <p className="text-[10px] text-fg-mute px-3 pt-2 pb-1">Busca un perro para generar recordatorios automáticos según su edad</p>
-          <div className="p-2 border-b border-hair">
+        <div className="absolute right-0 top-full mt-1 w-72 bg-surface-card border border-hairline rounded-lg shadow-xl z-30 flex flex-col">
+          <p className="text-[10px] text-muted px-3 pt-2 pb-1">Busca un perro para generar recordatorios automáticos según su edad</p>
+          <div className="p-2 border-b border-hairline">
             <div className="relative">
-              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fg-mute" />
+              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
               <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar perro..." className="w-full bg-chip border border-hair rounded pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-fg-mute focus:border-purple-500 focus:outline-none" />
+                placeholder="Buscar perro..." className="w-full bg-surface-card border border-hairline rounded pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-muted focus:border-purple-500 focus:outline-none" />
             </div>
           </div>
           <div className="max-h-56 overflow-y-auto">
             {filtered.map(d => (
               <button key={d.id} onClick={() => { onGenerate(d.id); setOpen(false) }}
                 disabled={generatingFor === d.id}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-fg-dim hover:bg-chip transition text-left disabled:opacity-50">
-                <div className="w-5 h-5 rounded-full overflow-hidden bg-chip flex-shrink-0 border" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-body hover:bg-surface-card transition text-left disabled:opacity-50">
+                <div className="w-5 h-5 rounded-full overflow-hidden bg-surface-card flex-shrink-0 border" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
                   {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
                 </div>
                 <span className="truncate flex-1">{d.name}</span>
                 {generatingFor === d.id && <Loader2 className="w-3 h-3 animate-spin" />}
               </button>
             ))}
-            {filtered.length === 0 && <p className="text-[10px] text-fg-mute px-3 py-3 text-center">{dogs.length === 0 ? 'Tus perros necesitan fecha de nacimiento' : 'Sin resultados'}</p>}
+            {filtered.length === 0 && <p className="text-[10px] text-muted px-3 py-3 text-center">{dogs.length === 0 ? 'Tus perros necesitan fecha de nacimiento' : 'Sin resultados'}</p>}
           </div>
         </div>
       )}

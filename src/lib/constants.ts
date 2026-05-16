@@ -3,7 +3,7 @@ import type { UserRole } from './permissions'
 export const BRAND = {
   name: 'Genealogic',
   primary: '#D74709',
-  primaryHover: '#c03d07',
+  primaryHover: '#000000',
   primaryLight: '#f8e8e0',
   male: '#017DFA',
   female: '#e84393',

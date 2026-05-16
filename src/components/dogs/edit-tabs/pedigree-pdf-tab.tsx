@@ -94,12 +94,12 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
 
   return (
     <div className="space-y-5 text-center">
-      <div className="text-[#D74709] mx-auto w-16 h-16 rounded-2xl bg-[#D74709]/10 flex items-center justify-center">
+      <div className="text-ink mx-auto w-16 h-16 rounded-2xl bg-surface-card flex items-center justify-center">
         <FileText className="w-8 h-8" />
       </div>
       <div>
         <h3 className="text-xl font-bold">Exportar Pedigree en PDF</h3>
-        <p className="text-sm text-fg-dim mt-2">
+        <p className="text-sm text-body mt-2">
           Genera un documento PDF con la genealogia digital de{' '}
           <strong className="text-white">{dogName || 'este perro'}</strong>, incluyendo los datos
           del perro, propietario y arbol genealogico de 4 generaciones.
@@ -115,7 +115,7 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
       <button
         onClick={handleExport}
         disabled={generating}
-        className="inline-flex items-center gap-2 bg-[#D74709]/10 border border-[#D74709]/30 text-[#D74709] font-semibold px-6 py-3 rounded-lg hover:bg-[#D74709]/20 transition disabled:opacity-50"
+        className="inline-flex items-center gap-2 bg-surface-card border border-hairline text-ink font-semibold px-6 py-3 rounded-lg hover:bg-surface-card transition disabled:opacity-50"
       >
         {generating ? (
           <>

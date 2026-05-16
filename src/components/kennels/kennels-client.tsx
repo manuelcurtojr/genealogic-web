@@ -26,19 +26,19 @@ export default function KennelsClient({ kennels }: { kennels: Kennel[] }) {
     <>
       {/* Search */}
       <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar criadero..."
-          className="w-full bg-chip border border-hair rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-fg-mute focus:outline-none focus:border-[#D74709]/50 transition"
+          className="w-full bg-surface-card border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-muted focus:outline-none focus:border-ink transition"
         />
       </div>
 
-      <p className="text-xs text-fg-mute mb-3">{filtered.length} criadero{filtered.length !== 1 ? 's' : ''}</p>
+      <p className="text-xs text-muted mb-3">{filtered.length} criadero{filtered.length !== 1 ? 's' : ''}</p>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-20 text-fg-mute">
+        <div className="text-center py-20 text-muted">
           <Home className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p>No se encontraron criaderos</p>
         </div>
@@ -48,7 +48,7 @@ export default function KennelsClient({ kennels }: { kennels: Kennel[] }) {
             <Link
               key={kennel.id}
               href={`/kennels/${kennel.slug || kennel.id}`}
-              className="bg-chip border border-hair rounded-xl p-5 hover:bg-chip transition group"
+              className="bg-surface-card border border-hairline rounded-xl p-5 hover:bg-surface-card transition group"
             >
               <div className="flex items-center gap-4">
                 <div
@@ -62,12 +62,12 @@ export default function KennelsClient({ kennels }: { kennels: Kennel[] }) {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white group-hover:text-[#D74709] transition truncate">{kennel.name}</p>
+                  <p className="text-sm font-semibold text-white group-hover:text-ink transition truncate">{kennel.name}</p>
                   {kennel.foundation_date && (
-                    <p className="text-xs text-fg-mute mt-0.5">Fundado en {new Date(kennel.foundation_date).getFullYear()}</p>
+                    <p className="text-xs text-muted mt-0.5">Fundado en {new Date(kennel.foundation_date).getFullYear()}</p>
                   )}
                   {kennel.description && (
-                    <p className="text-xs text-fg-mute mt-1 line-clamp-2">{kennel.description}</p>
+                    <p className="text-xs text-muted mt-1 line-clamp-2">{kennel.description}</p>
                   )}
                 </div>
               </div>

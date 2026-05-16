@@ -24,55 +24,55 @@ export default function AdminKennelsClient({ kennels: initKennels }: Props) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Criaderos</h1>
-          <p className="text-fg-mute text-sm">{kennels.length} criaderos registrados</p>
+          <p className="text-muted text-sm">{kennels.length} criaderos registrados</p>
         </div>
       </div>
 
       <div className="relative max-w-md mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Buscar criadero o propietario..."
-          className="w-full bg-chip border border-hair rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
+          className="w-full bg-surface-card border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none transition" />
       </div>
 
-      <div className="bg-chip border border-hair rounded-xl overflow-hidden">
+      <div className="bg-surface-card border border-hairline rounded-xl overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-hair">
-              <th className="text-left text-[10px] font-semibold text-fg-mute uppercase tracking-wider px-4 py-3">Criadero</th>
-              <th className="text-left text-[10px] font-semibold text-fg-mute uppercase tracking-wider px-4 py-3">Propietario</th>
-              <th className="text-left text-[10px] font-semibold text-fg-mute uppercase tracking-wider px-4 py-3">Perros</th>
-              <th className="text-left text-[10px] font-semibold text-fg-mute uppercase tracking-wider px-4 py-3">Formato afijo</th>
-              <th className="text-left text-[10px] font-semibold text-fg-mute uppercase tracking-wider px-4 py-3">Registro</th>
-              <th className="text-left text-[10px] font-semibold text-fg-mute uppercase tracking-wider px-4 py-3"></th>
+            <tr className="border-b border-hairline">
+              <th className="text-left text-[10px] font-semibold text-muted uppercase tracking-wider px-4 py-3">Criadero</th>
+              <th className="text-left text-[10px] font-semibold text-muted uppercase tracking-wider px-4 py-3">Propietario</th>
+              <th className="text-left text-[10px] font-semibold text-muted uppercase tracking-wider px-4 py-3">Perros</th>
+              <th className="text-left text-[10px] font-semibold text-muted uppercase tracking-wider px-4 py-3">Formato afijo</th>
+              <th className="text-left text-[10px] font-semibold text-muted uppercase tracking-wider px-4 py-3">Registro</th>
+              <th className="text-left text-[10px] font-semibold text-muted uppercase tracking-wider px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
             {filtered.map(k => {
               const owner = k.owner as any
               return (
-                <tr key={k.id} className="border-b border-hair hover:bg-ink-800 transition cursor-pointer" onClick={() => setPanelKennelId(k.id)}>
+                <tr key={k.id} className="border-b border-hairline hover:bg-surface-card transition cursor-pointer" onClick={() => setPanelKennelId(k.id)}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg overflow-hidden bg-chip border border-hair flex-shrink-0 flex items-center justify-center">
-                        {k.logo_url ? <img src={k.logo_url} alt="" className="w-full h-full object-cover" /> : <Store className="w-4 h-4 text-fg-mute" />}
+                      <div className="w-8 h-8 rounded-lg overflow-hidden bg-surface-card border border-hairline flex-shrink-0 flex items-center justify-center">
+                        {k.logo_url ? <img src={k.logo_url} alt="" className="w-full h-full object-cover" /> : <Store className="w-4 h-4 text-muted" />}
                       </div>
                       <span className="text-sm font-medium">{k.name}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-xs text-fg-dim">{owner?.display_name || '—'}</p>
-                    <p className="text-[10px] text-fg-mute">{owner?.email}</p>
+                    <p className="text-xs text-body">{owner?.display_name || '—'}</p>
+                    <p className="text-[10px] text-muted">{owner?.email}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-sm font-medium flex items-center gap-1"><Dog className="w-3 h-3 text-fg-mute" /> {k.dog_count}</span>
+                    <span className="text-sm font-medium flex items-center gap-1"><Dog className="w-3 h-3 text-muted" /> {k.dog_count}</span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-fg-mute">{k.affix_format || '—'}</td>
-                  <td className="px-4 py-3 text-[10px] text-fg-mute">
+                  <td className="px-4 py-3 text-xs text-muted">{k.affix_format || '—'}</td>
+                  <td className="px-4 py-3 text-[10px] text-muted">
                     {new Date(k.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
                   </td>
                   <td className="px-4 py-3">
-                    <Link href={`/kennels/${k.id}`} target="_blank" className="text-[#D74709] hover:text-[#c03d07] transition">
+                    <Link href={`/kennels/${k.id}`} target="_blank" className="text-ink hover:opacity-80 transition">
                       <ExternalLink className="w-4 h-4" />
                     </Link>
                   </td>
@@ -81,7 +81,7 @@ export default function AdminKennelsClient({ kennels: initKennels }: Props) {
             })}
           </tbody>
         </table>
-        {filtered.length === 0 && <p className="text-center py-8 text-fg-mute text-sm">Sin resultados</p>}
+        {filtered.length === 0 && <p className="text-center py-8 text-muted text-sm">Sin resultados</p>}
       </div>
 
       <AdminKennelPanel
