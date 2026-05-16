@@ -14,10 +14,10 @@ interface Props {
 }
 
 const TYPE_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
-  vaccine: { label: 'Vacuna', color: '#10B981', icon: Syringe },
-  deworming: { label: 'Desparasitación', color: '#F59E0B', icon: Bug },
-  checkup: { label: 'Revisión', color: '#3B82F6', icon: Stethoscope },
-  custom: { label: 'Personalizado', color: '#8B5CF6', icon: Calendar },
+  vaccine: { label: 'Vacuna', color: '#34d399', icon: Syringe },
+  deworming: { label: 'Desparasitación', color: '#f59e0b', icon: Bug },
+  checkup: { label: 'Revisión', color: '#3b82f6', icon: Stethoscope },
+  custom: { label: 'Personalizado', color: '#8b5cf6', icon: Calendar },
 }
 
 export default function VetRemindersClient({ initialReminders, dogs, templates, userId }: Props) {
@@ -145,70 +145,64 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
     setGeneratingFor(null)
   }
 
+  const stats = [
+    { label: 'Total', value: reminders.length, icon: Stethoscope, color: '#3b82f6' },
+    { label: 'Pendientes', value: pendingCount, icon: Clock, color: '#f59e0b' },
+    { label: 'Vencidos', value: overdueCount, icon: AlertTriangle, color: '#ef4444' },
+    { label: 'Completados', value: reminders.filter(r => r.completed_date).length, icon: Check, color: '#34d399' },
+  ]
+
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Recordatorios veterinarios</h1>
-          <p className="text-fg-mute text-xs sm:text-sm mt-0.5">Gestiona vacunas, desparasitaciones y revisiones de tus perros</p>
+          <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Salud</p>
+          <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
+            Recordatorios vet.
+          </h1>
+          <p className="mt-2 text-[14px] text-body">
+            Vacunas, desparasitaciones y revisiones de tus perros.
+          </p>
         </div>
-        <button onClick={() => { setEditingReminder(null); setShowForm(true) }}
-          className="flex items-center gap-1.5 bg-paper-50 text-ink-900 hover:opacity-90 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition self-start sm:self-auto">
-          <Plus className="w-4 h-4" /> Nuevo recordatorio
+        <button
+          onClick={() => { setEditingReminder(null); setShowForm(true) }}
+          className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90"
+        >
+          <Plus className="h-4 w-4" /> Recordatorio
         </button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <div className="bg-chip border border-hair rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-            <Stethoscope className="w-5 h-5 text-blue-400" />
+      {/* KPIs */}
+      <section className="grid gap-3 grid-cols-2 sm:grid-cols-4 sm:gap-4">
+        {stats.map(s => (
+          <div key={s.label} className="rounded-xl border border-hairline bg-canvas p-4">
+            <div className="flex items-center gap-2">
+              <s.icon className="h-4 w-4" style={{ color: s.color }} />
+              <span className="text-[12px] font-medium text-muted">{s.label}</span>
+            </div>
+            <p className="mt-3 text-[24px] font-semibold tabular-nums tracking-[-0.04em] text-ink leading-none">
+              {s.value}
+            </p>
           </div>
-          <div>
-            <p className="text-xl font-bold">{reminders.length}</p>
-            <p className="text-[10px] text-fg-mute">Total</p>
-          </div>
-        </div>
-        <div className="bg-chip border border-hair rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
-          <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-            <Clock className="w-5 h-5 text-amber-400" />
-          </div>
-          <div>
-            <p className="text-xl font-bold">{pendingCount}</p>
-            <p className="text-[10px] text-fg-mute">Pendientes</p>
-          </div>
-        </div>
-        <div className="bg-chip border border-hair rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
-          <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-            <AlertTriangle className="w-5 h-5 text-red-400" />
-          </div>
-          <div>
-            <p className="text-xl font-bold">{overdueCount}</p>
-            <p className="text-[10px] text-fg-mute">Vencidos</p>
-          </div>
-        </div>
-        <div className="bg-chip border border-hair rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
-          <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-            <Check className="w-5 h-5 text-green-400" />
-          </div>
-          <div>
-            <p className="text-xl font-bold">{reminders.filter(r => r.completed_date).length}</p>
-            <p className="text-[10px] text-fg-mute">Completados</p>
-          </div>
-        </div>
-      </div>
+        ))}
+      </section>
 
       {/* Filters + Dog search + Auto-generate */}
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <div className="flex bg-chip border border-hair rounded-lg overflow-hidden">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex gap-1 rounded-lg bg-surface-card p-1">
           {[
             { key: 'pending', label: 'Pendientes' },
             { key: 'overdue', label: 'Vencidos' },
             { key: 'completed', label: 'Completados' },
             { key: 'all', label: 'Todos' },
           ].map(f => (
-            <button key={f.key} onClick={() => setFilter(f.key as any)}
-              className={`px-3 py-2 text-xs font-medium transition ${filter === f.key ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg-mute hover:text-fg-dim'}`}>
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key as any)}
+              className={`rounded-md px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
+                filter === f.key ? 'bg-canvas text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)]' : 'text-muted hover:text-ink'
+              }`}
+            >
               {f.label}
             </button>
           ))}
@@ -232,91 +226,115 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
 
       {/* Reminders list */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 bg-chip border border-hair rounded-xl">
-          <Stethoscope className="w-12 h-12 text-fg-mute mx-auto mb-3" />
-          <p className="text-fg-mute text-sm">No hay recordatorios {filter !== 'all' ? 'en esta categoría' : ''}</p>
-          <p className="text-xs text-fg-mute mt-1">Añade un recordatorio o usa auto-generar</p>
+        <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
+          <Stethoscope className="mx-auto h-10 w-10 text-muted" />
+          <p className="mt-3 text-[14px] text-body">
+            No hay recordatorios {filter !== 'all' ? 'en esta categoría' : 'todavía'}.
+          </p>
+          <p className="text-[12.5px] text-muted">Añade uno o usa auto-generar.</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map(r => {
-            const dog = r.dog as any
-            const typeConf = TYPE_CONFIG[r.type] || TYPE_CONFIG.custom
-            const TypeIcon = typeConf.icon
-            const isOverdue = !r.completed_date && r.due_date < today
-            const isDueToday = r.due_date === today
-            const isDueSoon = !r.completed_date && !isOverdue && !isDueToday && r.due_date <= new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
-            const sexColor = dog?.sex === 'male' ? BRAND.male : BRAND.female
+        <div className="overflow-hidden rounded-xl border border-hairline bg-canvas">
+          <ul className="divide-y divide-hairline-soft">
+            {filtered.map(r => {
+              const dog = r.dog as any
+              const typeConf = TYPE_CONFIG[r.type] || TYPE_CONFIG.custom
+              const TypeIcon = typeConf.icon
+              const isOverdue = !r.completed_date && r.due_date < today
+              const isDueToday = r.due_date === today
+              const isDueSoon = !r.completed_date && !isOverdue && !isDueToday && r.due_date <= new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
+              const sexColor = dog?.sex === 'male' ? BRAND.male : BRAND.female
 
-            return (
-              <div key={r.id}
-                className={`bg-chip border rounded-xl p-2 sm:p-3 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 transition ${
-                  r.completed_date ? 'border-hair opacity-50' : isOverdue ? 'border-red-500/30 bg-red-500/5' : isDueSoon ? 'border-amber-500/20' : 'border-hair'
-                }`}>
-                {/* Type icon */}
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: typeConf.color + '15' }}>
-                  <TypeIcon className="w-4.5 h-4.5" style={{ color: typeConf.color }} />
-                </div>
-
-                {/* Dog avatar + name */}
-                <div className="flex items-center gap-2 min-w-0 sm:min-w-[140px] flex-shrink-0">
-                  <div className="w-7 h-7 rounded-full overflow-hidden bg-chip border flex-shrink-0" style={{ borderColor: sexColor }}>
-                    {dog?.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
+              return (
+                <li
+                  key={r.id}
+                  className={`flex flex-wrap items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-soft sm:flex-nowrap sm:px-5 ${
+                    r.completed_date ? 'opacity-60' : ''
+                  }`}
+                >
+                  <div
+                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg"
+                    style={{ backgroundColor: typeConf.color }}
+                  >
+                    <TypeIcon className="h-4 w-4 text-white" />
                   </div>
-                  <span className="text-xs font-medium truncate">{dog?.name || '?'}</span>
-                </div>
 
-                {/* Reminder info */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{r.title}</p>
-                  <div className="flex items-center gap-2 text-[10px] text-fg-mute">
-                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold" style={{ background: typeConf.color + '15', color: typeConf.color }}>
-                      {typeConf.label}
-                    </span>
-                    {r.auto_generated && <span className="text-purple-400">Auto</span>}
-                    {r.recurrence_days && <span>↻ cada {r.recurrence_days}d</span>}
-                    {r.notes && <span className="truncate">{r.notes}</span>}
+                  <div className="flex min-w-0 flex-shrink-0 items-center gap-2 sm:min-w-[150px]">
+                    <div
+                      className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full border-2 bg-surface-card"
+                      style={{ borderColor: sexColor }}
+                    >
+                      {dog?.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="h-full w-full object-cover" /> : null}
+                    </div>
+                    <span className="truncate text-[13px] font-medium text-ink">{dog?.name || '?'}</span>
                   </div>
-                </div>
 
-                {/* Date */}
-                <div className="text-right flex-shrink-0">
-                  <p className={`text-xs font-semibold ${
-                    r.completed_date ? 'text-green-400' : isOverdue ? 'text-red-400' : isDueToday ? 'text-[#D74709]' : isDueSoon ? 'text-amber-400' : 'text-fg-dim'
-                  }`}>
-                    {r.completed_date
-                      ? new Date(r.completed_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
-                      : new Date(r.due_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })
-                    }
-                  </p>
-                  <p className="text-[9px] text-fg-mute">
-                    {r.completed_date ? 'Completado' : isOverdue ? 'Vencido' : isDueToday ? 'Hoy' : isDueSoon ? 'Próximo' : ''}
-                  </p>
-                </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[14px] font-medium text-ink">{r.title}</p>
+                    <div className="mt-0.5 flex items-center gap-2 text-[11.5px] text-muted">
+                      <span
+                        className="inline-flex items-center rounded-full px-2 py-0.5 text-[10.5px] font-medium"
+                        style={{ backgroundColor: typeConf.color + '18', color: typeConf.color }}
+                      >
+                        {typeConf.label}
+                      </span>
+                      {r.auto_generated && <span className="text-[#8b5cf6]">Auto</span>}
+                      {r.recurrence_days && <span>↻ cada {r.recurrence_days}d</span>}
+                      {r.notes && <span className="truncate">{r.notes}</span>}
+                    </div>
+                  </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  {!r.completed_date && (
-                    <button onClick={() => markCompleted(r.id)}
-                      className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-400 hover:bg-green-500/20 transition"
-                      title="Marcar como completado">
-                      <Check className="w-4 h-4" />
+                  <div className="flex-shrink-0 text-right">
+                    <p className={`text-[13px] font-medium tabular-nums ${
+                      r.completed_date
+                        ? 'text-[color:var(--success)]'
+                        : isOverdue
+                          ? 'text-[color:var(--error)]'
+                          : isDueToday
+                            ? 'text-ink'
+                            : isDueSoon
+                              ? 'text-[color:var(--warning)]'
+                              : 'text-body'
+                    }`}>
+                      {r.completed_date
+                        ? new Date(r.completed_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
+                        : new Date(r.due_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })
+                      }
+                    </p>
+                    <p className="text-[10.5px] text-muted">
+                      {r.completed_date ? 'Completado' : isOverdue ? 'Vencido' : isDueToday ? 'Hoy' : isDueSoon ? 'Próximo' : ''}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-shrink-0 items-center gap-1">
+                    {!r.completed_date && (
+                      <button
+                        onClick={() => markCompleted(r.id)}
+                        title="Marcar como completado"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-[color:var(--success)]/10 text-[color:var(--success)] transition-colors hover:bg-[color:var(--success)]/15"
+                      >
+                        <Check className="h-4 w-4" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { setEditingReminder(r); setShowForm(true) }}
+                      title="Editar"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-card hover:text-ink"
+                    >
+                      <Calendar className="h-3.5 w-3.5" />
                     </button>
-                  )}
-                  <button onClick={() => { setEditingReminder(r); setShowForm(true) }}
-                    className="w-8 h-8 rounded-lg bg-chip flex items-center justify-center text-fg-mute hover:bg-chip hover:text-fg-dim transition"
-                    title="Editar">
-                    <Calendar className="w-3.5 h-3.5" />
-                  </button>
-                  <button onClick={() => deleteReminder(r.id)}
-                    className="w-8 h-8 rounded-lg bg-chip flex items-center justify-center text-fg-mute hover:bg-red-500/10 hover:text-red-400 transition"
-                    title="Eliminar">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            )
-          })}
+                    <button
+                      onClick={() => deleteReminder(r.id)}
+                      title="Eliminar"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-soft hover:text-[color:var(--error)]"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
         </div>
       )}
 

@@ -3,10 +3,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Search, Dog, Filter, X, Tag, MapPin, Home, ChevronDown, ShieldCheck } from 'lucide-react'
+import { Search, Dog, Filter, X, Tag, MapPin, Home, ChevronDown } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { getLocalizedCountries } from '@/lib/countries'
 import { DogImage } from '@/components/ui/dog-image'
+import { pastelByName } from '@/lib/avatars'
 
 type Tab = 'dogs' | 'kennels'
 
@@ -14,19 +15,32 @@ export default function SearchPage() {
   const [tab, setTab] = useState<Tab>('dogs')
 
   return (
-    <div>
-      <h1 className="text-xl sm:text-2xl font-bold mb-2">Buscar</h1>
-      <p className="text-fg-mute text-xs sm:text-sm mb-4 sm:mb-6">Encuentra perros y criaderos registrados</p>
+    <div className="space-y-6 sm:space-y-8">
+      <div>
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Descubrimiento</p>
+        <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
+          Buscar
+        </h1>
+        <p className="mt-2 text-[14px] text-body">Encuentra perros y criaderos registrados en Genealogic.</p>
+      </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-chip rounded-xl mb-4 sm:mb-6 w-fit">
-        <button onClick={() => setTab('dogs')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition ${tab === 'dogs' ? 'bg-[#D74709] text-white shadow' : 'text-fg-mute hover:text-fg-dim'}`}>
-          <Dog className="w-4 h-4" /> Perros
+      {/* Tabs Cal pill group */}
+      <div className="inline-flex gap-1 rounded-lg bg-surface-card p-1">
+        <button
+          onClick={() => setTab('dogs')}
+          className={`inline-flex items-center gap-1.5 rounded-md px-4 py-1.5 text-[13px] font-medium transition-colors ${
+            tab === 'dogs' ? 'bg-canvas text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)]' : 'text-muted hover:text-ink'
+          }`}
+        >
+          <Dog className="h-4 w-4" /> Perros
         </button>
-        <button onClick={() => setTab('kennels')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition ${tab === 'kennels' ? 'bg-[#D74709] text-white shadow' : 'text-fg-mute hover:text-fg-dim'}`}>
-          <Home className="w-4 h-4" /> Criaderos
+        <button
+          onClick={() => setTab('kennels')}
+          className={`inline-flex items-center gap-1.5 rounded-md px-4 py-1.5 text-[13px] font-medium transition-colors ${
+            tab === 'kennels' ? 'bg-canvas text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)]' : 'text-muted hover:text-ink'
+          }`}
+        >
+          <Home className="h-4 w-4" /> Criaderos
         </button>
       </div>
 
@@ -35,7 +49,7 @@ export default function SearchPage() {
   )
 }
 
-/* ─── Dogs Search (existing) ─── */
+/* ─── Dogs Search ─── */
 function DogsSearch() {
   const [query, setQuery] = useState('')
   const [breeds, setBreeds] = useState<any[]>([])
@@ -59,7 +73,7 @@ function DogsSearch() {
     setLoading(true)
     const supabase = createClient()
     let q = supabase.from('dogs')
-      .select('id, name, sex, thumbnail_url, birth_date, sale_price, sale_currency, sale_location, is_for_sale, breed:breeds(name), kennel:kennels(name)')
+      .select('id, slug, name, sex, thumbnail_url, birth_date, sale_price, sale_currency, sale_location, is_for_sale, breed:breeds(name), kennel:kennels(name)')
       .order('created_at', { ascending: false })
       .limit(50)
 
@@ -74,75 +88,99 @@ function DogsSearch() {
     setLoaded(true)
   }, [query, breedFilter, sexFilter, forSaleOnly])
 
-  useEffect(() => { handleSearch() }, [breedFilter, sexFilter, forSaleOnly])
+  useEffect(() => { handleSearch() }, [breedFilter, sexFilter, forSaleOnly]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const currencySymbol: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', MXN: '$' }
 
   return (
-    <>
-      {/* Search bar + filter toggle */}
-      <div className="flex items-center gap-2 mb-3">
-        <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />
-          <input type="text" value={query} onChange={e => setQuery(e.target.value)}
+    <div className="space-y-4">
+      {/* Search + filter toggle */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            placeholder="Buscar por nombre..."
-            className="w-full bg-chip border border-hair rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
+            placeholder="Buscar perro por nombre..."
+            className="w-full rounded-lg border border-hairline bg-canvas py-2.5 pl-10 pr-4 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
+          />
         </div>
-        <button onClick={() => setFiltersOpen(!filtersOpen)}
-          className={`p-2.5 rounded-lg border transition shrink-0 ${hasActiveFilters ? 'bg-[#D74709]/15 text-[#D74709] border-[#D74709]/30' : filtersOpen ? 'bg-chip text-white border-hair-strong' : 'bg-chip text-fg-mute border-hair'}`}>
-          <Filter className="w-4 h-4" />
+        <button
+          onClick={() => setFiltersOpen(!filtersOpen)}
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors ${
+            hasActiveFilters
+              ? 'bg-ink text-on-primary'
+              : 'border border-hairline bg-canvas text-body hover:bg-surface-soft hover:text-ink'
+          }`}
+        >
+          <Filter className="h-4 w-4" />
+          {hasActiveFilters && <span className="tabular-nums">{[breedFilter, sexFilter, forSaleOnly && 'venta'].filter(Boolean).length}</span>}
         </button>
       </div>
 
-      {/* Collapsible filters */}
+      {/* Filters */}
       {filtersOpen && (
-        <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 mb-4 p-3 bg-chip border border-hair rounded-xl">
-          <select value={breedFilter} onChange={e => setBreedFilter(e.target.value)}
-            className="bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-fg focus:border-[#D74709] focus:outline-none transition appearance-none flex-1 min-w-0 sm:min-w-[160px]">
+        <div className="flex flex-col gap-2 rounded-xl border border-hairline bg-surface-soft p-3 sm:flex-row sm:flex-wrap">
+          <select
+            value={breedFilter}
+            onChange={e => setBreedFilter(e.target.value)}
+            className="flex-1 min-w-0 rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-[13px] text-body focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none"
+          >
             <option value="">Todas las razas</option>
             {breeds.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
-          <select value={sexFilter} onChange={e => setSexFilter(e.target.value)}
-            className="bg-chip border border-hair rounded-lg px-3 py-2.5 text-sm text-fg focus:border-[#D74709] focus:outline-none transition appearance-none flex-1 min-w-0 sm:min-w-[130px]">
+          <select
+            value={sexFilter}
+            onChange={e => setSexFilter(e.target.value)}
+            className="flex-1 min-w-0 rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-[13px] text-body focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none sm:flex-initial sm:min-w-[140px]"
+          >
             <option value="">Ambos sexos</option>
             <option value="male">Macho</option>
             <option value="female">Hembra</option>
           </select>
-          <button onClick={() => setForSaleOnly(!forSaleOnly)}
-            className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium border transition ${forSaleOnly ? 'bg-[#D74709]/15 text-[#D74709] border-[#D74709]/30' : 'bg-chip text-fg-dim border-hair hover:bg-chip'}`}>
-            <Tag className="w-4 h-4" /> En venta
-          </button>
-          <button onClick={handleSearch}
-            className="bg-paper-50 text-ink-900 hover:opacity-90 px-5 py-2.5 rounded-lg text-sm font-semibold transition">
-            Buscar
+          <button
+            onClick={() => setForSaleOnly(!forSaleOnly)}
+            className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-[13px] font-medium transition-colors ${
+              forSaleOnly
+                ? 'bg-[#f59e0b] text-white'
+                : 'border border-hairline bg-canvas text-body hover:bg-surface-card hover:text-ink'
+            }`}
+          >
+            <Tag className="h-4 w-4" /> En venta
           </button>
         </div>
       )}
 
-      {loaded && <p className="text-xs text-fg-mute mb-4">{results.length} resultado{results.length !== 1 ? 's' : ''}</p>}
+      {loaded && (
+        <p className="text-[12.5px] text-muted">
+          {results.length} {results.length === 1 ? 'resultado' : 'resultados'}
+        </p>
+      )}
 
       {loading ? (
-        <div className="text-center py-20 text-fg-mute">Buscando...</div>
+        <div className="py-20 text-center text-[14px] text-muted">Buscando...</div>
       ) : results.length === 0 && loaded ? (
-        <div className="text-center py-20">
-          <Dog className="w-16 h-16 text-fg-mute mx-auto mb-4" />
-          <p className="text-fg-mute">No se encontraron resultados</p>
-          <p className="text-xs text-fg-mute mt-1">Prueba con otros filtros</p>
+        <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
+          <Dog className="mx-auto h-10 w-10 text-muted" />
+          <p className="mt-3 text-[14px] text-body">No se encontraron resultados.</p>
+          <p className="text-[12.5px] text-muted">Prueba con otros filtros.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
           {results.map((dog: any) => {
             const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
-            const sexIcon = dog.sex === 'male' ? '♂' : '♀'
             const breedName = dog.breed?.name
             const kennelName = dog.kennel?.name
             const symbol = currencySymbol[dog.sale_currency] || '€'
-
             return (
-              <Link key={dog.id} href={`/dogs/${dog.slug || dog.id}`}
-                className={`bg-ink-800 border rounded-xl overflow-hidden hover:border-[#D74709]/30 transition group ${dog.is_for_sale ? 'border-[#D74709]/20' : 'border-hair'}`}>
-                <div className="relative aspect-[4/3] bg-chip">
+              <Link
+                key={dog.id}
+                href={`/dogs/${dog.slug || dog.id}`}
+                className="group overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden bg-surface-card">
                   <DogImage
                     src={dog.thumbnail_url}
                     alt={dog.name}
@@ -150,33 +188,45 @@ function DogsSearch() {
                     width={0}
                     height={0}
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    className="absolute inset-0 w-full h-full"
+                    className="absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-105"
                   />
-                  {breedName && <span className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] font-semibold px-2 py-0.5 rounded-full z-10">{breedName}</span>}
+                  {breedName && (
+                    <span className="absolute right-2 top-2 z-10 rounded-full bg-canvas px-2 py-0.5 text-[10.5px] font-medium text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+                      {breedName}
+                    </span>
+                  )}
                   {dog.is_for_sale && (
-                    <span className="absolute top-2 left-2 bg-[#D74709] text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <Tag className="w-2.5 h-2.5" /> EN VENTA
+                    <span className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-full bg-[#f59e0b] px-2 py-0.5 text-[10.5px] font-medium text-white shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
+                      <Tag className="h-2.5 w-2.5" /> En venta
                     </span>
                   )}
                   <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: sexColor }} />
                 </div>
-                <div className="p-2 sm:p-3">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs sm:text-sm font-semibold truncate group-hover:text-[#D74709] transition">{dog.name}</span>
-                    
-                  </div>
-                  <div className="flex items-center gap-2 mt-1 text-[11px] text-fg-mute">
+                <div className="p-3">
+                  <p className="truncate text-[14px] font-medium text-ink">{dog.name}</p>
+                  <div className="mt-1 flex items-center gap-2 text-[11.5px] text-muted">
                     {dog.birth_date && <span>{new Date(dog.birth_date).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })}</span>}
-                    {kennelName && <span className="truncate">{kennelName}</span>}
+                    {kennelName && (
+                      <>
+                        {dog.birth_date && <span>·</span>}
+                        <span className="truncate">{kennelName}</span>
+                      </>
+                    )}
                   </div>
                   {dog.is_for_sale && (
-                    <div className="flex items-center justify-between mt-2">
+                    <div className="mt-2 flex items-center justify-between border-t border-hairline pt-2">
                       {dog.sale_price ? (
-                        <span className="text-sm font-bold text-[#D74709]">{Number(dog.sale_price).toLocaleString('es-ES')} {symbol}</span>
+                        <span className="text-[13px] font-semibold text-ink tabular-nums">
+                          {Number(dog.sale_price).toLocaleString('es-ES')} {symbol}
+                        </span>
                       ) : (
-                        <span className="text-xs text-fg-mute">Consultar precio</span>
+                        <span className="text-[11.5px] text-muted">Consultar precio</span>
                       )}
-                      {dog.sale_location && <span className="text-[10px] text-fg-mute flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{dog.sale_location}</span>}
+                      {dog.sale_location && (
+                        <span className="inline-flex items-center gap-0.5 text-[10.5px] text-muted">
+                          <MapPin className="h-2.5 w-2.5" />{dog.sale_location}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -185,11 +235,11 @@ function DogsSearch() {
           })}
         </div>
       )}
-    </>
+    </div>
   )
 }
 
-/* ─── Kennels Search (new) ─── */
+/* ─── Kennels Search ─── */
 function KennelsSearch() {
   const [query, setQuery] = useState('')
   const [breeds, setBreeds] = useState<any[]>([])
@@ -197,7 +247,6 @@ function KennelsSearch() {
   const [loading, setLoading] = useState(false)
   const [loaded, setLoaded] = useState(false)
 
-  // Multi-select filters
   const [selectedCountries, setSelectedCountries] = useState<string[]>([])
   const [selectedBreeds, setSelectedBreeds] = useState<string[]>([])
   const [countryDropdown, setCountryDropdown] = useState(false)
@@ -219,88 +268,96 @@ function KennelsSearch() {
     setLoading(true)
     const supabase = createClient()
     let q = supabase.from('kennels')
-      .select('id, name, logo_url, description, foundation_date, breed_ids, country, city')
+      .select('id, slug, name, logo_url, description, foundation_date, breed_ids, country, city')
       .order('name')
       .limit(60)
 
     if (query.trim()) q = q.ilike('name', `%${query.trim()}%`)
-
-    // breed_ids is a UUID array column — filter with overlaps
     if (selectedBreeds.length > 0) q = q.overlaps('breed_ids', selectedBreeds)
-
-    // Country filter — filter by kennel's own country field
     if (selectedCountries.length > 0) q = q.in('country', selectedCountries)
 
     const { data } = await q
-    const filtered = data || []
-
-    setResults(filtered)
+    setResults(data || [])
     setLoading(false)
     setLoaded(true)
   }, [query, selectedBreeds, selectedCountries])
 
-  useEffect(() => { handleSearch() }, [selectedBreeds, selectedCountries])
+  useEffect(() => { handleSearch() }, [selectedBreeds, selectedCountries]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const h = () => { setCountryDropdown(false); setBreedDropdown(false) }
     document.addEventListener('click', h)
     return () => document.removeEventListener('click', h)
   }, [])
 
-  const toggleCountry = (name: string) => {
-    setSelectedCountries(prev => prev.includes(name) ? prev.filter(c => c !== name) : [...prev, name])
-  }
-  const toggleBreed = (id: string) => {
-    setSelectedBreeds(prev => prev.includes(id) ? prev.filter(b => b !== id) : [...prev, id])
-  }
+  const toggleCountry = (name: string) => setSelectedCountries(prev => prev.includes(name) ? prev.filter(c => c !== name) : [...prev, name])
+  const toggleBreed = (id: string) => setSelectedBreeds(prev => prev.includes(id) ? prev.filter(b => b !== id) : [...prev, id])
+
+  const triggerCls = (open: boolean, hasSelection: boolean) =>
+    `w-full flex items-center gap-2 rounded-lg border bg-canvas px-3 py-2.5 text-[13px] text-left transition-colors ${
+      open ? 'border-ink' : hasSelection ? 'border-hairline bg-surface-soft' : 'border-hairline hover:bg-surface-soft'
+    }`
 
   return (
-    <>
-      {/* Search bar */}
-      <div className="relative mb-3">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-mute" />
-        <input type="text" value={query} onChange={e => setQuery(e.target.value)}
+    <div className="space-y-4">
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+        <input
+          type="text"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSearch()}
           placeholder="Buscar criadero por nombre..."
-          className="w-full bg-chip border border-hair rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none transition" />
+          className="w-full rounded-lg border border-hairline bg-canvas py-2.5 pl-10 pr-4 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
+        />
       </div>
 
       {/* Filters row */}
-      <div className="flex flex-col sm:flex-row gap-2 mb-4">
-        {/* Country multi-select */}
+      <div className="flex flex-col gap-2 sm:flex-row">
         <div className="relative flex-1 min-w-0" onClick={e => e.stopPropagation()}>
-          <button onClick={() => { setCountryDropdown(!countryDropdown); setBreedDropdown(false); setCountryQ('') }}
-            className={`w-full bg-chip border rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 transition text-left ${countryDropdown ? 'border-[#D74709]' : selectedCountries.length > 0 ? 'border-[#D74709]/30' : 'border-hair'}`}>
-            <MapPin className="w-3.5 h-3.5 text-fg-mute shrink-0" />
-            {selectedCountries.length > 0 ? (
-              <span className="truncate flex-1 text-fg">{selectedCountries.length} {selectedCountries.length === 1 ? 'país' : 'países'}</span>
-            ) : (
-              <span className="truncate flex-1 text-fg-mute">Filtrar por país</span>
-            )}
-            <ChevronDown className="w-3.5 h-3.5 text-fg-mute shrink-0" />
+          <button
+            onClick={() => { setCountryDropdown(!countryDropdown); setBreedDropdown(false); setCountryQ('') }}
+            className={triggerCls(countryDropdown, selectedCountries.length > 0)}
+          >
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted" />
+            <span className={`flex-1 truncate ${selectedCountries.length > 0 ? 'text-ink' : 'text-muted'}`}>
+              {selectedCountries.length > 0 ? `${selectedCountries.length} ${selectedCountries.length === 1 ? 'país' : 'países'}` : 'Filtrar por país'}
+            </span>
+            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted" />
           </button>
           {countryDropdown && (
-            <div className="absolute z-40 mt-1 w-full bg-ink-800 border border-hair rounded-lg shadow-xl max-h-56 flex flex-col">
-              <div className="p-2 border-b border-hair">
-                <input autoFocus value={countryQ} onChange={e => setCountryQ(e.target.value)} placeholder="Buscar país..."
-                  className="w-full bg-chip border border-hair rounded pl-3 pr-3 py-1.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+            <div className="absolute z-40 mt-1 flex max-h-72 w-full flex-col overflow-hidden rounded-lg border border-hairline bg-canvas shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+              <div className="border-b border-hairline p-2">
+                <input
+                  autoFocus
+                  value={countryQ}
+                  onChange={e => setCountryQ(e.target.value)}
+                  placeholder="Buscar país..."
+                  className="w-full rounded border border-hairline bg-canvas px-3 py-1.5 text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none"
+                />
               </div>
-              <div className="overflow-y-auto flex-1">
+              <div className="flex-1 overflow-y-auto">
                 {filteredCountries.map(c => {
                   const selected = selectedCountries.includes(c.name)
                   return (
-                    <button key={c.code} type="button" onClick={() => toggleCountry(c.name)}
-                      className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${selected ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg hover:bg-chip'}`}>
+                    <button
+                      key={c.code}
+                      type="button"
+                      onClick={() => toggleCountry(c.name)}
+                      className={`flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors ${
+                        selected ? 'bg-surface-card text-ink font-medium' : 'text-body hover:bg-surface-soft'
+                      }`}
+                    >
                       <span className="text-base">{c.flag}</span>
                       <span className="flex-1 truncate">{c.name}</span>
-                      {selected && <X className="w-3 h-3 shrink-0" />}
+                      {selected && <X className="h-3 w-3 shrink-0" />}
                     </button>
                   )
                 })}
               </div>
               {selectedCountries.length > 0 && (
-                <button onClick={() => setSelectedCountries([])} className="px-3 py-2 text-xs text-fg-mute hover:text-fg-dim border-t border-hair text-center">
+                <button onClick={() => setSelectedCountries([])} className="border-t border-hairline px-3 py-2 text-center text-[12px] text-body hover:bg-surface-soft hover:text-ink">
                   Limpiar selección
                 </button>
               )}
@@ -308,91 +365,107 @@ function KennelsSearch() {
           )}
         </div>
 
-        {/* Breed multi-select */}
         <div className="relative flex-1 min-w-0" onClick={e => e.stopPropagation()}>
-          <button onClick={() => { setBreedDropdown(!breedDropdown); setCountryDropdown(false); setBreedQ('') }}
-            className={`w-full bg-chip border rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 transition text-left ${breedDropdown ? 'border-[#D74709]' : selectedBreeds.length > 0 ? 'border-[#D74709]/30' : 'border-hair'}`}>
-            <Dog className="w-3.5 h-3.5 text-fg-mute shrink-0" />
-            {selectedBreeds.length > 0 ? (
-              <span className="truncate flex-1 text-fg">{selectedBreeds.length} {selectedBreeds.length === 1 ? 'raza' : 'razas'}</span>
-            ) : (
-              <span className="truncate flex-1 text-fg-mute">Filtrar por raza</span>
-            )}
-            <ChevronDown className="w-3.5 h-3.5 text-fg-mute shrink-0" />
+          <button
+            onClick={() => { setBreedDropdown(!breedDropdown); setCountryDropdown(false); setBreedQ('') }}
+            className={triggerCls(breedDropdown, selectedBreeds.length > 0)}
+          >
+            <Dog className="h-3.5 w-3.5 shrink-0 text-muted" />
+            <span className={`flex-1 truncate ${selectedBreeds.length > 0 ? 'text-ink' : 'text-muted'}`}>
+              {selectedBreeds.length > 0 ? `${selectedBreeds.length} ${selectedBreeds.length === 1 ? 'raza' : 'razas'}` : 'Filtrar por raza'}
+            </span>
+            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted" />
           </button>
           {breedDropdown && (
-            <div className="absolute z-40 mt-1 w-full bg-ink-800 border border-hair rounded-lg shadow-xl max-h-56 flex flex-col">
-              <div className="p-2 border-b border-hair">
-                <input autoFocus value={breedQ} onChange={e => setBreedQ(e.target.value)} placeholder="Buscar raza..."
-                  className="w-full bg-chip border border-hair rounded pl-3 pr-3 py-1.5 text-sm text-white placeholder:text-fg-mute focus:border-[#D74709] focus:outline-none" />
+            <div className="absolute z-40 mt-1 flex max-h-72 w-full flex-col overflow-hidden rounded-lg border border-hairline bg-canvas shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+              <div className="border-b border-hairline p-2">
+                <input
+                  autoFocus
+                  value={breedQ}
+                  onChange={e => setBreedQ(e.target.value)}
+                  placeholder="Buscar raza..."
+                  className="w-full rounded border border-hairline bg-canvas px-3 py-1.5 text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none"
+                />
               </div>
-              <div className="overflow-y-auto flex-1">
+              <div className="flex-1 overflow-y-auto">
                 {filteredBreedOptions.map(b => {
                   const selected = selectedBreeds.includes(b.id)
                   return (
-                    <button key={b.id} type="button" onClick={() => toggleBreed(b.id)}
-                      className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition ${selected ? 'bg-[#D74709]/15 text-[#D74709]' : 'text-fg hover:bg-chip'}`}>
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => toggleBreed(b.id)}
+                      className={`flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors ${
+                        selected ? 'bg-surface-card text-ink font-medium' : 'text-body hover:bg-surface-soft'
+                      }`}
+                    >
                       <span className="flex-1 truncate">{b.name}</span>
-                      {selected && <X className="w-3 h-3 shrink-0" />}
+                      {selected && <X className="h-3 w-3 shrink-0" />}
                     </button>
                   )
                 })}
               </div>
               {selectedBreeds.length > 0 && (
-                <button onClick={() => setSelectedBreeds([])} className="px-3 py-2 text-xs text-fg-mute hover:text-fg-dim border-t border-hair text-center">
+                <button onClick={() => setSelectedBreeds([])} className="border-t border-hairline px-3 py-2 text-center text-[12px] text-body hover:bg-surface-soft hover:text-ink">
                   Limpiar selección
                 </button>
               )}
             </div>
           )}
         </div>
-
-        <button onClick={handleSearch}
-          className="bg-paper-50 text-ink-900 hover:opacity-90 px-5 py-2.5 rounded-lg text-sm font-semibold transition shrink-0">
-          Buscar
-        </button>
       </div>
 
-      {/* Active filter chips */}
+      {/* Active chips */}
       {hasFilters && (
-        <div className="flex flex-wrap gap-1.5 mb-4">
+        <div className="flex flex-wrap gap-1.5">
           {selectedCountries.map(c => {
             const co = countries.find(x => x.name === c)
             return (
-              <button key={c} onClick={() => toggleCountry(c)}
-                className="flex items-center gap-1 bg-[#D74709]/10 text-[#D74709] text-xs font-medium px-2.5 py-1 rounded-full hover:bg-[#D74709]/20 transition">
-                {co?.flag} {c} <X className="w-3 h-3" />
+              <button
+                key={c}
+                onClick={() => toggleCountry(c)}
+                className="inline-flex items-center gap-1 rounded-full bg-surface-card px-2.5 py-1 text-[12px] font-medium text-ink transition-colors hover:bg-hairline"
+              >
+                {co?.flag} {c} <X className="h-3 w-3" />
               </button>
             )
           })}
           {selectedBreeds.map(id => {
             const br = breeds.find(b => b.id === id)
             return (
-              <button key={id} onClick={() => toggleBreed(id)}
-                className="flex items-center gap-1 bg-[#D74709]/10 text-[#D74709] text-xs font-medium px-2.5 py-1 rounded-full hover:bg-[#D74709]/20 transition">
-                {br?.name} <X className="w-3 h-3" />
+              <button
+                key={id}
+                onClick={() => toggleBreed(id)}
+                className="inline-flex items-center gap-1 rounded-full bg-surface-card px-2.5 py-1 text-[12px] font-medium text-ink transition-colors hover:bg-hairline"
+              >
+                {br?.name} <X className="h-3 w-3" />
               </button>
             )
           })}
-          <button onClick={() => { setSelectedCountries([]); setSelectedBreeds([]) }}
-            className="text-xs text-fg-mute hover:text-fg-dim px-2 py-1 transition">
+          <button
+            onClick={() => { setSelectedCountries([]); setSelectedBreeds([]) }}
+            className="px-2 py-1 text-[12px] font-medium text-muted transition-colors hover:text-ink"
+          >
             Limpiar todo
           </button>
         </div>
       )}
 
-      {loaded && <p className="text-xs text-fg-mute mb-4">{results.length} criadero{results.length !== 1 ? 's' : ''}</p>}
+      {loaded && (
+        <p className="text-[12.5px] text-muted">
+          {results.length} {results.length === 1 ? 'criadero' : 'criaderos'}
+        </p>
+      )}
 
       {loading ? (
-        <div className="text-center py-20 text-fg-mute">Buscando...</div>
+        <div className="py-20 text-center text-[14px] text-muted">Buscando...</div>
       ) : results.length === 0 && loaded ? (
-        <div className="text-center py-20">
-          <Home className="w-16 h-16 text-fg-mute mx-auto mb-4" />
-          <p className="text-fg-mute">No se encontraron criaderos</p>
-          <p className="text-xs text-fg-mute mt-1">Prueba con otros filtros</p>
+        <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
+          <Home className="mx-auto h-10 w-10 text-muted" />
+          <p className="mt-3 text-[14px] text-body">No se encontraron criaderos.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {results.map((kennel: any) => {
             const co = kennel.country ? countries.find(c => c.name === kennel.country) : null
             const kennelBreeds = (kennel.breed_ids || [])
@@ -400,40 +473,51 @@ function KennelsSearch() {
               .filter(Boolean) as string[]
 
             return (
-              <Link key={kennel.id} href={`/kennels/${kennel.slug || kennel.id}`}
-                className="bg-ink-800 border border-hair rounded-xl p-4 sm:p-5 hover:border-[#D74709]/30 hover:bg-chip transition group">
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-[#D74709]/10 flex items-center justify-center flex-shrink-0 border border-[#D74709]/20 overflow-hidden">
+              <Link
+                key={kennel.id}
+                href={`/kennels/${kennel.slug || kennel.id}`}
+                className="group block rounded-xl border border-hairline bg-canvas p-5 transition-colors hover:bg-surface-soft"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-xl">
                     {kennel.logo_url ? (
-                      <img src={kennel.logo_url} alt="" className="w-full h-full object-cover" />
+                      <img src={kennel.logo_url} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <span className="text-xl font-bold text-[#D74709]">{kennel.name[0]}</span>
+                      <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: pastelByName(kennel.name) }}>
+                        <span className="text-xl font-semibold text-white">{kennel.name[0]?.toUpperCase()}</span>
+                      </div>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-white group-hover:text-[#D74709] transition truncate">{kennel.name}</p>
-                    <div className="flex items-center gap-2 mt-0.5 text-xs text-fg-mute">
-                      {co && <span className="flex items-center gap-1">{co.flag} {kennel.city ? `${kennel.city}, ${co.name}` : co.name}</span>}
+                    <p className="truncate text-[14px] font-medium text-ink">{kennel.name}</p>
+                    <div className="mt-0.5 flex items-center gap-2 text-[12px] text-muted">
+                      {co && (
+                        <span className="inline-flex items-center gap-1">
+                          {co.flag} {kennel.city ? `${kennel.city}, ${co.name}` : co.name}
+                        </span>
+                      )}
                       {kennel.foundation_date && <span>Desde {new Date(kennel.foundation_date).getFullYear()}</span>}
                     </div>
                   </div>
                 </div>
                 {kennelBreeds.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-3">
+                  <div className="mt-3 flex flex-wrap gap-1">
                     {kennelBreeds.slice(0, 3).map(name => (
-                      <span key={name} className="bg-chip text-fg-dim text-[10px] font-semibold px-2 py-0.5 rounded-full">{name}</span>
+                      <span key={name} className="rounded-full bg-surface-card px-2 py-0.5 text-[10.5px] font-medium text-body">{name}</span>
                     ))}
-                    {kennelBreeds.length > 3 && <span className="text-[10px] text-fg-mute px-1 py-0.5">+{kennelBreeds.length - 3}</span>}
+                    {kennelBreeds.length > 3 && (
+                      <span className="px-1 py-0.5 text-[10.5px] text-muted">+{kennelBreeds.length - 3}</span>
+                    )}
                   </div>
                 )}
                 {kennel.description && (
-                  <p className="text-xs text-fg-mute mt-2 line-clamp-2">{kennel.description}</p>
+                  <p className="mt-2 line-clamp-2 text-[12.5px] text-muted">{kennel.description}</p>
                 )}
               </Link>
             )
           })}
         </div>
       )}
-    </>
+    </div>
   )
 }

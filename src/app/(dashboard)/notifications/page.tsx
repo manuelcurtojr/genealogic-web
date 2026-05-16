@@ -14,26 +14,16 @@ interface Notification {
   created_at: string
 }
 
-function getNotifIcon(type: string) {
-  switch (type) {
-    case 'vet': return Stethoscope
-    case 'calendar': return Calendar
-    case 'award': return Trophy
-    case 'contact': return UserPlus
-    case 'deal': return HandCoins
-    default: return Bell
-  }
+const NOTIF_CONFIG: Record<string, { icon: any; color: string }> = {
+  vet: { icon: Stethoscope, color: '#3b82f6' },
+  calendar: { icon: Calendar, color: '#8b5cf6' },
+  contact: { icon: UserPlus, color: '#34d399' },
+  deal: { icon: HandCoins, color: '#f59e0b' },
+  award: { icon: Trophy, color: '#f59e0b' },
 }
 
-function getNotifColor(type: string) {
-  switch (type) {
-    case 'vet': return 'bg-blue-500/15 text-blue-400'
-    case 'calendar': return 'bg-purple-500/15 text-purple-400'
-    case 'contact': return 'bg-green-500/15 text-green-400'
-    case 'deal': return 'bg-orange-500/15 text-orange-400'
-    case 'award': return 'bg-yellow-500/15 text-yellow-400'
-    default: return 'bg-chip text-fg-mute'
-  }
+function getNotifConfig(type: string) {
+  return NOTIF_CONFIG[type] || { icon: Bell, color: '#6b7280' }
 }
 
 function timeAgo(dateStr: string): string {
@@ -45,7 +35,7 @@ function timeAgo(dateStr: string): string {
   if (hours < 24) return `Hace ${hours}h`
   const days = Math.floor(hours / 24)
   if (days === 1) return 'Ayer'
-  if (days < 7) return `Hace ${days} dias`
+  if (days < 7) return `Hace ${days} días`
   return new Date(dateStr).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
 }
 
@@ -86,78 +76,99 @@ export default function NotificationsPage() {
   const filtered = filter === 'unread' ? notifications.filter(n => !n.is_read) : notifications
 
   return (
-    <div>
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold">Notificaciones</h1>
-          {unread > 0 && (
-            <span className="bg-[#D74709] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{unread}</span>
-          )}
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Centro</p>
+          <h1 className="mt-1.5 flex items-center gap-3 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
+            Notificaciones
+            {unread > 0 && (
+              <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-full bg-ink px-2 text-[12px] font-medium text-on-primary">
+                {unread}
+              </span>
+            )}
+          </h1>
         </div>
         <button
           onClick={markAllRead}
           disabled={unread === 0}
-          className="text-xs text-[#D74709] hover:text-[#c03d07] transition font-medium disabled:opacity-30 flex items-center gap-1"
+          className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink disabled:opacity-40"
         >
-          <Check className="w-3 h-3" /> Marcar leidas
+          <Check className="h-3.5 w-3.5" /> Marcar leídas
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-hair mb-4">
+      <div className="inline-flex gap-1 rounded-lg bg-surface-card p-1">
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${filter === 'all' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-fg-mute'}`}
+          className={`rounded-md px-4 py-1.5 text-[13px] font-medium transition-colors ${
+            filter === 'all' ? 'bg-canvas text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)]' : 'text-muted hover:text-ink'
+          }`}
         >
           Todas
         </button>
         <button
           onClick={() => setFilter('unread')}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${filter === 'unread' ? 'border-[#D74709] text-[#D74709]' : 'border-transparent text-fg-mute'}`}
+          className={`rounded-md px-4 py-1.5 text-[13px] font-medium transition-colors ${
+            filter === 'unread' ? 'bg-canvas text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)]' : 'text-muted hover:text-ink'
+          }`}
         >
-          No leidas ({unread})
+          No leídas {unread > 0 && <span className="ml-1 text-muted">({unread})</span>}
         </button>
       </div>
 
       {/* List */}
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-5 h-5 animate-spin text-fg-mute" />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-5 w-5 animate-spin text-muted" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-fg-mute">
-          <Bell className="w-12 h-12 mb-3 opacity-30" />
-          <p className="text-sm">{filter === 'unread' ? 'No tienes notificaciones sin leer' : 'No tienes notificaciones'}</p>
+        <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
+          <Bell className="mx-auto h-10 w-10 text-muted" />
+          <p className="mt-3 text-[14px] text-body">
+            {filter === 'unread' ? 'No tienes notificaciones sin leer.' : 'No tienes notificaciones.'}
+          </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map(notif => {
-            const Icon = getNotifIcon(notif.type)
-            const iconClass = getNotifColor(notif.type)
-            return (
-              <div
-                key={notif.id}
-                onClick={() => {
-                  if (!notif.is_read) markAsRead(notif.id)
-                  if (notif.link) window.location.href = notif.link
-                }}
-                className={`flex items-start gap-3 p-3 rounded-xl transition cursor-pointer border ${!notif.is_read ? 'bg-ink-800 border-hair' : 'bg-transparent border-transparent'} hover:bg-chip`}
-              >
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${iconClass}`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className={`text-sm font-medium ${notif.is_read ? 'text-fg-dim' : 'text-white'}`}>{notif.title}</p>
-                    {!notif.is_read && <div className="w-2 h-2 rounded-full bg-[#D74709] flex-shrink-0" />}
+        <div className="overflow-hidden rounded-xl border border-hairline bg-canvas">
+          <ul className="divide-y divide-hairline-soft">
+            {filtered.map(notif => {
+              const { icon: Icon, color } = getNotifConfig(notif.type)
+              return (
+                <li
+                  key={notif.id}
+                  onClick={() => {
+                    if (!notif.is_read) markAsRead(notif.id)
+                    if (notif.link) window.location.href = notif.link
+                  }}
+                  className={`flex cursor-pointer items-start gap-4 px-5 py-4 transition-colors hover:bg-surface-soft ${
+                    !notif.is_read ? 'bg-surface-soft/40' : ''
+                  }`}
+                >
+                  <div
+                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg"
+                    style={{ backgroundColor: color }}
+                  >
+                    <Icon className="h-4 w-4 text-white" />
                   </div>
-                  <p className="text-xs text-fg-mute mt-0.5">{notif.message}</p>
-                  <p className="text-[11px] text-fg-mute mt-1">{timeAgo(notif.created_at)}</p>
-                </div>
-              </div>
-            )
-          })}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className={`text-[14px] ${notif.is_read ? 'text-body' : 'font-semibold text-ink'}`}>
+                        {notif.title}
+                      </p>
+                      {!notif.is_read && (
+                        <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-ink" />
+                      )}
+                    </div>
+                    <p className="mt-0.5 text-[13px] text-muted">{notif.message}</p>
+                    <p className="mt-1 text-[11.5px] text-muted">{timeAgo(notif.created_at)}</p>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
         </div>
       )}
     </div>
