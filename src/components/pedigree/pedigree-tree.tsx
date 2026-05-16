@@ -11,9 +11,11 @@ interface PN { id:string;name:string;sex:string;registration:string|null;father_
 interface Props { data:PN[];rootId:string;onClickDog?:(dogId:string)=>void;onClickEmpty?:(parentDogId:string,role:'father'|'mother')=>void }
 
 function countOcc(nId:string|null,nm:Map<string,PN>,mx:number,g:number,c:Map<string,number>){if(!nId||g>mx)return;const n=nm.get(nId);if(!n)return;c.set(nId,(c.get(nId)||0)+1);countOcc(n.father_id,nm,mx,g+1,c);countOcc(n.mother_id,nm,mx,g+1,c)}
-const RC=['','','#3498db','#27ae60','#f39c12','#e74c3c','#9b59b6','#e84393']
+// Repetition badge colors — pastels Cal
+const RC=['','','#3b82f6','#34d399','#f59e0b','#ef4444','#8b5cf6','#ec4899']
 const CW=200,CH=64,PH=56
-const L='var(--pedigree-line, rgba(255,255,255,0.12))'
+// Línea conectora — usa token + fallback Cal (oscuro suave sobre canvas)
+const L='var(--pedigree-line, rgba(17, 17, 17, 0.14))'
 
 export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props){
   const[isNative,setIsNative]=useState(false)
@@ -30,7 +32,12 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
   const coi=useMemo(()=>calculateCOI(rootId,data,10),[rootId,data])
   const coiLvl=getCOILevel(coi),coiTxt=getCOIInterpretation(coi)
   const rc=useMemo(()=>{const c=new Map<string,number>();countOcc(root.father_id,nm,maxGen,1,c);countOcc(root.mother_id,nm,maxGen,1,c);return c},[root,nm,maxGen])
-  const cc:Record<string,{bg:string;text:string}>={green:{bg:'bg-green-500/15',text:'text-green-400'},orange:{bg:'bg-orange-500/15',text:'text-orange-400'},red:{bg:'bg-red-500/15',text:'text-red-400'}}
+  // Niveles COI con pastels Cal sobre tints suaves
+  const cc:Record<string,{bg:string;text:string}>={
+    green:{bg:'bg-[color:var(--success)]/10',text:'text-[color:var(--success)]'},
+    orange:{bg:'bg-[color:var(--warning)]/10',text:'text-[color:var(--warning)]'},
+    red:{bg:'bg-[color:var(--error)]/10',text:'text-[color:var(--error)]'},
+  }
   const toggleIB=()=>{setShowIB(s=>!s);setCoiPanel(p=>!p)}
   const close=()=>{setGenMenu(false);setZoomMenu(false)}
 
@@ -46,22 +53,120 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
       </PedigreeCtx.Provider>
       </div>
       {/* COI Panel — outside transform context */}
-      <div className={`fixed top-[56px] right-0 bottom-0 w-[300px] z-[45] bg-surface-card border-l border-hairline shadow-2xl transition-transform duration-300 flex flex-col ${coiPanel?'translate-x-0':'translate-x-full'}`}>
-        <button onClick={()=>setCoiPanel(!coiPanel)} className="absolute -left-7 top-1/2 -translate-y-1/2 w-7 h-14 bg-surface-card border border-r-0 border-hairline rounded-l-lg flex items-center justify-center text-muted hover:text-ink transition">{coiPanel?<ChevronRight className="w-3.5 h-3.5"/>:<ChevronLeft className="w-3.5 h-3.5"/>}</button>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-hairline"><div className="flex items-center gap-2"><Dna className="w-4 h-4 text-ink"/><h3 className="text-sm font-semibold">Salud Genetica</h3></div><button onClick={()=>setCoiPanel(false)} className="text-muted hover:text-ink"><ChevronRight className="w-4 h-4"/></button></div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <div className="text-center"><p className={`text-4xl font-bold ${cc[coiLvl].text}`}>{coi}%</p><p className="text-xs text-muted mt-1">Coeficiente de Consanguinidad</p></div>
-          <div><div className="h-3 rounded-full overflow-hidden flex"><div className="bg-green-500 flex-1"/><div className="bg-yellow-500 flex-1"/><div className="bg-orange-500 flex-1"/><div className="bg-red-500 flex-1"/></div><div className="relative h-3 -mt-0.5"><div className="absolute w-2.5 h-2.5 bg-white rounded-full border-2 border-gray-900 -translate-x-1 shadow" style={{left:`${Math.min((coi/25)*100,100)}%`}}/></div><div className="flex justify-between text-[9px] text-muted mt-1"><span>0%</span><span>6.25%</span><span>12.5%</span><span>25%+</span></div></div>
-          <div className={`${cc[coiLvl].bg} rounded-lg p-3 flex items-start gap-2`}><CheckCircle className={`w-4 h-4 ${cc[coiLvl].text} mt-0.5 flex-shrink-0`}/><p className={`text-xs ${cc[coiLvl].text}`}>{coiTxt}</p></div>
-          <p className="text-[10px] text-muted text-center">Calculado con 10 generaciones</p>
+      <div className={`fixed top-[56px] right-0 bottom-0 z-[45] flex w-[320px] flex-col border-l border-hairline bg-canvas shadow-[-8px_0_24px_rgba(0,0,0,0.06)] transition-transform duration-300 ${coiPanel?'translate-x-0':'translate-x-full'}`}>
+        <button
+          onClick={()=>setCoiPanel(!coiPanel)}
+          className="absolute -left-7 top-1/2 flex h-14 w-7 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 border-hairline bg-canvas text-muted transition-colors hover:text-ink"
+        >
+          {coiPanel?<ChevronRight className="h-3.5 w-3.5"/>:<ChevronLeft className="h-3.5 w-3.5"/>}
+        </button>
+        <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
+          <div className="flex items-center gap-2">
+            <Dna className="h-4 w-4 text-ink"/>
+            <h3 className="text-[14px] font-semibold text-ink">Salud genética</h3>
+          </div>
+          <button onClick={()=>setCoiPanel(false)} className="text-muted transition-colors hover:text-ink">
+            <ChevronRight className="h-4 w-4"/>
+          </button>
+        </div>
+        <div className="flex-1 space-y-5 overflow-y-auto p-5">
+          <div className="text-center">
+            <p className={`text-[40px] font-semibold tabular-nums tracking-[-0.04em] ${cc[coiLvl].text}`}>{coi}%</p>
+            <p className="mt-1 text-[12px] text-muted">Coeficiente de consanguinidad</p>
+          </div>
+          <div>
+            <div className="flex h-3 overflow-hidden rounded-full">
+              <div className="flex-1" style={{backgroundColor:'#34d399'}}/>
+              <div className="flex-1" style={{backgroundColor:'#fbbf24'}}/>
+              <div className="flex-1" style={{backgroundColor:'#fb923c'}}/>
+              <div className="flex-1" style={{backgroundColor:'#ef4444'}}/>
+            </div>
+            <div className="relative -mt-0.5 h-3">
+              <div className="absolute h-3 w-3 -translate-x-1.5 rounded-full border-2 border-canvas bg-ink shadow-[0_1px_3px_rgba(0,0,0,0.2)]" style={{left:`${Math.min((coi/25)*100,100)}%`}}/>
+            </div>
+            <div className="mt-1.5 flex justify-between text-[9.5px] text-muted">
+              <span>0%</span><span>6.25%</span><span>12.5%</span><span>25%+</span>
+            </div>
+          </div>
+          <div className={`flex items-start gap-2 rounded-lg p-3 ${cc[coiLvl].bg}`}>
+            <CheckCircle className={`mt-0.5 h-4 w-4 flex-shrink-0 ${cc[coiLvl].text}`}/>
+            <p className={`text-[12.5px] leading-[1.5] ${cc[coiLvl].text}`}>{coiTxt}</p>
+          </div>
+          <p className="text-center text-[10.5px] text-muted">Calculado con 10 generaciones.</p>
         </div>
       </div>
       {/* Floating buttons — outside transform context so fixed works */}
-      <div className="fixed z-50 flex items-center gap-1.5 lg:gap-2" style={{left: 'max(16px, calc(var(--sidebar-width, 0px) + 30px))', bottom: isNative ? '106px' : '16px'}} onClick={close}>
-        <div className="relative"><button onClick={e=>{e.stopPropagation();setZoomMenu(!zoomMenu);setGenMenu(false)}} className="w-11 h-11 rounded-full bg-surface-card border border-hairline flex items-center justify-center text-body shadow-lg hover:border-hairline transition"><Search className="w-4 h-4"/></button>{zoomMenu&&<div className="absolute bottom-14 left-0 bg-surface-card border border-hairline rounded-lg shadow-xl overflow-hidden" onClick={e=>e.stopPropagation()}>{[150,130,110,100,90,80,70,60,50].map(z=><button key={z} onClick={()=>{setZoom(z);setZoomMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${zoom===z?'bg-ink text-on-primary':'text-body hover:bg-surface-card'}`}>{z}%</button>)}</div>}</div>
-        <div className="relative"><button onClick={e=>{e.stopPropagation();setGenMenu(!genMenu);setZoomMenu(false)}} className="w-11 h-11 rounded-full bg-surface-card border border-hairline flex items-center justify-center text-body shadow-lg hover:border-hairline font-bold text-xs transition">x{maxGen}</button>{genMenu&&<div className="absolute bottom-14 left-0 bg-surface-card border border-hairline rounded-lg shadow-xl overflow-hidden" onClick={e=>e.stopPropagation()}>{[10,9,8,7,6,5,4,3].map(g=><button key={g} onClick={()=>{setMaxGen(g);setGenMenu(false)}} className={`block w-full px-4 py-1.5 text-xs text-center transition ${maxGen===g?'bg-ink text-on-primary':'text-body hover:bg-surface-card'}`}>x{g}</button>)}</div>}</div>
-        <button onClick={()=>setVert(!vert)} className={`w-11 h-11 rounded-full border flex items-center justify-center shadow-lg transition ${vert?'bg-ink border-ink text-white':'bg-surface-card border-hairline text-body hover:border-hairline'}`}><ArrowLeftRight className="w-4 h-4"/></button>
-        <button onClick={toggleIB} className={`w-11 h-11 rounded-full border flex items-center justify-center shadow-lg transition ${showIB?'bg-ink border-ink text-white':'bg-surface-card border-hairline text-body hover:border-hairline'}`}><GitBranch className="w-4 h-4"/></button>
+      <div
+        className="fixed z-50 flex items-center gap-2"
+        style={{left: 'max(16px, calc(var(--sidebar-width, 0px) + 30px))', bottom: isNative ? '106px' : '16px'}}
+        onClick={close}
+      >
+        <div className="relative">
+          <button
+            onClick={e=>{e.stopPropagation();setZoomMenu(!zoomMenu);setGenMenu(false)}}
+            title="Zoom"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-hairline bg-canvas text-body shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-colors hover:bg-surface-soft hover:text-ink"
+          >
+            <Search className="h-4 w-4"/>
+          </button>
+          {zoomMenu && (
+            <div className="absolute bottom-14 left-0 overflow-hidden rounded-lg border border-hairline bg-canvas shadow-[0_8px_24px_rgba(0,0,0,0.08)]" onClick={e=>e.stopPropagation()}>
+              {[150,130,110,100,90,80,70,60,50].map(z=>(
+                <button
+                  key={z}
+                  onClick={()=>{setZoom(z);setZoomMenu(false)}}
+                  className={`block w-full px-4 py-1.5 text-center text-[12px] font-medium transition-colors ${zoom===z?'bg-ink text-on-primary':'text-body hover:bg-surface-soft hover:text-ink'}`}
+                >
+                  {z}%
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="relative">
+          <button
+            onClick={e=>{e.stopPropagation();setGenMenu(!genMenu);setZoomMenu(false)}}
+            title="Generaciones"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-hairline bg-canvas text-[12px] font-semibold text-body shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-colors hover:bg-surface-soft hover:text-ink"
+          >
+            ×{maxGen}
+          </button>
+          {genMenu && (
+            <div className="absolute bottom-14 left-0 overflow-hidden rounded-lg border border-hairline bg-canvas shadow-[0_8px_24px_rgba(0,0,0,0.08)]" onClick={e=>e.stopPropagation()}>
+              {[10,9,8,7,6,5,4,3].map(g=>(
+                <button
+                  key={g}
+                  onClick={()=>{setMaxGen(g);setGenMenu(false)}}
+                  className={`block w-full px-4 py-1.5 text-center text-[12px] font-medium transition-colors ${maxGen===g?'bg-ink text-on-primary':'text-body hover:bg-surface-soft hover:text-ink'}`}
+                >
+                  ×{g}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <button
+          onClick={()=>setVert(!vert)}
+          title={vert?'Horizontal':'Vertical'}
+          className={`flex h-11 w-11 items-center justify-center rounded-full border shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-colors ${
+            vert
+              ? 'border-ink bg-ink text-on-primary'
+              : 'border-hairline bg-canvas text-body hover:bg-surface-soft hover:text-ink'
+          }`}
+        >
+          <ArrowLeftRight className="h-4 w-4"/>
+        </button>
+        <button
+          onClick={toggleIB}
+          title="Salud genética"
+          className={`flex h-11 w-11 items-center justify-center rounded-full border shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-colors ${
+            showIB
+              ? 'border-ink bg-ink text-on-primary'
+              : 'border-hairline bg-canvas text-body hover:bg-surface-soft hover:text-ink'
+          }`}
+        >
+          <GitBranch className="h-4 w-4"/>
+        </button>
       </div>
     </>
   )
@@ -69,18 +174,35 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
 
 function Card({n,isRoot,si,rc}:{n:PN;isRoot?:boolean;si:boolean;rc:Map<string,number>}){
   const{onClickDog}=useContext(PedigreeCtx)
-  const sc=n.sex==='male'?'#017DFA':'#e84393',reps=rc.get(n.id)||0,repC=reps>=2?(RC[Math.min(reps,RC.length-1)]||'#e74c3c'):''
-  const cls=`flex items-stretch bg-surface-card border ${isRoot?'border-ink':'border-hairline'} rounded-xl overflow-hidden hover:bg-surface-card transition relative cursor-pointer`
+  const sc=n.sex==='male'?'#017DFA':'#e84393'
+  const reps=rc.get(n.id)||0
+  const repC=reps>=2?(RC[Math.min(reps,RC.length-1)]||'#ef4444'):''
+  const cls=`group flex items-stretch overflow-hidden rounded-xl border bg-canvas transition-colors hover:bg-surface-soft cursor-pointer relative ${isRoot?'border-ink shadow-[0_0_0_1px_rgba(17,17,17,0.04)]':'border-hairline'}`
   const inner=<>
-    <div className="flex-shrink-0 bg-surface-card relative" style={{width:PH}}>
-      {n.photo_url?<img src={n.photo_url} alt="" className="w-full h-full object-cover"/>:<div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-5 h-5 opacity-20"/></div>}
-      <div className="absolute top-0 right-0 bottom-0 w-[3px]" style={{backgroundColor:sc}}/>
+    <div className="relative flex-shrink-0 bg-surface-card" style={{width:PH}}>
+      {n.photo_url
+        ? <img src={n.photo_url} alt="" className="h-full w-full object-cover"/>
+        : <div className="flex h-full w-full items-center justify-center"><img src="/icon.svg" alt="" className="h-5 w-5 opacity-20"/></div>
+      }
+      <div className="absolute right-0 top-0 bottom-0 w-[3px]" style={{backgroundColor:sc}}/>
     </div>
-    <div className="flex-1 min-w-0 px-2.5 py-1.5 flex flex-col justify-center overflow-hidden">
-      <p className="text-[12px] font-bold text-white leading-tight whitespace-nowrap" style={{maskImage:'linear-gradient(to right,black 80%,transparent)',WebkitMaskImage:'linear-gradient(to right,black 80%,transparent)'}}>{n.name}</p>
-      {n.breed_name&&<p className="text-[10px] text-muted truncate mt-0.5">{n.breed_name}</p>}
+    <div className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden px-2.5 py-1.5">
+      <p
+        className="whitespace-nowrap text-[12px] font-semibold leading-tight text-ink"
+        style={{maskImage:'linear-gradient(to right,black 80%,transparent)',WebkitMaskImage:'linear-gradient(to right,black 80%,transparent)'}}
+      >
+        {n.name}
+      </p>
+      {n.breed_name && <p className="mt-0.5 truncate text-[10.5px] text-muted">{n.breed_name}</p>}
     </div>
-    {si&&reps>=2&&<span className="absolute bottom-1 right-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{backgroundColor:repC}}>{reps}x</span>}
+    {si && reps>=2 && (
+      <span
+        className="absolute bottom-1 right-1.5 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold text-white"
+        style={{backgroundColor:repC}}
+      >
+        {reps}×
+      </span>
+    )}
   </>
   return onClickDog
     ? <div onClick={()=>onClickDog(n.id)} className={cls} style={{width:CW,height:CH,flexShrink:0}}>{inner}</div>
@@ -192,11 +314,20 @@ function VN({n,nm,g,mx,isRoot,si,rc}:{n:PN;nm:Map<string,PN>;g:number;mx:number;
 
 function Empty({sex,parentDogId}:{sex:string;parentDogId?:string}){
   const{onClickEmpty}=useContext(PedigreeCtx)
-  const bc=sex==='female'?'border-pink-400/30':'border-blue-400/30'
   const role=sex==='male'?'father' as const:'mother' as const
   const clickable=!!onClickEmpty&&!!parentDogId
-  return<div onClick={clickable?()=>onClickEmpty(parentDogId!,role):undefined}
-    className={`border-2 border-dashed ${bc} flex items-center justify-center text-muted rounded-xl ${clickable?'cursor-pointer hover:bg-surface-card hover:border-hairline transition':''}`} style={{width:CW,height:CH}}>
-    {clickable?<Plus className="w-4 h-4 text-muted"/>:<span className="text-xs">?</span>}
-  </div>
+  // Tint sutil según sexo, no chillón
+  const tint=sex==='female'?'#f9a8d4':'#93c5fd'
+  return (
+    <div
+      onClick={clickable?()=>onClickEmpty(parentDogId!,role):undefined}
+      className={`flex items-center justify-center rounded-xl border-2 border-dashed bg-surface-soft text-muted transition-colors ${clickable?'cursor-pointer hover:bg-surface-card hover:text-ink':''}`}
+      style={{width:CW,height:CH,borderColor:tint+'66'}}
+    >
+      {clickable
+        ? <Plus className="h-4 w-4"/>
+        : <span className="text-[11px] font-medium">{sex==='male'?'♂':'♀'} desconocido</span>
+      }
+    </div>
+  )
 }
