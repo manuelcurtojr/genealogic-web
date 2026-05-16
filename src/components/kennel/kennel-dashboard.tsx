@@ -293,7 +293,7 @@ function KennelDogCard({ dog, userId, onToggle, onTransfer, onSale }: {
     <div className="group overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft">
       <Link href={`/dogs/${dog.slug || dog.id}`} className="relative block aspect-[4/3] overflow-hidden bg-surface-card">
         {dog.thumbnail_url
-          ? <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          ? <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover" />
           : <div className="flex h-full w-full items-center justify-center"><Dog className="h-12 w-12 text-muted" /></div>
         }
         {dog.breed?.name && (

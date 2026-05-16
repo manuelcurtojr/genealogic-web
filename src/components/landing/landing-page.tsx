@@ -66,7 +66,7 @@ export default function LandingPage({ breeds, featuredDogs }: Props) {
                 <Link
                   key={dog.id}
                   href={`/dogs/${dog.slug || dog.id}`}
-                  className="block h-10 w-10 overflow-hidden rounded-md border border-hairline bg-surface-card transition hover:border-ink/30 hover:scale-105"
+                  className="block h-10 w-10 overflow-hidden rounded-md border border-hairline bg-surface-card transition hover:border-ink/30"
                   title={dog.name}
                 >
                   {dog.thumbnail_url && (

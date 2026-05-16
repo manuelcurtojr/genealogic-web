@@ -188,7 +188,7 @@ function DogsSearch() {
                     width={0}
                     height={0}
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    className="absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-105"
+                    className="absolute inset-0 h-full w-full"
                   />
                   {breedName && (
                     <span className="absolute right-2 top-2 z-10 rounded-full bg-canvas px-2 py-0.5 text-[10.5px] font-medium text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)]">

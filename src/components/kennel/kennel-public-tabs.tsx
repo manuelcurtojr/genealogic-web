@@ -203,7 +203,7 @@ function SaleDogCard({ dog, currencySymbol }: { dog: any; currencySymbol: Record
       </span>
       <div className="relative aspect-square overflow-hidden bg-surface-card">
         {dog.thumbnail_url
-          ? <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          ? <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover" />
           : <div className="flex h-full w-full items-center justify-center"><Dog className="h-10 w-10 text-muted" /></div>
         }
         {dog.breed?.name && (
@@ -239,7 +239,7 @@ function PublicDogCard({ dog }: { dog: any }) {
     >
       <div className="relative aspect-square overflow-hidden bg-surface-card">
         {dog.thumbnail_url
-          ? <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          ? <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover" />
           : <div className="flex h-full w-full items-center justify-center"><Dog className="h-10 w-10 text-muted" /></div>
         }
         {dog.breed?.name && (
