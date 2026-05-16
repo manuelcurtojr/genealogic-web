@@ -296,7 +296,7 @@ export default function CalendarPage() {
                 >
                   <span className={`
                     w-10 h-10 flex items-center justify-center rounded-full text-[15px] font-medium transition
-                    ${selected ? 'bg-ink text-on-primary' : todayDay ? 'text-ink font-bold' : 'text-white/80'}
+                    ${selected ? 'bg-ink text-on-primary' : todayDay ? 'text-ink font-bold' : 'text-muted'}
                   `}>
                     {day.getDate()}
                   </span>

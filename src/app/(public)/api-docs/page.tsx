@@ -36,7 +36,7 @@ export default function ApiDocsPage() {
           <ol className="space-y-3 text-[15px] leading-[1.6] text-body">
             <Step n={1}>
               Genera una API key en{' '}
-              <Link href="/kennel/api" className="text-ink underline decoration-fg-mute underline-offset-4 hover:decoration-fg">
+              <Link href="/kennel/api" className="text-ink underline decoration-hairline underline-offset-4 hover:decoration-ink">
                 Mi Criadero → API
               </Link>
               .

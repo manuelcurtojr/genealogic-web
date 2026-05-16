@@ -18,14 +18,15 @@ interface ActivityItem {
 
 const PAGE_SIZE = 50
 
-const ACTION_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
-  dog_created: { icon: Dog, color: 'text-green-400 bg-green-500/10', label: 'Perro creado' },
-  dog_imported: { icon: Link2, color: 'text-ink bg-surface-card', label: 'Pedigri importado' },
-  kennel_created: { icon: Store, color: 'text-purple-400 bg-purple-500/10', label: 'Criadero creado' },
-  litter_created: { icon: Baby, color: 'text-pink-400 bg-pink-500/10', label: 'Camada creada' },
-  vet_added: { icon: Stethoscope, color: 'text-cyan-400 bg-cyan-500/10', label: 'Registro veterinario' },
-  award_added: { icon: Trophy, color: 'text-yellow-400 bg-yellow-500/10', label: 'Premio añadido' },
-  user_registered: { icon: UserPlus, color: 'text-green-400 bg-green-500/10', label: 'Usuario registrado' },
+// Pastels Cal solid — icon en blanco sobre pastel sólido
+const ACTION_CONFIG: Record<string, { icon: any; color: string; bg: string; label: string }> = {
+  dog_created: { icon: Dog, color: 'text-white', bg: '#34d399', label: 'Perro creado' },
+  dog_imported: { icon: Link2, color: 'text-white', bg: '#3b82f6', label: 'Pedigrí importado' },
+  kennel_created: { icon: Store, color: 'text-white', bg: '#8b5cf6', label: 'Criadero creado' },
+  litter_created: { icon: Baby, color: 'text-white', bg: '#ec4899', label: 'Camada creada' },
+  vet_added: { icon: Stethoscope, color: 'text-white', bg: '#06b6d4', label: 'Registro veterinario' },
+  award_added: { icon: Trophy, color: 'text-white', bg: '#f59e0b', label: 'Premio añadido' },
+  user_registered: { icon: UserPlus, color: 'text-white', bg: '#fb923c', label: 'Usuario registrado' },
 }
 
 export default function AdminActivityClient() {
@@ -130,20 +131,31 @@ export default function AdminActivityClient() {
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="mb-4">
-        <h1 className="text-xl font-bold">Actividad</h1>
-        <p className="text-xs text-muted">Historial de acciones en la plataforma</p>
+    <div className="space-y-6 sm:space-y-8">
+      <div>
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Plataforma</p>
+        <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
+          Actividad
+        </h1>
+        <p className="mt-2 text-[14px] text-body">Historial de acciones en la plataforma.</p>
       </div>
 
-      <div className="flex items-center gap-2 mb-4 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-          <input value={search} onChange={e => { setSearch(e.target.value); setPage(0) }} onKeyDown={e => e.key === 'Enter' && fetchActivity()} placeholder="Buscar por nombre..."
-            className="w-full bg-surface-card border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative min-w-[200px] flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+          <input
+            value={search}
+            onChange={e => { setSearch(e.target.value); setPage(0) }}
+            onKeyDown={e => e.key === 'Enter' && fetchActivity()}
+            placeholder="Buscar por nombre..."
+            className="w-full rounded-lg border border-hairline bg-canvas py-2.5 pl-10 pr-4 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
+          />
         </div>
-        <select value={typeFilter} onChange={e => { setTypeFilter(e.target.value); setPage(0) }}
-          className="bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none appearance-none cursor-pointer min-w-[180px]">
+        <select
+          value={typeFilter}
+          onChange={e => { setTypeFilter(e.target.value); setPage(0) }}
+          className="min-w-[180px] cursor-pointer appearance-none rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-[13px] text-body focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
+        >
           <option value="">Todas las acciones</option>
           <option value="dog_created">Perros creados</option>
           <option value="dog_imported">Importaciones</option>
@@ -153,47 +165,73 @@ export default function AdminActivityClient() {
           <option value="award_added">Premios</option>
           <option value="user_registered">Usuarios registrados</option>
         </select>
-        <button onClick={() => fetchActivity()} className="px-4 py-2.5 rounded-lg text-sm bg-surface-card text-body hover:bg-surface-card transition">Actualizar</button>
+        <button
+          onClick={() => fetchActivity()}
+          className="rounded-lg border border-hairline bg-canvas px-4 py-2.5 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
+        >
+          Actualizar
+        </button>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-muted" /></div>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted" />
+        </div>
       ) : (
         <>
-          <div className="space-y-1">
-            {items.map(item => {
-              const config = ACTION_CONFIG[item.type] || { icon: Edit, color: 'text-muted bg-surface-card', label: item.type }
-              const Icon = config.icon
-              const date = new Date(item.timestamp)
-              const formatted = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+          <div className="overflow-hidden rounded-xl border border-hairline bg-canvas">
+            <ul className="divide-y divide-hairline-soft">
+              {items.map(item => {
+                const config = ACTION_CONFIG[item.type] || { icon: Edit, color: 'text-white', bg: '#6b7280', label: item.type }
+                const Icon = config.icon
+                const date = new Date(item.timestamp)
+                const formatted = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
-              return (
-                <div key={item.id} className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-surface-card transition">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${config.color}`}>
-                    <Icon className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm truncate">
-                      <span className="font-medium">{item.userName || 'Sistema'}</span>
-                      <span className="text-muted"> — </span>
-                      <span className="text-body">{config.label}: </span>
-                      <span className="text-white/80">{item.entityName}</span>
-                    </p>
-                    {item.details && <p className="text-[10px] text-muted truncate">{item.details}</p>}
-                  </div>
-                  <span className="text-[10px] text-muted flex-shrink-0 whitespace-nowrap">{formatted}</span>
-                </div>
-              )
-            })}
+                return (
+                  <li key={item.id} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-surface-soft">
+                    <div
+                      className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${config.color}`}
+                      style={{ backgroundColor: config.bg }}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[14px]">
+                        <span className="font-medium text-ink">{item.userName || 'Sistema'}</span>
+                        <span className="text-muted"> · </span>
+                        <span className="text-body">{config.label}:</span>{' '}
+                        <span className="text-ink">{item.entityName}</span>
+                      </p>
+                      {item.details && <p className="truncate text-[11.5px] text-muted">{item.details}</p>}
+                    </div>
+                    <span className="flex-shrink-0 whitespace-nowrap text-[11.5px] tabular-nums text-muted">{formatted}</span>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <p className="text-xs text-muted">{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} de {total}</p>
+            <div className="flex items-center justify-between">
+              <p className="text-[12.5px] text-muted">
+                {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} de {total}
+              </p>
               <div className="flex items-center gap-1">
-                <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} className="p-2 rounded-lg text-muted hover:text-ink hover:bg-surface-card disabled:opacity-20 transition"><ChevronLeft className="w-4 h-4" /></button>
-                <span className="text-xs text-muted px-2">{page + 1} / {totalPages}</span>
-                <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="p-2 rounded-lg text-muted hover:text-ink hover:bg-surface-card disabled:opacity-20 transition"><ChevronRight className="w-4 h-4" /></button>
+                <button
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-soft hover:text-ink disabled:opacity-30"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <span className="px-2 text-[12.5px] text-muted tabular-nums">{page + 1} / {totalPages}</span>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-soft hover:text-ink disabled:opacity-30"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
               </div>
             </div>
           )}

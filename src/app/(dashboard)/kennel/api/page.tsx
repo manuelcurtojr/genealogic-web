@@ -157,7 +157,7 @@ export default function KennelApiKeysPage() {
             onChange={e => setNewKeyName(e.target.value)}
             placeholder="Ej: Pawdoq producción"
             required autoFocus
-            className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none transition mb-3"
+            className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none transition mb-3"
           />
           <div className="flex items-center gap-2">
             <button type="submit" disabled={creating || !newKeyName.trim()}

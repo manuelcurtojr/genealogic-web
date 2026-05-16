@@ -24,50 +24,70 @@ export default async function AdminDashboard() {
     { label: 'Recordatorios vet.', value: vetRes.count || 0, icon: Stethoscope, color: '#6366f1' },
   ]
 
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-1">Panel de administración</h1>
-      <p className="text-muted text-sm mb-6">Vista general de la plataforma Genealogic</p>
+  const roleConfig: Record<string, { label: string; cls: string }> = {
+    admin: { label: 'admin', cls: 'bg-[color:var(--error)]/10 text-[color:var(--error)]' },
+    breeder: { label: 'breeder', cls: 'bg-surface-card text-ink' },
+    owner: { label: 'owner', cls: 'bg-surface-card text-muted' },
+  }
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+  return (
+    <div className="space-y-6 sm:space-y-8">
+      <div>
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Plataforma</p>
+        <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
+          Panel de administración
+        </h1>
+        <p className="mt-2 text-[14px] text-body">Vista general de Genealogic.</p>
+      </div>
+
+      {/* Stats */}
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         {stats.map(s => (
-          <div key={s.label} className="bg-surface-card border border-hairline rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: s.color + '15' }}>
-              <s.icon className="w-5 h-5" style={{ color: s.color }} />
+          <div key={s.label} className="rounded-xl border border-hairline bg-canvas p-5">
+            <div className="flex items-center gap-2">
+              <s.icon className="h-4 w-4" style={{ color: s.color }} />
+              <span className="text-[12px] font-medium text-muted">{s.label}</span>
             </div>
-            <div>
-              <p className="text-xl font-bold">{s.value.toLocaleString('es-ES')}</p>
-              <p className="text-[10px] text-muted">{s.label}</p>
-            </div>
+            <p className="mt-3 text-[28px] font-semibold tabular-nums tracking-[-0.04em] text-ink leading-none">
+              {s.value.toLocaleString('es-ES')}
+            </p>
           </div>
         ))}
-      </div>
+      </section>
 
       {/* Recent users */}
-      <div className="bg-surface-card border border-hairline rounded-xl p-5">
-        <h2 className="text-sm font-semibold mb-4">Últimos usuarios registrados</h2>
-        <div className="space-y-2">
-          {(recentUsersRes.data || []).map((u: any) => (
-            <div key={u.id} className="flex items-center gap-3 bg-surface-card rounded-lg p-3">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                style={{ backgroundColor: pastelByName(u.display_name || u.email) }}
-              >
-                {(u.display_name || u.email || '?')[0].toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{u.display_name || 'Sin nombre'}</p>
-                <p className="text-[10px] text-muted truncate">{u.email}</p>
-              </div>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                u.role === 'admin' ? 'bg-red-500/15 text-red-400' : u.role === 'breeder' ? 'bg-surface-card text-ink' : 'bg-surface-card text-muted'
-              }`}>{u.role}</span>
-              <span className="text-[10px] text-muted">{new Date(u.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}</span>
-            </div>
-          ))}
+      <section>
+        <h2 className="mb-4 text-[22px] font-semibold tracking-[-0.04em] text-ink">
+          Últimos usuarios registrados
+        </h2>
+        <div className="overflow-hidden rounded-xl border border-hairline bg-canvas">
+          <ul className="divide-y divide-hairline-soft">
+            {(recentUsersRes.data || []).map((u: any) => {
+              const rc = roleConfig[u.role] || roleConfig.owner
+              return (
+                <li key={u.id} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-surface-soft">
+                  <div
+                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-[13px] font-semibold text-white"
+                    style={{ backgroundColor: pastelByName(u.display_name || u.email) }}
+                  >
+                    {(u.display_name || u.email || '?')[0].toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[14px] font-medium text-ink">{u.display_name || 'Sin nombre'}</p>
+                    <p className="truncate text-[12px] text-muted">{u.email}</p>
+                  </div>
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${rc.cls}`}>
+                    {rc.label}
+                  </span>
+                  <span className="hidden text-[11.5px] tabular-nums text-muted sm:inline">
+                    {new Date(u.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

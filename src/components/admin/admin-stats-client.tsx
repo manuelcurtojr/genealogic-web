@@ -25,12 +25,17 @@ export default function AdminStatsClient({
   topBreeds, topCountries, litterStatus, totals,
 }: Props) {
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-1">Estadísticas</h1>
-      <p className="text-muted text-sm mb-6">Métricas y análisis de la plataforma</p>
+    <div className="space-y-6 sm:space-y-8">
+      <div>
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Plataforma</p>
+        <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
+          Estadísticas
+        </h1>
+        <p className="mt-2 text-[14px] text-body">Métricas y análisis de la plataforma.</p>
+      </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         {[
           { icon: Users, label: 'Usuarios', value: totals.users, color: '#fb923c' },
           { icon: Dog, label: 'Perros', value: totals.dogs, color: '#3b82f6' },
@@ -39,28 +44,28 @@ export default function AdminStatsClient({
           { icon: Eye, label: 'Perros públicos', value: totals.dogsPublic, color: '#06b6d4' },
           { icon: Tag, label: 'En venta', value: totals.dogsForSale, color: '#ec4899' },
         ].map(s => (
-          <div key={s.label} className="bg-surface-card border border-hairline rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: s.color + '15' }}>
-              <s.icon className="w-5 h-5" style={{ color: s.color }} />
+          <div key={s.label} className="rounded-xl border border-hairline bg-canvas p-5">
+            <div className="flex items-center gap-2">
+              <s.icon className="h-4 w-4" style={{ color: s.color }} />
+              <span className="text-[12px] font-medium text-muted">{s.label}</span>
             </div>
-            <div>
-              <p className="text-lg font-bold">{typeof s.value === 'number' ? s.value.toLocaleString('es-ES') : s.value}</p>
-              <p className="text-[10px] text-muted">{s.label}</p>
-            </div>
+            <p className="mt-3 text-[28px] font-semibold tabular-nums tracking-[-0.04em] text-ink leading-none">
+              {typeof s.value === 'number' ? s.value.toLocaleString('es-ES') : s.value}
+            </p>
           </div>
         ))}
-      </div>
+      </section>
 
       {/* Row 1: Growth charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartCard title="Registro de usuarios">
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={usersByMonth}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="month" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
-              <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
-              <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
-              <Bar dataKey="count" fill="#111111" radius={[4, 4, 0, 0]} name="Usuarios" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 10 }} />
+              <YAxis tick={{ fill: '#6b7280', fontSize: 10 }} />
+              <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 12 }} />
+              <Bar dataKey="count" fill="#fb923c" radius={[4, 4, 0, 0]} name="Usuarios" />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -68,25 +73,25 @@ export default function AdminStatsClient({
         <ChartCard title="Perros registrados">
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={dogsByMonth}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="month" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
-              <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
-              <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
-              <Bar dataKey="count" fill="#3B82F6" radius={[4, 4, 0, 0]} name="Perros" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 10 }} />
+              <YAxis tick={{ fill: '#6b7280', fontSize: 10 }} />
+              <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 12 }} />
+              <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Perros" />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
       </div>
 
       {/* Row 2: Distributions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <ChartCard title="Usuarios por rol">
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie data={roleDistribution} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
                 {roleDistribution.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
-              <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
+              <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 12 }} />
             </PieChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -97,7 +102,7 @@ export default function AdminStatsClient({
               <Pie data={sexDistribution} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
                 {sexDistribution.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
-              <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
+              <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 12 }} />
             </PieChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -108,21 +113,21 @@ export default function AdminStatsClient({
               <Pie data={litterStatus} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
                 {litterStatus.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
-              <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
+              <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 12 }} />
             </PieChart>
           </ResponsiveContainer>
         </ChartCard>
       </div>
 
       {/* Row 3: Top breeds + Countries */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ChartCard title="Top 10 razas">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={topBreeds} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
-              <YAxis dataKey="name" type="category" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} width={120} />
-              <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis type="number" tick={{ fill: '#6b7280', fontSize: 10 }} />
+              <YAxis dataKey="name" type="category" tick={{ fill: '#6b7280', fontSize: 10 }} width={120} />
+              <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 12 }} />
               <Bar dataKey="value" name="Perros" radius={[0, 4, 4, 0]}>
                 {topBreeds.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
               </Bar>
@@ -133,10 +138,10 @@ export default function AdminStatsClient({
         <ChartCard title="Usuarios por país">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={topCountries} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
-              <YAxis dataKey="name" type="category" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} width={80} />
-              <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis type="number" tick={{ fill: '#6b7280', fontSize: 10 }} />
+              <YAxis dataKey="name" type="category" tick={{ fill: '#6b7280', fontSize: 10 }} width={80} />
+              <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 12 }} />
               <Bar dataKey="value" name="Usuarios" radius={[0, 4, 4, 0]}>
                 {topCountries.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
               </Bar>
@@ -150,8 +155,8 @@ export default function AdminStatsClient({
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-surface-card border border-hairline rounded-xl p-5">
-      <h3 className="text-sm font-semibold mb-4">{title}</h3>
+    <div className="rounded-xl border border-hairline bg-canvas p-5">
+      <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-ink mb-4">{title}</h3>
       {children}
     </div>
   )

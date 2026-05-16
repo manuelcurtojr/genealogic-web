@@ -56,7 +56,7 @@ export default function LoginPage() {
           Accede a tu cuenta para gestionar tus perros, criadero y camadas.
         </p>
 
-        <div className="mt-10 rounded-card border border-hairline bg-surface-card p-6 sm:p-8">
+        <div className="mt-10 rounded-card border border-hairline bg-canvas p-6 sm:p-8 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
           <form onSubmit={handleLogin} className="space-y-5">
             {error && (
               <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
@@ -76,7 +76,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
                   required
-                  className="w-full rounded-lg border border-hairline bg-surface-card py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-fg-dim focus:outline-none transition"
+                  className="w-full rounded-lg border border-hairline bg-canvas py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-ink focus:ring-1 focus:ring-ink focus:outline-none transition"
                 />
               </div>
             </div>
@@ -98,7 +98,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Tu contraseña"
                   required
-                  className="w-full rounded-lg border border-hairline bg-surface-card py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-fg-dim focus:outline-none transition"
+                  className="w-full rounded-lg border border-hairline bg-canvas py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-ink focus:ring-1 focus:ring-ink focus:outline-none transition"
                 />
               </div>
             </div>
@@ -116,7 +116,7 @@ export default function LoginPage() {
 
         <p className="mt-8 text-center text-sm text-body">
           ¿No tienes cuenta?{' '}
-          <Link href="/register" className="text-ink underline decoration-fg-mute underline-offset-4 transition hover:decoration-fg">
+          <Link href="/register" className="text-ink underline decoration-hairline underline-offset-4 transition hover:decoration-ink">
             Regístrate
           </Link>
         </p>

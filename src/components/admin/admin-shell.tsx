@@ -47,7 +47,7 @@ export default function AdminShell({ user, children }: Props) {
   const mainMargin = collapsed ? 'lg:ml-[68px]' : 'lg:ml-60'
 
   return (
-    <div className="min-h-screen bg-canvas text-white flex">
+    <div className="min-h-screen bg-canvas text-ink flex">
       {/* Mobile backdrop */}
       {mobileOpen && <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setMobileOpen(false)} />}
 

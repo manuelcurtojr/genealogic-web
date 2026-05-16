@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
         </h1>
 
         {sent ? (
-          <div className="mt-10 rounded-card border border-hairline bg-surface-card p-6 sm:p-8 text-center">
+          <div className="mt-10 rounded-card border border-hairline bg-canvas p-6 sm:p-8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] text-center">
             <CheckCircle2 className="mx-auto mb-4 h-10 w-10 text-emerald-400" />
             <p className="text-base font-medium text-ink">Email enviado</p>
             <p className="mt-2 text-sm text-body">
@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
             </p>
             <Link
               href="/login"
-              className="mt-6 inline-block text-sm text-ink underline decoration-fg-mute underline-offset-4 hover:decoration-fg"
+              className="mt-6 inline-block text-sm text-ink underline decoration-hairline underline-offset-4 hover:decoration-ink"
             >
               Volver al login
             </Link>
@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
               Introduce tu email y te enviaremos un enlace para restablecer tu contraseña.
             </p>
 
-            <div className="mt-10 rounded-card border border-hairline bg-surface-card p-6 sm:p-8">
+            <div className="mt-10 rounded-card border border-hairline bg-canvas p-6 sm:p-8 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
               <form onSubmit={handleSubmit} className="space-y-5">
                 {error && (
                   <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
@@ -92,7 +92,7 @@ export default function ForgotPasswordPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="tu@email.com"
                       required
-                      className="w-full rounded-lg border border-hairline bg-surface-card py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-fg-dim focus:outline-none transition"
+                      className="w-full rounded-lg border border-hairline bg-canvas py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-ink focus:ring-1 focus:ring-ink focus:outline-none transition"
                     />
                   </div>
                 </div>
@@ -110,7 +110,7 @@ export default function ForgotPasswordPage() {
 
             <p className="mt-8 text-center text-sm text-body">
               ¿Recordaste tu contraseña?{' '}
-              <Link href="/login" className="text-ink underline decoration-fg-mute underline-offset-4 hover:decoration-fg">
+              <Link href="/login" className="text-ink underline decoration-hairline underline-offset-4 hover:decoration-ink">
                 Inicia sesión
               </Link>
             </p>

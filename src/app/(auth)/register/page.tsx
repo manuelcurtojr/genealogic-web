@@ -60,7 +60,7 @@ export default function RegisterPage() {
           Sube tus perros, conecta su genealogía y deja que el mundo encuentre lo que crías.
         </p>
 
-        <div className="mt-10 rounded-card border border-hairline bg-surface-card p-6 sm:p-8">
+        <div className="mt-10 rounded-card border border-hairline bg-canvas p-6 sm:p-8 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
           <form onSubmit={handleRegister} className="space-y-5">
             {error && (
               <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
@@ -80,7 +80,7 @@ export default function RegisterPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Tu nombre"
                   required
-                  className="w-full rounded-lg border border-hairline bg-surface-card py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-fg-dim focus:outline-none transition"
+                  className="w-full rounded-lg border border-hairline bg-canvas py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-ink focus:ring-1 focus:ring-ink focus:outline-none transition"
                 />
               </div>
             </div>
@@ -97,7 +97,7 @@ export default function RegisterPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
                   required
-                  className="w-full rounded-lg border border-hairline bg-surface-card py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-fg-dim focus:outline-none transition"
+                  className="w-full rounded-lg border border-hairline bg-canvas py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-ink focus:ring-1 focus:ring-ink focus:outline-none transition"
                 />
               </div>
             </div>
@@ -115,7 +115,7 @@ export default function RegisterPage() {
                   placeholder="Mínimo 6 caracteres"
                   required
                   minLength={6}
-                  className="w-full rounded-lg border border-hairline bg-surface-card py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-fg-dim focus:outline-none transition"
+                  className="w-full rounded-lg border border-hairline bg-canvas py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-ink focus:ring-1 focus:ring-ink focus:outline-none transition"
                 />
               </div>
             </div>
@@ -129,11 +129,11 @@ export default function RegisterPage() {
               />
               <span className="text-xs leading-relaxed text-body">
                 Acepto los{' '}
-                <a href="/terms" target="_blank" className="text-ink underline decoration-fg-mute underline-offset-4 hover:decoration-fg">
+                <a href="/terms" target="_blank" className="text-ink underline decoration-hairline underline-offset-4 hover:decoration-ink">
                   Términos
                 </a>{' '}
                 y la{' '}
-                <a href="/privacy" target="_blank" className="text-ink underline decoration-fg-mute underline-offset-4 hover:decoration-fg">
+                <a href="/privacy" target="_blank" className="text-ink underline decoration-hairline underline-offset-4 hover:decoration-ink">
                   Política de Privacidad
                 </a>
               </span>
@@ -152,7 +152,7 @@ export default function RegisterPage() {
 
         <p className="mt-8 text-center text-sm text-body">
           ¿Ya tienes cuenta?{' '}
-          <Link href="/login" className="text-ink underline decoration-fg-mute underline-offset-4 transition hover:decoration-fg">
+          <Link href="/login" className="text-ink underline decoration-hairline underline-offset-4 transition hover:decoration-ink">
             Inicia sesión
           </Link>
         </p>

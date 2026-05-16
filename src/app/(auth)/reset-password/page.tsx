@@ -74,7 +74,7 @@ export default function ResetPasswordPage() {
           <span className="italic font-light">tu contraseña.</span>
         </h1>
 
-        <div className="mt-10 rounded-card border border-hairline bg-surface-card p-6 sm:p-8">
+        <div className="mt-10 rounded-card border border-hairline bg-canvas p-6 sm:p-8 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
           {checking ? (
             <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted">
               <Loader2 className="h-4 w-4 animate-spin" /> Verificando enlace…
@@ -85,7 +85,7 @@ export default function ResetPasswordPage() {
               <p className="mt-2 text-sm text-body">Solicita un nuevo enlace de recuperación.</p>
               <Link
                 href="/forgot-password"
-                className="mt-5 inline-block text-sm text-ink underline decoration-fg-mute underline-offset-4 hover:decoration-fg"
+                className="mt-5 inline-block text-sm text-ink underline decoration-hairline underline-offset-4 hover:decoration-ink"
               >
                 Recuperar contraseña
               </Link>
@@ -117,7 +117,7 @@ export default function ResetPasswordPage() {
                     placeholder="Mínimo 6 caracteres"
                     required
                     minLength={6}
-                    className="w-full rounded-lg border border-hairline bg-surface-card py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-fg-dim focus:outline-none transition"
+                    className="w-full rounded-lg border border-hairline bg-canvas py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-ink focus:ring-1 focus:ring-ink focus:outline-none transition"
                   />
                 </div>
               </div>
@@ -135,7 +135,7 @@ export default function ResetPasswordPage() {
                     placeholder="Repite tu contraseña"
                     required
                     minLength={6}
-                    className="w-full rounded-lg border border-hairline bg-surface-card py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-fg-dim focus:outline-none transition"
+                    className="w-full rounded-lg border border-hairline bg-canvas py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-ink focus:ring-1 focus:ring-ink focus:outline-none transition"
                   />
                 </div>
               </div>
