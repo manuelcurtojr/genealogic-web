@@ -201,9 +201,13 @@ body {
 }
 
 /* Hide scrollbars */
-.scrollbar-hide,
+/* Hide scrollbars sin ocultar el contenedor — el selector anterior
+ * agrupaba ".scrollbar-hide, ::-webkit-scrollbar" y aplicaba display:none
+ * al propio elemento. Ahora solo escondemos la barra. */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 ::-webkit-scrollbar { display: none; }
-.scrollbar-hide, * { -ms-overflow-style: none; scrollbar-width: none; }
+* { -ms-overflow-style: none; scrollbar-width: none; }
 
 select option {
   background-color: var(--surface);
