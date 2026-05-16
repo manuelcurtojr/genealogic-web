@@ -83,6 +83,18 @@
   --color-ink: var(--ink);
   --color-body: var(--body);
   --color-muted: var(--muted);
+  --color-muted-soft: var(--muted-soft);
+  /* Text colors usados sobre fondos oscuros / primary */
+  --color-on-primary: var(--on-primary);
+  --color-on-dark: var(--on-dark);
+  --color-on-dark-soft: var(--on-dark-soft);
+  /* Surface-strong para borders hover Cal */
+  --color-surface-strong: var(--surface-strong);
+  /* Badges Cal — para pastels desde className */
+  --color-badge-orange: var(--badge-orange);
+  --color-badge-pink: var(--badge-pink);
+  --color-badge-violet: var(--badge-violet);
+  --color-badge-emerald: var(--badge-emerald);
 
   /* Lines */
   --color-hair: var(--hairline);

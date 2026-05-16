@@ -93,19 +93,19 @@ export default function AdminVetTemplatesClient({ templates: init }: Props) {
         <div className="bg-surface-card border border-hairline rounded-xl p-5 mb-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <input type="text" value={form.name} onChange={e => set('name', e.target.value)} placeholder="Nombre *"
-              className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
+              className="bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
             <input type="text" value={form.description} onChange={e => set('description', e.target.value)} placeholder="Descripción"
-              className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
+              className="bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <select value={form.type} onChange={e => set('type', e.target.value)}
-              className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white focus:border-ink focus:outline-none appearance-none">
+              className="bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none appearance-none">
               {TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
             <input type="number" value={form.default_interval_days} onChange={e => set('default_interval_days', e.target.value)} placeholder="Intervalo (días)"
-              className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
+              className="bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
             <select value={form.applies_to} onChange={e => set('applies_to', e.target.value)}
-              className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white focus:border-ink focus:outline-none appearance-none">
+              className="bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none appearance-none">
               {APPLIES_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>

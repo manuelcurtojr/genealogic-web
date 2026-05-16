@@ -123,12 +123,12 @@ export default function AdminCatalogClient({ breeds: initBreeds, colors: initCol
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder={`Buscar ${tab === 'breeds' ? 'raza' : 'color'}...`}
-            className="w-full bg-surface-card border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none transition" />
+            className="w-full bg-canvas border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
         </div>
         <input type="text" value={newName} onChange={e => setNewName(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && (tab === 'breeds' ? addBreed() : addColor())}
           placeholder={`Añadir ${tab === 'breeds' ? 'raza' : 'color'}...`}
-          className="bg-surface-card border border-hairline rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none transition" />
+          className="bg-canvas border border-hairline rounded-lg px-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
         <button onClick={tab === 'breeds' ? addBreed : addColor} disabled={!newName.trim()}
           className="bg-ink text-on-primary hover:opacity-90 px-4 py-2.5 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center gap-1.5">
           <Plus className="w-4 h-4" /> Añadir
@@ -162,7 +162,7 @@ export default function AdminCatalogClient({ breeds: initBreeds, colors: initCol
                 <input type="text" value={editName} onChange={e => setEditName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && updateItem(item.id)}
                   onClick={e => e.stopPropagation()}
-                  autoFocus className="flex-1 bg-surface-card border border-ink rounded px-3 py-1.5 text-sm text-white focus:outline-none" />
+                  autoFocus className="flex-1 bg-surface-card border border-ink rounded px-3 py-1.5 text-[14px] text-ink focus:outline-none" />
                 <button onClick={e => { e.stopPropagation(); updateItem(item.id) }} className="text-green-400 hover:text-green-300"><Check className="w-4 h-4" /></button>
                 <button onClick={e => { e.stopPropagation(); setEditingId(null) }} className="text-muted hover:text-body"><X className="w-4 h-4" /></button>
               </>
@@ -248,13 +248,13 @@ export default function AdminCatalogClient({ breeds: initBreeds, colors: initCol
               <div>
                 <label className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1 block">Nombre del color *</label>
                 <input type="text" value={colorForm.name} onChange={e => setColorForm(p => ({ ...p, name: e.target.value }))}
-                  className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white focus:border-ink focus:outline-none" />
+                  className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none" />
               </div>
               <div>
                 <label className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1 block">URL de la foto del color</label>
                 <input type="text" value={colorForm.thumbnail_url} onChange={e => setColorForm(p => ({ ...p, thumbnail_url: e.target.value }))}
                   placeholder="https://..."
-                  className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
+                  className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
                 <p className="text-[10px] text-muted mt-1">Esta foto aparecerá en el selector de colores al añadir un perro</p>
               </div>
               <button onClick={saveColor} disabled={saving || !colorForm.name.trim()}

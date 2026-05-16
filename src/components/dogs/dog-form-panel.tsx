@@ -379,7 +379,7 @@ function SelectCard({ label, name, image, sexColor, onClear, selector, disabled 
           </div>
         )}
         {sexColor && !image && <div className="w-1 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: sexColor }} />}
-        <span className={`flex-1 text-sm ${name ? 'text-white font-medium' : 'text-muted'}`}>{name || 'Seleccionar...'}</span>
+        <span className={`flex-1 text-[14px] `}>{name || 'Seleccionar...'}</span>
         <ChevronDown className={`w-4 h-4 text-muted transition ${open ? 'rotate-180' : ''}`} />
       </div>
       {open && !disabled && (
@@ -441,7 +441,7 @@ function DropdownSearch({ label, items, value, onChange, placeholder }: { label:
       <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">{label}</label>
       <div onClick={() => setOpen(!open)}
         className={`w-full bg-surface-card border rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 cursor-pointer transition hover:border-hairline ${open ? 'border-ink' : 'border-hairline'}`}>
-        <span className={sel ? 'text-white' : 'text-muted'}>{sel?.name || placeholder}</span>
+        <span className={sel ? "text-ink" : "text-muted"}>{sel?.name || placeholder}</span>
         <div className="ml-auto flex items-center gap-1.5">
           {value && <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="text-muted hover:text-body"><X className="w-3.5 h-3.5" /></span>}
           <ChevronDown className={`w-4 h-4 text-muted transition ${open ? 'rotate-180' : ''}`} />
@@ -462,7 +462,7 @@ function LockedCard({ label, name, sexColor }: { label: string; name?: string; s
       {sexColor && <div className="w-1 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: sexColor }} />}
       <div className="min-w-0 flex-1">
         <p className="text-[10px] text-muted uppercase font-semibold">{label}</p>
-        <p className="text-sm font-medium text-white truncate">{name || '—'}</p>
+        <p className="truncate text-[14px] font-medium text-ink">{name || '—'}</p>
       </div>
       <Lock className="w-3.5 h-3.5 text-muted flex-shrink-0" />
     </div>

@@ -172,7 +172,7 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className={`text-sm font-medium ${notif.is_read ? 'text-body' : 'text-white'}`}>{notif.title}</p>
+                          <p className={`text-sm font-medium `}>{notif.title}</p>
                           {!notif.is_read && <div className="w-2 h-2 rounded-full bg-ink flex-shrink-0" />}
                         </div>
                         <p className="text-xs text-muted mt-0.5">{notif.type === 'import' ? (() => { try { const p = JSON.parse(notif.message); return `${p.createdIds?.length || 0} perros importados` } catch { return '' } })() : notif.type === 'import_draft' ? 'Borrador pendiente de confirmar' : notif.message}</p>

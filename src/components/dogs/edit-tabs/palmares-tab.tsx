@@ -70,7 +70,7 @@ export default function PalmaresTab({ dogId, userId }: { dogId: string; userId: 
           </div>
           <input value={form.event_name} onChange={e => setForm(p => ({ ...p, event_name: e.target.value }))} placeholder="Nombre del evento" className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
           <div className="grid grid-cols-2 gap-2">
-            <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white focus:border-ink focus:outline-none" />
+            <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none" />
             <input value={form.judge} onChange={e => setForm(p => ({ ...p, judge: e.target.value }))} placeholder="Juez" className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
           </div>
           {/* Files */}
@@ -102,7 +102,7 @@ export default function PalmaresTab({ dogId, userId }: { dogId: string; userId: 
           <div key={a.id} className="bg-surface-card border border-hairline rounded-lg p-3 flex items-start gap-3 group">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: type.color + '20' }}><Trophy className="w-4 h-4" style={{ color: type.color }} /></div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white">{a.event_name}</p>
+              <p className="text-[14px] font-medium text-ink">{a.event_name}</p>
               <p className="text-xs text-muted">{type.label} · {new Date(a.date).toLocaleDateString('es-ES')}{a.judge && ` · ${a.judge}`}</p>
               {a.file_url && (() => { const ff = parseFiles(a.file_url); return ff.length > 0 ? (
                 <div className="flex gap-1.5 mt-1.5">

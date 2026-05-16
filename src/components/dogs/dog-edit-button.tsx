@@ -16,9 +16,11 @@ export default function DogEditButton({ dogId, userId }: Props) {
 
   return (
     <>
-      <button onClick={() => setShowPanel(true)}
-        className="bg-surface-card backdrop-blur-sm hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition border border-hairline">
-        <Edit className="w-4 h-4" /> Editar
+      <button
+        onClick={() => setShowPanel(true)}
+        className="inline-flex items-center gap-2 rounded-lg bg-canvas/90 px-4 py-2 text-[13px] font-medium text-ink shadow-[0_2px_8px_rgba(0,0,0,0.15)] backdrop-blur-sm transition-colors hover:bg-canvas"
+      >
+        <Edit className="h-4 w-4" /> Editar
       </button>
 
       <DogFormPanel

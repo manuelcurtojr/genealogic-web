@@ -177,7 +177,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
               <input
                 type={form.all_day ? 'date' : 'datetime-local'} value={form.all_day ? form.start_date?.slice(0, 10) : form.start_date}
                 onChange={(e) => set('start_date', e.target.value)}
-                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white focus:border-ink focus:outline-none transition"
+                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition"
               />
             </div>
             <div>
@@ -185,7 +185,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
               <input
                 type={form.all_day ? 'date' : 'datetime-local'} value={form.all_day ? form.end_date?.slice(0, 10) : form.end_date}
                 onChange={(e) => set('end_date', e.target.value)}
-                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white focus:border-ink focus:outline-none transition"
+                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition"
               />
             </div>
           </div>

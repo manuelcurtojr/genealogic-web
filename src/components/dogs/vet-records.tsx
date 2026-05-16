@@ -87,7 +87,7 @@ export default function VetRecords({ dogId, ownerId, isOwner }: VetRecordsProps)
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-white">{record.title}</span>
+                  <span className="text-[14px] font-medium text-ink">{record.title}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${type.bg}`}>{type.label}</span>
                 </div>
                 <p className="text-xs text-muted mt-0.5">{new Date(record.date).toLocaleDateString('es-ES')}</p>

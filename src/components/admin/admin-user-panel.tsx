@@ -232,7 +232,7 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
                 <div className="col-span-2">
                   <label className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1 block">Bio</label>
                   <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={2}
-                    className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white focus:border-ink focus:outline-none resize-none" />
+                    className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none resize-none" />
                 </div>
               </div>
             </Section>
@@ -402,7 +402,7 @@ function Select({ label, value, onChange, options }: { label: string; value: str
     <div>
       <label className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1 block">{label}</label>
       <select value={value} onChange={e => onChange(e.target.value)}
-        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white focus:border-ink focus:outline-none appearance-none">
+        className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none appearance-none">
         {options.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
       </select>
     </div>

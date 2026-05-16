@@ -16,22 +16,22 @@ interface ConfirmDialogProps {
 export default function ConfirmDialog({ open, onConfirm, onCancel, title, message, confirmLabel = 'Confirmar', destructive = false, loading = false }: ConfirmDialogProps) {
   return (
     <Modal open={open} onClose={onCancel} title={title} maxWidth="max-w-sm">
-      <p className="text-sm text-body mb-6">{message}</p>
-      <div className="flex gap-3 justify-end">
+      <p className="mb-6 text-[14px] text-body">{message}</p>
+      <div className="flex justify-end gap-2">
         <button
           onClick={onCancel}
-          className="px-4 py-2 rounded-lg text-sm font-medium bg-surface-card hover:bg-white/15 text-white transition"
+          className="rounded-lg border border-hairline bg-canvas px-4 py-2 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
         >
           Cancelar
         </button>
         <button
           onClick={onConfirm}
           disabled={loading}
-          className={`px-4 py-2 rounded-lg text-sm font-semibold text-white transition disabled:opacity-50 ${
-            destructive ? 'bg-red-600 hover:bg-red-700' : 'bg-ink hover:opacity-90'
+          className={`rounded-lg px-4 py-2 text-[13px] font-medium text-on-primary transition-colors disabled:opacity-50 ${
+            destructive ? 'bg-[color:var(--error)] hover:opacity-90' : 'bg-ink hover:opacity-90'
           }`}
         >
-          {loading ? 'Procesando...' : confirmLabel}
+          {loading ? 'Procesando…' : confirmLabel}
         </button>
       </div>
     </Modal>

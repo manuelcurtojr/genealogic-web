@@ -88,7 +88,7 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nombre..."
-            className="w-full bg-surface-card border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
+            className="w-full bg-canvas border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
         </div>
         <select value={sexFilter} onChange={e => { setSexFilter(e.target.value); setPage(0) }}
           className="bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none appearance-none cursor-pointer min-w-[120px]">

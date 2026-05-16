@@ -45,7 +45,7 @@ export default function NewKennelPage() {
           <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1.5 block">Nombre del criadero *</label>
           <input type="text" value={name} onChange={(e) => setName(e.target.value)} required autoFocus
             placeholder="Ej: Irema Curtó"
-            className="w-full bg-surface-card border border-hairline rounded-lg px-4 py-3 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none transition" />
+            className="w-full bg-canvas border border-hairline rounded-lg px-4 py-3 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
         </div>
 
         <button type="submit" disabled={loading || !name.trim()}

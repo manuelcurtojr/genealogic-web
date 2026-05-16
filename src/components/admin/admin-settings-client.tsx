@@ -136,11 +136,11 @@ export default function AdminSettingsClient({ settings: initSettings }: Props) {
           <p className="text-sm font-semibold">Añadir clave personalizada</p>
           <div className="grid grid-cols-3 gap-3">
             <input type="text" value={customKey} onChange={e => setCustomKey(e.target.value)}
-              placeholder="NOMBRE_CLAVE" className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none font-mono" />
+              placeholder="NOMBRE_CLAVE" className="bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none font-mono" />
             <input type="text" value={customValue} onChange={e => setCustomValue(e.target.value)}
-              placeholder="Valor" className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
+              placeholder="Valor" className="bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
             <input type="text" value={customDesc} onChange={e => setCustomDesc(e.target.value)}
-              placeholder="Descripción (opcional)" className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
+              placeholder="Descripción (opcional)" className="bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
           </div>
           <div className="flex gap-2">
             <button onClick={addCustom} disabled={!customKey.trim() || !customValue.trim() || saving === 'custom'}
@@ -184,7 +184,7 @@ export default function AdminSettingsClient({ settings: initSettings }: Props) {
                     value={editValue}
                     onChange={e => setEditValues(prev => ({ ...prev, [k.key]: e.target.value }))}
                     placeholder={k.placeholder}
-                    className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none transition font-mono pr-10"
+                    className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition font-mono pr-10"
                   />
                   <button onClick={() => toggleVisible(k.key)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-body transition">

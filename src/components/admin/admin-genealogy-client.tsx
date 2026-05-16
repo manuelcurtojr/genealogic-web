@@ -188,7 +188,7 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
                 <input type="text" value={search} onChange={e => setSearch(e.target.value)}
                   placeholder="Buscar..."
-                  className="w-full bg-surface-card border border-hairline rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-muted focus:border-ink focus:outline-none transition" />
+                  className="w-full bg-canvas border border-hairline rounded-lg pl-8 pr-3 py-1.5 text-xs text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
               </div>
             </div>
 
@@ -289,7 +289,7 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
                     <input type="text" value={ancestorSearch} onChange={e => setAncestorSearch(e.target.value)}
                       placeholder={`Buscar ${panelTarget.role === 'father' ? 'macho' : 'hembra'}...`} autoFocus
-                      className="w-full bg-surface-card border border-hairline rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
+                      className="w-full bg-canvas border border-hairline rounded-lg pl-9 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
                   </div>
                   <div className="space-y-1">
                     {ancestorCandidates.map(d => (
@@ -311,7 +311,7 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
                     <label className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1 block">Nombre *</label>
                     <input type="text" value={newAncestor.name} onChange={e => setNewAncestor(p => ({ ...p, name: e.target.value }))}
                       placeholder="Nombre del ancestro" autoFocus
-                      className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
+                      className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
                   </div>
                   <div>
                     <label className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1 block">Raza</label>

@@ -582,7 +582,7 @@ Rules:
               )}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                <input type="text" value={swapSearch} onChange={e => { setSwapSearch(e.target.value); searchSwap(e.target.value) }} placeholder="Buscar perro existente..." autoFocus className="w-full bg-surface-card border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
+                <input type="text" value={swapSearch} onChange={e => { setSwapSearch(e.target.value); searchSwap(e.target.value) }} placeholder="Buscar perro existente..." autoFocus className="w-full bg-canvas border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
               </div>
               <div className="max-h-48 overflow-y-auto space-y-1">
                 {swapSearching && <div className="text-center py-3"><Loader2 className="w-4 h-4 animate-spin text-muted mx-auto" /></div>}
@@ -622,7 +622,7 @@ Rules:
       <div>
         <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">URL de la genealogía</label>
         <div className="flex gap-2">
-          <input type="url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://presadb.com/dogocanario/nombre-del-perro" onKeyDown={e => e.key === 'Enter' && handleScan()} className="flex-1 bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none transition" />
+          <input type="url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://presadb.com/dogocanario/nombre-del-perro" onKeyDown={e => e.key === 'Enter' && handleScan()} className="flex-1 bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
           <button onClick={handleScan} disabled={scanning || !url.trim()} className="bg-ink text-on-primary hover:opacity-90 font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm flex-shrink-0">
             {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             {scanning ? 'Escaneando...' : 'Escanear'}

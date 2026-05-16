@@ -52,7 +52,7 @@ export default function AdminUsersClient({ initialUsers }: Props) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Buscar por nombre o email..."
-            className="w-full bg-surface-card border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none transition" />
+            className="w-full bg-canvas border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
         </div>
         <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)}
           className="bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-body focus:border-ink focus:outline-none transition appearance-none">

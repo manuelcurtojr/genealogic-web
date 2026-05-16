@@ -161,7 +161,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
                     <div>
                       <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Divisa</label>
                       <select value={form.sale_currency} onChange={e => set('sale_currency', e.target.value)}
-                        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white focus:border-ink focus:outline-none transition appearance-none">
+                        className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none transition appearance-none">
                         {CURRENCIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                       </select>
                     </div>

@@ -206,7 +206,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                     <div key={s.value}>
                       <button type="button" onClick={() => set('status', s.value)}
                         className={`w-full text-left flex items-center gap-3 p-3 rounded-lg border transition ${
-                          active ? 'border-ink bg-surface-soft' : 'border-hairline bg-surface-card hover:bg-surface-card'
+                          active ? 'border-ink bg-surface-soft' : 'border-hairline bg-canvas hover:bg-surface-soft'
                         }`}>
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? 'bg-surface-card' : 'bg-surface-card'}`}>
                           <Icon className="w-5 h-5" style={{ color: active ? '#fb923c' : s.color }} />
@@ -223,7 +223,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                           <div>
                             <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">Fecha del cruce</label>
                             <input type="date" value={form.mating_date} onChange={e => set('mating_date', e.target.value)}
-                              className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white focus:border-ink focus:outline-none transition" />
+                              className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition" />
                           </div>
                         </div>
                       )}
@@ -234,18 +234,18 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                           <div>
                             <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">Fecha del cruce</label>
                             <input type="date" value={form.mating_date} onChange={e => set('mating_date', e.target.value)}
-                              className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white focus:border-ink focus:outline-none transition" />
+                              className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition" />
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">Nacimiento</label>
                               <input type="date" value={form.birth_date} onChange={e => set('birth_date', e.target.value)}
-                                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white focus:border-ink focus:outline-none transition" />
+                                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition" />
                             </div>
                             <div>
                               <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">Cachorros</label>
                               <input type="number" min="0" value={form.puppy_count} onChange={e => set('puppy_count', e.target.value)}
-                                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-white focus:border-ink focus:outline-none transition" />
+                                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition" />
                             </div>
                           </div>
                         </div>
@@ -340,7 +340,7 @@ function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
     <div ref={ref} className="relative">
       <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{label}</label>
       <div onClick={() => { setOpen(!open); setSearch('') }}
-        className={`w-full bg-surface-card border rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 cursor-pointer transition hover:border-hairline ${open ? 'border-ink' : 'border-hairline'}`}>
+        className={`w-full bg-canvas border rounded-lg px-3 py-2.5 text-[14px] flex items-center gap-2 cursor-pointer transition-colors hover:bg-surface-soft ${open ? 'border-ink ring-1 ring-ink' : 'border-hairline'}`}>
         {selected ? (
           <>
             {selected.image && (
@@ -348,7 +348,7 @@ function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
                 <img src={selected.image} alt="" className="w-full h-full object-cover" />
               </div>
             )}
-            <span className="text-white flex-1 truncate">{selected.name}</span>
+            <span className="flex-1 truncate text-ink">{selected.name}</span>
           </>
         ) : (
           <span className="text-muted flex-1">{placeholder}</span>
@@ -359,26 +359,47 @@ function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
         </div>
       </div>
       {open && (
-        <div className="absolute z-[80] mt-1 w-full bg-surface-card border border-hairline rounded-lg shadow-xl max-h-52 flex flex-col">
-          <div className="p-2 border-b border-hairline">
+        <div className="absolute z-[80] mt-1 flex max-h-72 w-full flex-col overflow-hidden rounded-lg border border-hairline bg-canvas shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+          <div className="border-b border-hairline p-2">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
-              <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..."
-                className="w-full bg-surface-card border border-hairline rounded pl-8 pr-3 py-1.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
+              <input
+                ref={inputRef}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Buscar..."
+                className="w-full rounded border border-hairline bg-canvas py-1.5 pl-8 pr-3 text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink"
+              />
             </div>
           </div>
-          <div className="overflow-y-auto flex-1">
-            {filtered.length === 0 ? <p className="text-sm text-muted p-3 text-center">Sin resultados</p> : filtered.map(item => (
-              <button key={item.id} type="button" onClick={() => { onChange(item.id); setOpen(false); setSearch('') }}
-                className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2.5 transition ${item.id === value ? 'bg-surface-card text-ink' : 'text-ink hover:bg-surface-card'}`}>
-                {item.image !== null && (
-                  <div className="w-7 h-7 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor || BRAND.primary }}>
-                    {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-3.5 h-3.5 opacity-30" /></div>}
-                  </div>
-                )}
-                <span className="truncate">{item.name}</span>
-              </button>
-            ))}
+          <div className="flex-1 overflow-y-auto">
+            {filtered.length === 0 ? (
+              <p className="p-3 text-center text-[13px] text-muted">Sin resultados</p>
+            ) : (
+              filtered.map(item => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => { onChange(item.id); setOpen(false); setSearch('') }}
+                  className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] transition-colors ${
+                    item.id === value ? 'bg-surface-card text-ink font-medium' : 'text-body hover:bg-surface-soft hover:text-ink'
+                  }`}
+                >
+                  {item.image !== null && (
+                    <div
+                      className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full border-2 bg-surface-card"
+                      style={{ borderColor: sexColor || BRAND.primary }}
+                    >
+                      {item.image
+                        ? <img src={item.image} alt="" className="h-full w-full object-cover" />
+                        : <div className="flex h-full w-full items-center justify-center"><img src="/icon.svg" alt="" className="h-3.5 w-3.5 opacity-30" /></div>
+                      }
+                    </div>
+                  )}
+                  <span className="truncate">{item.name}</span>
+                </button>
+              ))
+            )}
           </div>
         </div>
       )}
@@ -391,19 +412,22 @@ function LockedField({ label, dogs, value, sex }: { label: string; dogs: any[]; 
   const sexColor = sex === 'male' ? BRAND.male : BRAND.female
   return (
     <div>
-      <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{label}</label>
-      <div className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 opacity-60 cursor-not-allowed">
+      <label className="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{label}</label>
+      <div className="flex w-full cursor-not-allowed items-center gap-2 rounded-lg border border-hairline bg-surface-soft px-3 py-2.5 text-[14px]">
         {dog ? (
           <>
-            <div className="w-6 h-6 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor }}>
-              {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted text-[10px]">{sex === 'male' ? '♂' : '♀'}</div>}
+            <div className="h-6 w-6 flex-shrink-0 overflow-hidden rounded-full border-2 bg-surface-card" style={{ borderColor: sexColor }}>
+              {dog.thumbnail_url
+                ? <img src={dog.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                : <div className="flex h-full w-full items-center justify-center text-[10px] text-muted">{sex === 'male' ? '♂' : '♀'}</div>
+              }
             </div>
-            <span className="text-white truncate">{dog.name}</span>
+            <span className="truncate text-ink">{dog.name}</span>
           </>
         ) : (
           <span className="text-muted">No asignado</span>
         )}
-        <Lock className="w-3.5 h-3.5 text-muted ml-auto flex-shrink-0" />
+        <Lock className="ml-auto h-3.5 w-3.5 flex-shrink-0 text-muted" />
       </div>
     </div>
   )

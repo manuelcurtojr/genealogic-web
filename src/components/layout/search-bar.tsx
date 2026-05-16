@@ -110,7 +110,7 @@ export default function SearchBar() {
           onChange={e => { setQuery(e.target.value); setOpen(true) }}
           onFocus={() => setOpen(true)}
           placeholder="Buscar perros, criaderos, razas..."
-          className="w-full bg-surface-card border border-hairline rounded-lg pl-9 pr-16 py-2 text-sm text-white placeholder:text-muted focus:outline-none focus:border-ink transition"
+          className="w-full bg-canvas border border-hairline rounded-lg pl-9 pr-16 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:border-ink transition"
         />
         <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted bg-surface-card border border-hairline rounded px-1.5 py-0.5 font-mono hidden sm:inline">
           Cmd+K
@@ -154,7 +154,7 @@ export default function SearchBar() {
                             </div>
                           )}
                           <div className="min-w-0">
-                            <p className="text-sm text-white font-medium truncate">{r.name}</p>
+                            <p className="truncate text-[14px] font-medium text-ink">{r.name}</p>
                             {r.subtitle && <p className="text-xs text-muted truncate">{r.subtitle}</p>}
                           </div>
                         </Link>

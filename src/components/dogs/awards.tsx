@@ -89,7 +89,7 @@ export default function Awards({ dogId, ownerId, isOwner }: AwardsProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-white">{award.event_name}</span>
+                  <span className="text-[14px] font-medium text-ink">{award.event_name}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${type.color}`}>{type.label}</span>
                 </div>
                 <p className="text-xs text-muted mt-0.5">

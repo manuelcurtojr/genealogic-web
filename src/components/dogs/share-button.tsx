@@ -146,10 +146,12 @@ export default function ShareButton({ dog, dogUrl }: Props) {
 
   return (
     <>
-      <button onClick={shareNative}
-        className="w-10 h-10 rounded-full backdrop-blur-sm bg-surface-card border border-hairline flex items-center justify-center text-white hover:bg-white/20 transition"
-        title="Compartir">
-        <Share2 className="w-5 h-5" />
+      <button
+        onClick={shareNative}
+        title="Compartir"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-canvas/90 text-ink shadow-[0_2px_8px_rgba(0,0,0,0.15)] backdrop-blur-sm transition-colors hover:bg-canvas"
+      >
+        <Share2 className="h-5 w-5" />
       </button>
 
       {showModal && (

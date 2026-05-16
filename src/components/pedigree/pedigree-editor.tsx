@@ -220,7 +220,7 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
                     <input type="text" value={ancestorSearch} onChange={e => setAncestorSearch(e.target.value)}
                       placeholder={`Buscar ${panelTarget.role === 'father' ? 'macho' : 'hembra'} existente...`} autoFocus
-                      className="w-full bg-surface-card border border-hairline rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none" />
+                      className="w-full bg-canvas border border-hairline rounded-lg pl-9 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
                   </div>
                   <div className="space-y-1">
                     {ancestorCandidates.map(d => (

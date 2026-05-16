@@ -27,14 +27,13 @@ const sizes: Record<Size, string> = {
 }
 
 const variants: Record<Variant, string> = {
-  // Cal.com primary: near-black (#111) bg, white text, no hover beyond press
-  primary: 'bg-[#111111] text-white hover:bg-[#242424]',
+  // Cal.com primary: ink bg, white text via on-primary token
+  primary: 'bg-ink text-on-primary hover:opacity-90',
   // White button with hairline outline
-  secondary: 'bg-white text-[#111111] border border-hairline hover:bg-surface-card',
+  secondary: 'bg-canvas text-ink border border-hairline hover:bg-surface-soft',
   // Text-only link/button
-  ghost: 'text-body hover:text-ink hover:bg-surface-card',
-  // Brand orange — Genealogic's accent (where Cal uses blue). Reserved for
-  // brand-tinted moments, not the default CTA.
+  ghost: 'text-body hover:text-ink hover:bg-surface-soft',
+  // Brand — alias del primary por compatibilidad
   brand: 'bg-ink text-on-primary hover:opacity-90',
 }
 

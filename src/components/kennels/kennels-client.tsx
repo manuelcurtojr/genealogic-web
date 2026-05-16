@@ -31,7 +31,7 @@ export default function KennelsClient({ kennels }: { kennels: Kennel[] }) {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar criadero..."
-          className="w-full bg-surface-card border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-muted focus:outline-none focus:border-ink transition"
+          className="w-full bg-canvas border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:outline-none focus:border-ink transition"
         />
       </div>
 
@@ -62,7 +62,7 @@ export default function KennelsClient({ kennels }: { kennels: Kennel[] }) {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white group-hover:text-ink transition truncate">{kennel.name}</p>
+                  <p className="font-medium text-ink transition-colors transition truncate">{kennel.name}</p>
                   {kennel.foundation_date && (
                     <p className="text-xs text-muted mt-0.5">Fundado en {new Date(kennel.foundation_date).getFullYear()}</p>
                   )}

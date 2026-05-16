@@ -81,7 +81,7 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
           </div>
           <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Nombre (ej: Rabia, Milbemax...)" className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
           <div className="grid grid-cols-2 gap-2">
-            <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white focus:border-ink focus:outline-none" />
+            <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none" />
             <div />
           </div>
           <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Notas" rows={2} className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none resize-none" />
@@ -114,7 +114,7 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
           <div key={r.id} className="bg-surface-card border border-hairline rounded-lg p-3 flex items-start gap-3 group">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: type.color + '20' }}><Icon className="w-4 h-4" style={{ color: type.color }} /></div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white">{r.title}</p>
+              <p className="text-[14px] font-medium text-ink">{r.title}</p>
               <p className="text-xs text-muted">{new Date(r.date).toLocaleDateString('es-ES')}</p>
               {r.notes && <p className="text-xs text-muted mt-0.5">{r.notes}</p>}
               {r.file_url && (() => { const ff = parseFiles(r.file_url); return ff.length > 0 ? (

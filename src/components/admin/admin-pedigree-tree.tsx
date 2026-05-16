@@ -91,7 +91,7 @@ function Card({ n, isRoot, onClickDog }: { n: PN; isRoot?: boolean; onClickDog: 
         <div className="absolute top-0 right-0 bottom-0 w-[3px]" style={{ backgroundColor: sc }} />
       </div>
       <div className="flex-1 min-w-0 px-2.5 py-1.5 flex flex-col justify-center overflow-hidden">
-        <p className="text-[12px] font-bold text-white leading-tight whitespace-nowrap"
+        <p className="text-[12px] font-semibold text-ink leading-tight whitespace-nowrap"
           style={{ maskImage: 'linear-gradient(to right,black 80%,transparent)', WebkitMaskImage: 'linear-gradient(to right,black 80%,transparent)' }}>{n.name}</p>
         {n.breed_name && <p className="text-[10px] text-muted truncate mt-0.5">{n.breed_name}</p>}
       </div>

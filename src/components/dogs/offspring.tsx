@@ -80,7 +80,7 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
                 <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: borderColor }} />
               </div>
               <div className="p-2.5">
-                <p className="text-sm font-semibold text-white truncate">{dog.name}</p>
+                <p className="truncate text-[14px] font-medium text-ink">{dog.name}</p>
                 <div className="flex items-center gap-1 mt-0.5">
                   {(dog.breed as any)?.name && (
                     <span className="text-xs text-muted truncate">{(dog.breed as any).name}</span>

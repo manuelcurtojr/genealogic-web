@@ -106,7 +106,7 @@ function MiniDogCard({ dog }: { dog: SiblingDog }) {
         <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: borderColor }} />
       </div>
       <div className="p-2.5">
-        <p className="text-sm font-semibold text-white truncate">{dog.name}</p>
+        <p className="truncate text-[14px] font-medium text-ink">{dog.name}</p>
         {(dog.breed as any)?.name && (
           <p className="text-xs text-muted truncate">{(dog.breed as any).name}</p>
         )}

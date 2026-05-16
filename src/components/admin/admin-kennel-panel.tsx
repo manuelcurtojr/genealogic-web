@@ -183,7 +183,7 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
                 <div>
                   <label className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1 block">Descripción</label>
                   <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3}
-                    className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white focus:border-ink focus:outline-none resize-none" />
+                    className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none resize-none" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Input label="Sitio web" value={form.website} onChange={v => set('website', v)} placeholder="https://..." />
@@ -193,7 +193,7 @@ export default function AdminKennelPanel({ open, onClose, onSaved, kennelId }: P
                 <div>
                   <label className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1 block">Formato de afijo</label>
                   <select value={form.affix_format} onChange={e => set('affix_format', e.target.value)}
-                    className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-white focus:border-ink focus:outline-none appearance-none">
+                    className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none appearance-none">
                     {AFFIX_FORMATS.map(f => <option key={f.value} value={f.value}>{f.example}</option>)}
                   </select>
                 </div>

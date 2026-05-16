@@ -32,7 +32,7 @@ export default function AdminKennelsClient({ kennels: initKennels }: Props) {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Buscar criadero o propietario..."
-          className="w-full bg-surface-card border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none transition" />
+          className="w-full bg-canvas border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
       </div>
 
       <div className="bg-surface-card border border-hairline rounded-xl overflow-hidden">

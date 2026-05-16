@@ -96,12 +96,12 @@ export default function LitterForm({ initialData, breeds, maleDogs, femaleDogs, 
               <div>
                 <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1.5 block">Fecha de nacimiento</label>
                 <input type="date" value={form.birth_date} onChange={(e) => set('birth_date', e.target.value)}
-                  className="w-full bg-surface-card border border-hairline rounded-lg px-4 py-3 text-sm text-white focus:border-ink focus:outline-none transition" />
+                  className="w-full bg-canvas border border-hairline rounded-lg px-4 py-3 text-sm text-ink focus:border-ink focus:outline-none transition" />
               </div>
               <div>
                 <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1.5 block">Número de cachorros</label>
                 <input type="number" min="0" value={form.puppy_count} onChange={(e) => set('puppy_count', e.target.value)}
-                  className="w-full bg-surface-card border border-hairline rounded-lg px-4 py-3 text-sm text-white focus:border-ink focus:outline-none transition" />
+                  className="w-full bg-canvas border border-hairline rounded-lg px-4 py-3 text-sm text-ink focus:border-ink focus:outline-none transition" />
               </div>
             </div>
           </div>
@@ -112,19 +112,24 @@ export default function LitterForm({ initialData, breeds, maleDogs, femaleDogs, 
           <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">Estado</h2>
           <div className="flex gap-3">
             {[
-              { value: 'pending', label: 'Pendiente', color: '#f39c12' },
-              { value: 'confirmed', label: 'Confirmada', color: '#27ae60' },
-            ].map((s) => (
-              <button key={s.value} type="button" onClick={() => set('status', s.value)}
-                className={`flex-1 py-3 rounded-lg text-sm font-semibold border transition ${
-                  form.status === s.value
-                    ? 'text-white' : 'border-hairline bg-surface-card text-body hover:bg-surface-card'
-                }`}
-                style={form.status === s.value ? { borderColor: s.color, backgroundColor: s.color + '15', color: s.color } : undefined}
-              >
-                {s.label}
-              </button>
-            ))}
+              { value: 'pending', label: 'Pendiente', color: '#f59e0b' },
+              { value: 'confirmed', label: 'Confirmada', color: '#34d399' },
+            ].map((s) => {
+              const active = form.status === s.value
+              return (
+                <button
+                  key={s.value}
+                  type="button"
+                  onClick={() => set('status', s.value)}
+                  className={`flex-1 rounded-lg border py-3 text-[13px] font-medium transition-colors ${
+                    active ? '' : 'border-hairline bg-canvas text-body hover:bg-surface-soft hover:text-ink'
+                  }`}
+                  style={active ? { borderColor: s.color, backgroundColor: s.color + '14', color: s.color } : undefined}
+                >
+                  {s.label}
+                </button>
+              )
+            })}
           </div>
         </section>
 

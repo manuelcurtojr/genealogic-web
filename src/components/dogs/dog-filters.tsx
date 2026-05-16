@@ -34,7 +34,7 @@ export default function DogFilters({
           placeholder="Buscar por nombre..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full bg-surface-card border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-muted focus:border-ink focus:outline-none transition"
+          className="w-full bg-canvas border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition"
         />
       </div>
 
