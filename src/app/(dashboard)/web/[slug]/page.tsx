@@ -13,6 +13,7 @@ import { SectionsList } from '@/components/admin/web/sections-list'
 import { AddSectionButton } from '@/components/admin/web/add-section-button'
 import { PreviewFrame } from '@/components/admin/web/preview-frame'
 import { EditorShortcuts, UndoRedoButtons } from '@/components/admin/web/editor-shortcuts'
+import { EditorLayout } from '@/components/admin/web/editor-layout'
 
 export const dynamic = 'force-dynamic'
 
@@ -106,72 +107,72 @@ export default async function PageEditorPage({
         </div>
       </header>
 
-      <div className="grid flex-1 grid-cols-1 lg:grid-cols-[280px_1fr_360px] overflow-hidden">
-        <aside className="flex flex-col border-r border-hairline bg-canvas overflow-hidden">
-          <div className="flex-1 overflow-y-auto">
-            <SectionsList pageSlug={slug} sections={sectionsLite} selectedId={selectedSectionId} />
-          </div>
-          <div className="border-t border-hairline p-3">
-            <AddSectionButton pageSlug={slug} catalog={catalog} usedTypes={usedTypes} />
-          </div>
-        </aside>
-
-        <main className="overflow-hidden bg-surface-card">
-          <PreviewFrame slug={slug} />
-        </main>
-
-        <aside className="border-l border-hairline bg-canvas overflow-y-auto">
-          {!selected && (
-            <div className="flex h-full items-center justify-center p-6">
-              <div className="max-w-[260px] text-center">
-                <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-surface-card text-xl text-ink">✎</div>
-                <p className="text-base font-bold text-ink">Selecciona una sección</p>
-                <p className="mt-2 text-xs text-muted">
-                  Pulsa una sección en la lista de la izquierda o directamente sobre ella en la vista previa.
-                </p>
-                <div className="mt-6 rounded-xl border border-hairline bg-surface-card p-3 text-left">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Atajos</p>
-                  <ul className="mt-2 space-y-1 text-[11px] text-body">
-                    <Shortcut keys={['Doble-click']} desc="Editar texto en línea" />
-                    <Shortcut keys={['D']} desc="Duplicar sección" />
-                    <Shortcut keys={['Supr']} desc="Eliminar sección" />
-                    <Shortcut keys={['Esc']} desc="Deseleccionar" />
-                    <Shortcut keys={['⌘', 'Z']} desc="Deshacer" />
-                    <Shortcut keys={['⌘', '⇧', 'Z']} desc="Rehacer" />
-                    <Shortcut keys={['⌘', 'S']} desc="Publicar" />
-                  </ul>
+      <EditorLayout
+        left={
+          <>
+            <div className="flex-1 overflow-y-auto">
+              <SectionsList pageSlug={slug} sections={sectionsLite} selectedId={selectedSectionId} />
+            </div>
+            <div className="border-t border-hairline p-3">
+              <AddSectionButton pageSlug={slug} catalog={catalog} usedTypes={usedTypes} />
+            </div>
+          </>
+        }
+        center={<PreviewFrame slug={slug} />}
+        right={
+          <>
+            {!selected && (
+              <div className="flex h-full items-center justify-center p-6">
+                <div className="max-w-[260px] text-center">
+                  <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-surface-card text-xl text-ink">✎</div>
+                  <p className="text-base font-bold text-ink">Selecciona una sección</p>
+                  <p className="mt-2 text-xs text-muted">
+                    Pulsa una sección en la lista de la izquierda o directamente sobre ella en la vista previa.
+                  </p>
+                  <div className="mt-6 rounded-xl border border-hairline bg-surface-card p-3 text-left">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Atajos</p>
+                    <ul className="mt-2 space-y-1 text-[11px] text-body">
+                      <Shortcut keys={['Doble-click']} desc="Editar texto en línea" />
+                      <Shortcut keys={['D']} desc="Duplicar sección" />
+                      <Shortcut keys={['Supr']} desc="Eliminar sección" />
+                      <Shortcut keys={['Esc']} desc="Deseleccionar" />
+                      <Shortcut keys={['⌘', 'Z']} desc="Deshacer" />
+                      <Shortcut keys={['⌘', '⇧', 'Z']} desc="Rehacer" />
+                      <Shortcut keys={['⌘', 'S']} desc="Publicar" />
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {selected && (
-            <div className="flex flex-col">
-              <div className="border-b border-hairline px-5 py-4">
-                <p className="text-[10px] font-mono uppercase tracking-wider text-muted">
-                  {selected.type}{!getSectionSchema(selected.type) && ' · sin form'}
-                </p>
-                <h2 className="mt-1 text-lg font-bold text-ink">{labelForType(selected.type)}</h2>
-                <div className="mt-3 flex items-center gap-2">
-                  <form action={duplicateSection.bind(null, slug, selected.id)}>
-                    <button type="submit" className="rounded-lg border border-hairline px-2.5 py-1 text-[11px] text-body hover:border-ink/30 hover:text-ink">
-                      Duplicar
-                    </button>
-                  </form>
-                  <form action={removeSection.bind(null, slug, selected.id)}>
-                    <button type="submit" className="rounded-lg border border-red-200 px-2.5 py-1 text-[11px] text-red-700 hover:bg-red-50">
-                      Eliminar
-                    </button>
-                  </form>
+            {selected && (
+              <div className="flex flex-col">
+                <div className="border-b border-hairline px-5 py-4">
+                  <p className="text-[10px] font-mono uppercase tracking-wider text-muted">
+                    {selected.type}{!getSectionSchema(selected.type) && ' · sin form'}
+                  </p>
+                  <h2 className="mt-1 text-lg font-bold text-ink">{labelForType(selected.type)}</h2>
+                  <div className="mt-3 flex items-center gap-2">
+                    <form action={duplicateSection.bind(null, slug, selected.id)}>
+                      <button type="submit" className="rounded-lg border border-hairline px-2.5 py-1 text-[11px] text-body hover:border-ink/30 hover:text-ink">
+                        Duplicar
+                      </button>
+                    </form>
+                    <form action={removeSection.bind(null, slug, selected.id)}>
+                      <button type="submit" className="rounded-lg border border-red-200 px-2.5 py-1 text-[11px] text-red-700 hover:bg-red-50">
+                        Eliminar
+                      </button>
+                    </form>
+                  </div>
+                </div>
+                <div className="px-5 py-5 pb-24">
+                  <SectionEditor pageSlug={slug} section={selected} />
                 </div>
               </div>
-              <div className="px-5 py-5 pb-24">
-                <SectionEditor pageSlug={slug} section={selected} />
-              </div>
-            </div>
-          )}
-        </aside>
-      </div>
+            )}
+          </>
+        }
+      />
     </div>
   )
 }
