@@ -27,16 +27,17 @@ import SearchBar from '@/components/layout/search-bar'
 interface Props {
   breeds: { id: string; name: string }[]
   featuredDogs: any[]
+  cockerPhotos?: string[]
 }
 
-export default function LandingPage({ breeds, featuredDogs }: Props) {
+export default function LandingPage({ breeds, featuredDogs, cockerPhotos = [] }: Props) {
   const heroDogs = featuredDogs.slice(0, 6)
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
       <StickyHeader />
       <Hero heroDogs={heroDogs} />
-      <PedigreeShowcase heroDogs={heroDogs} />
+      <PedigreeShowcase cockerPhotos={cockerPhotos} />
       <FeaturesGrid />
       <KanbanShowcase />
       <BotConversation />
@@ -88,83 +89,99 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
         }}
       />
 
-      <div className="relative mx-auto max-w-[1200px] px-6 pt-16 pb-20 text-center lg:px-12 lg:pt-24 lg:pb-24">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--brand)]/30 bg-[color:var(--brand-soft)] px-3 py-1 text-[12px] font-medium text-[color:var(--brand)]">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[color:var(--brand)] opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-[color:var(--brand)]" />
-          </span>
-          Founder pricing · plazas limitadas
-        </div>
-
-        {/* Headline — pawdoq-style: one bold block, tight tracking */}
-        <h1
-          className="mx-auto mt-8 max-w-[18ch] font-semibold text-ink"
-          style={{ fontSize: 'clamp(40px, 7vw, 76px)', lineHeight: 1.02, letterSpacing: '-0.04em' }}
-        >
-          Pedigrees verificables. Criadero profesional.
-        </h1>
-        <p className="mx-auto mt-6 max-w-[620px] text-[17px] leading-[1.55] text-body sm:text-[19px]">
-          El registro público mundial de perros con genealogía. Gratis para todos.
-          Tier Pro con todo lo que un criadero serio necesita en un sitio.
-        </p>
-
-        {/* CTAs */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <Button href="/register" variant="primary" size="lg">
-            Empieza gratis <ArrowRight className="h-4 w-4" />
-          </Button>
-          <Button href="#producto" variant="secondary" size="lg">
-            Cómo funciona
-          </Button>
-        </div>
-        <p className="mt-4 text-[13px] text-muted">
-          Sin tarjeta · Pro a precio Founder por vida
-        </p>
-
-        {/* App-window mockup with real SearchBar */}
-        <div className="relative mx-auto mt-16 max-w-[920px]">
-          <AppWindow url="genealogic.io/buscar" title="Buscar en el registro">
-            <div className="px-6 py-8 sm:px-10 sm:py-10">
-              <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-                Genealogías verificables
-              </p>
-              <h2
-                className="mt-2 font-semibold text-ink"
-                style={{ fontSize: 'clamp(24px, 3.4vw, 38px)', lineHeight: 1.1, letterSpacing: '-0.025em' }}
-              >
-                Encuentra perros, criaderos y razas
-              </h2>
-              <div className="mx-auto mt-6 max-w-[560px] text-left">
-                <SearchBar />
-              </div>
-
-              {/* Featured dogs row — real data */}
-              {heroDogs.length > 0 && (
-                <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
-                  {heroDogs.slice(0, 6).map((dog: any) => (
-                    <Link
-                      key={dog.id}
-                      href={`/dogs/${dog.slug || dog.id}`}
-                      className="group relative block h-11 w-11 overflow-hidden rounded-lg border border-hairline bg-surface-card transition hover:border-ink/40 hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
-                      title={dog.name}
-                    >
-                      {dog.thumbnail_url && (
-                        <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover" />
-                      )}
-                    </Link>
-                  ))}
-                  <Link
-                    href="/search"
-                    className="flex h-11 items-center rounded-lg border border-hairline px-3 text-[12px] font-medium text-body transition hover:border-ink/40 hover:text-ink"
-                  >
-                    Ver todos →
-                  </Link>
-                </div>
-              )}
+      <div className="relative mx-auto max-w-[1200px] px-6 pt-16 pb-20 lg:px-12 lg:pt-24 lg:pb-24">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
+          {/* Left: copy + CTAs */}
+          <div>
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--brand)]/30 bg-[color:var(--brand-soft)] px-3 py-1 text-[12px] font-medium text-[color:var(--brand)]">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[color:var(--brand)] opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[color:var(--brand)]" />
+              </span>
+              Founder pricing · plazas limitadas
             </div>
-          </AppWindow>
+
+            {/* Headline */}
+            <h1
+              className="mt-7 max-w-[16ch] font-semibold text-ink"
+              style={{ fontSize: 'clamp(40px, 6vw, 68px)', lineHeight: 1.02, letterSpacing: '-0.04em' }}
+            >
+              Pedigrees verificables. Criadero profesional.
+            </h1>
+            <p className="mt-6 max-w-[520px] text-[17px] leading-[1.55] text-body sm:text-[18px]">
+              El registro público mundial de perros con genealogía. Gratis para todos.
+              Tier Pro con todo lo que un criadero serio necesita en un sitio.
+            </p>
+
+            {/* CTAs */}
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <Button href="/register" variant="primary" size="lg">
+                Empieza gratis <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button href="#producto" variant="secondary" size="lg">
+                Cómo funciona
+              </Button>
+            </div>
+            <p className="mt-4 text-[13px] text-muted">
+              Sin tarjeta · Pro a precio Founder por vida
+            </p>
+          </div>
+
+          {/* Right: app-window mockup with real SearchBar */}
+          <div className="relative">
+            <AppWindow url="genealogic.io/buscar">
+              <div className="px-6 py-7 sm:px-8 sm:py-8">
+                <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
+                  Registro público
+                </p>
+                <h3
+                  className="mt-1.5 font-semibold text-ink"
+                  style={{ fontSize: 'clamp(20px, 2.4vw, 26px)', lineHeight: 1.15, letterSpacing: '-0.02em' }}
+                >
+                  Buscar en el registro
+                </h3>
+                <div className="mt-5 text-left">
+                  <SearchBar />
+                </div>
+
+                {/* Featured dogs row — real data */}
+                {heroDogs.length > 0 && (
+                  <div className="mt-6">
+                    <p className="text-[10.5px] font-medium uppercase tracking-[0.12em] text-muted">
+                      Publicados recientemente
+                    </p>
+                    <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                      {heroDogs.slice(0, 5).map((dog: any) => (
+                        <Link
+                          key={dog.id}
+                          href={`/dogs/${dog.slug || dog.id}`}
+                          className="block h-11 w-11 overflow-hidden rounded-lg border border-hairline bg-surface-card transition hover:border-ink/40 hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                          title={dog.name}
+                        >
+                          {dog.thumbnail_url && (
+                            <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover" />
+                          )}
+                        </Link>
+                      ))}
+                      <Link
+                        href="/search"
+                        className="flex h-11 items-center rounded-lg border border-hairline px-3 text-[12px] font-medium text-body transition hover:border-ink/40 hover:text-ink"
+                      >
+                        Ver todos →
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </AppWindow>
+            {/* Floating accent dot */}
+            <div
+              aria-hidden
+              className="absolute -bottom-3 -right-3 hidden h-20 w-20 rounded-full opacity-30 blur-2xl sm:block"
+              style={{ background: 'var(--brand)' }}
+            />
+          </div>
         </div>
       </div>
     </section>
@@ -209,7 +226,7 @@ function AppWindow({
 }
 
 // ─── Pedigree showcase ───────────────────────────────────────────────────
-function PedigreeShowcase({ heroDogs }: { heroDogs: any[] }) {
+function PedigreeShowcase({ cockerPhotos }: { cockerPhotos: string[] }) {
   return (
     <section id="producto" className="border-b border-hairline bg-surface-soft">
       <div className="mx-auto max-w-[1200px] px-6 py-24 lg:px-12 lg:py-[120px]">
@@ -232,8 +249,8 @@ function PedigreeShowcase({ heroDogs }: { heroDogs: any[] }) {
 
         {/* Real-looking pedigree mockup inside app window */}
         <div className="mt-14">
-          <AppWindow url="genealogic.io/dogs/fray-del-nie">
-            <RealPedigreeMockup heroDogs={heroDogs} />
+          <AppWindow url="genealogic.io/dogs/lord-byron-de-aldenham">
+            <RealPedigreeMockup cockerPhotos={cockerPhotos} />
           </AppWindow>
         </div>
 
@@ -262,20 +279,47 @@ function PedigreeShowcase({ heroDogs }: { heroDogs: any[] }) {
   )
 }
 
-/** Real pedigree look: replicates PedigreeTree's Card design (200x64 + photo + name + sex stripe). */
-function RealPedigreeMockup({ heroDogs }: { heroDogs: any[] }) {
-  // Realistic sample names — won't pretend to be Irema's specific dogs.
-  const sampleNames = [
-    'Fray de El Nie',          // root
-    'Tornado del Olimpo',      // father
-    'Estrella de la Sierra',   // mother
-    'Hércules del Norte',      // f-father
-    'Bella de los Picos',      // f-mother
-    'Apolo del Cantábrico',    // m-father
-    'Luna de Castilla',        // m-mother
+/**
+ * Realistic Cocker Spaniel pedigree mock. Uses absolute positioning so SVG
+ * connectors line up exactly with each card.
+ *
+ * Layout (container 880×460):
+ *   col1 root:        x=0,   y=198  (centered vertically)
+ *   col2 father:      x=320, y=68
+ *   col2 mother:      x=320, y=328
+ *   col3 GP1 (FF):    x=640, y=8
+ *   col3 GP2 (FM):    x=640, y=128
+ *   col3 GP3 (MF):    x=640, y=268
+ *   col3 GP4 (MM):    x=640, y=388
+ *
+ * Card is 220×64, so right edge x=card_x+220, vertical center y=card_y+32.
+ */
+function RealPedigreeMockup({ cockerPhotos }: { cockerPhotos: string[] }) {
+  const dogs: Array<{ name: string; sex: 'male' | 'female'; reg?: string }> = [
+    { name: 'Lord Byron de Aldenham', sex: 'male', reg: 'LOE 2189437' }, // root
+    { name: 'Ch. Whiskey de Aldenham', sex: 'male' },                    // father
+    { name: 'Hazel de Aldenham', sex: 'female' },                        // mother
+    { name: 'Reginald del Támesis', sex: 'male' },                       // FF
+    { name: 'Penny de Surrey', sex: 'female' },                          // FM
+    { name: 'Bandit du Lac', sex: 'male' },                              // MF
+    { name: 'Honey de Vendée', sex: 'female' },                          // MM
   ]
-  const breed = 'Bull Terrier'
-  const pad = (i: number) => heroDogs[i % Math.max(heroDogs.length, 1)]
+  const breed = 'Cocker Spaniel Inglés'
+
+  // Card positions (top-left)
+  const W = 220, H = 64
+  const positions = [
+    { x: 0,   y: 198 }, // root → center y = 230
+    { x: 320, y: 68  }, // father → center y = 100
+    { x: 320, y: 328 }, // mother → center y = 360
+    { x: 640, y: 8   }, // FF → center y = 40
+    { x: 640, y: 128 }, // FM → center y = 160
+    { x: 640, y: 268 }, // MF → center y = 300
+    { x: 640, y: 388 }, // MM → center y = 420
+  ]
+  const centerY = (i: number) => positions[i].y + H / 2
+  const rightX  = (i: number) => positions[i].x + W
+  const leftX   = (i: number) => positions[i].x
 
   return (
     <div className="overflow-x-auto p-6 sm:p-8">
@@ -289,62 +333,50 @@ function RealPedigreeMockup({ heroDogs }: { heroDogs: any[] }) {
         </span>
       </div>
 
-      <div className="relative min-w-[860px]">
-        {/* SVG connectors layer — under cards */}
+      {/* Stage — fixed pixel layout so cards & SVG line up */}
+      <div className="relative mx-auto" style={{ width: 860, height: 460, minWidth: 860 }}>
+        {/* SVG connectors */}
         <svg
-          className="pointer-events-none absolute inset-0 h-full w-full"
-          viewBox="0 0 860 360"
-          preserveAspectRatio="none"
+          className="pointer-events-none absolute inset-0"
+          width={860}
+          height={460}
+          viewBox="0 0 860 460"
           aria-hidden
         >
-          <g stroke="var(--pedigree-line)" strokeWidth="1.5" fill="none">
-            {/* Root → parents */}
-            <path d="M220 180 H 290 V 70 H 320" />
-            <path d="M220 180 H 290 V 290 H 320" />
-            {/* Father → grandparents */}
-            <path d="M540 70 H 590 V 30 H 620" />
-            <path d="M540 70 H 590 V 110 H 620" />
-            {/* Mother → grandparents */}
-            <path d="M540 290 H 590 V 250 H 620" />
-            <path d="M540 290 H 590 V 330 H 620" />
+          <g stroke="var(--pedigree-line, rgba(17,17,17,0.18))" strokeWidth="1.5" fill="none" strokeLinecap="round">
+            {/* Root → parents (fork at x = midpoint between col1 right and col2 left) */}
+            <path d={`M ${rightX(0)} ${centerY(0)} H 270`} />
+            <path d={`M 270 ${centerY(0)} V ${centerY(1)} H ${leftX(1)}`} />
+            <path d={`M 270 ${centerY(0)} V ${centerY(2)} H ${leftX(2)}`} />
+            {/* Father → his parents */}
+            <path d={`M ${rightX(1)} ${centerY(1)} H 590`} />
+            <path d={`M 590 ${centerY(1)} V ${centerY(3)} H ${leftX(3)}`} />
+            <path d={`M 590 ${centerY(1)} V ${centerY(4)} H ${leftX(4)}`} />
+            {/* Mother → her parents */}
+            <path d={`M ${rightX(2)} ${centerY(2)} H 590`} />
+            <path d={`M 590 ${centerY(2)} V ${centerY(5)} H ${leftX(5)}`} />
+            <path d={`M 590 ${centerY(2)} V ${centerY(6)} H ${leftX(6)}`} />
           </g>
         </svg>
 
-        {/* Cards grid */}
-        <div className="relative grid grid-cols-[220px_220px_220px] gap-x-[100px]">
-          {/* Col 1: root */}
-          <div className="flex flex-col justify-center" style={{ height: 360 }}>
+        {/* Cards positioned absolutely */}
+        {dogs.map((d, i) => (
+          <div
+            key={i}
+            className="absolute"
+            style={{ left: positions[i].x, top: positions[i].y }}
+          >
             <PedCard
-              name={sampleNames[0]}
+              name={d.name}
               breed={breed}
-              sex="male"
-              isRoot
-              photo={pad(0)?.thumbnail_url}
+              registration={d.reg}
+              sex={d.sex}
+              isRoot={i === 0}
+              photo={cockerPhotos[i] || cockerPhotos[i % Math.max(cockerPhotos.length, 1)]}
+              fallbackSeed={i}
             />
           </div>
-          {/* Col 2: parents */}
-          <div className="flex flex-col justify-around" style={{ height: 360 }}>
-            <PedCard
-              name={sampleNames[1]}
-              breed={breed}
-              sex="male"
-              photo={pad(1)?.thumbnail_url}
-            />
-            <PedCard
-              name={sampleNames[2]}
-              breed={breed}
-              sex="female"
-              photo={pad(2)?.thumbnail_url}
-            />
-          </div>
-          {/* Col 3: grandparents */}
-          <div className="flex flex-col justify-around" style={{ height: 360 }}>
-            <PedCard name={sampleNames[3]} breed={breed} sex="male" photo={pad(3)?.thumbnail_url} />
-            <PedCard name={sampleNames[4]} breed={breed} sex="female" photo={pad(4)?.thumbnail_url} />
-            <PedCard name={sampleNames[5]} breed={breed} sex="male" photo={pad(5)?.thumbnail_url} />
-            <PedCard name={sampleNames[6]} breed={breed} sex="female" photo={pad(0)?.thumbnail_url} />
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Footer line */}
@@ -368,21 +400,38 @@ function RealPedigreeMockup({ heroDogs }: { heroDogs: any[] }) {
   )
 }
 
-/** Mirrors the look of the production Card in pedigree-tree.tsx: 200x64, photo left, sex stripe, name + breed. */
+/** Mirrors the look of the production Card in pedigree-tree.tsx: 220x64, photo left, sex stripe, name + breed/reg. */
 function PedCard({
   name,
   breed,
+  registration,
   sex,
   isRoot,
   photo,
+  fallbackSeed = 0,
 }: {
   name: string
   breed?: string
+  registration?: string
   sex: 'male' | 'female'
   isRoot?: boolean
   photo?: string | null
+  fallbackSeed?: number
 }) {
   const stripe = sex === 'male' ? 'var(--male)' : 'var(--female)'
+  // Deterministic pastel gradient for the photo fallback (when dog.ceo unreachable
+  // or returns fewer photos than needed). Two muted spaniel-ish tones.
+  const fallbackGradients = [
+    'linear-gradient(135deg, #d4a574 0%, #8b6f47 100%)', // honey brown
+    'linear-gradient(135deg, #c9a98c 0%, #6b4f3a 100%)', // tan
+    'linear-gradient(135deg, #b08968 0%, #5d4037 100%)', // chocolate
+    'linear-gradient(135deg, #e8c39e 0%, #a47551 100%)', // cream
+    'linear-gradient(135deg, #1a1a1a 0%, #404040 100%)', // black
+    'linear-gradient(135deg, #d2b48c 0%, #8b7355 100%)', // tan light
+    'linear-gradient(135deg, #f4e4bc 0%, #c19a6b 100%)', // golden
+  ]
+  const fallbackBg = fallbackGradients[fallbackSeed % fallbackGradients.length]
+
   return (
     <div
       className={`relative flex items-stretch overflow-hidden rounded-xl border bg-canvas ${
@@ -392,19 +441,29 @@ function PedCard({
       }`}
       style={{ width: 220, height: 64 }}
     >
-      <div className="relative flex-shrink-0 bg-surface-card" style={{ width: 56 }}>
-        {photo ? (
-          <img src={photo} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <Dog className="h-4 w-4 text-muted opacity-50" />
-          </div>
+      <div
+        className="relative flex-shrink-0 overflow-hidden"
+        style={{ width: 56, background: fallbackBg }}
+      >
+        {photo && (
+          <img
+            src={photo}
+            alt=""
+            className="h-full w-full object-cover"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
         )}
+        {/* Sex stripe */}
         <div className="absolute bottom-0 right-0 top-0 w-[3px]" style={{ backgroundColor: stripe }} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col justify-center px-2.5 py-1.5">
         <p className="truncate text-[12px] font-semibold leading-tight text-ink">{name}</p>
-        {breed && <p className="mt-0.5 truncate text-[10.5px] text-muted">{breed}</p>}
+        {registration ? (
+          <p className="mt-0.5 truncate font-mono text-[10px] text-muted">{registration}</p>
+        ) : breed ? (
+          <p className="mt-0.5 truncate text-[10.5px] text-muted">{breed}</p>
+        ) : null}
       </div>
     </div>
   )

@@ -1,7 +1,23 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import LandingPage from '@/components/landing/landing-page'
+
+/** Fetches 7 real Cocker Spaniel photos from dog.ceo for the landing mock pedigree.
+ *  Failsafe: si dog.ceo está caído o tarda > 2s, devolvemos []. */
+async function fetchCockerPhotos(): Promise<string[]> {
+  try {
+    const res = await fetch('https://dog.ceo/api/breed/spaniel-cocker/images/random/7', {
+      signal: AbortSignal.timeout(2000),
+      // ISR: cachear 1 día — no necesitamos fotos distintas cada request
+      next: { revalidate: 60 * 60 * 24 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    return Array.isArray(json?.message) ? json.message : []
+  } catch {
+    return []
+  }
+}
 
 export default async function Home() {
   const supabase = await createClient()
@@ -20,13 +36,22 @@ export default async function Home() {
     .limit(20)
 
   // Fetch some recent public dogs for the hero showcase
-  const { data: featuredDogs } = await supabase
-    .from('dogs')
-    .select('id, name, slug, thumbnail_url, breed:breeds(id, name)')
-    .not('thumbnail_url', 'is', null)
-    .eq('is_public', true)
-    .order('created_at', { ascending: false })
-    .limit(8)
+  const [{ data: featuredDogs }, cockerPhotos] = await Promise.all([
+    supabase
+      .from('dogs')
+      .select('id, name, slug, thumbnail_url, breed:breeds(id, name)')
+      .not('thumbnail_url', 'is', null)
+      .eq('is_public', true)
+      .order('created_at', { ascending: false })
+      .limit(8),
+    fetchCockerPhotos(),
+  ])
 
-  return <LandingPage breeds={breeds || []} featuredDogs={featuredDogs || []} />
+  return (
+    <LandingPage
+      breeds={breeds || []}
+      featuredDogs={featuredDogs || []}
+      cockerPhotos={cockerPhotos}
+    />
+  )
 }
