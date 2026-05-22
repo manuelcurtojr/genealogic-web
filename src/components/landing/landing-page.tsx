@@ -107,11 +107,11 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
               className="mt-7 max-w-[16ch] font-semibold text-ink"
               style={{ fontSize: 'clamp(40px, 6vw, 68px)', lineHeight: 1.02, letterSpacing: '-0.04em' }}
             >
-              Pedigrees verificables. Criadero profesional.
+              Tu criadero entero, en un solo sitio.
             </h1>
             <p className="mt-6 max-w-[520px] text-[17px] leading-[1.55] text-body sm:text-[18px]">
-              El registro público mundial de perros con genealogía. Gratis para todos.
-              Tier Pro con todo lo que un criadero serio necesita en un sitio.
+              Genealogías verificables, reservas, clientes, web propia y emailbot.
+              Todo lo que necesita un criadero serio. Gratis para empezar.
             </p>
 
             {/* CTAs */}
@@ -242,7 +242,7 @@ function PedigreeShowcase({ cockerPhotos }: { cockerPhotos: string[] }) {
           </h2>
           <p className="max-w-[460px] text-[17px] leading-[1.55] text-body">
             Cada perro con árbol de hasta 5 generaciones, datos sanitarios, registro y
-            trazabilidad. Importa pedigrees existentes en segundos con IA. Comparte
+            trazabilidad. Importa genealogías existentes en segundos con IA. Comparte
             tu trabajo con un link público.
           </p>
         </div>
@@ -264,7 +264,7 @@ function PedigreeShowcase({ cockerPhotos }: { cockerPhotos: string[] }) {
           <MiniFeature
             icon={<Sparkles className="h-5 w-5" />}
             title="Importa con IA"
-            desc="Foto de pedigree → árbol completo en segundos. Claude lo entiende."
+            desc="Foto de una genealogía → árbol completo en segundos. Claude lo entiende."
             color="violet"
           />
           <MiniFeature
@@ -487,7 +487,7 @@ function FeaturesGrid() {
           <p className="max-w-[460px] text-[17px] leading-[1.55] text-body">
             Pipeline de reservas tipo Kanban, CRM de compradores, web pública con
             dominio propio, emailbot que responde a tus consultas con tu tono y tu
-            biblioteca, newsletter, estadísticas. Y el pedigree verificado encima.
+            biblioteca, newsletter, estadísticas. Y la genealogía verificada encima.
           </p>
         </div>
 
@@ -757,7 +757,7 @@ function OnboardingSteps() {
             Registro gratis. Configura tu criadero, afijo y datos básicos. Sin tarjeta.
           </Step>
           <Step n="2" duration="1 hora" title="Importa tus perros">
-            Sube fotos de pedigrees existentes. La IA extrae el árbol entero en segundos.
+            Sube fotos de genealogías existentes. La IA extrae el árbol entero en segundos.
           </Step>
           <Step n="3" duration="1 día" title="Diseña tu web">
             Editor visual. 8 páginas troncales, 36 secciones. Conecta tu dominio.
@@ -831,7 +831,7 @@ function Pricing() {
             </p>
             <ul className="mt-7 space-y-2.5 text-[14px]">
               <PricingRow>Perros ilimitados con genealogía</PricingRow>
-              <PricingRow>Importación de pedigrees con IA</PricingRow>
+              <PricingRow>Importación de genealogías con IA</PricingRow>
               <PricingRow>Búsqueda pública del registro</PricingRow>
               <PricingRow>Planificador de cruces</PricingRow>
               <PricingRow>Calendario de celos y partos</PricingRow>
@@ -906,7 +906,7 @@ function FAQ() {
     },
     {
       q: '¿Y si ya tengo otro sistema (Excel, Notion)?',
-      a: 'La importación de pedigrees con IA te ahorra horas. Para clientes y reservas, copias y pegas. La primera tarde es de setup; a partir de ahí, todo en un sitio.',
+      a: 'La importación de genealogías con IA te ahorra horas. Para clientes y reservas, copias y pegas. La primera tarde es de setup; a partir de ahí, todo en un sitio.',
     },
     {
       q: '¿Cuántas plazas Founder quedan?',
@@ -969,7 +969,7 @@ function FinalCta() {
           Tu próxima camada se reserva sola.
         </h2>
         <p className="mx-auto mt-6 max-w-[480px] text-[17px] leading-[1.55] text-body">
-          Pedigree verificable + criadero profesional + IA. En una sola cuenta.
+          Genealogía verificable + criadero profesional + IA. En una sola cuenta.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <Button href="/register" variant="primary" size="lg">
