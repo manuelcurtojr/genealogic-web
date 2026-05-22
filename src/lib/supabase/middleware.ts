@@ -26,28 +26,37 @@ export async function updateSession(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  const pathname = request.nextUrl.pathname
 
   // Public dog detail pages (e.g. /dogs/uuid) and public kennel pages
-  const isDogDetailPage = /^\/dogs\/[^/]+$/.test(request.nextUrl.pathname)
-  const isKennelDetailPage = /^\/kennels\/[^/]+$/.test(request.nextUrl.pathname)
-  const isLitterDetailPage = /^\/litters\/[^/]+$/.test(request.nextUrl.pathname)
-  const isPricingPage = request.nextUrl.pathname === '/pricing'
-  const isSearchPage = request.nextUrl.pathname === '/search'
-  const isKennelDirectoryPage = request.nextUrl.pathname === '/kennels'
+  const isDogDetailPage = /^\/dogs\/[^/]+$/.test(pathname)
+  const isKennelDetailPage = /^\/kennels\/[^/]+$/.test(pathname)
+  const isLitterDetailPage = /^\/litters\/[^/]+$/.test(pathname)
+  const isPricingPage = pathname === '/pricing'
+  const isSearchPage = pathname === '/search'
+  const isKennelDirectoryPage = pathname === '/kennels'
+
+  // Rutas Pro (requieren plan = 'pro' o 'premium')
+  const proRoutePrefixes = [
+    '/reservas', '/clientes', '/emailbot', '/conocimiento',
+    '/web', '/estadisticas', '/newsletter', '/cuenta',
+  ]
+  const isProRoute = proRoutePrefixes.some(p => pathname === p || pathname.startsWith(p + '/'))
 
   // Protected routes — redirect to login if not authenticated
   const isProtectedRoute = !isDogDetailPage && !isKennelDetailPage && !isKennelDirectoryPage && !isLitterDetailPage && !isPricingPage && !isSearchPage && (
-    request.nextUrl.pathname.startsWith('/dogs') ||
-    request.nextUrl.pathname.startsWith('/kennel') ||
-    request.nextUrl.pathname.startsWith('/litters') ||
-    request.nextUrl.pathname.startsWith('/planner') ||
-    request.nextUrl.pathname.startsWith('/calendar') ||
-    request.nextUrl.pathname.startsWith('/import') ||
-    request.nextUrl.pathname.startsWith('/settings') ||
-    request.nextUrl.pathname.startsWith('/analytics') ||
-    request.nextUrl.pathname.startsWith('/vet') ||
-    request.nextUrl.pathname.startsWith('/dashboard') ||
-    request.nextUrl.pathname.startsWith('/admin')
+    pathname.startsWith('/dogs') ||
+    pathname.startsWith('/kennel') ||
+    pathname.startsWith('/litters') ||
+    pathname.startsWith('/planner') ||
+    pathname.startsWith('/calendar') ||
+    pathname.startsWith('/import') ||
+    pathname.startsWith('/settings') ||
+    pathname.startsWith('/analytics') ||
+    pathname.startsWith('/vet') ||
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/admin') ||
+    isProRoute
   )
 
   if (isProtectedRoute && !user) {
@@ -57,12 +66,27 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Auth routes — redirect logged-in users (admins → /admin, others → /dashboard)
-  const isAuthRoute = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register'
+  const isAuthRoute = pathname === '/login' || pathname === '/register'
   if (isAuthRoute && user) {
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
     const url = request.nextUrl.clone()
     url.pathname = profile?.role === 'admin' ? '/admin' : '/dashboard'
     return NextResponse.redirect(url)
+  }
+
+  // Pro route gating — usuarios sin plan pro/premium van a /pricing
+  if (isProRoute && user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', user.id)
+      .single()
+    const plan = (profile as any)?.plan
+    if (plan !== 'pro' && plan !== 'premium') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/pricing'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

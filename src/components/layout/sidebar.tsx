@@ -5,12 +5,14 @@ import { usePathname } from 'next/navigation'
 import {
   Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogOut, X,
   GitCompareArrows, LayoutDashboard, Menu, Home, Store, BarChart3, Search,
-  Stethoscope, Shield, Inbox, Lock, Key
+  Stethoscope, Shield, Inbox, Lock, Key,
+  KanbanSquare, UsersRound, Mail, BookOpen, MessageSquare, Beaker,
+  Globe, TrendingUp, Send, Sparkles, Receipt, Link2,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { NAV_SECTIONS, BRAND } from '@/lib/constants'
-import { isAdmin } from '@/lib/permissions'
+import { isAdmin, hasProAccess } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 import { Wordmark } from '@/components/ui/wordmark'
 
@@ -18,22 +20,27 @@ const iconMap: Record<string, React.ElementType> = {
   Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings,
   LayoutDashboard, GitCompareArrows, Home, Store, BarChart3, Search,
   Stethoscope, Inbox, Key,
+  KanbanSquare, UsersRound, Mail, BookOpen, MessageSquare, Beaker,
+  Globe, TrendingUp, Send, Sparkles, Receipt, Link2,
 }
 
 interface SidebarProps {
   user: { display_name: string; email: string; role: string; avatar_url: string | null } | null
   kennel: { name: string; logo_url: string | null } | null
+  plan: string
+  planIsFounder?: boolean
   mobileOpen: boolean
   onClose: () => void
   collapsed: boolean
   onToggleCollapse: () => void
 }
 
-export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({ user, kennel, plan, planIsFounder, mobileOpen, onClose, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const userRole = user?.role || 'owner'
   const isBreeder = !!kennel
+  const userHasPro = hasProAccess(plan)
   const lang = typeof window !== 'undefined' ? localStorage.getItem('genealogic-lang') || 'es' : 'es'
   const t = getTranslator(lang)
 
@@ -46,8 +53,10 @@ export default function Sidebar({ user, kennel, mobileOpen, onClose, collapsed, 
   // Determine which sections are visible
   // - 'breeding' and 'kennel' only for breeders (users with a kennel)
   // - 'tools' (Calendar, Vet) shown to everyone
+  // - Pro sections (pipeline, bot, web, marketing, cuenta) only if plan is pro/premium
   const allSections = NAV_SECTIONS.filter(section => {
     if (section.requiresKennel && !isBreeder) return false
+    if (section.requiresPro && !userHasPro) return false
     return true
   })
 

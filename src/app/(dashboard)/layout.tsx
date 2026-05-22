@@ -18,7 +18,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('display_name, email, role, avatar_url')
+    .select('display_name, email, role, avatar_url, plan, plan_is_founder')
     .eq('id', user.id)
     .single()
 
@@ -29,8 +29,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .limit(1)
   const kennel = kennelArr?.[0] || null
 
+  const plan = (profile as any)?.plan || 'free'
+  const planIsFounder = Boolean((profile as any)?.plan_is_founder)
+
   return (
-    <DashboardShell user={profile} kennel={kennel} userId={user.id}>
+    <DashboardShell
+      user={profile}
+      kennel={kennel}
+      plan={plan}
+      planIsFounder={planIsFounder}
+      userId={user.id}
+    >
       {children}
     </DashboardShell>
   )

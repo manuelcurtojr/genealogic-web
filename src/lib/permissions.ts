@@ -1,11 +1,22 @@
 // Centralized permissions for Genealogic
-// Genealogic is FREE for everyone. Roles are simplified:
+//
+// Roles (en profiles.role):
 //   - 'owner'   = default (a user with dogs but no kennel)
 //   - 'breeder' = a user who has created a kennel (auto-promoted via DB trigger)
 //   - 'admin'   = internal admin role
-// Monetization happens in Pawdoq Breeders, not here.
+//
+// Plans (en profiles.plan) — desde 22 may 2026:
+//   - 'free'    = capa pública gratis (default)
+//   - 'starter' = criador hobbyist
+//   - 'pro'     = criador profesional (incluye Pawdoq Breeders features)
+//   - 'premium' = criadero grande / multi-kennel
+//
+// El tier Pro habilita en Genealogic las herramientas que antes vivían en
+// Pawdoq Breeders: pipeline de reservas, clientes, emailbot, web builder,
+// newsletter, etc.
 
 export type UserRole = 'owner' | 'breeder' | 'admin'
+export type UserPlan = 'free' | 'starter' | 'pro' | 'premium'
 
 export function isAdmin(role: string | null | undefined): boolean {
   return role === 'admin'
@@ -27,9 +38,31 @@ export function getRoleBadge(role: string | null | undefined): { label: string; 
   return { label: 'Propietario', bg: 'bg-surface-card text-muted' }
 }
 
-// Legacy compatibility helpers (always return true / no plan gating).
-// These exist temporarily so existing code doesn't break while we clean up.
-// Once all references are removed, delete these.
+// ─── Plan helpers ───────────────────────────────────────────────────────────
+
+export function isPro(plan: string | null | undefined): boolean {
+  return plan === 'pro'
+}
+
+export function isPremium(plan: string | null | undefined): boolean {
+  return plan === 'premium'
+}
+
+/** True si el usuario tiene acceso a features Pro (pro o premium). */
+export function hasProAccess(plan: string | null | undefined): boolean {
+  return plan === 'pro' || plan === 'premium'
+}
+
+export function getPlanLabel(plan: string | null | undefined): string {
+  if (plan === 'premium') return 'Premium'
+  if (plan === 'pro') return 'Pro'
+  if (plan === 'starter') return 'Starter'
+  return 'Free'
+}
+
+// ─── Legacy helpers (always return true) ────────────────────────────────────
+// Mantenidos para no romper código existente que aún los llama.
+
 export function roleAtLeast(_role: string | null | undefined, _minRole: string): boolean {
   return true
 }
