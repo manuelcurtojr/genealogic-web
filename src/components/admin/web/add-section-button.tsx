@@ -64,7 +64,7 @@ export function AddSectionButton({
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
                   Catálogo
                 </p>
-                <h2 className="mt-1 font-display text-xl font-semibold text-ink">
+                <h2 className="mt-1 text-xl font-semibold text-ink">
                   Añadir sección
                 </h2>
               </div>

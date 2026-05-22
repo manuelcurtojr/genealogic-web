@@ -216,7 +216,7 @@ function MediaLibraryDrawer({
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
               Biblioteca
             </p>
-            <h2 className="mt-1 font-display text-xl font-semibold text-ink">
+            <h2 className="mt-1 text-xl font-semibold text-ink">
               Tus imágenes
             </h2>
             <p className="mt-0.5 text-[11px] text-muted">
@@ -250,7 +250,7 @@ function MediaLibraryDrawer({
           )}
           {!loading && !error && items.length === 0 && (
             <div className="rounded-2xl border border-dashed border-hairline p-12 text-center">
-              <p className="font-display text-lg text-ink">No has subido ninguna imagen aún</p>
+              <p className="text-lg text-ink">No has subido ninguna imagen aún</p>
               <p className="mt-2 text-sm text-muted">
                 Cierra este panel y pulsa &laquo;Subir&raquo; para añadir tu primera foto.
               </p>

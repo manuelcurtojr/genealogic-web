@@ -13,12 +13,12 @@ export function PreviewClickRelay() {
     function applySelection(id: string | null) {
       // Limpia selección anterior
       document
-        .querySelectorAll('.pawdoq-section-selected')
-        .forEach((n) => n.classList.remove('pawdoq-section-selected'));
+        .querySelectorAll('.genealogic-section-selected')
+        .forEach((n) => n.classList.remove('genealogic-section-selected'));
       if (!id) return;
       const el = document.querySelector(`[data-section-id="${id}"]`) as HTMLElement | null;
       if (!el) return;
-      el.classList.add('pawdoq-section-selected');
+      el.classList.add('genealogic-section-selected');
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -57,13 +57,13 @@ export function PreviewClickRelay() {
       if (!wrapper) return;
 
       // Bloqueamos navegación real, salvo:
-      //  - Links explícitamente marcados con data-pawdoq-tab="true" (tabs
+      //  - Links explícitamente marcados con data-genealogic-tab="true" (tabs
       //    internas que cambian ?tab=… dentro del mismo iframe)
       //  - Links con target="_blank" (abren en otra pestaña, no afectan
       //    al iframe — útil para "Ver pedigrí" externo a Genealogic)
       const link = target.closest('a') as HTMLAnchorElement | null;
       if (link && link.getAttribute('href')) {
-        const allowNav = link.dataset.pawdoqTab === 'true' || link.target === '_blank';
+        const allowNav = link.dataset.genealogicTab === 'true' || link.target === '_blank';
         if (!allowNav) e.preventDefault();
       }
       // Bloqueamos submits
@@ -93,7 +93,7 @@ export function PreviewClickRelay() {
       const wrapper = editable.closest('[data-section-id]') as HTMLElement | null;
       if (!wrapper) return;
       const sectionId = wrapper.dataset.sectionId;
-      const path = editable.dataset.pawdoqEdit;
+      const path = editable.dataset.genealogicEdit;
       if (!sectionId || !path) return;
       makeEditable(editable, sectionId, path);
     }
@@ -101,7 +101,7 @@ export function PreviewClickRelay() {
     function makeEditable(el: HTMLElement, sectionId: string, path: string) {
       const original = el.innerText;
       el.contentEditable = 'true';
-      el.classList.add('pawdoq-editing');
+      el.classList.add('genealogic-editing');
       el.focus();
       // Selecciona todo el contenido al entrar
       const sel = window.getSelection();
@@ -112,7 +112,7 @@ export function PreviewClickRelay() {
 
       function commit(save: boolean) {
         el.contentEditable = 'false';
-        el.classList.remove('pawdoq-editing');
+        el.classList.remove('genealogic-editing');
         const newText = el.innerText.trim();
         el.removeEventListener('blur', onBlur);
         el.removeEventListener('keydown', onKey);
@@ -189,11 +189,11 @@ export function PreviewClickRelay() {
             pointer-events: none;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
           }
-          [data-section-id].pawdoq-section-selected {
+          [data-section-id].genealogic-section-selected {
             outline-color: rgba(215, 71, 9, 1);
             outline-width: 3px;
           }
-          [data-section-id].pawdoq-section-selected::before {
+          [data-section-id].genealogic-section-selected::before {
             content: attr(data-section-type) ' · seleccionada';
             position: absolute;
             top: 8px;
@@ -225,7 +225,7 @@ export function PreviewClickRelay() {
             background: rgba(255, 156, 64, 0.12);
             box-shadow: 0 0 0 4px rgba(255, 156, 64, 0.12);
           }
-          [data-genealogic-edit].pawdoq-editing,
+          [data-genealogic-edit].genealogic-editing,
           [data-genealogic-edit][contenteditable="true"] {
             background: rgba(255, 156, 64, 0.18);
             box-shadow: 0 0 0 4px rgba(255, 156, 64, 0.25);
