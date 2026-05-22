@@ -13,11 +13,13 @@ import NotificationsPanel from './notifications-panel'
 interface DashboardShellProps {
   user: { display_name: string; email: string; role: string; avatar_url: string | null } | null
   kennel: { name: string; logo_url: string | null } | null
+  plan: string
+  planIsFounder?: boolean
   userId?: string
   children: React.ReactNode
 }
 
-export default function DashboardShell({ user, kennel, userId, children }: DashboardShellProps) {
+export default function DashboardShell({ user, kennel, plan, planIsFounder, userId, children }: DashboardShellProps) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
@@ -151,6 +153,8 @@ export default function DashboardShell({ user, kennel, userId, children }: Dashb
       <Sidebar
         user={user}
         kennel={kennel}
+        plan={plan}
+        planIsFounder={planIsFounder}
         mobileOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
         collapsed={collapsed}

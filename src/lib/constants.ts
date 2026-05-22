@@ -30,6 +30,7 @@ export interface NavSection {
   id: string
   label: string
   requiresKennel?: boolean    // only show if user has a kennel (= breeder)
+  requiresPro?: boolean       // only show if plan = 'pro' | 'premium'
   items: NavItem[]
 }
 
@@ -77,6 +78,56 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Mi Criadero', href: '/kennel', icon: 'Store' },
       { label: 'Analíticas', href: '/analytics', icon: 'BarChart3' },
       { label: 'API', href: '/kennel/api', icon: 'Key' },
+    ],
+  },
+
+  // ─── Pro tier sections (fusión Pawdoq Breeders) ──────────────────────────
+  {
+    id: 'pipeline',
+    label: 'Pipeline',
+    requiresKennel: true,
+    requiresPro: true,
+    items: [
+      { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare' },
+      { label: 'Clientes', href: '/clientes', icon: 'UsersRound' },
+    ],
+  },
+  {
+    id: 'bot',
+    label: 'Bot',
+    requiresPro: true,
+    items: [
+      { label: 'Emailbot', href: '/emailbot', icon: 'Mail' },
+      { label: 'Biblioteca', href: '/conocimiento', icon: 'BookOpen' },
+      { label: 'Hilos reales', href: '/emailbot/hilos', icon: 'MessageSquare' },
+      { label: 'Test', href: '/emailbot/test', icon: 'Beaker' },
+    ],
+  },
+  {
+    id: 'web',
+    label: 'Web pública',
+    requiresPro: true,
+    items: [
+      { label: 'Páginas', href: '/web', icon: 'Globe' },
+    ],
+  },
+  {
+    id: 'marketing',
+    label: 'Marketing',
+    requiresPro: true,
+    items: [
+      { label: 'Estadísticas', href: '/estadisticas', icon: 'TrendingUp' },
+      { label: 'Newsletter', href: '/newsletter', icon: 'Send' },
+    ],
+  },
+  {
+    id: 'cuenta',
+    label: 'Cuenta',
+    requiresPro: true,
+    items: [
+      { label: 'Suscripción', href: '/cuenta/suscripcion', icon: 'Sparkles' },
+      { label: 'Facturación', href: '/cuenta/facturacion', icon: 'Receipt' },
+      { label: 'Dominio', href: '/cuenta/dominio', icon: 'Link2' },
     ],
   },
 ]
