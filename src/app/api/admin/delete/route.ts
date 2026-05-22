@@ -14,6 +14,21 @@ export async function POST(request: NextRequest) {
   const { table, id } = await request.json()
   if (!table || !id) return NextResponse.json({ error: 'table and id required' }, { status: 400 })
 
+  // Allowlist explícito: solo estas tablas se pueden borrar vía admin endpoint.
+  // Antes había un `default` permisivo que delegaba a cualquier tabla del schema,
+  // lo cual permitía a un admin (o token admin filtrado) borrar de platform_settings,
+  // migrations, etc.
+  const ALLOWED_TABLES = ['dogs', 'kennels', 'litters', 'profiles'] as const
+  if (!ALLOWED_TABLES.includes(table as typeof ALLOWED_TABLES[number])) {
+    return NextResponse.json({ error: `Unsupported table: ${table}` }, { status: 400 })
+  }
+
+  // Validar UUID
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (typeof id !== 'string' || !UUID_RE.test(id)) {
+    return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
+  }
+
   // Use service role for unrestricted delete
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -60,11 +75,6 @@ export async function POST(request: NextRequest) {
       const { error } = await adminSupabase.auth.admin.deleteUser(id)
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
       break
-    }
-    default: {
-      // Generic delete
-      const { error } = await adminSupabase.from(table).delete().eq('id', id)
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     }
   }
 

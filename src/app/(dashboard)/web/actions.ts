@@ -360,7 +360,7 @@ export async function discardDraft(slug: string) {
 }
 
 /**
- * Asegura que existen las 8 filas troncales para el tenant. Si falta alguna,
+ * Asegura que existen las 8 filas troncales para el kennel. Si falta alguna,
  * la inserta deshabilitada (para que el usuario decida si activarla).
  */
 export async function ensureAllPages() {

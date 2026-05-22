@@ -23,8 +23,11 @@ export async function GET(request: NextRequest) {
   const sex = url.searchParams.get('sex')
   const forSale = url.searchParams.get('for_sale')
   const reproductive = url.searchParams.get('reproductive')
-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50'), 100)
-  const offset = parseInt(url.searchParams.get('offset') || '0')
+  // Clamp + sanitize: si llega 'abc' o un número absurdo, normalizamos.
+  const rawLimit = parseInt(url.searchParams.get('limit') || '50', 10)
+  const rawOffset = parseInt(url.searchParams.get('offset') || '0', 10)
+  const limit = Math.min(Math.max(Number.isFinite(rawLimit) ? rawLimit : 50, 1), 100)
+  const offset = Math.max(Number.isFinite(rawOffset) ? rawOffset : 0, 0)
 
   const supabase = getApiClient()
   let query = supabase
