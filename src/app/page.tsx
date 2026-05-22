@@ -6,7 +6,9 @@ import LandingPage from '@/components/landing/landing-page'
  *  Failsafe: si dog.ceo está caído o tarda > 2s, devolvemos []. */
 async function fetchCockerPhotos(): Promise<string[]> {
   try {
-    const res = await fetch('https://dog.ceo/api/breed/spaniel-cocker/images/random/7', {
+    // dog.ceo usa sub-breed con slash en el path del API (aunque el filename del
+    // CDN sea spaniel-cocker con guion). El endpoint correcto es spaniel/cocker.
+    const res = await fetch('https://dog.ceo/api/breed/spaniel/cocker/images/random/7', {
       signal: AbortSignal.timeout(2000),
       // ISR: cachear 1 día — no necesitamos fotos distintas cada request
       next: { revalidate: 60 * 60 * 24 },
