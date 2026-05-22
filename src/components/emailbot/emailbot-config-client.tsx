@@ -1,0 +1,275 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { Mail, BookOpen, MessageSquare, Beaker, AlertTriangle, Power, ExternalLink, Copy, Check } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+
+interface Config {
+  kennel_id: string
+  is_enabled: boolean
+  inbound_address: string | null
+  reply_from_name: string | null
+  reply_from_email: string | null
+  signature: string | null
+  fallback_after_n_replies: number | null
+  last_inbound_at: string | null
+}
+
+interface Props {
+  kennelId: string
+  kennelName: string
+  kennelSlug: string
+  initialConfig: Config | null
+  stats: {
+    knowledgeCount: number
+    threadsTotal: number
+    threads30d: number
+    escalated: number
+  }
+}
+
+export default function EmailbotConfigClient({ kennelId, kennelName, kennelSlug, initialConfig, stats }: Props) {
+  const [cfg, setCfg] = useState<Config>(() => initialConfig || {
+    kennel_id: kennelId,
+    is_enabled: false,
+    inbound_address: `${kennelSlug}@inbound.genealogic.io`,
+    reply_from_name: kennelName,
+    reply_from_email: null,
+    signature: null,
+    fallback_after_n_replies: 3,
+    last_inbound_at: null,
+  })
+  const [saving, setSaving] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const ready = stats.knowledgeCount > 0
+
+  async function save(partial: Partial<Config>) {
+    const next = { ...cfg, ...partial }
+    setCfg(next)
+    setSaving(true)
+    try {
+      const res = await fetch('/api/emailbot/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kennel_id: kennelId, ...partial }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Error al guardar')
+      }
+      const data = await res.json()
+      setCfg(data.config)
+    } catch (err: any) {
+      alert(err.message)
+      setCfg(cfg) // revert
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function copyInbound() {
+    if (!cfg.inbound_address) return
+    navigator.clipboard.writeText(cfg.inbound_address)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  return (
+    <div>
+      <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-ink tracking-tight flex items-center gap-2">
+            <Mail className="w-6 h-6 text-muted" />
+            Emailbot
+          </h1>
+          <p className="text-sm text-muted mt-0.5">
+            Tu asistente de email para responder consultas con tu Biblioteca como contexto.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link href="/emailbot/test" className="text-xs font-medium text-body hover:text-ink border border-hairline rounded-lg px-3 py-1.5 inline-flex items-center gap-1.5 hover:bg-surface-soft transition">
+            <Beaker className="w-3.5 h-3.5" /> Test
+          </Link>
+          <Link href="/emailbot/hilos" className="text-xs font-medium text-body hover:text-ink border border-hairline rounded-lg px-3 py-1.5 inline-flex items-center gap-1.5 hover:bg-surface-soft transition">
+            <MessageSquare className="w-3.5 h-3.5" /> Hilos
+          </Link>
+        </div>
+      </div>
+
+      {/* Stats row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <StatBox label="Biblioteca" value={stats.knowledgeCount} sub="entradas activas" href="/conocimiento" />
+        <StatBox label="Hilos totales" value={stats.threadsTotal} href="/emailbot/hilos" />
+        <StatBox label="Activos (30d)" value={stats.threads30d} href="/emailbot/hilos" />
+        <StatBox label="Escalados" value={stats.escalated} sub="derivados a ti" href="/emailbot/hilos" />
+      </div>
+
+      {/* Knowledge prerequisite */}
+      {!ready && (
+        <div className="flex items-start gap-3 bg-surface-card border border-hairline rounded-xl p-4 mb-6">
+          <AlertTriangle className="w-5 h-5 text-muted flex-shrink-0 mt-0.5" />
+          <div className="flex-1 text-sm text-body">
+            <p className="mb-1"><strong>La Biblioteca está vacía.</strong></p>
+            <p>
+              Para activar el bot necesitas al menos una entrada en la{' '}
+              <Link href="/conocimiento" className="font-semibold text-ink underline">Biblioteca</Link>.
+              El bot responde basándose en lo que tú le hayas dicho — sin entradas, responde demasiado genérico.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Enable toggle */}
+      <div className="rounded-2xl border border-hairline bg-canvas p-5 lg:p-6 mb-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex-1 min-w-[260px]">
+            <div className="flex items-center gap-2 mb-1">
+              <Power className={`w-4 h-4 ${cfg.is_enabled ? 'text-ink' : 'text-muted'}`} />
+              <p className="text-sm font-semibold text-ink">Auto-responder activo</p>
+              {cfg.is_enabled ? (
+                <span className="text-[10px] font-bold uppercase tracking-[0.08em] bg-ink text-on-primary rounded-full px-2 py-0.5">On</span>
+              ) : (
+                <span className="text-[10px] font-bold uppercase tracking-[0.08em] bg-surface-card text-muted rounded-full px-2 py-0.5">Off</span>
+              )}
+            </div>
+            <p className="text-sm text-muted">
+              Cuando está activo, el bot responde automáticamente a emails entrantes en la dirección de abajo. Cuando está apagado, los emails se guardan pero no se responden.
+            </p>
+          </div>
+          <Button
+            variant={cfg.is_enabled ? 'secondary' : 'primary'} size="sm"
+            disabled={saving || (!ready && !cfg.is_enabled)}
+            onClick={() => save({ is_enabled: !cfg.is_enabled })}
+          >
+            {cfg.is_enabled ? 'Desactivar' : 'Activar bot'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Inbound address card */}
+      <div className="rounded-2xl border border-hairline bg-canvas p-5 lg:p-6 mb-4">
+        <p className="text-sm font-semibold text-ink mb-1">Dirección de recepción</p>
+        <p className="text-sm text-muted mb-4">
+          Los emails que lleguen a esta dirección se procesan automáticamente. Reenvía aquí desde tu inbox real (o configura un alias) para que el bot tome el control.
+        </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <code className="flex-1 min-w-[260px] bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm font-mono text-ink">
+            {cfg.inbound_address || '—'}
+          </code>
+          <Button variant="secondary" size="sm" onClick={copyInbound}>
+            {copied ? <><Check className="w-3.5 h-3.5" /> Copiado</> : <><Copy className="w-3.5 h-3.5" /> Copiar</>}
+          </Button>
+        </div>
+      </div>
+
+      {/* Reply identity */}
+      <div className="rounded-2xl border border-hairline bg-canvas p-5 lg:p-6 mb-4">
+        <p className="text-sm font-semibold text-ink mb-1">Identidad de respuesta</p>
+        <p className="text-sm text-muted mb-4">
+          Cómo aparece el remitente cuando el bot responde. Usa tu dominio personal si quieres que vaya en tu nombre.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <Field label="Nombre">
+            <input
+              type="text"
+              defaultValue={cfg.reply_from_name || ''}
+              onBlur={e => e.target.value !== cfg.reply_from_name && save({ reply_from_name: e.target.value || null })}
+              className="input" placeholder="Irema Curtó"
+            />
+          </Field>
+          <Field label="Email">
+            <input
+              type="email"
+              defaultValue={cfg.reply_from_email || ''}
+              onBlur={e => e.target.value !== cfg.reply_from_email && save({ reply_from_email: e.target.value || null })}
+              className="input" placeholder="hola@iremacurto.com"
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* Signature + escalation threshold */}
+      <div className="rounded-2xl border border-hairline bg-canvas p-5 lg:p-6 mb-4">
+        <Field label="Firma (se añade al final de cada respuesta)">
+          <textarea
+            defaultValue={cfg.signature || ''}
+            onBlur={e => e.target.value !== cfg.signature && save({ signature: e.target.value || null })}
+            className="input min-h-[80px]"
+            placeholder="—\nIrema Curtó · Criadero\nwhatsapp: +34 600 000 000"
+          />
+        </Field>
+        <div className="mt-4">
+          <Field label="Derivar a humano después de N respuestas automáticas">
+            <input
+              type="number" min={1} max={20}
+              defaultValue={cfg.fallback_after_n_replies || 3}
+              onBlur={e => {
+                const v = parseInt(e.target.value)
+                if (v && v !== cfg.fallback_after_n_replies) save({ fallback_after_n_replies: v })
+              }}
+              className="input max-w-[120px]"
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* Last inbound */}
+      {cfg.last_inbound_at && (
+        <p className="text-xs text-muted text-center">
+          Último email recibido: {new Date(cfg.last_inbound_at).toLocaleString('es-ES')}
+        </p>
+      )}
+
+      {/* Setup notes */}
+      <div className="mt-8 rounded-xl border border-hairline bg-surface-card p-5">
+        <p className="text-sm font-semibold text-ink mb-2 flex items-center gap-1.5">
+          <BookOpen className="w-4 h-4" /> Setup técnico (una sola vez)
+        </p>
+        <ol className="text-sm text-body space-y-1.5 list-decimal pl-5">
+          <li>Configura el dominio inbound en Resend (o el provider que prefieras) — p.ej. <code className="text-[12px] bg-canvas border border-hairline rounded px-1">inbound.genealogic.io</code>.</li>
+          <li>Añade los registros MX que indique Resend.</li>
+          <li>En Resend crea una Inbound webhook apuntando a <code className="text-[12px] bg-canvas border border-hairline rounded px-1">https://genealogic.io/api/emailbot/inbound</code> con header <code className="text-[12px] bg-canvas border border-hairline rounded px-1">X-Inbound-Secret: {'<EMAILBOT_INBOUND_SECRET>'}</code>.</li>
+          <li>En Vercel define las env vars <code className="text-[12px] bg-canvas border border-hairline rounded px-1">EMAILBOT_INBOUND_SECRET</code> y <code className="text-[12px] bg-canvas border border-hairline rounded px-1">RESEND_API_KEY</code>.</li>
+          <li>Confirma que la dirección de arriba aparece en el campo &quot;to&quot; del webhook de Resend.</li>
+        </ol>
+      </div>
+
+      <style jsx>{`
+        :global(.input) {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid var(--hairline, #e5e5e5);
+          border-radius: 8px;
+          background: #fff;
+          font-size: 14px;
+          color: var(--ink, #0f0f0f);
+          outline: none;
+          font-family: inherit;
+        }
+        :global(.input:focus) { border-color: var(--ink, #0f0f0f); }
+      `}</style>
+    </div>
+  )
+}
+
+function StatBox({ label, value, sub, href }: { label: string; value: number; sub?: string; href?: string }) {
+  const inner = (
+    <div className="rounded-xl border border-hairline bg-canvas p-4 hover:border-ink/30 transition h-full">
+      <p className="text-2xl font-bold text-ink leading-none">{value.toLocaleString('es-ES')}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted mt-2">{label}</p>
+      {sub && <p className="text-[11px] text-muted mt-0.5">{sub}</p>}
+    </div>
+  )
+  return href ? <Link href={href}>{inner}</Link> : inner
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-muted mb-1.5">{label}</span>
+      {children}
+    </label>
+  )
+}

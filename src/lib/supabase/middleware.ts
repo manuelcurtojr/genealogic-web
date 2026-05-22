@@ -28,6 +28,32 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
 
+  // ─── Custom domain rewrite ─────────────────────────────────────────────
+  // Si el host no es genealogic.io ni vercel.app ni localhost, buscar si es
+  // un custom_domain de algún kennel y servir su web pública via /c/[slug].
+  const host = request.headers.get('host')?.toLowerCase() || ''
+  const isGenealogicHost =
+    host === '' ||
+    host.endsWith('genealogic.io') ||
+    host.endsWith('vercel.app') ||
+    host.startsWith('localhost') ||
+    host.startsWith('127.0.0.1')
+
+  if (!isGenealogicHost && !pathname.startsWith('/api/') && !pathname.startsWith('/_next/')) {
+    const { data: kennel } = await supabase
+      .from('kennels')
+      .select('slug')
+      .eq('custom_domain', host)
+      .eq('custom_domain_verified', true)
+      .single()
+    if (kennel?.slug) {
+      const url = request.nextUrl.clone()
+      // Rewrite a /c/[slug]/<page>  (raíz = /c/[slug])
+      url.pathname = pathname === '/' ? `/c/${kennel.slug}` : `/c/${kennel.slug}${pathname}`
+      return NextResponse.rewrite(url)
+    }
+  }
+
   // Public dog detail pages (e.g. /dogs/uuid) and public kennel pages
   const isDogDetailPage = /^\/dogs\/[^/]+$/.test(pathname)
   const isKennelDetailPage = /^\/kennels\/[^/]+$/.test(pathname)
