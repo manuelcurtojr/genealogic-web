@@ -1,40 +1,45 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import { getKennelBySlug } from '@/lib/kennel-site'
+import { getPage } from '@/lib/kennel/pages'
+import { runWithKennel } from '@/lib/kennel-context'
+import { PageRenderer } from '@/components/site/sections/PageRenderer'
+import PageTracker from '@/components/track/page-tracker'
 
-/**
- * /c/[slug] — entry point del sitio público del criador.
- * Redirige a la página tipo "home" si existe, o a la primera publicada,
- * o si no hay ninguna, al perfil estándar de Genealogic /kennels/[slug].
- */
-export default async function KennelEntry({ params }: { params: Promise<{ slug: string }> }) {
+export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
-  const supabase = await createClient()
-  const { data: kennel } = await supabase
-    .from('kennels').select('id, slug').eq('slug', slug).single()
+  const kennel = await getKennelBySlug(slug)
+  if (!kennel) return { title: 'No encontrado' }
+  const page = await getPage(kennel.id, 'home')
+  return {
+    title: page?.meta_title || kennel.name,
+    description: page?.meta_description || kennel.description || undefined,
+  }
+}
+
+export default async function KennelHomePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const kennel = await getKennelBySlug(slug)
   if (!kennel) notFound()
-
-  // Buscar home publicada
-  const { data: home } = await supabase
-    .from('kennel_pages')
-    .select('slug')
-    .eq('kennel_id', kennel.id)
-    .eq('is_published', true)
-    .eq('page_type', 'home')
-    .limit(1)
-    .maybeSingle()
-
-  if (home) redirect(`/c/${slug}/${home.slug}`)
-
-  // Fallback: primera publicada por posición
-  const { data: first } = await supabase
-    .from('kennel_pages')
-    .select('slug')
-    .eq('kennel_id', kennel.id)
-    .eq('is_published', true)
-    .order('position').limit(1).maybeSingle()
-
-  if (first) redirect(`/c/${slug}/${first.slug}`)
-
-  // Sin páginas publicadas — al perfil estándar
-  redirect(`/kennels/${slug}`)
+  const page = await getPage(kennel.id, 'home')
+  if (!page) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-16 text-center">
+        <h1 className="text-3xl font-bold text-ink mb-3">{kennel.name}</h1>
+        {kennel.description && <p className="text-body mb-6">{kennel.description}</p>}
+        <p className="text-sm text-muted">
+          La web pública aún no se ha publicado. Ver{' '}
+          <a href={`/kennels/${kennel.slug}`} className="text-ink underline">perfil en Genealogic</a>.
+        </p>
+      </div>
+    )
+  }
+  return runWithKennel(kennel, async () => (
+    <>
+      <PageTracker kennelId={kennel.id} />
+      <PageRenderer slug="home" />
+    </>
+  ))
 }
