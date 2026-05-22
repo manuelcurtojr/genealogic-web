@@ -79,13 +79,9 @@ Rules:
 - If data is not available, use null
 - Return ONLY the JSON, no markdown, no explanation`
 
-  async function getApiKey(): Promise<string> {
-    const res = await fetch('/api/import-pedigree')
-    if (!res.ok) throw new Error('No se pudo obtener la clave de IA')
-    const { key } = await res.json()
-    if (!key) throw new Error('API key no configurada')
-    return key
-  }
+  // Nota: ya no se obtiene la API key en el cliente. Las llamadas a Anthropic
+  // pasan por /api/import-pedigree (POST) que es un proxy server-side. La key
+  // se queda en el servidor.
 
   function cleanHtml(html: string): string {
     // Extract page title as main dog context (the pedigree table only has ancestors)
@@ -134,26 +130,27 @@ Rules:
       .slice(0, 60000)
   }
 
-  async function callClaude(apiKey: string, messages: any[], maxTokens = 8000, _retries = 0): Promise<PedigreeData> {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+  async function callClaude(messages: any[], maxTokens = 8000, _retries = 0): Promise<PedigreeData> {
+    const res = await fetch('/api/import-pedigree', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: maxTokens, messages }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: maxTokens, messages }),
     })
     if (!res.ok) {
       // Auto-retry on 529 (overloaded) — wait and try again up to 3 times
       if (res.status === 529 && _retries < 3) {
         setScanPhase(`Servidor ocupado, reintentando en ${5 + _retries * 5}s...`)
         await new Promise(r => setTimeout(r, (5 + _retries * 5) * 1000))
-        return callClaude(apiKey, messages, maxTokens, _retries + 1)
+        return callClaude(messages, maxTokens, _retries + 1)
+      }
+      // Auto-retry on 429 (rate limit) — esperar lo que dice el servidor
+      if (res.status === 429 && _retries < 3) {
+        setScanPhase(`Rate limit, reintentando…`)
+        await new Promise(r => setTimeout(r, 6000))
+        return callClaude(messages, maxTokens, _retries + 1)
       }
       let detail = ''
-      try { const b = await res.json(); detail = b?.error?.message || '' } catch {}
+      try { const b = await res.json(); detail = b?.error || '' } catch {}
       throw new Error(`Error de IA (${res.status}): ${detail || 'Intenta de nuevo'}`)
     }
     const data = await res.json()
@@ -163,7 +160,7 @@ Rules:
 
     // If response was truncated, retry with more tokens
     if (stopReason === 'max_tokens' && maxTokens < 16000) {
-      return callClaude(apiKey, messages, 16000)
+      return callClaude(messages, 16000)
     }
 
     let jsonStr = text
@@ -176,7 +173,7 @@ Rules:
     } catch {
       // If JSON is malformed and we haven't maxed out, retry with more tokens
       if (maxTokens < 16000) {
-        return callClaude(apiKey, messages, 16000)
+        return callClaude(messages, 16000)
       }
       console.error('Claude stop_reason:', stopReason, 'max_tokens:', maxTokens)
       console.error('Claude raw response:', text.substring(0, 500))
@@ -304,8 +301,6 @@ Rules:
     if (!url.trim()) return
     setScanning(true); setError(''); setData(null); setSwaps({}); setScanPhase('Accediendo a la web...')
     try {
-      const apiKey = await getApiKey()
-
       // Fetch HTML via proxy
       let html: string | null = null
       try {
@@ -321,7 +316,7 @@ Rules:
 
       // Single Claude call — full extraction
       setScanPhase('Analizando genealogía con IA...')
-      const pedigreeData = await callClaude(apiKey, [{
+      const pedigreeData = await callClaude([{
         role: 'user',
         content: `${EXTRACTION_PROMPT}\n\n--- PAGE HTML ---\n${html}\n\n--- IMAGE URLS FOUND ---\n${imgUrls.slice(0, 10).join('\n')}`,
       }])
@@ -368,7 +363,6 @@ Rules:
     if (!file) return
     setUploadingImage(true); setError(''); setData(null); setSwaps({}); setScanPhase('Analizando imagen con IA...')
     try {
-      const apiKey = await getApiKey()
       const reader = new FileReader()
       const base64 = await new Promise<string>((resolve, reject) => {
         reader.onload = () => { const result = reader.result as string; resolve(result.split(',')[1]) }
@@ -377,7 +371,7 @@ Rules:
       })
 
       // Single Claude call — full extraction from image
-      const pedigreeData = await callClaude(apiKey, [{
+      const pedigreeData = await callClaude([{
         role: 'user',
         content: [
           { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },

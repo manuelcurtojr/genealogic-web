@@ -160,6 +160,14 @@ export async function DELETE(request: NextRequest) {
 
     if (createdIds.length === 0) return NextResponse.json({ error: 'Importacion no encontrada' }, { status: 404 })
 
+    // Sanitize: los ids vienen de un blob JSON de notifications, así que validamos
+    // estricto a UUID antes de interpolar en .not('id','in', `(${ids.join(',')})`)
+    // y `.or('father_id.eq.${id},mother_id.eq.${id}')`. Si alguien ha logrado meter
+    // basura en el blob, lo descartamos en vez de romper la query.
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    createdIds = createdIds.filter(x => typeof x === 'string' && UUID_RE.test(x))
+    if (createdIds.length === 0) return NextResponse.json({ error: 'Importacion sin ids válidos' }, { status: 400 })
+
     // Safety: 24h window
     if (createdAt) {
       const hoursAgo = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60)

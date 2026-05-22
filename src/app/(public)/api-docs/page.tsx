@@ -22,7 +22,7 @@ export default function ApiDocsPage() {
           <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
             API · Versión 1
           </p>
-          <h1 className="mt-3 font-display text-5xl font-normal leading-[1] tracking-[-0.025em] sm:text-6xl">
+          <h1 className="mt-3 font-sans text-5xl font-normal leading-[1] tracking-[-0.025em] sm:text-6xl">
             La <span className="italic font-light">API</span> de Genealogic.
           </h1>
           <p className="mt-6 max-w-[560px] text-[17px] leading-[1.55] text-body">
@@ -252,7 +252,7 @@ function Section({
         <span className="h-px w-6 bg-hair-strong" />
         <span className="uppercase">{label}</span>
       </div>
-      <h2 className="mt-4 font-display text-3xl font-normal leading-[1.1] tracking-[-0.02em] sm:text-4xl">
+      <h2 className="mt-4 font-sans text-3xl font-normal leading-[1.1] tracking-[-0.02em] sm:text-4xl">
         {title}
       </h2>
       <div className="mt-6">{children}</div>

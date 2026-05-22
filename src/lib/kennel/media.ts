@@ -25,8 +25,8 @@ function publicUrlFor(path: string): string {
 }
 
 /**
- * Lista los archivos de un tenant ordenados por fecha (más reciente primero).
- * Solo expone los del prefijo `${tenant_id}/`.
+ * Lista los archivos de un kennel ordenados por fecha (más reciente primero).
+ * Solo expone los del prefijo `${kennel_id}/`.
  */
 export async function listKennelMedia(kennelId: string, limit = 100): Promise<MediaItem[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,7 +57,7 @@ export async function listKennelMedia(kennelId: string, limit = 100): Promise<Me
 }
 
 /**
- * Sube un archivo al bucket bajo el prefijo del tenant. Devuelve la URL pública.
+ * Sube un archivo al bucket bajo el prefijo del kennel. Devuelve la URL pública.
  *
  * `originalFilename` se sanea y se prefija con timestamp para evitar colisiones.
  */

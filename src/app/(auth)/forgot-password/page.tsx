@@ -46,7 +46,7 @@ export default function ForgotPasswordPage() {
         <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
           Recuperar contraseña
         </p>
-        <h1 className="mt-8 font-display text-5xl font-normal leading-[1] tracking-[-0.025em] text-ink">
+        <h1 className="mt-8 font-sans text-5xl font-normal leading-[1] tracking-[-0.025em] text-ink">
           Restablece
           <br />
           <span className="italic font-light">tu acceso.</span>

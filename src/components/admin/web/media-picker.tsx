@@ -18,7 +18,7 @@ type MediaItem = {
 /**
  * Selector de imagen con 3 caminos:
  *  - Subir foto desde el dispositivo (input[type=file] oculto + server action)
- *  - Elegir de la biblioteca (drawer con todas las fotos del tenant)
+ *  - Elegir de la biblioteca (drawer con todas las fotos del kennel)
  *  - Pegar URL externa (input directo, fallback de siempre)
  *
  * Renderiza un preview cuando hay valor.

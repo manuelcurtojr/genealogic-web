@@ -63,7 +63,6 @@
   /* Fonts — Inter does it all. Fraunces and JetBrains Mono stay loaded
      for legacy callers but design system is single-family. */
   --font-sans: var(--font-inter), 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-inter), 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, monospace;
 
   /* Surfaces — legacy aliases mapped to Cal tokens */

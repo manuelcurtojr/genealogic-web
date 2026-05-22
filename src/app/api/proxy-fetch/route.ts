@@ -16,7 +16,14 @@ export async function GET(request: NextRequest) {
 
   try {
     const urlObj = new URL(url)
-    if (!allowedDomains.some(d => urlObj.hostname.includes(d))) return new NextResponse('Domain not allowed', { status: 403 })
+    if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+      return new NextResponse('Protocol not allowed', { status: 403 })
+    }
+    // Exact hostname match o subdominio. Antes usábamos .includes() que era bypaseable:
+    // `http://attacker.com/presadb.com/x` pasaba el filtro.
+    const host = urlObj.hostname.toLowerCase()
+    const allowed = allowedDomains.some(d => host === d || host.endsWith('.' + d))
+    if (!allowed) return new NextResponse('Domain not allowed', { status: 403 })
   } catch { return new NextResponse('Invalid URL', { status: 400 }) }
 
   // Strategy 1: Direct fetch with different UAs
