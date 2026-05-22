@@ -1,63 +1,204 @@
-import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
-import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { notFound } from 'next/navigation'
+import { createKennelAdminClient } from '@/lib/supabase/server'
+import { getMyKennel } from '@/lib/kennel-site'
 import { DEFAULT_NAV_LABELS, PAGE_SLUGS, pageHref } from '@/lib/kennel/pages'
-import PageSectionsEditor from '@/components/web/sections-editor'
+import { catalogForPage, labelForType } from '@/lib/kennel/section-catalog'
+import { getSectionSchema } from '@/lib/kennel/section-schemas'
+import {
+  removeSection, duplicateSection, publishPage, discardDraft,
+} from '../actions'
+import { SectionEditor } from './section-editor'
+import { SectionsList } from '@/components/admin/web/sections-list'
+import { AddSectionButton } from '@/components/admin/web/add-section-button'
+import { PreviewFrame } from '@/components/admin/web/preview-frame'
+import { EditorShortcuts, UndoRedoButtons } from '@/components/admin/web/editor-shortcuts'
 
 export const dynamic = 'force-dynamic'
 
-export default async function EditPagePage({ params }: { params: Promise<{ slug: string }> }) {
+type PageRow = {
+  slug: string
+  enabled: boolean
+  nav_label: string | null
+  sections: any[]
+  draft_sections: any[] | null
+  undo_history?: unknown[] | null
+  redo_history?: unknown[] | null
+}
+
+export default async function PageEditorPage({
+  params, searchParams,
+}: {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ section?: string }>
+}) {
   const { slug } = await params
   if (!PAGE_SLUGS.includes(slug as any)) notFound()
+  const sp = await searchParams
+  const selectedSectionId = sp.section ?? null
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: kennelArr } = await supabase
-    .from('kennels').select('id, name, slug, custom_domain').eq('owner_id', user.id).limit(1)
-  const kennel = kennelArr?.[0]
-  if (!kennel) redirect('/web')
-
-  const admin = createKennelAdminClient()
-  const { data: page } = await admin
+  const kennel = await getMyKennel()
+  const admin = createKennelAdminClient() as any
+  const { data } = await admin
     .from('kennel_pages')
-    .select('slug, enabled, nav_label, nav_order, sections, draft_sections, meta_title, meta_description')
+    .select('slug, enabled, nav_label, sections, draft_sections, undo_history, redo_history')
     .eq('kennel_id', kennel.id)
     .eq('slug', slug)
     .maybeSingle()
+  const page = data as PageRow | null
   if (!page) notFound()
 
-  const label = page.nav_label || DEFAULT_NAV_LABELS[page.slug] || page.slug
-  const previewUrl = (kennel as any).custom_domain
-    ? `https://${(kennel as any).custom_domain}${pageHref(kennel.slug, page.slug).replace(`/c/${kennel.slug}`, '')}`
-    : `${pageHref(kennel.slug, page.slug)}`
+  const isDraft = page.draft_sections !== null
+  const canUndo = Array.isArray(page.undo_history) && page.undo_history.length > 0
+  const canRedo = Array.isArray(page.redo_history) && page.redo_history.length > 0
+  const sections = (page.draft_sections ?? page.sections ?? []) as Array<{
+    id: string; type: string; props?: Record<string, any>
+  }>
+  const selected = selectedSectionId ? sections.find((s) => s.id === selectedSectionId) ?? null : null
+  const catalog = catalogForPage(slug)
+  const usedTypes = sections.map((s) => s.type)
+  const pageTitle = page.nav_label ?? DEFAULT_NAV_LABELS[slug] ?? slug
+
+  const sectionsLite = sections.map((s) => ({
+    id: s.id, type: s.type, label: labelForType(s.type), summary: summarizeProps(s.props ?? {}),
+  }))
+
+  const publicHref = pageHref(kennel.slug, slug)
 
   return (
-    <div>
-      <div className="mb-6">
-        <Link href="/web" className="text-xs font-medium text-muted hover:text-ink inline-flex items-center gap-1 transition">
-          <ArrowLeft className="w-3 h-3" /> Web pública
-        </Link>
-        <h1 className="text-2xl font-bold text-ink tracking-tight mt-2">{label}</h1>
-        <p className="text-sm text-muted mt-0.5">
-          Edita las secciones de esta página. Guarda en borrador y publica cuando esté listo.
-        </p>
-      </div>
+    <div className="-m-4 lg:-m-[30px] flex h-[calc(100vh-56px)] flex-col">
+      <EditorShortcuts pageSlug={slug} />
+      <header className="flex items-center justify-between gap-4 border-b border-hairline bg-canvas px-5 py-3">
+        <div className="min-w-0 flex items-baseline gap-3">
+          <Link href="/web" className="text-xs font-semibold uppercase tracking-wider text-muted hover:text-ink">
+            ← Páginas
+          </Link>
+          <h1 className="font-bold text-xl tracking-tight text-ink truncate">{pageTitle}</h1>
+          <span className="text-xs font-mono text-muted hidden sm:inline">{publicHref}</span>
+          {isDraft && (
+            <span className="rounded-full bg-yellow-200/60 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-yellow-900 ring-1 ring-yellow-300/60">
+              Borrador
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <UndoRedoButtons pageSlug={slug} canUndo={canUndo} canRedo={canRedo} />
+          {page.enabled && (
+            <Link href={publicHref} target="_blank"
+              className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-body hover:border-ink/30 hover:text-ink">
+              Ver web pública
+            </Link>
+          )}
+          {isDraft && (
+            <>
+              <form action={discardDraft.bind(null, slug)}>
+                <button type="submit" className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-body hover:border-ink/30 hover:text-ink">
+                  Descartar
+                </button>
+              </form>
+              <form action={publishPage.bind(null, slug)}>
+                <button type="submit" className="rounded-lg bg-ink px-4 py-1.5 text-xs font-semibold text-on-primary hover:opacity-90">
+                  Publicar
+                </button>
+              </form>
+            </>
+          )}
+        </div>
+      </header>
 
-      <PageSectionsEditor
-        kennelId={kennel.id}
-        kennelSlug={kennel.slug}
-        slug={page.slug}
-        initialSections={Array.isArray(page.sections) ? page.sections : []}
-        initialDraft={Array.isArray(page.draft_sections) ? page.draft_sections : null}
-        initialEnabled={!!page.enabled}
-        initialNavLabel={page.nav_label}
-        initialMetaTitle={page.meta_title}
-        initialMetaDescription={page.meta_description}
-        previewUrl={previewUrl}
-      />
+      <div className="grid flex-1 grid-cols-1 lg:grid-cols-[280px_1fr_360px] overflow-hidden">
+        <aside className="flex flex-col border-r border-hairline bg-canvas overflow-hidden">
+          <div className="flex-1 overflow-y-auto">
+            <SectionsList pageSlug={slug} sections={sectionsLite} selectedId={selectedSectionId} />
+          </div>
+          <div className="border-t border-hairline p-3">
+            <AddSectionButton pageSlug={slug} catalog={catalog} usedTypes={usedTypes} />
+          </div>
+        </aside>
+
+        <main className="overflow-hidden bg-surface-card">
+          <PreviewFrame slug={slug} />
+        </main>
+
+        <aside className="border-l border-hairline bg-canvas overflow-y-auto">
+          {!selected && (
+            <div className="flex h-full items-center justify-center p-6">
+              <div className="max-w-[260px] text-center">
+                <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-surface-card text-xl text-ink">✎</div>
+                <p className="text-base font-bold text-ink">Selecciona una sección</p>
+                <p className="mt-2 text-xs text-muted">
+                  Pulsa una sección en la lista de la izquierda o directamente sobre ella en la vista previa.
+                </p>
+                <div className="mt-6 rounded-xl border border-hairline bg-surface-card p-3 text-left">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Atajos</p>
+                  <ul className="mt-2 space-y-1 text-[11px] text-body">
+                    <Shortcut keys={['Doble-click']} desc="Editar texto en línea" />
+                    <Shortcut keys={['D']} desc="Duplicar sección" />
+                    <Shortcut keys={['Supr']} desc="Eliminar sección" />
+                    <Shortcut keys={['Esc']} desc="Deseleccionar" />
+                    <Shortcut keys={['⌘', 'Z']} desc="Deshacer" />
+                    <Shortcut keys={['⌘', '⇧', 'Z']} desc="Rehacer" />
+                    <Shortcut keys={['⌘', 'S']} desc="Publicar" />
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {selected && (
+            <div className="flex flex-col">
+              <div className="border-b border-hairline px-5 py-4">
+                <p className="text-[10px] font-mono uppercase tracking-wider text-muted">
+                  {selected.type}{!getSectionSchema(selected.type) && ' · sin form'}
+                </p>
+                <h2 className="mt-1 text-lg font-bold text-ink">{labelForType(selected.type)}</h2>
+                <div className="mt-3 flex items-center gap-2">
+                  <form action={duplicateSection.bind(null, slug, selected.id)}>
+                    <button type="submit" className="rounded-lg border border-hairline px-2.5 py-1 text-[11px] text-body hover:border-ink/30 hover:text-ink">
+                      Duplicar
+                    </button>
+                  </form>
+                  <form action={removeSection.bind(null, slug, selected.id)}>
+                    <button type="submit" className="rounded-lg border border-red-200 px-2.5 py-1 text-[11px] text-red-700 hover:bg-red-50">
+                      Eliminar
+                    </button>
+                  </form>
+                </div>
+              </div>
+              <div className="px-5 py-5 pb-24">
+                <SectionEditor pageSlug={slug} section={selected} />
+              </div>
+            </div>
+          )}
+        </aside>
+      </div>
     </div>
   )
+}
+
+function Shortcut({ keys, desc }: { keys: string[]; desc: string }) {
+  return (
+    <li className="flex items-center justify-between gap-2">
+      <span className="flex items-center gap-1">
+        {keys.map((k, i) => (
+          <span key={i}>
+            <kbd className="rounded border border-hairline bg-canvas px-1.5 py-0.5 font-mono text-[10px] text-body">{k}</kbd>
+            {i < keys.length - 1 && <span className="mx-0.5 text-muted">+</span>}
+          </span>
+        ))}
+      </span>
+      <span className="text-muted">{desc}</span>
+    </li>
+  )
+}
+
+function summarizeProps(props: Record<string, any>): string {
+  const candidates = ['title', 'tagline', 'headline', 'name', 'eyebrow', 'body']
+  for (const k of candidates) {
+    if (typeof props[k] === 'string' && props[k].trim()) return props[k].slice(0, 50)
+  }
+  for (const k of Object.keys(props)) {
+    if (Array.isArray(props[k])) return `${props[k].length} ${k}`
+  }
+  return '—'
 }
