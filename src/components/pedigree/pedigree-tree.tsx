@@ -226,10 +226,6 @@ function HN({n,nm,g,mx,isRoot,si,rc}:{n:PN;nm:Map<string,PN>;g:number;mx:number;
     const wr=wrapRef.current.getBoundingClientRect()
     const fr=fRef.current.getBoundingClientRect()
     const mr=mRef.current.getBoundingClientRect()
-    // Card right edge midpoint
-    const cx=CW,cy=CH/2
-    // Fork point
-    const forkX=CW+hGap/2
     // Father midpoint
     const fMidY=fr.top-wr.top+fr.height/2
     // Mother midpoint
@@ -237,7 +233,7 @@ function HN({n,nm,g,mx,isRoot,si,rc}:{n:PN;nm:Map<string,PN>;g:number;mx:number;
     // Card center Y
     const cardMidY=(fMidY+mMidY)/2
 
-    setLines([
+    const next=[
       // Horizontal from card to fork
       {x1:CW,y1:cardMidY,x2:CW+hGap,y2:cardMidY},
       // Vertical from father to mother
@@ -246,7 +242,14 @@ function HN({n,nm,g,mx,isRoot,si,rc}:{n:PN;nm:Map<string,PN>;g:number;mx:number;
       {x1:CW+hGap,y1:fMidY,x2:CW+hGap+20,y2:fMidY},
       // Horizontal stub to mother
       {x1:CW+hGap,y1:mMidY,x2:CW+hGap+20,y2:mMidY},
-    ])
+    ]
+    // Sin deps el effect corría en cada render → setLines con nuevo array
+    // (referencia distinta aunque valores iguales) → re-render → loop infinito
+    // que saturaba el main thread y se comía los clicks. Bail-out si nada cambió.
+    setLines(prev=>{
+      if(prev.length===next.length && prev.every((l,i)=>l.x1===next[i].x1&&l.y1===next[i].y1&&l.x2===next[i].x2&&l.y2===next[i].y2))return prev
+      return next
+    })
   })
 
   return(
@@ -290,12 +293,17 @@ function VN({n,nm,g,mx,isRoot,si,rc}:{n:PN;nm:Map<string,PN>;g:number;mx:number;
     const mCX=mr.left-wr.left+mr.width/2
     const childrenTop=fr.top-wr.top
 
-    setLines([
+    const next=[
       {x1:cardCX,y1:CH,x2:cardCX,y2:forkY},
       {x1:fCX,y1:forkY,x2:mCX,y2:forkY},
       {x1:fCX,y1:forkY,x2:fCX,y2:childrenTop},
       {x1:mCX,y1:forkY,x2:mCX,y2:childrenTop},
-    ])
+    ]
+    // Mismo bug que HN: sin deps + setLines con nuevo array = loop infinito.
+    setLines(prev=>{
+      if(prev.length===next.length && prev.every((l,i)=>l.x1===next[i].x1&&l.y1===next[i].y1&&l.x2===next[i].x2&&l.y2===next[i].y2))return prev
+      return next
+    })
   })
 
   return(
