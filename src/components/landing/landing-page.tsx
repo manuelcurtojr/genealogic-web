@@ -12,16 +12,17 @@ import {
   Check,
   Plus,
   Minus,
-  Search,
   Dog,
   Heart,
   Calendar,
   ShieldCheck,
   Zap,
+  Lock,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Wordmark } from '@/components/ui/wordmark'
+import SearchBar from '@/components/layout/search-bar'
 
 interface Props {
   breeds: { id: string; name: string }[]
@@ -29,18 +30,17 @@ interface Props {
 }
 
 export default function LandingPage({ breeds, featuredDogs }: Props) {
-  const heroDogs = featuredDogs.slice(0, 5)
+  const heroDogs = featuredDogs.slice(0, 6)
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
       <StickyHeader />
       <Hero heroDogs={heroDogs} />
-      <PedigreeShowcase />
+      <PedigreeShowcase heroDogs={heroDogs} />
       <FeaturesGrid />
       <KanbanShowcase />
       <BotConversation />
       <OnboardingSteps />
-      <CaseStudy />
       <Pricing />
       <FAQ />
       <FinalCta />
@@ -81,14 +81,14 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
       {/* Decorative gradient blobs */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.6]"
+        className="pointer-events-none absolute inset-0 opacity-[0.7]"
         style={{
           background:
-            'radial-gradient(60% 50% at 20% 0%, rgba(215,71,9,0.10) 0%, transparent 70%), radial-gradient(50% 40% at 90% 10%, rgba(1,125,250,0.08) 0%, transparent 70%)',
+            'radial-gradient(60% 50% at 15% 0%, rgba(215,71,9,0.12) 0%, transparent 65%), radial-gradient(50% 40% at 90% 20%, rgba(1,125,250,0.08) 0%, transparent 65%), radial-gradient(40% 40% at 50% 100%, rgba(232,67,147,0.05) 0%, transparent 70%)',
         }}
       />
 
-      <div className="relative mx-auto max-w-[1200px] px-6 pt-16 pb-24 lg:px-12 lg:pt-24 lg:pb-32">
+      <div className="relative mx-auto max-w-[1200px] px-6 pt-16 pb-20 text-center lg:px-12 lg:pt-24 lg:pb-24">
         {/* Badge */}
         <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--brand)]/30 bg-[color:var(--brand-soft)] px-3 py-1 text-[12px] font-medium text-[color:var(--brand)]">
           <span className="relative flex h-2 w-2">
@@ -98,155 +98,118 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
           Founder pricing · plazas limitadas
         </div>
 
-        {/* Headline */}
+        {/* Headline — pawdoq-style: one bold block, tight tracking */}
         <h1
-          className="mt-6 max-w-[18ch] font-semibold text-ink"
+          className="mx-auto mt-8 max-w-[18ch] font-semibold text-ink"
           style={{ fontSize: 'clamp(40px, 7vw, 76px)', lineHeight: 1.02, letterSpacing: '-0.04em' }}
         >
-          Pedigrees verificables. <span className="italic font-light text-body">Criadero profesional.</span>
+          Pedigrees verificables. Criadero profesional.
         </h1>
-        <p className="mt-6 max-w-[560px] text-[17px] leading-[1.55] text-body sm:text-[19px]">
+        <p className="mx-auto mt-6 max-w-[620px] text-[17px] leading-[1.55] text-body sm:text-[19px]">
           El registro público mundial de perros con genealogía. Gratis para todos.
-          Tier Pro con todo lo que un criadero serio necesita: reservas, clientes,
-          web propia, emailbot y newsletter.
+          Tier Pro con todo lo que un criadero serio necesita en un sitio.
         </p>
 
         {/* CTAs */}
-        <div className="mt-10 flex flex-wrap items-center gap-3">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <Button href="/register" variant="primary" size="lg">
             Empieza gratis <ArrowRight className="h-4 w-4" />
           </Button>
           <Button href="#producto" variant="secondary" size="lg">
             Cómo funciona
           </Button>
-          <span className="text-[13px] text-muted">
-            Sin tarjeta · Pro a precio Founder por vida
-          </span>
         </div>
+        <p className="mt-4 text-[13px] text-muted">
+          Sin tarjeta · Pro a precio Founder por vida
+        </p>
 
-        {/* Hero visual: pedigree mini-tree + recent dogs */}
-        <div className="mt-16 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <PedigreeCardVisual heroDogs={heroDogs} />
-          <RecentDogsCard heroDogs={heroDogs} />
+        {/* App-window mockup with real SearchBar */}
+        <div className="relative mx-auto mt-16 max-w-[920px]">
+          <AppWindow url="genealogic.io/buscar" title="Buscar en el registro">
+            <div className="px-6 py-8 sm:px-10 sm:py-10">
+              <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
+                Genealogías verificables
+              </p>
+              <h2
+                className="mt-2 font-semibold text-ink"
+                style={{ fontSize: 'clamp(24px, 3.4vw, 38px)', lineHeight: 1.1, letterSpacing: '-0.025em' }}
+              >
+                Encuentra perros, criaderos y razas
+              </h2>
+              <div className="mx-auto mt-6 max-w-[560px] text-left">
+                <SearchBar />
+              </div>
+
+              {/* Featured dogs row — real data */}
+              {heroDogs.length > 0 && (
+                <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
+                  {heroDogs.slice(0, 6).map((dog: any) => (
+                    <Link
+                      key={dog.id}
+                      href={`/dogs/${dog.slug || dog.id}`}
+                      className="group relative block h-11 w-11 overflow-hidden rounded-lg border border-hairline bg-surface-card transition hover:border-ink/40 hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                      title={dog.name}
+                    >
+                      {dog.thumbnail_url && (
+                        <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover" />
+                      )}
+                    </Link>
+                  ))}
+                  <Link
+                    href="/search"
+                    className="flex h-11 items-center rounded-lg border border-hairline px-3 text-[12px] font-medium text-body transition hover:border-ink/40 hover:text-ink"
+                  >
+                    Ver todos →
+                  </Link>
+                </div>
+              )}
+            </div>
+          </AppWindow>
         </div>
       </div>
     </section>
   )
 }
 
-function PedigreeCardVisual({ heroDogs }: { heroDogs: any[] }) {
-  const main = heroDogs[0]
+/** macOS-style window chrome wrapper. Used to frame product mockups. */
+function AppWindow({
+  url,
+  title,
+  children,
+}: {
+  url?: string
+  title?: string
+  children: React.ReactNode
+}) {
   return (
-    <div className="relative rounded-[16px] border border-hairline bg-canvas p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] sm:p-8">
-      <div className="mb-5 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-          <GitBranch className="h-3.5 w-3.5" />
-          Árbol genealógico
+    <div className="overflow-hidden rounded-[14px] border border-hairline bg-canvas shadow-[0_24px_60px_-12px_rgba(17,17,17,0.18),0_8px_24px_-4px_rgba(17,17,17,0.08)]">
+      {/* Title bar */}
+      <div className="flex items-center gap-3 border-b border-hairline bg-surface-soft px-3.5 py-2.5">
+        <div className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+          <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+          <span className="h-3 w-3 rounded-full bg-[#28c840]" />
         </div>
-        <span className="rounded-full bg-surface-card px-2.5 py-1 text-[11px] font-medium text-body">
-          5 generaciones
-        </span>
+        {url && (
+          <div className="hidden flex-1 sm:flex sm:justify-center">
+            <div className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-canvas px-3 py-1 text-[11px] text-muted shadow-inner">
+              <Lock className="h-3 w-3" />
+              <span className="font-mono">{url}</span>
+            </div>
+          </div>
+        )}
+        {title && !url && (
+          <p className="flex-1 text-center text-[12px] font-medium text-body">{title}</p>
+        )}
+        <div className="w-[54px]" />
       </div>
-
-      {/* SVG pedigree tree mock */}
-      <svg viewBox="0 0 520 220" className="h-auto w-full" aria-hidden>
-        {/* Connectors */}
-        <g stroke="var(--pedigree-line)" strokeWidth="1.5" fill="none">
-          <path d="M120 110 L240 60" />
-          <path d="M120 110 L240 160" />
-          <path d="M260 60 L380 30" />
-          <path d="M260 60 L380 90" />
-          <path d="M260 160 L380 130" />
-          <path d="M260 160 L380 190" />
-        </g>
-        {/* Main dog (gen 0) */}
-        <g>
-          <rect x="20" y="92" width="100" height="36" rx="8" fill="var(--ink)" />
-          <text x="70" y="115" textAnchor="middle" fill="white" fontSize="12" fontWeight="600">
-            {main?.name?.slice(0, 14) || 'Tu perro'}
-          </text>
-        </g>
-        {/* Gen 1 — parents */}
-        <g>
-          <rect x="240" y="42" width="120" height="36" rx="8" fill="var(--canvas)" stroke="var(--male)" strokeWidth="1.5" />
-          <text x="300" y="65" textAnchor="middle" fill="var(--ink)" fontSize="11" fontWeight="600">Padre</text>
-          <rect x="240" y="142" width="120" height="36" rx="8" fill="var(--canvas)" stroke="var(--female)" strokeWidth="1.5" />
-          <text x="300" y="165" textAnchor="middle" fill="var(--ink)" fontSize="11" fontWeight="600">Madre</text>
-        </g>
-        {/* Gen 2 — grandparents */}
-        <g fill="var(--surface-card)" stroke="var(--hairline)">
-          <rect x="380" y="12" width="120" height="36" rx="8" />
-          <rect x="380" y="72" width="120" height="36" rx="8" />
-          <rect x="380" y="112" width="120" height="36" rx="8" />
-          <rect x="380" y="172" width="120" height="36" rx="8" />
-        </g>
-        <g fill="var(--muted)" fontSize="11" textAnchor="middle">
-          <text x="440" y="35">Abuelo paterno</text>
-          <text x="440" y="95">Abuela paterna</text>
-          <text x="440" y="135">Abuelo materno</text>
-          <text x="440" y="195">Abuela materna</text>
-        </g>
-      </svg>
-
-      <div className="mt-6 flex flex-wrap items-center gap-2 text-[12px] text-muted">
-        <ShieldCheck className="h-4 w-4 text-[color:var(--success)]" />
-        Verificable · trazable · público
-      </div>
-    </div>
-  )
-}
-
-function RecentDogsCard({ heroDogs }: { heroDogs: any[] }) {
-  return (
-    <div className="rounded-[16px] border border-hairline bg-surface-card p-6 sm:p-8">
-      <div className="mb-5 flex items-center gap-2 text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-        <Dog className="h-3.5 w-3.5" />
-        Perros publicados hoy
-      </div>
-      <div className="space-y-2">
-        {heroDogs.length > 0
-          ? heroDogs.slice(0, 4).map((d: any) => (
-              <Link
-                key={d.id}
-                href={`/dogs/${d.slug || d.id}`}
-                className="flex items-center gap-3 rounded-lg bg-canvas p-2.5 transition hover:bg-surface-soft"
-              >
-                <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-md border border-hairline bg-surface-card">
-                  {d.thumbnail_url && (
-                    <img src={d.thumbnail_url} alt={d.name} className="h-full w-full object-cover" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px] font-semibold text-ink">{d.name}</p>
-                  <p className="truncate text-[11px] text-muted">
-                    {d.breed?.name || 'Sin raza definida'}
-                  </p>
-                </div>
-                <ArrowRight className="h-3.5 w-3.5 text-muted" />
-              </Link>
-            ))
-          : Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3 rounded-lg bg-canvas p-2.5">
-                <div className="h-10 w-10 flex-shrink-0 rounded-md bg-surface-card" />
-                <div className="flex-1 space-y-1.5">
-                  <div className="h-3 w-2/3 rounded bg-surface-card" />
-                  <div className="h-2.5 w-1/3 rounded bg-surface-card" />
-                </div>
-              </div>
-            ))}
-      </div>
-      <Link
-        href="/search"
-        className="mt-5 flex items-center justify-center gap-2 rounded-lg border border-hairline bg-canvas py-2.5 text-[13px] font-medium text-ink transition hover:bg-surface-soft"
-      >
-        <Search className="h-3.5 w-3.5" /> Buscar en el registro
-      </Link>
+      {children}
     </div>
   )
 }
 
 // ─── Pedigree showcase ───────────────────────────────────────────────────
-function PedigreeShowcase() {
+function PedigreeShowcase({ heroDogs }: { heroDogs: any[] }) {
   return (
     <section id="producto" className="border-b border-hairline bg-surface-soft">
       <div className="mx-auto max-w-[1200px] px-6 py-24 lg:px-12 lg:py-[120px]">
@@ -261,10 +224,17 @@ function PedigreeShowcase() {
             El registro público de perros con genealogía verificable.
           </h2>
           <p className="max-w-[460px] text-[17px] leading-[1.55] text-body">
-            Cada perro con árbol de 5 generaciones, datos sanitarios, registro y
+            Cada perro con árbol de hasta 5 generaciones, datos sanitarios, registro y
             trazabilidad. Importa pedigrees existentes en segundos con IA. Comparte
             tu trabajo con un link público.
           </p>
+        </div>
+
+        {/* Real-looking pedigree mockup inside app window */}
+        <div className="mt-14">
+          <AppWindow url="genealogic.io/dogs/fray-del-nie">
+            <RealPedigreeMockup heroDogs={heroDogs} />
+          </AppWindow>
         </div>
 
         <div className="mt-14 grid gap-6 md:grid-cols-3">
@@ -289,6 +259,154 @@ function PedigreeShowcase() {
         </div>
       </div>
     </section>
+  )
+}
+
+/** Real pedigree look: replicates PedigreeTree's Card design (200x64 + photo + name + sex stripe). */
+function RealPedigreeMockup({ heroDogs }: { heroDogs: any[] }) {
+  // Realistic sample names — won't pretend to be Irema's specific dogs.
+  const sampleNames = [
+    'Fray de El Nie',          // root
+    'Tornado del Olimpo',      // father
+    'Estrella de la Sierra',   // mother
+    'Hércules del Norte',      // f-father
+    'Bella de los Picos',      // f-mother
+    'Apolo del Cantábrico',    // m-father
+    'Luna de Castilla',        // m-mother
+  ]
+  const breed = 'Bull Terrier'
+  const pad = (i: number) => heroDogs[i % Math.max(heroDogs.length, 1)]
+
+  return (
+    <div className="overflow-x-auto p-6 sm:p-8">
+      <div className="mb-5 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
+          <GitBranch className="h-3.5 w-3.5" />
+          Árbol genealógico
+        </div>
+        <span className="rounded-full bg-surface-card px-2.5 py-1 text-[11px] font-medium text-body">
+          3 generaciones · 5 disponibles
+        </span>
+      </div>
+
+      <div className="relative min-w-[860px]">
+        {/* SVG connectors layer — under cards */}
+        <svg
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          viewBox="0 0 860 360"
+          preserveAspectRatio="none"
+          aria-hidden
+        >
+          <g stroke="var(--pedigree-line)" strokeWidth="1.5" fill="none">
+            {/* Root → parents */}
+            <path d="M220 180 H 290 V 70 H 320" />
+            <path d="M220 180 H 290 V 290 H 320" />
+            {/* Father → grandparents */}
+            <path d="M540 70 H 590 V 30 H 620" />
+            <path d="M540 70 H 590 V 110 H 620" />
+            {/* Mother → grandparents */}
+            <path d="M540 290 H 590 V 250 H 620" />
+            <path d="M540 290 H 590 V 330 H 620" />
+          </g>
+        </svg>
+
+        {/* Cards grid */}
+        <div className="relative grid grid-cols-[220px_220px_220px] gap-x-[100px]">
+          {/* Col 1: root */}
+          <div className="flex flex-col justify-center" style={{ height: 360 }}>
+            <PedCard
+              name={sampleNames[0]}
+              breed={breed}
+              sex="male"
+              isRoot
+              photo={pad(0)?.thumbnail_url}
+            />
+          </div>
+          {/* Col 2: parents */}
+          <div className="flex flex-col justify-around" style={{ height: 360 }}>
+            <PedCard
+              name={sampleNames[1]}
+              breed={breed}
+              sex="male"
+              photo={pad(1)?.thumbnail_url}
+            />
+            <PedCard
+              name={sampleNames[2]}
+              breed={breed}
+              sex="female"
+              photo={pad(2)?.thumbnail_url}
+            />
+          </div>
+          {/* Col 3: grandparents */}
+          <div className="flex flex-col justify-around" style={{ height: 360 }}>
+            <PedCard name={sampleNames[3]} breed={breed} sex="male" photo={pad(3)?.thumbnail_url} />
+            <PedCard name={sampleNames[4]} breed={breed} sex="female" photo={pad(4)?.thumbnail_url} />
+            <PedCard name={sampleNames[5]} breed={breed} sex="male" photo={pad(5)?.thumbnail_url} />
+            <PedCard name={sampleNames[6]} breed={breed} sex="female" photo={pad(0)?.thumbnail_url} />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer line */}
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-[12px] text-muted">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-[color:var(--success)]" />
+          Verificable · trazable · público
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block h-2 w-2 rounded-sm" style={{ background: 'var(--male)' }} />
+            Macho
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block h-2 w-2 rounded-sm" style={{ background: 'var(--female)' }} />
+            Hembra
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Mirrors the look of the production Card in pedigree-tree.tsx: 200x64, photo left, sex stripe, name + breed. */
+function PedCard({
+  name,
+  breed,
+  sex,
+  isRoot,
+  photo,
+}: {
+  name: string
+  breed?: string
+  sex: 'male' | 'female'
+  isRoot?: boolean
+  photo?: string | null
+}) {
+  const stripe = sex === 'male' ? 'var(--male)' : 'var(--female)'
+  return (
+    <div
+      className={`relative flex items-stretch overflow-hidden rounded-xl border bg-canvas ${
+        isRoot
+          ? 'border-ink shadow-[0_0_0_1px_rgba(17,17,17,0.04),0_4px_18px_rgba(17,17,17,0.10)]'
+          : 'border-hairline shadow-[0_1px_2px_rgba(17,17,17,0.04)]'
+      }`}
+      style={{ width: 220, height: 64 }}
+    >
+      <div className="relative flex-shrink-0 bg-surface-card" style={{ width: 56 }}>
+        {photo ? (
+          <img src={photo} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <Dog className="h-4 w-4 text-muted opacity-50" />
+          </div>
+        )}
+        <div className="absolute bottom-0 right-0 top-0 w-[3px]" style={{ backgroundColor: stripe }} />
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col justify-center px-2.5 py-1.5">
+        <p className="truncate text-[12px] font-semibold leading-tight text-ink">{name}</p>
+        {breed && <p className="mt-0.5 truncate text-[10.5px] text-muted">{breed}</p>}
+      </div>
+    </div>
   )
 }
 
@@ -376,45 +494,48 @@ function KanbanShowcase() {
           firmó contrato, quién espera la próxima camada.
         </p>
 
-        {/* Kanban mock */}
-        <div className="mt-12 overflow-x-auto">
-          <div className="grid min-w-[820px] grid-cols-4 gap-4">
-            <KanbanColumn
-              title="Interesados"
-              count={3}
-              accent="badge-orange"
-              cards={[
-                { name: 'Laura M.', sub: 'Camada primavera · macho' },
-                { name: 'Carlos D.', sub: 'Lista de espera' },
-                { name: 'Ana P.', sub: 'Pregunta por afijo' },
-              ]}
-            />
-            <KanbanColumn
-              title="Seña pagada"
-              count={2}
-              accent="badge-violet"
-              cards={[
-                { name: 'Diego R.', sub: '300 € · 12 mar' },
-                { name: 'María L.', sub: '300 € · 8 mar' },
-              ]}
-            />
-            <KanbanColumn
-              title="Contrato firmado"
-              count={1}
-              accent="badge-emerald"
-              cards={[{ name: 'Pablo G.', sub: 'Cachorro asignado · #7' }]}
-            />
-            <KanbanColumn
-              title="Entregados"
-              count={4}
-              accent="muted"
-              cards={[
-                { name: 'Elena C.', sub: 'Recogido 12 feb' },
-                { name: 'Jorge T.', sub: 'Recogido 5 feb' },
-                { name: '+2 más', sub: '' },
-              ]}
-            />
-          </div>
+        <div className="mt-12">
+          <AppWindow url="genealogic.io/reservas">
+            <div className="overflow-x-auto p-5 sm:p-7">
+              <div className="grid min-w-[820px] grid-cols-4 gap-4">
+                <KanbanColumn
+                  title="Interesados"
+                  count={3}
+                  accent="badge-orange"
+                  cards={[
+                    { name: 'Laura M.', sub: 'Camada primavera · macho' },
+                    { name: 'Carlos D.', sub: 'Lista de espera' },
+                    { name: 'Ana P.', sub: 'Pregunta por afijo' },
+                  ]}
+                />
+                <KanbanColumn
+                  title="Seña pagada"
+                  count={2}
+                  accent="badge-violet"
+                  cards={[
+                    { name: 'Diego R.', sub: '300 € · 12 mar' },
+                    { name: 'María L.', sub: '300 € · 8 mar' },
+                  ]}
+                />
+                <KanbanColumn
+                  title="Contrato firmado"
+                  count={1}
+                  accent="badge-emerald"
+                  cards={[{ name: 'Pablo G.', sub: 'Cachorro asignado · #7' }]}
+                />
+                <KanbanColumn
+                  title="Entregados"
+                  count={4}
+                  accent="muted"
+                  cards={[
+                    { name: 'Elena C.', sub: 'Recogido 12 feb' },
+                    { name: 'Jorge T.', sub: 'Recogido 5 feb' },
+                    { name: '+2 más', sub: '' },
+                  ]}
+                />
+              </div>
+            </div>
+          </AppWindow>
         </div>
       </div>
     </section>
@@ -433,11 +554,11 @@ function KanbanColumn({
   cards: { name: string; sub: string }[]
 }) {
   return (
-    <div className="rounded-[12px] bg-canvas border border-hairline p-3">
+    <div className="rounded-[12px] border border-hairline bg-surface-soft p-3">
       <div className="mb-3 flex items-center justify-between px-1">
         <span className="text-[12px] font-semibold text-ink">{title}</span>
         <span
-          className="rounded-full bg-surface-card px-2 py-0.5 text-[11px] font-medium text-body"
+          className="rounded-full bg-canvas px-2 py-0.5 text-[11px] font-medium text-body"
           style={accent !== 'muted' ? { color: `var(--${accent})` } : undefined}
         >
           {count}
@@ -494,13 +615,8 @@ function BotConversation() {
             </div>
           </div>
 
-          {/* Chat mock */}
-          <div className="rounded-[16px] border border-hairline bg-canvas p-5 shadow-[0_4px_24px_rgba(0,0,0,0.06)] sm:p-7">
-            <div className="mb-4 flex items-center gap-2 text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-              <Mail className="h-3.5 w-3.5" />
-              hola@tucriadero.com
-            </div>
-            <div className="space-y-3">
+          <AppWindow title="hola@tucriadero.com · Hilo 142">
+            <div className="space-y-3 p-5 sm:p-7">
               <ChatBubble side="left">
                 Hola, ¿tendréis camadas previstas para primavera? Estaba interesado en
                 un macho con padres con certificados de cadera.
@@ -518,7 +634,7 @@ function BotConversation() {
                 </span>
               </div>
             </div>
-          </div>
+          </AppWindow>
         </div>
       </div>
     </section>
@@ -546,9 +662,11 @@ function ChatBubble({
   }
   return (
     <div className="flex items-start justify-end gap-2">
-      <div className={`max-w-[85%] rounded-2xl rounded-tr-sm px-4 py-2.5 text-[13.5px] leading-[1.5] ${
-        bot ? 'bg-ink text-on-primary' : 'bg-surface-card text-ink'
-      }`}>
+      <div
+        className={`max-w-[85%] rounded-2xl rounded-tr-sm px-4 py-2.5 text-[13.5px] leading-[1.5] ${
+          bot ? 'bg-ink text-on-primary' : 'bg-surface-card text-ink'
+        }`}
+      >
         {children}
       </div>
       {bot && (
@@ -623,61 +741,13 @@ function Step({
   )
 }
 
-// ─── Case study ──────────────────────────────────────────────────────────
-function CaseStudy() {
-  return (
-    <section className="border-b border-hairline">
-      <div className="mx-auto max-w-[1200px] px-6 py-24 lg:px-12 lg:py-[120px]">
-        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div>
-            <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-              06 · Caso real
-            </p>
-            <h2
-              className="mt-3 font-semibold text-ink"
-              style={{ fontSize: 'clamp(28px, 4.5vw, 44px)', lineHeight: 1.1, letterSpacing: '-0.03em' }}
-            >
-              Irema Curtó · Bull Terriers desde 1975
-            </h2>
-            <blockquote className="mt-6 border-l-2 border-[color:var(--brand)] pl-5 text-[17px] leading-[1.6] text-body">
-              «Genealogic le ahorra a mi padre 4 horas a la semana de contestar los
-              mismos emails y le permite enseñar el linaje real de cada cachorro al
-              instante. Es lo que faltaba en este sector.»
-            </blockquote>
-            <p className="mt-4 text-[13px] text-muted">
-              Manuel Curtó · 4ª generación · @iremacurto
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <Stat big="1975" label="Afijo desde" />
-            <Stat big="+1.000" label="Cachorros entregados" />
-            <Stat big="6" label="Países atendidos" />
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function Stat({ big, label }: { big: string; label: string }) {
-  return (
-    <div className="rounded-[12px] border border-hairline bg-surface-soft p-5 text-center">
-      <p className="text-[28px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
-        {big}
-      </p>
-      <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">{label}</p>
-    </div>
-  )
-}
-
 // ─── Pricing ─────────────────────────────────────────────────────────────
 function Pricing() {
   return (
-    <section id="precios" className="border-b border-hairline bg-surface-soft">
+    <section id="precios" className="border-b border-hairline">
       <div className="mx-auto max-w-[1200px] px-6 py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-          07 · Precios
+          06 · Precios
         </p>
         <h2
           className="mt-3 max-w-[18ch] font-semibold text-ink"
@@ -786,9 +856,9 @@ function FAQ() {
   ]
 
   return (
-    <section id="faq" className="border-b border-hairline">
+    <section id="faq" className="border-b border-hairline bg-surface-soft">
       <div className="mx-auto max-w-[860px] px-6 py-24 lg:px-12 lg:py-[120px]">
-        <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">08 · FAQ</p>
+        <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">07 · FAQ</p>
         <h2
           className="mt-3 font-semibold text-ink"
           style={{ fontSize: 'clamp(32px, 5vw, 48px)', lineHeight: 1.1, letterSpacing: '-0.03em' }}
