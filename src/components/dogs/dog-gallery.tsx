@@ -22,13 +22,10 @@ export default function DogGallery({ photos, name, sex }: DogGalleryProps) {
   const prevMobile = () => setMobileIdx(i => Math.max(0, i - 1))
   const nextMobile = () => setMobileIdx(i => Math.min(photos.length - 1, i + 1))
 
-  // En desktop, las fotos se reparten equitativamente hasta 4 columnas.
-  // Si hay 1, ocupa todo el ancho con altura fija (no aspect-square completo).
-  // Si hay 2-3, se reparten 1/2 / 1/3 con aspect cuadrado.
-  // Si hay 4+, 4 columnas con scroll horizontal.
-  const desktopCols = Math.min(photos.length, desktopVisible)
-  const colClass = desktopCols === 1 ? 'w-full' : desktopCols === 2 ? 'w-1/2' : desktopCols === 3 ? 'w-1/3' : 'w-1/4'
-  const desktopHeightClass = desktopCols === 1 ? 'h-[420px]' : 'aspect-square'
+  // En desktop SIEMPRE mostramos 4 slots cuadrados (1/4 ancho c/u).
+  // Si hay menos de 4 fotos, los huecos quedan como placeholders grises.
+  // Si hay más de 4, scroll horizontal de a 1 columna.
+  const emptySlots = Math.max(0, desktopVisible - photos.length)
 
   return (
     <>
@@ -77,32 +74,37 @@ export default function DogGallery({ photos, name, sex }: DogGalleryProps) {
         )}
       </div>
 
-      {/* ── Desktop: layout adaptativo según número de fotos ── */}
+      {/* ── Desktop: siempre 4 slots cuadrados, huecos como placeholders ── */}
       <div className="relative hidden w-full overflow-hidden bg-surface-soft lg:block">
-        {hasPhotos ? (
-          <div
-            className="flex transition-transform duration-300"
-            style={photos.length > desktopVisible ? { transform: `translateX(-${desktopOffset * 25}%)` } : undefined}
-          >
-            {photos.map((url, i) => (
-              <div key={i} className={`relative flex-shrink-0 ${colClass} ${desktopHeightClass}`}>
-                <Image
-                  src={url}
-                  alt={`${name} ${i + 1}`}
-                  fill
-                  sizes={desktopCols === 1 ? '100vw' : '(max-width: 1024px) 25vw, 400px'}
-                  priority={i < 4}
-                  className="cursor-pointer object-cover transition-opacity hover:opacity-90"
-                  onClick={() => setLightboxIdx(i)}
-                />
+        <div
+          className="flex transition-transform duration-300"
+          style={photos.length > desktopVisible ? { transform: `translateX(-${desktopOffset * 25}%)` } : undefined}
+        >
+          {photos.map((url, i) => (
+            <div key={`photo-${i}`} className="relative aspect-square w-1/4 flex-shrink-0">
+              <Image
+                src={url}
+                alt={`${name} ${i + 1}`}
+                fill
+                sizes="(max-width: 1024px) 25vw, 400px"
+                priority={i < 4}
+                className="cursor-pointer object-cover transition-opacity hover:opacity-90"
+                onClick={() => setLightboxIdx(i)}
+              />
+            </div>
+          ))}
+          {/* Placeholders grises para completar hasta 4 slots */}
+          {Array.from({ length: emptySlots }).map((_, i) => (
+            <div
+              key={`empty-${i}`}
+              className="relative aspect-square w-1/4 flex-shrink-0 border-l border-hairline bg-surface-card"
+            >
+              <div className="flex h-full w-full items-center justify-center">
+                <img src="/icon.svg" alt="" className="h-10 w-10 opacity-[0.08]" />
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex aspect-[16/5] w-full items-center justify-center">
-            <img src="/icon.svg" alt="" className="h-16 w-16 opacity-10" />
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
 
         {photos.length > desktopVisible && (
           <>
