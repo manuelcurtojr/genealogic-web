@@ -15,6 +15,7 @@ import { NAV_SECTIONS, BRAND } from '@/lib/constants'
 import { isAdmin, hasProAccess } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 import { Wordmark } from '@/components/ui/wordmark'
+import { CommandBarTrigger } from './command-bar'
 
 const iconMap: Record<string, React.ElementType> = {
   Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings,
@@ -50,15 +51,23 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, mobileOpen,
     window.location.href = '/login'
   }
 
-  // Determine which sections are visible
-  // - 'breeding' and 'kennel' only for breeders (users with a kennel)
-  // - 'tools' (Calendar, Vet) shown to everyone
-  // - Pro sections (pipeline, bot, web, marketing, cuenta) only if plan is pro/premium
-  const allSections = NAV_SECTIONS.filter(section => {
-    if (section.requiresKennel && !isBreeder) return false
-    if (section.requiresPro && !userHasPro) return false
-    return true
-  })
+  // Filter sections + items by user permissions
+  const allSections = NAV_SECTIONS
+    .filter(section => {
+      if (section.requiresKennel && !isBreeder) return false
+      if (section.requiresPro && !userHasPro) return false
+      return true
+    })
+    .map(section => ({
+      ...section,
+      items: section.items.filter(item => {
+        if (item.requiresKennel && !isBreeder) return false
+        if (item.requiresPro && !userHasPro) return false
+        if (item.hideIfPro && userHasPro) return false
+        return true
+      }),
+    }))
+    .filter(section => section.items.length > 0)
 
   // No locked sections in this model — show or hide
   const isSectionLocked = (_section: typeof NAV_SECTIONS[number]) => false
@@ -90,18 +99,26 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, mobileOpen,
           )}
         </div>
 
+        {/* Command Bar trigger ⌘K — todo lo demás se invoca desde aquí */}
+        <div className="px-2 pt-3 pb-1">
+          <CommandBarTrigger collapsed={collapsed && !mobileOpen} />
+        </div>
+
         {/* Navigation by sections */}
-        <nav className="flex-1 overflow-y-auto py-3 px-2">
+        <nav className="flex-1 overflow-y-auto py-2 px-2">
           {allSections.map((section, sIdx) => {
             const locked = isSectionLocked(section)
+            const hasLabel = section.label && section.label.trim().length > 0
             return (
             <div key={section.id}>
-              {/* Section title */}
-              {(!collapsed || mobileOpen) ? (
+              {/* Section title (solo si tiene label) */}
+              {(!collapsed || mobileOpen) && hasLabel ? (
                 <p className={`text-[10px] font-semibold uppercase tracking-[0.08em] px-3 ${sIdx > 0 ? 'mt-5' : ''} mb-2 flex items-center gap-1.5 text-muted`}>
                   {t(section.label)}
                   {locked && <Lock className="w-2.5 h-2.5" />}
                 </p>
+              ) : sIdx > 0 && !hasLabel ? (
+                <div className="my-2 mx-3 border-t border-hairline" />
               ) : sIdx > 0 ? (
                 <div className="my-3 mx-3 border-t border-hairline" />
               ) : null}
