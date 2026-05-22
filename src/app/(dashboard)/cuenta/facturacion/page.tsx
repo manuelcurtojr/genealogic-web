@@ -1,19 +1,31 @@
-import ComingSoon from '@/components/ui/coming-soon'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import BillingClient from '@/components/billing/billing-client'
 
 export const metadata = { title: 'Facturación · Genealogic Pro' }
 
-export default function FacturacionPage() {
+export default async function FacturacionPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('stripe_customer_id, stripe_subscription_id, stripe_subscription_status, billing_email, billing_name, billing_tax_id, billing_country, billing_address, billing_city, billing_postal_code, plan, plan_is_founder')
+    .eq('id', user.id)
+    .single()
+
+  const { data: invoices } = await supabase
+    .from('plan_invoices')
+    .select('id, number, amount_cents, currency, status, description, hosted_invoice_url, pdf_url, paid_at, created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
   return (
-    <ComingSoon
-      title="Facturación"
-      description="Facturas, recibos, método de pago y datos fiscales del kennel. Todo descargable en PDF para tu contabilidad."
-      features={[
-        'Historial de facturas con descarga PDF',
-        'Cambio de método de pago (Stripe)',
-        'Datos fiscales del criadero',
-        'Recibos de verificaciones oficiales pagadas',
-        'Resumen anual exportable',
-      ]}
+    <BillingClient
+      profile={profile as any}
+      invoices={invoices || []}
     />
   )
 }

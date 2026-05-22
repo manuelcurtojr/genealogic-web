@@ -6,6 +6,7 @@ import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 import { isUUID } from '@/lib/slug'
 import { pastelByName } from '@/lib/avatars'
 import KennelPublicTabs from '@/components/kennel/kennel-public-tabs'
+import PageTracker from '@/components/track/page-tracker'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -77,6 +78,7 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
   return (
     <div className="space-y-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <PageTracker kennelId={kennel.id} />
 
       {/* Back button */}
       <Link
