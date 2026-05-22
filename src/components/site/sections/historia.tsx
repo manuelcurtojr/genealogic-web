@@ -1,94 +1,93 @@
-import { HeroBackground } from './common';
+/**
+ * Sección "Nuestra historia" — light theme.
+ */
 
-// ──────────────────────────────────────────────────────────────────────
-// Sección: story-hero
-// ──────────────────────────────────────────────────────────────────────
 export function StoryHeroSection({
-  eyebrow,
-  title,
-  subtitle,
+  eyebrow, title, subtitle, background_image_url,
 }: {
-  eyebrow?: string;
-  title: string;
-  subtitle?: string;
+  eyebrow?: string
+  title: string
+  subtitle?: string
+  background_image_url?: string
 }) {
   return (
-    <section className="relative isolate">
-      <HeroBackground />
-      <div className="mx-auto max-w-3xl px-6 pt-32 pb-20 text-center">
+    <section className="relative min-h-[40vh] flex items-center bg-ink overflow-hidden">
+      {background_image_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={background_image_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50" />
+      )}
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-16 lg:py-20 w-full">
         {eyebrow && (
-          <p data-pawdoq-edit="eyebrow" className="text-sm tracking-[0.3em] uppercase text-brand-400/80">{eyebrow}</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/80 mb-3">{eyebrow}</p>
         )}
-        <h1 data-pawdoq-edit="title" className="mt-6 font-serif text-5xl md:text-7xl leading-[1.05]">{title}</h1>
+        <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight tracking-tight mb-4">{title}</h1>
         {subtitle && (
-          <p data-pawdoq-edit="subtitle" className="mt-8 text-lg text-white/80 leading-relaxed">{subtitle}</p>
+          <p className="text-lg text-white/85 max-w-2xl leading-relaxed">{subtitle}</p>
         )}
       </div>
     </section>
-  );
+  )
 }
 
-// ──────────────────────────────────────────────────────────────────────
-// Sección: timeline
-// ──────────────────────────────────────────────────────────────────────
-type Milestone = { year: string; title: string; body: string };
-
-export function TimelineSection({ milestones }: { milestones: Milestone[] }) {
+export function TimelineSection({
+  title, items = [],
+}: {
+  title?: string
+  items?: { year: string; title: string; body?: string; image_url?: string }[]
+}) {
   return (
-    <section className="border-t border-white/10 bg-neutral-950">
-      <div className="mx-auto max-w-3xl px-6 py-24">
-        <ol className="relative border-l border-white/15 pl-8 space-y-14">
-          {milestones.map((m, i) => (
+    <section className="py-16 lg:py-24">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        {title && (
+          <h2 className="text-2xl md:text-3xl font-bold text-ink mb-12 text-center tracking-tight">{title}</h2>
+        )}
+        <ol className="relative border-l border-hairline space-y-10 pl-6">
+          {items.map((it, i) => (
             <li key={i} className="relative">
-              <span className="absolute -left-[37px] top-2 w-3 h-3 rounded-full bg-brand-500 ring-4 ring-black" />
-              <p data-pawdoq-edit={`milestones[${i}].year`} className="text-brand-400 text-sm tracking-widest uppercase">{m.year}</p>
-              <h2 data-pawdoq-edit={`milestones[${i}].title`} className="mt-2 font-serif text-2xl md:text-3xl">{m.title}</h2>
-              <p data-pawdoq-edit={`milestones[${i}].body`} className="mt-3 text-white/70 leading-relaxed">{m.body}</p>
+              <span className="absolute -left-[31px] top-1 w-3 h-3 rounded-full bg-ink border-4 border-canvas" />
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted mb-1">{it.year}</p>
+              <h3 className="text-lg font-bold text-ink mb-2 tracking-tight">{it.title}</h3>
+              {it.body && (
+                <p className="text-sm text-body leading-relaxed">{it.body}</p>
+              )}
+              {it.image_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={it.image_url} alt={it.title} className="mt-4 rounded-xl border border-hairline w-full max-w-md" />
+              )}
             </li>
           ))}
         </ol>
       </div>
     </section>
-  );
+  )
 }
 
-// ──────────────────────────────────────────────────────────────────────
-// Sección: team
-// ──────────────────────────────────────────────────────────────────────
-type Member = { name: string; role: string; bio: string; photo?: string };
-
 export function TeamSection({
-  eyebrow,
-  title,
-  members,
+  title, members = [],
 }: {
-  eyebrow?: string;
-  title?: string;
-  members: Member[];
+  title?: string
+  members?: { name: string; role?: string; bio?: string; photo_url?: string }[]
 }) {
   return (
-    <section className="border-t border-white/10">
-      <div className="mx-auto max-w-4xl px-6 py-24">
-        {(eyebrow || title) && (
-          <div className="text-center mb-16">
-            {eyebrow && (
-              <p data-pawdoq-edit="eyebrow" className="text-sm tracking-[0.3em] uppercase text-brand-400/80">{eyebrow}</p>
-            )}
-            {title && (
-              <h2 data-pawdoq-edit="title" className="mt-4 font-serif text-4xl md:text-5xl">{title}</h2>
-            )}
-          </div>
+    <section className="py-12 lg:py-16 bg-surface-card">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        {title && (
+          <h2 className="text-2xl md:text-3xl font-bold text-ink mb-10 text-center tracking-tight">{title}</h2>
         )}
-        <div className="space-y-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {members.map((m, i) => (
-            <article key={m.name} className="border-b border-white/10 pb-20 last:border-0">
-              <p data-pawdoq-edit={`members[${i}].role`} className="text-brand-400 text-sm tracking-widest uppercase">{m.role}</p>
-              <h3 data-pawdoq-edit={`members[${i}].name`} className="mt-3 font-serif text-4xl md:text-5xl">{m.name}</h3>
-              <p data-pawdoq-edit={`members[${i}].bio`} className="mt-6 text-white/75 leading-relaxed text-lg">{m.bio}</p>
-            </article>
+            <div key={i} className="rounded-xl border border-hairline bg-canvas p-5 text-center">
+              {m.photo_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={m.photo_url} alt={m.name} className="w-24 h-24 rounded-full mx-auto object-cover mb-3" />
+              )}
+              <p className="text-base font-bold text-ink">{m.name}</p>
+              {m.role && <p className="text-xs text-muted">{m.role}</p>}
+              {m.bio && <p className="text-sm text-body mt-3 leading-relaxed">{m.bio}</p>}
+            </div>
           ))}
         </div>
       </div>
     </section>
-  );
+  )
 }

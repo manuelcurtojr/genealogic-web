@@ -1,143 +1,141 @@
-import Link from 'next/link';
-import { NewsletterForm } from '@/components/site/newsletter-form';
+/**
+ * Secciones comunes reutilizables — light theme Cal.com.
+ */
+import Link from 'next/link'
+import { NewsletterForm } from '@/components/site/newsletter-form'
+import { getCurrentKennel } from '@/lib/kennel-context'
 
-/** Fondo radial cálido reutilizable. */
-export function HeroBackground() {
-  return (
-    <div
-      className="absolute inset-0 -z-10"
-      style={{
-        background:
-          'radial-gradient(120% 80% at 50% 0%, #6b1f08 0%, #2a0a04 45%, #000 80%)',
-      }}
-    />
-  );
-}
-
-type Cta = { label: string; href: string; variant?: 'primary' | 'outline' | 'ghost' };
+type Cta = { label: string; href: string; variant?: 'primary' | 'outline' | 'ghost' }
 
 function CtaButton({ cta }: { cta: Cta }) {
-  const base = 'inline-flex items-center px-7 py-3 rounded-full transition';
-  if (cta.variant === 'primary' || !cta.variant) {
-    return (
-      <Link href={cta.href} className={`${base} bg-white text-black font-medium hover:bg-white/90`}>
-        {cta.label}
-      </Link>
-    );
-  }
-  if (cta.variant === 'outline') {
-    return (
-      <Link href={cta.href} className={`${base} border border-white/30 text-white hover:bg-white/10`}>
-        {cta.label}
-      </Link>
-    );
-  }
-  return (
-    <Link href={cta.href} className={`${base} text-white hover:bg-white/5`}>
-      {cta.label}
-    </Link>
-  );
+  const cls = cta.variant === 'outline'
+    ? 'inline-flex items-center justify-center rounded-lg border border-ink text-ink px-5 py-3 text-sm font-semibold hover:bg-ink/5 transition'
+    : cta.variant === 'ghost'
+      ? 'inline-flex items-center justify-center rounded-lg text-ink px-5 py-3 text-sm font-semibold hover:bg-surface-soft transition'
+      : 'inline-flex items-center justify-center rounded-lg bg-ink text-on-primary px-5 py-3 text-sm font-semibold hover:opacity-90 transition'
+  return <Link href={cta.href} className={cls}>{cta.label}</Link>
 }
 
-/** Renderiza un Cta delegando estilos por variante. */
-export function CtaButtonExport({ cta }: { cta: Cta }) {
-  return <CtaButton cta={cta} />;
-}
+// Exportado por compat con landing.tsx
+export function HeroBackground() { return null }
+export const CtaButtonExport = CtaButton
 
-// ──────────────────────────────────────────────────────────────────────
-// Sección: page-header
-// ──────────────────────────────────────────────────────────────────────
 export function PageHeaderSection({
-  eyebrow,
-  title,
-  subtitle,
+  eyebrow, title, subtitle,
 }: {
-  eyebrow?: string;
-  title: string;
-  subtitle?: string;
+  eyebrow?: string
+  title?: string
+  subtitle?: string
 }) {
   return (
-    <section className="relative isolate">
-      <HeroBackground />
-      <div className="mx-auto max-w-3xl px-6 pt-32 pb-20 text-center">
+    <section className="border-b border-hairline">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 lg:py-20">
         {eyebrow && (
-          <p data-pawdoq-edit="eyebrow" className="text-sm tracking-[0.3em] uppercase text-brand-400/80">{eyebrow}</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted mb-3">{eyebrow}</p>
         )}
-        <h1 data-pawdoq-edit="title" className="mt-6 font-serif text-5xl md:text-7xl leading-[1.05]">{title}</h1>
+        {title && (
+          <h1 className="text-3xl md:text-5xl font-bold text-ink tracking-tight">{title}</h1>
+        )}
         {subtitle && (
-          <p data-pawdoq-edit="subtitle" className="mt-8 text-lg text-white/80 leading-relaxed">{subtitle}</p>
+          <p className="mt-4 text-lg text-body max-w-2xl leading-relaxed">{subtitle}</p>
         )}
       </div>
     </section>
-  );
+  )
 }
 
-// ──────────────────────────────────────────────────────────────────────
-// Sección: newsletter
-// ──────────────────────────────────────────────────────────────────────
-export function NewsletterSection({
-  headline = 'Boletín',
-  body = 'Recibe las últimas noticias en tu correo.',
-  placeholderEmail = 'tu@email.com',
-  ctaLabel = 'Suscribirse',
+export async function NewsletterSection({
+  title, subtitle, eyebrow, placeholderEmail, ctaLabel,
 }: {
-  headline?: string;
-  body?: string;
-  placeholderEmail?: string;
-  ctaLabel?: string;
+  title?: string
+  subtitle?: string
+  eyebrow?: string
+  placeholderEmail?: string
+  ctaLabel?: string
 }) {
+  const kennel = await getCurrentKennel()
   return (
-    <section className="border-t border-white/10 bg-neutral-950">
-      <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-        <h3 data-pawdoq-edit="headline" className="font-serif text-3xl mb-4">{headline}</h3>
-        <p data-pawdoq-edit="body" className="text-white/70 mb-8">{body}</p>
-        <NewsletterForm placeholderEmail={placeholderEmail} ctaLabel={ctaLabel} />
+    <section className="py-16 lg:py-20 bg-surface-card border-y border-hairline">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
+        {eyebrow && (
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted mb-3">{eyebrow}</p>
+        )}
+        {title && (
+          <h2 className="text-2xl md:text-3xl font-bold text-ink mb-3 tracking-tight">{title}</h2>
+        )}
+        {subtitle && (
+          <p className="text-body mb-8 leading-relaxed">{subtitle}</p>
+        )}
+        <NewsletterForm
+          kennelId={kennel.id}
+          placeholderEmail={placeholderEmail}
+          ctaLabel={ctaLabel}
+        />
       </div>
     </section>
-  );
+  )
 }
 
-// ──────────────────────────────────────────────────────────────────────
-// Sección: trust-strip
-// ──────────────────────────────────────────────────────────────────────
 export function TrustStripSection({
-  headline,
-  body,
+  title, logos = [],
 }: {
-  headline: string;
-  body?: string;
+  title?: string
+  logos?: { label: string; url?: string; image_url?: string }[]
+}) {
+  if (!logos.length) return null
+  return (
+    <section className="py-10 lg:py-14 border-y border-hairline bg-canvas">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        {title && (
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted mb-6 text-center">{title}</p>
+        )}
+        <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 opacity-80">
+          {logos.map((l, i) => (
+            <div key={i} className="text-sm text-body font-medium">
+              {l.image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={l.image_url} alt={l.label} className="h-8 w-auto object-contain" />
+              ) : (
+                l.label
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export function CtaBannerSection({
+  title, subtitle, cta_label, cta_href, eyebrow,
+}: {
+  title?: string
+  subtitle?: string
+  cta_label?: string
+  cta_href?: string
+  eyebrow?: string
 }) {
   return (
-    <section className="border-t border-white/10">
-      <div className="mx-auto max-w-6xl px-6 py-24 text-center">
-        <h2 data-pawdoq-edit="headline" className="font-serif text-4xl md:text-5xl">{headline}</h2>
-        {body && (
-          <p data-pawdoq-edit="body" className="mt-6 mx-auto max-w-2xl text-white/70 leading-relaxed">{body}</p>
+    <section className="py-16 lg:py-24 bg-ink">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+        {eyebrow && (
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/70 mb-3">{eyebrow}</p>
+        )}
+        {title && (
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">{title}</h2>
+        )}
+        {subtitle && (
+          <p className="text-white/85 text-lg mb-8 leading-relaxed">{subtitle}</p>
+        )}
+        {cta_label && cta_href && (
+          <Link
+            href={cta_href}
+            className="inline-flex items-center justify-center rounded-lg bg-white text-ink px-6 py-3 text-sm font-semibold hover:bg-white/90 transition"
+          >
+            {cta_label}
+          </Link>
         )}
       </div>
     </section>
-  );
-}
-
-// ──────────────────────────────────────────────────────────────────────
-// Sección: cta-banner
-// ──────────────────────────────────────────────────────────────────────
-export function CtaBannerSection({
-  headline,
-  body,
-  cta,
-}: {
-  headline: string;
-  body?: string;
-  cta: Cta;
-}) {
-  return (
-    <section className="border-t border-white/10 bg-neutral-950">
-      <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-        <h2 data-pawdoq-edit="headline" className="font-serif text-4xl mb-4">{headline}</h2>
-        {body && <p data-pawdoq-edit="body" className="text-white/70 mb-8 leading-relaxed">{body}</p>}
-        <CtaButton cta={cta} />
-      </div>
-    </section>
-  );
+  )
 }

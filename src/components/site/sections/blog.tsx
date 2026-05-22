@@ -1,193 +1,135 @@
-import Link from 'next/link';
-import { HeroBackground } from './common';
-import { getCurrentKennel } from '@/lib/kennel-context';
-import { createKennelAdminClient } from '@/lib/supabase/server';
+/**
+ * Secciones de Blog — leen de kennel_posts. Light theme.
+ */
+import Link from 'next/link'
+import { createKennelAdminClient } from '@/lib/supabase/server'
+import { getCurrentKennel } from '@/lib/kennel-context'
 
-// ──────────────────────────────────────────────────────────────────────
-// Sección: blog-hero
-// ──────────────────────────────────────────────────────────────────────
-export function BlogHeroSection({
-  eyebrow,
-  title,
-  subtitle,
-}: {
-  eyebrow?: string;
-  title: string;
-  subtitle?: string;
-}) {
-  return (
-    <section className="relative isolate">
-      <HeroBackground />
-      <div className="mx-auto max-w-3xl px-6 pt-32 pb-20 text-center">
-        {eyebrow && (
-          <p data-pawdoq-edit="eyebrow" className="text-sm tracking-[0.3em] uppercase text-brand-400/80">{eyebrow}</p>
-        )}
-        <h1 data-pawdoq-edit="title" className="mt-6 font-serif text-5xl md:text-7xl leading-[1.05]">{title}</h1>
-        {subtitle && <p data-pawdoq-edit="subtitle" className="mt-8 text-lg text-white/80 leading-relaxed">{subtitle}</p>}
-      </div>
-    </section>
-  );
-}
-
-// ──────────────────────────────────────────────────────────────────────
-// Helpers para leer posts publicados del tenant actual.
-// ──────────────────────────────────────────────────────────────────────
 type Post = {
-  slug: string;
-  title: string;
-  excerpt: string | null;
-  cover_image_url: string | null;
-  published_at: string | null;
-  reading_time_minutes: number | null;
-  category_slug: string | null;
-};
+  slug: string
+  title: string
+  excerpt: string | null
+  cover_image_url: string | null
+  published_at: string | null
+  reading_time_minutes: number | null
+  category_slug: string | null
+}
 
 async function getPublishedPosts(kennelId: string, limit: number, pinnedOnly = false): Promise<Post[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const admin = createKennelAdminClient() as any;
+  const admin = createKennelAdminClient() as any
   let q = admin
     .from('kennel_posts')
     .select('slug, title, excerpt, cover_image_url, published_at, reading_time_minutes, category_slug, pinned')
     .eq('kennel_id', kennelId)
     .eq('status', 'published')
+    .order('pinned', { ascending: false })
     .order('published_at', { ascending: false })
-    .limit(limit);
-  if (pinnedOnly) q = q.eq('pinned', true);
-  const { data } = await q;
-  return (data as Post[] | null) ?? [];
+    .limit(limit)
+  if (pinnedOnly) q = q.eq('pinned', true)
+  const { data } = await q
+  return (data as Post[] | null) ?? []
 }
 
-// ──────────────────────────────────────────────────────────────────────
-// Sección: featured-post
-// ──────────────────────────────────────────────────────────────────────
-export async function FeaturedPostSection({
-  mode = 'latest',
-  pinnedSlug,
-}: {
-  mode?: 'latest' | 'pinned';
-  pinnedSlug?: string;
-}) {
-  const kennel = await getCurrentKennel();
-  let post: Post | null = null;
-  if (mode === 'pinned' && pinnedSlug) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const admin = createKennelAdminClient() as any;
-    const { data } = await admin
-      .from('kennel_posts')
-      .select('slug, title, excerpt, cover_image_url, published_at, reading_time_minutes, category_slug')
-      .eq('kennel_id', kennel.id)
-      .eq('status', 'published')
-      .eq('slug', pinnedSlug)
-      .maybeSingle();
-    post = (data as Post | null) ?? null;
-  } else {
-    const list = await getPublishedPosts(kennel.id, 1);
-    post = list[0] ?? null;
-  }
+function fmtDate(iso: string | null): string {
+  if (!iso) return ''
+  return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
+}
 
-  if (!post) return null;
-
+export function BlogHeroSection({ eyebrow, title, subtitle }: { eyebrow?: string; title?: string; subtitle?: string }) {
   return (
-    <section className="border-t border-white/10 bg-neutral-950">
-      <div className="mx-auto max-w-6xl px-6 py-20">
-        <Link
-          href={`/blog/${post.slug}`}
-          className="group grid gap-10 md:grid-cols-2 items-center"
-        >
-          {post.cover_image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={post.cover_image_url}
-              alt={post.title}
-              className="aspect-[4/3] w-full rounded-2xl object-cover"
-            />
-          ) : (
-            <div className="aspect-[4/3] w-full rounded-2xl bg-neutral-900" />
-          )}
-          <div>
-            <p className="text-xs uppercase tracking-widest text-brand-400/80">
-              {post.category_slug ?? 'Blog'}
-            </p>
-            <h2 className="mt-4 font-serif text-4xl md:text-5xl group-hover:text-brand-300 transition">
-              {post.title}
-            </h2>
-            {post.excerpt && (
-              <p className="mt-6 text-white/75 leading-relaxed text-lg">{post.excerpt}</p>
+    <section className="border-b border-hairline">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 lg:py-20">
+        {eyebrow && (
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted mb-3">{eyebrow}</p>
+        )}
+        {title && <h1 className="text-3xl md:text-5xl font-bold text-ink tracking-tight">{title}</h1>}
+        {subtitle && <p className="mt-4 text-lg text-body max-w-2xl leading-relaxed">{subtitle}</p>}
+      </div>
+    </section>
+  )
+}
+
+export async function FeaturedPostSection({ mode = 'latest' }: { mode?: 'latest' | 'pinned' }) {
+  const kennel = await getCurrentKennel()
+  const posts = await getPublishedPosts(kennel.id, 1, mode === 'pinned')
+  if (!posts.length) return null
+  const p = posts[0]
+  return (
+    <section className="py-12 lg:py-16">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <Link href={`./blog/${p.slug}`} className="block group">
+          <article className="rounded-2xl border border-hairline bg-canvas overflow-hidden hover:border-ink/30 hover:shadow-sm transition">
+            {p.cover_image_url && (
+              <div className="aspect-[21/9] bg-surface-card overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.cover_image_url} alt={p.title} className="w-full h-full object-cover" />
+              </div>
             )}
-            <p className="mt-6 text-sm uppercase tracking-widest text-brand-400">
-              Leer artículo →
-            </p>
-          </div>
+            <div className="p-6 lg:p-8">
+              {p.category_slug && (
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted mb-2">{p.category_slug}</p>
+              )}
+              <h2 className="text-2xl md:text-3xl font-bold text-ink tracking-tight mb-3">{p.title}</h2>
+              {p.excerpt && <p className="text-body leading-relaxed">{p.excerpt}</p>}
+              <p className="text-xs text-muted mt-4">
+                {fmtDate(p.published_at)}
+                {p.reading_time_minutes ? ` · ${p.reading_time_minutes} min` : ''}
+              </p>
+            </div>
+          </article>
         </Link>
       </div>
     </section>
-  );
+  )
 }
 
-// ──────────────────────────────────────────────────────────────────────
-// Sección: posts-grid
-// ──────────────────────────────────────────────────────────────────────
-export async function PostsGridSection({
-  pageSize = 12,
-  layout: _layout = 'grid',
-}: {
-  pageSize?: number;
-  showCategories?: boolean;
-  layout?: 'grid' | 'list';
-}) {
-  const kennel = await getCurrentKennel();
-  const posts = await getPublishedPosts(kennel.id, pageSize);
-
-  if (posts.length === 0) {
-    return (
-      <section className="border-t border-white/10">
-        <div className="mx-auto max-w-3xl px-6 py-24 text-center">
-          <p className="text-white/40 italic">
-            Próximamente publicaremos los primeros artículos.
-          </p>
-        </div>
-      </section>
-    );
-  }
-
+export async function PostsGridSection({ limit = 9, title, eyebrow }: { limit?: number; title?: string; eyebrow?: string }) {
+  const kennel = await getCurrentKennel()
+  const posts = await getPublishedPosts(kennel.id, limit)
   return (
-    <section className="border-t border-white/10">
-      <div className="mx-auto max-w-6xl px-6 py-24">
-        <ul className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {posts.map((p) => (
-            <li key={p.slug}>
-              <Link
-                href={`/blog/${p.slug}`}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] hover:border-brand-400/40 transition"
-              >
-                {p.cover_image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={p.cover_image_url}
-                    alt={p.title}
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                ) : (
-                  <div className="aspect-[4/3] w-full bg-neutral-900" />
-                )}
-                <div className="p-6">
-                  {p.category_slug && (
-                    <p className="text-xs uppercase tracking-widest text-brand-400/80">
-                      {p.category_slug}
+    <section className="py-12 lg:py-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        {(title || eyebrow) && (
+          <div className="mb-8">
+            {eyebrow && (
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted mb-2">{eyebrow}</p>
+            )}
+            {title && <h2 className="text-2xl md:text-3xl font-bold text-ink tracking-tight">{title}</h2>}
+          </div>
+        )}
+        {posts.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-hairline bg-canvas p-12 text-center">
+            <p className="text-sm text-muted">Aún no hay artículos publicados. Vuelve pronto.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {posts.map(p => (
+              <Link key={p.slug} href={`./blog/${p.slug}`} className="block group">
+                <article className="rounded-xl border border-hairline bg-canvas overflow-hidden hover:border-ink/30 hover:shadow-sm transition h-full flex flex-col">
+                  {p.cover_image_url && (
+                    <div className="aspect-[16/9] bg-surface-card overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.cover_image_url} alt={p.title} loading="lazy" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="p-5 flex-1 flex flex-col">
+                    {p.category_slug && (
+                      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted mb-2">{p.category_slug}</p>
+                    )}
+                    <h3 className="text-base font-bold text-ink mb-2 tracking-tight">{p.title}</h3>
+                    {p.excerpt && <p className="text-sm text-body leading-relaxed mb-3 line-clamp-3">{p.excerpt}</p>}
+                    <p className="text-[11px] text-muted mt-auto">
+                      {fmtDate(p.published_at)}
+                      {p.reading_time_minutes ? ` · ${p.reading_time_minutes} min` : ''}
                     </p>
-                  )}
-                  <h3 className="mt-2 font-serif text-2xl text-white group-hover:text-brand-300 transition">
-                    {p.title}
-                  </h3>
-                  {p.excerpt && (
-                    <p className="mt-3 text-sm text-white/70 leading-relaxed">{p.excerpt}</p>
-                  )}
-                </div>
+                  </div>
+                </article>
               </Link>
-            </li>
-          ))}
-        </ul>
+            ))}
+          </div>
+        )}
       </div>
     </section>
-  );
+  )
 }
