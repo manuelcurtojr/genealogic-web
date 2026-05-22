@@ -60,7 +60,7 @@ export function MediaPicker({
     <div>
       {/* Preview */}
       {value ? (
-        <div className="relative mb-2 overflow-hidden rounded-lg border border-ink-200 bg-ink-50/40">
+        <div className="relative mb-2 overflow-hidden rounded-lg border border-hairline bg-surface-soft">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={value}
@@ -79,8 +79,8 @@ export function MediaPicker({
           </button>
         </div>
       ) : (
-        <div className="mb-2 flex h-24 items-center justify-center rounded-lg border border-dashed border-ink-200 bg-ink-50/30">
-          <p className="text-xs text-ink-400">Sin imagen</p>
+        <div className="mb-2 flex h-24 items-center justify-center rounded-lg border border-dashed border-hairline bg-surface-soft">
+          <p className="text-xs text-muted">Sin imagen</p>
         </div>
       )}
 
@@ -90,14 +90,14 @@ export function MediaPicker({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="flex-1 rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-medium text-ink-700 hover:border-ink-300 disabled:opacity-50"
+          className="flex-1 rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-body hover:border-muted disabled:opacity-50"
         >
           {uploading ? 'Subiendo…' : '↑ Subir'}
         </button>
         <button
           type="button"
           onClick={() => setLibraryOpen(true)}
-          className="flex-1 rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-medium text-ink-700 hover:border-ink-300"
+          className="flex-1 rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-body hover:border-muted"
         >
           ⊞ Biblioteca
         </button>
@@ -116,7 +116,7 @@ export function MediaPicker({
         value={value}
         placeholder={placeholder ?? 'O pega una URL externa'}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-xs font-mono text-ink-950 outline-none focus:border-brand"
+        className="w-full rounded-lg border border-hairline bg-white px-3 py-2 text-xs font-mono text-ink outline-none focus:border-brand"
       />
 
       {error && (
@@ -205,28 +205,28 @@ function MediaLibraryDrawer({
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-ink-950/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 z-40 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
       <aside
         role="dialog"
         aria-label="Biblioteca de medios"
         className="fixed inset-y-0 right-0 z-50 flex w-full flex-col overflow-hidden bg-white shadow-2xl sm:max-w-2xl"
       >
-        <div className="flex items-center justify-between gap-3 border-b border-brand-100 px-5 py-4">
+        <div className="flex items-center justify-between gap-3 border-b border-hairline px-5 py-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
               Biblioteca
             </p>
-            <h2 className="mt-1 font-display text-xl font-semibold text-ink-950">
+            <h2 className="mt-1 font-display text-xl font-semibold text-ink">
               Tus imágenes
             </h2>
-            <p className="mt-0.5 text-[11px] text-ink-500">
+            <p className="mt-0.5 text-[11px] text-muted">
               {items.length} {items.length === 1 ? 'imagen' : 'imágenes'}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-ink-500 hover:bg-ink-50"
+            className="rounded-full p-2 text-muted hover:bg-surface-card"
             aria-label="Cerrar"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -239,7 +239,7 @@ function MediaLibraryDrawer({
           {loading && (
             <div className="grid grid-cols-3 gap-3">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="aspect-square animate-pulse rounded-lg bg-ink-100" />
+                <div key={i} className="aspect-square animate-pulse rounded-lg bg-surface-card" />
               ))}
             </div>
           )}
@@ -249,9 +249,9 @@ function MediaLibraryDrawer({
             </div>
           )}
           {!loading && !error && items.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-ink-200 p-12 text-center">
-              <p className="font-display text-lg text-ink-950">No has subido ninguna imagen aún</p>
-              <p className="mt-2 text-sm text-ink-500">
+            <div className="rounded-2xl border border-dashed border-hairline p-12 text-center">
+              <p className="font-display text-lg text-ink">No has subido ninguna imagen aún</p>
+              <p className="mt-2 text-sm text-muted">
                 Cierra este panel y pulsa &laquo;Subir&raquo; para añadir tu primera foto.
               </p>
             </div>
@@ -261,7 +261,7 @@ function MediaLibraryDrawer({
               {items.map((it) => (
                 <li
                   key={it.name}
-                  className="group relative overflow-hidden rounded-lg border border-ink-100 bg-ink-50 transition hover:border-brand"
+                  className="group relative overflow-hidden rounded-lg border border-surface-card bg-surface-card transition hover:border-ink/30"
                 >
                   <button
                     type="button"

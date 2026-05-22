@@ -139,13 +139,13 @@ export function UndoRedoButtons({
   }
 
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-ink-200 bg-white">
+    <div className="flex items-center gap-1 rounded-lg border border-hairline bg-white">
       <button
         type="button"
         title="Deshacer (Cmd+Z)"
         disabled={!canUndo}
         onClick={() => startTransition(async () => { await undoChange(pageSlug); emit(); })}
-        className="rounded-l-lg px-2 py-1.5 text-xs text-ink-600 hover:bg-ink-50 disabled:opacity-30 disabled:hover:bg-transparent"
+        className="rounded-l-lg px-2 py-1.5 text-xs text-body hover:bg-surface-card disabled:opacity-30 disabled:hover:bg-transparent"
         aria-label="Deshacer"
       >
         <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -153,13 +153,13 @@ export function UndoRedoButtons({
           <path d="M21 17a9 9 0 00-15-6.7L3 13" />
         </svg>
       </button>
-      <span className="h-4 w-px bg-ink-100" />
+      <span className="h-4 w-px bg-surface-card" />
       <button
         type="button"
         title="Rehacer (Cmd+Shift+Z)"
         disabled={!canRedo}
         onClick={() => startTransition(async () => { await redoChange(pageSlug); emit(); })}
-        className="rounded-r-lg px-2 py-1.5 text-xs text-ink-600 hover:bg-ink-50 disabled:opacity-30 disabled:hover:bg-transparent"
+        className="rounded-r-lg px-2 py-1.5 text-xs text-body hover:bg-surface-card disabled:opacity-30 disabled:hover:bg-transparent"
         aria-label="Rehacer"
       >
         <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
