@@ -36,10 +36,15 @@ export default async function KennelHomePage({ params }: { params: Promise<{ slu
       </div>
     )
   }
-  return runWithKennel(kennel, async () => (
+  // CRÍTICO: ejecutar PageRenderer DENTRO del callback de runWithKennel para
+  // que AsyncLocalStorage propague el kennel a todas las secciones async.
+  // Si retornamos <PageRenderer/> como JSX, React lo evalúa fuera del scope
+  // ALS y getCurrentKennel() lanza "No kennel in context".
+  const rendered = await runWithKennel(kennel, () => PageRenderer({ slug: 'home' }))
+  return (
     <>
       <PageTracker kennelId={kennel.id} />
-      <PageRenderer slug="home" />
+      {rendered}
     </>
-  ))
+  )
 }

@@ -38,10 +38,13 @@ export default async function KennelPage({
   const dbSlug = resolveDbSlug(pageParam)
   const page = await getPage(kennel.id, dbSlug)
   if (!page) notFound()
-  return runWithKennel(kennel, async () => (
+  // Ver nota en /c/[slug]/page.tsx sobre por qué hay que invocar PageRenderer
+  // como función dentro del callback de runWithKennel (ALS + RSC async).
+  const rendered = await runWithKennel(kennel, () => PageRenderer({ slug: dbSlug, searchParams }))
+  return (
     <>
       <PageTracker kennelId={kennel.id} />
-      <PageRenderer slug={dbSlug} searchParams={searchParams} />
+      {rendered}
     </>
-  ))
+  )
 }
