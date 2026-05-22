@@ -254,7 +254,7 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
       {/* SLIDE PANEL (add / edit) */}
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${panelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setPanelOpen(false)} />
 
-      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-surface-card border-l border-hairline shadow-2xl transition-transform duration-300 flex flex-col ${panelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-surface-card border-l border-hairline shadow-2xl transition-transform duration-300 flex flex-col ${panelOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}>
 
         {/* ADD MODE */}
         {panelMode === 'add' && panelTarget && (

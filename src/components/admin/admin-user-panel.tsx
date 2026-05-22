@@ -154,7 +154,7 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
       <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
 
-      <div className={`fixed top-0 right-0 h-full w-full max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}>
         <div className="flex items-center justify-between px-6 py-3 border-b border-hairline flex-shrink-0">
           <h2 className="text-lg font-semibold">Editar usuario</h2>
           <button onClick={onClose} className="text-muted hover:text-ink transition"><X className="w-5 h-5" /></button>

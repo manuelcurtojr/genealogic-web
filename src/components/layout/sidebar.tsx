@@ -80,7 +80,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, mobileOpen,
       )}
 
       <aside className={`fixed left-0 top-0 h-screen bg-canvas border-r border-hairline flex flex-col z-50 w-64 ${collapsed ? 'lg:w-[68px]' : 'lg:w-64'} lg:transition-all lg:duration-300 ${
-        mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 pointer-events-none lg:pointer-events-auto'
       }`}>
         {/* Logo + toggle */}
         <div className="h-14 border-b border-hairline flex items-center px-3 gap-2 flex-shrink-0">
