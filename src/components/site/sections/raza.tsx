@@ -62,26 +62,28 @@ export async function BreedTemperamentSection(props: {
 
 export async function BreedColorsSection(props: {
   title?: string
-  colors?: { name: string; hex?: string; description?: string }[]
+  colors?: { name: string; hex?: string; description?: string; image_url?: string }[]
 }) {
   return (
     <section className="py-12 lg:py-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-ink mb-8 tracking-tight">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <h2 className="text-2xl md:text-3xl font-bold text-ink mb-8 text-center tracking-tight">
           {props.title || 'Colores aceptados'}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {(props.colors || []).map((c, i) => (
-            <div key={i} className="flex items-center gap-3 rounded-xl border border-hairline bg-canvas p-3">
-              {c.hex && (
-                <span
-                  className="w-8 h-8 rounded-full border border-hairline flex-shrink-0"
-                  style={{ background: c.hex }}
-                />
-              )}
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-ink truncate">{c.name}</p>
-                {c.description && <p className="text-[11px] text-muted truncate">{c.description}</p>}
+            <div key={i} className="rounded-xl border border-hairline bg-canvas overflow-hidden">
+              {c.image_url ? (
+                <div className="aspect-square bg-surface-card overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={c.image_url} alt={c.name} loading="lazy" className="w-full h-full object-cover" />
+                </div>
+              ) : c.hex ? (
+                <div className="aspect-square" style={{ background: c.hex }} />
+              ) : null}
+              <div className="p-3">
+                <p className="text-sm font-semibold text-ink">{c.name}</p>
+                {c.description && <p className="text-[11px] text-muted mt-0.5">{c.description}</p>}
               </div>
             </div>
           ))}

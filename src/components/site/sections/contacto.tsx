@@ -1,150 +1,175 @@
-// ──────────────────────────────────────────────────────────────────────
-// Sección: contact-form
-// ──────────────────────────────────────────────────────────────────────
+/**
+ * Secciones "Contacto" — light theme.
+ */
+'use client'
+
+import { useState } from 'react'
+import { useEffect } from 'react'
+
 export function ContactFormSection({
-  headline = 'Cuéntanos',
-  subjectOptions,
+  title, subtitle, eyebrow, headline, topics, success_message,
 }: {
-  headline?: string;
-  subjectOptions?: string[];
+  title?: string
+  subtitle?: string
+  eyebrow?: string
+  headline?: string  // alias
+  topics?: string[]
+  success_message?: string
 }) {
+  const t = title || headline || 'Cuéntanos'
+  const [kennelId, setKennelId] = useState<string | null>(null)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [topic, setTopic] = useState(topics?.[0] || '')
+  const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Obtener kennel del path /c/[slug]
+    const seg = typeof window !== 'undefined' ? window.location.pathname.split('/') : []
+    const slug = seg[2]
+    if (!slug) return
+    fetch(`/api/kennel-by-slug?slug=${encodeURIComponent(slug)}`)
+      .then(r => r.json())
+      .then(d => { if (d.kennel?.id) setKennelId(d.kennel.id) })
+      .catch(() => {})
+  }, [])
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!kennelId) { setErr('Cargando criadero…'); return }
+    setLoading(true); setErr(null)
+    try {
+      const notes = `[Tema: ${topic || 'Sin especificar'}]\n${message}`.trim()
+      const res = await fetch('/api/owners', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kennel_id: kennelId,
+          full_name: name.trim(),
+          email: email.trim() || null,
+          phone: phone.trim() || null,
+          notes,
+        }),
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        throw new Error(d.error || 'Error')
+      }
+      setSent(true)
+    } catch (e: any) {
+      setErr(e.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (sent) {
+    return (
+      <section className="py-16 lg:py-24">
+        <div className="max-w-xl mx-auto px-4 sm:px-6 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-ink mb-3 tracking-tight">¡Recibido!</h2>
+          <p className="text-body">
+            {success_message || 'Tu mensaje ha llegado al criador. Te responderá personalmente lo antes posible.'}
+          </p>
+        </div>
+      </section>
+    )
+  }
+
   return (
-    <section className="border-t border-white/10 bg-neutral-950">
-      <div className="mx-auto max-w-2xl px-6 py-24">
-        <h2 data-pawdoq-edit="headline" className="font-serif text-4xl mb-8 text-center">{headline}</h2>
-        <form
-          action="/api/contact"
-          method="post"
-          className="rounded-2xl border border-white/10 bg-white/[0.02] p-8 space-y-5"
-        >
-          <Field name="full_name" label="Nombre" required />
-          <Field name="email" label="Email" type="email" required />
-          <Field name="phone" label="Teléfono (opcional)" type="tel" />
-          {subjectOptions && subjectOptions.length > 0 && (
-            <label className="block">
-              <span className="text-xs font-mono uppercase tracking-widest text-brand-400/80">
-                Tema
-              </span>
-              <select
-                name="subject"
-                className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none focus:border-brand-400/40"
-              >
-                {subjectOptions.map((s) => (
-                  <option key={s} value={s} className="bg-neutral-900">
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </label>
+    <section className="py-12 lg:py-16">
+      <div className="max-w-xl mx-auto px-4 sm:px-6">
+        {eyebrow && (
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted mb-2">{eyebrow}</p>
+        )}
+        <h2 className="text-2xl md:text-3xl font-bold text-ink mb-3 tracking-tight">{t}</h2>
+        {subtitle && <p className="text-body mb-6 leading-relaxed">{subtitle}</p>}
+        <form onSubmit={submit} className="space-y-4">
+          <input type="text" required placeholder="Nombre *" value={name} onChange={e => setName(e.target.value)}
+            className="w-full px-4 py-3 text-sm border border-hairline rounded-lg bg-canvas focus:outline-none focus:border-ink" />
+          <input type="email" required placeholder="Email *" value={email} onChange={e => setEmail(e.target.value)}
+            className="w-full px-4 py-3 text-sm border border-hairline rounded-lg bg-canvas focus:outline-none focus:border-ink" />
+          <input type="tel" placeholder="Teléfono (opcional)" value={phone} onChange={e => setPhone(e.target.value)}
+            className="w-full px-4 py-3 text-sm border border-hairline rounded-lg bg-canvas focus:outline-none focus:border-ink" />
+          {topics && topics.length > 0 && (
+            <select value={topic} onChange={e => setTopic(e.target.value)}
+              className="w-full px-4 py-3 text-sm border border-hairline rounded-lg bg-canvas focus:outline-none focus:border-ink">
+              {topics.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
           )}
-          <label className="block">
-            <span className="text-xs font-mono uppercase tracking-widest text-brand-400/80">
-              Mensaje
-            </span>
-            <textarea
-              name="message"
-              required
-              rows={5}
-              className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-brand-400/40"
-              placeholder="Cuéntanos lo que necesites — cachorro, raza, visita, etc."
-            />
-          </label>
-          <button
-            type="submit"
-            className="w-full rounded-full bg-white px-6 py-3 text-sm font-medium text-black hover:bg-brand-300 transition"
-          >
-            Enviar mensaje
+          <textarea required placeholder="Mensaje *" value={message} onChange={e => setMessage(e.target.value)}
+            className="w-full px-4 py-3 text-sm border border-hairline rounded-lg bg-canvas focus:outline-none focus:border-ink min-h-[140px]" />
+          {err && <p className="text-sm text-red-700">{err}</p>}
+          <button type="submit" disabled={loading}
+            className="w-full inline-flex items-center justify-center rounded-lg bg-ink text-on-primary px-6 py-3 text-sm font-semibold hover:opacity-90 transition disabled:opacity-50">
+            {loading ? 'Enviando…' : 'Enviar mensaje'}
           </button>
         </form>
       </div>
     </section>
-  );
+  )
 }
 
-function Field({
-  name,
-  label,
-  type = 'text',
-  required,
-}: {
-  name: string;
-  label: string;
-  type?: string;
-  required?: boolean;
-}) {
-  return (
-    <label className="block">
-      <span className="text-xs font-mono uppercase tracking-widest text-brand-400/80">
-        {label}
-        {required && <span className="ml-1 text-brand-300">*</span>}
-      </span>
-      <input
-        type={type}
-        name={name}
-        required={required}
-        className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-brand-400/40"
-      />
-    </label>
-  );
-}
-
-// ──────────────────────────────────────────────────────────────────────
-// Sección: contact-info
-// ──────────────────────────────────────────────────────────────────────
 export function ContactInfoSection({
-  address,
-  phone,
-  email,
-  hours,
+  title, items = [], eyebrow,
 }: {
-  address?: string | null;
-  phone?: string | null;
-  email?: string | null;
-  hours?: string | null;
+  title?: string
+  eyebrow?: string
+  items?: { label: string; value: string }[]
 }) {
-  const items: { label: string; value: string }[] = [];
-  if (address) items.push({ label: 'Dirección', value: address });
-  if (phone) items.push({ label: 'Teléfono', value: phone });
-  if (email) items.push({ label: 'Email', value: email });
-  if (hours) items.push({ label: 'Horario', value: hours });
-  if (items.length === 0) return null;
-
   return (
-    <section className="border-t border-white/10">
-      <div className="mx-auto max-w-3xl px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-        {items.map((it) => (
-          <div key={it.label}>
-            <p className="text-xs font-mono uppercase tracking-widest text-white/40">
-              {it.label}
-            </p>
-            <p className="mt-2 text-white/85 text-sm leading-relaxed">{it.value}</p>
-          </div>
-        ))}
+    <section className="py-12 lg:py-16 bg-surface-card border-y border-hairline">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6">
+        {eyebrow && (
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted mb-2 text-center">{eyebrow}</p>
+        )}
+        {title && (
+          <h2 className="text-2xl md:text-3xl font-bold text-ink mb-8 text-center tracking-tight">{title}</h2>
+        )}
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {items.map((it, i) => (
+            <div key={i} className="rounded-xl border border-hairline bg-canvas p-4">
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted mb-1">{it.label}</dt>
+              <dd className="text-sm text-ink font-medium">{it.value}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </section>
-  );
+  )
 }
 
-// ──────────────────────────────────────────────────────────────────────
-// Sección: map-embed
-// ──────────────────────────────────────────────────────────────────────
 export function MapEmbedSection({
-  address,
+  title, embed_url, address,
 }: {
-  address: string;
+  title?: string
+  embed_url?: string
+  address?: string
 }) {
-  const src = `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
+  if (!embed_url) return null
   return (
-    <section className="border-t border-white/10">
-      <div className="aspect-[16/9] w-full bg-neutral-900">
-        <iframe
-          src={src}
-          className="h-full w-full"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          title="Mapa"
-        />
+    <section className="py-12 lg:py-16">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        {title && (
+          <h2 className="text-2xl md:text-3xl font-bold text-ink mb-6 tracking-tight">{title}</h2>
+        )}
+        <div className="aspect-[16/9] rounded-2xl overflow-hidden border border-hairline">
+          <iframe
+            src={embed_url}
+            className="w-full h-full"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title={address || 'Mapa'}
+          />
+        </div>
+        {address && (
+          <p className="text-sm text-muted mt-3 text-center">{address}</p>
+        )}
       </div>
     </section>
-  );
+  )
 }

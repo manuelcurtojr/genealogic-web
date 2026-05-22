@@ -2,6 +2,41 @@
 """Genera el SQL para importar el contenido de iremacurto.com a kennel_pages."""
 import json, os, sys
 
+# ── Cargar mapping de imágenes subidas a Supabase Storage ──────────────────
+try:
+    with open('/tmp/irema-img-mapping.json') as f:
+        IMG_MAP = json.load(f)
+    with open('/tmp/irema-imgs.json') as f:
+        IMGS_BY_PAGE = json.load(f)
+except Exception:
+    IMG_MAP, IMGS_BY_PAGE = {}, {}
+
+def img(orig):
+    """Resuelve URL original (relativa o absoluta) a la URL final."""
+    if orig in IMG_MAP:
+        return IMG_MAP[orig]
+    if orig.startswith('http'):
+        return orig
+    return 'https://iremacurto.com' + orig
+
+def imgs_filter(page, sub):
+    """Devuelve las imágenes resueltas de una página filtradas por substring del path."""
+    return [img(u) for u in IMGS_BY_PAGE.get(page, []) if sub in u]
+
+# ── Imágenes precalculadas por categoría ───────────────────────────────────
+HOME_DRIVE = imgs_filter('home', '/drive/')
+HOME_CLIENTES = imgs_filter('home', '/clientes/')
+HOME_INST = imgs_filter('home', '/instalaciones/')
+GAL_DRIVE = imgs_filter('galeria', '/drive/')
+GAL_CLIENTES = imgs_filter('galeria', '/clientes/')
+GAL_INST = imgs_filter('galeria', '/instalaciones/')
+INST_ALL = [img(u) for u in IMGS_BY_PAGE.get('instalaciones', [])]
+CAPAS = {u.split('/')[-1].split('.')[0]: img(u) for u in IMGS_BY_PAGE.get('raza', [])}
+
+HERO_IMG = HOME_DRIVE[0] if HOME_DRIVE else None
+HISTORIA_HERO = HOME_DRIVE[2] if len(HOME_DRIVE) > 2 else None
+RAZA_HERO = HOME_DRIVE[1] if len(HOME_DRIVE) > 1 else None
+
 PAGES = [
     {
         "slug": "home",
@@ -16,6 +51,7 @@ PAGES = [
                 "subtitle": "Criadero familiar dedicado a la selección y mejora del Presa Canario, con los más altos estándares de la raza original.",
                 "ctas": [{"label": "Ver ejemplares", "href": "./perros"}, {"label": "Hablar con el criador", "href": "./contacto", "variant": "outline"}],
                 "height": "lg",
+                "background_image_url": HERO_IMG,
             }},
             {"id": "home-pillars", "type": "three-pillars", "props": {
                 "title": "Tradición en evolución",
@@ -40,6 +76,11 @@ PAGES = [
                     {"question": "¿Puedo visitar el criadero?", "answer": "Sí, las visitas son siempre con cita previa. Estamos en Tenerife, Islas Canarias. Escríbenos y coordinamos un día."},
                     {"question": "¿Qué pasa si la seña no se devuelve?", "answer": "La seña no se devuelve salvo problema de salud del cachorro o causa mayor del criadero. Está aplicada al precio total al recoger."},
                 ],
+            }},
+            {"id": "home-clientes", "type": "gallery-grid", "props": {
+                "title": "Familias felices",
+                "subtitle": "Cachorros que ya están en casa. Cada entrega es una nueva familia.",
+                "images": [{"url": u, "alt": "Cliente con su Presa Canario"} for u in HOME_CLIENTES],
             }},
             {"id": "home-cta", "type": "cta-banner", "props": {
                 "title": "¿Listo para tener tu Presa Canario?",
@@ -68,7 +109,7 @@ PAGES = [
         "meta_title": "Sobre el Perro de Presa Canario · Irema Curtó",
         "meta_description": "Características, estándar, colores y temperamento del Perro de Presa Canario.",
         "sections": [
-            {"id": "r-hero", "type": "breed-hero", "props": {"breed_name": "El Presa Canario", "tagline": "Una raza musculosa, imponente y saludable, ideal para convivir con familias con niños como perro de guardia y defensa."}},
+            {"id": "r-hero", "type": "breed-hero", "props": {"breed_name": "El Presa Canario", "tagline": "Una raza musculosa, imponente y saludable, ideal para convivir con familias con niños como perro de guardia y defensa.", "background_image_url": RAZA_HERO}},
             {"id": "r-traits", "type": "breed-traits", "props": {
                 "title": "Características físicas",
                 "stats": [
@@ -90,14 +131,14 @@ PAGES = [
             {"id": "r-col", "type": "breed-colors", "props": {
                 "title": "Capas reconocidas",
                 "colors": [
-                    {"name": "Negro", "hex": "#1a1a1a", "description": "Manto sólido sin atigrar"},
-                    {"name": "Bardino oscuro", "hex": "#3d2818", "description": "Atigrado de base oscura"},
-                    {"name": "Bardino gris", "hex": "#7c7c7a", "description": "Atigrado plateado"},
-                    {"name": "Bardino rojo", "hex": "#7a3823", "description": "Atigrado de base rojiza"},
-                    {"name": "Bardino dorado", "hex": "#b87f3a", "description": "Atigrado dorado"},
-                    {"name": "Bardino claro", "hex": "#d4a574", "description": "Atigrado de base muy clara"},
-                    {"name": "Leonado", "hex": "#a06a3c", "description": "Manto sólido, máscara oscura"},
-                    {"name": "Arena", "hex": "#d6b896", "description": "Manto sólido crema, máscara oscura"},
+                    {"name": "Negro", "hex": "#1a1a1a", "description": "Manto sólido sin atigrar", "image_url": CAPAS.get("negro")},
+                    {"name": "Bardino oscuro", "hex": "#3d2818", "description": "Atigrado de base oscura", "image_url": CAPAS.get("bardino-oscuro")},
+                    {"name": "Bardino gris", "hex": "#7c7c7a", "description": "Atigrado plateado", "image_url": CAPAS.get("bardino-gris")},
+                    {"name": "Bardino rojo", "hex": "#7a3823", "description": "Atigrado de base rojiza", "image_url": CAPAS.get("bardino-rojo")},
+                    {"name": "Bardino dorado", "hex": "#b87f3a", "description": "Atigrado dorado", "image_url": CAPAS.get("bardino-dorado")},
+                    {"name": "Bardino claro", "hex": "#d4a574", "description": "Atigrado de base muy clara", "image_url": CAPAS.get("bardino-claro")},
+                    {"name": "Leonado", "hex": "#a06a3c", "description": "Manto sólido, máscara oscura", "image_url": CAPAS.get("leonado")},
+                    {"name": "Arena", "hex": "#d6b896", "description": "Manto sólido crema, máscara oscura", "image_url": CAPAS.get("arena")},
                 ],
             }},
         ],
@@ -109,7 +150,7 @@ PAGES = [
         "meta_title": "Historia de Irema Curtó · Presa Canario desde 1975",
         "meta_description": "Estudio, creación y expansión del Perro de Presa Canario. Cinco décadas de historia del criadero Irema Curtó.",
         "sections": [
-            {"id": "h-hero", "type": "story-hero", "props": {"eyebrow": "Nuestra historia", "title": "Estudio, creación y expansión", "subtitle": "Te contamos una historia de creación, preservación, estudio, defensa, difusión y expansión de una raza que marcaría un antes y un después en los perros funcionales."}},
+            {"id": "h-hero", "type": "story-hero", "props": {"eyebrow": "Nuestra historia", "title": "Estudio, creación y expansión", "subtitle": "Te contamos una historia de creación, preservación, estudio, defensa, difusión y expansión de una raza que marcaría un antes y un después en los perros funcionales.", "background_image_url": HISTORIA_HERO}},
             {"id": "h-tl", "type": "timeline", "props": {
                 "items": [
                     {"year": "1975", "title": "Se concede el afijo Irema Curtó Kennels", "body": "El 4 de noviembre de 1975, la Real Sociedad Canina de España concede el afijo a Manuel Curtó Gracia."},
@@ -154,7 +195,7 @@ PAGES = [
         "meta_title": "Instalaciones del criadero · Irema Curtó · Tenerife",
         "meta_description": "17.000 m² de instalaciones propias en plena montaña de Tenerife.",
         "sections": [
-            {"id": "i-h", "type": "facilities-hero", "props": {"eyebrow": "Instalaciones", "title": "17.000 m² de instalaciones propias", "subtitle": "Las mismas instalaciones donde criamos al Presa Canario desde 1975: parideras climatizadas, zonas exteriores naturales y atención veterinaria continua, en plena montaña de Tenerife."}},
+            {"id": "i-h", "type": "facilities-hero", "props": {"eyebrow": "Instalaciones", "title": "17.000 m² de instalaciones propias", "subtitle": "Las mismas instalaciones donde criamos al Presa Canario desde 1975: parideras climatizadas, zonas exteriores naturales y atención veterinaria continua, en plena montaña de Tenerife.", "background_image_url": INST_ALL[0] if INST_ALL else None}},
             {"id": "i-f", "type": "facility-features", "props": {
                 "features": [
                     {"label": "Superficie", "value": "17.000 m²"},
@@ -162,6 +203,10 @@ PAGES = [
                     {"label": "Zonas exteriores", "value": "Naturales"},
                     {"label": "Atención veterinaria", "value": "Continua"},
                 ],
+            }},
+            {"id": "i-gallery", "type": "gallery-grid", "props": {
+                "title": "Recorrido por el criadero",
+                "images": [{"url": u, "alt": "Instalación del criadero Irema Curtó"} for u in INST_ALL],
             }},
             {"id": "i-v", "type": "visit-cta", "props": {"title": "Concierta tu visita", "subtitle": "Las visitas son con cita previa. Escríbenos y coordinamos un día que os venga bien para conocer las instalaciones y los cachorros.", "cta_label": "Pedir cita", "cta_href": "./contacto"}},
         ],
@@ -174,6 +219,21 @@ PAGES = [
         "meta_description": "Fotos del criadero, los Presa Canarios y las familias.",
         "sections": [
             {"id": "g-h", "type": "page-header", "props": {"eyebrow": "Galería", "title": "Cinco décadas en imágenes", "subtitle": "Fotos del criadero, los Presa Canarios y las familias que ya tienen el suyo."}},
+            {"id": "g-dogs", "type": "gallery-grid", "props": {
+                "title": "Nuestros perros",
+                "subtitle": "Presa Canarios de Irema",
+                "images": [{"url": u, "alt": "Presa Canario del criadero Irema Curtó"} for u in GAL_DRIVE],
+            }},
+            {"id": "g-clientes", "type": "gallery-grid", "props": {
+                "title": "Familias felices",
+                "subtitle": "Cachorros que ya están en casa",
+                "images": [{"url": u, "alt": "Cliente con su Presa Canario"} for u in GAL_CLIENTES],
+            }},
+            {"id": "g-inst", "type": "gallery-grid", "props": {
+                "title": "Instalaciones",
+                "subtitle": "17.000 m² en Tenerife",
+                "images": [{"url": u, "alt": "Instalación del criadero"} for u in GAL_INST],
+            }},
             {"id": "g-n", "type": "newsletter", "props": {"title": "Recibe novedades del criadero", "subtitle": "Apúntate y te avisamos cuando publiquemos nuevos perros, camadas o eventos.", "placeholderEmail": "tu@email.com", "ctaLabel": "Suscribirse"}},
         ],
     },
