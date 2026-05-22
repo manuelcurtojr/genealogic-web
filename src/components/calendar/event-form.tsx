@@ -129,7 +129,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
       />
 
       {/* Slide panel */}
-      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-lg z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:max-w-lg z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}>
         {/* Fixed header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
           <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar evento' : 'Nuevo evento'}</h2>

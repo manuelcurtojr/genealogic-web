@@ -111,7 +111,7 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
         onClick={onClose}
       />
 
-      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-surface-card border-l border-hairline shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-surface-card border-l border-hairline shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-hairline flex-shrink-0">
           <div className="flex items-center gap-2">

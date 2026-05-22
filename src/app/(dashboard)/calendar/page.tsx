@@ -314,7 +314,7 @@ export default function CalendarPage() {
 
         {/* ─── Mobile Day Panel (slide from right) ─── */}
         <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${dayPanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setDayPanelOpen(false)} />
-        <div className={`fixed top-0 right-0 h-full w-full max-w-sm z-[70] bg-canvas border-l border-hairline shadow-2xl transition-transform duration-300 flex flex-col ${dayPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className={`fixed top-0 right-0 h-full w-full max-w-sm z-[70] bg-canvas border-l border-hairline shadow-2xl transition-transform duration-300 flex flex-col ${dayPanelOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}>
           {/* Panel header */}
           <div className="flex items-center justify-between px-4 py-4 border-b border-hairline">
             <h3 className="text-base font-semibold">{dayPanelLabel}</h3>

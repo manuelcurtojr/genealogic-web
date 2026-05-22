@@ -53,10 +53,10 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
       </PedigreeCtx.Provider>
       </div>
       {/* COI Panel — outside transform context */}
-      <div className={`fixed top-[56px] right-0 bottom-0 z-[45] flex w-[320px] flex-col border-l border-hairline bg-canvas shadow-[-8px_0_24px_rgba(0,0,0,0.06)] transition-transform duration-300 ${coiPanel?'translate-x-0':'translate-x-full'}`}>
+      <div className={`fixed top-[56px] right-0 bottom-0 z-[45] flex w-[320px] flex-col border-l border-hairline bg-canvas shadow-[-8px_0_24px_rgba(0,0,0,0.06)] transition-transform duration-300 ${coiPanel?'translate-x-0':'translate-x-full pointer-events-none'}`}>
         <button
           onClick={()=>setCoiPanel(!coiPanel)}
-          className="absolute -left-7 top-1/2 flex h-14 w-7 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 border-hairline bg-canvas text-muted transition-colors hover:text-ink"
+          className="pointer-events-auto absolute -left-7 top-1/2 flex h-14 w-7 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 border-hairline bg-canvas text-muted transition-colors hover:text-ink"
         >
           {coiPanel?<ChevronRight className="h-3.5 w-3.5"/>:<ChevronLeft className="h-3.5 w-3.5"/>}
         </button>
