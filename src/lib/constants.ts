@@ -24,110 +24,41 @@ export interface NavItem {
   label: string
   href: string
   icon: string
+  requiresKennel?: boolean
+  requiresPro?: boolean
+  /** Si el usuario ES pro, este item se oculta (porque hay uno mejor) */
+  hideIfPro?: boolean
 }
 
 export interface NavSection {
   id: string
   label: string
-  requiresKennel?: boolean    // only show if user has a kennel (= breeder)
-  requiresPro?: boolean       // only show if plan = 'pro' | 'premium'
+  requiresKennel?: boolean
+  requiresPro?: boolean
   items: NavItem[]
 }
 
-// Sections visible per role:
-// Owner (no kennel):  Principal | Perros | Herramientas (Calendar, Vet)
-// Breeder (kennel):   Principal | Perros | Crianza | Criadero
+// Sidebar minimalista: solo lo más usado a diario. Todo lo demás se invoca
+// con ⌘K (CommandBar). Reduce ruido cognitivo de 20+ items a 4-5.
+//
+// Lo que NO está aquí pero sigue accesible via ⌘K:
+//   Buscar, Camadas, Planificador, Calendario, Vet, Newsletter, Biblioteca,
+//   Emailbot config, Hilos, Test, Estadísticas, Analíticas, API,
+//   Suscripción, Facturación, Dominio, Kennels directory, etc.
 export const NAV_SECTIONS: NavSection[] = [
   {
     id: 'main',
-    label: 'Principal',
+    label: '',
     items: [
       { label: 'Escritorio', href: '/dashboard', icon: 'LayoutDashboard' },
-      { label: 'Buscar', href: '/search', icon: 'Search' },
-    ],
-  },
-  {
-    id: 'dogs',
-    label: 'Perros',
-    items: [
       { label: 'Mis Perros', href: '/dogs', icon: 'Dog' },
-    ],
-  },
-  {
-    id: 'tools',
-    label: 'Herramientas',
-    items: [
-      { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
-      { label: 'Veterinario', href: '/vet', icon: 'Stethoscope' },
-    ],
-  },
-  {
-    id: 'breeding',
-    label: 'Crianza',
-    requiresKennel: true,
-    items: [
-      { label: 'Camadas', href: '/litters', icon: 'Baby' },
-      { label: 'Planificador', href: '/planner', icon: 'GitCompareArrows' },
-    ],
-  },
-  {
-    id: 'kennel',
-    label: 'Criadero',
-    requiresKennel: true,
-    items: [
-      { label: 'Mi Criadero', href: '/kennel', icon: 'Store' },
-      { label: 'Analíticas', href: '/analytics', icon: 'BarChart3' },
-      { label: 'API', href: '/kennel/api', icon: 'Key' },
-    ],
-  },
-
-  // ─── Pro tier sections (fusión Pawdoq Breeders) ──────────────────────────
-  {
-    id: 'pipeline',
-    label: 'Pipeline',
-    requiresKennel: true,
-    requiresPro: true,
-    items: [
-      { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare' },
-      { label: 'Clientes', href: '/clientes', icon: 'UsersRound' },
-    ],
-  },
-  {
-    id: 'bot',
-    label: 'Bot',
-    requiresPro: true,
-    items: [
-      { label: 'Emailbot', href: '/emailbot', icon: 'Mail' },
-      { label: 'Biblioteca', href: '/conocimiento', icon: 'BookOpen' },
-      { label: 'Hilos reales', href: '/emailbot/hilos', icon: 'MessageSquare' },
-      { label: 'Test', href: '/emailbot/test', icon: 'Beaker' },
-    ],
-  },
-  {
-    id: 'web',
-    label: 'Web pública',
-    requiresPro: true,
-    items: [
-      { label: 'Páginas', href: '/web', icon: 'Globe' },
-    ],
-  },
-  {
-    id: 'marketing',
-    label: 'Marketing',
-    requiresPro: true,
-    items: [
-      { label: 'Estadísticas', href: '/estadisticas', icon: 'TrendingUp' },
-      { label: 'Newsletter', href: '/newsletter', icon: 'Send' },
-    ],
-  },
-  {
-    id: 'cuenta',
-    label: 'Cuenta',
-    requiresPro: true,
-    items: [
-      { label: 'Suscripción', href: '/cuenta/suscripcion', icon: 'Sparkles' },
-      { label: 'Facturación', href: '/cuenta/facturacion', icon: 'Receipt' },
-      { label: 'Dominio', href: '/cuenta/dominio', icon: 'Link2' },
+      // Para criadores Free: items visibles que sin Pro tendrían sentido
+      { label: 'Camadas', href: '/litters', icon: 'Baby', requiresKennel: true, hideIfPro: true },
+      { label: 'Calendario', href: '/calendar', icon: 'Calendar', hideIfPro: true },
+      // Para criadores Pro: items de operativa diaria
+      { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare', requiresPro: true, requiresKennel: true },
+      { label: 'Clientes', href: '/clientes', icon: 'UsersRound', requiresPro: true, requiresKennel: true },
+      { label: 'Web', href: '/web', icon: 'Globe', requiresPro: true },
     ],
   },
 ]

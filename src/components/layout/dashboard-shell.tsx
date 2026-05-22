@@ -9,6 +9,8 @@ import { usePathname } from 'next/navigation'
 import Sidebar from './sidebar'
 import SearchBar from './search-bar'
 import NotificationsPanel from './notifications-panel'
+import { CommandBar } from './command-bar'
+import { hasProAccess } from '@/lib/permissions'
 
 interface DashboardShellProps {
   user: { display_name: string; email: string; role: string; avatar_url: string | null } | null
@@ -209,6 +211,13 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
 
       {/* Notifications panel */}
       <NotificationsPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
+
+      {/* Command Bar (⌘K) — montado a nivel shell para estar disponible siempre */}
+      <CommandBar
+        hasKennel={!!kennel}
+        isPro={hasProAccess(plan)}
+        isAdmin={user?.role === 'admin'}
+      />
     </div>
   )
 }
