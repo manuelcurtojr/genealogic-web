@@ -1,19 +1,220 @@
-import ComingSoon from '@/components/ui/coming-soon'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { Dog, Baby, UsersRound, KanbanSquare, BookOpen, Mail, TrendingUp, ArrowRight } from 'lucide-react'
 
 export const metadata = { title: 'Estadísticas · Genealogic Pro' }
 
-export default function EstadisticasPage() {
+export default async function EstadisticasPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: kennelArr } = await supabase
+    .from('kennels')
+    .select('id, name, slug')
+    .eq('owner_id', user.id)
+    .limit(1)
+  const kennel = kennelArr?.[0]
+
+  if (!kennel) {
+    return (
+      <div className="max-w-2xl mx-auto py-10">
+        <h1 className="text-3xl font-bold text-ink mb-3">Estadísticas</h1>
+        <p className="text-body">Necesitas un criadero registrado.</p>
+      </div>
+    )
+  }
+
+  // Cargar contadores en paralelo
+  const since30d = new Date(Date.now() - 30 * 86400000).toISOString()
+  const [dogsRes, littersRes, activeReservasRes, totalReservasRes, ownersRes, knowledgeRes, subsRes, pageviewsRes, pageviews30Res] = await Promise.all([
+    supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id),
+    supabase.from('litters').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
+    supabase.from('puppy_reservations').select('id', { count: 'exact', head: true })
+      .eq('kennel_id', kennel.id).not('status', 'in', '("delivered","cancelled")'),
+    supabase.from('puppy_reservations').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id),
+    supabase.from('owners').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id),
+    supabase.from('knowledge_entries').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id).eq('is_active', true),
+    supabase.from('newsletter_subscribers').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id).eq('is_active', true),
+    supabase.from('page_views').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id),
+    supabase.from('page_views').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id).gte('created_at', since30d),
+  ])
+
+  const stats = {
+    dogs: dogsRes.count || 0,
+    litters: littersRes.count || 0,
+    activeReservas: activeReservasRes.count || 0,
+    totalReservas: totalReservasRes.count || 0,
+    owners: ownersRes.count || 0,
+    knowledge: knowledgeRes.count || 0,
+    subs: subsRes.count || 0,
+    pageviewsTotal: pageviewsRes.count || 0,
+    pageviews30d: pageviews30Res.count || 0,
+  }
+
+  // Top perros por reservas
+  const { data: topDogsByRes } = await supabase
+    .from('puppy_reservations')
+    .select('dog_id, dog:dogs(id, name, slug)')
+    .eq('kennel_id', kennel.id)
+    .not('dog_id', 'is', null)
+
+  const dogReservCount: Record<string, { name: string; slug: string; count: number }> = {}
+  for (const r of topDogsByRes || []) {
+    const d = (r as any).dog
+    if (!d) continue
+    if (!dogReservCount[d.id]) dogReservCount[d.id] = { name: d.name, slug: d.slug || d.id, count: 0 }
+    dogReservCount[d.id].count++
+  }
+  const topDogs = Object.values(dogReservCount).sort((a, b) => b.count - a.count).slice(0, 5)
+
+  // Reservas por status
+  const { data: allRes } = await supabase
+    .from('puppy_reservations')
+    .select('status')
+    .eq('kennel_id', kennel.id)
+  const byStatus: Record<string, number> = {}
+  for (const r of allRes || []) byStatus[r.status] = (byStatus[r.status] || 0) + 1
+
   return (
-    <ComingSoon
-      title="Estadísticas"
-      description="Métricas reales del impacto de tu perfil público y tu mini-sitio: visitas, origen, conversión a inquiries, conversión a reserva."
-      features={[
-        'Pageviews por página y por perro',
-        'Origen del tráfico (orgánico Google, redes, directo, referrals)',
-        'Conversión visita → inquiry → reserva',
-        'Top perros más visitados / más solicitados',
-        'Comparativa mes a mes',
-      ]}
-    />
+    <div>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-ink tracking-tight">Estadísticas</h1>
+        <p className="text-sm text-muted mt-0.5">{kennel.name} · resumen general</p>
+      </div>
+
+      {/* KPI grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        <StatCard icon={Dog} label="Perros" value={stats.dogs} href="/dogs" />
+        <StatCard icon={Baby} label="Camadas" value={stats.litters} href="/litters" />
+        <StatCard icon={KanbanSquare} label="Reservas activas" value={stats.activeReservas}
+                  sub={`${stats.totalReservas} totales`} href="/reservas" />
+        <StatCard icon={UsersRound} label="Clientes" value={stats.owners} href="/clientes" />
+        <StatCard icon={BookOpen} label="Biblioteca" value={stats.knowledge}
+                  sub="entradas activas" href="/conocimiento" />
+        <StatCard icon={Mail} label="Newsletter" value={stats.subs}
+                  sub="suscriptores" href="/newsletter" />
+        <StatCard icon={TrendingUp} label="Visitas 30d" value={stats.pageviews30d}
+                  sub={`${stats.pageviewsTotal} histórico`} />
+        <StatCard icon={TrendingUp} label="Visitas totales" value={stats.pageviewsTotal} />
+      </div>
+
+      {/* Pageviews note */}
+      {stats.pageviewsTotal === 0 && (
+        <div className="rounded-xl border border-hairline bg-surface-card p-4 mb-8 flex items-start gap-3">
+          <TrendingUp className="w-5 h-5 text-muted flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-body leading-relaxed">
+            <p className="mb-1"><strong>Tracking de visitas aún sin datos.</strong></p>
+            <p>
+              El conteo de visitas a tu perfil público y a las fichas de tus perros se activa
+              en la próxima fase. La infraestructura ya está en la base de datos
+              (<code className="text-[12px] bg-canvas border border-hairline rounded px-1">page_views</code>),
+              falta enganchar el middleware de tracking ligero y anónimo (sha256 de ip+user-agent+día, GDPR-friendly).
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Pipeline status breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+        <div className="rounded-xl border border-hairline bg-canvas p-5">
+          <h3 className="text-sm font-semibold text-ink mb-4">Pipeline de reservas</h3>
+          {stats.totalReservas === 0 ? (
+            <p className="text-sm text-muted">Sin reservas todavía. Crea la primera en <Link href="/reservas" className="text-ink underline">Reservas</Link>.</p>
+          ) : (
+            <div className="space-y-2">
+              {[
+                ['interested', 'Interesado'],
+                ['waitlisted', 'Lista de espera'],
+                ['deposit_paid', 'Depósito pagado'],
+                ['assigned', 'Asignado'],
+                ['contract_signed', 'Contrato firmado'],
+                ['paid_in_full', 'Pago total'],
+                ['delivered', 'Entregado'],
+                ['cancelled', 'Cancelado'],
+              ].map(([key, label]) => {
+                const count = byStatus[key] || 0
+                const pct = stats.totalReservas > 0 ? (count / stats.totalReservas) * 100 : 0
+                if (count === 0) return null
+                return (
+                  <div key={key}>
+                    <div className="flex items-center justify-between text-xs mb-0.5">
+                      <span className="text-body">{label}</span>
+                      <span className="text-muted font-medium">{count}</span>
+                    </div>
+                    <div className="h-1.5 bg-surface-card rounded-full overflow-hidden">
+                      <div className="h-full bg-ink" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-xl border border-hairline bg-canvas p-5">
+          <h3 className="text-sm font-semibold text-ink mb-4">Top perros (por reservas asociadas)</h3>
+          {topDogs.length === 0 ? (
+            <p className="text-sm text-muted">Aún no hay reservas asociadas a perros concretos.</p>
+          ) : (
+            <div className="space-y-2">
+              {topDogs.map((d, i) => (
+                <Link
+                  key={d.slug + i}
+                  href={`/dogs/${d.slug}`}
+                  className="flex items-center justify-between gap-3 py-2 border-b border-hairline last:border-0 hover:bg-surface-soft -mx-2 px-2 rounded transition"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-xs text-muted font-medium w-4">{i + 1}</span>
+                    <span className="text-sm font-medium text-ink truncate">{d.name}</span>
+                  </div>
+                  <span className="text-xs text-muted whitespace-nowrap">{d.count} reserva{d.count === 1 ? '' : 's'}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Perfil público link */}
+      <div className="rounded-xl border border-hairline bg-canvas p-5">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-sm font-semibold text-ink mb-1">Tu perfil público</p>
+            <p className="text-sm text-muted">
+              Las visitas y conversiones a este perfil se medirán aquí en cuanto se active el tracking.
+            </p>
+          </div>
+          <Link
+            href={`/kennels/${kennel.slug}`}
+            target="_blank"
+            className="text-xs font-medium text-body hover:text-ink border border-hairline rounded-lg px-3 py-1.5 inline-flex items-center gap-1.5 transition hover:bg-surface-soft"
+          >
+            Ver perfil
+            <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+      </div>
+    </div>
   )
+}
+
+function StatCard({
+  icon: Icon, label, value, sub, href,
+}: {
+  icon: any; label: string; value: number; sub?: string; href?: string
+}) {
+  const inner = (
+    <div className="rounded-xl border border-hairline bg-canvas p-4 hover:border-ink/30 hover:shadow-sm transition h-full">
+      <div className="flex items-center justify-between mb-2">
+        <Icon className="w-4 h-4 text-muted" />
+        {href && <ArrowRight className="w-3 h-3 text-muted opacity-0 transition" />}
+      </div>
+      <p className="text-2xl font-bold text-ink leading-none">{value.toLocaleString('es-ES')}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted mt-2">{label}</p>
+      {sub && <p className="text-[11px] text-muted mt-0.5">{sub}</p>}
+    </div>
+  )
+  return href ? <Link href={href}>{inner}</Link> : inner
 }
