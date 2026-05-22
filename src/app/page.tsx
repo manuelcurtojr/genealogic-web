@@ -19,11 +19,12 @@ export default async function Home() {
     .order('name')
     .limit(20)
 
-  // Fetch some recent public dogs for the breed thumbnails
+  // Fetch some recent public dogs for the hero showcase
   const { data: featuredDogs } = await supabase
     .from('dogs')
-    .select('id, name, thumbnail_url, breed:breeds(id, name)')
+    .select('id, name, slug, thumbnail_url, breed:breeds(id, name)')
     .not('thumbnail_url', 'is', null)
+    .eq('is_public', true)
     .order('created_at', { ascending: false })
     .limit(8)
 
