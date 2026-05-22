@@ -77,7 +77,7 @@ function RawJsonEditor({ pageSlug, section }: { pageSlug: string; section: Secti
 
   return (
     <div>
-      <p className="mb-2 text-[11px] text-ink-500">
+      <p className="mb-2 text-[11px] text-muted">
         Esta sección aún no tiene formulario específico. Edita las props como JSON crudo.
       </p>
       <textarea
@@ -85,15 +85,15 @@ function RawJsonEditor({ pageSlug, section }: { pageSlug: string; section: Secti
         onChange={(e) => setValue(e.target.value)}
         spellCheck={false}
         rows={Math.min(20, Math.max(8, value.split('\n').length + 1))}
-        className="w-full rounded-lg border border-ink-200 bg-ink-50/40 px-3 py-2 font-mono text-xs text-ink-950 outline-none focus:border-brand"
+        className="w-full rounded-lg border border-hairline bg-surface-soft px-3 py-2 font-mono text-xs text-ink outline-none focus:border-brand"
       />
       {error && (
-        <p className="mt-2 rounded-md bg-[var(--admin-danger-soft)] px-3 py-2 text-xs text-[color:var(--admin-danger)] ring-1 ring-[color:var(--admin-danger-soft)]">
+        <p className="mt-2 rounded-md bg-[var(--red-200/60)] px-3 py-2 text-xs text-[color:var(--red-700)] ring-1 ring-[color:var(--red-200/60)]">
           JSON no válido: {error}
         </p>
       )}
       <div className="mt-3 flex items-center justify-between gap-2">
-        <p className="text-[11px] text-ink-500">
+        <p className="text-[11px] text-muted">
           {isPending && 'Guardando…'}
           {!isPending && savedAt && `✓ Guardado a las ${savedAt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`}
         </p>
@@ -101,7 +101,7 @@ function RawJsonEditor({ pageSlug, section }: { pageSlug: string; section: Secti
           <button
             type="button"
             onClick={format}
-            className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-medium text-ink-700 hover:border-ink-300"
+            className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-body hover:border-muted"
           >
             Formatear
           </button>
@@ -109,7 +109,7 @@ function RawJsonEditor({ pageSlug, section }: { pageSlug: string; section: Secti
             type="button"
             onClick={save}
             disabled={!isDirty || isPending}
-            className="rounded-lg bg-ink-950 px-4 py-1.5 text-xs font-medium text-white transition hover:bg-ink-800 disabled:opacity-40"
+            className="rounded-lg bg-ink px-4 py-1.5 text-xs font-medium text-white transition hover:bg-ink disabled:opacity-40"
           >
             Guardar
           </button>

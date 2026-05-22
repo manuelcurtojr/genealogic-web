@@ -91,9 +91,9 @@ export function PreviewFrame({ slug }: { slug: string }) {
   const src = `/web-preview/${slug}?_v=${version}${selectedId ? `&selected=${encodeURIComponent(selectedId)}` : ''}`;
 
   return (
-    <div className="flex h-full flex-col bg-ink-100/40">
-      <div className="flex items-center justify-between gap-3 border-b border-brand-100 bg-white px-4 py-2">
-        <div className="flex items-center gap-1 rounded-lg bg-ink-100 p-0.5">
+    <div className="flex h-full flex-col bg-surface-card">
+      <div className="flex items-center justify-between gap-3 border-b border-hairline bg-white px-4 py-2">
+        <div className="flex items-center gap-1 rounded-lg bg-surface-card p-0.5">
           {(Object.keys(VIEWPORTS) as Viewport[]).map((v) => (
             <button
               key={v}
@@ -101,23 +101,23 @@ export function PreviewFrame({ slug }: { slug: string }) {
               onClick={() => setViewport(v)}
               className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition ${
                 viewport === v
-                  ? 'bg-white text-ink-950 shadow-sm'
-                  : 'text-ink-500 hover:text-ink-700'
+                  ? 'bg-white text-ink shadow-sm'
+                  : 'text-muted hover:text-body'
               }`}
             >
               {VIEWPORTS[v].label}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2 text-[11px] text-ink-500">
+        <div className="flex items-center gap-2 text-[11px] text-muted">
           {reloading && <span>Actualizando…</span>}
-          <span className="hidden sm:inline text-ink-400">
+          <span className="hidden sm:inline text-muted">
             Pulsa cualquier sección para editarla
           </span>
           <button
             type="button"
             onClick={manualReload}
-            className="rounded-md p-1 text-ink-500 hover:bg-ink-100"
+            className="rounded-md p-1 text-muted hover:bg-surface-card"
             aria-label="Recargar previsualización"
             title="Recargar"
           >

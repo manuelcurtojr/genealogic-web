@@ -105,7 +105,7 @@ export function SectionForm({ pageSlug, sectionId, schema, initialValue, onSaved
         </div>
       )}
 
-      <div className="sticky bottom-0 -mx-5 -mb-5 mt-6 flex items-center justify-between gap-3 border-t border-brand-100 bg-white/95 backdrop-blur px-5 py-3">
+      <div className="sticky bottom-0 -mx-5 -mb-5 mt-6 flex items-center justify-between gap-3 border-t border-hairline bg-white/95 backdrop-blur px-5 py-3">
         <SaveStatus
           isPending={isPending}
           pendingSave={pendingSave}
@@ -116,7 +116,7 @@ export function SectionForm({ pageSlug, sectionId, schema, initialValue, onSaved
           type="button"
           onClick={flushNow}
           disabled={!isDirty || isPending}
-          className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-medium text-ink-700 hover:border-ink-300 disabled:opacity-30"
+          className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-body hover:border-muted disabled:opacity-30"
           title="Guardar ahora sin esperar al autosave"
         >
           Guardar ya
@@ -139,7 +139,7 @@ function SaveStatus({
 }) {
   if (isPending) {
     return (
-      <p className="flex items-center gap-2 text-[11px] text-ink-500">
+      <p className="flex items-center gap-2 text-[11px] text-muted">
         <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
         Guardando…
       </p>
@@ -147,7 +147,7 @@ function SaveStatus({
   }
   if (pendingSave) {
     return (
-      <p className="flex items-center gap-2 text-[11px] text-ink-500">
+      <p className="flex items-center gap-2 text-[11px] text-muted">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
         Cambios sin guardar
       </p>
@@ -155,16 +155,16 @@ function SaveStatus({
   }
   if (savedAt) {
     return (
-      <p className="flex items-center gap-2 text-[11px] text-ink-500">
+      <p className="flex items-center gap-2 text-[11px] text-muted">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
         Guardado a las {savedAt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
       </p>
     );
   }
   if (isDirty) {
-    return <p className="text-[11px] text-ink-500">Cambios sin guardar</p>;
+    return <p className="text-[11px] text-muted">Cambios sin guardar</p>;
   }
-  return <p className="text-[11px] text-ink-400">Todo al día</p>;
+  return <p className="text-[11px] text-muted">Todo al día</p>;
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -188,7 +188,7 @@ function FieldRenderer({
           value={(value as string) ?? ''}
           placeholder={field.placeholder}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm text-ink-950 outline-none focus:border-brand"
+          className="w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand"
         />
       </Wrapper>
     );
@@ -201,7 +201,7 @@ function FieldRenderer({
           rows={field.rows ?? 4}
           placeholder={field.placeholder}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm text-ink-950 outline-none focus:border-brand"
+          className="w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand"
         />
       </Wrapper>
     );
@@ -215,7 +215,7 @@ function FieldRenderer({
           min={field.min}
           max={field.max}
           onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
-          className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm text-ink-950 outline-none focus:border-brand"
+          className="w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand"
         />
       </Wrapper>
     );
@@ -226,7 +226,7 @@ function FieldRenderer({
         <select
           value={(value as string) ?? ''}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm text-ink-950 outline-none focus:border-brand"
+          className="w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand"
         >
           {field.options.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -274,7 +274,7 @@ function GroupField({
 }) {
   return (
     <Wrapper label={field.label} description={field.description}>
-      <div className="rounded-lg border border-ink-200 bg-ink-50/40 p-3 space-y-3">
+      <div className="rounded-lg border border-hairline bg-surface-soft p-3 space-y-3">
         {field.fields.map((f) => (
           <FieldRenderer
             key={f.key}
@@ -300,12 +300,12 @@ function Wrapper({
   return (
     <label className="block">
       <div className="mb-1.5 flex items-baseline justify-between gap-3">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-600">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-body">
           {label}
         </span>
       </div>
       {children}
-      {description && <p className="mt-1 text-[11px] text-ink-500">{description}</p>}
+      {description && <p className="mt-1 text-[11px] text-muted">{description}</p>}
     </label>
   );
 }
@@ -331,18 +331,18 @@ function TagsField({
   }
   return (
     <Wrapper label={field.label} description={field.description}>
-      <div className="rounded-lg border border-ink-200 bg-white p-2 focus-within:border-brand">
+      <div className="rounded-lg border border-hairline bg-white p-2 focus-within:border-brand">
         <div className="flex flex-wrap gap-1.5">
           {value.map((tag, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1.5 rounded-full bg-ink-100 px-2.5 py-1 text-xs text-ink-700"
+              className="inline-flex items-center gap-1.5 rounded-full bg-surface-card px-2.5 py-1 text-xs text-body"
             >
               {tag}
               <button
                 type="button"
                 onClick={() => removeAt(i)}
-                className="text-ink-500 hover:text-red-600"
+                className="text-muted hover:text-red-600"
                 aria-label={`Quitar ${tag}`}
               >
                 ✕
@@ -363,7 +363,7 @@ function TagsField({
             }}
             onBlur={add}
             placeholder={field.placeholder ?? 'Añadir y pulsar Enter'}
-            className="min-w-[120px] flex-1 bg-transparent px-2 py-1 text-sm text-ink-950 outline-none placeholder:text-ink-400"
+            className="min-w-[120px] flex-1 bg-transparent px-2 py-1 text-sm text-ink outline-none placeholder:text-muted"
           />
         </div>
       </div>
@@ -382,25 +382,25 @@ function CtaField({
 }) {
   return (
     <Wrapper label={field.label} description={field.description}>
-      <div className="rounded-lg border border-ink-200 bg-ink-50/40 p-3 space-y-2">
+      <div className="rounded-lg border border-hairline bg-surface-soft p-3 space-y-2">
         <input
           type="text"
           value={value.label ?? ''}
           onChange={(e) => onChange({ ...value, label: e.target.value })}
           placeholder="Texto del botón"
-          className="w-full rounded-md border border-ink-200 bg-white px-3 py-1.5 text-xs text-ink-950 outline-none focus:border-brand"
+          className="w-full rounded-md border border-hairline bg-white px-3 py-1.5 text-xs text-ink outline-none focus:border-brand"
         />
         <input
           type="text"
           value={value.href ?? ''}
           onChange={(e) => onChange({ ...value, href: e.target.value })}
           placeholder="Enlace (/raza, https://…)"
-          className="w-full rounded-md border border-ink-200 bg-white px-3 py-1.5 text-xs text-ink-950 outline-none focus:border-brand"
+          className="w-full rounded-md border border-hairline bg-white px-3 py-1.5 text-xs text-ink outline-none focus:border-brand"
         />
         <select
           value={value.variant ?? 'primary'}
           onChange={(e) => onChange({ ...value, variant: e.target.value })}
-          className="w-full rounded-md border border-ink-200 bg-white px-3 py-1.5 text-xs text-ink-950 outline-none focus:border-brand"
+          className="w-full rounded-md border border-hairline bg-white px-3 py-1.5 text-xs text-ink outline-none focus:border-brand"
         >
           <option value="primary">Primary (sólido blanco)</option>
           <option value="outline">Outline (borde)</option>
@@ -463,25 +463,25 @@ function ListField({
             (field.itemLabelKey && (item[field.itemLabelKey] as string)) ||
             `Item ${i + 1}`;
           return (
-            <li key={i} className="rounded-lg border border-ink-200 bg-white">
+            <li key={i} className="rounded-lg border border-hairline bg-white">
               <div className="flex items-center gap-1 px-3 py-2">
                 <button
                   type="button"
                   onClick={() => setOpenIdx(isOpen ? null : i)}
                   className="flex-1 min-w-0 text-left"
                 >
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-ink-400">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-muted">
                     {i + 1}
                   </span>
-                  <span className="ml-2 text-sm text-ink-950 truncate">
-                    {headLabel || <span className="italic text-ink-400">Sin título</span>}
+                  <span className="ml-2 text-sm text-ink truncate">
+                    {headLabel || <span className="italic text-muted">Sin título</span>}
                   </span>
                 </button>
                 <button
                   type="button"
                   onClick={() => moveItem(i, 'up')}
                   disabled={i === 0}
-                  className="rounded p-1 text-xs text-ink-500 hover:bg-ink-50 disabled:opacity-30"
+                  className="rounded p-1 text-xs text-muted hover:bg-surface-card disabled:opacity-30"
                   aria-label="Subir"
                 >
                   ▲
@@ -490,7 +490,7 @@ function ListField({
                   type="button"
                   onClick={() => moveItem(i, 'down')}
                   disabled={i === value.length - 1}
-                  className="rounded p-1 text-xs text-ink-500 hover:bg-ink-50 disabled:opacity-30"
+                  className="rounded p-1 text-xs text-muted hover:bg-surface-card disabled:opacity-30"
                   aria-label="Bajar"
                 >
                   ▼
@@ -505,7 +505,7 @@ function ListField({
                 </button>
               </div>
               {isOpen && (
-                <div className="space-y-3 border-t border-ink-100 bg-ink-50/30 px-3 py-3">
+                <div className="space-y-3 border-t border-surface-card bg-surface-soft px-3 py-3">
                   {field.itemFields.map((f) => (
                     <FieldRenderer
                       key={f.key}
@@ -523,7 +523,7 @@ function ListField({
       <button
         type="button"
         onClick={addItem}
-        className="mt-3 w-full rounded-lg border border-dashed border-ink-200 px-3 py-2 text-xs font-medium text-ink-600 hover:border-brand hover:text-brand"
+        className="mt-3 w-full rounded-lg border border-dashed border-hairline px-3 py-2 text-xs font-medium text-body hover:border-ink/30 hover:text-brand"
       >
         + {field.addLabel ?? 'Añadir'}
       </button>
