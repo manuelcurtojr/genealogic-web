@@ -1,5 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createPlainClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+
+/** Admin client (service-role, bypassing RLS). Para queries server-only del web builder. */
+export function createKennelAdminClient() {
+  return createPlainClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  )
+}
 
 export async function createClient() {
   const cookieStore = await cookies()
