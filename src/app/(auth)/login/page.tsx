@@ -5,14 +5,32 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock } from 'lucide-react'
-import { AuthShell, Field, AuthSubmit, AuthError } from '@/components/auth/auth-shell'
+import { AuthShell, Field, AuthSubmit, AuthError, GoogleButton, OAuthDivider } from '@/components/auth/auth-shell'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState(false)
   const router = useRouter()
+
+  const handleGoogle = async () => {
+    setError('')
+    setOauthLoading(true)
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+      },
+    })
+    if (error) {
+      setError(error.message)
+      setOauthLoading(false)
+    }
+    // Si va bien, Supabase redirige al provider — no llegamos a la siguiente línea
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,6 +64,9 @@ export default function LoginPage() {
         href: '/register',
       }}
     >
+      <GoogleButton onClick={handleGoogle} loading={oauthLoading} />
+      <OAuthDivider />
+
       <form onSubmit={handleLogin} className="space-y-4">
         {error && <AuthError>{error}</AuthError>}
 

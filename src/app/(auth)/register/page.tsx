@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock, User } from 'lucide-react'
-import { AuthShell, Field, AuthSubmit, AuthError } from '@/components/auth/auth-shell'
+import { AuthShell, Field, AuthSubmit, AuthError, GoogleButton, OAuthDivider } from '@/components/auth/auth-shell'
 
 export default function RegisterPage() {
   const [name, setName] = useState('')
@@ -13,8 +13,30 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState(false)
   const [acceptTerms, setAcceptTerms] = useState(false)
   const router = useRouter()
+
+  const handleGoogle = async () => {
+    // Para registro con Google también exigimos que acepten términos primero
+    if (!acceptTerms) {
+      setError('Acepta los Términos y la Política de Privacidad para continuar.')
+      return
+    }
+    setError('')
+    setOauthLoading(true)
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+      },
+    })
+    if (error) {
+      setError(error.message)
+      setOauthLoading(false)
+    }
+  }
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,6 +70,13 @@ export default function RegisterPage() {
         href: '/login',
       }}
     >
+      <GoogleButton
+        onClick={handleGoogle}
+        loading={oauthLoading}
+        label="Continuar con Google"
+      />
+      <OAuthDivider label="o regístrate con email" />
+
       <form onSubmit={handleRegister} className="space-y-4">
         {error && <AuthError>{error}</AuthError>}
 
