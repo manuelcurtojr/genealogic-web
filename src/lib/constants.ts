@@ -56,17 +56,20 @@ export const NAV_SECTIONS: NavSection[] = [
     label: '',
     items: [
       { label: 'Escritorio', href: '/dashboard', icon: 'LayoutDashboard' },
+      // Catálogo y herramientas del criador
       { label: 'Perros', href: '/dogs', icon: 'Dog' },
-      // Catálogo del criador (Free criador)
       { label: 'Camadas', href: '/litters', icon: 'Baby', requiresKennel: true },
       { label: 'Cruces', href: '/cruces', icon: 'GitCompareArrows', requiresKennel: true },
       { label: 'Reproducción', href: '/reproduccion', icon: 'Heart', requiresKennel: true },
-      // Tiempo (todos los usuarios)
+      // Tiempo
       { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
       // Operativa Pro
       { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare', requiresPro: true, requiresKennel: true },
       { label: 'Clientes', href: '/clientes', icon: 'UsersRound', requiresPro: true, requiresKennel: true },
-      { label: 'Web', href: '/web', icon: 'Globe', requiresPro: true },
+      // Criadero como hub: contiene Web pública, Dominio, API, etc. dentro
+      { label: 'Criadero', href: '/kennel', icon: 'Store', requiresKennel: true },
+      // Emailbot como sección propia (con tabs internos para Hilos / Test / Biblioteca)
+      { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresPro: true, requiresKennel: true },
     ],
   },
 ]
