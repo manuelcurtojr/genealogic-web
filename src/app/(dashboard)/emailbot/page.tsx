@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import EmailbotConfigClient from '@/components/emailbot/emailbot-config-client'
+import EmailbotSubnav from '@/components/emailbot/emailbot-subnav'
 
 export const metadata = { title: 'Emailbot · Genealogic Pro' }
 
@@ -38,17 +39,20 @@ export default async function EmailbotPage() {
   ])
 
   return (
-    <EmailbotConfigClient
-      kennelId={kennel.id}
-      kennelName={kennel.name}
-      kennelSlug={kennel.slug}
-      initialConfig={cfgRes.data || null}
-      stats={{
-        knowledgeCount: knowledgeRes.count || 0,
-        threadsTotal: threadsRes.count || 0,
-        threads30d: threads30dRes.count || 0,
-        escalated: escalated30dRes.count || 0,
-      }}
-    />
+    <div className="space-y-5">
+      <EmailbotSubnav />
+      <EmailbotConfigClient
+        kennelId={kennel.id}
+        kennelName={kennel.name}
+        kennelSlug={kennel.slug}
+        initialConfig={cfgRes.data || null}
+        stats={{
+          knowledgeCount: knowledgeRes.count || 0,
+          threadsTotal: threadsRes.count || 0,
+          threads30d: threads30dRes.count || 0,
+          escalated: escalated30dRes.count || 0,
+        }}
+      />
+    </div>
   )
 }

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ThreadsListClient from '@/components/emailbot/threads-list-client'
+import EmailbotSubnav from '@/components/emailbot/emailbot-subnav'
 
 export const metadata = { title: 'Hilos · Genealogic Pro' }
 
@@ -30,9 +31,12 @@ export default async function EmailbotHilosPage() {
     .limit(200)
 
   return (
-    <ThreadsListClient
-      kennelName={kennel.name}
-      initialThreads={threads || []}
-    />
+    <div className="space-y-5">
+      <EmailbotSubnav />
+      <ThreadsListClient
+        kennelName={kennel.name}
+        initialThreads={threads || []}
+      />
+    </div>
   )
 }

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ChatPlayground from '@/components/emailbot/chat-playground'
+import EmailbotSubnav from '@/components/emailbot/emailbot-subnav'
 
 export const metadata = { title: 'Test Emailbot · Genealogic Pro' }
 
@@ -33,10 +34,13 @@ export default async function EmailbotTestPage() {
     .eq('is_active', true)
 
   return (
-    <ChatPlayground
-      kennelId={kennel.id}
-      kennelName={kennel.name}
-      knowledgeCount={knowledgeCount || 0}
-    />
+    <div className="space-y-5">
+      <EmailbotSubnav />
+      <ChatPlayground
+        kennelId={kennel.id}
+        kennelName={kennel.name}
+        knowledgeCount={knowledgeCount || 0}
+      />
+    </div>
   )
 }

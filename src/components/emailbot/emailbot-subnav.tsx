@@ -1,0 +1,74 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Mail, MessageSquare, Beaker, BookOpen } from 'lucide-react'
+
+/**
+ * Subnav compartido entre /emailbot, /emailbot/hilos, /emailbot/test
+ * y /conocimiento (la Biblioteca de conocimiento alimenta al bot).
+ *
+ * Los 4 forman parte del mismo workflow conceptual: el bot responde
+ * usando la Biblioteca, gestiona hilos, y se prueba en el playground.
+ * Tener 4 entradas separadas en el sidebar/CommandBar es ruido —
+ * este subnav las une visualmente.
+ */
+export default function EmailbotSubnav() {
+  const pathname = usePathname()
+
+  const tabs = [
+    {
+      href: '/emailbot',
+      label: 'Configuración',
+      hint: 'Activación, tono, reglas y stats del bot',
+      icon: Mail,
+      active: pathname === '/emailbot',
+    },
+    {
+      href: '/emailbot/hilos',
+      label: 'Hilos',
+      hint: 'Conversaciones reales del bot con contactos',
+      icon: MessageSquare,
+      active: pathname.startsWith('/emailbot/hilos'),
+    },
+    {
+      href: '/emailbot/test',
+      label: 'Probar',
+      hint: 'Playground para testear respuestas del bot',
+      icon: Beaker,
+      active: pathname.startsWith('/emailbot/test'),
+    },
+    {
+      href: '/conocimiento',
+      label: 'Biblioteca',
+      hint: 'Entradas de conocimiento que alimentan al bot',
+      icon: BookOpen,
+      active: pathname.startsWith('/conocimiento'),
+    },
+  ]
+
+  return (
+    <nav className="-mx-1 flex overflow-x-auto pb-1">
+      <div className="flex gap-1 px-1">
+        {tabs.map((t) => {
+          const Icon = t.icon
+          return (
+            <Link
+              key={t.href}
+              href={t.href}
+              title={t.hint}
+              className={`flex-shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                t.active
+                  ? 'border-ink bg-ink text-on-primary'
+                  : 'border-hairline bg-canvas text-body hover:bg-surface-soft'
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {t.label}
+            </Link>
+          )
+        })}
+      </div>
+    </nav>
+  )
+}

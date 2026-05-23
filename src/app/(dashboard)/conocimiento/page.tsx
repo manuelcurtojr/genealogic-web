@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import KnowledgePageClient from '@/components/conocimiento/knowledge-page-client'
+import EmailbotSubnav from '@/components/emailbot/emailbot-subnav'
 
 export const metadata = { title: 'Biblioteca · Genealogic Pro' }
 
@@ -36,10 +37,13 @@ export default async function ConocimientoPage() {
     .order('position')
 
   return (
-    <KnowledgePageClient
-      kennelId={kennel.id}
-      kennelName={kennel.name}
-      initialEntries={entries || []}
-    />
+    <div className="space-y-5">
+      <EmailbotSubnav />
+      <KnowledgePageClient
+        kennelId={kennel.id}
+        kennelName={kennel.name}
+        initialEntries={entries || []}
+      />
+    </div>
   )
 }
