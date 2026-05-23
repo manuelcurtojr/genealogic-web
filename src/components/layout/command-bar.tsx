@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Search, Bell, Dog, Plus, PlusCircle, Baby, GitCompareArrows,
   Calendar, Stethoscope, KanbanSquare, UsersRound, Mail, Beaker, MessageSquare,
   BookOpen, Send, Globe, TrendingUp, Store, Edit3, BarChart3, Key, Users,
-  Sparkles, Receipt, Link2, Settings, Shield, Tag, Upload,
+  Sparkles, Receipt, Link2, Settings, Shield, Tag, Upload, Heart, Dna,
   ArrowRight, CornerDownLeft,
 } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
@@ -16,7 +16,7 @@ const ICONS: Record<string, React.ElementType> = {
   LayoutDashboard, Search, Bell, Dog, Plus, PlusCircle, Baby, GitCompareArrows,
   Calendar, Stethoscope, KanbanSquare, UsersRound, Mail, Beaker, MessageSquare,
   BookOpen, Send, Globe, TrendingUp, Store, Edit3, BarChart3, Key, Users,
-  Sparkles, Receipt, Link2, Settings, Shield, Tag, Upload,
+  Sparkles, Receipt, Link2, Settings, Shield, Tag, Upload, Heart, Dna,
 }
 
 interface Props {
