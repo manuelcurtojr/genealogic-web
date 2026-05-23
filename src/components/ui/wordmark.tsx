@@ -33,7 +33,17 @@ export function Wordmark({
     className,
   )
 
-  const inner = <span className={classes}>Genealogic</span>
+  const inner = (
+    <span className={cn('inline-flex items-center gap-2', className)}>
+      <img
+        src="/icon.svg"
+        alt=""
+        aria-hidden="true"
+        className="h-[1em] w-[1em] shrink-0"
+      />
+      <span className={classes}>Genealogic</span>
+    </span>
+  )
 
   if (!asLink) return inner
   return (
