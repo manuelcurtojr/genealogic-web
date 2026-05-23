@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Globe, Calendar, ExternalLink, Sparkles } from 'lucide-react'
 import WhatsAppIcon from '@/components/ui/whatsapp-icon'
@@ -30,14 +30,43 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 }
 
-export default async function KennelDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function KennelDetailPage({
+  params, searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ force?: string }>
+}) {
   const { id } = await params
+  const sp = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const field = isUUID(id) ? 'id' : 'slug'
   const { data: kennel } = await supabase.from('kennels').select('*').eq(field, id).single()
   if (!kennel) notFound()
+
+  // ¿El criador prefiere redirigir a su web personalizada?
+  // - Solo si tiene default_public_view='custom_web'
+  // - Solo si hay web publicada (kennel_pages home enabled)
+  // - El owner ve siempre el estándar (para gestionar) UNLESS force=custom
+  // - Visitantes pueden hacer bypass con ?force=standard
+  const isOwner = user?.id === kennel.owner_id
+  const forceStandard = sp.force === 'standard'
+  const forceCustom = sp.force === 'custom'
+  const wantsCustomRedirect =
+    kennel.default_public_view === 'custom_web' && !!kennel.slug
+  if (wantsCustomRedirect && !forceStandard && (!isOwner || forceCustom)) {
+    const { data: customPageCheck } = await supabase
+      .from('kennel_pages')
+      .select('id')
+      .eq('kennel_id', kennel.id)
+      .eq('slug', 'home')
+      .eq('enabled', true)
+      .maybeSingle()
+    if (customPageCheck) {
+      redirect(`/c/${kennel.slug}`)
+    }
+  }
 
   const { data: allDogs } = await supabase
     .from('dogs')
