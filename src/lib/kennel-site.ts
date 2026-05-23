@@ -30,10 +30,11 @@ export type KennelContext = {
   custom_domain: string | null
   affix_format: string | null
   owner_id: string
+  contact_form_config?: unknown
 }
 
 const KENNEL_FIELDS =
-  'id, slug, name, description, logo_url, country, city, social_facebook, social_instagram, social_tiktok, social_youtube, whatsapp_phone, whatsapp_enabled, custom_domain, affix_format, owner_id'
+  'id, slug, name, description, logo_url, country, city, social_facebook, social_instagram, social_tiktok, social_youtube, whatsapp_phone, whatsapp_enabled, custom_domain, affix_format, owner_id, contact_form_config'
 
 /** Resuelve un kennel por su slug. Se cachea por la duración del request. */
 export const getKennelBySlug = cache(async (slug: string): Promise<KennelContext | null> => {

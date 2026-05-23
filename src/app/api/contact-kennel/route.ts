@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createKennelAdminClient } from '@/lib/supabase/server'
+import { getEffectiveConfig, validateForm, splitFormValues } from '@/lib/kennel/contact-form'
 
 /**
  * POST /api/contact-kennel
  *
- * Endpoint público para que un visitante envíe una solicitud de
- * contacto a un criadero. Crea un registro en puppy_reservations
- * con source='public_form' y status='interested' → aparece en
- * la bandeja de "Solicitudes" del criador (tab "Todas" de /reservas).
+ * Recibe { kennel_id, values } donde values es el mapa { fieldId: valor }
+ * según la config del formulario del kennel. Valida + separa canónicos
+ * vs extras + inserta en puppy_reservations.
  *
- * Usa service_role para bypass RLS (las RLS no permiten INSERT
- * anónimo, lo cual es correcto — controlamos la inserción aquí).
- *
- * Validación mínima por ahora; añadir captcha + rate limit en futuro.
+ * Compatible con el formato anterior (campos planos) por retrocompat.
  */
 export async function POST(request: NextRequest) {
   let body: any
@@ -22,58 +19,72 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const {
-    kennel_id,
-    applicant_name,
-    applicant_email,
-    applicant_phone,
-    applicant_message,
-    preference_sex,
-    preference_color,
-  } = body || {}
+  const { kennel_id, values: rawValues, ...legacyTopLevel } = body || {}
 
-  // Validación campos obligatorios
   if (!kennel_id || typeof kennel_id !== 'string') {
     return NextResponse.json({ error: 'kennel_id requerido' }, { status: 400 })
-  }
-  if (!applicant_name || typeof applicant_name !== 'string' || !applicant_name.trim()) {
-    return NextResponse.json({ error: 'Nombre requerido' }, { status: 400 })
-  }
-  if (!applicant_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(applicant_email)) {
-    return NextResponse.json({ error: 'Email válido requerido' }, { status: 400 })
-  }
-  if (!applicant_message || typeof applicant_message !== 'string' || applicant_message.trim().length < 5) {
-    return NextResponse.json({ error: 'Mensaje muy corto' }, { status: 400 })
   }
 
   const admin = createKennelAdminClient()
 
-  // Verificar que el kennel existe
+  // Verificar kennel y cargar config
   const { data: kennel, error: kErr } = await admin
     .from('kennels')
-    .select('id, name')
+    .select('id, name, contact_form_config')
     .eq('id', kennel_id)
     .maybeSingle()
   if (kErr || !kennel) {
     return NextResponse.json({ error: 'Criadero no encontrado' }, { status: 404 })
   }
 
-  // Insertar la solicitud — owner_id se deja NULL (referencia a tabla
-  // owners del CRM, que se vincula sólo si el criador convierte el lead).
-  // El RLS SELECT del criador filtra por kennel_id, no por owner_id.
+  const config = getEffectiveConfig(kennel.contact_form_config)
+
+  // Soporte legacy: si llegan campos planos en body en vez de { values }, mapearlos
+  const values: Record<string, any> = rawValues && typeof rawValues === 'object'
+    ? rawValues
+    : {
+        // Fallback compatibilidad con la versión anterior del button
+        name: legacyTopLevel.applicant_name,
+        email: legacyTopLevel.applicant_email,
+        phone: legacyTopLevel.applicant_phone,
+        message: legacyTopLevel.applicant_message,
+        puppy_sex: legacyTopLevel.preference_sex,
+      }
+
+  // Validar contra la config
+  const { errors, ok } = validateForm(config, values)
+  if (!ok) {
+    const firstError = Object.values(errors)[0] || 'Datos inválidos'
+    return NextResponse.json({ error: firstError, fields: errors }, { status: 400 })
+  }
+
+  // Separar valores canónicos vs extras
+  const { canonical, extra } = splitFormValues(config, values)
+
+  // Normalizar preference_sex si vino como "Macho/Hembra/Indiferente"
+  const sexRaw = canonical.preference_sex
+  if (sexRaw && typeof sexRaw === 'string') {
+    const lower = sexRaw.toLowerCase()
+    if (lower.includes('macho') || lower === 'male') canonical.preference_sex = 'male'
+    else if (lower.includes('hembra') || lower === 'female') canonical.preference_sex = 'female'
+    else canonical.preference_sex = null as any
+  }
+
+  if (canonical.applicant_email) {
+    canonical.applicant_email = String(canonical.applicant_email).trim().toLowerCase()
+  }
+
+  const insertPayload: Record<string, any> = {
+    kennel_id: kennel.id,
+    status: 'interested',
+    source: 'public_form',
+    ...canonical,
+    applicant_extra_data: Object.keys(extra).length > 0 ? extra : null,
+  }
+
   const { data: insertedRes, error: insertErr } = await admin
     .from('puppy_reservations')
-    .insert({
-      kennel_id: kennel.id,
-      status: 'interested',
-      source: 'public_form',
-      applicant_name: applicant_name.trim(),
-      applicant_email: applicant_email.trim().toLowerCase(),
-      applicant_phone: applicant_phone?.trim() || null,
-      applicant_message: applicant_message.trim(),
-      preference_sex: ['male', 'female'].includes(preference_sex) ? preference_sex : null,
-      preference_color: preference_color?.trim() || null,
-    })
+    .insert(insertPayload)
     .select('id')
     .single()
 

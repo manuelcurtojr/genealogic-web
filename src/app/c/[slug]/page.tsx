@@ -5,6 +5,7 @@ import { getPage } from '@/lib/kennel/pages'
 import { runWithKennel } from '@/lib/kennel-context'
 import { PageRenderer } from '@/components/site/sections/PageRenderer'
 import PageTracker from '@/components/track/page-tracker'
+import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,7 +46,19 @@ export default async function KennelHomePage({ params }: { params: Promise<{ slu
     <>
       <PageTracker kennelId={kennel.id} />
       {rendered}
-      {/* Badge sutil bottom-right para ir al perfil estándar de Genealogic */}
+
+      {/* Botón flotante de Solicitudes — mismo motor que /kennels/[slug],
+          renderiza el form configurado por el criador */}
+      <div className="fixed bottom-4 left-4 z-40">
+        <ContactKennelButton
+          kennelId={kennel.id}
+          kennelName={kennel.name}
+          config={(kennel as any).contact_form_config || null}
+          variant="light"
+        />
+      </div>
+
+      {/* Badge sutil bottom-right para ir al perfil estándar */}
       <a
         href={`/kennels/${kennel.slug}?force=standard`}
         title={`Ver perfil de ${kennel.name} en Genealogic`}

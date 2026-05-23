@@ -184,7 +184,7 @@ export default async function KennelDetailPage({
                   <ExternalLink className="h-3.5 w-3.5" /> Facebook
                 </a>
               )}
-              <ContactKennelButton kennelId={kennel.id} kennelName={kennel.name} />
+              <ContactKennelButton kennelId={kennel.id} kennelName={kennel.name} config={kennel.contact_form_config || null} />
             </div>
           </div>
         </div>
