@@ -13,12 +13,22 @@ type Cta = { label: string; href: string; variant?: 'primary' | 'outline' | 'gho
 export async function HeroSection(props: {
   eyebrow?: string
   title?: string
+  // Aliases que vienen del schema del editor:
+  tagline?: string
+  tagline_emphasis?: string
   subtitle?: string
   background_image_url?: string
+  bg_image_url?: string
+  bg_video_url?: string
+  bg_overlay_opacity?: number
   ctas?: Cta[]
   height?: 'sm' | 'md' | 'lg'
 }) {
-  const { eyebrow, title, subtitle, background_image_url, ctas = [] } = props
+  const { eyebrow, subtitle, ctas = [] } = props
+  // Acepta tanto `title` como `tagline`+`tagline_emphasis` (lo que use el editor)
+  const title = props.title ?? [props.tagline, props.tagline_emphasis].filter(Boolean).join(' ')
+  // Acepta tanto background_image_url como bg_image_url (alias del schema)
+  const background_image_url = props.background_image_url || props.bg_image_url
   const height = props.height === 'sm' ? 'min-h-[60vh]' : props.height === 'lg' ? 'min-h-[92vh]' : 'min-h-[75vh]'
   return (
     <section className={`relative ${height} flex items-end overflow-hidden bg-[#0a0a0a]`}>

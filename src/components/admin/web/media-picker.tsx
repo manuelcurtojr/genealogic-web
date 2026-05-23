@@ -5,6 +5,8 @@ import {
   listMediaAction,
   uploadMediaAction,
   deleteMediaAction,
+  listDogPhotosAction,
+  type DogPhoto,
 } from '@/app/(dashboard)/web/media-actions';
 
 type MediaItem = {
@@ -13,6 +15,15 @@ type MediaItem = {
   size: number;
   created_at: string;
   mime_type?: string;
+};
+
+type SourceTab = 'library' | 'my-dogs' | 'bred-by-me' | 'site-section';
+
+const TAB_LABELS: Record<SourceTab, string> = {
+  library: 'Biblioteca',
+  'my-dogs': 'Mis perros',
+  'bred-by-me': 'Criados por mí',
+  'site-section': 'En la web',
 };
 
 /**
@@ -156,7 +167,7 @@ function translateError(msg: string): string {
 }
 
 // ────────────────────────────────────────────────────────────────────
-// Drawer de la biblioteca
+// Drawer multi-fuente: Biblioteca · Mis perros · Criados por mí · En la web
 // ────────────────────────────────────────────────────────────────────
 function MediaLibraryDrawer({
   onClose,
@@ -165,7 +176,9 @@ function MediaLibraryDrawer({
   onClose: () => void;
   onPick: (url: string) => void;
 }) {
-  const [items, setItems] = useState<MediaItem[]>([]);
+  const [tab, setTab] = useState<SourceTab>('library');
+  const [libraryItems, setLibraryItems] = useState<MediaItem[]>([]);
+  const [dogPhotos, setDogPhotos] = useState<DogPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingPath, setDeletingPath] = useState<string | null>(null);
@@ -175,17 +188,20 @@ function MediaLibraryDrawer({
     let cancelled = false;
     (async () => {
       try {
-        const list = await listMediaAction();
-        if (!cancelled) setItems(list);
+        const [lib, dogs] = await Promise.all([
+          listMediaAction(),
+          listDogPhotosAction(),
+        ]);
+        if (cancelled) return;
+        setLibraryItems(lib);
+        setDogPhotos(dogs);
       } catch (e) {
         if (!cancelled) setError((e as Error).message);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   function deleteItem(path: string) {
@@ -194,7 +210,7 @@ function MediaLibraryDrawer({
     startTransition(async () => {
       try {
         await deleteMediaAction(path);
-        setItems((prev) => prev.filter((it) => it.name !== path));
+        setLibraryItems((prev) => prev.filter((it) => it.name !== path));
       } catch (e) {
         setError((e as Error).message);
       } finally {
@@ -202,6 +218,17 @@ function MediaLibraryDrawer({
       }
     });
   }
+
+  // Counts por tab
+  const counts: Record<SourceTab, number> = {
+    library: libraryItems.length,
+    'my-dogs': dogPhotos.filter((p) => p.source === 'my-dogs').length,
+    'bred-by-me': dogPhotos.filter((p) => p.source === 'bred-by-me').length,
+    'site-section': dogPhotos.filter((p) => p.source === 'site-section').length,
+  };
+
+  // Items que se muestran según el tab activo
+  const visibleDogs = dogPhotos.filter((p) => p.source === tab);
 
   return (
     <>
@@ -214,13 +241,11 @@ function MediaLibraryDrawer({
         <div className="flex items-center justify-between gap-3 border-b border-hairline px-5 py-4">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
-              Biblioteca
+              Biblioteca de medios
             </p>
-            <h2 className="mt-1 text-xl font-semibold text-ink">
-              Tus imágenes
-            </h2>
+            <h2 className="mt-1 text-xl font-semibold text-ink">Elegir imagen</h2>
             <p className="mt-0.5 text-[11px] text-muted">
-              {items.length} {items.length === 1 ? 'imagen' : 'imágenes'}
+              Tus uploads, fotos de tus perros, fotos del criadero o ya publicadas en la web
             </p>
           </div>
           <button
@@ -235,61 +260,126 @@ function MediaLibraryDrawer({
           </button>
         </div>
 
+        {/* Tabs */}
+        <div className="flex items-center gap-0 border-b border-hairline overflow-x-auto">
+          {(Object.keys(TAB_LABELS) as SourceTab[]).map((k) => {
+            const isActive = tab === k;
+            return (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setTab(k)}
+                className={`text-[11px] font-semibold uppercase tracking-[0.12em] px-4 py-3 whitespace-nowrap transition-all relative -mb-px border-b-2 ${
+                  isActive
+                    ? 'border-ink text-ink'
+                    : 'border-transparent text-muted hover:text-ink'
+                }`}
+              >
+                {TAB_LABELS[k]}
+                <span className={`ml-2 text-[10px] font-mono ${isActive ? 'text-ink' : 'text-muted'}`}>
+                  {String(counts[k]).padStart(2, '0')}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         <div className="flex-1 overflow-y-auto p-4">
           {loading && (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="aspect-square animate-pulse rounded-lg bg-surface-card" />
               ))}
             </div>
           )}
           {error && (
-            <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700 ring-1 ring-red-100">
+            <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700 ring-1 ring-red-100 mb-3">
               {error}
             </div>
           )}
-          {!loading && !error && items.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-hairline p-12 text-center">
-              <p className="text-lg text-ink">No has subido ninguna imagen aún</p>
-              <p className="mt-2 text-sm text-muted">
-                Cierra este panel y pulsa &laquo;Subir&raquo; para añadir tu primera foto.
-              </p>
-            </div>
+
+          {/* Tab: Biblioteca (uploads) */}
+          {!loading && tab === 'library' && (
+            libraryItems.length === 0 ? (
+              <EmptyState
+                title="No has subido ninguna imagen aún"
+                hint="Cierra este panel y pulsa «↑ Subir» para añadir tu primera foto."
+              />
+            ) : (
+              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {libraryItems.map((it) => (
+                  <li
+                    key={it.name}
+                    className="group relative overflow-hidden rounded-lg border border-surface-card bg-surface-card transition hover:border-ink/30"
+                  >
+                    <button type="button" onClick={() => onPick(it.url)} className="block w-full">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={it.url} alt={it.name} className="aspect-square w-full object-cover" loading="lazy" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteItem(it.name)}
+                      disabled={deletingPath === it.name}
+                      className="absolute right-1.5 top-1.5 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white opacity-0 transition group-hover:opacity-100 hover:bg-red-600 disabled:opacity-50"
+                    >
+                      {deletingPath === it.name ? '…' : '✕'}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )
           )}
-          {!loading && items.length > 0 && (
-            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {items.map((it) => (
-                <li
-                  key={it.name}
-                  className="group relative overflow-hidden rounded-lg border border-surface-card bg-surface-card transition hover:border-ink/30"
-                >
-                  <button
-                    type="button"
-                    onClick={() => onPick(it.url)}
-                    className="block w-full"
+
+          {/* Tabs: dog photos / site-section */}
+          {!loading && tab !== 'library' && (
+            visibleDogs.length === 0 ? (
+              <EmptyState
+                title={
+                  tab === 'my-dogs'
+                    ? 'No tienes perros públicos con foto'
+                    : tab === 'bred-by-me'
+                      ? 'Aún no hay perros criados con foto pública'
+                      : 'No hay fotos publicadas en otras secciones de la web'
+                }
+                hint={
+                  tab === 'my-dogs'
+                    ? 'Añade fotos a tus perros desde el catálogo y volverán a aparecer aquí.'
+                    : tab === 'bred-by-me'
+                      ? 'Cuando registres perros con tu criadero como kennel_id aparecerán aquí.'
+                      : 'En cuanto añadas imágenes a galerías u otras secciones, aparecerán aquí para reutilizarlas.'
+                }
+              />
+            ) : (
+              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {visibleDogs.map((p, i) => (
+                  <li
+                    key={`${p.url}-${i}`}
+                    className="group relative overflow-hidden rounded-lg border border-surface-card bg-surface-card transition hover:border-ink/30"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={it.url}
-                      alt={it.name}
-                      className="aspect-square w-full object-cover"
-                      loading="lazy"
-                    />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteItem(it.name)}
-                    disabled={deletingPath === it.name}
-                    className="absolute right-1.5 top-1.5 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white opacity-0 transition group-hover:opacity-100 hover:bg-red-600 disabled:opacity-50"
-                  >
-                    {deletingPath === it.name ? '…' : '✕'}
-                  </button>
-                </li>
-              ))}
-            </ul>
+                    <button type="button" onClick={() => onPick(p.url)} className="block w-full text-left">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.url} alt={p.name} className="aspect-square w-full object-cover" loading="lazy" />
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2.5 py-2">
+                        <p className="text-[11px] font-semibold text-white truncate">{p.name}</p>
+                        {p.meta && <p className="text-[10px] text-white/80 truncate">{p.meta}</p>}
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )
           )}
         </div>
       </aside>
     </>
+  );
+}
+
+function EmptyState({ title, hint }: { title: string; hint: string }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-hairline p-12 text-center">
+      <p className="text-base font-semibold text-ink">{title}</p>
+      <p className="mt-2 text-sm text-muted">{hint}</p>
+    </div>
   );
 }
