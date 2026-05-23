@@ -62,7 +62,7 @@ export async function HeroSection(props: {
                   ? 'inline-flex items-center justify-center rounded-xl border border-white/35 backdrop-blur-sm bg-white/5 text-white px-7 py-3.5 text-[14px] font-semibold hover:bg-white/15 hover:border-white/60 transition-all'
                   : c.variant === 'ghost'
                     ? 'inline-flex items-center justify-center rounded-xl text-white px-7 py-3.5 text-[14px] font-semibold hover:bg-white/10 transition-all'
-                    : 'inline-flex items-center justify-center rounded-xl bg-white text-ink px-7 py-3.5 text-[14px] font-semibold shadow-2xl shadow-black/30 hover:bg-white/95 hover:translate-y-[-1px] hover:shadow-3xl transition-all'}
+                    : 'inline-flex items-center justify-center rounded-xl bg-[var(--brand)] text-[var(--on-primary)] px-7 py-3.5 text-[14px] font-semibold shadow-2xl shadow-black/30 hover:bg-[var(--brand-hover)] hover:translate-y-[-1px] hover:shadow-3xl transition-all'}
               >
                 {c.label}
               </Link>
