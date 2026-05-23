@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Heart, Mars, Venus } from 'lucide-react'
+import { Heart, Mars, Venus, Dna } from 'lucide-react'
 import SearchableSelect from '@/components/ui/searchable-select'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
+import GeneticsForecast from '@/components/planner/genetics-forecast'
 import { BRAND } from '@/lib/constants'
 
 export default function PlannerPage() {
@@ -115,6 +116,17 @@ export default function PlannerPage() {
           />
         </div>
       </div>
+
+      {/* Genetics Forecast — solo cuando ambos padres están seleccionados */}
+      {sireId && damId && (
+        <section>
+          <h2 className="mb-4 flex items-center gap-2 text-[22px] font-semibold tracking-[-0.04em] text-ink">
+            <Dna className="h-5 w-5" />
+            Predicción genética
+          </h2>
+          <GeneticsForecast sireId={sireId} damId={damId} />
+        </section>
+      )}
 
       {/* Combined pedigree */}
       {loading ? (
