@@ -121,7 +121,7 @@ export async function ThreePillarsSection(props: {
                 {bigNumber ? (
                   <>
                     <p
-                      className="text-6xl md:text-7xl lg:text-[88px] font-bold text-ink leading-[0.9] tracking-[-0.03em] tabular-nums"
+                      className="text-5xl md:text-6xl lg:text-[72px] font-bold text-ink leading-[0.9] tracking-[-0.03em] tabular-nums whitespace-nowrap"
                       style={{ fontFamily: 'var(--font-display, inherit)' }}
                     >
                       {bigNumber}

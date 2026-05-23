@@ -163,7 +163,7 @@ export function CtaBannerSection({
         {cta_label && cta_href && (
           <Link
             href={cta_href}
-            className="inline-flex items-center gap-2 rounded-xl bg-white text-ink px-8 py-4 text-[15px] font-semibold shadow-2xl shadow-black/40 hover:bg-white/95 hover:translate-y-[-2px] hover:shadow-3xl transition-all duration-300"
+            className="btn-brand inline-flex items-center gap-2 rounded-xl px-8 py-4 text-[15px] font-semibold shadow-2xl shadow-black/40 uppercase tracking-[0.08em]"
           >
             {cta_label}
             <span aria-hidden="true">→</span>
