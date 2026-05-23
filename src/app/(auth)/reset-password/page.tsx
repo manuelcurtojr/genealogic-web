@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Wordmark } from '@/components/ui/wordmark'
-import { Lock, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { Lock, Loader2, CheckCircle2 } from 'lucide-react'
+import { AuthShell, Field, AuthSubmit, AuthError } from '@/components/auth/auth-shell'
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
@@ -33,7 +33,6 @@ export default function ResetPasswordPage() {
       setError('La contraseña debe tener al menos 6 caracteres')
       return
     }
-
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden')
       return
@@ -51,107 +50,107 @@ export default function ResetPasswordPage() {
 
     setDone(true)
     setLoading(false)
-    setTimeout(() => router.push('/dogs'), 1800)
+    setTimeout(() => router.push('/dashboard'), 1800)
+  }
+
+  if (checking) {
+    return (
+      <AuthShell title="Verificando" titleTail="enlace…" subtitle="Un segundo, comprobando la sesión.">
+        <div className="flex items-center justify-center gap-2 py-4 text-[14px] text-muted">
+          <Loader2 className="h-4 w-4 animate-spin" /> Verificando…
+        </div>
+      </AuthShell>
+    )
+  }
+
+  if (!authorized) {
+    return (
+      <AuthShell
+        title="Enlace"
+        titleTail="no válido."
+        subtitle="El enlace que has usado ha expirado o no es correcto. Solicita uno nuevo."
+        footer={{
+          question: '¿Quieres recordar tu contraseña actual?',
+          label: 'Iniciar sesión',
+          href: '/login',
+        }}
+      >
+        <Link
+          href="/forgot-password"
+          className="inline-flex w-full items-center justify-center rounded-lg bg-ink px-5 py-3 text-[14px] font-semibold text-on-primary transition-opacity hover:opacity-90"
+        >
+          Solicitar nuevo enlace
+        </Link>
+      </AuthShell>
+    )
+  }
+
+  if (done) {
+    return (
+      <AuthShell
+        title="Contraseña"
+        titleTail="actualizada."
+        subtitle="Te llevamos al dashboard en un segundo."
+      >
+        <div className="rounded-[12px] border border-[color:var(--success)]/30 bg-[color:var(--success)]/[0.06] p-5">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-[color:var(--success)]" />
+            <div>
+              <p className="text-[14.5px] font-semibold text-ink">Todo listo</p>
+              <p className="mt-1 text-[13.5px] leading-[1.5] text-body">
+                Tu contraseña se ha actualizado. Redirigiendo…
+              </p>
+            </div>
+          </div>
+        </div>
+      </AuthShell>
+    )
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-canvas px-6 text-ink">
-      <Link
-        href="/login"
-        className="absolute top-6 left-6 flex h-9 w-9 items-center justify-center rounded-full text-muted transition hover:text-ink hover:bg-surface-card"
-      >
-        <ArrowLeft className="h-4 w-4" />
-      </Link>
+    <AuthShell
+      title="Cambia"
+      titleTail="tu contraseña."
+      subtitle="Elige una contraseña nueva. Mínimo 6 caracteres. Cuanto más larga, mejor."
+      footer={{
+        question: '¿Recordaste tu contraseña?',
+        label: 'Iniciar sesión',
+        href: '/login',
+      }}
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && <AuthError>{error}</AuthError>}
 
-      <div className="w-full max-w-[440px]">
-        <Wordmark size="text-2xl" />
-        <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
-          Nueva contraseña
-        </p>
-        <h1 className="mt-8 font-sans text-5xl font-normal leading-[1] tracking-[-0.025em] text-ink">
-          Cambia
-          <br />
-          <span className="italic font-light">tu contraseña.</span>
-        </h1>
+        <Field
+          label="Nueva contraseña"
+          icon={<Lock className="h-4 w-4" />}
+          type="password"
+          value={password}
+          onChange={setPassword}
+          placeholder="Mínimo 6 caracteres"
+          required
+          minLength={6}
+          autoComplete="new-password"
+        />
 
-        <div className="mt-10 rounded-card border border-hairline bg-canvas p-6 sm:p-8 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
-          {checking ? (
-            <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted">
-              <Loader2 className="h-4 w-4 animate-spin" /> Verificando enlace…
-            </div>
-          ) : !authorized ? (
-            <div className="text-center">
-              <p className="text-base font-medium text-ink">Enlace no válido o expirado</p>
-              <p className="mt-2 text-sm text-body">Solicita un nuevo enlace de recuperación.</p>
-              <Link
-                href="/forgot-password"
-                className="mt-5 inline-block text-sm text-ink underline decoration-hairline underline-offset-4 hover:decoration-ink"
-              >
-                Recuperar contraseña
-              </Link>
-            </div>
-          ) : done ? (
-            <div className="text-center">
-              <CheckCircle2 className="mx-auto mb-3 h-10 w-10 text-emerald-400" />
-              <p className="text-base font-medium text-ink">Contraseña actualizada</p>
-              <p className="mt-2 text-sm text-body">Redirigiendo…</p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {error && (
-                <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
-                  {error}
-                </div>
-              )}
+        <Field
+          label="Confirmar contraseña"
+          icon={<Lock className="h-4 w-4" />}
+          type="password"
+          value={confirmPassword}
+          onChange={setConfirmPassword}
+          placeholder="Repite tu contraseña"
+          required
+          minLength={6}
+          autoComplete="new-password"
+        />
 
-              <div>
-                <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
-                  Nueva contraseña
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
-                    required
-                    minLength={6}
-                    className="w-full rounded-lg border border-hairline bg-canvas py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-ink focus:ring-1 focus:ring-ink focus:outline-none transition"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
-                  Confirmar contraseña
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repite tu contraseña"
-                    required
-                    minLength={6}
-                    className="w-full rounded-lg border border-hairline bg-canvas py-3 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-ink focus:ring-1 focus:ring-ink focus:outline-none transition"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-3 text-sm font-medium text-on-primary transition hover:opacity-90 disabled:opacity-50"
-              >
-                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {loading ? 'Guardando…' : 'Cambiar contraseña'}
-              </button>
-            </form>
-          )}
+        <div className="pt-2">
+          <AuthSubmit loading={loading} loadingLabel="Guardando…">
+            Cambiar contraseña
+          </AuthSubmit>
         </div>
-      </div>
-    </main>
+      </form>
+    </AuthShell>
   )
 }
