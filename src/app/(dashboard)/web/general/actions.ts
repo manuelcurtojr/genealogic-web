@@ -19,8 +19,9 @@ export async function updateKennelTheme(formData: FormData) {
     throw new Error('tema_no_valido')
   }
 
-  const overrides: Record<string, string> = {}
-  for (const key of ['primary', 'accent', 'canvas', 'ink'] as const) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const overrides: Record<string, any> = {}
+  for (const key of ['primary', 'accent', 'canvas', 'ink', 'on_primary'] as const) {
     const raw = formData.get(`override_${key}`)
     if (typeof raw === 'string' && raw.trim() && HEX.test(raw.trim())) {
       overrides[key] = raw.trim().toLowerCase()
@@ -31,13 +32,24 @@ export async function updateKennelTheme(formData: FormData) {
   const rawFont = String(formData.get('override_font_display') ?? '')
   if (VALID_FONTS.has(rawFont)) overrides.font_display = rawFont as DisplayFont
 
+  // Stripe colors (1-3 hex). Solo se persisten los válidos en orden.
+  const stripeColors: string[] = []
+  for (let i = 0; i < 3; i++) {
+    const raw = formData.get(`override_stripe_${i}`)
+    if (typeof raw === 'string' && raw.trim() && HEX.test(raw.trim())) {
+      stripeColors.push(raw.trim().toLowerCase())
+    }
+  }
+  if (stripeColors.length > 0) overrides.stripe_colors = stripeColors
+
   const useOverrides = String(formData.get('use_overrides') ?? '') === 'on'
 
-  // Las overrides de tipografía/forma SIEMPRE se persisten si el usuario las
-  // tocó (no requieren el toggle "Colores personalizados"). Solo los 4 colores
-  // dependen del toggle.
-  const colorKeys = new Set(['primary', 'accent', 'canvas', 'ink'])
-  const persistedOverrides: Record<string, string> = {}
+  // Las overrides de tipografía/forma/stripe SIEMPRE se persisten si el
+  // usuario las tocó. Solo los 5 colores principales dependen del toggle
+  // "Colores personalizados".
+  const colorKeys = new Set(['primary', 'accent', 'canvas', 'ink', 'on_primary'])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const persistedOverrides: Record<string, any> = {}
   for (const [k, v] of Object.entries(overrides)) {
     if (colorKeys.has(k)) {
       if (useOverrides) persistedOverrides[k] = v

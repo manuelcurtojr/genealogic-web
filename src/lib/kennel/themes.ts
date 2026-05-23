@@ -64,6 +64,11 @@ export type ThemeOverrides = {
   accent?: string
   canvas?: string
   ink?: string
+  /** Color del texto sobre el botón primario (e.g. negro sobre oro Lambo) */
+  on_primary?: string
+  /** Banda decorativa multi-color (BMW M tricolor, Lambo gold, etc.).
+   * 1 a 3 colores hex. Si la longitud > 0, sustituye al accentStripe del tema. */
+  stripe_colors?: string[]
   button_radius?: ButtonRadius
   font_display?: DisplayFont
 }
@@ -224,12 +229,14 @@ export function applyOverrides(theme: Theme, overrides?: ThemeOverrides | null):
     ...theme,
     ...(o.button_radius ? { buttonRadius: o.button_radius } : {}),
     ...(o.font_display ? { displayFont: o.font_display } : {}),
+    ...(o.stripe_colors && o.stripe_colors.length > 0 ? { accentStripe: o.stripe_colors } : {}),
     tokens: {
       ...theme.tokens,
       ...(o.primary ? { primary: o.primary, primaryHover: o.primary } : {}),
       ...(o.accent ? { accent: o.accent } : {}),
       ...(o.canvas ? { canvas: o.canvas } : {}),
       ...(o.ink ? { ink: o.ink } : {}),
+      ...(o.on_primary ? { onPrimary: o.on_primary } : {}),
     },
   }
 }

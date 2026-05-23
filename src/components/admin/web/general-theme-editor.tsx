@@ -49,12 +49,15 @@ export function GeneralThemeEditor({ themes, currentThemeId, currentOverrides, k
     const fd = new FormData()
     fd.set('theme_id', selectedId)
     fd.set('use_overrides', useOverrides ? 'on' : 'off')
-    for (const k of ['primary', 'accent', 'canvas', 'ink'] as const) {
+    for (const k of ['primary', 'accent', 'canvas', 'ink', 'on_primary'] as const) {
       const v = overrides[k]
       if (v) fd.set(`override_${k}`, v)
     }
     if (overrides.button_radius) fd.set('override_button_radius', overrides.button_radius)
     if (overrides.font_display) fd.set('override_font_display', overrides.font_display)
+    // Stripe colors numerados override_stripe_0/1/2
+    const stripe = overrides.stripe_colors ?? []
+    stripe.forEach((c, i) => fd.set(`override_stripe_${i}`, c))
     startTransition(async () => {
       await updateKennelTheme(fd)
       setSavedAt(Date.now())
@@ -102,13 +105,19 @@ export function GeneralThemeEditor({ themes, currentThemeId, currentOverrides, k
           <div className={`mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4 ${!useOverrides && 'opacity-40 pointer-events-none'}`}>
             <ColorField
               label="Primary"
-              hint="CTAs, botones, acentos brand"
+              hint="Fondo de CTAs y botones brand"
               value={overrides.primary ?? baseTheme.tokens.primary}
               onChange={(v) => setOverrides((o) => ({ ...o, primary: v }))}
             />
             <ColorField
+              label="Texto botones"
+              hint="Color del texto sobre el primary"
+              value={overrides.on_primary ?? baseTheme.tokens.onPrimary}
+              onChange={(v) => setOverrides((o) => ({ ...o, on_primary: v }))}
+            />
+            <ColorField
               label="Accent"
-              hint="Highlights, badges, líneas decorativas"
+              hint="Highlights, badges, numeración secciones"
               value={overrides.accent ?? baseTheme.tokens.accent}
               onChange={(v) => setOverrides((o) => ({ ...o, accent: v }))}
             />
@@ -135,8 +144,10 @@ export function GeneralThemeEditor({ themes, currentThemeId, currentOverrides, k
                   accent: baseTheme.tokens.accent,
                   canvas: baseTheme.tokens.canvas,
                   ink: baseTheme.tokens.ink,
+                  on_primary: baseTheme.tokens.onPrimary,
                   button_radius: baseTheme.buttonRadius,
                   font_display: baseTheme.displayFont,
+                  stripe_colors: baseTheme.accentStripe ?? [],
                 })
               }}
               className="mt-4 inline-flex items-center gap-1.5 text-[11px] font-medium text-muted hover:text-ink"
@@ -145,6 +156,54 @@ export function GeneralThemeEditor({ themes, currentThemeId, currentOverrides, k
               Resetear a defaults del tema
             </button>
           )}
+        </section>
+
+        {/* Línea decorativa (BMW M tricolor / Lambo gold / etc.) */}
+        <section className="rounded-2xl border border-hairline bg-canvas p-5">
+          <h2 className="text-base font-bold text-ink">Línea decorativa superior</h2>
+          <p className="mt-1 text-xs text-muted">
+            Banda fina de color en la cabecera (estilo BMW M tricolor / Lamborghini Giallo). Deja un
+            campo vacío para usar menos colores (1, 2 o 3).
+          </p>
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[0, 1, 2].map((i) => {
+              const current = overrides.stripe_colors?.[i] ?? baseTheme.accentStripe?.[i] ?? ''
+              return (
+                <StripeColorField
+                  key={i}
+                  label={`Color ${i + 1}`}
+                  value={current}
+                  onChange={(v) => {
+                    setOverrides((o) => {
+                      const arr = [...(o.stripe_colors ?? baseTheme.accentStripe ?? [])]
+                      arr[i] = v
+                      // Compactamos vacíos al final
+                      const cleaned = arr.filter(Boolean)
+                      return { ...o, stripe_colors: cleaned }
+                    })
+                  }}
+                  onClear={() => {
+                    setOverrides((o) => {
+                      const arr = [...(o.stripe_colors ?? baseTheme.accentStripe ?? [])]
+                      arr[i] = ''
+                      const cleaned = arr.filter(Boolean)
+                      return { ...o, stripe_colors: cleaned }
+                    })
+                  }}
+                />
+              )
+            })}
+          </div>
+          {/* Preview de la stripe */}
+          <div className="mt-4 flex h-2 rounded-sm overflow-hidden bg-surface-soft">
+            {(overrides.stripe_colors ?? baseTheme.accentStripe ?? []).map((c, i) => (
+              <div key={i} className="flex-1" style={{ background: c }} />
+            ))}
+            {(!overrides.stripe_colors || overrides.stripe_colors.length === 0) &&
+              !baseTheme.accentStripe?.length && (
+                <p className="w-full text-center text-[10px] text-muted py-0.5">(sin línea)</p>
+              )}
+          </div>
         </section>
 
         {/* Tipografía + Forma — disponibles incluso sin "Colores personalizados" */}
@@ -293,6 +352,43 @@ function ThemeCard({ theme, selected, onSelect }: { theme: Theme; selected: bool
         </div>
       )}
     </button>
+  )
+}
+
+function StripeColorField({
+  label, value, onChange, onClear,
+}: { label: string; value: string; onChange: (v: string) => void; onClear: () => void }) {
+  const valid = HEX.test(value)
+  return (
+    <div>
+      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted">{label}</label>
+      <div className="mt-2 flex items-center gap-2 rounded-lg border border-hairline bg-canvas p-1.5 focus-within:border-ink/30">
+        <input
+          type="color"
+          value={valid ? value : '#000000'}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-8 w-10 rounded cursor-pointer border-0 bg-transparent p-0"
+        />
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`flex-1 bg-transparent text-[12.5px] font-mono tracking-tight outline-none ${valid ? 'text-ink' : value ? 'text-red-600' : 'text-muted'}`}
+          placeholder="vacío"
+          maxLength={7}
+        />
+        {value && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="text-[10px] text-muted hover:text-red-600 px-1"
+            title="Quitar este color"
+          >
+            ×
+          </button>
+        )}
+      </div>
+    </div>
   )
 }
 

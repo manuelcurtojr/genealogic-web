@@ -3,6 +3,7 @@
  */
 import Link from 'next/link'
 import { SectionHeader } from '@/components/site/section-primitives'
+import { GalleryGridLightbox } from './gallery-grid-client'
 
 export function FacilitiesHeroSection({
   eyebrow, title, subtitle, body, background_image_url, bg_image_url,
@@ -17,20 +18,40 @@ export function FacilitiesHeroSection({
   const bg = background_image_url || bg_image_url
   const desc = subtitle || body
   return (
-    <section className="relative min-h-[45vh] flex items-center bg-ink overflow-hidden">
+    <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-[#0a0a0a]">
       {bg && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={bg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-55" />
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={bg}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover scale-105 motion-safe:animate-[heroZoom_30s_ease-out_infinite_alternate]"
+          />
+          {/* Gradient cinematográfico que sale del CANVAS del tema (no white
+             hardcoded). En BMW M el fondo es negro, en clásico sería claro
+             pero los heros siempre van con foto + texto blanco. */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/15" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-transparent to-transparent" />
+          <div className="absolute inset-0 shadow-[inset_0_0_180px_rgba(0,0,0,0.55)]" />
+        </>
       )}
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-16 lg:py-20 w-full">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-8 lg:px-10 pb-12 lg:pb-20 pt-28 w-full">
         {eyebrow && (
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/80 mb-3">{eyebrow}</p>
+          <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90 mb-5">
+            <span className="inline-block h-px w-8 bg-theme-accent" />
+            {eyebrow}
+          </p>
         )}
         {title && (
-          <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight tracking-tight mb-4">{title}</h1>
+          <h1
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[0.95] tracking-[-0.035em] mb-5 max-w-4xl drop-shadow-[0_2px_30px_rgba(0,0,0,0.5)]"
+            style={{ fontFamily: 'var(--font-display, inherit)' }}
+          >
+            {title}
+          </h1>
         )}
         {desc && (
-          <p className="text-lg text-white/85 max-w-2xl leading-relaxed">{desc}</p>
+          <p className="text-lg text-white/85 max-w-2xl leading-[1.55] drop-shadow-[0_1px_10px_rgba(0,0,0,0.5)]">{desc}</p>
         )}
       </div>
     </section>
@@ -83,78 +104,14 @@ export function GalleryGridSection({
       </section>
     )
   }
-
-  // MASONRY: usa CSS columns para layout estilo Pinterest sin librerías.
-  if (layout === 'masonry') {
-    const colsClass = columns === 2 ? 'sm:columns-2' : columns === 4 ? 'sm:columns-2 lg:columns-4' : 'sm:columns-2 lg:columns-3'
-    return (
-      <section className="py-20 lg:py-28 relative overflow-hidden">
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-10">
-          <SectionHeader number="05" eyebrow={eyebrow ?? 'Comunidad'} title={title} subtitle={subtitle} align="left" />
-          <div className={`columns-1 ${colsClass} gap-4 lg:gap-5 [&>*]:mb-4 lg:[&>*]:mb-5`}>
-            {images.map((im, i) => (
-              <figure
-                key={i}
-                className="group relative break-inside-avoid overflow-hidden bg-surface-card ring-1 ring-hairline shadow-sm hover:shadow-2xl hover:ring-theme-accent transition-all duration-500"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={im.url}
-                  alt={im.alt || ''}
-                  loading="lazy"
-                  className="w-full h-auto object-cover group-hover:scale-[1.05] transition-transform duration-[900ms] ease-out"
-                />
-                {/* Overlay con gradiente + caption */}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                {im.alt && (
-                  <figcaption className="pointer-events-none absolute bottom-0 left-0 right-0 p-5 text-white opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
-                    <span className="block h-[2px] w-8 bg-theme-accent mb-3" />
-                    <p className="text-[13.5px] font-medium leading-snug drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">
-                      {im.alt}
-                    </p>
-                  </figcaption>
-                )}
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
-    )
-  }
-
-  // UNIFORM: grid clásico (compat hacia atrás)
-  const colsClass = columns === 2 ? 'sm:grid-cols-2' : columns === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3'
+  // Una sola implementación tematizada: usa GalleryGridLightbox client
+  // component. Soporta masonry/uniform + lightbox completo con flechas,
+  // contador, swipe táctil, teclado, y backdrop var(--surface).
   return (
-    <section className="py-16 lg:py-24">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        {(title || subtitle || eyebrow) && (
-          <div className="mb-10 text-center">
-            {eyebrow && (
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted mb-3">{eyebrow}</p>
-            )}
-            {title && <h2 className="text-3xl md:text-4xl font-bold text-ink tracking-[-0.03em]">{title}</h2>}
-            {subtitle && <p className="text-body mt-3 max-w-2xl mx-auto">{subtitle}</p>}
-          </div>
-        )}
-        <div className={`grid grid-cols-1 ${colsClass} gap-4 lg:gap-5`}>
-          {images.map((im, i) => (
-            <figure key={i} className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-surface-card ring-1 ring-hairline hover:ring-ink/15 hover:shadow-xl transition-all duration-500">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={im.url}
-                alt={im.alt || ''}
-                loading="lazy"
-                className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700"
-              />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              {im.alt && (
-                <figcaption className="pointer-events-none absolute bottom-0 left-0 right-0 p-4 text-white opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">
-                  <p className="text-[13px] font-medium leading-snug drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">{im.alt}</p>
-                </figcaption>
-              )}
-            </figure>
-          ))}
-        </div>
+    <section className="py-20 lg:py-28 relative overflow-hidden">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-10">
+        <SectionHeader number="05" eyebrow={eyebrow ?? 'Comunidad'} title={title} subtitle={subtitle} align="left" />
+        <GalleryGridLightbox images={images} columns={columns} layout={layout} />
       </div>
     </section>
   )
