@@ -92,7 +92,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, mobileOpen,
           </button>
           {(collapsed && !mobileOpen) ? (
             <Link href="/dashboard" className="flex items-center" onClick={onClose}>
-              <span className="font-sans font-bold text-ink text-2xl tracking-[-0.025em] leading-none">G</span>
+              <img src="/icon.svg" alt="Genealogic" className="h-6 w-6" />
             </Link>
           ) : (
             <Wordmark href="/dashboard" size="text-xl" onClick={onClose} />
