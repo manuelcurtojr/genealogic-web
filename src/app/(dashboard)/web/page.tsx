@@ -43,7 +43,18 @@ export default async function AdminWebIndexPage() {
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-wider text-muted">Web pública</p>
-      <h1 className="mt-2 text-4xl font-bold tracking-tight text-ink">Páginas</h1>
+      <div className="mt-2 flex items-baseline justify-between gap-4 flex-wrap">
+        <h1 className="text-4xl font-bold tracking-tight text-ink">Páginas</h1>
+        {/* Sub-nav local: General | Páginas (default) */}
+        <nav className="flex items-center gap-1 rounded-lg border border-hairline p-1 text-xs">
+          <Link href="/web" className="rounded-md bg-ink text-on-primary px-3 py-1.5 font-semibold">
+            Páginas
+          </Link>
+          <Link href="/web/general" className="rounded-md px-3 py-1.5 font-medium text-body hover:bg-surface-soft hover:text-ink">
+            General
+          </Link>
+        </nav>
+      </div>
       <p className="mt-2 text-body">
         9 páginas troncales, siempre las mismas. Activa las que quieras mostrar y construye el
         contenido por secciones.

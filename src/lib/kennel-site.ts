@@ -31,10 +31,12 @@ export type KennelContext = {
   affix_format: string | null
   owner_id: string
   contact_form_config?: unknown
+  theme_id?: string | null
+  theme_overrides?: { primary?: string; accent?: string; canvas?: string; ink?: string } | null
 }
 
 const KENNEL_FIELDS =
-  'id, slug, name, description, logo_url, country, city, social_facebook, social_instagram, social_tiktok, social_youtube, whatsapp_phone, whatsapp_enabled, custom_domain, affix_format, owner_id, contact_form_config'
+  'id, slug, name, description, logo_url, country, city, social_facebook, social_instagram, social_tiktok, social_youtube, whatsapp_phone, whatsapp_enabled, custom_domain, affix_format, owner_id, contact_form_config, theme_id, theme_overrides'
 
 /** Resuelve un kennel por su slug. Se cachea por la duración del request. */
 export const getKennelBySlug = cache(async (slug: string): Promise<KennelContext | null> => {

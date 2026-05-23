@@ -4,6 +4,8 @@ import { getKennelBySlug } from '@/lib/kennel-site'
 import { getEnabledPages, DEFAULT_NAV_LABELS, pageHref } from '@/lib/kennel/pages'
 import { createClient } from '@/lib/supabase/server'
 import OwnerFloatingNav from '@/components/kennel/owner-floating-nav'
+import { getTheme, applyOverrides } from '@/lib/kennel/themes'
+import { ThemeInjector, AccentStripe } from '@/components/site/theme-injector'
 
 export default async function KennelSiteLayout({
   children, params,
@@ -28,8 +30,13 @@ export default async function KennelSiteLayout({
       label: p.nav_label || DEFAULT_NAV_LABELS[p.slug] || p.slug,
     }))
 
+  // Tema visual de la web custom (clásico, BMW M, etc.) + overrides puntuales
+  const theme = applyOverrides(getTheme(kennel.theme_id), kennel.theme_overrides)
+
   return (
-    <div className="min-h-screen bg-canvas text-ink flex flex-col">
+    <div data-kennel-theme={theme.id} className="min-h-screen bg-canvas text-ink flex flex-col">
+      <ThemeInjector theme={theme} />
+      <AccentStripe theme={theme} />
       {isOwner && <OwnerFloatingNav />}
       <header className="border-b border-hairline sticky top-0 bg-canvas/95 backdrop-blur z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
