@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import AnalyticsDashboard from '@/components/analytics/analytics-dashboard'
+import AnalyticsSubnav from '@/components/analytics/analytics-subnav'
 
 export default async function AnalyticsPage() {
   const supabase = await createClient()
@@ -29,15 +30,18 @@ export default async function AnalyticsPage() {
     : { data: [] }
 
   return (
-    <AnalyticsDashboard
-      dogs={dogsRes.data || []}
-      kennelDogs={kennelDogsRes.data || []}
-      litters={littersRes.data || []}
-      kennel={kennel}
-      vetCount={vetRes.count || 0}
-      awardsCount={awardsRes.count || 0}
-      profile={profileRes.data}
-      userId={user.id}
-    />
+    <div className="space-y-5">
+      <AnalyticsSubnav />
+      <AnalyticsDashboard
+        dogs={dogsRes.data || []}
+        kennelDogs={kennelDogsRes.data || []}
+        litters={littersRes.data || []}
+        kennel={kennel}
+        vetCount={vetRes.count || 0}
+        awardsCount={awardsRes.count || 0}
+        profile={profileRes.data}
+        userId={user.id}
+      />
+    </div>
   )
 }

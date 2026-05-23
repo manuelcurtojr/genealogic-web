@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Dog, Baby, UsersRound, KanbanSquare, BookOpen, Mail, TrendingUp, ArrowRight } from 'lucide-react'
+import AnalyticsSubnav from '@/components/analytics/analytics-subnav'
 
 export const metadata = { title: 'Estadísticas · Genealogic Pro' }
 
@@ -79,6 +80,9 @@ export default async function EstadisticasPage() {
 
   return (
     <div>
+      <div className="mb-5">
+        <AnalyticsSubnav />
+      </div>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-ink tracking-tight">Estadísticas</h1>
         <p className="text-sm text-muted mt-0.5">{kennel.name} · resumen general</p>

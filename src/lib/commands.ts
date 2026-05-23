@@ -53,13 +53,13 @@ export const COMMANDS: Command[] = [
 
   // ── WEB PÚBLICA (Pro) ──────────────────────────────────────────────────
   { id: 'web', label: 'Páginas de la web', href: '/web', icon: 'Globe', section: 'Web pública', requiresPro: true, keywords: ['sitio', 'site', 'web builder', 'editor'] },
-  { id: 'estadisticas', label: 'Estadísticas', href: '/estadisticas', icon: 'TrendingUp', section: 'Web pública', requiresPro: true, keywords: ['analytics', 'visitas', 'tráfico'] },
+  { id: 'estadisticas', label: 'Estadísticas operativas', href: '/estadisticas', icon: 'TrendingUp', section: 'Análisis', requiresPro: true, keywords: ['analytics', 'reservas', 'pipeline', 'clientes', 'visitas', 'tráfico', 'web', 'pageviews'] },
 
   // ── CRIADERO ───────────────────────────────────────────────────────────
   { id: 'kennel', label: 'Mi criadero', href: '/kennel', icon: 'Store', section: 'Criadero', requiresKennel: true, keywords: ['perfil', 'afijo', 'kennel'] },
   { id: 'kennel-edit', label: 'Editar criadero', href: '/kennel/edit', icon: 'Edit3', section: 'Criadero', requiresKennel: true, keywords: ['datos del criadero', 'logo', 'descripción'] },
   { id: 'kennel-new', label: 'Crear nuevo criadero', href: '/kennel/new', icon: 'PlusCircle', section: 'Criadero', keywords: ['nuevo afijo', 'crear kennel'] },
-  { id: 'analytics', label: 'Analíticas del criadero', href: '/analytics', icon: 'BarChart3', section: 'Criadero', requiresKennel: true, keywords: ['stats', 'métricas'] },
+  { id: 'analytics', label: 'Analíticas del negocio', href: '/analytics', icon: 'BarChart3', section: 'Análisis', requiresKennel: true, keywords: ['stats', 'métricas', 'analytics', 'criadero', 'perros', 'camadas', 'palmarés'] },
   { id: 'kennel-api', label: 'API keys del criadero', href: '/kennel/api', icon: 'Key', section: 'Criadero', requiresKennel: true, keywords: ['integración', 'token', 'developer'] },
   { id: 'kennels-directory', label: 'Directorio de criaderos', href: '/kennels', icon: 'Users', section: 'Criadero', keywords: ['otros criaderos', 'buscar criaderos'] },
 
