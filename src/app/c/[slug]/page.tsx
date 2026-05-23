@@ -45,6 +45,15 @@ export default async function KennelHomePage({ params }: { params: Promise<{ slu
     <>
       <PageTracker kennelId={kennel.id} />
       {rendered}
+      {/* Badge sutil bottom-right para ir al perfil estándar de Genealogic */}
+      <a
+        href={`/kennels/${kennel.slug}`}
+        title={`Ver perfil de ${kennel.name} en Genealogic`}
+        className="fixed bottom-4 right-4 z-40 inline-flex items-center gap-1.5 rounded-full bg-black/75 backdrop-blur-sm px-3.5 py-1.5 text-[11.5px] font-medium text-white shadow-lg transition-opacity hover:bg-black"
+      >
+        <span aria-hidden="true">🐾</span>
+        <span>Ver en Genealogic</span>
+      </a>
     </>
   )
 }

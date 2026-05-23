@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Globe, Calendar, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Globe, Calendar, ExternalLink, Sparkles } from 'lucide-react'
 import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 import { isUUID } from '@/lib/slug'
 import { pastelByName } from '@/lib/avatars'
@@ -53,6 +53,16 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
     .eq('show_in_kennel', true)
     .order('created_at', { ascending: false })
 
+  // ¿Tiene este criadero una web personalizada publicada con el builder de Genealogic?
+  const { data: customPage } = await supabase
+    .from('kennel_pages')
+    .select('id')
+    .eq('kennel_id', kennel.id)
+    .eq('slug', 'home')
+    .eq('enabled', true)
+    .maybeSingle()
+  const hasCustomWeb = !!customPage && !!kennel.slug
+
   const dogs = allDogs || []
   const litters = allLitters || []
   const forSale = dogs.filter((d: any) => d.is_for_sale)
@@ -80,13 +90,23 @@ export default async function KennelDetailPage({ params }: { params: Promise<{ i
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <PageTracker kennelId={kennel.id} />
 
-      {/* Back button */}
-      <Link
-        href={user?.id === kennel.owner_id ? '/kennel' : '/kennels'}
-        className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted transition-colors hover:text-ink"
-      >
-        <ArrowLeft className="h-4 w-4" /> Volver
-      </Link>
+      {/* Back button + CTA web personalizada (si existe) */}
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          href={user?.id === kennel.owner_id ? '/kennel' : '/kennels'}
+          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted transition-colors hover:text-ink"
+        >
+          <ArrowLeft className="h-4 w-4" /> Volver
+        </Link>
+        {hasCustomWeb && (
+          <Link
+            href={`/c/${kennel.slug}`}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90"
+          >
+            <Sparkles className="h-3.5 w-3.5" /> Ver web del criadero
+          </Link>
+        )}
+      </div>
 
       {/* Kennel header — Cal clean card */}
       <div className="overflow-hidden rounded-2xl border border-hairline bg-canvas">
