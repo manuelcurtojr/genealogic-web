@@ -26,13 +26,23 @@ export async function updateKennelTheme(formData: FormData) {
   }
   const useOverrides = String(formData.get('use_overrides') ?? '') === 'on'
 
-  await admin
+  const { error } = await admin
     .from('kennels')
     .update({
       theme_id,
       theme_overrides: useOverrides && Object.keys(overrides).length > 0 ? overrides : null,
     })
     .eq('id', kennel.id)
+
+  // Si las columnas aún no existen (migración no aplicada) damos un mensaje claro
+  if (error) {
+    if (/column.*theme/i.test(error.message)) {
+      throw new Error(
+        'La migración del sistema de temas aún no está aplicada en Supabase. Ejecuta el SQL de supabase/migrations/20260530_kennel_theme.sql en el SQL Editor.',
+      )
+    }
+    throw new Error(error.message)
+  }
 
   revalidatePath('/web/general')
   revalidatePath(`/c/${kennel.slug}`)

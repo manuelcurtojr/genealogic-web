@@ -9,6 +9,8 @@ export const metadata = { title: 'General · Web pública · Genealogic Pro' }
 export default async function WebGeneralPage() {
   const kennel = await getMyKennel()
   const activeTheme = getTheme(kennel.theme_id)
+  // theme_id es undefined si la migración aún no se aplicó → mostramos aviso
+  const migrationApplied = kennel.theme_id !== undefined
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-wider text-muted">Web pública</p>
@@ -28,11 +30,30 @@ export default async function WebGeneralPage() {
         personalizarlo aún más. Los cambios se ven en tiempo real en la preview.
       </p>
 
+      {!migrationApplied && (
+        <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          <p className="font-semibold mb-1">⚠️ Migración pendiente</p>
+          <p>
+            El sistema de temas necesita ejecutar una migración en Supabase. Ve al{' '}
+            <a href="https://supabase.com/dashboard/project/elhwppumacnyhovkapeb/sql/new" target="_blank" rel="noreferrer" className="underline font-medium">
+              SQL Editor
+            </a>{' '}
+            y ejecuta:
+          </p>
+          <pre className="mt-3 rounded-lg bg-amber-900/90 text-amber-50 p-3 text-[11px] overflow-x-auto font-mono">{`ALTER TABLE kennels
+  ADD COLUMN IF NOT EXISTS theme_id text NOT NULL DEFAULT 'classic',
+  ADD COLUMN IF NOT EXISTS theme_overrides jsonb;
+CREATE INDEX IF NOT EXISTS kennels_theme_id_idx ON kennels(theme_id);`}</pre>
+          <p className="mt-2 text-xs">Una vez ejecutado, refresca esta página y podrás guardar temas.</p>
+        </div>
+      )}
+
       <GeneralThemeEditor
         themes={THEMES}
         currentThemeId={activeTheme.id}
         currentOverrides={kennel.theme_overrides ?? null}
         kennelSlug={kennel.slug}
+        disabled={!migrationApplied}
       />
     </div>
   )

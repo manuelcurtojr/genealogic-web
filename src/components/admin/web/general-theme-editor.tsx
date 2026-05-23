@@ -13,11 +13,12 @@ type Props = {
   currentThemeId: string
   currentOverrides: Overrides | null
   kennelSlug: string
+  disabled?: boolean
 }
 
 const HEX = /^#[0-9a-fA-F]{6}$/
 
-export function GeneralThemeEditor({ themes, currentThemeId, currentOverrides, kennelSlug }: Props) {
+export function GeneralThemeEditor({ themes, currentThemeId, currentOverrides, kennelSlug, disabled = false }: Props) {
   const [selectedId, setSelectedId] = useState<string>(currentThemeId)
   const [useOverrides, setUseOverrides] = useState<boolean>(!!currentOverrides)
   const [overrides, setOverrides] = useState<Overrides>(currentOverrides ?? {})
@@ -64,7 +65,7 @@ export function GeneralThemeEditor({ themes, currentThemeId, currentOverrides, k
     (useOverrides && JSON.stringify(overrides) !== JSON.stringify(currentOverrides ?? {}))
 
   return (
-    <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
+    <div className={`mt-8 grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
       {/* Columna izquierda: selector + colores */}
       <div className="space-y-6">
         <section className="rounded-2xl border border-hairline bg-canvas p-5">
