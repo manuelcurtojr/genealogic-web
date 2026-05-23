@@ -49,7 +49,7 @@ export default function KennelPublicTabs({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Tabs nav — scrollable underline-style Cal */}
       <div className="-mb-px flex gap-1 overflow-x-auto border-b border-hairline scrollbar-hide">
         {TABS.map(({ key, label, icon: Icon, iconColor }) => {

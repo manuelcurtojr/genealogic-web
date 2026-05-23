@@ -2,11 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Globe, Calendar, ExternalLink, Sparkles } from 'lucide-react'
-import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 import { isUUID } from '@/lib/slug'
 import { pastelByName } from '@/lib/avatars'
 import KennelPublicTabs from '@/components/kennel/kennel-public-tabs'
 import PageTracker from '@/components/track/page-tracker'
+import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -184,15 +184,7 @@ export default async function KennelDetailPage({
                   <ExternalLink className="h-3.5 w-3.5" /> Facebook
                 </a>
               )}
-              {kennel.whatsapp_enabled && kennel.whatsapp_phone && (
-                <a
-                  href={`https://wa.me/${kennel.whatsapp_phone.replace(/\D/g, '')}?text=${encodeURIComponent(kennel.whatsapp_text || '')}`}
-                  target="_blank" rel="noopener"
-                  className="inline-flex items-center gap-1.5 rounded-md bg-[#25D366] px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:opacity-90"
-                >
-                  <WhatsAppIcon className="h-3.5 w-3.5" /> WhatsApp
-                </a>
-              )}
+              <ContactKennelButton kennelId={kennel.id} kennelName={kennel.name} />
             </div>
           </div>
         </div>
