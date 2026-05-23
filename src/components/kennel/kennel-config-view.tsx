@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Edit, Globe, ExternalLink, Settings, Camera, Loader2, Dog, Heart, Baby,
-  Eye, Key, Link2, ArrowRight,
+  Eye, Key, Link2, ArrowRight, Inbox,
 } from 'lucide-react'
 import KennelEditPanel from './kennel-edit-panel'
 import PublicViewToggle from './public-view-toggle'
+import ContactFormBuilder from './contact-form-builder'
 
 interface Props {
   kennel: any
@@ -32,6 +33,7 @@ interface Props {
 export default function KennelConfigView({ kennel, stats, hasCustomWeb = false, isPro = false, userId }: Props) {
   const router = useRouter()
   const [showEdit, setShowEdit] = useState(false)
+  const [showFormBuilder, setShowFormBuilder] = useState(false)
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -82,6 +84,12 @@ export default function KennelConfigView({ kennel, stats, hasCustomWeb = false, 
       desc: 'Nombre, afijo, descripción, ubicación, redes sociales.',
       icon: Edit,
       onClick: () => setShowEdit(true),
+    },
+    {
+      label: 'Formulario de contacto',
+      desc: 'Configura las preguntas que ven los visitantes en tu perfil y web. 2 plantillas + campos custom.',
+      icon: Inbox,
+      onClick: () => setShowFormBuilder(true),
     },
     {
       label: 'Web pública',
@@ -267,6 +275,15 @@ export default function KennelConfigView({ kennel, stats, hasCustomWeb = false, 
           router.refresh()
         }}
       />
+
+      {/* Form builder panel */}
+      {showFormBuilder && (
+        <ContactFormBuilder
+          kennelId={kennel.id}
+          initialConfig={kennel.contact_form_config || null}
+          onClose={() => setShowFormBuilder(false)}
+        />
+      )}
       {/* userId silenciado para evitar warning de no-uso */}
       {false && <span data-user-id={userId} />}
     </div>

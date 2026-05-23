@@ -18,7 +18,7 @@ export default async function KennelPage() {
 
   const { data: kennels } = await supabase
     .from('kennels')
-    .select('*')
+    .select('*, contact_form_config')
     .eq('owner_id', user.id)
     .order('created_at')
     .limit(1)
