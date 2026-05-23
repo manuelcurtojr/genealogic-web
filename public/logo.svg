@@ -1,34 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 320" role="img" aria-label="Genealogic">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 320" role="img" aria-label="Genealogic">
   <title>Genealogic</title>
-  <g fill="#D74709" transform="translate(28,40)">
-    <circle cx="61" cy="58" r="58"/>
-    <circle cx="259" cy="58" r="58"/>
-    <circle cx="160" cy="215" r="58"/>
-    <path d="
-      M 41 131
-      C 41 122 48 115 57 115
-      C 66 115 73 122 73 131
-      L 73 159
-      C 73 166 79 172 86 172
-      L 234 172
-      C 241 172 247 166 247 159
-      L 247 131
-      C 247 122 254 115 263 115
-      C 272 115 279 122 279 131
-      L 279 159
-      C 279 184 259 204 234 204
-      L 179 204
-      L 179 232
-      C 179 243 170 252 159 252
-      C 148 252 139 243 139 232
-      L 139 204
-      L 86 204
-      C 61 204 41 184 41 159
-      Z
-    "/>
+  <g fill="#D74709" transform="translate(0,40) scale(0.234)">
+    <path d="M274 390
+             C309 390 320 416 354 416
+             H670
+             C704 416 715 390 750 390
+             C794 390 830 424 830 468
+             C830 512 794 546 750 546
+             C715 546 704 520 670 520
+             H558
+             C535 520 524 531 524 554
+             V598
+             C524 631 548 641 548 674
+             C548 714 516 746 476 746
+             C436 746 404 714 404 674
+             C404 641 428 631 428 598
+             V554
+             C428 531 417 520 394 520
+             H354
+             C320 520 309 546 274 546
+             C230 546 194 512 194 468
+             C194 424 230 390 274 390Z"/>
+    <circle cx="274" cy="304" r="118"/>
+    <circle cx="750" cy="304" r="118"/>
+    <circle cx="476" cy="732" r="118"/>
   </g>
   <text
-    x="370"
+    x="250"
     y="218"
     fill="#111111"
     font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"

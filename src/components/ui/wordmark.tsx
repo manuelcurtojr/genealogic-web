@@ -34,7 +34,7 @@ export function Wordmark({
   )
 
   const inner = (
-    <span className={cn('inline-flex items-center gap-2', className)}>
+    <span className={cn('inline-flex items-center gap-1', className)}>
       <img
         src="/icon.svg"
         alt=""
