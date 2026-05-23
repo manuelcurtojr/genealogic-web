@@ -36,22 +36,24 @@ export default async function ReservasPage() {
     )
   }
 
-  const { data: reservations } = await supabase
-    .from('puppy_reservations')
-    .select(`
-      id, status, source, created_at,
-      applicant_name, applicant_email, applicant_phone, applicant_message,
-      preference_sex, preference_color
-    `)
-    .eq('kennel_id', kennel.id)
-    .order('created_at', { ascending: false })
-    .limit(500)
+  const [reservationsRes, dogsRes] = await Promise.all([
+    supabase.from('puppy_reservations')
+      .select('*')
+      .eq('kennel_id', kennel.id)
+      .order('created_at', { ascending: false })
+      .limit(500),
+    supabase.from('dogs')
+      .select('id, name, sex, thumbnail_url')
+      .eq('kennel_id', kennel.id)
+      .order('name'),
+  ])
 
   return (
     <ReservationsPipeline
       kennelId={kennel.id}
       kennelName={kennel.name}
-      reservations={(reservations || []) as any}
+      reservations={(reservationsRes.data || []) as any}
+      dogs={(dogsRes.data || []) as any}
       isPro={isPro}
     />
   )

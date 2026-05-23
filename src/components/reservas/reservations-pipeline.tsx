@@ -7,13 +7,15 @@ import { useRouter } from 'next/navigation'
 import {
   Loader2, Crown, Mail, Phone, Inbox, ShoppingCart, Users2, Sparkles, Filter,
 } from 'lucide-react'
+import ReservationDetailPanel, { type Reservation as FullReservation, type DogOption } from './reservation-detail-panel'
 
 type Status =
   | 'interested' | 'waitlisted' | 'deposit_paid'
   | 'assigned' | 'contract_signed' | 'paid_in_full' | 'delivered' | 'cancelled'
+  | 'refunded' | 'lost'
 
 const VENTAS_STATUSES: Status[] = ['interested', 'waitlisted', 'deposit_paid']
-const CLIENTES_STATUSES: Status[] = ['assigned', 'contract_signed', 'paid_in_full', 'delivered', 'cancelled']
+const CLIENTES_STATUSES: Status[] = ['assigned', 'contract_signed', 'paid_in_full', 'delivered', 'cancelled', 'refunded']
 
 const STATUS_LABEL: Record<Status, string> = {
   interested: 'Interesado',
@@ -24,6 +26,8 @@ const STATUS_LABEL: Record<Status, string> = {
   paid_in_full: 'Pagado completo',
   delivered: 'Entregado',
   cancelled: 'Cancelado',
+  refunded: 'Reembolsado',
+  lost: 'Perdido',
 }
 
 const STATUS_TONE: Record<Status, string> = {
@@ -35,6 +39,8 @@ const STATUS_TONE: Record<Status, string> = {
   paid_in_full: 'bg-emerald-100 text-emerald-800',
   delivered: 'bg-emerald-100 text-emerald-800',
   cancelled: 'bg-rose-100 text-rose-800',
+  refunded: 'bg-rose-100 text-rose-800',
+  lost: 'bg-stone-200 text-stone-700',
 }
 
 const SOURCE_LABEL: Record<string, string> = {
@@ -44,29 +50,19 @@ const SOURCE_LABEL: Record<string, string> = {
   api: 'API',
 }
 
-interface Reservation {
-  id: string
-  status: Status
-  applicant_name: string | null
-  applicant_email: string | null
-  applicant_phone: string | null
-  applicant_message: string | null
-  preference_sex: string | null
-  preference_color: string | null
-  source: string | null
-  created_at: string
-}
+type Reservation = FullReservation
 
 interface Props {
   kennelId: string
   kennelName: string
   reservations: Reservation[]
+  dogs: DogOption[]
   isPro: boolean
 }
 
 type Pipeline = 'ventas' | 'clientes'
 
-export default function ReservationsPipeline({ kennelId, kennelName, reservations: initialReservations, isPro }: Props) {
+export default function ReservationsPipeline({ kennelId, kennelName, reservations: initialReservations, dogs, isPro }: Props) {
   const router = useRouter()
   const [reservations, setReservations] = useState(initialReservations)
   const [pipeline, setPipeline] = useState<Pipeline>('ventas')
@@ -283,108 +279,15 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
         </div>
       )}
 
-      {/* Side panel detalle */}
+      {/* Side panel detalle con 3 tabs (Acciones / Cliente / Conversación) */}
       {selected && (
-        <div
-          className="fixed inset-0 z-50 flex justify-end bg-black/40"
-          onClick={() => setSelectedId(null)}
-        >
-          <div
-            className="h-full w-full max-w-md overflow-y-auto bg-canvas shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="border-b border-hairline px-5 py-4">
-              <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">Solicitud</p>
-              <h2 className="mt-0.5 text-[18px] font-semibold tracking-[-0.02em] text-ink">
-                {selected.applicant_name || 'Sin nombre'}
-              </h2>
-              <p className="mt-1 text-[12px] text-muted">
-                Recibida {new Date(selected.created_at).toLocaleString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-              </p>
-            </div>
-
-            <div className="space-y-4 px-5 py-4">
-              {/* Contacto */}
-              <div className="space-y-2">
-                {selected.applicant_email && (
-                  <a
-                    href={`mailto:${selected.applicant_email}`}
-                    className="flex items-center gap-2.5 rounded-lg border border-hairline px-3 py-2 text-[13px] text-body hover:bg-surface-soft"
-                  >
-                    <Mail className="h-3.5 w-3.5 text-muted" />
-                    {selected.applicant_email}
-                  </a>
-                )}
-                {selected.applicant_phone && (
-                  <a
-                    href={`tel:${selected.applicant_phone}`}
-                    className="flex items-center gap-2.5 rounded-lg border border-hairline px-3 py-2 text-[13px] text-body hover:bg-surface-soft"
-                  >
-                    <Phone className="h-3.5 w-3.5 text-muted" />
-                    {selected.applicant_phone}
-                  </a>
-                )}
-              </div>
-
-              {/* Preferencias */}
-              {(selected.preference_sex || selected.preference_color) && (
-                <div>
-                  <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-                    Preferencias
-                  </p>
-                  <p className="text-[13px] text-ink">
-                    {[
-                      selected.preference_sex === 'male' ? 'Macho' : selected.preference_sex === 'female' ? 'Hembra' : null,
-                      selected.preference_color,
-                    ].filter(Boolean).join(' · ')}
-                  </p>
-                </div>
-              )}
-
-              {/* Mensaje */}
-              {selected.applicant_message && (
-                <div>
-                  <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-                    Mensaje
-                  </p>
-                  <p className="rounded-lg bg-surface-soft px-3 py-2.5 text-[13px] text-ink whitespace-pre-wrap">
-                    {selected.applicant_message}
-                  </p>
-                </div>
-              )}
-
-              {/* Cambio de estado */}
-              <div>
-                <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-                  Estado
-                </p>
-                <select
-                  value={selected.status}
-                  onChange={(e) => handleStatusChange(selected.id, e.target.value as Status)}
-                  className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13px] text-ink focus:border-ink focus:outline-none"
-                >
-                  <optgroup label="Ventas">
-                    {VENTAS_STATUSES.map((s) => (
-                      <option key={s} value={s}>{STATUS_LABEL[s]}</option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Clientes">
-                    {CLIENTES_STATUSES.map((s) => (
-                      <option key={s} value={s}>{STATUS_LABEL[s]}</option>
-                    ))}
-                  </optgroup>
-                </select>
-              </div>
-
-              {!isPro && (
-                <div className="rounded-lg border border-purple-200 bg-purple-50 px-3 py-2.5 text-[12px] text-purple-900">
-                  <Crown className="inline h-3 w-3 mr-1" />
-                  Con <strong>Pro</strong> el emailbot puede responder estas solicitudes automáticamente y derivar a humano cuando corresponda.
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <ReservationDetailPanel
+          reservation={selected}
+          dogs={dogs}
+          isPro={isPro}
+          onClose={() => setSelectedId(null)}
+          onChanged={() => router.refresh()}
+        />
       )}
     </div>
   )
