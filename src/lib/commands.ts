@@ -21,6 +21,8 @@ export type Command = {
   requiresPro?: boolean
   requiresKennel?: boolean
   requiresAdmin?: boolean
+  /** Ocultar si el usuario YA tiene un criadero (ej. "Crear criadero" no debe aparecer si ya lo tienes) */
+  hideIfKennel?: boolean
 }
 
 export const COMMANDS: Command[] = [
@@ -30,10 +32,8 @@ export const COMMANDS: Command[] = [
   { id: 'notifications', label: 'Notificaciones', href: '/notifications', icon: 'Bell', section: 'Principal', keywords: ['avisos', 'alerts'] },
 
   // ── GENEALOGÍA ─────────────────────────────────────────────────────────
-  { id: 'dogs', label: 'Mis perros', href: '/dogs', icon: 'Dog', section: 'Genealogía', keywords: ['perros', 'ejemplares', 'reproductores', 'cachorros'] },
-  { id: 'dogs-new', label: 'Añadir un perro nuevo', href: '/dogs/new', icon: 'Plus', section: 'Genealogía', keywords: ['nuevo perro', 'crear perro', 'añadir perro'] },
-  { id: 'litters', label: 'Camadas', href: '/litters', icon: 'Baby', section: 'Genealogía', requiresKennel: true, keywords: ['camada', 'litter', 'partos'] },
-  { id: 'litters-new', label: 'Nueva camada', href: '/litters/new', icon: 'Plus', section: 'Genealogía', requiresKennel: true, keywords: ['crear camada'] },
+  { id: 'dogs', label: 'Mis perros', href: '/dogs', icon: 'Dog', section: 'Genealogía', keywords: ['perros', 'ejemplares', 'reproductores', 'cachorros', 'nuevo perro', 'añadir perro', 'crear perro'] },
+  { id: 'litters', label: 'Camadas', href: '/litters', icon: 'Baby', section: 'Genealogía', requiresKennel: true, keywords: ['camada', 'litter', 'partos', 'nueva camada', 'crear camada'] },
   { id: 'cruces', label: 'Simulador de cruces', href: '/cruces', icon: 'GitCompareArrows', section: 'Genealogía', requiresKennel: true, keywords: ['cruce', 'planner', 'planificador', 'pedigrí', 'coi', 'consanguinidad', 'apareamiento', 'simulador', 'cruzar'] },
   { id: 'reproduccion', label: 'Calendario reproductivo (Gantt)', href: '/reproduccion', icon: 'Heart', section: 'Genealogía', requiresKennel: true, keywords: ['celos', 'gestación', 'reproducción', 'hembras', 'planificador', 'gantt', 'ciclos', 'cría'] },
   { id: 'genetica', label: 'Genética y predicción de cruces', href: '/genetica', icon: 'Dna', section: 'Genealogía', requiresKennel: true, keywords: ['adn', 'dna', 'loci', 'merle', 'color', 'genotipo', 'embark', 'wisdom', 'punnett', 'fenotipo'] },
@@ -58,7 +58,7 @@ export const COMMANDS: Command[] = [
   // ── CRIADERO ───────────────────────────────────────────────────────────
   { id: 'kennel', label: 'Mi criadero', href: '/kennel', icon: 'Store', section: 'Criadero', requiresKennel: true, keywords: ['perfil', 'afijo', 'kennel'] },
   { id: 'kennel-edit', label: 'Editar criadero', href: '/kennel/edit', icon: 'Edit3', section: 'Criadero', requiresKennel: true, keywords: ['datos del criadero', 'logo', 'descripción'] },
-  { id: 'kennel-new', label: 'Crear nuevo criadero', href: '/kennel/new', icon: 'PlusCircle', section: 'Criadero', keywords: ['nuevo afijo', 'crear kennel'] },
+  { id: 'kennel-new', label: 'Crear mi criadero', href: '/kennel/new', icon: 'PlusCircle', section: 'Criadero', hideIfKennel: true, keywords: ['nuevo afijo', 'crear kennel', 'registrar criadero', 'afijo'] },
   { id: 'analytics', label: 'Analíticas del negocio', href: '/analytics', icon: 'BarChart3', section: 'Análisis', requiresKennel: true, keywords: ['stats', 'métricas', 'analytics', 'criadero', 'perros', 'camadas', 'palmarés'] },
   { id: 'kennel-api', label: 'API keys del criadero', href: '/kennel/api', icon: 'Key', section: 'Criadero', requiresKennel: true, keywords: ['integración', 'token', 'developer'] },
   { id: 'kennels-directory', label: 'Comunidad de criaderos', href: '/kennels', icon: 'Users', section: 'Comunidad', keywords: ['directorio', 'otros criaderos', 'buscar criaderos', 'explorar', 'descubrir', 'comunidad'] },
@@ -93,6 +93,7 @@ export function commandsFor(opts: {
     if (c.requiresAdmin && !opts.isAdmin) return false
     if (c.requiresPro && !opts.isPro) return false
     if (c.requiresKennel && !opts.hasKennel) return false
+    if (c.hideIfKennel && opts.hasKennel) return false
     return true
   })
 }
