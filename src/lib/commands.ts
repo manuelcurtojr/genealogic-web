@@ -61,7 +61,7 @@ export const COMMANDS: Command[] = [
   { id: 'kennel-new', label: 'Crear nuevo criadero', href: '/kennel/new', icon: 'PlusCircle', section: 'Criadero', keywords: ['nuevo afijo', 'crear kennel'] },
   { id: 'analytics', label: 'Analíticas del negocio', href: '/analytics', icon: 'BarChart3', section: 'Análisis', requiresKennel: true, keywords: ['stats', 'métricas', 'analytics', 'criadero', 'perros', 'camadas', 'palmarés'] },
   { id: 'kennel-api', label: 'API keys del criadero', href: '/kennel/api', icon: 'Key', section: 'Criadero', requiresKennel: true, keywords: ['integración', 'token', 'developer'] },
-  { id: 'kennels-directory', label: 'Directorio de criaderos', href: '/kennels', icon: 'Users', section: 'Criadero', keywords: ['otros criaderos', 'buscar criaderos'] },
+  { id: 'kennels-directory', label: 'Comunidad de criaderos', href: '/kennels', icon: 'Users', section: 'Comunidad', keywords: ['directorio', 'otros criaderos', 'buscar criaderos', 'explorar', 'descubrir', 'comunidad'] },
 
   // ── CUENTA (Pro) ───────────────────────────────────────────────────────
   { id: 'suscripcion', label: 'Suscripción y plan', href: '/cuenta/suscripcion', icon: 'Sparkles', section: 'Cuenta', requiresPro: true, keywords: ['plan', 'upgrade', 'pro', 'premium', 'billing'] },
