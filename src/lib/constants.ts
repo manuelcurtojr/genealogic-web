@@ -39,23 +39,31 @@ export interface NavSection {
 }
 
 // Sidebar minimalista: solo lo más usado a diario. Todo lo demás se invoca
-// con ⌘K (CommandBar). Reduce ruido cognitivo de 20+ items a 4-5.
+// con ⌘K (CommandBar). Reduce ruido cognitivo de 30+ rutas a ~9 items.
 //
 // Lo que NO está aquí pero sigue accesible via ⌘K:
-//   Buscar, Camadas, Planificador, Calendario, Vet, Newsletter, Biblioteca,
-//   Emailbot config, Hilos, Test, Estadísticas, Analíticas, API,
-//   Suscripción, Facturación, Dominio, Kennels directory, etc.
+//   Buscar, Veterinario, Genética, Newsletter, Biblioteca, Emailbot config,
+//   Hilos, Test, Estadísticas, Analíticas, API keys, Suscripción,
+//   Facturación, Dominio, Comunidad de criaderos, etc.
+//
+// Reglas:
+//   - requiresKennel: solo criadores (con afijo registrado)
+//   - requiresPro: solo Pro tier
+//   - Sin flags: visible para todos
 export const NAV_SECTIONS: NavSection[] = [
   {
     id: 'main',
     label: '',
     items: [
       { label: 'Escritorio', href: '/dashboard', icon: 'LayoutDashboard' },
-      { label: 'Mis Perros', href: '/dogs', icon: 'Dog' },
-      // Para criadores Free: items visibles que sin Pro tendrían sentido
-      { label: 'Camadas', href: '/litters', icon: 'Baby', requiresKennel: true, hideIfPro: true },
-      { label: 'Calendario', href: '/calendar', icon: 'Calendar', hideIfPro: true },
-      // Para criadores Pro: items de operativa diaria
+      { label: 'Perros', href: '/dogs', icon: 'Dog' },
+      // Catálogo del criador (Free criador)
+      { label: 'Camadas', href: '/litters', icon: 'Baby', requiresKennel: true },
+      { label: 'Cruces', href: '/cruces', icon: 'GitCompareArrows', requiresKennel: true },
+      { label: 'Reproducción', href: '/reproduccion', icon: 'Heart', requiresKennel: true },
+      // Tiempo (todos los usuarios)
+      { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
+      // Operativa Pro
       { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare', requiresPro: true, requiresKennel: true },
       { label: 'Clientes', href: '/clientes', icon: 'UsersRound', requiresPro: true, requiresKennel: true },
       { label: 'Web', href: '/web', icon: 'Globe', requiresPro: true },
