@@ -60,6 +60,7 @@ function StickyHeader() {
           <a href="#producto" className="transition hover:text-ink">Producto</a>
           <a href="#criadores" className="transition hover:text-ink">Para criadores</a>
           <a href="#precios" className="transition hover:text-ink">Precios</a>
+          <Link href="/blog" className="transition hover:text-ink">Blog</Link>
           <a href="#faq" className="transition hover:text-ink">FAQ</a>
         </nav>
         <div className="flex items-center gap-2">
@@ -1001,6 +1002,7 @@ function Footer() {
             links={[
               { label: 'Para criadores', href: '#criadores' },
               { label: 'Precios', href: '#precios' },
+              { label: 'Blog', href: '/blog' },
               { label: 'FAQ', href: '#faq' },
               { label: 'API pública', href: '/api-docs' },
             ]}
