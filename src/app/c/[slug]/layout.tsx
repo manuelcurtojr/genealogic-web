@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getKennelBySlug } from '@/lib/kennel-site'
 import { getEnabledPages, DEFAULT_NAV_LABELS, pageHref } from '@/lib/kennel/pages'
+import { createClient } from '@/lib/supabase/server'
+import OwnerFloatingNav from '@/components/kennel/owner-floating-nav'
 
 export default async function KennelSiteLayout({
   children, params,
@@ -13,6 +15,11 @@ export default async function KennelSiteLayout({
   const kennel = await getKennelBySlug(slug)
   if (!kennel) notFound()
 
+  // Si el visitante logueado es el owner del kennel, mostrar mini-nav flotante
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const isOwner = user?.id === kennel.owner_id
+
   const pages = await getEnabledPages(kennel.id)
   const navItems = pages
     .filter(p => p.slug !== 'home')
@@ -23,6 +30,7 @@ export default async function KennelSiteLayout({
 
   return (
     <div className="min-h-screen bg-canvas text-ink flex flex-col">
+      {isOwner && <OwnerFloatingNav />}
       <header className="border-b border-hairline sticky top-0 bg-canvas/95 backdrop-blur z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
           <Link href={`/c/${kennel.slug}`} className="flex items-center gap-2 min-w-0">
