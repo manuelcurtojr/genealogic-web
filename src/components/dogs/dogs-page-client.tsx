@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { Grid3X3, List, Search, Plus, Eye, Edit, ArrowRightLeft, GitBranch } from 'lucide-react'
 import DogCard from './dog-card'
 import DogFormPanel from './dog-form-panel'
@@ -20,17 +20,26 @@ interface Dog {
   breed: any
   color: any
   breed_id: string | null
+  is_reproductive?: boolean | null
+  is_for_sale?: boolean | null
+  breeder_id?: string | null
+  kennel_id?: string | null
 }
 
 interface DogsPageClientProps {
   dogs: Dog[]
   breeds: { id: string; name: string }[]
   userId: string
+  isBreeder?: boolean
 }
+
+type DogTab = 'all' | 'reproductive' | 'puppies' | 'bred' | 'sale'
+
+const PUPPY_MAX_MONTHS = 12 // un perro < 12 meses se considera cachorro
 
 const PAGE_SIZE = 24
 
-export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientProps) {
+export default function DogsPageClient({ dogs, breeds, userId, isBreeder = false }: DogsPageClientProps) {
   const [search, setSearch] = useState('')
   const [panelOpen, setPanelOpen] = useState(false)
   const [editDogId, setEditDogId] = useState<string | null>(null)
@@ -38,6 +47,24 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
   const [transferDog, setTransferDog] = useState<any>(null)
   const [pedigreeOpen, setPedigreeOpen] = useState(false)
   const [pedigreeDogId, setPedigreeDogId] = useState('')
+
+  // Tab activo (solo aplica si isBreeder); también lee/escribe ?tab= para deeplink
+  const [activeTab, setActiveTab] = useState<DogTab>(() => {
+    if (typeof window === 'undefined' || !isBreeder) return 'all'
+    const p = new URLSearchParams(window.location.search).get('tab')
+    if (p === 'reproductive' || p === 'puppies' || p === 'bred' || p === 'sale') return p
+    return 'all'
+  })
+  const changeTab = (t: DogTab) => {
+    setActiveTab(t)
+    setVisibleCount(PAGE_SIZE)
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href)
+      if (t === 'all') url.searchParams.delete('tab')
+      else url.searchParams.set('tab', t)
+      window.history.replaceState(null, '', url.toString())
+    }
+  }
 
   const openAdd = () => { setEditDogId(null); setPanelOpen(true) }
   const openEdit = (dogId: string) => { setEditDogId(dogId); setPanelOpen(true) }
@@ -55,7 +82,31 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
 
   const changeView = (v: 'grid' | 'list') => { setViewMode(v); localStorage.setItem('dogs-view', v) }
 
+  // Helpers para clasificar perros según tab
+  const isPuppy = (dog: Dog): boolean => {
+    if (!dog.birth_date) return false
+    const months = (Date.now() - new Date(dog.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30)
+    return months <= PUPPY_MAX_MONTHS
+  }
+
+  // Counts por tab (calculados sobre el dataset COMPLETO, no filtrado)
+  const tabCounts = useMemo(() => ({
+    all: dogs.length,
+    reproductive: dogs.filter((d) => d.is_reproductive === true).length,
+    puppies: dogs.filter(isPuppy).length,
+    bred: dogs.filter((d) => d.breeder_id === userId).length,
+    sale: dogs.filter((d) => d.is_for_sale === true).length,
+  }), [dogs, userId])
+
   const filtered = dogs.filter((dog) => {
+    // Filtro por tab (solo si isBreeder)
+    if (isBreeder) {
+      if (activeTab === 'reproductive' && dog.is_reproductive !== true) return false
+      if (activeTab === 'puppies' && !isPuppy(dog)) return false
+      if (activeTab === 'bred' && dog.breeder_id !== userId) return false
+      if (activeTab === 'sale' && dog.is_for_sale !== true) return false
+    }
+    // Filtro búsqueda
     const q = search.toLowerCase()
     if (q) {
       const breedName = (Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name) || ''
@@ -96,9 +147,13 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
             Catálogo
           </p>
           <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-            Mis perros
+            {isBreeder ? 'Perros' : 'Mis perros'}
           </h1>
-          <p className="mt-2 text-[14px] text-body">{dogs.length} {dogs.length === 1 ? 'perro registrado' : 'perros registrados'}</p>
+          {!isBreeder && (
+            <p className="mt-2 text-[14px] text-body">
+              {dogs.length} {dogs.length === 1 ? 'perro registrado' : 'perros registrados'}
+            </p>
+          )}
         </div>
         <button
           onClick={openAdd}
@@ -107,6 +162,44 @@ export default function DogsPageClient({ dogs, breeds, userId }: DogsPageClientP
           <Plus className="h-4 w-4" /> Perro
         </button>
       </div>
+
+      {/* Tabs (solo para criadores) */}
+      {isBreeder && (
+        <div className="-mx-1 flex overflow-x-auto">
+          <div className="flex gap-1 px-1">
+            {([
+              { key: 'all' as const, label: 'Todos' },
+              { key: 'reproductive' as const, label: 'Reproductores' },
+              { key: 'puppies' as const, label: 'Cachorros' },
+              { key: 'bred' as const, label: 'Criados por mí' },
+              { key: 'sale' as const, label: 'En venta' },
+            ]).map((t) => {
+              const isActive = activeTab === t.key
+              const count = tabCounts[t.key]
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => changeTab(t.key)}
+                  className={`flex-shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                    isActive
+                      ? 'border-ink bg-ink text-on-primary'
+                      : 'border-hairline bg-canvas text-body hover:bg-surface-soft'
+                  }`}
+                >
+                  {t.label}
+                  <span
+                    className={`rounded px-1.5 py-0.5 text-[11px] tabular-nums ${
+                      isActive ? 'bg-white/15 text-on-primary' : 'bg-surface-soft text-muted'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Toolbar */}
       <div className="space-y-2.5">
