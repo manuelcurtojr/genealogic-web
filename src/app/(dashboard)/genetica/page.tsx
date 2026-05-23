@@ -15,25 +15,26 @@ export default async function GeneticaPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [dogsRes, colorsRes] = await Promise.all([
+  const [dogsRes, allColorsRes] = await Promise.all([
     supabase
       .from('dogs')
-      .select('id, name, slug, sex, thumbnail_url')
+      .select('id, name, slug, sex, thumbnail_url, breed_id, color_id, breed:breeds(name)')
       .eq('owner_id', user.id)
       .order('name'),
     supabase.from('colors').select('id, name').order('name'),
   ])
   const dogs = dogsRes.data || []
-  const colors = colorsRes.data || []
+  const allColors = allColorsRes.data || []
 
   const selectedDogId = searchParams.dog || dogs[0]?.id || null
   const selectedDog = dogs.find((d) => d.id === selectedDogId) || null
 
-  // Cargar genotipos DNA + observación visual del perro seleccionado
+  // Cargar genotipos DNA + observación visual + colores filtrados por raza
   let genotypes: any[] = []
   let observation: any = null
+  let breedColors: { id: string; name: string }[] = []
   if (selectedDog) {
-    const [gtRes, obsRes] = await Promise.all([
+    const [gtRes, obsRes, bcRes] = await Promise.all([
       supabase
         .from('dog_genotypes')
         .select('id, locus, allele_1, allele_2, source, confidence, notes')
@@ -43,9 +44,20 @@ export default async function GeneticaPage({
         .select('id, color_id, coat_length, white_pattern, has_merle, has_mask, has_tan_points, has_brindle, is_diluted, notes')
         .eq('dog_id', selectedDog.id)
         .maybeSingle(),
+      // Colores del estándar de la raza (si breed_id existe)
+      selectedDog.breed_id
+        ? supabase
+            .from('breed_colors')
+            .select('color:colors(id, name)')
+            .eq('breed_id', selectedDog.breed_id)
+        : Promise.resolve({ data: [] as any[] }),
     ])
     genotypes = gtRes.data || []
     observation = obsRes.data || null
+    breedColors = ((bcRes.data || []) as any[])
+      .map((r) => r.color)
+      .filter((c): c is { id: string; name: string } => !!c)
+      .sort((a, b) => a.name.localeCompare(b.name, 'es'))
   }
 
   return (
@@ -110,9 +122,22 @@ export default async function GeneticaPage({
           {/* Editor */}
           {selectedDog ? (
             <GenotypeEditor
-              dog={selectedDog}
+              dog={{
+                id: selectedDog.id,
+                name: selectedDog.name,
+                slug: selectedDog.slug,
+                sex: selectedDog.sex,
+                thumbnail_url: selectedDog.thumbnail_url,
+                breed_id: selectedDog.breed_id,
+                color_id: selectedDog.color_id,
+                // Supabase devuelve la relación como array; normalizar
+                breed: Array.isArray((selectedDog as any).breed)
+                  ? (selectedDog as any).breed[0] || null
+                  : (selectedDog as any).breed || null,
+              }}
               initialGenotypes={genotypes}
-              colors={colors}
+              breedColors={breedColors}
+              allColors={allColors}
               initialObservation={observation}
             />
           ) : (

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Save, Loader2, Check, Palette } from 'lucide-react'
+import { Save, Loader2, Check, Palette, Info } from 'lucide-react'
 import { inferGenotype, type ColorObservation } from '@/lib/genetics/inference'
 
 interface Color {
@@ -18,12 +18,33 @@ interface Observation extends ColorObservation {
 
 interface Props {
   dogId: string
-  colors: Color[]
+  /** Colores del estándar de la raza (filtrados). Vacío si raza desconocida o sin mapping. */
+  breedColors: Color[]
+  /** Todos los colores del catálogo (fallback cuando el user marca "ver todos"). */
+  allColors: Color[]
+  /** Nombre de la raza para mostrar en la UI. */
+  breedName: string | null
+  /** Color del perro guardado en dogs.color_id, usado como default si no hay observation. */
+  defaultColorId: string | null
   initial: Observation | null
 }
 
-export default function ColorObservationForm({ dogId, colors, initial }: Props) {
-  const [colorId, setColorId] = useState<string>(initial?.color_id || '')
+export default function ColorObservationForm({
+  dogId,
+  breedColors,
+  allColors,
+  breedName,
+  defaultColorId,
+  initial,
+}: Props) {
+  // Default: observation.color_id si existe, sino dogs.color_id (pre-selección del color del perro)
+  const [colorId, setColorId] = useState<string>(initial?.color_id || defaultColorId || '')
+  // Si el color por defecto no está en los del estándar de raza, abrir "todos" automáticamente
+  const initialColorInBreed = !defaultColorId || breedColors.some((c) => c.id === defaultColorId)
+  const [showAllColors, setShowAllColors] = useState<boolean>(
+    breedColors.length === 0 || !initialColorInBreed
+  )
+  const colorsToShow = showAllColors ? allColors : breedColors
   const [coatLength, setCoatLength] = useState<'short' | 'medium' | 'long' | 'wire'>(
     initial?.coat_length || 'short'
   )
@@ -41,7 +62,8 @@ export default function ColorObservationForm({ dogId, colors, initial }: Props) 
   const [error, setError] = useState<string | null>(null)
 
   // Calcular inferencia en tiempo real para preview
-  const colorName = colors.find((c) => c.id === colorId)?.name || null
+  // Buscar en allColors (que es el catálogo completo) para resolver el nombre
+  const colorName = allColors.find((c) => c.id === colorId)?.name || null
   const preview = inferGenotype({
     color_name: colorName,
     coat_length: coatLength,
@@ -115,24 +137,53 @@ export default function ColorObservationForm({ dogId, colors, initial }: Props) 
         <div className="space-y-4">
           {/* Color principal */}
           <div>
-            <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
-              Color principal
-            </label>
+            <div className="mb-1.5 flex items-center justify-between gap-2">
+              <label className="text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
+                Color principal
+                {!showAllColors && breedName && breedColors.length > 0 && (
+                  <span className="ml-1.5 normal-case tracking-normal text-muted/70">
+                    · estándar {breedName}
+                  </span>
+                )}
+              </label>
+              {breedColors.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllColors((v) => !v)}
+                  className="text-[11.5px] font-medium text-body hover:text-ink"
+                >
+                  {showAllColors ? 'Ver solo estándar' : 'Ver todos los colores'}
+                </button>
+              )}
+            </div>
             <select
               value={colorId}
               onChange={(e) => setColorId(e.target.value)}
               className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
             >
               <option value="">— Selecciona un color —</option>
-              {colors.map((c) => (
+              {colorsToShow.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-[11.5px] text-muted">
-              El nombre que usarías en una ficha del criadero (ej: &quot;Bardino rojo&quot;, &quot;Negro y fuego&quot;).
-            </p>
+            {breedColors.length === 0 ? (
+              <p className="mt-1 flex items-start gap-1.5 text-[11.5px] text-muted">
+                <Info className="mt-0.5 h-3 w-3 flex-shrink-0" />
+                <span>
+                  No hay colores estándar definidos para esta raza. Mostrando catálogo completo.
+                </span>
+              </p>
+            ) : showAllColors ? (
+              <p className="mt-1 text-[11.5px] text-muted">
+                Mostrando todos los colores (incluidos los que no son del estándar de la raza).
+              </p>
+            ) : (
+              <p className="mt-1 text-[11.5px] text-muted">
+                Solo se muestran los {breedColors.length} colores aceptados en el estándar de {breedName}.
+              </p>
+            )}
           </div>
 
           {/* Longitud + manchas blancas */}

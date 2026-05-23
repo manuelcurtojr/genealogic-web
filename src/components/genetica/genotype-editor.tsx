@@ -12,6 +12,9 @@ interface Dog {
   slug: string | null
   sex: string
   thumbnail_url: string | null
+  breed_id?: string | null
+  color_id?: string | null
+  breed?: { name: string } | null
 }
 
 interface Genotype {
@@ -45,13 +48,14 @@ interface ColorObs {
 interface Props {
   dog: Dog
   initialGenotypes: Genotype[]
-  colors: Color[]
+  breedColors: Color[]
+  allColors: Color[]
   initialObservation: ColorObs | null
 }
 
 type Tab = 'color' | 'dna'
 
-export default function GenotypeEditor({ dog, initialGenotypes, colors, initialObservation }: Props) {
+export default function GenotypeEditor({ dog, initialGenotypes, breedColors, allColors, initialObservation }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>(initialGenotypes.length > 0 ? 'dna' : 'color')
 
   const hasColorData = !!initialObservation
@@ -108,7 +112,10 @@ export default function GenotypeEditor({ dog, initialGenotypes, colors, initialO
       {activeTab === 'color' ? (
         <ColorObservationForm
           dogId={dog.id}
-          colors={colors}
+          breedColors={breedColors}
+          allColors={allColors}
+          breedName={dog.breed?.name || null}
+          defaultColorId={dog.color_id || null}
           initial={initialObservation}
         />
       ) : (
