@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import KennelConfigView from '@/components/kennel/kennel-config-view'
+import { hasProAccess } from '@/lib/permissions'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,8 +28,8 @@ export default async function KennelPage() {
     redirect('/kennel/new')
   }
 
-  // Solo COUNTS — no se cargan listas. Las listas viven en /dogs y /litters.
-  const [dogsCountRes, visibleCountRes, reproductiveCountRes, littersCountRes] = await Promise.all([
+  // Solo COUNTS + flags para el toggle de vista pública.
+  const [dogsCountRes, visibleCountRes, reproductiveCountRes, littersCountRes, customPageRes, profileRes] = await Promise.all([
     supabase.from('dogs').select('id', { count: 'exact', head: true })
       .eq('kennel_id', kennel.id),
     supabase.from('dogs').select('id', { count: 'exact', head: true })
@@ -37,7 +38,15 @@ export default async function KennelPage() {
       .eq('kennel_id', kennel.id).eq('is_reproductive', true),
     supabase.from('litters').select('id', { count: 'exact', head: true })
       .eq('owner_id', user.id),
+    supabase.from('kennel_pages')
+      .select('id')
+      .eq('kennel_id', kennel.id).eq('slug', 'home').eq('enabled', true)
+      .maybeSingle(),
+    supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
   ])
+
+  const hasCustomWeb = !!customPageRes.data && !!kennel.slug
+  const isPro = hasProAccess(profileRes.data?.plan)
 
   return (
     <KennelConfigView
@@ -48,6 +57,8 @@ export default async function KennelPage() {
         reproductive: reproductiveCountRes.count || 0,
         litters: littersCountRes.count || 0,
       }}
+      hasCustomWeb={hasCustomWeb}
+      isPro={isPro}
       userId={user.id}
     />
   )

@@ -9,6 +9,7 @@ import {
   Eye, Key, Link2, ArrowRight,
 } from 'lucide-react'
 import KennelEditPanel from './kennel-edit-panel'
+import PublicViewToggle from './public-view-toggle'
 
 interface Props {
   kennel: any
@@ -18,6 +19,8 @@ interface Props {
     reproductive: number
     litters: number
   }
+  hasCustomWeb?: boolean
+  isPro?: boolean
   userId: string
 }
 
@@ -26,7 +29,7 @@ interface Props {
  * Sustituye al KennelDashboard antiguo que duplicaba la lista de perros
  * de /dogs. Aquí solo se muestran KPIs + cards de acción.
  */
-export default function KennelConfigView({ kennel, stats, userId }: Props) {
+export default function KennelConfigView({ kennel, stats, hasCustomWeb = false, isPro = false, userId }: Props) {
   const router = useRouter()
   const [showEdit, setShowEdit] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -181,6 +184,15 @@ export default function KennelConfigView({ kennel, stats, userId }: Props) {
           </button>
         </div>
       </section>
+
+      {/* Toggle vista pública por defecto — incentivo Pro */}
+      <PublicViewToggle
+        kennelId={kennel.id}
+        kennelSlug={kennel.slug || null}
+        current={kennel.default_public_view || 'standard'}
+        hasCustomWeb={hasCustomWeb}
+        isPro={isPro}
+      />
 
       {/* KPIs (clickables → llevan a /dogs y /litters, NO duplican listas aquí) */}
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
