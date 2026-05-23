@@ -19,7 +19,7 @@ export default async function DogsPage() {
       .from('dogs')
       .select(`
         id, slug, name, sex, birth_date, thumbnail_url, breed_id,
-        is_reproductive, is_for_sale, breeder_id, kennel_id, created_at, updated_at,
+        is_reproductive, is_for_sale, show_in_kennel, breeder_id, kennel_id, created_at, updated_at,
         breed:breeds(name),
         color:colors(name),
         kennel:kennels(id, name, logo_url)

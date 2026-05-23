@@ -9,6 +9,7 @@ import PedigreeEditor from '../pedigree/pedigree-editor'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 import SortSelect, { useSortPreference, sortItems } from '@/components/ui/sort-select'
+import { createClient } from '@/lib/supabase/client'
 
 interface Dog {
   id: string
@@ -22,6 +23,7 @@ interface Dog {
   breed_id: string | null
   is_reproductive?: boolean | null
   is_for_sale?: boolean | null
+  show_in_kennel?: boolean | null
   breeder_id?: string | null
   kennel_id?: string | null
 }
@@ -40,7 +42,12 @@ const PUPPY_MAX_MONTHS = 12 // un perro < 12 meses se considera cachorro
 
 const PAGE_SIZE = 24
 
-export default function DogsPageClient({ dogs, breeds, userId, isBreeder = false, myKennelId = null }: DogsPageClientProps) {
+export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBreeder = false, myKennelId = null }: DogsPageClientProps) {
+  // Estado local de dogs para optimistic updates al hacer toggles desde la card
+  const [dogs, setDogs] = useState(initialDogs)
+  // Sync si el server entrega lista nueva (ej. después de router.refresh)
+  useEffect(() => { setDogs(initialDogs) }, [initialDogs])
+
   const [search, setSearch] = useState('')
   const [panelOpen, setPanelOpen] = useState(false)
   const [editDogId, setEditDogId] = useState<string | null>(null)
@@ -66,6 +73,21 @@ export default function DogsPageClient({ dogs, breeds, userId, isBreeder = false
       window.history.replaceState(null, '', url.toString())
     }
   }
+
+  // Toggle handlers (optimistic update + rollback en error)
+  const toggleDogField = async (dogId: string, field: 'is_reproductive' | 'show_in_kennel', newValue: boolean) => {
+    const before = dogs
+    setDogs((prev) => prev.map((d) => (d.id === dogId ? { ...d, [field]: newValue } : d)))
+    const supabase = createClient()
+    const { error } = await supabase.from('dogs').update({ [field]: newValue }).eq('id', dogId)
+    if (error) {
+      // Rollback en error
+      setDogs(before)
+      console.error('Toggle error:', error)
+    }
+  }
+  const handleToggleReproductive = (dogId: string, current: boolean) => toggleDogField(dogId, 'is_reproductive', !current)
+  const handleToggleVisible = (dogId: string, current: boolean) => toggleDogField(dogId, 'show_in_kennel', !current)
 
   const openAdd = () => { setEditDogId(null); setPanelOpen(true) }
   const openEdit = (dogId: string) => { setEditDogId(dogId); setPanelOpen(true) }
@@ -313,6 +335,8 @@ export default function DogsPageClient({ dogs, breeds, userId, isBreeder = false
               onEdit={() => openEdit(dog.id)}
               onEditPedigree={() => openPedigree(dog.id)}
               onTransfer={() => setTransferDog({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name })}
+              onToggleReproductive={isBreeder ? () => handleToggleReproductive(dog.id, !!dog.is_reproductive) : undefined}
+              onToggleVisible={isBreeder ? () => handleToggleVisible(dog.id, dog.show_in_kennel !== false) : undefined}
             />
           ))}
         </div>

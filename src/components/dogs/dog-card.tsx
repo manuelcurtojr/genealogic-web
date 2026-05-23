@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Eye, Edit, ArrowRightLeft, GitBranch } from 'lucide-react'
+import { Eye, Edit, ArrowRightLeft, GitBranch, Globe, EyeOff, Heart } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { DogImage } from '@/components/ui/dog-image'
 
@@ -16,17 +16,33 @@ interface DogCardProps {
     breed: any
     color: any
     kennel?: any
+    is_reproductive?: boolean | null
+    show_in_kennel?: boolean | null
   }
   onEdit?: () => void
   onTransfer?: () => void
   onEditPedigree?: () => void
+  /** Solo para criadores: toggle "visible en perfil público del criadero" */
+  onToggleVisible?: () => void
+  /** Solo para criadores: toggle "es reproductor" */
+  onToggleReproductive?: () => void
 }
 
 /**
  * Dog card Cal.com — canvas blanco + hairline + foto 4:3.
  * Sex bar inferior como único acento cromático. Sin orange brand.
+ *
+ * Para criadores se muestran 2 toggles inline (Visible / Reproductor)
+ * con feedback visual del estado actual. Click hace optimistic update.
  */
-export default function DogCard({ dog, onEdit, onTransfer, onEditPedigree }: DogCardProps) {
+export default function DogCard({
+  dog,
+  onEdit,
+  onTransfer,
+  onEditPedigree,
+  onToggleVisible,
+  onToggleReproductive,
+}: DogCardProps) {
   const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#888'
   const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
   const colorName = Array.isArray(dog.color) ? dog.color[0]?.name : dog.color?.name
@@ -94,6 +110,45 @@ export default function DogCard({ dog, onEdit, onTransfer, onEditPedigree }: Dog
               <GitBranch className="h-3.5 w-3.5" />
             </button>
           )}
+
+          {/* Toggles para criadores (solo se muestran si vienen los handlers) */}
+          {onToggleVisible && (
+            <button
+              onClick={onToggleVisible}
+              title={
+                dog.show_in_kennel !== false
+                  ? 'Visible en tu perfil público — click para ocultar'
+                  : 'Oculto en tu perfil público — click para mostrar'
+              }
+              aria-pressed={dog.show_in_kennel !== false}
+              className={`inline-flex h-8 w-8 items-center justify-center rounded-md border transition-colors ${
+                dog.show_in_kennel !== false
+                  ? 'border-emerald-400/60 bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                  : 'border-hairline bg-canvas text-muted hover:bg-surface-card hover:text-ink'
+              }`}
+            >
+              {dog.show_in_kennel !== false ? <Globe className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+            </button>
+          )}
+          {onToggleReproductive && (
+            <button
+              onClick={onToggleReproductive}
+              title={
+                dog.is_reproductive
+                  ? 'Es reproductor — click para desmarcar'
+                  : 'No es reproductor — click para marcar'
+              }
+              aria-pressed={!!dog.is_reproductive}
+              className={`inline-flex h-8 w-8 items-center justify-center rounded-md border transition-colors ${
+                dog.is_reproductive
+                  ? 'border-pink-400/60 bg-pink-50 text-pink-600 hover:bg-pink-100'
+                  : 'border-hairline bg-canvas text-muted hover:bg-surface-card hover:text-ink'
+              }`}
+            >
+              <Heart className={`h-3.5 w-3.5 ${dog.is_reproductive ? 'fill-current' : ''}`} />
+            </button>
+          )}
+
           <button
             onClick={onTransfer}
             title="Transferir a otro dueño"
