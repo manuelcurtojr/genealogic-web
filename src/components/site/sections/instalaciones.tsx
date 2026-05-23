@@ -63,7 +63,7 @@ export function FacilityFeaturesSection({
 }
 
 export function GalleryGridSection({
-  title, subtitle, eyebrow, images = [], columns = 3,
+  title, subtitle, eyebrow, images = [], columns = 3, layout = 'masonry',
 }: {
   title?: string
   subtitle?: string
@@ -82,30 +82,93 @@ export function GalleryGridSection({
       </section>
     )
   }
+
+  // MASONRY: usa CSS columns para layout estilo Pinterest sin librerías.
+  if (layout === 'masonry') {
+    const colsClass = columns === 2 ? 'sm:columns-2' : columns === 4 ? 'sm:columns-2 lg:columns-4' : 'sm:columns-2 lg:columns-3'
+    return (
+      <section className="py-16 lg:py-24 relative overflow-hidden">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+          {(title || subtitle || eyebrow) && (
+            <div className="mb-12 lg:mb-16 text-center">
+              {eyebrow && (
+                <p className="flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted mb-4">
+                  <span className="inline-block h-px w-8 bg-muted/40" />
+                  {eyebrow}
+                  <span className="inline-block h-px w-8 bg-muted/40" />
+                </p>
+              )}
+              {title && (
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-ink tracking-[-0.03em] leading-[1.05]">
+                  {title}
+                </h2>
+              )}
+              {subtitle && (
+                <p className="text-base md:text-lg text-body mt-4 max-w-2xl mx-auto leading-relaxed">{subtitle}</p>
+              )}
+            </div>
+          )}
+          <div className={`columns-1 ${colsClass} gap-4 lg:gap-5 [&>*]:mb-4 lg:[&>*]:mb-5`}>
+            {images.map((im, i) => (
+              <figure
+                key={i}
+                className="group relative break-inside-avoid rounded-2xl overflow-hidden bg-surface-card ring-1 ring-hairline shadow-sm hover:shadow-2xl hover:ring-ink/15 transition-all duration-500"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={im.url}
+                  alt={im.alt || ''}
+                  loading="lazy"
+                  className="w-full h-auto object-cover group-hover:scale-[1.04] transition-transform duration-[900ms] ease-out"
+                />
+                {/* Overlay con gradiente + caption */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                {im.alt && (
+                  <figcaption className="pointer-events-none absolute bottom-0 left-0 right-0 p-5 text-white opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
+                    <p className="text-[13.5px] font-medium leading-snug drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">
+                      {im.alt}
+                    </p>
+                  </figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  // UNIFORM: grid clásico (compat hacia atrás)
   const colsClass = columns === 2 ? 'sm:grid-cols-2' : columns === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3'
   return (
-    <section className="py-12 lg:py-16">
+    <section className="py-16 lg:py-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {(title || subtitle || eyebrow) && (
-          <div className="mb-8 text-center">
+          <div className="mb-10 text-center">
             {eyebrow && (
-              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted mb-2">{eyebrow}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted mb-3">{eyebrow}</p>
             )}
-            {title && <h2 className="text-2xl md:text-3xl font-bold text-ink tracking-tight">{title}</h2>}
-            {subtitle && <p className="text-body mt-2">{subtitle}</p>}
+            {title && <h2 className="text-3xl md:text-4xl font-bold text-ink tracking-[-0.03em]">{title}</h2>}
+            {subtitle && <p className="text-body mt-3 max-w-2xl mx-auto">{subtitle}</p>}
           </div>
         )}
-        <div className={`grid grid-cols-1 ${colsClass} gap-3 md:gap-4`}>
+        <div className={`grid grid-cols-1 ${colsClass} gap-4 lg:gap-5`}>
           {images.map((im, i) => (
-            <div key={i} className="aspect-[4/3] rounded-xl overflow-hidden bg-surface-card border border-hairline">
+            <figure key={i} className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-surface-card ring-1 ring-hairline hover:ring-ink/15 hover:shadow-xl transition-all duration-500">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={im.url}
                 alt={im.alt || ''}
                 loading="lazy"
-                className="w-full h-full object-cover hover:scale-[1.02] transition duration-500"
+                className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700"
               />
-            </div>
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              {im.alt && (
+                <figcaption className="pointer-events-none absolute bottom-0 left-0 right-0 p-4 text-white opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">
+                  <p className="text-[13px] font-medium leading-snug drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">{im.alt}</p>
+                </figcaption>
+              )}
+            </figure>
           ))}
         </div>
       </div>

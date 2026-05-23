@@ -200,22 +200,44 @@ export function FaqSection({
   items?: { question: string; answer: string }[]
 }) {
   return (
-    <section className="py-12 lg:py-16">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+    <section className="py-20 lg:py-28 relative overflow-hidden">
+      {/* Background pattern muy sutil */}
+      <div
+        className="absolute inset-0 opacity-[0.02] pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0,0,0,1) 1px, transparent 0)',
+          backgroundSize: '24px 24px',
+        }}
+      />
+      <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
         {(title || eyebrow) && (
-          <div className="mb-8 text-center">
-            {eyebrow && <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted mb-2">{eyebrow}</p>}
-            {title && <h2 className="text-2xl md:text-3xl font-bold text-ink tracking-tight">{title}</h2>}
+          <div className="mb-14 lg:mb-16 text-center">
+            {eyebrow && (
+              <p className="flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted mb-4">
+                <span className="inline-block h-px w-8 bg-muted/40" />
+                {eyebrow}
+                <span className="inline-block h-px w-8 bg-muted/40" />
+              </p>
+            )}
+            {title && (
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-ink tracking-[-0.03em] leading-[1.05]">
+                {title}
+              </h2>
+            )}
           </div>
         )}
-        <div className="space-y-2">
+        <div className="divide-y divide-hairline border-y border-hairline">
           {items.map((it, i) => (
-            <details key={i} className="rounded-xl border border-hairline bg-canvas p-4 group">
-              <summary className="cursor-pointer list-none flex items-center justify-between gap-3">
-                <span className="text-sm font-semibold text-ink">{it.question}</span>
-                <span className="text-muted text-xl group-open:rotate-45 transition">+</span>
+            <details key={i} className="group py-2">
+              <summary className="cursor-pointer list-none flex items-start justify-between gap-6 py-5 hover:opacity-80 transition-opacity">
+                <span className="text-lg md:text-xl font-semibold text-ink leading-snug tracking-[-0.01em] flex-1">
+                  {it.question}
+                </span>
+                <span className="shrink-0 mt-1 flex h-7 w-7 items-center justify-center rounded-full border border-hairline text-muted text-base group-open:rotate-45 group-open:border-ink/40 group-open:text-ink transition-all duration-300">
+                  +
+                </span>
               </summary>
-              <div className="mt-3 text-sm text-body leading-relaxed whitespace-pre-line">
+              <div className="pb-6 pr-12 text-[15px] text-body leading-[1.7] whitespace-pre-line">
                 {it.answer}
               </div>
             </details>
