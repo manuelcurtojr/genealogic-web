@@ -31,6 +31,7 @@ interface DogsPageClientProps {
   breeds: { id: string; name: string }[]
   userId: string
   isBreeder?: boolean
+  myKennelId?: string | null
 }
 
 type DogTab = 'all' | 'reproductive' | 'puppies' | 'bred' | 'sale'
@@ -39,7 +40,7 @@ const PUPPY_MAX_MONTHS = 12 // un perro < 12 meses se considera cachorro
 
 const PAGE_SIZE = 24
 
-export default function DogsPageClient({ dogs, breeds, userId, isBreeder = false }: DogsPageClientProps) {
+export default function DogsPageClient({ dogs, breeds, userId, isBreeder = false, myKennelId = null }: DogsPageClientProps) {
   const [search, setSearch] = useState('')
   const [panelOpen, setPanelOpen] = useState(false)
   const [editDogId, setEditDogId] = useState<string | null>(null)
@@ -89,21 +90,33 @@ export default function DogsPageClient({ dogs, breeds, userId, isBreeder = false
     return months <= PUPPY_MAX_MONTHS
   }
 
+  // "Criados por mí" = perros nacidos en MI criadero = kennel_id === myKennelId.
+  // No usar breeder_id porque la mayoría de perros históricos solo tienen
+  // kennel_id rellenado (breeder_id es legacy/opcional).
+  // Fallback: si por lo que sea no hay myKennelId pero el perro tiene breeder_id=me,
+  // también cuenta (para los pocos casos antiguos).
+  const isBredByMe = (dog: Dog): boolean => {
+    if (myKennelId && dog.kennel_id === myKennelId) return true
+    if (dog.breeder_id === userId) return true
+    return false
+  }
+
   // Counts por tab (calculados sobre el dataset COMPLETO, no filtrado)
   const tabCounts = useMemo(() => ({
     all: dogs.length,
     reproductive: dogs.filter((d) => d.is_reproductive === true).length,
     puppies: dogs.filter(isPuppy).length,
-    bred: dogs.filter((d) => d.breeder_id === userId).length,
+    bred: dogs.filter(isBredByMe).length,
     sale: dogs.filter((d) => d.is_for_sale === true).length,
-  }), [dogs, userId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [dogs, userId, myKennelId])
 
   const filtered = dogs.filter((dog) => {
     // Filtro por tab (solo si isBreeder)
     if (isBreeder) {
       if (activeTab === 'reproductive' && dog.is_reproductive !== true) return false
       if (activeTab === 'puppies' && !isPuppy(dog)) return false
-      if (activeTab === 'bred' && dog.breeder_id !== userId) return false
+      if (activeTab === 'bred' && !isBredByMe(dog)) return false
       if (activeTab === 'sale' && dog.is_for_sale !== true) return false
     }
     // Filtro búsqueda

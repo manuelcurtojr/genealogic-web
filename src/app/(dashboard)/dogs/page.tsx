@@ -11,7 +11,8 @@ export default async function DogsPage() {
     .select('id')
     .eq('owner_id', user!.id)
     .limit(1)
-  const isBreeder = !!kennelArr?.[0]
+  const myKennelId = kennelArr?.[0]?.id || null
+  const isBreeder = !!myKennelId
 
   const [dogsRes, breedsRes] = await Promise.all([
     supabase
@@ -35,6 +36,7 @@ export default async function DogsPage() {
         breeds={breedsRes.data || []}
         userId={user!.id}
         isBreeder={isBreeder}
+        myKennelId={myKennelId}
       />
     </div>
   )
