@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { getCurrentKennel } from '@/lib/kennel-context'
 import { getAvailablePuppiesByKennel, getUpcomingLittersByKennel } from '@/lib/kennel/data'
 import { SectionHeader } from '@/components/site/section-primitives'
+import { HeroCtaButton } from '@/components/site/hero-cta-button'
 
 type Cta = { label: string; href: string; variant?: 'primary' | 'outline' | 'ghost' }
 
@@ -56,17 +57,7 @@ export async function HeroSection(props: {
         {ctas.length > 0 && (
           <div className="flex flex-wrap gap-3">
             {ctas.map((c, i) => (
-              <Link
-                key={i}
-                href={c.href}
-                className={c.variant === 'outline'
-                  ? 'inline-flex items-center justify-center rounded-xl border border-white/35 backdrop-blur-sm bg-white/5 text-white px-7 py-3.5 text-[14px] font-semibold hover:bg-white/15 hover:border-white/60 transition-all'
-                  : c.variant === 'ghost'
-                    ? 'inline-flex items-center justify-center rounded-xl text-white px-7 py-3.5 text-[14px] font-semibold hover:bg-white/10 transition-all'
-                    : 'btn-brand inline-flex items-center justify-center rounded-xl px-7 py-3.5 text-[14px] font-semibold shadow-2xl shadow-black/30'}
-              >
-                {c.label}
-              </Link>
+              <HeroCtaButton key={i} href={c.href} label={c.label} variant={c.variant} />
             ))}
           </div>
         )}

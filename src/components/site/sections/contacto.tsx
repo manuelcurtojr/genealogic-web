@@ -2,6 +2,7 @@
  * Secciones "Contacto" — server wrappers + client form interno.
  */
 import ContactFormInner from './contact-form-inner'
+import { SectionHeader } from '@/components/site/section-primitives'
 
 export function ContactFormSection({
   title, subtitle, eyebrow, headline, topics, success_message,
@@ -15,13 +16,9 @@ export function ContactFormSection({
 }) {
   const t = title || headline || 'Cuéntanos'
   return (
-    <section className="py-12 lg:py-16">
+    <section className="py-16 lg:py-24">
       <div className="max-w-xl mx-auto px-4 sm:px-6">
-        {eyebrow && (
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted mb-2">{eyebrow}</p>
-        )}
-        <h2 className="text-2xl md:text-3xl font-bold text-ink mb-3 tracking-tight">{t}</h2>
-        {subtitle && <p className="text-body mb-6 leading-relaxed">{subtitle}</p>}
+        <SectionHeader number="01" eyebrow={eyebrow ?? 'Contacto'} title={t} subtitle={subtitle} align="left" />
         <ContactFormInner topics={topics} success_message={success_message} />
       </div>
     </section>

@@ -3,9 +3,11 @@
 import { revalidatePath } from 'next/cache'
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import { getMyKennel } from '@/lib/kennel-site'
-import { THEMES } from '@/lib/kennel/themes'
+import { THEMES, BUTTON_RADIUS_PX, DISPLAY_FONT_LABELS, type ButtonRadius, type DisplayFont } from '@/lib/kennel/themes'
 
 const HEX = /^#[0-9a-fA-F]{6}$/
+const VALID_RADII = new Set(Object.keys(BUTTON_RADIUS_PX))
+const VALID_FONTS = new Set(Object.keys(DISPLAY_FONT_LABELS))
 
 export async function updateKennelTheme(formData: FormData) {
   const kennel = await getMyKennel()
@@ -24,13 +26,31 @@ export async function updateKennelTheme(formData: FormData) {
       overrides[key] = raw.trim().toLowerCase()
     }
   }
+  const rawRadius = String(formData.get('override_button_radius') ?? '')
+  if (VALID_RADII.has(rawRadius)) overrides.button_radius = rawRadius as ButtonRadius
+  const rawFont = String(formData.get('override_font_display') ?? '')
+  if (VALID_FONTS.has(rawFont)) overrides.font_display = rawFont as DisplayFont
+
   const useOverrides = String(formData.get('use_overrides') ?? '') === 'on'
+
+  // Las overrides de tipografía/forma SIEMPRE se persisten si el usuario las
+  // tocó (no requieren el toggle "Colores personalizados"). Solo los 4 colores
+  // dependen del toggle.
+  const colorKeys = new Set(['primary', 'accent', 'canvas', 'ink'])
+  const persistedOverrides: Record<string, string> = {}
+  for (const [k, v] of Object.entries(overrides)) {
+    if (colorKeys.has(k)) {
+      if (useOverrides) persistedOverrides[k] = v
+    } else {
+      persistedOverrides[k] = v
+    }
+  }
 
   const { error } = await admin
     .from('kennels')
     .update({
       theme_id,
-      theme_overrides: useOverrides && Object.keys(overrides).length > 0 ? overrides : null,
+      theme_overrides: Object.keys(persistedOverrides).length > 0 ? persistedOverrides : null,
     })
     .eq('id', kennel.id)
 

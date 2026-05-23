@@ -9,29 +9,50 @@ import {
   getAvailablePuppiesByKennel,
   type SiteDog,
 } from '@/lib/kennel/data'
+import { SectionHeader } from '@/components/site/section-primitives'
 
 function DogCard({ d }: { d: SiteDog }) {
   return (
     <Link
       href={`https://genealogic.io/dogs/${d.slug || d.id}`}
       target="_blank"
-      className="block rounded-xl border border-hairline bg-canvas overflow-hidden hover:border-ink/30 hover:shadow-sm transition"
+      className="group block overflow-hidden bg-surface-card ring-1 ring-hairline hover:ring-2 hover:ring-theme-accent hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-2xl"
+      style={{ borderRadius: 'var(--button-radius, 12px)' }}
     >
-      <div className="aspect-square bg-surface-card overflow-hidden">
-        {d.thumbnail_url && (
+      <div className="relative aspect-square bg-canvas overflow-hidden">
+        {d.thumbnail_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={d.thumbnail_url} alt={d.name} className="w-full h-full object-cover" />
+          <img
+            src={d.thumbnail_url}
+            alt={d.name}
+            className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-700"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-muted text-3xl opacity-50">
+            {d.name[0]?.toUpperCase()}
+          </div>
+        )}
+        {d.is_for_sale && (
+          <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 bg-canvas/95 backdrop-blur px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink shadow-sm" style={{ borderRadius: 'var(--button-radius, 999px)' }}>
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Disponible
+          </span>
         )}
       </div>
-      <div className="p-3">
-        <p className="text-sm font-semibold text-ink truncate">{d.name}</p>
-        <p className="text-[11px] text-muted">
-          {d.sex === 'male' ? 'Macho' : 'Hembra'}
+      <div className="p-4">
+        <p
+          className="text-[15px] font-bold text-ink truncate tracking-[-0.01em] group-hover:text-theme-accent transition-colors"
+          style={{ fontFamily: 'var(--font-display, inherit)' }}
+        >
+          {d.name}
+        </p>
+        <p className="text-[11px] text-muted mt-1 uppercase tracking-[0.08em]">
+          {d.sex === 'male' ? '♂ Macho' : '♀ Hembra'}
           {d.breed?.name ? ` · ${d.breed.name}` : ''}
           {d.color?.name ? ` · ${d.color.name}` : ''}
         </p>
         {d.is_for_sale && d.sale_price != null && (
-          <p className="text-[11px] font-semibold text-ink mt-1">
+          <p className="text-[12px] font-bold text-theme-accent mt-2">
             {d.sale_price.toLocaleString('es-ES')} {d.sale_currency || 'EUR'}
           </p>
         )}
@@ -43,13 +64,13 @@ function DogCard({ d }: { d: SiteDog }) {
 function DogGrid({ dogs, empty }: { dogs: SiteDog[]; empty?: string }) {
   if (!dogs.length) {
     return (
-      <div className="rounded-xl border border-dashed border-hairline bg-canvas p-10 text-center">
+      <div className="border border-dashed border-hairline bg-canvas p-12 text-center" style={{ borderRadius: 'var(--button-radius, 12px)' }}>
         <p className="text-sm text-muted">{empty || 'Sin perros en esta categoría ahora mismo.'}</p>
       </div>
     )
   }
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
       {dogs.map(d => <DogCard key={d.id} d={d} />)}
     </div>
   )
@@ -94,39 +115,71 @@ export async function BreedingDogsGridSection(props: { title?: string; subtitle?
 }
 
 export async function DogsTabsSection(props: {
+  title?: string
+  subtitle?: string
+  eyebrow?: string
   searchParams?: Record<string, string | string[] | undefined>
 }) {
   const kennel = await getCurrentKennel()
   const tab = (props.searchParams?.tab as string) || 'available'
   const all = await getDogsByKennel(kennel.id)
+
   const available = all.filter(d => d.is_for_sale)
   const males = all.filter(d => d.is_reproductive && d.sex === 'male')
   const females = all.filter(d => d.is_reproductive && d.sex === 'female')
+  // "Criados por nosotros" = el resto del catálogo público del kennel: perros
+  // adultos ya entregados a familias, retirados, ejemplares de pedigree, etc.
+  // Quedan fuera los reproductores activos y los disponibles (ya tienen tab).
+  const bredByUs = all.filter(d => !d.is_for_sale && !d.is_reproductive)
 
-  const tabs = [
-    { key: 'available', label: `Disponibles (${available.length})`, dogs: available },
-    { key: 'males', label: `Sementales (${males.length})`, dogs: males },
-    { key: 'females', label: `Hembras de cría (${females.length})`, dogs: females },
+  // Auto-hide tabs vacíos. Si TODO está vacío, mostramos solo el primero con
+  // mensaje de empty state.
+  const allTabs = [
+    { key: 'available', label: 'Disponibles', dogs: available, empty: 'No hay cachorros disponibles ahora mismo. Apúntate a la lista de espera.' },
+    { key: 'males', label: 'Sementales', dogs: males, empty: 'Aún no hay sementales publicados.' },
+    { key: 'females', label: 'Hembras de cría', dogs: females, empty: 'Aún no hay hembras de cría publicadas.' },
+    { key: 'bred', label: 'Criados por nosotros', dogs: bredByUs, empty: 'Aún no hay perros criados publicados.' },
   ]
-  const active = tabs.find(t => t.key === tab) || tabs[0]
+  const tabs = allTabs.filter(t => t.dogs.length > 0)
+  // Si NADA tiene perros, mantenemos el primero como vacío para que la sección no quede mocha
+  const visibleTabs = tabs.length > 0 ? tabs : [allTabs[0]]
+  const active = visibleTabs.find(t => t.key === tab) || visibleTabs[0]
 
   return (
-    <section className="py-10 lg:py-14">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1">
-          {tabs.map(t => (
-            <Link
-              key={t.key}
-              href={`?tab=${t.key}`}
-              className={`text-sm font-medium px-4 py-2 rounded-full whitespace-nowrap transition ${
-                t.key === active.key ? 'bg-ink text-on-primary' : 'border border-hairline text-body hover:text-ink hover:bg-surface-soft'
-              }`}
-            >
-              {t.label}
-            </Link>
-          ))}
+    <section className="py-16 lg:py-24">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10">
+        {(props.title || props.eyebrow) && (
+          <SectionHeader
+            number="01"
+            eyebrow={props.eyebrow ?? 'Cachorros'}
+            title={props.title}
+            subtitle={props.subtitle}
+            align="left"
+          />
+        )}
+        {/* Tabs estilo BMW M: uppercase tracking, active con border-bottom accent */}
+        <div className="flex items-center gap-0 mb-10 overflow-x-auto border-b border-hairline">
+          {visibleTabs.map(t => {
+            const isActive = t.key === active.key
+            return (
+              <Link
+                key={t.key}
+                href={`?tab=${t.key}`}
+                className={`text-[12px] font-semibold uppercase tracking-[0.14em] px-5 py-4 whitespace-nowrap transition-all relative -mb-px border-b-2 ${
+                  isActive
+                    ? 'border-theme-accent text-ink'
+                    : 'border-transparent text-muted hover:text-ink'
+                }`}
+              >
+                {t.label}
+                <span className={`ml-2 text-[10px] font-mono ${isActive ? 'text-theme-accent' : 'text-muted'}`}>
+                  {String(t.dogs.length).padStart(2, '0')}
+                </span>
+              </Link>
+            )
+          })}
         </div>
-        <DogGrid dogs={active.dogs} />
+        <DogGrid dogs={active.dogs} empty={active.empty} />
       </div>
     </section>
   )
@@ -134,19 +187,23 @@ export async function DogsTabsSection(props: {
 
 export async function WaitlistCtaSection(props: { title?: string; subtitle?: string; href?: string; cta_label?: string }) {
   return (
-    <section className="py-12 lg:py-16 bg-surface-card">
+    <section className="py-16 lg:py-24 bg-surface-card border-y border-hairline">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-        <h2 className="text-2xl md:text-3xl font-bold text-ink mb-3 tracking-tight">
+        <h2
+          className="text-3xl md:text-4xl lg:text-5xl font-bold text-ink mb-4 tracking-[-0.02em]"
+          style={{ fontFamily: 'var(--font-display, inherit)' }}
+        >
           {props.title || '¿Te interesa una próxima camada?'}
         </h2>
-        <p className="text-body mb-6">
+        <p className="text-body mb-8 leading-relaxed max-w-xl mx-auto">
           {props.subtitle || 'Vendemos por reservas, no por disponibilidad. Apúntate a la lista de espera y te avisamos cuando haya cachorros.'}
         </p>
         <Link
           href={props.href || './contacto'}
-          className="inline-flex items-center justify-center rounded-lg bg-ink text-on-primary px-6 py-3 text-sm font-semibold hover:opacity-90 transition"
+          className="btn-brand inline-flex items-center gap-2 px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] shadow-xl"
         >
           {props.cta_label || 'Apuntarme a la lista de espera'}
+          <span aria-hidden="true">→</span>
         </Link>
       </div>
     </section>

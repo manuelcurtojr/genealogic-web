@@ -8,19 +8,16 @@
  *   - <div class="kennel-accent-stripe"> tricolor (BMW M y similares)
  */
 import type { Theme } from '@/lib/kennel/themes'
-import { themeToCss } from '@/lib/kennel/themes'
+import { themeToCss, FONT_STACKS } from '@/lib/kennel/themes'
 
 type Props = { theme: Theme }
 
-// Mapa de fuentes externas que requieren <link> a Google Fonts según tema
-const FONT_LINKS: Record<string, string> = {
-  'bmw-m': 'https://fonts.googleapis.com/css2?family=Anton&display=swap',
-  lamborghini: 'https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap',
-}
-
 export function ThemeInjector({ theme }: Props) {
   const css = themeToCss(theme, '[data-kennel-theme]')
-  const fontHref = FONT_LINKS[theme.id]
+  const font = FONT_STACKS[theme.displayFont]
+  const fontHref = font?.googleFamily
+    ? `https://fonts.googleapis.com/css2?family=${font.googleFamily}${font.weights ? `:wght@${font.weights}` : ''}&display=swap`
+    : null
   return (
     <>
       {fontHref && (

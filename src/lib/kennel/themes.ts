@@ -16,6 +16,23 @@ export type ThemeId = 'classic' | 'bmw-m' | 'lamborghini'
 
 export type ThemeShape = 'soft' | 'sharp'
 
+/** Radio de botones. Mapeado a valores px concretos en themeToCss. */
+export type ButtonRadius = 'sharp' | 'subtle' | 'soft' | 'rounded' | 'pill'
+
+/** Fuentes display soportadas. Si se elige una externa, se carga dinámicamente
+ * desde Google Fonts via theme-injector. */
+export type DisplayFont =
+  | 'inter'
+  | 'anton'
+  | 'oswald'
+  | 'bebas-neue'
+  | 'playfair'
+  | 'archivo-black'
+  | 'unbounded'
+  | 'montserrat'
+  | 'caveat'
+  | 'permanent-marker'
+
 export type ThemeTokens = {
   /** Color de fondo principal */
   canvas: string
@@ -41,6 +58,58 @@ export type ThemeTokens = {
   accent: string
 }
 
+/** Overrides que el usuario puede aplicar desde la pestaña General. */
+export type ThemeOverrides = {
+  primary?: string
+  accent?: string
+  canvas?: string
+  ink?: string
+  button_radius?: ButtonRadius
+  font_display?: DisplayFont
+}
+
+export const BUTTON_RADIUS_PX: Record<ButtonRadius, string> = {
+  sharp: '0px',
+  subtle: '4px',
+  soft: '12px',
+  rounded: '24px',
+  pill: '9999px',
+}
+
+export const FONT_STACKS: Record<DisplayFont, { stack: string; googleFamily?: string; weights?: string }> = {
+  inter: { stack: '"Inter", system-ui, sans-serif' },
+  anton: { stack: '"Anton", "Bebas Neue", "Inter", sans-serif', googleFamily: 'Anton', weights: '400' },
+  oswald: { stack: '"Oswald", "Inter", sans-serif', googleFamily: 'Oswald', weights: '400;500;600;700' },
+  'bebas-neue': { stack: '"Bebas Neue", "Anton", sans-serif', googleFamily: 'Bebas+Neue', weights: '400' },
+  playfair: { stack: '"Playfair Display", Georgia, serif', googleFamily: 'Playfair+Display', weights: '400;500;700;900' },
+  'archivo-black': { stack: '"Archivo Black", "Inter", sans-serif', googleFamily: 'Archivo+Black', weights: '400' },
+  unbounded: { stack: '"Unbounded", "Inter", sans-serif', googleFamily: 'Unbounded', weights: '400;600;800' },
+  montserrat: { stack: '"Montserrat", "Inter", sans-serif', googleFamily: 'Montserrat', weights: '400;600;800' },
+  caveat: { stack: '"Caveat", cursive', googleFamily: 'Caveat', weights: '400;700' },
+  'permanent-marker': { stack: '"Permanent Marker", cursive', googleFamily: 'Permanent+Marker', weights: '400' },
+}
+
+export const DISPLAY_FONT_LABELS: Record<DisplayFont, string> = {
+  inter: 'Inter',
+  anton: 'Anton (BMW M)',
+  oswald: 'Oswald (Lambo)',
+  'bebas-neue': 'Bebas Neue',
+  playfair: 'Playfair Display',
+  'archivo-black': 'Archivo Black',
+  unbounded: 'Unbounded',
+  montserrat: 'Montserrat',
+  caveat: 'Caveat',
+  'permanent-marker': 'Permanent Marker',
+}
+
+export const BUTTON_RADIUS_LABELS: Record<ButtonRadius, string> = {
+  sharp: 'Sharp (0px)',
+  subtle: 'Subtle (4px)',
+  soft: 'Soft (12px)',
+  rounded: 'Rounded (24px)',
+  pill: 'Pill (9999px)',
+}
+
 export type Theme = {
   id: ThemeId
   name: string
@@ -49,8 +118,10 @@ export type Theme = {
   description: string
   /** soft = bordes redondeados generosos; sharp = bordes mínimos (BMW, brutalismo) */
   shape: ThemeShape
-  /** Fuente display (titulares). undefined = Inter por defecto */
-  fontDisplay?: string
+  /** Radio de botones default del tema (override por theme_overrides.button_radius) */
+  buttonRadius: ButtonRadius
+  /** Fuente display default del tema (override por theme_overrides.font_display) */
+  displayFont: DisplayFont
   /** ¿Titulares en mayúsculas siempre? */
   uppercaseDisplay?: boolean
   /** Tracking extra para titulares (e.g. '0.05em' para BMW look) */
@@ -68,6 +139,8 @@ export const THEMES: Theme[] = [
     description:
       'Diseño Cal.com / Linear: canvas blanco, tipografía Inter, acentos sutiles. La opción segura que funciona en cualquier raza.',
     shape: 'soft',
+    buttonRadius: 'soft',
+    displayFont: 'inter',
     tokens: {
       canvas: '#ffffff',
       surfaceSoft: '#f8f9fa',
@@ -89,7 +162,8 @@ export const THEMES: Theme[] = [
     description:
       'Inspirado en BMW M: canvas negro absoluto, tipografía bold mayúsculas, banda tricolor azul-claro / azul-oscuro / rojo como acento brand. Ideal para razas de guarda, working dogs o criaderos con identidad fuerte.',
     shape: 'sharp',
-    fontDisplay: '"Anton", "Bebas Neue", "Inter", system-ui, sans-serif',
+    buttonRadius: 'subtle',
+    displayFont: 'anton',
     uppercaseDisplay: true,
     displayTracking: '-0.01em',
     accentStripe: ['#2E9BD6', '#1C3D6E', '#E22718'],
@@ -114,7 +188,8 @@ export const THEMES: Theme[] = [
     description:
       'Inspirado en Lamborghini: lujo brutalista, canvas negro absoluto y oro Giallo (#F0B416) como único acento. Tipografía condensada uppercase, formas angulares (hexagonales). Ideal para criaderos premium que quieran posicionarse como exclusivos.',
     shape: 'sharp',
-    fontDisplay: '"Oswald", "Saira Condensed", "Bebas Neue", "Inter", system-ui, sans-serif',
+    buttonRadius: 'sharp',
+    displayFont: 'oswald',
     uppercaseDisplay: true,
     displayTracking: '0.02em',
     accentStripe: ['#F0B416'],
@@ -139,14 +214,16 @@ export function getTheme(id: string | null | undefined): Theme {
 }
 
 /**
- * Aplica overrides de usuario sobre el tema base. Solo permite override de
- * los 4 colores expuestos al usuario en la UI (primary, accent, canvas, ink).
+ * Aplica overrides de usuario sobre el tema base. Acepta los 4 colores
+ * + button_radius + font_display.
  */
-export function applyOverrides(theme: Theme, overrides?: Partial<Pick<ThemeTokens, 'primary' | 'accent' | 'canvas' | 'ink'>> | null): Theme {
+export function applyOverrides(theme: Theme, overrides?: ThemeOverrides | null): Theme {
   if (!overrides) return theme
   const o = overrides
   return {
     ...theme,
+    ...(o.button_radius ? { buttonRadius: o.button_radius } : {}),
+    ...(o.font_display ? { displayFont: o.font_display } : {}),
     tokens: {
       ...theme.tokens,
       ...(o.primary ? { primary: o.primary, primaryHover: o.primary } : {}),
@@ -159,11 +236,21 @@ export function applyOverrides(theme: Theme, overrides?: Partial<Pick<ThemeToken
 
 /**
  * Genera el CSS que inyectamos en el layout público. Sobreescribe las CSS
- * vars de globals.css solo dentro del scope `[data-theme="..."]`, así el
- * dashboard sigue intacto.
+ * vars de globals.css solo dentro del scope `[data-theme="..."]`.
+ *
+ * Variables emitidas para que CUALQUIER componente las pueda usar:
+ *   --button-radius      → border-radius de botones (.btn-brand, otros)
+ *   --font-display       → font-family de h1/h2/h3 + cualquier .font-display
+ *   --theme-accent       → color secundario (numbers, stripes, hover)
+ *   --display-uppercase  → 'uppercase' o 'none' (para mixed-case en .font-display)
+ *   --display-tracking   → letter-spacing display
  */
 export function themeToCss(theme: Theme, scope = '[data-kennel-theme]'): string {
   const t = theme.tokens
+  const fontStack = FONT_STACKS[theme.displayFont]?.stack ?? FONT_STACKS.inter.stack
+  const radius = BUTTON_RADIUS_PX[theme.buttonRadius] ?? BUTTON_RADIUS_PX.soft
+  const uppercase = theme.uppercaseDisplay ? 'uppercase' : 'none'
+  const tracking = theme.displayTracking ?? '-0.02em'
   return `${scope}{
   --surface:${t.canvas};
   --surface-soft:${t.surfaceSoft};
@@ -183,9 +270,13 @@ export function themeToCss(theme: Theme, scope = '[data-kennel-theme]'): string 
   --on-dark:${t.ink};
   --on-dark-soft:${t.body};
   --theme-accent:${t.accent};
-  ${theme.fontDisplay ? `--font-display:${theme.fontDisplay};` : ''}
+  --font-display:${fontStack};
+  --button-radius:${radius};
+  --display-uppercase:${uppercase};
+  --display-tracking:${tracking};
 }
-${scope} h1,${scope} h2,${scope} h3{${theme.fontDisplay ? `font-family:var(--font-display);` : ''}${theme.uppercaseDisplay ? 'text-transform:uppercase;' : ''}${theme.displayTracking ? `letter-spacing:${theme.displayTracking};` : ''}}
+${scope} h1,${scope} h2,${scope} h3{font-family:var(--font-display);text-transform:var(--display-uppercase);letter-spacing:var(--display-tracking);}
+${scope} .btn-brand,${scope} .btn-themed{border-radius:var(--button-radius)!important;}
 `
 }
 

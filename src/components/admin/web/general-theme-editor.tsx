@@ -1,12 +1,12 @@
 'use client'
 
 import { useState, useTransition, useMemo, useEffect } from 'react'
-import { Check, Palette, RotateCcw } from 'lucide-react'
-import type { Theme, ThemeTokens } from '@/lib/kennel/themes'
-import { applyOverrides } from '@/lib/kennel/themes'
+import { Check, Palette, RotateCcw, Type, Square } from 'lucide-react'
+import type { Theme, ThemeOverrides, ButtonRadius, DisplayFont } from '@/lib/kennel/themes'
+import { applyOverrides, BUTTON_RADIUS_PX, BUTTON_RADIUS_LABELS, DISPLAY_FONT_LABELS, FONT_STACKS } from '@/lib/kennel/themes'
 import { updateKennelTheme } from '@/app/(dashboard)/web/general/actions'
 
-type Overrides = Partial<Pick<ThemeTokens, 'primary' | 'accent' | 'canvas' | 'ink'>>
+type Overrides = ThemeOverrides
 
 type Props = {
   themes: Theme[]
@@ -53,6 +53,8 @@ export function GeneralThemeEditor({ themes, currentThemeId, currentOverrides, k
       const v = overrides[k]
       if (v) fd.set(`override_${k}`, v)
     }
+    if (overrides.button_radius) fd.set('override_button_radius', overrides.button_radius)
+    if (overrides.font_display) fd.set('override_font_display', overrides.font_display)
     startTransition(async () => {
       await updateKennelTheme(fd)
       setSavedAt(Date.now())
@@ -133,14 +135,81 @@ export function GeneralThemeEditor({ themes, currentThemeId, currentOverrides, k
                   accent: baseTheme.tokens.accent,
                   canvas: baseTheme.tokens.canvas,
                   ink: baseTheme.tokens.ink,
+                  button_radius: baseTheme.buttonRadius,
+                  font_display: baseTheme.displayFont,
                 })
               }}
               className="mt-4 inline-flex items-center gap-1.5 text-[11px] font-medium text-muted hover:text-ink"
             >
               <RotateCcw className="h-3 w-3" />
-              Resetear a colores del tema
+              Resetear a defaults del tema
             </button>
           )}
+        </section>
+
+        {/* Tipografía + Forma — disponibles incluso sin "Colores personalizados" */}
+        <section className="rounded-2xl border border-hairline bg-canvas p-5">
+          <h2 className="text-base font-bold text-ink flex items-center gap-2">
+            <Type className="h-4 w-4 text-muted" />
+            Tipografía y forma
+          </h2>
+          <p className="mt-1 text-xs text-muted">
+            Cambia la fuente de los titulares y el radio de los botones. Los cambios se aplican a toda la web.
+          </p>
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                Fuente de titulares
+              </label>
+              <select
+                value={overrides.font_display ?? baseTheme.displayFont}
+                onChange={(e) => setOverrides((o) => ({ ...o, font_display: e.target.value as DisplayFont }))}
+                className="mt-2 w-full px-3 py-2.5 text-[13px] border border-hairline rounded-lg bg-canvas focus:outline-none focus:border-ink/40"
+                style={{ fontFamily: FONT_STACKS[overrides.font_display ?? baseTheme.displayFont]?.stack }}
+              >
+                {(Object.keys(DISPLAY_FONT_LABELS) as DisplayFont[]).map((k) => (
+                  <option key={k} value={k} style={{ fontFamily: FONT_STACKS[k]?.stack }}>
+                    {DISPLAY_FONT_LABELS[k]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted flex items-center gap-1.5">
+                <Square className="h-3 w-3" />
+                Forma de botones
+              </label>
+              <select
+                value={overrides.button_radius ?? baseTheme.buttonRadius}
+                onChange={(e) => setOverrides((o) => ({ ...o, button_radius: e.target.value as ButtonRadius }))}
+                className="mt-2 w-full px-3 py-2.5 text-[13px] border border-hairline rounded-lg bg-canvas focus:outline-none focus:border-ink/40"
+              >
+                {(Object.keys(BUTTON_RADIUS_LABELS) as ButtonRadius[]).map((k) => (
+                  <option key={k} value={k}>{BUTTON_RADIUS_LABELS[k]}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {/* Mini preview de la combinación */}
+          <div className="mt-5 flex items-center gap-3 rounded-lg bg-surface-soft p-4">
+            <p
+              className="text-2xl font-bold text-ink flex-1"
+              style={{ fontFamily: FONT_STACKS[overrides.font_display ?? baseTheme.displayFont]?.stack }}
+            >
+              Aa
+            </p>
+            <button
+              type="button"
+              className="px-5 py-2.5 text-xs font-semibold text-white"
+              style={{
+                background: overrides.primary ?? baseTheme.tokens.primary,
+                color: baseTheme.tokens.onPrimary,
+                borderRadius: BUTTON_RADIUS_PX[overrides.button_radius ?? baseTheme.buttonRadius],
+              }}
+            >
+              Botón ejemplo
+            </button>
+          </div>
         </section>
 
         <div className="flex items-center gap-3">
@@ -180,6 +249,7 @@ export function GeneralThemeEditor({ themes, currentThemeId, currentOverrides, k
 
 function ThemeCard({ theme, selected, onSelect }: { theme: Theme; selected: boolean; onSelect: () => void }) {
   const t = theme.tokens
+  const cardDisplayStack = FONT_STACKS[theme.displayFont]?.stack
   return (
     <button
       type="button"
@@ -200,7 +270,7 @@ function ThemeCard({ theme, selected, onSelect }: { theme: Theme; selected: bool
         <div
           className="text-[13px] font-bold leading-tight"
           style={{
-            fontFamily: theme.fontDisplay,
+            fontFamily: cardDisplayStack,
             textTransform: theme.uppercaseDisplay ? 'uppercase' : undefined,
             letterSpacing: theme.displayTracking,
           }}
@@ -273,7 +343,8 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
  */
 function ThemePreview({ theme }: { theme: Theme }) {
   const t = theme.tokens
-  const radius = theme.shape === 'sharp' ? '4px' : '14px'
+  const radius = BUTTON_RADIUS_PX[theme.buttonRadius]
+  const displayStack = FONT_STACKS[theme.displayFont]?.stack
   return (
     <div
       className="rounded-2xl overflow-hidden ring-1 ring-hairline shadow-sm"
@@ -296,7 +367,7 @@ function ThemePreview({ theme }: { theme: Theme }) {
         <h3
           className="text-3xl font-bold leading-[0.95] tracking-[-0.02em] mb-3"
           style={{
-            fontFamily: theme.fontDisplay,
+            fontFamily: displayStack,
             textTransform: theme.uppercaseDisplay ? 'uppercase' : undefined,
             letterSpacing: theme.displayTracking,
           }}
@@ -362,15 +433,13 @@ function TokenList({ theme }: { theme: Theme }) {
             <span className="font-mono text-ink truncate">{it.value}</span>
           </div>
         ))}
-        {theme.fontDisplay && (
-          <div className="col-span-2 flex items-center gap-2 text-[11px] mt-1">
-            <span className="text-muted font-medium w-14">font</span>
-            <span className="font-mono text-ink truncate">{theme.fontDisplay.split(',')[0]}</span>
-          </div>
-        )}
+        <div className="col-span-2 flex items-center gap-2 text-[11px] mt-1">
+          <span className="text-muted font-medium w-14">font</span>
+          <span className="font-mono text-ink truncate">{DISPLAY_FONT_LABELS[theme.displayFont]}</span>
+        </div>
         <div className="col-span-2 flex items-center gap-2 text-[11px]">
-          <span className="text-muted font-medium w-14">shape</span>
-          <span className="font-mono text-ink">{theme.shape === 'sharp' ? 'sharp (4px radius)' : 'soft (14px radius)'}</span>
+          <span className="text-muted font-medium w-14">radius</span>
+          <span className="font-mono text-ink">{BUTTON_RADIUS_LABELS[theme.buttonRadius]}</span>
         </div>
       </div>
     </div>

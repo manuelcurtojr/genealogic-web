@@ -60,35 +60,52 @@ export default function ContactFormInner({
 
   if (sent) {
     return (
-      <div className="text-center">
-        <h2 className="text-2xl md:text-3xl font-bold text-ink mb-3 tracking-tight">¡Recibido!</h2>
-        <p className="text-body">
+      <div className="text-center py-6">
+        <div
+          className="mx-auto mb-5 inline-flex h-14 w-14 items-center justify-center text-2xl text-theme-accent"
+          style={{ borderRadius: 'var(--button-radius, 999px)', background: 'var(--brand-soft)' }}
+        >
+          ✓
+        </div>
+        <h2
+          className="text-2xl md:text-3xl font-bold text-ink mb-3 tracking-tight"
+          style={{ fontFamily: 'var(--font-display, inherit)' }}
+        >
+          ¡Recibido!
+        </h2>
+        <p className="text-body leading-relaxed">
           {success_message || 'Tu mensaje ha llegado al criador. Te responderá personalmente lo antes posible.'}
         </p>
       </div>
     )
   }
 
+  // Estilos compartidos para todos los inputs — usan tokens del tema
+  const inputClass =
+    'w-full px-4 py-3 text-sm border border-hairline bg-canvas text-ink placeholder-muted/70 focus:outline-none focus:border-theme-accent transition-colors'
+  const inputStyle = { borderRadius: 'var(--button-radius, 8px)' as const }
+
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={submit} className="space-y-3">
       <input type="text" required placeholder="Nombre *" value={name} onChange={e => setName(e.target.value)}
-        className="w-full px-4 py-3 text-sm border border-hairline rounded-lg bg-canvas focus:outline-none focus:border-ink" />
+        className={inputClass} style={inputStyle} />
       <input type="email" required placeholder="Email *" value={email} onChange={e => setEmail(e.target.value)}
-        className="w-full px-4 py-3 text-sm border border-hairline rounded-lg bg-canvas focus:outline-none focus:border-ink" />
+        className={inputClass} style={inputStyle} />
       <input type="tel" placeholder="Teléfono (opcional)" value={phone} onChange={e => setPhone(e.target.value)}
-        className="w-full px-4 py-3 text-sm border border-hairline rounded-lg bg-canvas focus:outline-none focus:border-ink" />
+        className={inputClass} style={inputStyle} />
       {topics && topics.length > 0 && (
         <select value={topic} onChange={e => setTopic(e.target.value)}
-          className="w-full px-4 py-3 text-sm border border-hairline rounded-lg bg-canvas focus:outline-none focus:border-ink">
+          className={inputClass} style={inputStyle}>
           {topics.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       )}
       <textarea required placeholder="Mensaje *" value={message} onChange={e => setMessage(e.target.value)}
-        className="w-full px-4 py-3 text-sm border border-hairline rounded-lg bg-canvas focus:outline-none focus:border-ink min-h-[140px]" />
-      {err && <p className="text-sm text-red-700">{err}</p>}
+        className={`${inputClass} min-h-[140px]`} style={inputStyle} />
+      {err && <p className="text-sm text-red-600">{err}</p>}
       <button type="submit" disabled={loading}
-        className="w-full inline-flex items-center justify-center rounded-lg bg-ink text-on-primary px-6 py-3 text-sm font-semibold hover:opacity-90 transition disabled:opacity-50">
+        className="btn-brand w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 text-[13px] font-semibold uppercase tracking-[0.1em] disabled:opacity-50">
         {loading ? 'Enviando…' : 'Enviar mensaje'}
+        {!loading && <span aria-hidden="true">→</span>}
       </button>
     </form>
   )
