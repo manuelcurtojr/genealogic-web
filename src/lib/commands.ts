@@ -34,7 +34,7 @@ export const COMMANDS: Command[] = [
   { id: 'dogs-new', label: 'Añadir un perro nuevo', href: '/dogs/new', icon: 'Plus', section: 'Genealogía', keywords: ['nuevo perro', 'crear perro', 'añadir perro'] },
   { id: 'litters', label: 'Camadas', href: '/litters', icon: 'Baby', section: 'Genealogía', requiresKennel: true, keywords: ['camada', 'litter', 'partos'] },
   { id: 'litters-new', label: 'Nueva camada', href: '/litters/new', icon: 'Plus', section: 'Genealogía', requiresKennel: true, keywords: ['crear camada'] },
-  { id: 'planner', label: 'Planificador de cruces', href: '/planner', icon: 'GitCompareArrows', section: 'Genealogía', requiresKennel: true, keywords: ['cruce', 'pedigrí', 'coi', 'consanguinidad', 'apareamiento'] },
+  { id: 'cruces', label: 'Simulador de cruces', href: '/cruces', icon: 'GitCompareArrows', section: 'Genealogía', requiresKennel: true, keywords: ['cruce', 'planner', 'planificador', 'pedigrí', 'coi', 'consanguinidad', 'apareamiento', 'simulador', 'cruzar'] },
   { id: 'reproduccion', label: 'Calendario reproductivo (Gantt)', href: '/reproduccion', icon: 'Heart', section: 'Genealogía', requiresKennel: true, keywords: ['celos', 'gestación', 'reproducción', 'hembras', 'planificador', 'gantt', 'ciclos', 'cría'] },
   { id: 'genetica', label: 'Genética y predicción de cruces', href: '/genetica', icon: 'Dna', section: 'Genealogía', requiresKennel: true, keywords: ['adn', 'dna', 'loci', 'merle', 'color', 'genotipo', 'embark', 'wisdom', 'punnett', 'fenotipo'] },
   { id: 'calendar', label: 'Calendario', href: '/calendar', icon: 'Calendar', section: 'Genealogía', keywords: ['agenda', 'eventos', 'celos', 'fechas'] },

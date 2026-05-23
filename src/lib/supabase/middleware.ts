@@ -75,6 +75,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/kennel') ||
     pathname.startsWith('/litters') ||
     pathname.startsWith('/planner') ||
+    pathname.startsWith('/cruces') ||
     pathname.startsWith('/calendar') ||
     pathname.startsWith('/import') ||
     pathname.startsWith('/settings') ||
