@@ -50,14 +50,14 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported, isAdmi
   const [allBreeds, setAllBreeds] = useState<{ id: string; name: string }[]>([])
   const [breedsLoaded, setBreedsLoaded] = useState(false)
 
-  const EXTRACTION_PROMPT = `You are a dog pedigree data extractor. Extract the complete pedigree information from this content.
+  const EXTRACTION_PROMPT = `You are an expert dog pedigree data extractor. Extract the COMPLETE pedigree from the content provided. Be exhaustive — include every dog you can identify, no matter how deep in the tree.
 
-Return a JSON object with this EXACT structure:
+OUTPUT — return ONLY this JSON object (no markdown, no prose, no explanation):
 {
   "main_dog": {
     "name": "string", "sex": "Male" or "Female", "registration": "string or null",
     "breed": "string or null", "color": "string or null", "birth_date": "YYYY-MM-DD or YYYY or null",
-    "health": "string (HD, ED results) or null", "breeder": "string or null", "owner": "string or null",
+    "health": "string (HD/ED/DCM/PRA results, etc.) or null", "breeder": "string or null", "owner": "string or null",
     "photo_url": "string or null", "father_name": "exact name or null", "mother_name": "exact name or null"
   },
   "ancestors": [
@@ -66,71 +66,167 @@ Return a JSON object with this EXACT structure:
       "breed": "string or null", "color": "string or null", "birth_date": "YYYY-MM-DD or YYYY or null",
       "health": "string or null", "photo_url": "string or null",
       "father_name": "string or null", "mother_name": "string or null",
-      "generation": number (1=parents, 2=grandparents, 3=great-grandparents, etc)
+      "generation": number
     }
   ]
 }
 
-Rules:
-- Extract ALL dogs in the pedigree (main dog + ALL ancestors up to whatever generation is available)
-- Names must be EXACT as shown (preserve capitalization, accents, special chars)
-- father_name and mother_name must match the exact name of another dog in the tree
-- Sex: determine from context (sire/father = Male, dam/mother = Female)
-- If data is not available, use null
-- Return ONLY the JSON, no markdown, no explanation`
+CRITICAL RULES:
+1. EXTRACT EVERY DOG. Even partial info counts — if you only have a name, include it.
+2. PRESERVE NAMES EXACTLY as shown: capitalization, accents (à á è é ñ ç ö ü ø æ etc.), apostrophes, hyphens. Do not "correct" or translate.
+3. SEX inference — recognize these synonyms in ANY language:
+   - Male: Sire, Father, Padre, Père, Padre, Vater, Otec, Отец, ♂, M
+   - Female: Dam, Mother, Madre, Mère, Mãe, Mutter, Matka, Мать, ♀, F
+   - In horizontal pedigree tables: upper row = Sire/Male, lower row = Dam/Female (FCI convention)
+4. GENERATION — count from main_dog:
+   - 1 = parents (2 dogs)
+   - 2 = grandparents (4 dogs)
+   - 3 = great-grandparents (8 dogs)
+   - 4 = great-great-grandparents (16 dogs)
+   - 5 = etc. (32 dogs max in typical 5-gen tree)
+5. RELATIONSHIPS — father_name / mother_name MUST be the EXACT name of another dog you've listed in main_dog or ancestors[]. If you list "Tornado del Olimpo" as someone's father, "Tornado del Olimpo" MUST appear as a dog entry too. Do not orphan parents.
+6. PHOTO_URL — if you see [IMG:URL] or [PHOTO:URL] markers, pick the URL that's most clearly the dog's portrait (not banner/logo/icon). The main dog photo is usually the largest or labeled with "photo".
+7. REGISTRATION numbers — common formats include LOE/LO/RKF/AKC/KCSB/SHSB/LOSH followed by digits. Preserve format exactly.
+8. BIRTH_DATE — extract any date you see. If only year: "1995". If full date: "1995-03-12". If month+year: "1995-03". If unknown: null.
+9. HEALTH — concatenate findings: "HD-A, ED-0, DCM clear" etc. Pick anything that looks like a health certification.
+10. TITLES — preserve championship prefixes in the name: "Ch.", "Int.Ch.", "Multi-Ch.", "JCh.", etc. (don't strip them)
+
+BEFORE RETURNING — verify yourself:
+- Every father_name in main_dog or ancestors[] appears as an actual entry somewhere
+- Every mother_name in main_dog or ancestors[] appears as an actual entry somewhere
+- If any link is broken, fix it: either add the missing dog or set the link to null
+- The generation numbers are coherent (parents have gen=1, their parents gen=2, etc.)
+- No duplicates in ancestors[]
+- Same dog with same name only appears ONCE even if shown multiple times (inbreeding)
+
+Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
 
   // Nota: ya no se obtiene la API key en el cliente. Las llamadas a Anthropic
   // pasan por /api/import-pedigree (POST) que es un proxy server-side. La key
   // se queda en el servidor.
 
+  /**
+   * Limpia HTML para extracción de pedigree. Maneja:
+   *  - Tablas (presadb, pedigreedatabase, k9data, working-dog)
+   *  - Layouts modernos con divs (sites que no usan <table>)
+   *  - SPAs con scripts grandes y contenido en <main> / <article>
+   *  - Fallback: limpia HTML entero y trunca.
+   *
+   * Estrategia:
+   *  1. Extraer contexto del perro (title + h1 + main info)
+   *  2. Buscar el "bloque genealogía" — primero tabla, luego div con muchas
+   *     fotos/nombres, luego main/article.
+   *  3. Aplanar a texto preservando solo lo útil: nombres, fechas, fotos.
+   */
   function cleanHtml(html: string): string {
-    // Extract page title as main dog context (the pedigree table only has ancestors)
-    const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
-    const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)
-    const mainDogContext = `MAIN DOG PAGE: ${titleMatch?.[1] || ''} ${h1Match?.[1]?.replace(/<[^>]+>/g, '') || ''}`
-
-    // Try to extract just the pedigree table (largest table usually contains the tree)
-    const tables = [...html.matchAll(/<table[^>]*>([\s\S]*?)<\/table>/gi)]
-    if (tables.length > 0) {
-      const largest = tables.reduce((a, b) => a[0].length > b[0].length ? a : b)
-      if (largest[0].length > 5000) {
-        const tableHtml = largest[0]
-          .replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi, '[IMG:$1]')
-          .replace(/\s(class|style|width|height|bgcolor|align|valign|border|cellpadding|cellspacing|rowspan|colspan)=["'][^"']*["']/gi, (m, attr) => {
-            if (attr === 'rowspan' || attr === 'colspan') return m
-            return ''
-          })
-          .replace(/\s{2,}/g, ' ')
-        // Also extract main dog info section (before the table)
-        const bodyStart = html.indexOf('<body')
-        const tableStart = html.indexOf(largest[0])
-        let dogInfoHtml = ''
-        if (bodyStart >= 0 && tableStart > bodyStart) {
-          dogInfoHtml = html.substring(bodyStart, tableStart)
-            .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-            .replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi, '[PHOTO:$1]') // preserve photo URLs
-            .replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim()
-            .slice(0, 3000)
-        }
-        if (tableHtml.length < 120000) return `${mainDogContext}\n\nDOG INFO: ${dogInfoHtml}\n\nPEDIGREE TABLE:\n${tableHtml}`
-      }
-    }
-
-    // Fallback: clean full HTML
-    return html
+    // ── 1. Strip chrome (scripts, styles, nav, footer, header, aside) ────
+    let cleaned = html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-      .replace(/<link[^>]*>/gi, '')
-      .replace(/<meta[^>]*>/gi, '')
+      .replace(/<link[^>]*\/?>/gi, '')
+      .replace(/<meta[^>]*\/?>/gi, '')
+      .replace(/<noscript[^>]*>[\s\S]*?<\/noscript>/gi, '')
       .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
       .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
       .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '')
-      .replace(/\s{2,}/g, ' ')
-      .slice(0, 60000)
+      .replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, '')
+      .replace(/<!--[\s\S]*?-->/g, '')
+
+    // ── 2. Contexto del perro principal: title + h1 + h2 ────────────────
+    const titleMatch = cleaned.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
+    const h1Match = cleaned.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)
+    const h2Match = cleaned.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i)
+    const stripTags = (s: string) => s.replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim()
+    const ctx = [
+      titleMatch ? `TITLE: ${stripTags(titleMatch[1])}` : '',
+      h1Match ? `H1: ${stripTags(h1Match[1])}` : '',
+      h2Match ? `H2: ${stripTags(h2Match[1])}` : '',
+    ].filter(Boolean).join('\n')
+
+    // ── 3. Detectar SPA (HTML inicial casi vacío) ────────────────────────
+    const hasBodyContent = (cleaned.match(/<(div|section|main|article|table)[^>]*>/gi) || []).length
+    if (hasBodyContent < 5) {
+      // El HTML viene sin contenido renderizado. Devolvemos lo que hay y dejamos
+      // que el LLM intente extraer del title/meta. El proxy ya habrá intentado
+      // ScrapingBee con JS render como fallback.
+      return `${ctx}\n\n--- SPA detected, minimal HTML ---\n${cleaned.slice(0, 8000)}`
+    }
+
+    // ── 4. Intentar la tabla más grande (formato clásico) ────────────────
+    const tables = [...cleaned.matchAll(/<table[^>]*>([\s\S]*?)<\/table>/gi)]
+    let pedigreeBlock = ''
+    let dogInfoBlock = ''
+
+    if (tables.length > 0) {
+      const largest = tables.reduce((a, b) => a[0].length > b[0].length ? a : b)
+      if (largest[0].length > 4000) {
+        pedigreeBlock = compactBlock(largest[0])
+        // Info antes de la tabla (ficha del perro principal)
+        const tableStart = cleaned.indexOf(largest[0])
+        const bodyStart = cleaned.search(/<(body|main|article)\b/i)
+        if (bodyStart >= 0 && tableStart > bodyStart) {
+          dogInfoBlock = compactBlock(cleaned.substring(bodyStart, tableStart)).slice(0, 4000)
+        }
+      }
+    }
+
+    // ── 5. Si no hay tabla útil, buscar <main>, <article>, o div con muchas fotos ─
+    if (!pedigreeBlock) {
+      const mainMatch = cleaned.match(/<(main|article)[^>]*>([\s\S]*?)<\/\1>/i)
+      if (mainMatch && mainMatch[0].length > 4000) {
+        pedigreeBlock = compactBlock(mainMatch[0])
+      } else {
+        // Buscar el div con más imágenes (heurística para layouts modernos)
+        const divs = [...cleaned.matchAll(/<div[^>]*>([\s\S]*?)<\/div>/gi)]
+        let bestDiv = ''
+        let bestImgs = 0
+        for (const d of divs.slice(0, 200)) {
+          const imgs = (d[0].match(/<img\b/gi) || []).length
+          if (imgs > bestImgs && d[0].length > 4000 && d[0].length < 100000) {
+            bestImgs = imgs
+            bestDiv = d[0]
+          }
+        }
+        if (bestImgs >= 4 && bestDiv) {
+          pedigreeBlock = compactBlock(bestDiv)
+        }
+      }
+    }
+
+    // ── 6. Si SIGUE sin haber bloque genealogía, devolvemos body limpio ──
+    if (!pedigreeBlock) {
+      const bodyMatch = cleaned.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
+      if (bodyMatch) {
+        pedigreeBlock = compactBlock(bodyMatch[1]).slice(0, 80000)
+      } else {
+        pedigreeBlock = compactBlock(cleaned).slice(0, 80000)
+      }
+    }
+
+    const result = [ctx, dogInfoBlock ? `DOG INFO: ${dogInfoBlock}` : '', `PEDIGREE BLOCK:\n${pedigreeBlock}`]
+      .filter(Boolean).join('\n\n')
+    return result.length > 130000 ? result.slice(0, 130000) : result
   }
 
-  async function callClaude(messages: any[], maxTokens = 8000, _retries = 0): Promise<PedigreeData> {
+  /** Comprime un bloque HTML preservando rowspan/colspan (vital para árboles) y URLs de imágenes. */
+  function compactBlock(html: string): string {
+    return html
+      .replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi, '[IMG:$1]')
+      // Preserva rowspan/colspan, elimina lo demás
+      .replace(/\s(class|style|width|height|bgcolor|align|valign|border|cellpadding|cellspacing|id|onclick|onmouseover|onmouseout|data-[a-z-]+)=["'][^"']*["']/gi, '')
+      // Aplana <a href="x">text</a> a "text [LINK:x]" si href es interesante
+      .replace(/<a[^>]*href=["']([^"']*\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_, href, text) => {
+        const cleanText = text.replace(/<[^>]+>/g, '').trim()
+        return cleanText
+      })
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+      .replace(/\s{2,}/g, ' ')
+  }
+
+  async function callClaude(messages: any[], maxTokens = 12000, _retries = 0): Promise<PedigreeData> {
     const res = await fetch('/api/import-pedigree', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -173,12 +269,43 @@ Rules:
     } catch {
       // If JSON is malformed and we haven't maxed out, retry with more tokens
       if (maxTokens < 16000) {
-        return callClaude(messages, 16000)
+        return callClaude(messages, 16000, _retries)
       }
       console.error('Claude stop_reason:', stopReason, 'max_tokens:', maxTokens)
       console.error('Claude raw response:', text.substring(0, 500))
       throw new Error('No se pudo interpretar la respuesta de la IA')
     }
+  }
+
+  /**
+   * Verifica la consistencia interna del JSON extraído.
+   *  - Todos los father_name / mother_name DEBEN existir como ancestor o como main_dog.
+   *  - Las generaciones deben ser coherentes (parents=1, gp=2, etc.).
+   *
+   * Si encuentra problemas, devuelve la lista. handleScan los usa para
+   * decidir si hacer un segundo pase de Claude para corregir.
+   */
+  function verifyPedigree(data: PedigreeData): { broken: string[]; orphanLinks: number } {
+    const allNames = new Set<string>()
+    allNames.add(data.main_dog.name)
+    for (const a of data.ancestors || []) allNames.add(a.name)
+
+    const broken: string[] = []
+    let orphanLinks = 0
+
+    const checkLinks = (dog: { name: string; father_name: string | null; mother_name: string | null }) => {
+      if (dog.father_name && !allNames.has(dog.father_name)) {
+        broken.push(`"${dog.name}".father_name = "${dog.father_name}" — no aparece en el árbol`)
+        orphanLinks++
+      }
+      if (dog.mother_name && !allNames.has(dog.mother_name)) {
+        broken.push(`"${dog.name}".mother_name = "${dog.mother_name}" — no aparece en el árbol`)
+        orphanLinks++
+      }
+    }
+    checkLinks(data.main_dog)
+    for (const a of data.ancestors || []) checkLinks(a)
+    return { broken, orphanLinks }
   }
 
   function extractImageUrls(html: string): string[] {
@@ -316,14 +443,31 @@ Rules:
 
       // Single Claude call — full extraction
       setScanPhase('Analizando genealogía con IA...')
-      const pedigreeData = await callClaude([{
+      let pedigreeData = await callClaude([{
         role: 'user',
-        content: `${EXTRACTION_PROMPT}\n\n--- PAGE HTML ---\n${html}\n\n--- IMAGE URLS FOUND ---\n${imgUrls.slice(0, 10).join('\n')}`,
+        content: `${EXTRACTION_PROMPT}\n\n--- PAGE HTML ---\n${html}\n\n--- IMAGE URLS FOUND ---\n${imgUrls.slice(0, 15).join('\n')}`,
       }])
 
       if (!pedigreeData?.main_dog?.name) {
         setError('No se pudo extraer datos de esta web. Prueba a subir un screenshot manual de la genealogía.')
         setScanning(false); setScanPhase(''); return
+      }
+
+      // Self-verification: si hay father_name / mother_name "huérfanos" (apuntan a
+      // perros que no están en el árbol), pedir a Claude que lo corrija.
+      const { broken, orphanLinks } = verifyPedigree(pedigreeData)
+      if (orphanLinks > 0 && orphanLinks <= 8) {
+        setScanPhase(`Corrigiendo ${orphanLinks} enlaces rotos en el árbol...`)
+        try {
+          const fixed = await callClaude([{
+            role: 'user',
+            content: `The pedigree JSON you produced has ${orphanLinks} broken parent links — father_name or mother_name pointing to dogs that don't exist in the array. Fix them by either: adding the missing dogs as ancestors (with the right generation), or setting the link to null.\n\nBroken links:\n${broken.join('\n')}\n\nCurrent JSON:\n${JSON.stringify(pedigreeData)}\n\nReturn ONLY the corrected JSON.`,
+          }], 12000)
+          if (fixed?.main_dog?.name) {
+            const reCheck = verifyPedigree(fixed)
+            if (reCheck.orphanLinks < orphanLinks) pedigreeData = fixed
+          }
+        } catch { /* silent — usamos la versión anterior */ }
       }
 
       // Fallback: if main dog has no photo, find the largest photo from the page
@@ -361,7 +505,16 @@ Rules:
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setUploadingImage(true); setError(''); setData(null); setSwaps({}); setScanPhase('Analizando imagen con IA...')
+
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+    const isImage = file.type.startsWith('image/')
+    if (!isPdf && !isImage) {
+      setError('Formato no soportado. Sube una imagen (JPG/PNG) o un PDF.')
+      return
+    }
+
+    setUploadingImage(true); setError(''); setData(null); setSwaps({})
+    setScanPhase(isPdf ? 'Analizando PDF con IA...' : 'Analizando imagen con IA...')
     try {
       const reader = new FileReader()
       const base64 = await new Promise<string>((resolve, reject) => {
@@ -370,16 +523,39 @@ Rules:
         reader.readAsDataURL(file)
       })
 
-      // Single Claude call — full extraction from image
-      const pedigreeData = await callClaude([{
+      // Claude Sonnet 4.5 acepta image (jpeg/png/gif/webp) y document (pdf) nativamente.
+      const mediaType = isPdf
+        ? 'application/pdf'
+        : (file.type || 'image/jpeg')
+      const sourceType = isPdf ? 'document' : 'image'
+
+      let pedigreeData = await callClaude([{
         role: 'user',
         content: [
-          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+          { type: sourceType, source: { type: 'base64', media_type: mediaType, data: base64 } },
           { type: 'text', text: EXTRACTION_PROMPT },
         ],
       }])
 
-      if (!pedigreeData?.main_dog?.name) { setError('No se pudo extraer datos de la imagen.'); setUploadingImage(false); setScanPhase(''); return }
+      if (!pedigreeData?.main_dog?.name) {
+        setError(isPdf ? 'No se pudo extraer datos del PDF.' : 'No se pudo extraer datos de la imagen.')
+        setUploadingImage(false); setScanPhase(''); return
+      }
+
+      // Self-verification igual que en handleScan
+      const { broken, orphanLinks } = verifyPedigree(pedigreeData)
+      if (orphanLinks > 0 && orphanLinks <= 8) {
+        setScanPhase(`Corrigiendo ${orphanLinks} enlaces rotos…`)
+        try {
+          const fixed = await callClaude([{
+            role: 'user',
+            content: `The pedigree JSON has ${orphanLinks} broken parent links. Fix them.\n\nBroken:\n${broken.join('\n')}\n\nJSON:\n${JSON.stringify(pedigreeData)}\n\nReturn ONLY the corrected JSON.`,
+          }], 12000)
+          if (fixed?.main_dog?.name && verifyPedigree(fixed).orphanLinks < orphanLinks) {
+            pedigreeData = fixed
+          }
+        } catch {}
+      }
 
       // Post-processing: find existing dogs in DB
       setScanPhase('Verificando perros existentes...')
@@ -610,7 +786,7 @@ Rules:
       </div>
       <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 flex items-start gap-2">
         <AlertTriangle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-orange-400">Compatible con la mayoría de webs: ingrus.net, pedigreedatabase.com, presadb.com y muchas más.</p>
+        <p className="text-xs text-orange-400">Compatible con cualquier web pública: presadb, pedigreedatabase, k9data, ingrus, working-dog, breedarchive, hunddata, clubes FCI, criaderos privados, etc. También acepta PDFs oficiales (RSCE/FCI) y screenshots.</p>
       </div>
       {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
       <div>
@@ -630,18 +806,18 @@ Rules:
         <div className="flex-1 border-t border-hairline" />
       </div>
 
-      {/* Image upload */}
+      {/* File upload (image or PDF) */}
       <div>
-        <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Subir screenshot de la genealogía</label>
+        <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Subir screenshot o PDF de la genealogía</label>
         <label className={`flex items-center justify-center gap-2 border-2 border-dashed border-hairline rounded-lg py-4 cursor-pointer hover:border-hairline hover:bg-surface-card transition ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}>
           {uploadingImage ? (
-            <><Loader2 className="w-4 h-4 animate-spin text-ink" /><span className="text-sm text-body">Analizando imagen con IA...</span></>
+            <><Loader2 className="w-4 h-4 animate-spin text-ink" /><span className="text-sm text-body">{scanPhase || 'Analizando con IA...'}</span></>
           ) : (
-            <><Globe className="w-4 h-4 text-muted" /><span className="text-sm text-muted">Arrastra o haz clic para subir una imagen</span></>
+            <><Globe className="w-4 h-4 text-muted" /><span className="text-sm text-muted">Imagen (JPG/PNG) o PDF — arrastra o haz clic</span></>
           )}
-          <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+          <input type="file" accept="image/*,application/pdf,.pdf" onChange={handleImageUpload} className="hidden" />
         </label>
-        <p className="text-[10px] text-muted mt-1">Si la web bloquea el escaneo automático, haz un screenshot de la genealogía y súbelo aquí</p>
+        <p className="text-[10px] text-muted mt-1">Para pedigrees oficiales RSCE/FCI sube el PDF directamente. Para webs que bloquean el scrapeo, sube un screenshot.</p>
       </div>
 
       {(scanning || uploadingImage) && (
