@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { Dog, Baby, PawPrint, Tag, Plus, Stethoscope, ArrowRight, Search, Crown } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import StatCard from '@/components/dashboard/stat-card'
+import DailyCheckIn from '@/components/dashboard/daily-checkin'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -74,6 +75,9 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Daily Check-In Cal — resumen diario solo para criadores */}
+      {isBreeder && <DailyCheckIn userId={user.id} />}
 
       {/* KPIs Cal — icon arriba con label, número grande tabular */}
       {isBreeder ? (
