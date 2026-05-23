@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ChevronLeft, ChevronRight, Plus, Check, Clock, X } from 'lucide-react'
 import EventForm from '@/components/calendar/event-form'
 import VetReminderForm from '@/components/vet/vet-reminder-form'
+import CalendarSubnav from '@/components/calendar/calendar-subnav'
 
 interface CalendarEvent {
   id: string
@@ -252,6 +253,10 @@ export default function CalendarPage() {
 
   return (
     <div>
+      <div className="mb-5">
+        <CalendarSubnav />
+      </div>
+
       {/* ═══════════════════════════════════════════ */}
       {/* ═══  MOBILE VIEW (< lg)  ═══════════════ */}
       {/* ═══════════════════════════════════════════ */}

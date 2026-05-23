@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import VetRemindersClient from '@/components/vet/vet-reminders-client'
+import CalendarSubnav from '@/components/calendar/calendar-subnav'
 
 export default async function VetRemindersPage() {
   const supabase = await createClient()
@@ -28,11 +29,14 @@ export default async function VetRemindersPage() {
     .order('type, name')
 
   return (
-    <VetRemindersClient
-      initialReminders={reminders || []}
-      dogs={dogs || []}
-      templates={templates || []}
-      userId={user.id}
-    />
+    <div className="space-y-5">
+      <CalendarSubnav />
+      <VetRemindersClient
+        initialReminders={reminders || []}
+        dogs={dogs || []}
+        templates={templates || []}
+        userId={user.id}
+      />
+    </div>
   )
 }

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ReproductionGantt from '@/components/reproduccion/reproduction-gantt'
+import CalendarSubnav from '@/components/calendar/calendar-subnav'
 import { Heart } from 'lucide-react'
 import Link from 'next/link'
 
@@ -22,6 +23,7 @@ export default async function ReproduccionPage() {
   if (!females || females.length === 0) {
     return (
       <div className="space-y-6">
+        <CalendarSubnav />
         <div>
           <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Crianza</p>
           <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
@@ -67,6 +69,7 @@ export default async function ReproduccionPage() {
 
   return (
     <div className="space-y-6">
+      <CalendarSubnav />
       <div>
         <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Crianza</p>
         <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
