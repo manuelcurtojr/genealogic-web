@@ -1,0 +1,296 @@
+'use client'
+
+import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { Save, Loader2, Check, Palette } from 'lucide-react'
+import { inferGenotype, type ColorObservation } from '@/lib/genetics/inference'
+
+interface Color {
+  id: string
+  name: string
+}
+
+interface Observation extends ColorObservation {
+  id?: string
+  color_id?: string | null
+  notes?: string | null
+}
+
+interface Props {
+  dogId: string
+  colors: Color[]
+  initial: Observation | null
+}
+
+export default function ColorObservationForm({ dogId, colors, initial }: Props) {
+  const [colorId, setColorId] = useState<string>(initial?.color_id || '')
+  const [coatLength, setCoatLength] = useState<'short' | 'medium' | 'long' | 'wire'>(
+    initial?.coat_length || 'short'
+  )
+  const [whitePattern, setWhitePattern] = useState<'none' | 'small' | 'parti' | 'piebald'>(
+    initial?.white_pattern || 'none'
+  )
+  const [hasMerle, setHasMerle] = useState(initial?.has_merle || false)
+  const [hasMask, setHasMask] = useState(initial?.has_mask || false)
+  const [hasTanPoints, setHasTanPoints] = useState(initial?.has_tan_points || false)
+  const [hasBrindle, setHasBrindle] = useState(initial?.has_brindle || false)
+  const [isDiluted, setIsDiluted] = useState(initial?.is_diluted || false)
+  const [notes, setNotes] = useState(initial?.notes || '')
+  const [saving, setSaving] = useState(false)
+  const [savedFlash, setSavedFlash] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Calcular inferencia en tiempo real para preview
+  const colorName = colors.find((c) => c.id === colorId)?.name || null
+  const preview = inferGenotype({
+    color_name: colorName,
+    coat_length: coatLength,
+    white_pattern: whitePattern,
+    has_merle: hasMerle,
+    has_mask: hasMask,
+    has_tan_points: hasTanPoints,
+    has_brindle: hasBrindle,
+    is_diluted: isDiluted,
+  })
+
+  const handleSave = async () => {
+    setSaving(true)
+    setError(null)
+    const supabase = createClient()
+
+    const payload = {
+      dog_id: dogId,
+      color_id: colorId || null,
+      coat_length: coatLength,
+      white_pattern: whitePattern,
+      has_merle: hasMerle,
+      has_mask: hasMask,
+      has_tan_points: hasTanPoints,
+      has_brindle: hasBrindle,
+      is_diluted: isDiluted,
+      notes: notes.trim() || null,
+    }
+
+    const { error: upsertErr } = await supabase
+      .from('dog_color_observations')
+      .upsert(payload, { onConflict: 'dog_id' })
+
+    setSaving(false)
+
+    if (upsertErr) {
+      setError(upsertErr.message)
+      return
+    }
+
+    setSavedFlash(true)
+    setTimeout(() => setSavedFlash(false), 2000)
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-xl border border-hairline bg-canvas p-5">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Palette className="h-4 w-4 text-muted" />
+            <h3 className="text-[14.5px] font-semibold text-ink">
+              Color y aspecto visible
+            </h3>
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-on-primary transition-colors hover:opacity-90 disabled:opacity-50"
+          >
+            {saving ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : savedFlash ? (
+              <Check className="h-3.5 w-3.5" />
+            ) : (
+              <Save className="h-3.5 w-3.5" />
+            )}
+            {savedFlash ? 'Guardado' : 'Guardar'}
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          {/* Color principal */}
+          <div>
+            <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
+              Color principal
+            </label>
+            <select
+              value={colorId}
+              onChange={(e) => setColorId(e.target.value)}
+              className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
+            >
+              <option value="">— Selecciona un color —</option>
+              {colors.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-[11.5px] text-muted">
+              El nombre que usarías en una ficha del criadero (ej: &quot;Bardino rojo&quot;, &quot;Negro y fuego&quot;).
+            </p>
+          </div>
+
+          {/* Longitud + manchas blancas */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
+                Longitud del pelo
+              </label>
+              <select
+                value={coatLength}
+                onChange={(e) => setCoatLength(e.target.value as any)}
+                className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
+              >
+                <option value="short">Corto</option>
+                <option value="medium">Medio</option>
+                <option value="long">Largo</option>
+                <option value="wire">Duro (wire)</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
+                Manchas blancas
+              </label>
+              <select
+                value={whitePattern}
+                onChange={(e) => setWhitePattern(e.target.value as any)}
+                className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
+              >
+                <option value="none">Ninguna</option>
+                <option value="small">Pequeñas (pecho/patas)</option>
+                <option value="parti">Bicolor / con blanco</option>
+                <option value="piebald">Piebald / pinto extenso</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Toggles */}
+          <div>
+            <p className="mb-2 text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
+              Características visibles
+            </p>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Toggle
+                label="Atigrado / bardino / brindle"
+                hint="Rayas verticales sobre color base"
+                checked={hasBrindle}
+                onChange={setHasBrindle}
+              />
+              <Toggle
+                label="Merle / arlequín"
+                hint="⚠️ Cruce M×M peligroso"
+                checked={hasMerle}
+                onChange={setHasMerle}
+              />
+              <Toggle
+                label="Negro y fuego (tan points)"
+                hint="Marcas tan en cejas, patas, pecho"
+                checked={hasTanPoints}
+                onChange={setHasTanPoints}
+              />
+              <Toggle
+                label="Máscara facial negra"
+                hint="Hocico oscuro"
+                checked={hasMask}
+                onChange={setHasMask}
+              />
+              <Toggle
+                label="Color diluido (azul/isabella/lilac)"
+                hint="Pigmento más pálido de lo normal"
+                checked={isDiluted}
+                onChange={setIsDiluted}
+              />
+            </div>
+          </div>
+
+          {/* Notas */}
+          <div>
+            <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
+              Notas
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
+              placeholder="Observaciones adicionales sobre el color o aspecto del perro..."
+            />
+          </div>
+
+          {error && (
+            <div className="rounded-lg bg-[color:var(--error)]/10 px-3 py-2 text-[12.5px] text-[color:var(--error)]">
+              {error}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Preview de inferencia */}
+      <div className="rounded-xl border border-hairline bg-surface-soft p-5">
+        <h4 className="mb-3 text-[13px] font-semibold text-ink">Genotipo inferido (preview)</h4>
+        <p className="mb-4 text-[12px] text-muted">
+          A partir de lo que has indicado, estos son los alelos compatibles. &quot;?&quot; = desconocido. Si conoces el genotipo exacto desde un test DNA, edítalo en la pestaña &quot;Genotipo DNA&quot;.
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {preview.map((p) => {
+            const hasData = p.allele1.code !== '?' || p.allele2.code !== '?'
+            if (!hasData) return null
+            return (
+              <div
+                key={p.locus}
+                className="rounded-lg border border-hairline bg-canvas px-3 py-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[12px] font-medium text-muted">Locus {p.locus}</span>
+                  <span className="font-mono text-[13.5px] font-semibold tabular-nums text-ink">
+                    {p.allele1.code}/{p.allele2.code}
+                  </span>
+                </div>
+                {p.reasoning.length > 0 && (
+                  <p className="mt-1 text-[11px] italic text-muted">{p.reasoning[0]}</p>
+                )}
+              </div>
+            )
+          })}
+        </div>
+        {preview.every((p) => p.allele1.code === '?' && p.allele2.code === '?') && (
+          <p className="text-[12.5px] text-muted">
+            Rellena el color principal y las características arriba para ver los alelos inferidos.
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Toggle({
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  label: string
+  hint?: string
+  checked: boolean
+  onChange: (v: boolean) => void
+}) {
+  return (
+    <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-hairline bg-canvas px-3 py-2.5 transition-colors hover:bg-surface-soft">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-hairline"
+      />
+      <span className="min-w-0 flex-1">
+        <span className="block text-[13px] text-ink">{label}</span>
+        {hint && <span className="block text-[11px] text-muted">{hint}</span>}
+      </span>
+    </label>
+  )
+}

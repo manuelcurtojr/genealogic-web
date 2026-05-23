@@ -15,23 +15,37 @@ export default async function GeneticaPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: dogs } = await supabase
-    .from('dogs')
-    .select('id, name, slug, sex, thumbnail_url')
-    .eq('owner_id', user.id)
-    .order('name')
+  const [dogsRes, colorsRes] = await Promise.all([
+    supabase
+      .from('dogs')
+      .select('id, name, slug, sex, thumbnail_url')
+      .eq('owner_id', user.id)
+      .order('name'),
+    supabase.from('colors').select('id, name').order('name'),
+  ])
+  const dogs = dogsRes.data || []
+  const colors = colorsRes.data || []
 
-  const selectedDogId = searchParams.dog || dogs?.[0]?.id || null
-  const selectedDog = dogs?.find((d) => d.id === selectedDogId) || null
+  const selectedDogId = searchParams.dog || dogs[0]?.id || null
+  const selectedDog = dogs.find((d) => d.id === selectedDogId) || null
 
-  // Cargar genotipos del perro seleccionado
+  // Cargar genotipos DNA + observación visual del perro seleccionado
   let genotypes: any[] = []
+  let observation: any = null
   if (selectedDog) {
-    const { data } = await supabase
-      .from('dog_genotypes')
-      .select('id, locus, allele_1, allele_2, source, confidence, notes')
-      .eq('dog_id', selectedDog.id)
-    genotypes = data || []
+    const [gtRes, obsRes] = await Promise.all([
+      supabase
+        .from('dog_genotypes')
+        .select('id, locus, allele_1, allele_2, source, confidence, notes')
+        .eq('dog_id', selectedDog.id),
+      supabase
+        .from('dog_color_observations')
+        .select('id, color_id, coat_length, white_pattern, has_merle, has_mask, has_tan_points, has_brindle, is_diluted, notes')
+        .eq('dog_id', selectedDog.id)
+        .maybeSingle(),
+    ])
+    genotypes = gtRes.data || []
+    observation = obsRes.data || null
   }
 
   return (
@@ -42,7 +56,7 @@ export default async function GeneticaPage({
           Genética
         </h1>
         <p className="mt-2 text-[14px] text-body">
-          Registra los genotipos de tus perros por locus. Los datos se usarán en el planificador de cruces para predecir el color, patrón y características de las camadas.
+          Registra el color visible de tus perros (lo más común) o su genotipo DNA si tienes tests. Los datos alimentan la predicción de cruces en el planificador.
         </p>
       </div>
 
@@ -98,10 +112,12 @@ export default async function GeneticaPage({
             <GenotypeEditor
               dog={selectedDog}
               initialGenotypes={genotypes}
+              colors={colors}
+              initialObservation={observation}
             />
           ) : (
             <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-20 text-center text-[14px] text-muted">
-              Selecciona un perro para editar su genotipo.
+              Selecciona un perro para editar su genética.
             </div>
           )}
         </div>

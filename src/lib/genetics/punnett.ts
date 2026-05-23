@@ -10,6 +10,10 @@
  * posibles genotipos de un cachorro son 4 combinaciones (cuadrado de
  * Punnett): sireA×damA, sireA×damB, sireB×damA, sireB×damB.
  *
+ * Soporta alelos desconocidos '?': cuando un padre tiene incertidumbre
+ * en un alelo, se expande considerando que '?' puede ser cualquiera de
+ * los alelos del locus con probabilidad uniforme (modelo conservador).
+ *
  * Normalizamos para que la suma de probabilidades sume 100%.
  */
 
@@ -17,8 +21,8 @@ import { LOCI, getLocus, getAllele, type Locus } from './loci'
 
 export interface Genotype {
   locus: string         // 'E', 'K', etc.
-  allele1: string
-  allele2: string
+  allele1: string       // alelo o '?'
+  allele2: string       // alelo o '?'
 }
 
 export interface OffspringGenotype {
@@ -39,6 +43,19 @@ function orderAlleles(locus: Locus, a: string, b: string): [string, string] {
 }
 
 /**
+ * Expande un alelo: si es '?' devuelve todos los alelos posibles del locus
+ * con peso 1/N cada uno. Si es concreto, devuelve [(alelo, 1.0)].
+ */
+function expandAllele(locus: Locus, allele: string): { code: string; weight: number }[] {
+  if (allele !== '?' && allele !== '') {
+    return [{ code: allele, weight: 1 }]
+  }
+  // Desconocido: cualquier alelo posible, peso uniforme
+  const all = locus.alleles
+  return all.map((a) => ({ code: a.code, weight: 1 / all.length }))
+}
+
+/**
  * Cruza dos genotipos del mismo locus y devuelve la distribución de
  * los 3-4 genotipos posibles en los cachorros (ordenado por probabilidad).
  */
@@ -51,31 +68,47 @@ export function crossLocus(sire: Genotype, dam: Genotype): OffspringGenotype[] {
     throw new Error(`Unknown locus: ${sire.locus}`)
   }
 
-  // 4 combinaciones posibles (cuadrado de Punnett), cada una con prob 25%
-  const combinations: [string, string][] = [
-    [sire.allele1, dam.allele1],
-    [sire.allele1, dam.allele2],
-    [sire.allele2, dam.allele1],
-    [sire.allele2, dam.allele2],
-  ]
+  // Expandir alelos (soporta '?' = desconocido)
+  const sire1 = expandAllele(locus, sire.allele1)
+  const sire2 = expandAllele(locus, sire.allele2)
+  const dam1 = expandAllele(locus, dam.allele1)
+  const dam2 = expandAllele(locus, dam.allele2)
 
-  // Agrupar por genotipo (los ordenados son equivalentes: Aa == aA)
-  const counts = new Map<string, { allele1: string; allele2: string; count: number }>()
-  for (const [a, b] of combinations) {
-    const [first, second] = orderAlleles(locus, a, b)
-    const key = `${first}|${second}`
-    const existing = counts.get(key)
-    if (existing) {
-      existing.count += 1
-    } else {
-      counts.set(key, { allele1: first, allele2: second, count: 1 })
+  // Cada padre aporta uno de sus 2 alelos al azar (50/50).
+  // Construir distribución del aporte de cada padre.
+  const sireGametes = new Map<string, number>()
+  for (const a of sire1) sireGametes.set(a.code, (sireGametes.get(a.code) || 0) + 0.5 * a.weight)
+  for (const a of sire2) sireGametes.set(a.code, (sireGametes.get(a.code) || 0) + 0.5 * a.weight)
+
+  const damGametes = new Map<string, number>()
+  for (const a of dam1) damGametes.set(a.code, (damGametes.get(a.code) || 0) + 0.5 * a.weight)
+  for (const a of dam2) damGametes.set(a.code, (damGametes.get(a.code) || 0) + 0.5 * a.weight)
+
+  // Producto cartesiano: probabilidad de cada combinación cachorro
+  const counts = new Map<string, { allele1: string; allele2: string; weight: number }>()
+  for (const [sa, sp] of sireGametes.entries()) {
+    for (const [da, dp] of damGametes.entries()) {
+      const [first, second] = orderAlleles(locus, sa, da)
+      const key = `${first}|${second}`
+      const w = sp * dp
+      const existing = counts.get(key)
+      if (existing) {
+        existing.weight += w
+      } else {
+        counts.set(key, { allele1: first, allele2: second, weight: w })
+      }
     }
   }
 
+  // Normalizar a suma 1
+  let totalWeight = 0
+  for (const v of counts.values()) totalWeight += v.weight
+  if (totalWeight === 0) totalWeight = 1
+
   // Convertir a array con probabilidades
   const results: OffspringGenotype[] = []
-  for (const { allele1, allele2, count } of counts.values()) {
-    const probability = count / 4
+  for (const { allele1, allele2, weight } of counts.values()) {
+    const probability = weight / totalWeight
     const a1 = getAllele(locus.code, allele1)
     const a2 = getAllele(locus.code, allele2)
     const label = `${a1?.code || allele1}/${a2?.code || allele2}`

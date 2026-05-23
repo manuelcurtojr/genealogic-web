@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Dna, Save, Loader2, Check } from 'lucide-react'
+import { Dna, Save, Loader2, Check, Palette, Microscope } from 'lucide-react'
 import { LOCI } from '@/lib/genetics/loci'
+import ColorObservationForm from './color-observation-form'
 
 interface Dog {
   id: string
@@ -23,13 +24,104 @@ interface Genotype {
   notes?: string | null
 }
 
+interface Color {
+  id: string
+  name: string
+}
+
+interface ColorObs {
+  id?: string
+  color_id?: string | null
+  coat_length?: 'short' | 'medium' | 'long' | 'wire'
+  white_pattern?: 'none' | 'small' | 'parti' | 'piebald'
+  has_merle?: boolean
+  has_mask?: boolean
+  has_tan_points?: boolean
+  has_brindle?: boolean
+  is_diluted?: boolean
+  notes?: string | null
+}
+
 interface Props {
   dog: Dog
   initialGenotypes: Genotype[]
+  colors: Color[]
+  initialObservation: ColorObs | null
 }
 
-export default function GenotypeEditor({ dog, initialGenotypes }: Props) {
-  // Estado: mapa locus → { allele1, allele2 }. Inicializado desde DB.
+type Tab = 'color' | 'dna'
+
+export default function GenotypeEditor({ dog, initialGenotypes, colors, initialObservation }: Props) {
+  const [activeTab, setActiveTab] = useState<Tab>(initialGenotypes.length > 0 ? 'dna' : 'color')
+
+  const hasColorData = !!initialObservation
+  const hasDnaData = initialGenotypes.length > 0
+
+  return (
+    <div className="space-y-4">
+      {/* Header del perro */}
+      <div className="flex items-center justify-between rounded-xl border border-hairline bg-canvas px-5 py-4">
+        <div className="flex items-center gap-3">
+          {dog.thumbnail_url ? (
+            <img src={dog.thumbnail_url} alt={dog.name} className="h-12 w-12 rounded-full object-cover" />
+          ) : (
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-card">
+              <Dna className="h-5 w-5 text-muted" />
+            </div>
+          )}
+          <div>
+            <h2 className="text-[17px] font-semibold tracking-[-0.02em] text-ink">{dog.name}</h2>
+            <p className="text-[12px] text-muted">
+              {dog.sex === 'male' ? 'Macho' : dog.sex === 'female' ? 'Hembra' : 'Sexo no definido'}
+              {hasColorData && ' · Color registrado'}
+              {hasDnaData && ` · ${initialGenotypes.length} loci DNA`}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 rounded-lg bg-surface-soft p-0.5">
+        <button
+          onClick={() => setActiveTab('color')}
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-[13px] font-medium transition-colors ${
+            activeTab === 'color' ? 'bg-canvas text-ink shadow-sm' : 'text-muted hover:text-ink'
+          }`}
+        >
+          <Palette className="h-3.5 w-3.5" />
+          Color visible
+          {hasColorData && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+        </button>
+        <button
+          onClick={() => setActiveTab('dna')}
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-[13px] font-medium transition-colors ${
+            activeTab === 'dna' ? 'bg-canvas text-ink shadow-sm' : 'text-muted hover:text-ink'
+          }`}
+        >
+          <Microscope className="h-3.5 w-3.5" />
+          Genotipo DNA (avanzado)
+          {hasDnaData && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+        </button>
+      </div>
+
+      {/* Tab content */}
+      {activeTab === 'color' ? (
+        <ColorObservationForm
+          dogId={dog.id}
+          colors={colors}
+          initial={initialObservation}
+        />
+      ) : (
+        <DnaEditor dogId={dog.id} initialGenotypes={initialGenotypes} />
+      )}
+    </div>
+  )
+}
+
+/**
+ * Editor de genotipo DNA (loci avanzados). Para usuarios con test DNA.
+ */
+function DnaEditor({ dogId, initialGenotypes }: { dogId: string; initialGenotypes: Genotype[] }) {
   const initialMap = new Map<string, { allele1: string; allele2: string }>()
   for (const g of initialGenotypes) {
     initialMap.set(g.locus, { allele1: g.allele_1, allele2: g.allele_2 })
@@ -65,14 +157,12 @@ export default function GenotypeEditor({ dog, initialGenotypes }: Props) {
     const supabase = createClient()
 
     try {
-      // Strategy: delete-then-upsert. Borra los que el usuario ha vaciado,
-      // upsert los que tiene completos.
       const toUpsert: any[] = []
       const presentLoci: string[] = []
       for (const [locus, { allele1, allele2 }] of genotypes.entries()) {
         if (allele1 && allele2) {
           toUpsert.push({
-            dog_id: dog.id,
+            dog_id: dogId,
             locus,
             allele_1: allele1,
             allele_2: allele2,
@@ -83,19 +173,17 @@ export default function GenotypeEditor({ dog, initialGenotypes }: Props) {
         }
       }
 
-      // Borrar los que ya no están en el form
       const initialLoci = initialGenotypes.map((g) => g.locus)
       const toDelete = initialLoci.filter((l) => !presentLoci.includes(l))
       if (toDelete.length > 0) {
         const { error: delErr } = await supabase
           .from('dog_genotypes')
           .delete()
-          .eq('dog_id', dog.id)
+          .eq('dog_id', dogId)
           .in('locus', toDelete)
         if (delErr) throw delErr
       }
 
-      // Upsert nuevos / actualizados
       if (toUpsert.length > 0) {
         const { error: upsertErr } = await supabase
           .from('dog_genotypes')
@@ -114,28 +202,17 @@ export default function GenotypeEditor({ dog, initialGenotypes }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* Header del perro */}
-      <div className="flex items-center justify-between rounded-xl border border-hairline bg-canvas px-5 py-4">
-        <div className="flex items-center gap-3">
-          {dog.thumbnail_url ? (
-            <img src={dog.thumbnail_url} alt={dog.name} className="h-12 w-12 rounded-full object-cover" />
-          ) : (
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-card">
-              <Dna className="h-5 w-5 text-muted" />
-            </div>
-          )}
-          <div>
-            <h2 className="text-[17px] font-semibold tracking-[-0.02em] text-ink">{dog.name}</h2>
-            <p className="text-[12px] text-muted">
-              {dog.sex === 'male' ? 'Macho' : dog.sex === 'female' ? 'Hembra' : 'Sexo no definido'} ·{' '}
-              {genotypes.size} loci registrados
-            </p>
-          </div>
+      <div className="flex items-center justify-between rounded-xl border border-hairline bg-canvas px-5 py-3">
+        <div>
+          <p className="text-[13px] font-medium text-ink">Genotipo confirmado por DNA</p>
+          <p className="text-[11.5px] text-muted">
+            Rellena solo si tienes resultados de Embark, Wisdom Panel u otro test genético.
+          </p>
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-on-primary transition-colors hover:opacity-90 disabled:opacity-50"
         >
           {saving ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -154,7 +231,6 @@ export default function GenotypeEditor({ dog, initialGenotypes }: Props) {
         </div>
       )}
 
-      {/* Editor por locus */}
       <div className="space-y-3">
         {LOCI.map((locus) => {
           const current = genotypes.get(locus.code)
@@ -183,7 +259,6 @@ export default function GenotypeEditor({ dog, initialGenotypes }: Props) {
                   )}
                 </div>
 
-                {/* Selectores de alelo */}
                 <div className="flex items-center gap-1.5">
                   <select
                     value={a1}
@@ -226,7 +301,7 @@ export default function GenotypeEditor({ dog, initialGenotypes }: Props) {
       </div>
 
       <div className="rounded-lg border border-dashed border-hairline bg-surface-soft px-4 py-3 text-[12.5px] text-muted">
-        💡 Los datos genéticos pueden venir de tests Embark, Wisdom Panel, observación visual, o registros del criadero. Cuanto más completo, mejor será la predicción del cruce.
+        💡 Los datos DNA tienen prioridad sobre la observación visual en el cálculo del forecast.
       </div>
     </div>
   )
