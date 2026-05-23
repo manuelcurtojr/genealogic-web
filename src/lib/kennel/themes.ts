@@ -12,7 +12,7 @@
  *   3. Ya está — el selector en /web/general lo recoge automáticamente.
  */
 
-export type ThemeId = 'classic' | 'bmw-m'
+export type ThemeId = 'classic' | 'bmw-m' | 'lamborghini'
 
 export type ThemeShape = 'soft' | 'sharp'
 
@@ -105,6 +105,31 @@ export const THEMES: Theme[] = [
       primaryHover: '#c61f12',
       onPrimary: '#ffffff',
       accent: '#2E9BD6',
+    },
+  },
+  {
+    id: 'lamborghini',
+    name: 'Supercar',
+    tagline: 'Negro + oro Giallo',
+    description:
+      'Inspirado en Lamborghini: lujo brutalista, canvas negro absoluto y oro Giallo (#F0B416) como único acento. Tipografía condensada uppercase, formas angulares (hexagonales). Ideal para criaderos premium que quieran posicionarse como exclusivos.',
+    shape: 'sharp',
+    fontDisplay: '"Oswald", "Saira Condensed", "Bebas Neue", "Inter", system-ui, sans-serif',
+    uppercaseDisplay: true,
+    displayTracking: '0.02em',
+    accentStripe: ['#F0B416'],
+    tokens: {
+      canvas: '#000000',
+      surfaceSoft: '#080808',
+      surfaceCard: '#111111',
+      ink: '#ffffff',
+      body: '#b8b8b8',
+      muted: '#6a6a6a',
+      hairline: '#1a1a1a',
+      primary: '#F0B416',
+      primaryHover: '#d99e0a',
+      onPrimary: '#000000',
+      accent: '#F0B416',
     },
   },
 ]

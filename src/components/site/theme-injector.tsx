@@ -12,18 +12,20 @@ import { themeToCss } from '@/lib/kennel/themes'
 
 type Props = { theme: Theme }
 
+// Mapa de fuentes externas que requieren <link> a Google Fonts según tema
+const FONT_LINKS: Record<string, string> = {
+  'bmw-m': 'https://fonts.googleapis.com/css2?family=Anton&display=swap',
+  lamborghini: 'https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap',
+}
+
 export function ThemeInjector({ theme }: Props) {
   const css = themeToCss(theme, '[data-kennel-theme]')
-  // Cargamos Google Font Anton si el tema BMW-M está activo
-  const needsAnton = theme.id === 'bmw-m'
+  const fontHref = FONT_LINKS[theme.id]
   return (
     <>
-      {needsAnton && (
+      {fontHref && (
         // eslint-disable-next-line @next/next/no-page-custom-font
-        <link
-          href="https://fonts.googleapis.com/css2?family=Anton&display=swap"
-          rel="stylesheet"
-        />
+        <link href={fontHref} rel="stylesheet" />
       )}
       <style dangerouslySetInnerHTML={{ __html: css }} />
     </>
