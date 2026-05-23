@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Grid3X3, List, Search, Plus, Eye, Edit, ArrowRightLeft, GitBranch } from 'lucide-react'
+import { Grid3X3, List, Search, Plus, Eye, EyeOff, Edit, ArrowRightLeft, GitBranch, Globe, Heart } from 'lucide-react'
 import DogCard from './dog-card'
 import DogFormPanel from './dog-form-panel'
 import TransferPanel from '../kennel/transfer-panel'
@@ -401,6 +401,39 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
                   >
                     <GitBranch className="h-3.5 w-3.5" /> <span className="hidden md:inline">Genealogía</span>
                   </button>
+
+                  {/* Toggles solo para criadores */}
+                  {isBreeder && (
+                    <>
+                      <button
+                        onClick={e => { e.stopPropagation(); handleToggleVisible(dog.id, dog.show_in_kennel !== false) }}
+                        title={dog.show_in_kennel !== false ? 'Visible en perfil público — click para ocultar' : 'Oculto — click para mostrar'}
+                        aria-pressed={dog.show_in_kennel !== false}
+                        className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+                          dog.show_in_kennel !== false
+                            ? 'border-emerald-400/60 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                            : 'border-hairline bg-canvas text-muted hover:bg-surface-soft hover:text-ink'
+                        }`}
+                      >
+                        {dog.show_in_kennel !== false ? <Globe className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                        <span className="hidden md:inline">{dog.show_in_kennel !== false ? 'Visible' : 'Oculto'}</span>
+                      </button>
+                      <button
+                        onClick={e => { e.stopPropagation(); handleToggleReproductive(dog.id, !!dog.is_reproductive) }}
+                        title={dog.is_reproductive ? 'Es reproductor — click para desmarcar' : 'No es reproductor — click para marcar'}
+                        aria-pressed={!!dog.is_reproductive}
+                        className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+                          dog.is_reproductive
+                            ? 'border-pink-400/60 bg-pink-50 text-pink-700 hover:bg-pink-100'
+                            : 'border-hairline bg-canvas text-muted hover:bg-surface-soft hover:text-ink'
+                        }`}
+                      >
+                        <Heart className={`h-3.5 w-3.5 ${dog.is_reproductive ? 'fill-current' : ''}`} />
+                        <span className="hidden md:inline">{dog.is_reproductive ? 'Reproductor' : 'No reproductor'}</span>
+                      </button>
+                    </>
+                  )}
+
                   <button
                     onClick={e => {
                       e.stopPropagation()
