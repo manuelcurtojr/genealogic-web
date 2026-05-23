@@ -48,23 +48,23 @@ export async function POST(request: NextRequest) {
 
   const admin = createKennelAdminClient()
 
-  // Verificar que el kennel existe + obtener owner_id (necesario para
-  // que el criador vea su solicitud según RLS de SELECT)
+  // Verificar que el kennel existe
   const { data: kennel, error: kErr } = await admin
     .from('kennels')
-    .select('id, owner_id, name')
+    .select('id, name')
     .eq('id', kennel_id)
     .maybeSingle()
   if (kErr || !kennel) {
     return NextResponse.json({ error: 'Criadero no encontrado' }, { status: 404 })
   }
 
-  // Insertar la solicitud
+  // Insertar la solicitud — owner_id se deja NULL (referencia a tabla
+  // owners del CRM, que se vincula sólo si el criador convierte el lead).
+  // El RLS SELECT del criador filtra por kennel_id, no por owner_id.
   const { data: insertedRes, error: insertErr } = await admin
     .from('puppy_reservations')
     .insert({
       kennel_id: kennel.id,
-      owner_id: kennel.owner_id, // el criador es el "dueño" de la solicitud
       status: 'interested',
       source: 'public_form',
       applicant_name: applicant_name.trim(),
