@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import type { MetadataRoute } from 'next'
+import { allPosts } from '@/content/blog'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createClient(
@@ -10,10 +11,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
     { url: 'https://genealogic.io', lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
     { url: 'https://genealogic.io/search', lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
+    { url: 'https://genealogic.io/blog', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
     { url: 'https://genealogic.io/privacy', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
     { url: 'https://genealogic.io/terms', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
     { url: 'https://genealogic.io/legal', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
   ]
+
+  // Blog posts
+  for (const { meta } of allPosts) {
+    entries.push({
+      url: `https://genealogic.io/blog/${meta.slug}`,
+      lastModified: new Date(meta.date),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    })
+  }
 
   // Add all public dogs
   const { data: dogs } = await supabase
