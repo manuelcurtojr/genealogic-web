@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, Lock, Globe, Shield } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, Lock, Globe, Shield, Dna } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import { BRAND } from '@/lib/constants'
 import { formatDogName, type AffixFormat } from '@/lib/affix'
@@ -13,6 +13,7 @@ import GalleryTab from './edit-tabs/gallery-tab'
 import SaludTab from './edit-tabs/salud-tab'
 import PalmaresTab from './edit-tabs/palmares-tab'
 import PedigreePdfTab from './edit-tabs/pedigree-pdf-tab'
+import GeneticaTab from './edit-tabs/genetica-tab'
 import ImportPedigreeTab from './import-pedigree-tab'
 
 interface DogFormPanelProps {
@@ -33,6 +34,7 @@ interface DogFormPanelProps {
 const TABS = [
   { key: 'datos', label: 'Datos', icon: Dog },
   { key: 'salud', label: 'Salud', icon: Stethoscope },
+  { key: 'genetica', label: 'Genética', icon: Dna },
   { key: 'palmares', label: 'Palmarés', icon: Trophy },
   { key: 'pedigree-pdf', label: 'Genealogía PDF', icon: FileText },
 ] as const
@@ -312,6 +314,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             )}
 
             {activeTab === 'salud' && editDogId && <SaludTab dogId={editDogId} userId={userId} />}
+            {activeTab === 'genetica' && editDogId && <GeneticaTab dogId={editDogId} userId={userId} />}
             {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
             {activeTab === 'pedigree-pdf' && editDogId && <PedigreePdfTab dogId={editDogId} dogName={form.name} userId={userId} />}
           </div>
