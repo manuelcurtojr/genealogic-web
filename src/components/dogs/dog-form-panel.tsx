@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, Lock, Globe, Shield, Dna } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, Lock, Globe, Shield, Dna, Heart } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import { BRAND } from '@/lib/constants'
 import { formatDogName, type AffixFormat } from '@/lib/affix'
@@ -14,6 +14,7 @@ import SaludTab from './edit-tabs/salud-tab'
 import PalmaresTab from './edit-tabs/palmares-tab'
 import PedigreePdfTab from './edit-tabs/pedigree-pdf-tab'
 import GeneticaTab from './edit-tabs/genetica-tab'
+import ReproduccionTab from './edit-tabs/reproduccion-tab'
 import ImportPedigreeTab from './import-pedigree-tab'
 
 interface DogFormPanelProps {
@@ -34,6 +35,7 @@ interface DogFormPanelProps {
 const TABS = [
   { key: 'datos', label: 'Datos', icon: Dog },
   { key: 'salud', label: 'Salud', icon: Stethoscope },
+  { key: 'reproduccion', label: 'Reproducción', icon: Heart, femaleOnly: true },
   { key: 'genetica', label: 'Genética', icon: Dna },
   { key: 'palmares', label: 'Palmarés', icon: Trophy },
   { key: 'pedigree-pdf', label: 'Genealogía PDF', icon: FileText },
@@ -188,7 +190,9 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         {/* Edit tabs */}
         {isEdit && (
           <div className="flex border-b border-hairline px-4 overflow-x-auto flex-shrink-0">
-            {TABS.map(t => {
+            {TABS
+              .filter((t) => !('femaleOnly' in t && t.femaleOnly) || form.sex === 'female')
+              .map(t => {
               const Icon = t.icon
               return (
                 <button key={t.key} onClick={() => setActiveTab(t.key)}
@@ -314,6 +318,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             )}
 
             {activeTab === 'salud' && editDogId && <SaludTab dogId={editDogId} userId={userId} />}
+            {activeTab === 'reproduccion' && editDogId && form.sex === 'female' && <ReproduccionTab dogId={editDogId} userId={userId} />}
             {activeTab === 'genetica' && editDogId && <GeneticaTab dogId={editDogId} userId={userId} />}
             {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
             {activeTab === 'pedigree-pdf' && editDogId && <PedigreePdfTab dogId={editDogId} dogName={form.name} userId={userId} />}
