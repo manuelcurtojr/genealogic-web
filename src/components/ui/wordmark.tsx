@@ -39,7 +39,7 @@ export function Wordmark({
         src="/icon.svg"
         alt=""
         aria-hidden="true"
-        className="h-[1em] w-[1em] shrink-0"
+        className="h-[1.25em] w-[1.25em] shrink-0"
       />
       <span className={classes}>Genealogic</span>
     </span>
