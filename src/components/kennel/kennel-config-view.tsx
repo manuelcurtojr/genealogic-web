@@ -67,7 +67,7 @@ export default function KennelConfigView({ kennel, stats, hasCustomWeb = false, 
     img.src = URL.createObjectURL(file)
   }
 
-  const publicUrl = kennel.slug ? `/k/${kennel.slug}` : null
+  const publicUrl = kennel.slug ? `/kennels/${kennel.slug}` : null
 
   const kpiCards = [
     { label: 'Perros', value: stats.dogs, icon: Dog, href: '/dogs', color: '#fb923c' },
