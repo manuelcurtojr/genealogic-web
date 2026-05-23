@@ -4,6 +4,7 @@
 import Link from 'next/link'
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import { getCurrentKennel } from '@/lib/kennel-context'
+import { SectionHeader } from '@/components/site/section-primitives'
 
 export function TwoColumnBlockSection({
   title, body, image_url, image_alt, image_position = 'right', cta,
@@ -200,44 +201,21 @@ export function FaqSection({
   items?: { question: string; answer: string }[]
 }) {
   return (
-    <section className="py-20 lg:py-28 relative overflow-hidden">
-      {/* Background pattern muy sutil */}
-      <div
-        className="absolute inset-0 opacity-[0.02] pointer-events-none"
-        style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0,0,0,1) 1px, transparent 0)',
-          backgroundSize: '24px 24px',
-        }}
-      />
-      <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
-        {(title || eyebrow) && (
-          <div className="mb-14 lg:mb-16 text-center">
-            {eyebrow && (
-              <p className="flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted mb-4">
-                <span className="inline-block h-px w-8 bg-muted/40" />
-                {eyebrow}
-                <span className="inline-block h-px w-8 bg-muted/40" />
-              </p>
-            )}
-            {title && (
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-ink tracking-[-0.03em] leading-[1.05]">
-                {title}
-              </h2>
-            )}
-          </div>
-        )}
-        <div className="divide-y divide-hairline border-y border-hairline">
+    <section className="py-24 lg:py-32 relative overflow-hidden">
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-10">
+        <SectionHeader number="04" eyebrow={eyebrow ?? 'Preguntas'} title={title} align="left" />
+        <div className="border-t border-hairline">
           {items.map((it, i) => (
-            <details key={i} className="group py-2">
-              <summary className="cursor-pointer list-none flex items-start justify-between gap-6 py-5 hover:opacity-80 transition-opacity">
-                <span className="text-lg md:text-xl font-semibold text-ink leading-snug tracking-[-0.01em] flex-1">
+            <details key={i} className="group border-b border-hairline">
+              <summary className="cursor-pointer list-none flex items-start justify-between gap-6 py-7 lg:py-8 hover:[&_span:first-child]:text-theme-accent transition-colors">
+                <span className="text-xl md:text-2xl font-semibold text-ink leading-snug tracking-[-0.015em] flex-1 transition-colors">
                   {it.question}
                 </span>
-                <span className="shrink-0 mt-1 flex h-7 w-7 items-center justify-center rounded-full border border-hairline text-muted text-base group-open:rotate-45 group-open:border-ink/40 group-open:text-ink transition-all duration-300">
+                <span className="shrink-0 mt-2 flex h-9 w-9 items-center justify-center rounded-none border border-hairline text-muted text-lg group-open:rotate-45 group-open:border-theme-accent group-open:text-theme-accent transition-all duration-300">
                   +
                 </span>
               </summary>
-              <div className="pb-6 pr-12 text-[15px] text-body leading-[1.7] whitespace-pre-line">
+              <div className="pb-8 pr-14 text-[15.5px] text-body leading-[1.75] whitespace-pre-line">
                 {it.answer}
               </div>
             </details>

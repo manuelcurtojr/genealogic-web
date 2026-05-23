@@ -38,25 +38,30 @@ export default async function KennelSiteLayout({
       <ThemeInjector theme={theme} />
       <AccentStripe theme={theme} />
       {isOwner && <OwnerFloatingNav />}
-      <header className="border-b border-hairline sticky top-0 bg-canvas/95 backdrop-blur z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
-          <Link href={`/c/${kennel.slug}`} className="flex items-center gap-2 min-w-0">
+      <header className="border-b border-hairline sticky top-0 bg-canvas/90 backdrop-blur-md z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 h-[72px] flex items-center gap-4">
+          <Link href={`/c/${kennel.slug}`} className="flex items-center gap-3 min-w-0 group">
             {kennel.logo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={kennel.logo_url} alt={kennel.name} className="w-8 h-8 rounded-full object-cover border border-hairline" />
+              <img src={kennel.logo_url} alt={kennel.name} className="w-9 h-9 rounded-full object-cover border border-hairline group-hover:border-theme-accent transition-colors" />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-ink text-on-primary flex items-center justify-center text-xs font-bold">
+              <div className="w-9 h-9 rounded-full bg-ink text-on-primary flex items-center justify-center text-sm font-bold group-hover:bg-theme-accent transition-colors">
                 {kennel.name[0]?.toUpperCase()}
               </div>
             )}
-            <span className="text-sm font-bold text-ink truncate">{kennel.name}</span>
+            <span
+              className="text-[15px] font-bold text-ink truncate tracking-tight"
+              style={{ fontFamily: 'var(--font-display, inherit)', textTransform: 'inherit' }}
+            >
+              {kennel.name}
+            </span>
           </Link>
-          <nav className="ml-auto flex items-center gap-1 overflow-x-auto">
+          <nav className="ml-auto flex items-center gap-0 overflow-x-auto">
             {navItems.map(item => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm text-body hover:text-ink px-3 py-1.5 rounded-lg hover:bg-surface-soft transition whitespace-nowrap"
+                className="text-[12px] font-semibold uppercase tracking-[0.12em] text-body hover:text-theme-accent px-4 py-2 transition-colors whitespace-nowrap"
               >
                 {item.label}
               </Link>
@@ -67,15 +72,45 @@ export default async function KennelSiteLayout({
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t border-hairline mt-12 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center text-xs text-muted">
-          <p className="font-semibold text-ink mb-1">{kennel.name}</p>
-          {(kennel.city || kennel.country) && (
-            <p>{[kennel.city, kennel.country].filter(Boolean).join(', ')}</p>
-          )}
-          <p className="mt-3">
-            Sitio creado con <Link href="https://genealogic.io" className="hover:text-ink underline">Genealogic</Link>
-          </p>
+      {/* Footer + stripe tricolor superior como cierre visual */}
+      <AccentStripe theme={theme} />
+      <footer className="bg-surface-soft py-14 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
+          <div className="flex items-start justify-between gap-8 flex-wrap">
+            <div>
+              <p
+                className="text-2xl font-bold text-ink tracking-tight"
+                style={{ fontFamily: 'var(--font-display, inherit)' }}
+              >
+                {kennel.name}
+              </p>
+              {(kennel.city || kennel.country) && (
+                <p className="mt-2 text-sm text-body">
+                  {[kennel.city, kennel.country].filter(Boolean).join(' · ')}
+                </p>
+              )}
+            </div>
+            <nav className="flex flex-wrap gap-x-6 gap-y-2 max-w-xl justify-end">
+              {navItems.map(item => (
+                <Link
+                  key={`f-${item.href}`}
+                  href={item.href}
+                  className="text-[12px] font-semibold uppercase tracking-[0.12em] text-muted hover:text-theme-accent transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="mt-12 pt-6 border-t border-hairline flex items-center justify-between gap-4 flex-wrap text-[11px] text-muted">
+            <p>© {new Date().getFullYear()} {kennel.name}. Todos los derechos reservados.</p>
+            <p>
+              Sitio creado con{' '}
+              <Link href="https://genealogic.io" className="font-semibold text-body hover:text-theme-accent transition-colors uppercase tracking-[0.12em]">
+                Genealogic
+              </Link>
+            </p>
+          </div>
         </div>
       </footer>
     </div>

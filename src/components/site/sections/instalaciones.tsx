@@ -2,6 +2,7 @@
  * Secciones "Instalaciones" — light theme.
  */
 import Link from 'next/link'
+import { SectionHeader } from '@/components/site/section-primitives'
 
 export function FacilitiesHeroSection({
   eyebrow, title, subtitle, body, background_image_url, bg_image_url,
@@ -87,44 +88,27 @@ export function GalleryGridSection({
   if (layout === 'masonry') {
     const colsClass = columns === 2 ? 'sm:columns-2' : columns === 4 ? 'sm:columns-2 lg:columns-4' : 'sm:columns-2 lg:columns-3'
     return (
-      <section className="py-16 lg:py-24 relative overflow-hidden">
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-          {(title || subtitle || eyebrow) && (
-            <div className="mb-12 lg:mb-16 text-center">
-              {eyebrow && (
-                <p className="flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted mb-4">
-                  <span className="inline-block h-px w-8 bg-muted/40" />
-                  {eyebrow}
-                  <span className="inline-block h-px w-8 bg-muted/40" />
-                </p>
-              )}
-              {title && (
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-ink tracking-[-0.03em] leading-[1.05]">
-                  {title}
-                </h2>
-              )}
-              {subtitle && (
-                <p className="text-base md:text-lg text-body mt-4 max-w-2xl mx-auto leading-relaxed">{subtitle}</p>
-              )}
-            </div>
-          )}
+      <section className="py-20 lg:py-28 relative overflow-hidden">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-10">
+          <SectionHeader number="05" eyebrow={eyebrow ?? 'Comunidad'} title={title} subtitle={subtitle} align="left" />
           <div className={`columns-1 ${colsClass} gap-4 lg:gap-5 [&>*]:mb-4 lg:[&>*]:mb-5`}>
             {images.map((im, i) => (
               <figure
                 key={i}
-                className="group relative break-inside-avoid rounded-2xl overflow-hidden bg-surface-card ring-1 ring-hairline shadow-sm hover:shadow-2xl hover:ring-ink/15 transition-all duration-500"
+                className="group relative break-inside-avoid overflow-hidden bg-surface-card ring-1 ring-hairline shadow-sm hover:shadow-2xl hover:ring-theme-accent transition-all duration-500"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={im.url}
                   alt={im.alt || ''}
                   loading="lazy"
-                  className="w-full h-auto object-cover group-hover:scale-[1.04] transition-transform duration-[900ms] ease-out"
+                  className="w-full h-auto object-cover group-hover:scale-[1.05] transition-transform duration-[900ms] ease-out"
                 />
                 {/* Overlay con gradiente + caption */}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 {im.alt && (
                   <figcaption className="pointer-events-none absolute bottom-0 left-0 right-0 p-5 text-white opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
+                    <span className="block h-[2px] w-8 bg-theme-accent mb-3" />
                     <p className="text-[13.5px] font-medium leading-snug drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">
                       {im.alt}
                     </p>

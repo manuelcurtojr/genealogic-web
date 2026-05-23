@@ -5,6 +5,7 @@
 import Link from 'next/link'
 import { getCurrentKennel } from '@/lib/kennel-context'
 import { getAvailablePuppiesByKennel, getUpcomingLittersByKennel } from '@/lib/kennel/data'
+import { SectionHeader } from '@/components/site/section-primitives'
 
 type Cta = { label: string; href: string; variant?: 'primary' | 'outline' | 'ghost' }
 
@@ -62,7 +63,7 @@ export async function HeroSection(props: {
                   ? 'inline-flex items-center justify-center rounded-xl border border-white/35 backdrop-blur-sm bg-white/5 text-white px-7 py-3.5 text-[14px] font-semibold hover:bg-white/15 hover:border-white/60 transition-all'
                   : c.variant === 'ghost'
                     ? 'inline-flex items-center justify-center rounded-xl text-white px-7 py-3.5 text-[14px] font-semibold hover:bg-white/10 transition-all'
-                    : 'inline-flex items-center justify-center rounded-xl bg-[var(--brand)] text-[var(--on-primary)] px-7 py-3.5 text-[14px] font-semibold shadow-2xl shadow-black/30 hover:bg-[var(--brand-hover)] hover:translate-y-[-1px] hover:shadow-3xl transition-all'}
+                    : 'btn-brand inline-flex items-center justify-center rounded-xl px-7 py-3.5 text-[14px] font-semibold shadow-2xl shadow-black/30'}
               >
                 {c.label}
               </Link>
@@ -93,55 +94,51 @@ export async function ThreePillarsSection(props: {
 }) {
   const { title, subtitle, pillars = [] } = props
   return (
-    <section className="relative py-20 lg:py-32 overflow-hidden">
-      {/* Background sutil con grid pattern */}
+    <section className="relative py-24 lg:py-36 overflow-hidden">
       <div
-        className="absolute inset-0 opacity-[0.02] pointer-events-none"
+        className="absolute inset-0 opacity-[0.025] pointer-events-none"
         style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0,0,0,1) 1px, transparent 0)',
-          backgroundSize: '24px 24px',
+          backgroundImage: 'radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)',
+          backgroundSize: '28px 28px',
         }}
       />
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-14 lg:mb-20">
-          {title && (
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-ink tracking-[-0.035em] leading-[1.05]">
-              {title}
-            </h2>
-          )}
-          {subtitle && (
-            <p className="mt-5 text-lg text-body max-w-2xl mx-auto leading-relaxed">{subtitle}</p>
-          )}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-hairline rounded-2xl overflow-hidden border border-hairline">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-10">
+        <SectionHeader number="01" eyebrow="La casa" title={title} subtitle={subtitle} align="center" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-hairline rounded-none overflow-hidden border-y border-hairline">
           {pillars.map((p, i) => {
-            // Si el title empieza por un número (50/12/17.000), lo separamos para hero-size
             const m = p.title.match(/^([\d.,]+\s*\S*?)\s+(.+)$/)
             const bigNumber = m ? m[1] : null
             const restTitle = m ? m[2] : p.title
             return (
               <div
                 key={i}
-                className="group relative bg-canvas p-8 lg:p-10 transition-colors hover:bg-surface-soft"
+                className="group relative bg-canvas p-10 lg:p-12 transition-colors hover:bg-surface-soft"
               >
-                {p.icon && (
-                  <div className="text-3xl mb-5 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-transform">
-                    {p.icon}
-                  </div>
-                )}
+                {/* Index number top-right como BMW M */}
+                <span className="absolute top-6 right-6 text-theme-accent text-[11px] font-mono tracking-[0.2em] opacity-70">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
                 {bigNumber ? (
                   <>
-                    <p className="text-5xl md:text-6xl font-bold text-ink leading-none tracking-[-0.03em] tabular-nums">
+                    <p
+                      className="text-6xl md:text-7xl lg:text-[88px] font-bold text-ink leading-[0.9] tracking-[-0.03em] tabular-nums"
+                      style={{ fontFamily: 'var(--font-display, inherit)' }}
+                    >
                       {bigNumber}
                     </p>
-                    <h3 className="mt-2 text-[15px] font-semibold uppercase tracking-[0.06em] text-muted">
+                    {/* Línea de acento debajo del número (signature BMW M) */}
+                    <span className="block mt-4 h-[3px] w-12 bg-theme-accent" />
+                    <h3 className="mt-5 text-[12px] font-semibold uppercase tracking-[0.18em] text-muted">
                       {restTitle}
                     </h3>
                   </>
                 ) : (
-                  <h3 className="text-2xl font-bold text-ink leading-tight">{p.title}</h3>
+                  <>
+                    <h3 className="text-2xl font-bold text-ink leading-tight tracking-[-0.01em]">{p.title}</h3>
+                    <span className="block mt-4 h-[3px] w-12 bg-theme-accent" />
+                  </>
                 )}
-                <p className="mt-4 text-[14px] text-body leading-[1.6]">{p.body}</p>
+                <p className="mt-5 text-[14.5px] text-body leading-[1.7]">{p.body}</p>
               </div>
             )
           })}
@@ -167,22 +164,29 @@ export async function AvailablePuppiesStripSection(props: {
   if (puppies.length === 0 && litters.length === 0 && !editMode) return null
 
   return (
-    <section className="py-16 lg:py-24 bg-surface-card/30 border-y border-hairline">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-end justify-between gap-4 mb-10 flex-wrap">
+    <section className="py-20 lg:py-28 bg-surface-card/30 border-y border-hairline">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10">
+        <div className="flex items-end justify-between gap-4 mb-12 flex-wrap">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted mb-3 flex items-center gap-2">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Datos en vivo
-            </p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-ink tracking-[-0.03em] leading-[1.05]">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="text-theme-accent font-mono text-[11px] tracking-[0.2em]">02</span>
+              <span className="inline-block h-px w-8 bg-theme-accent opacity-60" />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted inline-flex items-center gap-2">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Datos en vivo
+              </span>
+            </div>
+            <h2
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-ink tracking-[-0.025em] leading-[0.95]"
+              style={{ fontFamily: 'var(--font-display, inherit)' }}
+            >
               {title}
             </h2>
-            {subtitle && <p className="text-base text-body mt-3 max-w-xl">{subtitle}</p>}
+            {subtitle && <p className="text-base text-body mt-4 max-w-xl">{subtitle}</p>}
           </div>
           <Link
             href={cta_href}
-            className="group inline-flex items-center gap-2 text-[13.5px] font-semibold text-ink hover:gap-3 transition-all"
+            className="group inline-flex items-center gap-2 text-[13px] font-semibold text-ink hover:text-theme-accent hover:gap-3 transition-all uppercase tracking-[0.12em]"
           >
             Ver todos
             <span className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
