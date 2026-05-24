@@ -65,7 +65,7 @@ export async function updateSession(request: NextRequest) {
   // Rutas Pro (requieren plan = 'pro' o 'premium')
   const proRoutePrefixes = [
     '/reservas', '/clientes', '/emailbot', '/conocimiento',
-    '/web', '/estadisticas', '/newsletter', '/cuenta',
+    '/web', '/estadisticas', '/visitas', '/newsletter', '/cuenta',
   ]
   const isProRoute = proRoutePrefixes.some(p => pathname === p || pathname.startsWith(p + '/'))
 
