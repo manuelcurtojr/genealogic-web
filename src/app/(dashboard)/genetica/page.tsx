@@ -65,7 +65,7 @@ export default async function GeneticaPage({
       <div>
         <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Crianza</p>
         <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-          Genética
+          Genotipos
         </h1>
         <p className="mt-2 text-[14px] text-body">
           Registra el color visible de tus perros (lo más común) o su genotipo DNA si tienes tests. Los datos alimentan la predicción de cruces en el planificador.

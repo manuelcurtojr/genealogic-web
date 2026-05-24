@@ -64,28 +64,29 @@ export interface NavSection {
 //   - requiresAdmin    → solo profiles.role = 'admin'
 export const NAV_SECTIONS: NavSection[] = [
   // ── Principal — siempre visible ──────────────────────────────────────
+  // Notificaciones se accede vía la campana del header (siempre visible);
+  // duplicarla aquí solo añade ruido.
   {
     id: 'main',
     label: '',
     items: [
       { label: 'Escritorio', href: '/dashboard', icon: 'LayoutDashboard' },
       { label: 'Buscar', href: '/search', icon: 'Search' },
-      { label: 'Notificaciones', href: '/notifications', icon: 'Bell' },
       { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
     ],
   },
 
   // ── Genealogía — herramientas core del criador ──────────────────────
+  // Reproducción y Veterinario viven como tabs del subnav de /calendar
+  // (mismo módulo "tiempo"); no se duplican aquí.
   {
     id: 'genealogy',
     label: 'Genealogía',
     items: [
       { label: 'Perros', href: '/dogs', icon: 'Dog' },
       { label: 'Camadas', href: '/litters', icon: 'Baby', requiresKennel: true },
-      { label: 'Cruces', href: '/cruces', icon: 'GitCompareArrows', requiresKennel: true },
-      { label: 'Reproducción', href: '/reproduccion', icon: 'Heart', requiresKennel: true },
-      { label: 'Genética', href: '/genetica', icon: 'Dna', requiresKennel: true },
-      { label: 'Veterinario', href: '/vet', icon: 'Stethoscope' },
+      { label: 'Simulador de cruces', href: '/cruces', icon: 'GitCompareArrows', requiresKennel: true },
+      { label: 'Genotipos', href: '/genetica', icon: 'Dna', requiresKennel: true },
     ],
   },
 
@@ -114,9 +115,11 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
 
-  // ── Criadero — info pública + extensión web + cobros + integraciones ─
-  // Absorbe lo que era "Web pública" y "Cuenta → Dominio" porque todo es
-  // una extensión natural del criadero.
+  // ── Criadero — solo entradas principales ────────────────────────────
+  // Dominio, Pagos (Stripe) y API keys son configuración interna del
+  // kennel; viven dentro de /kennel (no se duplican en sidebar).
+  // Visitas también va dentro porque es parte del análisis del criadero;
+  // dejamos Estadísticas como vista más general operativa.
   {
     id: 'kennel',
     label: 'Criadero',
@@ -124,11 +127,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Mi criadero', href: '/kennel', icon: 'Store', requiresKennel: true },
       { label: 'Páginas web', href: '/web', icon: 'Globe', requiresPro: true, requiresKennel: true },
-      { label: 'Visitas', href: '/visitas', icon: 'TrendingUp', requiresPro: true, requiresKennel: true },
       { label: 'Estadísticas', href: '/estadisticas', icon: 'BarChart3', requiresPro: true, requiresKennel: true },
-      { label: 'Dominio', href: '/cuenta/dominio', icon: 'Link2', requiresPro: true, requiresKennel: true },
-      { label: 'Pagos (Stripe)', href: '/kennel/pagos', icon: 'CreditCard', requiresKennel: true },
-      { label: 'API keys', href: '/kennel/api', icon: 'Key', requiresKennel: true },
     ],
   },
 

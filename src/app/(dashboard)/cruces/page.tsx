@@ -78,7 +78,7 @@ export default function PlannerPage() {
       <div>
         <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Crianza</p>
         <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-          Planificador de cruces
+          Simulador de cruces
         </h1>
         <p className="mt-2 text-[14px] text-body">
           Selecciona un macho y una hembra para ver la genealogía combinada de la camada hipotética.

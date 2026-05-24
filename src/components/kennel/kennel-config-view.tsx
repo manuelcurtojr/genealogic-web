@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Edit, Globe, ExternalLink, Settings, Camera, Loader2, Dog, Heart, Baby,
-  Eye, Key, Link2, ArrowRight, Inbox,
+  Eye, Key, Link2, ArrowRight, Inbox, CreditCard, TrendingUp,
 } from 'lucide-react'
 import KennelEditPanel from './kennel-edit-panel'
 import PublicViewToggle from './public-view-toggle'
@@ -98,11 +98,24 @@ export default function KennelConfigView({ kennel, stats, hasCustomWeb = false, 
       href: '/web',
     },
     {
+      label: 'Visitas a la web',
+      desc: 'Analíticas de tráfico, países, dispositivos y páginas más vistas.',
+      icon: TrendingUp,
+      href: '/visitas',
+      requiresPro: true,
+    },
+    {
       label: 'Dominio personalizado',
       desc: 'Conecta tu dominio propio (criadero.com).',
       icon: Link2,
       href: '/cuenta/dominio',
       requiresPro: true,
+    },
+    {
+      label: 'Pagos online (Stripe)',
+      desc: 'Conecta Stripe Connect para cobrar reservas y entregas online.',
+      icon: CreditCard,
+      href: '/kennel/pagos',
     },
     {
       label: 'API keys',
