@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import DogsPageClient from '@/components/dogs/dogs-page-client'
+import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
 
 export default async function DogsPage() {
   const supabase = await createClient()
@@ -32,7 +33,7 @@ export default async function DogsPage() {
   return (
     <div>
       <DogsPageClient
-        dogs={dogsRes.data || []}
+        dogs={sortDogsPhotoFirst(dogsRes.data || [])}
         breeds={breedsRes.data || []}
         userId={user!.id}
         isBreeder={isBreeder}

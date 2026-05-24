@@ -9,6 +9,7 @@
 import 'server-only'
 import { cache } from 'react'
 import { createKennelAdminClient } from '@/lib/supabase/server'
+import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
 
 export type MyDog = {
   id: string
@@ -51,7 +52,8 @@ export const getMyDogs = cache(async (userId: string): Promise<MyDog[]> => {
     .eq('owner_id', userId)
     .not('delivered_from_reservation_id', 'is', null)
     .order('birth_date', { ascending: false })
-  return (data as MyDog[]) ?? []
+  // Foto primero (sort estable mantiene birth_date desc dentro del grupo)
+  return sortDogsPhotoFirst((data as MyDog[]) ?? [])
 })
 
 /** Ficha de un perro propio. */

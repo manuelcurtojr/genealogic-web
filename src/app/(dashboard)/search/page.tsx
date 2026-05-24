@@ -8,6 +8,7 @@ import { BRAND } from '@/lib/constants'
 import { getLocalizedCountries } from '@/lib/countries'
 import { DogImage } from '@/components/ui/dog-image'
 import { pastelByName } from '@/lib/avatars'
+import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
 
 type Tab = 'dogs' | 'kennels'
 
@@ -83,7 +84,8 @@ function DogsSearch() {
     if (forSaleOnly) q = q.eq('is_for_sale', true)
 
     const { data } = await q
-    setResults(data || [])
+    // Foto primero — los que no tienen quedan al final del listado
+    setResults(sortDogsPhotoFirst(data || []))
     setLoading(false)
     setLoaded(true)
   }, [query, breedFilter, sexFilter, forSaleOnly])

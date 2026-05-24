@@ -5,6 +5,7 @@ import { GitBranch } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
+import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
 
 interface OffspringProps {
   dogId: string
@@ -35,7 +36,8 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
         .eq(parentField, dogId)
         .order('birth_date', { ascending: false })
 
-      setOffspring(data || [])
+      // Foto primero, manteniendo birth_date desc dentro de cada grupo
+      setOffspring(sortDogsPhotoFirst(data || []))
       setLoading(false)
     }
     fetch()

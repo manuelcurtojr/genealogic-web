@@ -7,6 +7,7 @@ import { pastelByName } from '@/lib/avatars'
 import KennelPublicTabs from '@/components/kennel/kennel-public-tabs'
 import PageTracker from '@/components/track/page-tracker'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
+import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -92,7 +93,8 @@ export default async function KennelDetailPage({
     .maybeSingle()
   const hasCustomWeb = !!customPage && !!kennel.slug
 
-  const dogs = allDogs || []
+  // Foto primero — nunca cajas vacías en el primer pantallazo
+  const dogs = sortDogsPhotoFirst(allDogs || [])
   const litters = allLitters || []
   const forSale = dogs.filter((d: any) => d.is_for_sale)
   const reproductores = dogs.filter((d: any) => d.is_reproductive && !d.is_for_sale)

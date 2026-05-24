@@ -8,6 +8,7 @@
 import 'server-only'
 import { cache } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
 
 export type SiteDog = {
   id: string
@@ -66,7 +67,10 @@ export const getDogsByKennel = cache(async (kennelId: string): Promise<SiteDog[]
     .eq('kennel_id', kennelId)
     .eq('is_public', true)
     .order('birth_date', { ascending: false })
-  return (data as any) || []
+  // Primero los que tienen foto: en el primer pantallazo de la web nunca
+  // se ven cajas vacías. Sort estable mantiene el orden por birth_date dentro
+  // de cada grupo (con foto / sin foto).
+  return sortDogsPhotoFirst((data as any) || [])
 })
 
 export const getReproductiveDogsByKennel = cache(async (kennelId: string): Promise<SiteDog[]> => {
