@@ -7,6 +7,11 @@ import OwnerFloatingNav from '@/components/kennel/owner-floating-nav'
 import { getTheme, applyOverrides } from '@/lib/kennel/themes'
 import { ThemeInjector, AccentStripe } from '@/components/site/theme-injector'
 
+// Sin cache estática: el nav refleja al instante los cambios de páginas
+// (activar/desactivar) hechos en /web. Combina bien con revalidatePath()
+// que disparan las server actions.
+export const dynamic = 'force-dynamic'
+
 export default async function KennelSiteLayout({
   children, params,
 }: {

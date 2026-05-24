@@ -201,6 +201,10 @@ export async function togglePageEnabled(slug: string, enabled: boolean) {
     .eq('kennel_id', kennel.id)
     .eq('slug', slug);
   revalidatePath('/web');
+  // Invalida también la web pública para que el menú refleje el cambio
+  // inmediatamente (sin esto el nav cacheado seguía mostrando el link
+  // → 404 al pulsarlo).
+  revalidatePath(`/c/${kennel.slug}`, 'layout');
 }
 
 export async function updateNavLabel(slug: string, navLabel: string | null) {
@@ -211,6 +215,7 @@ export async function updateNavLabel(slug: string, navLabel: string | null) {
     .eq('kennel_id', kennel.id)
     .eq('slug', slug);
   revalidatePath('/web');
+  revalidatePath(`/c/${kennel.slug}`, 'layout');
 }
 
 export async function reorderPages(slugsInOrder: string[]) {

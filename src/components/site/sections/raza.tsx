@@ -6,19 +6,48 @@ export async function BreedHeroSection(props: {
   breed_name?: string
   tagline?: string
   background_image_url?: string
+  bg_image_url?: string
+  eyebrow?: string
+  title?: string
+  subtitle?: string
 }) {
+  // Acepta tanto los nombres específicos (breed_name, tagline) como los
+  // aliases del schema genérico de hero (title, subtitle, bg_image_url).
+  const bg = props.background_image_url || props.bg_image_url
+  const title = props.title || props.breed_name || 'Nuestra raza'
+  const subtitle = props.subtitle || props.tagline
+  const eyebrow = props.eyebrow || 'Sobre la raza'
   return (
-    <section className="relative min-h-[40vh] flex items-center bg-ink overflow-hidden">
-      {props.background_image_url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={props.background_image_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+    <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-[#0a0a0a]">
+      {bg && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={bg}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover scale-105 motion-safe:animate-[heroZoom_30s_ease-out_infinite_alternate]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/15" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-transparent to-transparent" />
+          <div className="absolute inset-0 shadow-[inset_0_0_180px_rgba(0,0,0,0.55)]" />
+        </>
       )}
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-16 lg:py-20 w-full">
-        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/80 mb-3">Sobre la raza</p>
-        <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight tracking-tight mb-4">
-          {props.breed_name || 'Nuestra raza'}
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-8 lg:px-10 pb-12 lg:pb-20 pt-28 w-full">
+        <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90 mb-5">
+          <span className="inline-block h-px w-8 bg-theme-accent" />
+          {eyebrow}
+        </p>
+        <h1
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[0.95] tracking-[-0.035em] mb-5 max-w-4xl drop-shadow-[0_2px_30px_rgba(0,0,0,0.5)]"
+          style={{ fontFamily: 'var(--font-display, inherit)' }}
+        >
+          {title}
         </h1>
-        {props.tagline && <p className="text-lg text-white/85 max-w-2xl">{props.tagline}</p>}
+        {subtitle && (
+          <p className="text-lg text-white/85 max-w-2xl leading-[1.55] drop-shadow-[0_1px_10px_rgba(0,0,0,0.5)]">
+            {subtitle}
+          </p>
+        )}
       </div>
     </section>
   )
