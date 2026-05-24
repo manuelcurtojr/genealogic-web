@@ -2,14 +2,15 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BarChart3, TrendingUp } from 'lucide-react'
+import { BarChart3, TrendingUp, Globe } from 'lucide-react'
 
 /**
- * Subnav compartido entre /analytics (Negocio) y /estadisticas (Operativa).
+ * Subnav compartido entre /analytics (Negocio), /estadisticas (Operativa)
+ * y /visitas (Web — tráfico del criadero).
  *
- * Ambas miden cosas distintas pero el criador las percibe como "métricas"
- * en general. Este subnav las une visualmente sin tocar la lógica de
- * cada página.
+ * Las tres miden cosas distintas pero el criador las percibe como
+ * "métricas" en general. Este subnav las une visualmente sin tocar la
+ * lógica de cada página.
  */
 export default function AnalyticsSubnav() {
   const pathname = usePathname()
@@ -25,9 +26,16 @@ export default function AnalyticsSubnav() {
     {
       href: '/estadisticas',
       label: 'Operativa',
-      hint: 'Reservas, clientes, biblioteca, newsletter, web pública',
+      hint: 'Reservas, clientes, biblioteca, newsletter — resumen ejecutivo',
       icon: TrendingUp,
       active: pathname === '/estadisticas' || pathname.startsWith('/estadisticas/'),
+    },
+    {
+      href: '/visitas',
+      label: 'Visitas web',
+      hint: 'Tráfico de tu web pública — visitantes, fuentes, países, dispositivos',
+      icon: Globe,
+      active: pathname === '/visitas' || pathname.startsWith('/visitas/'),
     },
   ]
 
