@@ -274,3 +274,16 @@ select option {
   opacity: 0.55;
 }
 .kennel-section-divider > * { flex: 1; }
+
+/* Estilos del preview/render de contratos (markdown → HTML). */
+.contract-preview h1 { font-size: 1.5rem; font-weight: 700; margin: 1rem 0 0.75rem; color: var(--ink); }
+.contract-preview h2 { font-size: 1.125rem; font-weight: 700; margin: 1.25rem 0 0.5rem; color: var(--ink); }
+.contract-preview h3 { font-size: 1rem; font-weight: 600; margin: 1rem 0 0.5rem; color: var(--ink); }
+.contract-preview p { margin: 0.5rem 0; line-height: 1.6; }
+.contract-preview ul, .contract-preview ol { margin: 0.5rem 0 0.5rem 1.25rem; }
+.contract-preview ul li { list-style: disc; margin: 0.25rem 0; }
+.contract-preview ol li { list-style: decimal; margin: 0.25rem 0; }
+.contract-preview strong { font-weight: 600; }
+.contract-preview em { font-style: italic; }
+.contract-preview hr { margin: 1.5rem 0; border: 0; border-top: 1px solid var(--hairline); }
+.contract-preview a { color: var(--ink); text-decoration: underline; }

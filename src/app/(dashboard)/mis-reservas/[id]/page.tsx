@@ -233,22 +233,22 @@ export default async function MyReservationDetailPage({
           </section>
 
           <section className="rounded-2xl border border-hairline bg-canvas p-5">
-            <h2 className="text-base font-bold text-ink mb-4">Contrato</h2>
+            <h2 className="text-base font-bold text-ink mb-3">Contrato</h2>
             {reservation.contract_signed_at ? (
-              <div>
-                <p className="text-sm font-semibold text-emerald-700">
-                  ✓ Firmado el {formatDate(reservation.contract_signed_at)}
-                </p>
-                <p className="mt-2 text-[11px] text-muted">
-                  Próximamente: descargar PDF firmado.
-                </p>
-              </div>
+              <p className="text-sm font-semibold text-emerald-700 mb-3">
+                ✓ Firmado el {formatDate(reservation.contract_signed_at)}
+              </p>
             ) : (
-              <p className="text-sm text-muted">
-                El criador aún no ha generado el contrato. Cuando lo haga, podrás
-                revisarlo y firmarlo desde aquí.
+              <p className="text-sm text-muted mb-3">
+                Revisa el estado del contrato y fírmalo cuando el criador lo envíe.
               </p>
             )}
+            <Link
+              href={`/mis-reservas/${reservation.id}/contrato`}
+              className="inline-flex items-center gap-1 w-full justify-center rounded-lg border border-hairline px-3 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
+            >
+              Abrir contrato →
+            </Link>
           </section>
 
           <section>
