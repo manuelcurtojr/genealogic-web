@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateReply, type BotContext } from '@/lib/emailbot'
 import { logAIUsage } from '@/lib/ai/track'
+import { checkBotReplyQuota, quotaReasonMessage } from '@/lib/ai/quotas'
 
 export const maxDuration = 30
 

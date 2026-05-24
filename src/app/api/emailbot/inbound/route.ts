@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { generateReply, type BotContext, type BotMessage } from '@/lib/emailbot'
 import { logAIUsage } from '@/lib/ai/track'
+import { checkBotReplyQuota } from '@/lib/ai/quotas'
 
 export const maxDuration = 60
 
@@ -193,6 +194,29 @@ export async function POST(request: NextRequest) {
       .update({ status: 'derived_to_human', last_message_at: new Date().toISOString() })
       .eq('id', thread.id)
     return NextResponse.json({ ok: true, status: 'escalated_max_replies' })
+  }
+
+  // ─── Quota mensual del plan ──────────────────────────────────────────────
+  // Si el kennel ya consumió sus respuestas del mes, NO respondemos pero el
+  // email queda guardado en el hilo y se escala a humano con razón clara.
+  // El criador lo verá en /emailbot/hilos y en /cuenta/facturacion.
+  const quota = await checkBotReplyQuota({ kennelId: cfg.kennel_id })
+  if (!quota.allowed) {
+    await admin
+      .from('emailbot_threads')
+      .update({
+        status: 'derived_to_human',
+        last_message_at: new Date().toISOString(),
+      })
+      .eq('id', thread.id)
+    return NextResponse.json({
+      ok: true,
+      status: 'escalated_quota_exceeded',
+      reason: quota.reason,
+      plan: quota.plan,
+      used: quota.used,
+      limit: quota.limit,
+    })
   }
 
   // ─── Generar respuesta ───────────────────────────────────────────────────
