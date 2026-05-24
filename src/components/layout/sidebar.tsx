@@ -30,13 +30,15 @@ interface SidebarProps {
   kennel: { name: string; logo_url: string | null } | null
   plan: string
   planIsFounder?: boolean
+  /** Si el user tiene reservas vinculadas o perros transferidos como cliente. */
+  isClient?: boolean
   mobileOpen: boolean
   onClose: () => void
   collapsed: boolean
   onToggleCollapse: () => void
 }
 
-export default function Sidebar({ user, kennel, plan, planIsFounder, mobileOpen, onClose, collapsed, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = false, mobileOpen, onClose, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const userRole = user?.role || 'owner'
@@ -56,6 +58,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, mobileOpen,
     .filter(section => {
       if (section.requiresKennel && !isBreeder) return false
       if (section.requiresPro && !userHasPro) return false
+      if (section.requiresClient && !isClient) return false
       return true
     })
     .map(section => ({
@@ -63,6 +66,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, mobileOpen,
       items: section.items.filter(item => {
         if (item.requiresKennel && !isBreeder) return false
         if (item.requiresPro && !userHasPro) return false
+        if (item.requiresClient && !isClient) return false
         if (item.hideIfPro && userHasPro) return false
         return true
       }),

@@ -28,6 +28,8 @@ export interface NavItem {
   requiresPro?: boolean
   /** Si el usuario ES pro, este item se oculta (porque hay uno mejor) */
   hideIfPro?: boolean
+  /** Solo visible si el user tiene reservas/perros como cliente */
+  requiresClient?: boolean
 }
 
 export interface NavSection {
@@ -35,6 +37,8 @@ export interface NavSection {
   label: string
   requiresKennel?: boolean
   requiresPro?: boolean
+  /** Solo visible si el user es cliente (tiene reservas/perros recibidos) */
+  requiresClient?: boolean
   items: NavItem[]
 }
 
@@ -70,6 +74,20 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Criadero', href: '/kennel', icon: 'Store', requiresKennel: true },
       // Emailbot como sección propia (con tabs internos para Hilos / Test / Biblioteca)
       { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresPro: true, requiresKennel: true },
+    ],
+  },
+  // ── Bloque propietario (cliente) ─────────────────────────────────────
+  // Aparece solo si el user tiene reservas vinculadas (puppy_reservations.
+  // client_user_id = me) o perros transferidos (dogs.owner_id = me con
+  // delivered_from_reservation_id NOT NULL). Un user puede ser
+  // criador Y cliente a la vez (criador que compra a otro criador).
+  {
+    id: 'client',
+    label: 'Propietario',
+    requiresClient: true,
+    items: [
+      { label: 'Mis reservas', href: '/mis-reservas', icon: 'KanbanSquare', requiresClient: true },
+      { label: 'Mis perros', href: '/mis-perros', icon: 'Dog', requiresClient: true },
     ],
   },
 ]

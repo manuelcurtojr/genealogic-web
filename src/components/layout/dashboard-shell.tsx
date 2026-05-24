@@ -18,10 +18,13 @@ interface DashboardShellProps {
   plan: string
   planIsFounder?: boolean
   userId?: string
+  /** True si el user tiene al menos una reserva vinculada o un perro
+   *  transferido como cliente. Activa el bloque "Propietario" del sidebar. */
+  isClient?: boolean
   children: React.ReactNode
 }
 
-export default function DashboardShell({ user, kennel, plan, planIsFounder, userId, children }: DashboardShellProps) {
+export default function DashboardShell({ user, kennel, plan, planIsFounder, userId, isClient, children }: DashboardShellProps) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
@@ -157,6 +160,7 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
         kennel={kennel}
         plan={plan}
         planIsFounder={planIsFounder}
+        isClient={isClient ?? false}
         mobileOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
         collapsed={collapsed}

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import DashboardShell from '@/components/layout/dashboard-shell'
 import PublicHeader from '@/components/layout/public-header'
+import { getEffectiveRoles } from '@/lib/auth/roles'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -32,6 +33,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const plan = (profile as any)?.plan || 'free'
   const planIsFounder = Boolean((profile as any)?.plan_is_founder)
 
+  // Detecta roles efectivos del user (isClient = tiene reservas o perros transferidos).
+  // Si es client, el sidebar muestra el bloque "Propietario" con Mis reservas/perros.
+  const roles = await getEffectiveRoles(user.id)
+
   return (
     <DashboardShell
       user={profile}
@@ -39,6 +44,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       plan={plan}
       planIsFounder={planIsFounder}
       userId={user.id}
+      isClient={roles.isClient}
     >
       {children}
     </DashboardShell>
