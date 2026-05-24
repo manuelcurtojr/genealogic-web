@@ -1,8 +1,23 @@
+/**
+ * Panel deslizante de notificaciones (header → campana).
+ * Versión mejorada con:
+ *  - Iconos por tipo consistentes con /notifications (catálogo unificado)
+ *  - Realtime: nuevas notifs aparecen al instante
+ *  - Mensajes humanizados (imports JSON → "X perros importados")
+ *  - Botón "Ver todas" → /notifications
+ */
 'use client'
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { X, Bell, Calendar, Stethoscope, Trophy, UserPlus, HandCoins, Loader2, Check, Link2 } from 'lucide-react'
+import {
+  X, Loader2, Check, ArrowRight,
+  Bell, Calendar, Stethoscope, Trophy, UserPlus, HandCoins, MessageSquare,
+  FileText, PenSquare, CreditCard, CircleDollarSign, Dog, PartyPopper,
+  Baby, KanbanSquare, Upload, Store, Info,
+} from 'lucide-react'
+import Link from 'next/link'
+import { getNotificationMeta, timeAgo } from '@/lib/notifications/types'
 
 interface Notification {
   id: string
@@ -19,43 +34,23 @@ interface NotificationsPanelProps {
   onClose: () => void
 }
 
-function getNotifIcon(type: string) {
-  switch (type) {
-    case 'vet': return Stethoscope
-    case 'calendar': return Calendar
-    case 'award': return Trophy
-    case 'contact': return UserPlus
-    case 'deal': return HandCoins
-    case 'import': return Link2
-    case 'import_draft': return Link2
-    default: return Bell
-  }
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Bell, Calendar, Stethoscope, Trophy, UserPlus, HandCoins, MessageSquare,
+  FileText, PenSquare, CreditCard, CircleDollarSign, Dog, PartyPopper,
+  Baby, KanbanSquare, Upload, Store, Info,
 }
 
-function getNotifColor(type: string) {
-  switch (type) {
-    case 'vet': return 'bg-blue-500/15 text-blue-400'
-    case 'calendar': return 'bg-purple-500/15 text-purple-400'
-    case 'contact': return 'bg-green-500/15 text-green-400'
-    case 'deal': return 'bg-orange-500/15 text-orange-400'
-    case 'award': return 'bg-yellow-500/15 text-yellow-400'
-    case 'import': return 'bg-surface-card text-ink'
-    case 'import_draft': return 'bg-yellow-500/15 text-yellow-400'
-    default: return 'bg-surface-card text-muted'
+function renderMessage(n: Notification): string {
+  if (n.type === 'import') {
+    try {
+      const p = JSON.parse(n.message)
+      return `${p.createdIds?.length ?? p.count ?? 0} perros importados`
+    } catch {
+      return n.message
+    }
   }
-}
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'Ahora'
-  if (mins < 60) return `Hace ${mins} min`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `Hace ${hours}h`
-  const days = Math.floor(hours / 24)
-  if (days === 1) return 'Ayer'
-  if (days < 7) return `Hace ${days} dias`
-  return new Date(dateStr).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
+  if (n.type === 'import_draft') return 'Borrador pendiente de confirmar'
+  return n.message
 }
 
 export default function NotificationsPanel({ open, onClose }: NotificationsPanelProps) {
@@ -63,9 +58,34 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
   const [loading, setLoading] = useState(false)
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
 
+  // Realtime: mantener panel actualizado aunque esté cerrado (para que el badge funcione)
+  useEffect(() => {
+    const supabase = createClient()
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      channel = supabase
+        .channel('notifs-panel')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+          (payload) => {
+            setNotifications((prev) => [payload.new as Notification, ...prev])
+          },
+        )
+        .subscribe()
+    })
+    return () => {
+      if (channel) supabase.removeChannel(channel)
+    }
+  }, [])
+
+  // ESC para cerrar + load on open
   useEffect(() => {
     if (!open) return
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
   }, [open, onClose])
@@ -88,36 +108,44 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
   }
 
   async function markAsRead(id: string) {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)))
     const supabase = createClient()
     await supabase.from('notifications').update({ is_read: true }).eq('id', id)
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
   }
 
   async function markAllRead() {
-    const supabase = createClient()
-    const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id)
+    const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id)
     if (unreadIds.length === 0) return
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
+    const supabase = createClient()
     await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds)
-    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
   }
 
-  const unread = notifications.filter(n => !n.is_read).length
-  const filtered = filter === 'unread' ? notifications.filter(n => !n.is_read) : notifications
+  const unread = notifications.filter((n) => !n.is_read).length
+  const filtered = filter === 'unread' ? notifications.filter((n) => !n.is_read) : notifications
 
   return (
     <>
       <div
-        className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${
+          open ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={onClose}
       />
 
-      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-surface-card border-l border-hairline shadow-2xl transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}>
+      <div
+        className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-canvas border-l border-hairline shadow-2xl transition-transform duration-300 flex flex-col ${
+          open ? 'translate-x-0' : 'translate-x-full pointer-events-none'
+        }`}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-hairline flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-hairline flex-shrink-0">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">Notificaciones</h2>
+            <h2 className="text-lg font-semibold text-ink">Notificaciones</h2>
             {unread > 0 && (
-              <span className="bg-ink text-on-primary text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{unread}</span>
+              <span className="bg-ink text-on-primary text-[10px] font-bold rounded-full min-w-[20px] h-5 px-1.5 flex items-center justify-center">
+                {unread}
+              </span>
             )}
           </div>
           <button onClick={onClose} className="text-muted hover:text-ink transition">
@@ -126,18 +154,33 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-hairline px-6">
+        <div className="flex border-b border-hairline px-5">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${filter === 'all' ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}
+            className={`px-3 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${
+              filter === 'all'
+                ? 'border-ink text-ink'
+                : 'border-transparent text-muted hover:text-body'
+            }`}
           >
             Todas
           </button>
           <button
             onClick={() => setFilter('unread')}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${filter === 'unread' ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}
+            className={`px-3 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${
+              filter === 'unread'
+                ? 'border-ink text-ink'
+                : 'border-transparent text-muted hover:text-body'
+            }`}
           >
-            No leidas ({unread})
+            No leídas {unread > 0 && <span className="text-muted">({unread})</span>}
+          </button>
+          <button
+            onClick={markAllRead}
+            disabled={unread === 0}
+            className="ml-auto self-center text-xs text-muted hover:text-ink transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+          >
+            <Check className="w-3 h-3" /> Marcar leídas
           </button>
         </div>
 
@@ -148,53 +191,79 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
               <Loader2 className="w-5 h-5 animate-spin text-muted" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-muted">
+            <div className="flex flex-col items-center justify-center h-full text-muted px-6 text-center">
               <Bell className="w-10 h-10 mb-3 opacity-30" />
-              <p className="text-sm">{filter === 'unread' ? 'No tienes notificaciones sin leer' : 'No tienes notificaciones'}</p>
+              <p className="text-sm font-semibold text-ink">
+                {filter === 'unread' ? '¡Todo al día!' : 'Sin notificaciones'}
+              </p>
+              <p className="text-xs text-muted mt-1">
+                {filter === 'unread'
+                  ? 'No tienes nada pendiente.'
+                  : 'Te avisaremos aquí en tiempo real.'}
+              </p>
             </div>
           ) : (
-            <div className="divide-y divide-white/5">
-              {filtered.map(notif => {
-                const Icon = getNotifIcon(notif.type)
-                const iconClass = getNotifColor(notif.type)
+            <ul className="divide-y divide-hairline-soft">
+              {filtered.map((notif) => {
+                const meta = getNotificationMeta(notif.type)
+                const Icon = ICON_MAP[meta.icon] || Bell
                 return (
-                  <div
+                  <li
                     key={notif.id}
                     onClick={() => {
                       if (!notif.is_read) markAsRead(notif.id)
-                      if (notif.link) window.location.href = notif.link
+                      if (notif.link) {
+                        window.location.href = notif.link
+                        onClose()
+                      }
                     }}
-                    className={`px-6 py-4 hover:bg-surface-card transition cursor-pointer ${!notif.is_read ? 'bg-surface-card' : ''}`}
+                    className={`px-5 py-3.5 hover:bg-surface-soft transition cursor-pointer ${
+                      !notif.is_read ? 'bg-surface-soft/40' : ''
+                    }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${iconClass}`}>
-                        <Icon className="w-4 h-4" />
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: meta.color }}
+                      >
+                        <Icon className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className={`text-sm font-medium `}>{notif.title}</p>
-                          {!notif.is_read && <div className="w-2 h-2 rounded-full bg-ink flex-shrink-0" />}
+                          <p
+                            className={`text-sm truncate ${
+                              notif.is_read ? 'text-body' : 'font-semibold text-ink'
+                            }`}
+                          >
+                            {notif.title}
+                          </p>
+                          {!notif.is_read && (
+                            <div className="w-1.5 h-1.5 rounded-full bg-ink flex-shrink-0" />
+                          )}
                         </div>
-                        <p className="text-xs text-muted mt-0.5">{notif.type === 'import' ? (() => { try { const p = JSON.parse(notif.message); return `${p.createdIds?.length || 0} perros importados` } catch { return '' } })() : notif.type === 'import_draft' ? 'Borrador pendiente de confirmar' : notif.message}</p>
+                        <p className="text-xs text-muted mt-0.5 line-clamp-2">
+                          {renderMessage(notif)}
+                        </p>
                         <p className="text-[11px] text-muted mt-1">{timeAgo(notif.created_at)}</p>
                       </div>
                     </div>
-                  </div>
+                  </li>
                 )
               })}
-            </div>
+            </ul>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-3 border-t border-hairline flex-shrink-0">
-          <button
-            onClick={markAllRead}
-            disabled={unread === 0}
-            className="text-xs text-ink hover:opacity-80 transition font-medium disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
+        {/* Footer: link a página completa */}
+        <div className="px-5 py-3 border-t border-hairline flex-shrink-0">
+          <Link
+            href="/notifications"
+            onClick={onClose}
+            className="flex items-center justify-center gap-1.5 w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink transition"
           >
-            <Check className="w-3 h-3" /> Marcar todas como leidas
-          </button>
+            Ver centro de notificaciones
+            <ArrowRight className="w-3 h-3" />
+          </Link>
         </div>
       </div>
     </>

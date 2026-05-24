@@ -32,10 +32,34 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
   const [notifOpen, setNotifOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
+  // Cuenta de no leídas + suscripción realtime
   useEffect(() => {
     const supabase = createClient()
-    supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('is_read', false)
-      .then(({ count }) => setUnreadCount(count || 0))
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
+    async function refreshCount() {
+      const { count } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_read', false)
+      setUnreadCount(count || 0)
+    }
+    refreshCount()
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      channel = supabase
+        .channel('notifs-badge')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+          () => refreshCount(),
+        )
+        .subscribe()
+    })
+    return () => {
+      if (channel) supabase.removeChannel(channel)
+    }
   }, [notifOpen])
 
   useEffect(() => {
@@ -189,7 +213,11 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
         <div className="flex items-center gap-2 flex-shrink-0">
           <button onClick={() => setNotifOpen(true)} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-surface-card transition relative`}>
             <Bell className="w-[18px] h-[18px]" />
-            {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-ink" />}
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-ink text-on-primary text-[10px] font-bold flex items-center justify-center">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </button>
           <Link href="/settings" className={`w-9 h-9 rounded-full overflow-hidden border-2 ${avatarBg} cursor-pointer block`}>
             {user?.avatar_url ? (
