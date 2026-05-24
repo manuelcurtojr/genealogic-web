@@ -15,6 +15,9 @@ import {
   formatDate,
   formatPrice,
 } from '@/lib/owner/reservations'
+import { listReservationMessages, markThreadRead } from '@/lib/reservations/messages'
+import ReservationThread from '@/components/reservations/reservation-thread'
+import { sendClientMessageAction } from './actions'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Reserva · Mis reservas · Genealogic' }
@@ -37,6 +40,11 @@ export default async function MyReservationDetailPage({
 
   // Línea de tiempo: pasos del journey de la reserva
   const timeline = buildTimeline(reservation)
+
+  // Mensajería
+  const messages = await listReservationMessages(reservation.id)
+  // Marcar como leídos los mensajes del criador (no bloqueante)
+  markThreadRead(reservation.id, 'client').catch(() => {})
 
   return (
     <div>
@@ -243,21 +251,20 @@ export default async function MyReservationDetailPage({
             )}
           </section>
 
-          <section className="rounded-2xl border border-hairline bg-canvas p-5">
-            <h2 className="text-base font-bold text-ink mb-2">Mensajes</h2>
-            <p className="text-sm text-muted">
-              Mensajería interna llegando en próxima actualización. Mientras
-              tanto contacta al criador por email o WhatsApp desde su perfil.
-            </p>
-            {reservation.kennel?.slug && (
-              <Link
-                href={`/kennels/${reservation.kennel.slug}`}
-                target="_blank"
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-ink hover:text-brand"
-              >
-                Ver perfil del criador →
-              </Link>
-            )}
+          <section>
+            <div className="flex items-end justify-between mb-3">
+              <h2 className="text-base font-bold text-ink">Mensajes</h2>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                {messages.length} {messages.length === 1 ? 'mensaje' : 'mensajes'}
+              </span>
+            </div>
+            <ReservationThread
+              messages={messages}
+              currentRole="client"
+              reservationId={reservation.id}
+              onSendAction={sendClientMessageAction}
+              otherSideName={reservation.kennel?.name || 'el criador'}
+            />
           </section>
         </div>
       </div>
