@@ -32,24 +32,37 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
   const [notifOpen, setNotifOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
-  // Cuenta de no leídas + suscripción realtime
+  // Cuenta de no leídas. Tres fuentes de actualización:
+  //   1. mount inicial (refreshCount al cargar)
+  //   2. realtime: INSERT/UPDATE/DELETE en notifications del user (suscripción
+  //      única, sin deps — antes el re-subscribe creaba race conditions)
+  //   3. evento custom 'notifs:changed' que emiten los componentes que
+  //      modifican notifs (panel, página /notifications, etc.). Garantiza
+  //      refresh inmediato sin esperar latencia de realtime.
+  //   4. cuando se cierra el panel (notifOpen → false), refresh defensivo
   useEffect(() => {
     const supabase = createClient()
     let channel: ReturnType<typeof supabase.channel> | null = null
+    let active = true
+    let currentUserId: string | null = null
 
     async function refreshCount() {
+      if (!active || !currentUserId) return
       const { count } = await supabase
         .from('notifications')
         .select('id', { count: 'exact', head: true })
+        .eq('user_id', currentUserId)
         .eq('is_read', false)
-      setUnreadCount(count || 0)
+      if (active) setUnreadCount(count || 0)
     }
-    refreshCount()
 
+    // Setup: auth + realtime
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return
+      if (!active || !user) return
+      currentUserId = user.id
+      refreshCount()
       channel = supabase
-        .channel('notifs-badge')
+        .channel(`notifs-badge-${user.id}`)
         .on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
@@ -57,9 +70,24 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
         )
         .subscribe()
     })
+
+    // Evento custom: el panel/page emite esto al marcar leídas/borrar
+    function handleNotifsChanged() {
+      refreshCount()
+    }
+    window.addEventListener('notifs:changed', handleNotifsChanged)
+
     return () => {
+      active = false
+      window.removeEventListener('notifs:changed', handleNotifsChanged)
       if (channel) supabase.removeChannel(channel)
     }
+  }, [])
+
+  // Refresh defensivo al cerrar el panel (por si el evento custom se perdió)
+  useEffect(() => {
+    if (notifOpen) return
+    window.dispatchEvent(new Event('notifs:changed'))
   }, [notifOpen])
 
   useEffect(() => {

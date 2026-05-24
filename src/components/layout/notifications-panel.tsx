@@ -111,6 +111,8 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)))
     const supabase = createClient()
     await supabase.from('notifications').update({ is_read: true }).eq('id', id)
+    // Avisar al badge del header para que refresque sin esperar realtime
+    window.dispatchEvent(new Event('notifs:changed'))
   }
 
   async function markAllRead() {
@@ -119,6 +121,7 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
     const supabase = createClient()
     await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds)
+    window.dispatchEvent(new Event('notifs:changed'))
   }
 
   const unread = notifications.filter((n) => !n.is_read).length

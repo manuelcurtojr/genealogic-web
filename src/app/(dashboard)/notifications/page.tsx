@@ -105,10 +105,16 @@ export default function NotificationsPage() {
     setLoading(false)
   }
 
+  function notifyBadge() {
+    // Avisa al badge de la campana para que refresque sin esperar realtime
+    window.dispatchEvent(new Event('notifs:changed'))
+  }
+
   async function markAsRead(id: string) {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)))
     const supabase = createClient()
     await supabase.from('notifications').update({ is_read: true }).eq('id', id)
+    notifyBadge()
   }
 
   async function markAllRead() {
@@ -117,12 +123,14 @@ export default function NotificationsPage() {
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
     const supabase = createClient()
     await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds)
+    notifyBadge()
   }
 
   async function deleteNotif(id: string) {
     setNotifications((prev) => prev.filter((n) => n.id !== id))
     const supabase = createClient()
     await supabase.from('notifications').delete().eq('id', id)
+    notifyBadge()
   }
 
   async function clearAllRead() {
@@ -132,6 +140,7 @@ export default function NotificationsPage() {
     setNotifications((prev) => prev.filter((n) => !n.is_read))
     const supabase = createClient()
     await supabase.from('notifications').delete().in('id', readIds)
+    notifyBadge()
   }
 
   const unread = notifications.filter((n) => !n.is_read).length
