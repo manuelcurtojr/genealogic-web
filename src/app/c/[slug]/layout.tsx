@@ -1,11 +1,14 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
 import { getKennelBySlug } from '@/lib/kennel-site'
-import { getEnabledPages, DEFAULT_NAV_LABELS, pageHref } from '@/lib/kennel/pages'
+import { getEnabledPages, DEFAULT_NAV_LABELS, pageHrefForHost } from '@/lib/kennel/pages'
 import { createClient } from '@/lib/supabase/server'
 import OwnerFloatingNav from '@/components/kennel/owner-floating-nav'
 import { getTheme, applyOverrides } from '@/lib/kennel/themes'
 import { ThemeInjector, AccentStripe } from '@/components/site/theme-injector'
+import { FloatingContactButtonFooter } from '@/components/site/floating-contact-button'
+import { MobileNav } from '@/components/site/mobile-nav'
 
 // Sin cache estática: el nav refleja al instante los cambios de páginas
 // (activar/desactivar) hechos en /web. Combina bien con revalidatePath()
@@ -27,11 +30,22 @@ export default async function KennelSiteLayout({
   const { data: { user } } = await supabase.auth.getUser()
   const isOwner = user?.id === kennel.owner_id
 
+  // Detecta el host actual para construir URLs correctas. En custom domain
+  // los hrefs deben ser cortos (/perros) — si usásemos /c/<slug>/perros el
+  // middleware haría rewrite doble y todo daría 404.
+  const hdrs = await headers()
+  const host = hdrs.get('host')?.toLowerCase() || null
+  const homeHref = pageHrefForHost({
+    kennelSlug: kennel.slug, pageSlug: 'home', host, customDomain: kennel.custom_domain,
+  })
+
   const pages = await getEnabledPages(kennel.id)
   const navItems = pages
     .filter(p => p.slug !== 'home')
     .map(p => ({
-      href: pageHref(kennel.slug, p.slug),
+      href: pageHrefForHost({
+        kennelSlug: kennel.slug, pageSlug: p.slug, host, customDomain: kennel.custom_domain,
+      }),
       label: p.nav_label || DEFAULT_NAV_LABELS[p.slug] || p.slug,
     }))
 
@@ -42,10 +56,15 @@ export default async function KennelSiteLayout({
     <div data-kennel-theme={theme.id} className="min-h-screen bg-canvas text-ink flex flex-col">
       <ThemeInjector theme={theme} />
       <AccentStripe theme={theme} />
-      {isOwner && <OwnerFloatingNav />}
+      {/* OwnerFloatingNav siempre se monta — internamente decide si mostrarse
+          según la sesión (cookie del host actual) o el flag ?owner=1 en URL
+          que viene del dashboard de Genealogic. Esto permite que el menú
+          aparezca también en custom domains (iremacurto.com) donde no
+          tenemos la cookie de Supabase. */}
+      <OwnerFloatingNav serverIsOwner={isOwner} kennelSlug={kennel.slug} />
       <header className="border-b border-hairline sticky top-0 bg-canvas/90 backdrop-blur-md z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 h-[72px] flex items-center gap-4">
-          <Link href={`/c/${kennel.slug}`} className="flex items-center gap-3 min-w-0 group">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 h-[64px] lg:h-[72px] flex items-center gap-3">
+          <Link href={homeHref} className="flex items-center gap-2.5 min-w-0 group">
             {kennel.logo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={kennel.logo_url} alt={kennel.name} className="w-9 h-9 rounded-full object-cover border border-hairline group-hover:border-theme-accent transition-colors" />
@@ -61,17 +80,22 @@ export default async function KennelSiteLayout({
               {kennel.name}
             </span>
           </Link>
-          <nav className="ml-auto flex items-center gap-0 overflow-x-auto">
+          {/* Nav desktop (visible md+) */}
+          <nav className="ml-auto hidden md:flex items-center gap-0">
             {navItems.map(item => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-[12px] font-semibold uppercase tracking-[0.12em] text-body hover:text-theme-accent px-4 py-2 transition-colors whitespace-nowrap"
+                className="text-[11px] lg:text-[12px] font-semibold uppercase tracking-[0.12em] text-body hover:text-theme-accent px-3 lg:px-4 py-2 transition-colors whitespace-nowrap"
               >
                 {item.label}
               </Link>
             ))}
           </nav>
+          {/* Burger mobile (visible <md) */}
+          <div className="ml-auto md:hidden">
+            <MobileNav items={navItems} kennelName={kennel.name} />
+          </div>
         </div>
       </header>
 
@@ -107,7 +131,29 @@ export default async function KennelSiteLayout({
               ))}
             </nav>
           </div>
-          <div className="mt-12 pt-6 border-t border-hairline flex items-center justify-between gap-4 flex-wrap text-[11px] text-muted">
+          {/* Botones de acción del footer — visibles en MOBILE (donde los
+              badges sticky están ocultos por petición del criador) y también
+              en desktop como mirror. */}
+          <div className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 md:hidden">
+            <FloatingContactButtonFooter
+              kennelId={kennel.id}
+              kennelName={kennel.name}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              config={(kennel as any).contact_form_config || null}
+            />
+            <a
+              href={`https://genealogic.io/kennels/${kennel.slug}`}
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center justify-center gap-1.5 border border-hairline px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-body hover:border-theme-accent hover:text-theme-accent transition-colors"
+              style={{ borderRadius: 'var(--button-radius, 8px)' }}
+            >
+              <span aria-hidden="true">🐾</span>
+              Ver en Genealogic
+            </a>
+          </div>
+
+          <div className="mt-10 pt-6 border-t border-hairline flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-[11px] text-muted">
             <p>© {new Date().getFullYear()} {kennel.name}. Todos los derechos reservados.</p>
             <p>
               Sitio creado con{' '}

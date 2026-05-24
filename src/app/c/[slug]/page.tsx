@@ -5,7 +5,7 @@ import { getPage } from '@/lib/kennel/pages'
 import { runWithKennel } from '@/lib/kennel-context'
 import { PageRenderer } from '@/components/site/sections/PageRenderer'
 import PageTracker from '@/components/track/page-tracker'
-import ContactKennelButton from '@/components/kennel/contact-kennel-button'
+import { FloatingContactButton } from '@/components/site/floating-contact-button'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,22 +47,26 @@ export default async function KennelHomePage({ params }: { params: Promise<{ slu
       <PageTracker kennelId={kennel.id} />
       {rendered}
 
-      {/* Botón flotante de Solicitudes — mismo motor que /kennels/[slug],
-          renderiza el form configurado por el criador */}
-      <div className="fixed bottom-4 left-4 z-40">
-        <ContactKennelButton
+      {/* Botón flotante de Solicitudes (solo desktop sticky; en mobile el
+          equivalente vive en el footer del layout). */}
+      <div className="hidden md:block">
+        <FloatingContactButton
           kennelId={kennel.id}
           kennelName={kennel.name}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           config={(kennel as any).contact_form_config || null}
-          variant="light"
         />
       </div>
 
-      {/* Badge sutil bottom-right para ir al perfil estándar */}
+      {/* Badge "Ver en Genealogic" — siempre absoluto a genealogic.io (porque
+          desde un custom domain como iremacurto.com /kennels/<slug> daría 404
+          al estar en otro origin). Solo desktop sticky. */}
       <a
-        href={`/kennels/${kennel.slug}?force=standard`}
+        href={`https://genealogic.io/kennels/${kennel.slug}`}
+        target="_blank"
+        rel="noopener"
         title={`Ver perfil de ${kennel.name} en Genealogic`}
-        className="fixed bottom-4 right-4 z-40 inline-flex items-center gap-1.5 rounded-full bg-black/75 backdrop-blur-sm px-3.5 py-1.5 text-[11.5px] font-medium text-white shadow-lg transition-opacity hover:bg-black"
+        className="hidden md:inline-flex fixed bottom-4 right-4 z-40 items-center gap-1.5 rounded-full bg-black/75 backdrop-blur-sm px-3.5 py-1.5 text-[11.5px] font-medium text-white shadow-lg transition-opacity hover:bg-black"
       >
         <span aria-hidden="true">🐾</span>
         <span>Ver en Genealogic</span>

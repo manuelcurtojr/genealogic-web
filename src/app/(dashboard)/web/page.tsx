@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import { getMyKennel } from '@/lib/kennel-site'
-import { DEFAULT_NAV_LABELS, pageHref } from '@/lib/kennel/pages'
+import { DEFAULT_NAV_LABELS, pageHref, publicUrl } from '@/lib/kennel/pages'
 import { ensureAllPages, togglePageEnabled } from './actions'
 
 export const dynamic = 'force-dynamic'
@@ -100,7 +100,11 @@ export default async function AdminWebIndexPage() {
                 <div className="flex items-center gap-2">
                   {p.enabled && (
                     <Link
-                      href={pageHref(kennel.slug, p.slug)}
+                      href={publicUrl({
+                        kennelSlug: kennel.slug,
+                        pageSlug: p.slug,
+                        customDomain: kennel.custom_domain,
+                      })}
                       target="_blank"
                       className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-body hover:border-ink/30 hover:text-ink"
                     >

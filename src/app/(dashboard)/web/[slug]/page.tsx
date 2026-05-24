@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import { getMyKennel } from '@/lib/kennel-site'
-import { DEFAULT_NAV_LABELS, PAGE_SLUGS, pageHref } from '@/lib/kennel/pages'
+import { DEFAULT_NAV_LABELS, PAGE_SLUGS, pageHref, publicUrl } from '@/lib/kennel/pages'
 import { catalogForPage, labelForType } from '@/lib/kennel/section-catalog'
 import { getSectionSchema } from '@/lib/kennel/section-schemas'
 import {
@@ -64,7 +64,11 @@ export default async function PageEditorPage({
     id: s.id, type: s.type, label: labelForType(s.type), summary: summarizeProps(s.props ?? {}),
   }))
 
-  const publicHref = pageHref(kennel.slug, slug)
+  const publicHref = publicUrl({
+    kennelSlug: kennel.slug,
+    pageSlug: slug,
+    customDomain: kennel.custom_domain,
+  })
 
   return (
     <div className="-m-4 lg:-m-[30px] flex h-[calc(100vh-56px)] flex-col">

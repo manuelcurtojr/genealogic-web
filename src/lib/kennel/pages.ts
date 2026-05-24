@@ -92,5 +92,53 @@ export function pageHref(kennelSlug: string, pageSlug: string): string {
   return `/c/${kennelSlug}/${pageSlug}`
 }
 
+/**
+ * Versión "para el cliente" del href. Si estamos viendo la web a través del
+ * custom_domain (e.g. iremacurto.com), los enlaces internos deben ser
+ * RELATIVOS al root del dominio (`/perros`) y NO incluir el prefijo
+ * `/c/<slug>/`. Si los incluyésemos, el middleware haría rewrite doble
+ * → /c/<slug>/c/<slug>/perros → 404.
+ *
+ * Cuando NO estamos en custom domain, devolvemos el path absoluto normal.
+ */
+export function pageHrefForHost(args: {
+  kennelSlug: string
+  pageSlug: string
+  host?: string | null
+  customDomain?: string | null
+}): string {
+  const onCustomDomain =
+    !!args.customDomain && !!args.host && args.host.toLowerCase() === args.customDomain.toLowerCase()
+  if (onCustomDomain) {
+    if (args.pageSlug === 'home') return '/'
+    if (args.pageSlug === 'razas') return '/raza'
+    return `/${args.pageSlug}`
+  }
+  return pageHref(args.kennelSlug, args.pageSlug)
+}
+
+/**
+ * URL pública desde el dashboard "Ver web pública" — respeta el custom_domain
+ * si existe (e.g. https://iremacurto.com/perros en lugar de
+ * /c/irema-curto/perros) y añade `?owner=1` para que el OwnerFloatingNav
+ * se active en el custom domain (donde no hay cookie de Supabase).
+ *
+ * Cuando NO hay custom_domain, devolvemos pageHref relativo (sin ?owner=1
+ * porque la propia cookie en .genealogic.io ya identifica al owner).
+ */
+export function publicUrl(args: {
+  kennelSlug: string
+  pageSlug: string
+  customDomain?: string | null
+}): string {
+  const path = pageHref(args.kennelSlug, args.pageSlug)
+  if (args.customDomain) {
+    // Quita el prefijo /c/<slug> y deja solo la ruta de la página
+    const rel = path.replace(`/c/${args.kennelSlug}`, '') || '/'
+    return `https://${args.customDomain}${rel}?owner=1`
+  }
+  return path
+}
+
 export const PAGE_SLUGS = ['home', 'perros', 'razas', 'historia', 'servicios', 'instalaciones', 'galeria', 'blog', 'contacto'] as const
 export type PageSlug = typeof PAGE_SLUGS[number]

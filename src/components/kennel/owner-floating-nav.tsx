@@ -8,15 +8,19 @@ import {
 } from 'lucide-react'
 
 /**
- * Mini-sidebar flotante que se renderiza SOLO si el visitante logueado
- * es el owner del kennel cuya web custom está viendo. Permite navegar
- * de vuelta al dashboard sin perder de vista cómo se ve la web.
+ * Mini-sidebar flotante para el OWNER del kennel cuya web custom está viendo.
  *
- * Por defecto está PLEGADO (solo icono "G" en esquina top-left).
- * Click → despliega panel con accesos rápidos. Persiste estado en
- * localStorage para que el criador lo mantenga abierto si prefiere.
+ * Detección de "soy owner" en 3 capas (prevalece la primera que matche):
+ *   1. `serverIsOwner` desde props (cookie de Supabase en el host actual)
+ *   2. URL query `?owner=1` cuando el owner entra desde el dashboard
+ *      → guardamos un flag en sessionStorage para que persista en la sesión
+ *   3. sessionStorage `owner-preview-kennel` previamente guardado
  *
- * Diseño minimal para no interferir con el branding propio del criadero.
+ * Las capas 2 y 3 son necesarias para que el menú salga también en
+ * custom domains (iremacurto.com), donde la cookie de Supabase está
+ * en .genealogic.io y NO está disponible. El acceso a las acciones
+ * reales sigue requiriendo sesión válida (las acciones viven en
+ * genealogic.io). Esto es solo UX visual + atajo de navegación.
  */
 
 const ITEMS = [
@@ -32,19 +36,52 @@ const ITEMS = [
   { label: 'Ajustes', href: '/settings', icon: Settings },
 ] as const
 
-export default function OwnerFloatingNav() {
+export default function OwnerFloatingNav({
+  serverIsOwner = false,
+  kennelSlug,
+}: {
+  serverIsOwner?: boolean
+  kennelSlug?: string
+}) {
   const [expanded, setExpanded] = useState(false)
+  // Detecta owner por query/sessionStorage. Empieza false en SSR.
+  const [clientIsOwner, setClientIsOwner] = useState(false)
 
   useEffect(() => {
     const saved = localStorage.getItem('owner-floating-nav-expanded')
     if (saved === 'true') setExpanded(true)
-  }, [])
+
+    // ── Detección owner por query param (?owner=1) o sessionStorage ──
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const fromQuery = params.get('owner') === '1'
+    const storageKey = `owner-preview-${kennelSlug ?? ''}`
+    const fromStorage = sessionStorage.getItem(storageKey) === '1'
+    if (fromQuery) {
+      sessionStorage.setItem(storageKey, '1')
+      setClientIsOwner(true)
+      // Limpia el query param de la URL para que no sea bookmark-able
+      params.delete('owner')
+      const newQs = params.toString()
+      const newUrl = window.location.pathname + (newQs ? `?${newQs}` : '') + window.location.hash
+      window.history.replaceState({}, '', newUrl)
+    } else if (fromStorage) {
+      setClientIsOwner(true)
+    }
+  }, [kennelSlug])
 
   const toggle = () => {
     const next = !expanded
     setExpanded(next)
     localStorage.setItem('owner-floating-nav-expanded', String(next))
   }
+
+  // Renderizar solo si alguna de las 2 capas matchea
+  if (!serverIsOwner && !clientIsOwner) return null
+
+  // Si el owner solo fue detectado client-side (custom domain), apuntamos
+  // los links absolutos a genealogic.io para que abran el dashboard real.
+  const baseUrl = (!serverIsOwner && clientIsOwner) ? 'https://genealogic.io' : ''
 
   return (
     <div className="fixed left-4 top-4 z-50 hidden lg:block">
@@ -53,7 +90,8 @@ export default function OwnerFloatingNav() {
           {/* Header con toggle */}
           <div className="flex items-center justify-between gap-2 px-2 pb-1.5">
             <Link
-              href="/dashboard"
+              href={`${baseUrl}/dashboard`}
+              target={baseUrl ? '_blank' : undefined}
               className="flex items-center gap-1.5 text-[13px] font-semibold tracking-[-0.02em] text-ink"
             >
               <span className="font-display">Genealogic</span>
@@ -78,7 +116,8 @@ export default function OwnerFloatingNav() {
             return (
               <Link
                 key={it.href}
-                href={it.href}
+                href={`${baseUrl}${it.href}`}
+                target={baseUrl ? '_blank' : undefined}
                 className="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
               >
                 <Icon className="h-3.5 w-3.5 text-muted" />
@@ -89,7 +128,9 @@ export default function OwnerFloatingNav() {
 
           <div className="mt-1 border-t border-hairline-soft px-2 pt-2">
             <p className="text-[10.5px] text-muted leading-tight">
-              Estás viendo tu web pública. Solo tú ves este menú porque estás logueado como propietario.
+              {baseUrl
+                ? 'Estás viendo tu web pública en tu dominio. Los enlaces abren tu dashboard en genealogic.io en una pestaña nueva.'
+                : 'Estás viendo tu web pública. Solo tú ves este menú porque estás logueado como propietario.'}
             </p>
           </div>
         </div>
