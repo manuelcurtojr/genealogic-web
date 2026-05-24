@@ -5,9 +5,10 @@ import { usePathname } from 'next/navigation'
 import {
   Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogOut, X,
   GitCompareArrows, LayoutDashboard, Menu, Home, Store, BarChart3, Search,
-  Stethoscope, Shield, Inbox, Lock, Key,
+  Stethoscope, Shield, Inbox, Lock, Key, Bell,
   KanbanSquare, UsersRound, Mail, BookOpen, MessageSquare, Beaker,
   Globe, TrendingUp, Send, Sparkles, Receipt, Link2,
+  Dna, CreditCard, Tag, Upload,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -15,14 +16,14 @@ import { NAV_SECTIONS, BRAND } from '@/lib/constants'
 import { isAdmin, hasProAccess } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 import { Wordmark } from '@/components/ui/wordmark'
-import { CommandBarTrigger } from './command-bar'
 
 const iconMap: Record<string, React.ElementType> = {
   Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings,
   LayoutDashboard, GitCompareArrows, Home, Store, BarChart3, Search,
-  Stethoscope, Inbox, Key,
+  Stethoscope, Inbox, Key, Bell, Shield,
   KanbanSquare, UsersRound, Mail, BookOpen, MessageSquare, Beaker,
   Globe, TrendingUp, Send, Sparkles, Receipt, Link2,
+  Dna, CreditCard, Tag, Upload,
 }
 
 interface SidebarProps {
@@ -43,6 +44,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
   const router = useRouter()
   const userRole = user?.role || 'owner'
   const isBreeder = !!kennel
+  const userIsAdmin = isAdmin(userRole)
   const userHasPro = hasProAccess(plan)
   const lang = typeof window !== 'undefined' ? localStorage.getItem('genealogic-lang') || 'es' : 'es'
   const t = getTranslator(lang)
@@ -56,6 +58,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
   // Filter sections + items by user permissions
   const allSections = NAV_SECTIONS
     .filter(section => {
+      if (section.requiresAdmin && !userIsAdmin) return false
       if (section.requiresKennel && !isBreeder) return false
       if (section.requiresPro && !userHasPro) return false
       if (section.requiresClient && !isClient) return false
@@ -64,6 +67,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
     .map(section => ({
       ...section,
       items: section.items.filter(item => {
+        if (item.requiresAdmin && !userIsAdmin) return false
         if (item.requiresKennel && !isBreeder) return false
         if (item.requiresPro && !userHasPro) return false
         if (item.requiresClient && !isClient) return false
@@ -103,13 +107,8 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
           )}
         </div>
 
-        {/* Command Bar trigger ⌘K — todo lo demás se invoca desde aquí */}
-        <div className="px-2 pt-3 pb-1">
-          <CommandBarTrigger collapsed={collapsed && !mobileOpen} />
-        </div>
-
         {/* Navigation by sections */}
-        <nav className="flex-1 overflow-y-auto py-2 px-2">
+        <nav className="flex-1 overflow-y-auto py-3 px-2">
           {allSections.map((section, sIdx) => {
             const locked = isSectionLocked(section)
             const hasLabel = section.label && section.label.trim().length > 0
@@ -178,20 +177,8 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
           })}
         </nav>
 
-        {/* Bottom: Admin + Settings + Logout */}
+        {/* Bottom: Settings + Logout (Admin ya está como sección si aplica) */}
         <div className="border-t border-hairline p-2">
-          {userRole === 'admin' && (
-            <a
-              href="/admin"
-              title={collapsed && !mobileOpen ? 'Admin' : undefined}
-              className={`flex items-center gap-3 rounded-lg text-[13px] font-medium transition mb-0.5 text-[color:var(--brand)] hover:bg-[color:var(--brand-soft)] ${
-                collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
-              }`}
-            >
-              <Shield className="w-[18px] h-[18px] flex-shrink-0" />
-              {(!collapsed || mobileOpen) && <span>Admin</span>}
-            </a>
-          )}
           <a
             href="/settings"
             title={collapsed && !mobileOpen ? t('Ajustes') : undefined}
