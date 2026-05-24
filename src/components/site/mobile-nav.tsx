@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 
@@ -15,6 +16,10 @@ export function MobileNav({
   kennelName: string
 }) {
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Solo en cliente: necesario para que createPortal no rompa en SSR
+  useEffect(() => { setMounted(true) }, [])
 
   // Lock body scroll cuando el menu está abierto + Esc para cerrar
   useEffect(() => {
@@ -28,23 +33,14 @@ export function MobileNav({
     }
   }, [open])
 
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Abrir menú"
-        className="inline-flex items-center justify-center h-10 w-10 border border-hairline hover:border-theme-accent text-ink transition-colors"
-        style={{ borderRadius: 'var(--button-radius, 8px)' }}
-      >
-        <Menu className="h-5 w-5" />
-      </button>
-
-      {open && (
+  // El drawer se renderiza en document.body via createPortal — necesario
+  // porque el botón vive dentro del <header sticky> que crea stacking
+  // context, y un overlay z-[60] no se vería por encima del propio header.
+  const drawer = open && (
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-[60] animate-[mnFade_180ms_ease-out]"
+          className="fixed inset-0 z-[100] animate-[mnFade_180ms_ease-out]"
         >
           <button
             type="button"
@@ -89,7 +85,21 @@ export function MobileNav({
             </nav>
           </div>
         </div>
-      )}
+      )
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Abrir menú"
+        className="inline-flex items-center justify-center h-10 w-10 border border-hairline hover:border-theme-accent text-ink transition-colors"
+        style={{ borderRadius: 'var(--button-radius, 8px)' }}
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
+      {mounted && drawer && createPortal(drawer, document.body)}
 
       <style>{`
         @keyframes mnFade { from { opacity: 0 } to { opacity: 1 } }

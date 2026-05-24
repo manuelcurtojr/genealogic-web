@@ -142,3 +142,42 @@ export function publicUrl(args: {
 
 export const PAGE_SLUGS = ['home', 'perros', 'razas', 'historia', 'servicios', 'instalaciones', 'galeria', 'blog', 'contacto'] as const
 export type PageSlug = typeof PAGE_SLUGS[number]
+
+/**
+ * Reescribe href a "#contacto" si:
+ *   - apunta a la página de contacto (cualquiera de las variantes que el
+ *     editor o un usuario pueden meter: '/contacto', './contacto',
+ *     '/c/<slug>/contacto', URL absoluta a /contacto)
+ *   - Y la página de contacto está DESACTIVADA en el kennel
+ *
+ * El sistema de modales (HeroCtaButton, ChatPromoSection, etc.) ya entiende
+ * #contacto como "abrir popup con el form". Así garantizamos que ningún
+ * CTA "contactar" da 404 cuando la página de contacto está oculta.
+ */
+export function resolveContactHref(args: {
+  href: string
+  contactPageEnabled: boolean
+}): string {
+  if (args.contactPageEnabled) return args.href
+  const h = (args.href || '').trim()
+  if (!h) return h
+  // Patrones que apuntan a la página de contacto
+  const isContactPath =
+    /^(\.|\.\.|)\/?contacto\/?$/i.test(h) ||
+    /\/contacto\/?$/i.test(h)
+  return isContactPath ? '#contacto' : h
+}
+
+/**
+ * ¿La página "contacto" está enabled para este kennel? Helper cacheado para
+ * que componentes asíncronos no tengan que hacer la query individualmente.
+ */
+export const isContactPageEnabled = cache(async (kennelId: string): Promise<boolean> => {
+  const { data } = await admin()
+    .from('kennel_pages')
+    .select('enabled')
+    .eq('kennel_id', kennelId)
+    .eq('slug', 'contacto')
+    .maybeSingle()
+  return !!(data as { enabled?: boolean } | null)?.enabled
+})

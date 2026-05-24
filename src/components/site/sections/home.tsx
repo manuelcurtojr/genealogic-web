@@ -7,6 +7,7 @@ import { getCurrentKennel } from '@/lib/kennel-context'
 import { getAvailablePuppiesByKennel, getUpcomingLittersByKennel } from '@/lib/kennel/data'
 import { SectionHeader } from '@/components/site/section-primitives'
 import { HeroCtaButton } from '@/components/site/hero-cta-button'
+import { isContactPageEnabled, resolveContactHref } from '@/lib/kennel/pages'
 
 type Cta = { label: string; href: string; variant?: 'primary' | 'outline' | 'ghost' }
 
@@ -37,6 +38,10 @@ export async function HeroSection(props: {
   const contactFormConfig = ((kennel as any).contact_form_config ?? null) as
     | import('@/lib/kennel/contact-form').ContactFormConfig
     | null
+  // Si la página de contacto está desactivada, los CTAs que apunten a
+  // /contacto se reescriben a #contacto → el modal popup se abrirá en su
+  // lugar (evita 404).
+  const contactPageEnabled = await isContactPageEnabled(kennel.id)
   return (
     <section className={`relative ${height} flex items-end overflow-hidden bg-[#0a0a0a]`}>
       {background_image_url && (
@@ -76,7 +81,7 @@ export async function HeroSection(props: {
             {ctas.map((c, i) => (
               <HeroCtaButton
                 key={i}
-                href={c.href}
+                href={resolveContactHref({ href: c.href, contactPageEnabled })}
                 label={c.label}
                 variant={c.variant}
                 kennelId={kennel.id}

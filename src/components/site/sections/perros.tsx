@@ -10,6 +10,8 @@ import {
   type SiteDog,
 } from '@/lib/kennel/data'
 import { SectionHeader } from '@/components/site/section-primitives'
+import { isContactPageEnabled, resolveContactHref } from '@/lib/kennel/pages'
+import { HeroCtaButton } from '@/components/site/hero-cta-button'
 
 function DogCard({ d }: { d: SiteDog }) {
   return (
@@ -185,7 +187,41 @@ export async function DogsTabsSection(props: {
   )
 }
 
+/** Botón del WaitlistCta que respeta el modal de contacto si la página de
+ *  contacto está desactivada (delega en HeroCtaButton). */
+function WaitlistCtaButton({
+  href, label, kennelId, kennelName, contactFormConfig,
+}: {
+  href: string
+  label: string
+  kennelId: string
+  kennelName: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contactFormConfig: any
+}) {
+  return (
+    <div className="inline-block">
+      <HeroCtaButton
+        href={href}
+        label={label}
+        variant="primary"
+        kennelId={kennelId}
+        kennelName={kennelName}
+        contactFormConfig={contactFormConfig}
+      />
+    </div>
+  )
+}
+
 export async function WaitlistCtaSection(props: { title?: string; subtitle?: string; href?: string; cta_label?: string }) {
+  const kennel = await getCurrentKennel()
+  const contactPageEnabled = await isContactPageEnabled(kennel.id)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const config = ((kennel as any).contact_form_config ?? null)
+  const resolvedHref = resolveContactHref({
+    href: props.href || './contacto',
+    contactPageEnabled,
+  })
   return (
     <section className="py-16 lg:py-24 bg-surface-card border-y border-hairline">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
@@ -198,13 +234,13 @@ export async function WaitlistCtaSection(props: { title?: string; subtitle?: str
         <p className="text-body mb-8 leading-relaxed max-w-xl mx-auto">
           {props.subtitle || 'Vendemos por reservas, no por disponibilidad. Apúntate a la lista de espera y te avisamos cuando haya cachorros.'}
         </p>
-        <Link
-          href={props.href || './contacto'}
-          className="btn-brand inline-flex items-center gap-2 px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.1em] shadow-xl"
-        >
-          {props.cta_label || 'Apuntarme a la lista de espera'}
-          <span aria-hidden="true">→</span>
-        </Link>
+        <WaitlistCtaButton
+          href={resolvedHref}
+          label={props.cta_label || 'Apuntarme a la lista de espera'}
+          kennelId={kennel.id}
+          kennelName={kennel.name}
+          contactFormConfig={config}
+        />
       </div>
     </section>
   )
