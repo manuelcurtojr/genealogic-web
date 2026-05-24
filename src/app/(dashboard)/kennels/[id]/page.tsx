@@ -8,6 +8,7 @@ import KennelPublicTabs from '@/components/kennel/kennel-public-tabs'
 import PageTracker from '@/components/track/page-tracker'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
+import { KennelJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -45,6 +46,11 @@ export default async function KennelDetailPage({
   const field = isUUID(id) ? 'id' : 'slug'
   const { data: kennel } = await supabase.from('kennels').select('*').eq(field, id).single()
   if (!kennel) notFound()
+
+  // 301 canónica UUID → slug (SEO + URLs limpias)
+  if (field === 'id' && kennel.slug && kennel.slug !== id) {
+    redirect(`/kennels/${kennel.slug}`)
+  }
 
   // ¿El criador prefiere redirigir a su web personalizada?
   // - Solo si tiene default_public_view='custom_web'
@@ -102,23 +108,28 @@ export default async function KennelDetailPage({
 
   const currencySymbol: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', MXN: '$', COP: '$', ARS: '$', CLP: '$' }
 
+  const canonicalUrl = `https://genealogic.io/kennels/${kennel.slug || id}`
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: kennel.name,
-    description: kennel.description || `Criadero ${kennel.name}${location ? ' en ' + location : ''}`,
-    url: `https://genealogic.io/kennels/${kennel.slug || id}`,
-    ...(kennel.logo_url && { logo: kennel.logo_url }),
-    ...(kennel.website && { sameAs: [kennel.website] }),
-    ...(location && { address: { '@type': 'PostalAddress', addressLocality: kennel.city, addressCountry: kennel.country } }),
-    ...(kennel.foundation_date && { foundingDate: kennel.foundation_date }),
-    numberOfEmployees: dogs.length,
-  }
 
   return (
     <div className="space-y-8">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <KennelJsonLd
+        name={kennel.name}
+        url={canonicalUrl}
+        description={kennel.description}
+        logoUrl={kennel.logo_url}
+        city={kennel.city}
+        country={kennel.country}
+        foundationDate={kennel.foundation_date}
+        website={kennel.website}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Inicio', url: 'https://genealogic.io' },
+          { name: 'Criaderos', url: 'https://genealogic.io/kennels' },
+          { name: kennel.name, url: canonicalUrl },
+        ]}
+      />
       <PageTracker kennelId={kennel.id} />
 
       {/* Back button + CTA web personalizada (si existe) */}

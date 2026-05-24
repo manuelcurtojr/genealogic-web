@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette } from 'lucide-react'
 import BackButton from '@/components/ui/back-button'
@@ -11,6 +11,7 @@ import DogTabs from '@/components/dogs/dog-tabs'
 import DogEditButton from '@/components/dogs/dog-edit-button'
 import ShareButton from '@/components/dogs/share-button'
 import PageTracker from '@/components/track/page-tracker'
+import { DogJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -72,6 +73,13 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
 
   if (!dog) notFound()
 
+  // 301 canónica: si llegan por UUID y el perro tiene slug, redirigimos a
+  // la URL legible. Mejora SEO (un solo canonical) y evita contenido
+  // duplicado en buscadores.
+  if (field === 'id' && dog.slug && dog.slug !== id) {
+    redirect(`/dogs/${dog.slug}`)
+  }
+
   const [fatherRes, motherRes] = await Promise.all([
     dog.father_id ? supabase.from('dogs').select('id, name, sex, thumbnail_url, slug').eq('id', dog.father_id).single() : { data: null },
     dog.mother_id ? supabase.from('dogs').select('id, name, sex, thumbnail_url, slug').eq('id', dog.mother_id).single() : { data: null },
@@ -101,23 +109,33 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
     galleryPhotos.unshift(dog.thumbnail_url)
   }
 
-  // JSON-LD structured data for SEO
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Thing',
-    name: dog.name,
-    description: `${dog.name}${breedName ? `, ${breedName}` : ''}${kennel?.name ? ` de ${kennel.name}` : ''}. Genealogic — Plataforma de Crianza Canina.`,
-    image: dog.thumbnail_url || 'https://genealogic.io/icon.svg',
-    url: `https://genealogic.io/dogs/${dog.slug || dog.id}`,
-    ...(breedName && { additionalType: breedName }),
-    ...(dog.birth_date && { birthDate: dog.birth_date }),
-    ...(dog.sex && { gender: dog.sex === 'male' ? 'Male' : 'Female' }),
-    ...(kennel && { isPartOf: { '@type': 'Organization', name: kennel.name } }),
-  }
+  const canonicalUrl = `https://genealogic.io/dogs/${dog.slug || dog.id}`
+  const dogDescription = `${dog.name}${breedName ? `, ${breedName}` : ''}${
+    kennel?.name ? ` de ${kennel.name}` : ''
+  }. Genealogic — Plataforma de Crianza Canina.`
 
   return (
     <div>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <DogJsonLd
+        name={dog.name}
+        url={canonicalUrl}
+        description={dogDescription}
+        image={dog.thumbnail_url || undefined}
+        breed={breedName}
+        color={colorName}
+        sex={dog.sex}
+        birthDate={dog.birth_date}
+        kennel={kennel ? { name: kennel.name, slug: kennel.slug, url: kennel.slug ? `https://genealogic.io/kennels/${kennel.slug}` : undefined } : null}
+        sireName={father?.name}
+        damName={mother?.name}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Inicio', url: 'https://genealogic.io' },
+          ...(kennel ? [{ name: kennel.name, url: `https://genealogic.io/kennels/${kennel.slug || kennel.id}` }] : []),
+          { name: dog.name, url: canonicalUrl },
+        ]}
+      />
       <PageTracker kennelId={kennel?.id || null} dogId={dog.id} />
       {/* Gallery — full bleed: public = 100vw, logged-in = cancel padding */}
       <div className={`relative overflow-hidden ${user ? '-mx-4 -mt-4 sm:-mx-[30px] sm:-mt-[30px]' : ''}`}
