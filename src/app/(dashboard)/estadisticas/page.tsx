@@ -94,7 +94,7 @@ export default async function EstadisticasPage() {
         <StatCard icon={Baby} label="Camadas" value={stats.litters} href="/litters" />
         <StatCard icon={KanbanSquare} label="Reservas activas" value={stats.activeReservas}
                   sub={`${stats.totalReservas} totales`} href="/reservas" />
-        <StatCard icon={UsersRound} label="Clientes" value={stats.owners} href="/clientes" />
+        <StatCard icon={UsersRound} label="Contactos" value={stats.owners} href="/contactos" />
         <StatCard icon={BookOpen} label="Biblioteca" value={stats.knowledge}
                   sub="entradas activas" href="/conocimiento" />
         <StatCard icon={Mail} label="Newsletter" value={stats.subs}

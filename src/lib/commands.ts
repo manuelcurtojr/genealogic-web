@@ -42,7 +42,7 @@ export const COMMANDS: Command[] = [
 
   // ── PIPELINE (Pro) ─────────────────────────────────────────────────────
   { id: 'reservas', label: 'Reservas (pipeline)', href: '/reservas', icon: 'KanbanSquare', section: 'Pipeline', requiresPro: true, requiresKennel: true, keywords: ['kanban', 'pedidos', 'depósito', 'reserva cachorro'] },
-  { id: 'clientes', label: 'Clientes', href: '/clientes', icon: 'UsersRound', section: 'Pipeline', requiresPro: true, requiresKennel: true, keywords: ['compradores', 'familias', 'lista espera', 'crm'] },
+  { id: 'contactos', label: 'Contactos', href: '/contactos', icon: 'UsersRound', section: 'Pipeline', requiresPro: true, requiresKennel: true, keywords: ['clientes', 'compradores', 'familias', 'lista espera', 'crm', 'suscriptores', 'leads', 'newsletter'] },
 
   // ── COMUNICACIÓN (Pro) ─────────────────────────────────────────────────
   { id: 'emailbot', label: 'Emailbot', href: '/emailbot', icon: 'Mail', section: 'Comunicación', requiresPro: true, keywords: ['bot', 'auto-reply', 'ia', 'chat', 'emails'] },

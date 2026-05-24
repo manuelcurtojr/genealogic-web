@@ -96,7 +96,7 @@ export const NAV_SECTIONS: NavSection[] = [
     requiresKennel: true,
     items: [
       { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare', requiresPro: true, requiresKennel: true },
-      { label: 'Clientes', href: '/clientes', icon: 'UsersRound', requiresPro: true, requiresKennel: true },
+      { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresPro: true, requiresKennel: true },
     ],
   },
 
