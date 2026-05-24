@@ -39,7 +39,15 @@ const CURRENCIES = [
 
 // Plan info is now in lib/permissions.ts
 
-type Section = 'perfil' | 'seguridad' | 'idioma' | 'notificaciones' | 'privacidad' | 'datos'
+type Section =
+  | 'perfil'
+  | 'suscripcion'
+  | 'facturacion'
+  | 'seguridad'
+  | 'idioma'
+  | 'notificaciones'
+  | 'privacidad'
+  | 'datos'
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -170,13 +178,21 @@ export default function SettingsPage() {
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-muted" /></div>
 
   const userRole = profile?.role || 'owner'
+  const userPlan: string = (profile as any)?.plan || 'free'
+  const userIsFounder: boolean = Boolean((profile as any)?.plan_is_founder)
+  const userPlanLabel =
+    userPlan === 'premium' ? 'Premium' :
+    userPlan === 'pro'     ? 'Pro' :
+    userPlan === 'starter' ? 'Starter' : 'Free'
   const sections: { key: Section; label: string; icon: React.ElementType }[] = [
-    { key: 'perfil', label: 'Perfil', icon: User },
-    { key: 'seguridad', label: 'Seguridad', icon: Lock },
-    { key: 'idioma', label: 'Idioma y región', icon: Globe },
-    { key: 'notificaciones', label: 'Notificaciones', icon: Bell },
-    { key: 'privacidad', label: 'Privacidad', icon: Eye },
-    { key: 'datos', label: 'Datos', icon: Download },
+    { key: 'perfil',         label: 'Perfil',           icon: User },
+    { key: 'suscripcion',    label: 'Suscripción',      icon: Crown },
+    { key: 'facturacion',    label: 'Facturación',      icon: CreditCard },
+    { key: 'seguridad',      label: 'Seguridad',        icon: Lock },
+    { key: 'idioma',         label: 'Idioma y región',  icon: Globe },
+    { key: 'notificaciones', label: 'Notificaciones',   icon: Bell },
+    { key: 'privacidad',     label: 'Privacidad',       icon: Eye },
+    { key: 'datos',          label: 'Datos',            icon: Download },
   ]
 
   return (
@@ -295,6 +311,89 @@ export default function SettingsPage() {
                 </div>
                 <SaveButton saving={saving} onClick={handleSave} />
               </div>
+            </div>
+          )}
+
+          {/* === SUSCRIPCIÓN === */}
+          {activeSection === 'suscripcion' && (
+            <div className="space-y-4">
+              <SectionHeader title="Suscripción" desc="Plan actual y opciones de upgrade" />
+              <div className="rounded-2xl border border-ink bg-canvas p-6 relative overflow-hidden">
+                <div className="absolute top-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-ink text-on-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
+                  <Crown className="w-3 h-3" />
+                  Activa
+                </div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted mb-1">
+                  Plan actual
+                </p>
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  <h2 className="text-2xl font-bold text-ink">Genealogic {userPlanLabel}</h2>
+                  {userIsFounder && (
+                    <span className="inline-flex items-center rounded-full bg-surface-card border border-hairline px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-ink">
+                      Founder · 39€/mes
+                    </span>
+                  )}
+                </div>
+                <div className="mt-5 flex flex-col sm:flex-row gap-2">
+                  <Link
+                    href="/cuenta/suscripcion"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-ink text-on-primary px-4 py-2 text-sm font-semibold hover:opacity-90"
+                  >
+                    Ver detalle del plan
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                  {userPlan !== 'premium' && (
+                    <a
+                      href="mailto:hola@genealogic.io?subject=Upgrade%20a%20Premium"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink"
+                    >
+                      Subir a Premium
+                    </a>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-muted">
+                Beneficios incluidos, comparación de planes y upgrade en{' '}
+                <Link href="/cuenta/suscripcion" className="font-semibold text-ink hover:underline">
+                  /cuenta/suscripción
+                </Link>
+                .
+              </p>
+            </div>
+          )}
+
+          {/* === FACTURACIÓN === */}
+          {activeSection === 'facturacion' && (
+            <div className="space-y-4">
+              <SectionHeader title="Facturación" desc="Historial de pagos y datos fiscales" />
+              <div className="rounded-xl border border-hairline bg-canvas p-5">
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-surface-card flex items-center justify-center flex-shrink-0">
+                    <CreditCard className="w-5 h-5 text-ink" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-ink">Stripe en preparación</p>
+                    <p className="text-xs text-muted mt-0.5">
+                      Por ahora la facturación se gestiona manualmente. Próximamente verás
+                      historial de pagos, método de pago y descarga de facturas aquí.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href="/cuenta/facturacion"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink"
+                >
+                  Abrir facturación completa
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+              <p className="text-xs text-muted">
+                Si necesitas factura ahora mismo, escríbeme a{' '}
+                <a href="mailto:hola@genealogic.io" className="text-ink underline">
+                  hola@genealogic.io
+                </a>
+                .
+              </p>
             </div>
           )}
 

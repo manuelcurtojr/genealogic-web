@@ -44,13 +44,17 @@ export interface NavSection {
   items: NavItem[]
 }
 
-// Sidebar completo con TODAS las rutas del producto, organizadas por
-// secciones temáticas. Cada item se muestra si el user cumple los flags
-// (requiresKennel / requiresPro / requiresClient / requiresAdmin); las
-// secciones se ocultan si ninguno de sus items pasa el filtro.
+// Sidebar consolidado tras la refactor 2026-05-24 #2:
 //
-// El Command Bar (⌘K) sigue montado en DashboardShell para invocar
-// acciones rápidas, pero ya no es la puerta principal de navegación.
+//  - Comunicación: solo Emailbot + Newsletter (Hilos/Test/Conocimiento
+//    viven como tabs dentro de Emailbot)
+//  - Web pública: ELIMINADA, sus items son extensión natural del criadero
+//    y viven en la sección Criadero (Páginas, Visitas, Estadísticas, Dominio)
+//  - Analíticas eliminada del sidebar (confunde con Estadísticas;
+//    accesible vía ⌘K y desde fichas individuales)
+//  - Comunidad eliminada (criaderos se descubren desde /search)
+//  - Cuenta eliminada — Suscripción + Facturación se gestionan desde
+//    Ajustes; Dominio pasó a Criadero
 //
 // Reglas de visibilidad:
 //   - Sin flags        → siempre
@@ -58,9 +62,6 @@ export interface NavSection {
 //   - requiresPro      → solo plan Pro/Premium
 //   - requiresClient   → solo si tiene reservas o perros recibidos
 //   - requiresAdmin    → solo profiles.role = 'admin'
-//
-// Convención de orden: lo que usa a diario va arriba; lo que se usa una
-// vez al mes (cuenta, pagos, admin) va abajo.
 export const NAV_SECTIONS: NavSection[] = [
   // ── Principal — siempre visible ──────────────────────────────────────
   {
@@ -100,50 +101,41 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
 
-  // ── Comunicación (Pro) ──────────────────────────────────────────────
+  // ── Comunicación (Pro) — solo entradas principales ──────────────────
+  // Hilos del bot, Test del bot y Conocimiento viven como tabs dentro
+  // de /emailbot; no se duplican aquí.
   {
     id: 'comms',
     label: 'Comunicación',
     requiresPro: true,
     items: [
       { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresPro: true },
-      { label: 'Hilos', href: '/emailbot/hilos', icon: 'MessageSquare', requiresPro: true },
-      { label: 'Test del bot', href: '/emailbot/test', icon: 'Beaker', requiresPro: true },
-      { label: 'Conocimiento', href: '/conocimiento', icon: 'BookOpen', requiresPro: true },
       { label: 'Newsletter', href: '/newsletter', icon: 'Send', requiresPro: true },
     ],
   },
 
-  // ── Web pública (Pro + Kennel) ──────────────────────────────────────
-  {
-    id: 'web',
-    label: 'Web pública',
-    requiresPro: true,
-    requiresKennel: true,
-    items: [
-      { label: 'Páginas', href: '/web', icon: 'Globe', requiresPro: true, requiresKennel: true },
-      { label: 'Visitas', href: '/visitas', icon: 'TrendingUp', requiresPro: true, requiresKennel: true },
-      { label: 'Estadísticas', href: '/estadisticas', icon: 'BarChart3', requiresPro: true, requiresKennel: true },
-      { label: 'Analíticas', href: '/analytics', icon: 'BarChart3', requiresKennel: true },
-    ],
-  },
-
-  // ── Criadero — config del kennel ────────────────────────────────────
+  // ── Criadero — info pública + extensión web + cobros + integraciones ─
+  // Absorbe lo que era "Web pública" y "Cuenta → Dominio" porque todo es
+  // una extensión natural del criadero.
   {
     id: 'kennel',
     label: 'Criadero',
     requiresKennel: true,
     items: [
       { label: 'Mi criadero', href: '/kennel', icon: 'Store', requiresKennel: true },
+      { label: 'Páginas web', href: '/web', icon: 'Globe', requiresPro: true, requiresKennel: true },
+      { label: 'Visitas', href: '/visitas', icon: 'TrendingUp', requiresPro: true, requiresKennel: true },
+      { label: 'Estadísticas', href: '/estadisticas', icon: 'BarChart3', requiresPro: true, requiresKennel: true },
+      { label: 'Dominio', href: '/cuenta/dominio', icon: 'Link2', requiresPro: true, requiresKennel: true },
       { label: 'Pagos (Stripe)', href: '/kennel/pagos', icon: 'CreditCard', requiresKennel: true },
       { label: 'API keys', href: '/kennel/api', icon: 'Key', requiresKennel: true },
     ],
   },
 
   // ── Propietario — solo si tiene reservas/perros como cliente ────────
-  // Aparece para cualquiera con `puppy_reservations.client_user_id = me` o
-  // `dogs.owner_id = me` (delivered_from_reservation_id NOT NULL). Un user
-  // puede ser criador Y cliente simultáneamente (criador comprando a otro).
+  // Un user puede ser criador Y cliente simultáneamente (criador
+  // comprando a otro). Aparece si hay reserva con client_user_id=me o
+  // dog.owner_id=me (delivered_from_reservation_id NOT NULL).
   {
     id: 'client',
     label: 'Propietario',
@@ -151,27 +143,6 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Mis reservas', href: '/mis-reservas', icon: 'KanbanSquare', requiresClient: true },
       { label: 'Mis perros', href: '/mis-perros', icon: 'Dog', requiresClient: true },
-    ],
-  },
-
-  // ── Comunidad — siempre visible ─────────────────────────────────────
-  {
-    id: 'community',
-    label: 'Comunidad',
-    items: [
-      { label: 'Criaderos', href: '/kennels', icon: 'Users' },
-    ],
-  },
-
-  // ── Cuenta (Pro) — subscription, billing, dominio ───────────────────
-  {
-    id: 'account',
-    label: 'Cuenta',
-    requiresPro: true,
-    items: [
-      { label: 'Suscripción', href: '/cuenta/suscripcion', icon: 'Sparkles', requiresPro: true },
-      { label: 'Facturación', href: '/cuenta/facturacion', icon: 'Receipt', requiresPro: true },
-      { label: 'Dominio', href: '/cuenta/dominio', icon: 'Link2', requiresPro: true },
     ],
   },
 
