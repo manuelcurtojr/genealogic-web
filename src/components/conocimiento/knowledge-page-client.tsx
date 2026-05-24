@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, Search, BookOpen, Eye, EyeOff } from 'lucide-react'
+import { Plus, Search, BookOpen, Eye, EyeOff, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import KnowledgeFormPanel from './knowledge-form-panel'
+import KnowledgeImporter from './knowledge-importer'
 
 interface Entry {
   id: string
@@ -42,6 +43,7 @@ export default function KnowledgePageClient({ kennelId, kennelName, initialEntri
   const [activeCategory, setActiveCategory] = useState<string>('all')
   const [panelOpen, setPanelOpen] = useState(false)
   const [editing, setEditing] = useState<Entry | null>(null)
+  const [importerOpen, setImporterOpen] = useState(false)
 
   const filtered = useMemo(() => {
     let result = entries
@@ -101,11 +103,22 @@ export default function KnowledgePageClient({ kennelId, kennelName, initialEntri
             )}
           </p>
         </div>
-        <Button onClick={() => { setEditing(null); setPanelOpen(true) }} size="md" variant="primary">
-          <Plus className="w-4 h-4" />
-          Nueva entrada
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setImporterOpen(true)} size="md" variant="secondary">
+            <Sparkles className="w-4 h-4" />
+            Importar con IA
+          </Button>
+          <Button onClick={() => { setEditing(null); setPanelOpen(true) }} size="md" variant="primary">
+            <Plus className="w-4 h-4" />
+            Nueva entrada
+          </Button>
+        </div>
       </div>
+      <KnowledgeImporter
+        open={importerOpen}
+        onClose={() => setImporterOpen(false)}
+        kennelId={kennelId}
+      />
 
       {/* Hint */}
       <div className="rounded-xl border border-hairline bg-surface-card p-4 mb-6 flex items-start gap-3">

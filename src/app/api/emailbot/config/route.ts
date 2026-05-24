@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { AI_MODELS } from '@/lib/ai/models'
 
 /**
  * POST /api/emailbot/config — upsert config del Emailbot del kennel del usuario.
@@ -20,7 +21,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Kennel no encontrado o no es tuyo' }, { status: 403 })
   }
 
-  // Construir update solo con keys permitidas
+  // Si llega bot_model, va a kennels (NO a emailbot_config). Validar contra catálogo.
+  if (typeof body.bot_model === 'string') {
+    const valid = AI_MODELS.some((m) => m.id === body.bot_model)
+    if (!valid) {
+      return NextResponse.json({ error: `Modelo no válido: ${body.bot_model}` }, { status: 400 })
+    }
+    const { error: kErr } = await supabase
+      .from('kennels')
+      .update({ bot_model: body.bot_model })
+      .eq('id', kennel_id)
+    if (kErr) return NextResponse.json({ error: kErr.message }, { status: 500 })
+  }
+
+  // Construir update solo con keys permitidas (las propias de emailbot_config)
   const allowed = ['is_enabled', 'inbound_address', 'reply_from_name', 'reply_from_email', 'signature', 'fallback_after_n_replies', 'working_hours']
   const updates: any = {}
   for (const k of allowed) if (k in body) updates[k] = body[k]

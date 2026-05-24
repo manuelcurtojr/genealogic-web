@@ -11,7 +11,8 @@
  *   - /api/emailbot/test     (playground del dashboard)
  *   - /api/emailbot/inbound  (webhook real de Resend Inbound)
  */
-import Anthropic from '@anthropic-ai/sdk'
+import { chat, type ChatMessage } from '@/lib/ai/client'
+import { getDefaultModel } from '@/lib/ai/models'
 
 export interface KnowledgeEntry {
   category: string
@@ -25,6 +26,9 @@ export interface BotContext {
   scenario: 'new_lead' | 'waitlist' | 'reservation'
   contactName?: string | null
   knowledge: KnowledgeEntry[]
+  /** ID del modelo de IA elegido por el kennel (kennels.bot_model).
+   *  Si no se pasa, se usa el default del catálogo. */
+  modelId?: string
 }
 
 export interface BotMessage {
@@ -37,6 +41,15 @@ export interface BotResponse {
   shouldEscalate: boolean
   escalationReason?: string
   tokensUsed: number
+  /** Datos extra para logging en ai_usage_logs */
+  usage: {
+    inputTokens: number
+    outputTokens: number
+    costUsd: number
+    provider: string
+    model: string
+    resolvedModelId: string
+  }
 }
 
 const SCENARIO_CONTEXTS: Record<BotContext['scenario'], string> = {
@@ -79,31 +92,33 @@ Responde directamente al mensaje del usuario en el contexto descrito. No prepare
 }
 
 /**
- * Llama a Claude con el contexto del kennel y devuelve la respuesta procesada.
+ * Genera la respuesta del bot delegando en el cliente unificado multi-provider.
+ *
+ * El modelo se elige por kennel (ctx.modelId, viene de kennels.bot_model).
+ * Si no se pasa, usa el default del catálogo.
+ *
  * Detecta marcador [[ESCALAR_A_HUMANO: …]] y lo extrae sin enviárselo al cliente.
  */
 export async function generateReply(
   ctx: BotContext,
   messages: BotMessage[],
 ): Promise<BotResponse> {
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY no configurada')
+  const modelId = ctx.modelId || getDefaultModel().id
 
-  const client = new Anthropic({ apiKey })
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 1024,
+  const chatMessages: ChatMessage[] = messages.map((m) => ({
+    role: m.role === 'assistant' ? 'assistant' : 'user',
+    content: m.content,
+  }))
+
+  const result = await chat({
+    modelId,
     system: buildSystemPrompt(ctx),
-    messages: messages.map(m => ({
-      role: m.role === 'assistant' ? 'assistant' : 'user',
-      content: m.content,
-    })),
+    messages: chatMessages,
+    maxTokens: 1024,
   })
 
-  const textBlock = response.content.find(b => b.type === 'text') as any
-  let reply = textBlock?.text || ''
-
   // Extraer marcador de escalación
+  let reply = result.text
   const escalateMatch = reply.match(/\[\[ESCALAR_A_HUMANO:\s*([^\]]+)\]\]/i)
   let shouldEscalate = false
   let escalationReason: string | undefined
@@ -113,7 +128,18 @@ export async function generateReply(
     reply = reply.replace(/\[\[ESCALAR_A_HUMANO:[^\]]+\]\]/gi, '').trim()
   }
 
-  const tokensUsed = (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0)
-
-  return { reply, shouldEscalate, escalationReason, tokensUsed }
+  return {
+    reply,
+    shouldEscalate,
+    escalationReason,
+    tokensUsed: result.totalTokens,
+    usage: {
+      inputTokens: result.inputTokens,
+      outputTokens: result.outputTokens,
+      costUsd: result.costUsd,
+      provider: result.provider,
+      model: result.model,
+      resolvedModelId: result.resolvedModelId,
+    },
+  }
 }

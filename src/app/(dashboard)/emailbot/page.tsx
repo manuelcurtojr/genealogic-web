@@ -12,7 +12,7 @@ export default async function EmailbotPage() {
 
   const { data: kennelArr } = await supabase
     .from('kennels')
-    .select('id, name, slug')
+    .select('id, name, slug, bot_model')
     .eq('owner_id', user.id)
     .limit(1)
   const kennel = kennelArr?.[0]
@@ -46,6 +46,7 @@ export default async function EmailbotPage() {
         kennelName={kennel.name}
         kennelSlug={kennel.slug}
         initialConfig={cfgRes.data || null}
+        initialBotModel={(kennel as any).bot_model || null}
         stats={{
           knowledgeCount: knowledgeRes.count || 0,
           threadsTotal: threadsRes.count || 0,

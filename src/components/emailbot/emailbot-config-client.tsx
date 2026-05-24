@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Mail, BookOpen, MessageSquare, Beaker, AlertTriangle, Power, ExternalLink, Copy, Check } from 'lucide-react'
+import { Mail, BookOpen, MessageSquare, Beaker, AlertTriangle, Power, ExternalLink, Copy, Check, Cpu, Zap, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { AI_MODELS, getDefaultModel, getModel } from '@/lib/ai/models'
 
 interface Config {
   kennel_id: string
@@ -21,6 +22,7 @@ interface Props {
   kennelName: string
   kennelSlug: string
   initialConfig: Config | null
+  initialBotModel: string | null
   stats: {
     knowledgeCount: number
     threadsTotal: number
@@ -29,7 +31,31 @@ interface Props {
   }
 }
 
-export default function EmailbotConfigClient({ kennelId, kennelName, kennelSlug, initialConfig, stats }: Props) {
+export default function EmailbotConfigClient({
+  kennelId, kennelName, kennelSlug, initialConfig, initialBotModel, stats,
+}: Props) {
+  const [botModel, setBotModel] = useState<string>(initialBotModel || getDefaultModel().id)
+  const [savingModel, setSavingModel] = useState(false)
+
+  async function saveBotModel(newId: string) {
+    const prev = botModel
+    setBotModel(newId)
+    setSavingModel(true)
+    try {
+      const res = await fetch('/api/emailbot/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kennel_id: kennelId, bot_model: newId }),
+      })
+      if (!res.ok) throw new Error('Error al guardar modelo')
+    } catch (err: any) {
+      alert(err.message)
+      setBotModel(prev)
+    } finally {
+      setSavingModel(false)
+    }
+  }
+
   const [cfg, setCfg] = useState<Config>(() => initialConfig || {
     kennel_id: kennelId,
     is_enabled: false,
@@ -120,6 +146,62 @@ export default function EmailbotConfigClient({ kennelId, kennelName, kennelSlug,
           </div>
         </div>
       )}
+
+      {/* Selector de modelo IA */}
+      <div className="rounded-2xl border border-hairline bg-canvas p-5 lg:p-6 mb-4">
+        <div className="flex items-center gap-2 mb-1">
+          <Cpu className="w-4 h-4 text-ink" />
+          <p className="text-sm font-semibold text-ink">Modelo de IA</p>
+          {savingModel && <span className="text-[11px] text-muted">guardando...</span>}
+        </div>
+        <p className="text-xs text-muted mb-4">
+          Elige el modelo que usará el bot para responder. Cuesta más calidad,
+          menos coste por email. Genealogic se encarga de las APIs — tu plan
+          cubre el uso normal.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {AI_MODELS.map((m) => {
+            const active = m.id === botModel
+            const SpeedIcon = m.speedTier === 'fast' ? Zap
+                            : m.speedTier === 'premium' ? Star
+                            : Cpu
+            return (
+              <button
+                key={m.id}
+                onClick={() => saveBotModel(m.id)}
+                disabled={savingModel}
+                className={`text-left rounded-lg border p-3 transition ${
+                  active
+                    ? 'border-ink bg-surface-card ring-2 ring-ink/20'
+                    : 'border-hairline bg-canvas hover:border-ink/30'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <SpeedIcon className={`w-3.5 h-3.5 flex-shrink-0 ${
+                      m.speedTier === 'fast' ? 'text-emerald-600'
+                      : m.speedTier === 'premium' ? 'text-amber-600'
+                      : 'text-blue-600'
+                    }`} />
+                    <p className="text-sm font-bold text-ink truncate">{m.label}</p>
+                  </div>
+                  {active && <Check className="w-4 h-4 text-ink flex-shrink-0" />}
+                </div>
+                <p className="text-[11px] text-muted line-clamp-2 leading-snug">
+                  {m.shortDescription}
+                </p>
+                <p className="text-[10px] text-muted mt-1.5 font-mono">
+                  ${m.pricePer1MInput}/M in · ${m.pricePer1MOutput}/M out
+                </p>
+              </button>
+            )
+          })}
+        </div>
+        <p className="text-[11px] text-muted mt-3">
+          Modelo activo: <strong className="text-ink">{getModel(botModel).label}</strong>
+          {' '}({getModel(botModel).provider})
+        </p>
+      </div>
 
       {/* Enable toggle */}
       <div className="rounded-2xl border border-hairline bg-canvas p-5 lg:p-6 mb-4">

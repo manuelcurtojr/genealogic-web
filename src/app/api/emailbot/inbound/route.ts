@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { generateReply, type BotContext, type BotMessage } from '@/lib/emailbot'
+import { logAIUsage } from '@/lib/ai/track'
 
 export const maxDuration = 60
 
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
 
   const { data: kennel } = await admin
     .from('kennels')
-    .select('id, name, description')
+    .select('id, name, description, bot_model')
     .eq('id', cfg.kennel_id)
     .single()
   if (!kennel) {
@@ -204,11 +205,30 @@ export async function POST(request: NextRequest) {
         scenario,
         contactName: fromName || owner?.full_name || null,
         knowledge: entries || [],
+        modelId: (kennel as any).bot_model || undefined,
       },
       messages,
     )
+    await logAIUsage({
+      scope: 'emailbot_reply',
+      kennelId: kennel.id,
+      result: {
+        text: botResult.reply, totalTokens: botResult.tokensUsed,
+        inputTokens: botResult.usage.inputTokens, outputTokens: botResult.usage.outputTokens,
+        costUsd: botResult.usage.costUsd, provider: botResult.usage.provider,
+        model: botResult.usage.model, resolvedModelId: botResult.usage.resolvedModelId,
+      },
+      threadId: thread.id,
+      requestMeta: { scenario, messages_count: messages.length, knowledge_count: entries?.length || 0 },
+    })
   } catch (err: any) {
     console.error('Emailbot inbound generate error:', err)
+    await logAIUsage({
+      scope: 'emailbot_reply',
+      kennelId: kennel.id,
+      threadId: thread.id,
+      errorMessage: err.message || 'unknown',
+    })
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 
