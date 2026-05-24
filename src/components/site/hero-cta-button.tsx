@@ -1,43 +1,34 @@
 'use client'
 
 /**
- * Botón de CTA del hero que soporta 3 modos:
+ * Botón de CTA del hero que soporta 2 modos:
  *
- * 1. Link normal: cualquier href que no sea especial → <Link href> Next.js
- * 2. Modal contacto: href === '#contact' | '#contacto' | '#form' →
- *    abre un dialog con el ContactFormInner (popup centrado, sin navegar).
- * 3. Si href es relative '.' o vacío → navega al home del kennel.
+ * 1. Modal contacto (href === '#contact' | '#contacto' | '#form'):
+ *    abre el ContactDialog UNIFICADO que usa el `contact_form_config` que
+ *    el criador construyó en /kennel → "Formulario de contacto".
+ *    Renderiza los campos custom (cría enfocada, genérico o custom).
+ * 2. Link normal: cualquier otro href → <Link href> de Next.js.
  *
- * Heredita el tema activo automáticamente (CSS vars) — no hay nada hardcoded.
+ * Hereda el tema activo (CSS vars) — sin hardcodes.
  */
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import ContactFormInner from './sections/contact-form-inner'
+import { ContactDialog } from './contact-dialog'
+import type { ContactFormConfig } from '@/lib/kennel/contact-form'
 
 type Variant = 'primary' | 'outline' | 'ghost'
 
 export function HeroCtaButton({
-  href, label, variant = 'primary',
+  href, label, variant = 'primary', kennelId, kennelName, contactFormConfig,
 }: {
   href: string
   label: string
   variant?: Variant
+  kennelId?: string
+  kennelName?: string
+  contactFormConfig?: ContactFormConfig | null
 }) {
   const [open, setOpen] = useState(false)
-
-  // Cierra modal con Esc
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
-    document.addEventListener('keydown', onKey)
-    // Lock body scroll
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
-    }
-  }, [open])
-
   const isContactModal = /^#(contact|contacto|form)/i.test(href.trim())
 
   const cls =
@@ -49,13 +40,20 @@ export function HeroCtaButton({
 
   const style = variant !== 'primary' ? { borderRadius: 'var(--button-radius, 12px)' } : undefined
 
-  if (isContactModal) {
+  if (isContactModal && kennelId && kennelName) {
     return (
       <>
         <button type="button" onClick={() => setOpen(true)} className={cls} style={style}>
           {label}
         </button>
-        {open && <ContactModal onClose={() => setOpen(false)} />}
+        <ContactDialog
+          open={open}
+          onClose={() => setOpen(false)}
+          kennelId={kennelId}
+          kennelName={kennelName}
+          config={contactFormConfig ?? null}
+          themed
+        />
       </>
     )
   }
@@ -64,59 +62,5 @@ export function HeroCtaButton({
     <Link href={href || '.'} className={cls} style={style}>
       {label}
     </Link>
-  )
-}
-
-function ContactModal({ onClose }: { onClose: () => void }) {
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-[modalFade_180ms_ease-out]"
-    >
-      <button
-        type="button"
-        aria-label="Cerrar"
-        onClick={onClose}
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-      />
-      <div
-        className="relative w-full max-w-md bg-canvas border border-hairline shadow-2xl overflow-hidden animate-[modalSlide_220ms_ease-out]"
-        style={{ borderRadius: 'var(--button-radius, 12px)' }}
-      >
-        {/* Cabecera con tricolor stripe si el tema la tiene */}
-        <div className="p-6 lg:p-8">
-          <div className="flex items-start justify-between gap-4 mb-6">
-            <div>
-              <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted mb-3">
-                <span className="text-theme-accent font-mono">01</span>
-                <span className="inline-block h-px w-8 bg-theme-accent opacity-60" />
-                Contacto directo
-              </p>
-              <h2
-                className="text-2xl md:text-3xl font-bold text-ink tracking-[-0.02em]"
-                style={{ fontFamily: 'var(--font-display, inherit)' }}
-              >
-                Hablar con el criador
-              </h2>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Cerrar"
-              className="shrink-0 h-9 w-9 inline-flex items-center justify-center text-muted hover:text-ink border border-hairline hover:border-theme-accent transition-colors"
-              style={{ borderRadius: 'var(--button-radius, 8px)' }}
-            >
-              ✕
-            </button>
-          </div>
-          <ContactFormInner />
-        </div>
-      </div>
-      <style>{`
-        @keyframes modalFade { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes modalSlide { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: translateY(0) } }
-      `}</style>
-    </div>
   )
 }

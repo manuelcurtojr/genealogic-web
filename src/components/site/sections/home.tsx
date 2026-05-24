@@ -30,6 +30,13 @@ export async function HeroSection(props: {
   // Acepta tanto background_image_url como bg_image_url (alias del schema)
   const background_image_url = props.background_image_url || props.bg_image_url
   const height = props.height === 'sm' ? 'min-h-[60vh]' : props.height === 'lg' ? 'min-h-[92vh]' : 'min-h-[75vh]'
+  // Datos del kennel para que el modal del CTA "Hablar con el criador" pueda
+  // renderizar el formulario CUSTOM construido por el criador en /kennel.
+  const kennel = await getCurrentKennel()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const contactFormConfig = ((kennel as any).contact_form_config ?? null) as
+    | import('@/lib/kennel/contact-form').ContactFormConfig
+    | null
   return (
     <section className={`relative ${height} flex items-end overflow-hidden bg-[#0a0a0a]`}>
       {background_image_url && (
@@ -67,7 +74,15 @@ export async function HeroSection(props: {
         {ctas.length > 0 && (
           <div className="flex flex-wrap gap-3">
             {ctas.map((c, i) => (
-              <HeroCtaButton key={i} href={c.href} label={c.label} variant={c.variant} />
+              <HeroCtaButton
+                key={i}
+                href={c.href}
+                label={c.label}
+                variant={c.variant}
+                kennelId={kennel.id}
+                kennelName={kennel.name}
+                contactFormConfig={contactFormConfig}
+              />
             ))}
           </div>
         )}
