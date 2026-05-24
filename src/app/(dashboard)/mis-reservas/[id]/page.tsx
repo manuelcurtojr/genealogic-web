@@ -227,9 +227,12 @@ export default async function MyReservationDetailPage({
                   </p>
                 )}
             </dl>
-            <p className="mt-5 text-[11px] text-muted leading-relaxed">
-              Próximamente: pagos online directos con el criador vía Stripe.
-            </p>
+            <Link
+              href={`/mis-reservas/${reservation.id}/pagos`}
+              className="mt-5 inline-flex items-center gap-1 w-full justify-center rounded-lg border border-hairline px-3 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
+            >
+              Ver pagos y abonar →
+            </Link>
           </section>
 
           <section className="rounded-2xl border border-hairline bg-canvas p-5">
