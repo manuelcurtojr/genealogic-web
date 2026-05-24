@@ -9,6 +9,8 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getMyDog, calcAge } from '@/lib/owner/dogs'
 import { formatDate } from '@/lib/owner/reservations'
+import { listDogDocumentsForOwner } from '@/lib/dogs/documents'
+import DogDocumentsGrid from '@/components/dogs/dog-documents-grid'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Mi perro · Genealogic' }
@@ -28,6 +30,7 @@ export default async function MyDogDetailPage({
 
   const kennel = dog.delivered_from_reservation?.kennel
   const reservation = dog.delivered_from_reservation
+  const documents = await listDogDocumentsForOwner(dog.id)
 
   return (
     <div>
@@ -138,14 +141,31 @@ export default async function MyDogDetailPage({
         </section>
       )}
 
-      {/* Papeles (placeholder Fase C) */}
+      {/* Papeles */}
       <section className="mt-6 rounded-2xl border border-hairline bg-canvas p-5">
-        <h2 className="text-base font-bold text-ink mb-2">Papeles</h2>
-        <p className="text-sm text-muted">
-          Contrato, cartilla sanitaria, cartilla de vacunas y otros documentos
-          aparecerán aquí en la próxima actualización. Mientras, contacta al
-          criador para los originales.
-        </p>
+        <div className="flex items-end justify-between mb-4 gap-3">
+          <div>
+            <h2 className="text-base font-bold text-ink">Papeles</h2>
+            <p className="text-xs text-muted mt-0.5">
+              Contrato, cartilla sanitaria, vacunas, pedigree y otros documentos
+              que el criador ha subido. También puedes añadir los tuyos.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {documents.length > 0 && (
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                {documents.length} {documents.length === 1 ? 'doc' : 'docs'}
+              </span>
+            )}
+            <Link
+              href={`/dogs/${dog.id}/papeles`}
+              className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink whitespace-nowrap"
+            >
+              Gestionar →
+            </Link>
+          </div>
+        </div>
+        <DogDocumentsGrid documents={documents} />
       </section>
     </div>
   )
