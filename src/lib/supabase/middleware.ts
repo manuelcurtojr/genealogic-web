@@ -67,7 +67,10 @@ export async function updateSession(request: NextRequest) {
     '/reservas', '/clientes', '/contactos', '/emailbot', '/conocimiento',
     '/web', '/estadisticas', '/visitas', '/newsletter', '/cuenta',
   ]
-  const isProRoute = proRoutePrefixes.some(p => pathname === p || pathname.startsWith(p + '/'))
+  // /newsletter/unsubscribe es PÚBLICO (link desde emails enviados a contactos
+  // que ni siquiera son usuarios de Genealogic). Excluir de pro check.
+  const isPublicNewsletterPath = pathname.startsWith('/newsletter/unsubscribe')
+  const isProRoute = !isPublicNewsletterPath && proRoutePrefixes.some(p => pathname === p || pathname.startsWith(p + '/'))
 
   // Protected routes — redirect to login if not authenticated
   const isProtectedRoute = !isDogDetailPage && !isKennelDetailPage && !isKennelDirectoryPage && !isLitterDetailPage && !isPricingPage && !isSearchPage && (
