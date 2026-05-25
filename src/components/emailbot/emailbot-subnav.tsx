@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Mail, MessageSquare, Beaker, BookOpen } from 'lucide-react'
+import { Mail, MessageSquare, Beaker, BookOpen, FlaskConical } from 'lucide-react'
 
 /**
  * Subnav compartido entre /emailbot, /emailbot/hilos, /emailbot/test
@@ -34,9 +34,16 @@ export default function EmailbotSubnav() {
     {
       href: '/emailbot/test',
       label: 'Probar',
-      hint: 'Playground para testear respuestas del bot',
+      hint: 'Playground 1-shot para testear una respuesta del bot',
       icon: Beaker,
-      active: pathname.startsWith('/emailbot/test'),
+      active: pathname === '/emailbot/test' || pathname.startsWith('/emailbot/test/'),
+    },
+    {
+      href: '/emailbot/test-suite',
+      label: 'Suite tests',
+      hint: 'Bate 16 perfiles ficticios contra tu bot y evalúa calidad (con coste)',
+      icon: FlaskConical,
+      active: pathname.startsWith('/emailbot/test-suite'),
     },
     {
       href: '/conocimiento',
