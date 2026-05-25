@@ -21,6 +21,8 @@ import {
   cancelPaymentAction,
 } from './actions'
 import { CreditCard, Plus, AlertCircle } from 'lucide-react'
+import { isEarlyAccessKennel } from '@/lib/early-access'
+import ComingSoon from '@/components/early-access/coming-soon'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Pagos · Reserva · Genealogic' }
@@ -47,6 +49,11 @@ export default async function BreederPaymentsPage({
     .maybeSingle()
   if (!reservation) notFound()
   if (reservation.kennel?.owner_id !== user.id) redirect('/reservas')
+
+  // Gate Early Access: pagos solo activos para el kennel del fundador
+  if (!isEarlyAccessKennel(reservation.kennel?.id)) {
+    return <ComingSoon featureId="stripe_payments" backHref={`/reservas/${reservation.id}`} backLabel="← Volver a la reserva" />
+  }
 
   const payments = await listReservationPayments(reservation.id)
   const totalPaid = payments

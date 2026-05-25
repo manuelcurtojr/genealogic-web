@@ -18,6 +18,8 @@ import Link from 'next/link'
 import { isStripeConfigured } from '@/lib/stripe/server'
 import { startStripeOnboardingAction, syncStripeStatusAction } from './actions'
 import { CheckCircle2, AlertTriangle, ExternalLink } from 'lucide-react'
+import { isEarlyAccessKennel } from '@/lib/early-access'
+import ComingSoon from '@/components/early-access/coming-soon'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Pagos · Mi criadero · Genealogic' }
@@ -39,6 +41,13 @@ export default async function KennelPagosPage({
     .select('id, name, slug, stripe_account_id, stripe_account_status')
     .eq('owner_id', user.id)
     .maybeSingle()
+
+  // Gate Early Access: solo el kennel del fundador (Irema) ve la página real.
+  // El resto ve placeholder "Próximamente" hasta que activemos Stripe Connect
+  // globalmente con metered billing y onboarding pulido.
+  if (!isEarlyAccessKennel(kennel?.id)) {
+    return <ComingSoon featureId="stripe_payments" backHref="/kennel" backLabel="← Volver a Mi criadero" />
+  }
 
   // Si vuelven del onboarding (?refresh=1), sincronizamos status
   if (sp.refresh && kennel?.stripe_account_id) {

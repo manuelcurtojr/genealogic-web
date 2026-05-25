@@ -23,6 +23,8 @@ import {
   cancelContractAction,
 } from './actions'
 import { CheckCircle2, FileText, AlertCircle } from 'lucide-react'
+import { isEarlyAccessKennel } from '@/lib/early-access'
+import ComingSoon from '@/components/early-access/coming-soon'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Contrato · Genealogic' }
@@ -46,6 +48,16 @@ export default async function BreederContractPage({
     .maybeSingle()
   if (!reservation) notFound()
   if (reservation.kennel?.owner_id !== user.id) redirect('/reservas')
+
+  // Gate Early Access: contratos sin firma legal robusta solo para Irema
+  if (!isEarlyAccessKennel(reservation.kennel_id)) {
+    return <ComingSoon
+      featureId="contracts"
+      description="Editor de contratos con firma electrónica vinculante. Trabajando en integración con DocuSign/Signaturit para que la firma tenga validez legal completa."
+      backHref={`/reservas/${reservation.id}`}
+      backLabel="← Volver a la reserva"
+    />
+  }
 
   const contract = await getContractByReservation(reservation.id)
 

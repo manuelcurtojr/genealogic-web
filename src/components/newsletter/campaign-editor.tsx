@@ -22,6 +22,8 @@ import {
 } from 'lucide-react'
 import { AUDIENCE_LABELS, AUDIENCE_HINTS, type AudienceType } from '@/lib/newsletter/audiences-shared'
 import { renderContractMarkdown } from '@/lib/contracts/markdown'
+import { isEarlyAccessKennel } from '@/lib/early-access'
+import { ComingSoonChip } from '@/components/early-access/coming-soon'
 
 export type CampaignRow = {
   id: string
@@ -64,6 +66,7 @@ export default function CampaignEditor({
 }) {
   const router = useRouter()
   const isLocked = ['sending', 'sent'].includes(initial.status)
+  const canSend = isEarlyAccessKennel(kennelId)
   const [tab, setTab] = useState<Tab>(isLocked ? 'send' : 'edit')
 
   // Form state (controlado, autosave)
@@ -436,8 +439,9 @@ export default function CampaignEditor({
                   />
                   <button
                     onClick={sendTest}
-                    disabled={testSending || !testEmail.trim()}
-                    className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink disabled:opacity-50"
+                    disabled={testSending || !testEmail.trim() || !canSend}
+                    title={!canSend ? 'Envío de newsletter próximamente disponible' : undefined}
+                    className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {testSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                     Enviar prueba
@@ -451,15 +455,27 @@ export default function CampaignEditor({
               </div>
 
               {/* Send real */}
-              <div className="rounded-2xl border-2 border-ink bg-canvas p-5">
-                <p className="text-sm font-bold text-ink inline-flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Enviar a {audienceCount} suscriptores
-                </p>
+              <div className={`rounded-2xl border-2 ${canSend ? 'border-ink' : 'border-hairline'} bg-canvas p-5`}>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-bold text-ink inline-flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Enviar a {audienceCount} suscriptores
+                  </p>
+                  {!canSend && <ComingSoonChip featureId="newsletter_send" />}
+                </div>
                 <p className="mt-1 text-xs text-muted">
-                  Manda la campaña a toda la audiencia <strong>{AUDIENCE_LABELS[draft.audience_type]}</strong>.
-                  Tarda ~{Math.max(5, Math.ceil(audienceCount / 20))} segundos.
-                  No se puede deshacer.
+                  {canSend ? (
+                    <>
+                      Manda la campaña a toda la audiencia <strong>{AUDIENCE_LABELS[draft.audience_type]}</strong>.
+                      Tarda ~{Math.max(5, Math.ceil(audienceCount / 20))} segundos.
+                      No se puede deshacer.
+                    </>
+                  ) : (
+                    <>
+                      El envío real de campañas está disponible para todos en las próximas semanas.
+                      Mientras tanto puedes diseñar la campaña y previsualizarla aquí.
+                    </>
+                  )}
                 </p>
                 {sendError && (
                   <p className="mt-2 text-xs text-red-600">
@@ -475,8 +491,9 @@ export default function CampaignEditor({
                 )}
                 <button
                   onClick={() => setConfirmOpen(true)}
-                  disabled={sending || audienceCount === 0}
-                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90 disabled:opacity-50"
+                  disabled={sending || audienceCount === 0 || !canSend}
+                  title={!canSend ? 'Envío de newsletter próximamente disponible' : undefined}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {sending ? (
                     <>

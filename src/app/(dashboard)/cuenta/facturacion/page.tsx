@@ -6,6 +6,8 @@ import EmailbotUsageSection, {
   type ScopeBreakdown,
 } from '@/components/billing/emailbot-usage-section'
 import { checkBotReplyQuota } from '@/lib/ai/quotas'
+import { isEarlyAccessKennel } from '@/lib/early-access'
+import ComingSoon from '@/components/early-access/coming-soon'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Facturación · Genealogic Pro' }
@@ -35,6 +37,17 @@ export default async function FacturacionPage() {
     .select('id')
     .eq('owner_id', user.id)
     .maybeSingle()
+
+  // Gate Early Access: la facturación con Stripe + uso del bot todavía
+  // está incompleta (sin billing real). Solo el fundador la ve.
+  if (!isEarlyAccessKennel(kennel?.id)) {
+    return <ComingSoon
+      featureId="billing"
+      description="Historial de facturas, método de pago y datos fiscales con integración Stripe. Llegará para todos en las próximas semanas. Mientras tanto, si necesitas factura escríbenos."
+      backHref="/settings"
+      backLabel="← Volver a Ajustes"
+    />
+  }
 
   let usageBlock: React.ReactNode = null
   if (kennel) {

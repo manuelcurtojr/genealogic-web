@@ -15,6 +15,8 @@ import { renderContractMarkdown } from '@/lib/contracts/markdown'
 import { getMyReservation } from '@/lib/owner/reservations'
 import ClientSignForm from '@/components/contracts/client-sign-form'
 import { CheckCircle2, Clock, FileText } from 'lucide-react'
+import { isEarlyAccessKennel } from '@/lib/early-access'
+import ComingSoon from '@/components/early-access/coming-soon'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Contrato · Mi reserva · Genealogic' }
@@ -31,6 +33,16 @@ export default async function MyReservationContractPage({
 
   const reservation = await getMyReservation(user.id, id)
   if (!reservation) notFound()
+
+  // Gate Early Access: el cliente solo ve contratos si el kennel es early access
+  if (!isEarlyAccessKennel(reservation.kennel?.id)) {
+    return <ComingSoon
+      featureId="contracts"
+      description="Próximamente el criador podrá enviarte un contrato por aquí para firmarlo online. Mientras tanto, lo recibirás por email."
+      backHref={`/mis-reservas/${reservation.id}`}
+      backLabel="← Volver a la reserva"
+    />
+  }
 
   const contract = await getContractByReservation(reservation.id)
   const visibleToClient = contract && contract.status !== 'draft' && contract.status !== 'cancelled'

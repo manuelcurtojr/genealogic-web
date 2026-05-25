@@ -18,6 +18,8 @@ import EmailbotSubnav from '@/components/emailbot/emailbot-subnav'
 import TestSuiteClient from '@/components/emailbot/test-suite-client'
 import { getModel, getDefaultModel } from '@/lib/ai/models'
 import { estimateRunCostCents } from '@/lib/ai/emailbot-tester'
+import { isEarlyAccessKennel } from '@/lib/early-access'
+import ComingSoon from '@/components/early-access/coming-soon'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Test Suite · Emailbot · Genealogic Pro' }
@@ -41,6 +43,22 @@ export default async function TestSuitePage() {
           <h1 className="text-3xl font-bold text-ink mb-3">Test Suite</h1>
           <p className="text-body">Necesitas un criadero registrado.</p>
         </div>
+      </div>
+    )
+  }
+
+  // Gate Early Access: el test suite cuesta dinero real (~1-2€/run); hasta
+  // que tengamos quota/metered billing solo lo activamos para el fundador.
+  if (!isEarlyAccessKennel(kennel.id)) {
+    return (
+      <div className="space-y-5">
+        <EmailbotSubnav />
+        <ComingSoon
+          featureId="bot_test_suite"
+          description="Bate 16 perfiles ficticios contra tu bot y obtén scoring + bugs detectados. Llegará para todos cuando tengamos sistema de cuotas y pago por uso."
+          backHref="/emailbot"
+          backLabel="← Volver al Emailbot"
+        />
       </div>
     )
   }
