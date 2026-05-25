@@ -55,21 +55,42 @@ export default function LandingPage({ breeds, featuredDogs, cockerPhotos = [] }:
 }
 
 // ─── Header ──────────────────────────────────────────────────────────────
-// Header limpio: wordmark a la izquierda, hamburguesa a la derecha. El menú
-// (mismo en mobile y desktop para consistencia) abre un drawer estilo
-// sidebar de dashboard con TODAS las secciones + auth + acceso al producto.
+// Mobile: hamburguesa que abre un drawer lateral derecho.
+// Desktop (md+): nav inline clásico + botones Login/Empezar (más rápido
+// para navegar con mouse; en móvil el drawer da más espacio táctil).
 function StickyHeader() {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-hairline bg-canvas/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:px-6 lg:px-12">
+        <div className="mx-auto flex h-16 max-w-[1200px] items-center gap-4 px-4 sm:px-6 lg:px-12">
           <Wordmark size="text-xl" />
+
+          {/* Desktop nav inline */}
+          <nav className="hidden flex-1 items-center justify-center gap-7 text-[14px] text-body md:flex">
+            <a href="#producto" className="transition hover:text-ink">Producto</a>
+            <a href="#criadores" className="transition hover:text-ink">Para criadores</a>
+            <a href="#precios" className="transition hover:text-ink">Precios</a>
+            <Link href="/blog" className="transition hover:text-ink">Blog</Link>
+            <a href="#faq" className="transition hover:text-ink">FAQ</a>
+          </nav>
+
+          {/* Desktop CTAs */}
+          <div className="ml-auto hidden items-center gap-2 md:flex">
+            <Button href="/login" variant="ghost" size="sm">
+              Iniciar sesión
+            </Button>
+            <Button href="/register?intent=breeder&plan=free" variant="primary" size="sm">
+              Empezar gratis
+            </Button>
+          </div>
+
+          {/* Mobile hamburguesa */}
           <button
             onClick={() => setDrawerOpen(true)}
             aria-label="Abrir menú"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-ink hover:bg-surface-card transition"
+            className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-lg text-ink hover:bg-surface-card transition md:hidden"
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -155,14 +176,8 @@ function PublicDrawer({ open, onClose }: { open: boolean; onClose: () => void })
             <DrawerAnchor href="#criadores" onClick={onClose}>Para criadores</DrawerAnchor>
             <DrawerAnchor href="#precios" onClick={onClose}>Precios</DrawerAnchor>
             <DrawerAnchor href="#faq" onClick={onClose}>FAQ</DrawerAnchor>
-          </DrawerSection>
-
-          <DrawerSection label="Recursos">
             <DrawerLink href="/api-docs" icon={Zap} onClick={onClose}>
               API pública
-            </DrawerLink>
-            <DrawerLink href="/pricing" icon={Sparkles} onClick={onClose}>
-              Página de precios
             </DrawerLink>
           </DrawerSection>
         </nav>
