@@ -10,7 +10,7 @@ export const metadata: BlogPostMeta = {
   date: '2026-05-26',
   category: 'Para criadores',
   heroImage:
-    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/master-mcgrath.jpg',
+    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/master-mcgrath.png',
   heroAlt: 'Master McGrath, greyhound irlandés tricampeón Waterloo Cup',
   readMinutes: 5,
   author: { name: 'Equipo Genealogic', role: 'Editorial' },

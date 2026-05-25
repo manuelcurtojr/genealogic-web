@@ -27,19 +27,25 @@ import MessageNewEmail, { type MessageNewProps } from '@/emails/message-new'
 import ClaimApprovedEmail, { type ClaimApprovedProps } from '@/emails/claim-approved'
 import ClaimRejectedEmail, { type ClaimRejectedProps } from '@/emails/claim-rejected'
 import SupportRepliedEmail, { type SupportRepliedProps } from '@/emails/support-replied'
+import SubscriptionActivatedEmail, { type SubscriptionActivatedProps } from '@/emails/subscription-activated'
+import SubscriptionCancelledEmail, { type SubscriptionCancelledProps } from '@/emails/subscription-cancelled'
+import PaymentFailedEmail, { type PaymentFailedProps } from '@/emails/payment-failed'
 
 const FROM_TRANSACTIONAL = 'Genealogic <hola@genealogic.io>'
 const REPLY_TO = 'hola@genealogic.io'
 
 // Mapa template → { props, subject, category, render fn }
 export type EmailTemplate =
-  | { template: 'welcome_breeder';  props: WelcomeBreederProps }
-  | { template: 'welcome_owner';    props: WelcomeOwnerProps }
-  | { template: 'reservation_new';  props: ReservationNewProps }
-  | { template: 'message_new';      props: MessageNewProps }
-  | { template: 'claim_approved';   props: ClaimApprovedProps }
-  | { template: 'claim_rejected';   props: ClaimRejectedProps }
-  | { template: 'support_replied';  props: SupportRepliedProps }
+  | { template: 'welcome_breeder';        props: WelcomeBreederProps }
+  | { template: 'welcome_owner';          props: WelcomeOwnerProps }
+  | { template: 'reservation_new';        props: ReservationNewProps }
+  | { template: 'message_new';            props: MessageNewProps }
+  | { template: 'claim_approved';         props: ClaimApprovedProps }
+  | { template: 'claim_rejected';         props: ClaimRejectedProps }
+  | { template: 'support_replied';        props: SupportRepliedProps }
+  | { template: 'subscription_activated'; props: SubscriptionActivatedProps }
+  | { template: 'subscription_cancelled'; props: SubscriptionCancelledProps }
+  | { template: 'payment_failed';         props: PaymentFailedProps }
 
 /** Categoría → si el user puede hacer opt-out. */
 type Category = 'auth' | 'reservations' | 'messages' | 'vet_reminders' | 'weekly_digest' | 'marketing' | 'critical'
@@ -76,6 +82,19 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
     category: 'critical',
     subject: (p: SupportRepliedProps) => `Re: ${p.requestSubject}`,
   },
+  subscription_activated: {
+    category: 'critical',
+    subject: (p: SubscriptionActivatedProps) =>
+      `✓ Genealogic ${p.plan === 'pro' ? 'Pro' : 'Premium'} activado`,
+  },
+  subscription_cancelled: {
+    category: 'critical',
+    subject: () => 'Tu suscripción de Genealogic ha terminado',
+  },
+  payment_failed: {
+    category: 'critical',
+    subject: () => 'No hemos podido cobrar tu suscripción',
+  },
 }
 
 let _resend: Resend | null = null
@@ -89,13 +108,16 @@ function resend(): Resend | null {
 
 function renderTemplate(t: EmailTemplate): Promise<string> {
   switch (t.template) {
-    case 'welcome_breeder':  return render(WelcomeBreederEmail(t.props))
-    case 'welcome_owner':    return render(WelcomeOwnerEmail(t.props))
-    case 'reservation_new':  return render(ReservationNewEmail(t.props))
-    case 'message_new':      return render(MessageNewEmail(t.props))
-    case 'claim_approved':   return render(ClaimApprovedEmail(t.props))
-    case 'claim_rejected':   return render(ClaimRejectedEmail(t.props))
-    case 'support_replied':  return render(SupportRepliedEmail(t.props))
+    case 'welcome_breeder':        return render(WelcomeBreederEmail(t.props))
+    case 'welcome_owner':          return render(WelcomeOwnerEmail(t.props))
+    case 'reservation_new':        return render(ReservationNewEmail(t.props))
+    case 'message_new':            return render(MessageNewEmail(t.props))
+    case 'claim_approved':         return render(ClaimApprovedEmail(t.props))
+    case 'claim_rejected':         return render(ClaimRejectedEmail(t.props))
+    case 'support_replied':        return render(SupportRepliedEmail(t.props))
+    case 'subscription_activated': return render(SubscriptionActivatedEmail(t.props))
+    case 'subscription_cancelled': return render(SubscriptionCancelledEmail(t.props))
+    case 'payment_failed':         return render(PaymentFailedEmail(t.props))
   }
 }
 

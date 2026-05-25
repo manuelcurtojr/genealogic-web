@@ -10,7 +10,7 @@ export const metadata: BlogPostMeta = {
   date: '2026-05-26',
   category: 'Para criadores',
   heroImage:
-    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/flocki.jpg',
+    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/flocki-boxer-1895.jpg',
   heroAlt: 'Mühlbauer\'s Flocki, primer bóxer inscrito en libro de orígenes',
   readMinutes: 5,
   author: { name: 'Equipo Genealogic', role: 'Editorial' },

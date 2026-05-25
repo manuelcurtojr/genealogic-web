@@ -47,7 +47,7 @@ export default function HeroMosaic({ photos }: { photos: string[] }) {
                 alt=""
                 aria-hidden="true"
                 loading="eager"
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover filter grayscale"
               />
             )}
           </div>
@@ -64,7 +64,7 @@ export default function HeroMosaic({ photos }: { photos: string[] }) {
                 alt=""
                 aria-hidden="true"
                 loading="eager"
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover filter grayscale"
               />
             )}
           </div>

@@ -10,7 +10,7 @@ export const metadata: BlogPostMeta = {
   date: '2026-05-26',
   category: 'Para criadores',
   heroImage:
-    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/horand-von-grafrath.jpg',
+    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/horand-cropped.jpg',
   heroAlt: 'Horand von Grafrath, primer pastor alemán inscrito (SZ 1)',
   readMinutes: 7,
   author: { name: 'Equipo Genealogic', role: 'Editorial' },

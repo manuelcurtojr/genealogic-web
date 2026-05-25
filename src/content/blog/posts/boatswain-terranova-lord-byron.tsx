@@ -10,7 +10,7 @@ export const metadata: BlogPostMeta = {
   date: '2026-05-26',
   category: 'Para criadores',
   heroImage:
-    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/boatswain.jpg',
+    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/boatswain-monument.jpg',
   heroAlt: 'Boatswain, terranova de Lord Byron, retrato histórico',
   readMinutes: 4,
   author: { name: 'Equipo Genealogic', role: 'Editorial' },

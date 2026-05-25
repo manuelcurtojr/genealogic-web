@@ -10,7 +10,7 @@ export const metadata: BlogPostMeta = {
   date: '2026-05-26',
   category: 'Para criadores',
   heroImage:
-    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/buccleuch-avon.jpg',
+    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/buccleuch-avon.png',
   heroAlt: 'Buccleuch Avon, labrador negro fundador, fotografía histórica',
   readMinutes: 5,
   author: { name: 'Equipo Genealogic', role: 'Editorial' },

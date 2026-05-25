@@ -10,7 +10,7 @@ export const metadata: BlogPostMeta = {
   date: '2026-05-26',
   category: 'Para criadores',
   heroImage:
-    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/pal-glamis.jpg',
+    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/pal-lassie-1942.jpg',
   heroAlt: 'Pal von Glamis, collie original de las películas de Lassie',
   readMinutes: 5,
   author: { name: 'Equipo Genealogic', role: 'Editorial' },

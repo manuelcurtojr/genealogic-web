@@ -10,7 +10,7 @@ export const metadata: BlogPostMeta = {
   date: '2026-05-26',
   category: 'Para criadores',
   heroImage:
-    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/trump-hogarth.jpg',
+    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/trump-hogarth-1745.jpg',
   heroAlt: 'Trump, pug del pintor William Hogarth, retrato en óleo',
   readMinutes: 4,
   author: { name: 'Equipo Genealogic', role: 'Editorial' },

@@ -99,7 +99,7 @@ export default function DiscoveryHome({
               }}
             >
               Cada perro con su pedigree.{' '}
-              <span className="text-muted font-medium">Cada criador con su escaparate.</span>
+              <span style={{ color: '#FE6620' }} className="font-medium">Cada criador con su escaparate.</span>
             </h1>
 
             <p

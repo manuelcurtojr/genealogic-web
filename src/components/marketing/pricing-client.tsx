@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Check, Sparkles, ArrowRight, Search, Dog, Store, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import CheckoutButton from '@/components/billing/checkout-button'
 
 interface Tier {
   id: 'free' | 'pro' | 'premium'
@@ -94,7 +95,13 @@ const ownerFeatures = [
   'App móvil con tus papeles offline (próximamente)',
 ]
 
-export default function PricingClient({ initialTab }: { initialTab: 'breeder' | 'owner' }) {
+export default function PricingClient({
+  initialTab,
+  isLoggedIn = false,
+}: {
+  initialTab: 'breeder' | 'owner'
+  isLoggedIn?: boolean
+}) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [tab, setTab] = useState<'breeder' | 'owner'>(initialTab)
@@ -191,17 +198,43 @@ export default function PricingClient({ initialTab }: { initialTab: 'breeder' | 
                     ))}
                   </ul>
 
-                  <Button
-                    href={tier.ctaHref}
-                    variant={tier.highlight ? 'primary' : 'secondary'}
-                    size="md"
-                    className="w-full"
-                  >
-                    {tier.cta}
-                  </Button>
+                  {tier.id === 'pro' || tier.id === 'premium' ? (
+                    tier.manualSales ? (
+                      <Button
+                        href={tier.ctaHref}
+                        variant={tier.highlight ? 'primary' : 'secondary'}
+                        size="md"
+                        className="w-full"
+                      >
+                        {tier.cta}
+                      </Button>
+                    ) : (
+                      <CheckoutButton
+                        plan={tier.id}
+                        label={tier.cta}
+                        isLoggedIn={isLoggedIn}
+                        className={
+                          tier.highlight
+                            ? 'inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-sm font-bold hover:opacity-90 disabled:opacity-50 transition'
+                            : 'inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-hairline bg-canvas text-ink px-5 py-3 text-sm font-bold hover:border-ink/40 disabled:opacity-50 transition'
+                        }
+                      />
+                    )
+                  ) : (
+                    <Button
+                      href={tier.ctaHref}
+                      variant={tier.highlight ? 'primary' : 'secondary'}
+                      size="md"
+                      className="w-full"
+                    >
+                      {tier.cta}
+                    </Button>
+                  )}
                   {!tier.manualSales && tier.id !== 'free' && (
                     <p className="mt-2 text-[11px] text-muted text-center">
-                      Empiezas en plan Free; activas {tier.name} después de crear tu criadero.
+                      {isLoggedIn
+                        ? 'Pago seguro con Stripe · Cancela cuando quieras'
+                        : `Crea tu cuenta y activa ${tier.name}`}
                     </p>
                   )}
                 </div>

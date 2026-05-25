@@ -10,7 +10,7 @@ export const metadata: BlogPostMeta = {
   date: '2026-05-26',
   category: 'Para criadores',
   heroImage:
-    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/mick-the-miller.jpg',
+    'https://elhwppumacnyhovkapeb.supabase.co/storage/v1/object/public/dog-photos/historic/mick-the-miller-statue.jpg',
   heroAlt: 'Mick the Miller, greyhound de carreras leyenda del galgódromo',
   readMinutes: 5,
   author: { name: 'Equipo Genealogic', role: 'Editorial' },
