@@ -71,8 +71,9 @@ export default function HeroMosaic({ photos }: { photos: string[] }) {
         ))}
       </div>
 
-      {/* OVERLAY blanco más opaco — las fotos quedan muy suaves de fondo */}
-      <div className="absolute inset-0 bg-canvas/65 sm:bg-canvas/60" />
+      {/* OVERLAY blanco — más opaco en mobile (las fotos verticales tipo 4/5 son
+          mucho más visibles a esa escala) y algo más translúcido en desktop. */}
+      <div className="absolute inset-0 bg-canvas/85 sm:bg-canvas/60" />
 
       {/* Gradiente horizontal SOLO desktop para reforzar el lado izquierdo
           donde vive el texto del hero. */}
