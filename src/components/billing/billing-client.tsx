@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { Receipt, ExternalLink, FileText, CreditCard } from 'lucide-react'
+import { useState, useTransition } from 'react'
+import Link from 'next/link'
+import { Receipt, ExternalLink, FileText, CreditCard, Sparkles, Crown, ArrowRight, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface Invoice {
@@ -34,12 +35,16 @@ interface Profile {
 interface Props {
   profile: Profile | null
   invoices: Invoice[]
+  /** True si en server las env vars STRIPE_PRICE_* están configuradas. */
+  stripeReady: boolean
+  /** True si el user tiene un kennel (puede suscribirse a Pro/Premium). */
+  hasKennel: boolean
 }
 
 function fmtMoney(cents: number, currency: string) {
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
-    currency: currency || 'EUR',
+    currency: (currency || 'EUR').toUpperCase(),
   }).format(cents / 100)
 }
 
@@ -47,24 +52,60 @@ function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-export default function BillingClient({ profile, invoices }: Props) {
+const PLAN_LABEL: Record<string, string> = {
+  free: 'Free',
+  pro: 'Pro',
+  premium: 'Premium',
+}
+
+const PLAN_PRICE: Record<string, string> = {
+  free: 'Gratis',
+  pro: '39 €/mes',
+  premium: '149 €/mes',
+}
+
+export default function BillingClient({ profile, invoices, stripeReady, hasKennel }: Props) {
   const [loadingPortal, setLoadingPortal] = useState(false)
+  const [checkoutPending, startCheckout] = useTransition()
+  const [error, setError] = useState<string | null>(null)
 
   async function openPortal() {
+    setError(null)
     setLoadingPortal(true)
     try {
       const res = await fetch('/api/billing/portal', { method: 'POST' })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Error abriendo portal')
+      if (!res.ok) throw new Error(data.error || data.message || 'Error abriendo portal')
       window.location.href = data.url
-    } catch (err: any) {
-      alert(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error abriendo portal')
       setLoadingPortal(false)
     }
   }
 
+  function startCheckoutFn(plan: 'pro' | 'premium', interval: 'monthly' | 'annual' = 'monthly') {
+    setError(null)
+    startCheckout(async () => {
+      try {
+        const res = await fetch('/api/billing/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan, interval }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || data.message || 'Error iniciando el pago')
+        if (data.url) window.location.href = data.url
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error iniciando el pago')
+      }
+    })
+  }
+
   const hasStripe = !!profile?.stripe_customer_id
   const subStatus = profile?.stripe_subscription_status
+  const currentPlan = profile?.plan || 'free'
+  const isPaidPlan = currentPlan === 'pro' || currentPlan === 'premium'
+  const isFounder = profile?.plan_is_founder
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -73,50 +114,119 @@ export default function BillingClient({ profile, invoices }: Props) {
           <Receipt className="w-6 h-6 text-muted" />
           Facturación
         </h1>
-        <p className="text-sm text-muted mt-0.5">Facturas, método de pago y datos fiscales.</p>
+        <p className="text-sm text-muted mt-0.5">Tu plan, facturas y método de pago.</p>
       </div>
 
-      {/* Status + portal CTA */}
+      {error && (
+        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          {error}
+        </div>
+      )}
+
+      {/* ═════ Plan actual ═════ */}
       <div className="rounded-2xl border border-hairline bg-canvas p-6 mb-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted mb-1">Estado</p>
-            {!hasStripe ? (
-              <p className="text-sm text-body">
-                Aún no tienes cliente Stripe. Cuando hagas tu primer pago aparecerá todo aquí.
-                {profile?.plan_is_founder && ' Como Founder no necesitas pagar — la cuenta es vitalicia.'}
-              </p>
-            ) : subStatus === 'active' ? (
-              <p className="text-sm text-body">
-                Suscripción <strong className="text-ink">activa</strong> en Stripe.
-              </p>
-            ) : subStatus === 'past_due' ? (
-              <p className="text-sm text-red-700">
-                Pago pendiente. Actualiza tu método de pago en el portal.
-              </p>
-            ) : subStatus === 'canceled' ? (
-              <p className="text-sm text-body">Suscripción cancelada.</p>
-            ) : (
-              <p className="text-sm text-muted">{subStatus || '—'}</p>
-            )}
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted mb-2">Tu plan</p>
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl font-bold text-ink tracking-tight">
+                {PLAN_LABEL[currentPlan] || currentPlan}
+              </span>
+              <span className="text-sm text-muted">{PLAN_PRICE[currentPlan]}</span>
+              {isFounder && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
+                  <Crown className="w-2.5 h-2.5" />
+                  Founder
+                </span>
+              )}
+            </div>
+            {/* Status secundario */}
+            <p className="text-sm text-body mt-3">
+              {isFounder ? (
+                <>Cuenta vitalicia — no se cobra nunca.</>
+              ) : !hasStripe ? (
+                <>Aún sin método de pago. {hasKennel ? 'Suscríbete para desbloquear Pro o Premium.' : 'Crea tu criadero para acceder a planes de pago.'}</>
+              ) : subStatus === 'active' ? (
+                <>Suscripción activa en Stripe.</>
+              ) : subStatus === 'past_due' ? (
+                <span className="text-red-700">Pago pendiente — actualiza tu tarjeta cuanto antes.</span>
+              ) : subStatus === 'canceled' ? (
+                <>Suscripción cancelada. Puedes reactivarla cuando quieras.</>
+              ) : (
+                <>{subStatus || 'Sin estado'}</>
+              )}
+            </p>
           </div>
+
           {hasStripe && (
             <Button variant="primary" size="md" disabled={loadingPortal} onClick={openPortal}>
               <CreditCard className="w-4 h-4" />
-              {loadingPortal ? 'Abriendo…' : 'Portal de Stripe'}
+              {loadingPortal ? 'Abriendo…' : 'Gestionar suscripción'}
               <ExternalLink className="w-3.5 h-3.5" />
             </Button>
           )}
         </div>
+
         {hasStripe && (
-          <p className="text-xs text-muted mt-3">
-            En el portal de Stripe puedes: cambiar tarjeta, descargar facturas en cualquier momento,
-            actualizar datos fiscales y cancelar la suscripción.
+          <p className="text-xs text-muted mt-4">
+            En el portal de Stripe puedes cambiar de plan, cancelar, actualizar tarjeta y descargar facturas.
           </p>
         )}
       </div>
 
-      {/* Invoices */}
+      {/* ═════ Upgrade CTAs — solo si tiene kennel y no es plan pago ya ═════ */}
+      {!isPaidPlan && !isFounder && hasKennel && (
+        <div className="mb-6">
+          <h2 className="text-sm font-semibold text-ink mb-3 flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-muted" />
+            Mejora tu plan
+          </h2>
+
+          {!stripeReady ? (
+            <div className="rounded-xl border border-hairline bg-surface-card p-5">
+              <p className="text-sm text-body">
+                Los pagos online estarán disponibles muy pronto. Si quieres activar Pro o Premium ahora,
+                escríbenos a <a href="mailto:hola@genealogic.io" className="text-ink underline">hola@genealogic.io</a>.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <PlanCard
+                name="Pro"
+                price="39 €"
+                period="/mes"
+                description="Pipeline de reservas, web pública, emailbot, contratos."
+                highlight
+                onSelect={() => startCheckoutFn('pro')}
+                disabled={checkoutPending}
+              />
+              <PlanCard
+                name="Premium"
+                price="149 €"
+                period="/mes"
+                description="Multi-kennel, API B2B, verificación oficial y soporte prioritario."
+                onSelect={() => startCheckoutFn('premium')}
+                disabled={checkoutPending}
+              />
+            </div>
+          )}
+
+          {checkoutPending && (
+            <p className="text-xs text-muted mt-3 flex items-center gap-1.5">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Redirigiendo a Stripe…
+            </p>
+          )}
+
+          <p className="text-xs text-muted mt-3">
+            Pago seguro con Stripe. Cancela cuando quieras desde el portal.{' '}
+            <Link href="/pricing" className="text-ink underline">Ver todas las diferencias</Link>.
+          </p>
+        </div>
+      )}
+
+      {/* ═════ Histórico de facturas ═════ */}
       <div className="mb-6">
         <h2 className="text-sm font-semibold text-ink mb-3 flex items-center gap-1.5">
           <FileText className="w-4 h-4 text-muted" />
@@ -168,16 +278,53 @@ export default function BillingClient({ profile, invoices }: Props) {
         )}
       </div>
 
-      {/* Setup notes */}
-      <div className="rounded-xl border border-hairline bg-surface-card p-5">
-        <p className="text-sm font-semibold text-ink mb-2">Setup técnico (una sola vez)</p>
-        <ol className="text-sm text-body space-y-1.5 list-decimal pl-5">
-          <li>Crear productos en Stripe: Pro mensual, Pro anual, Premium mensual, Premium anual.</li>
-          <li>Definir env vars en Vercel: <code className="text-[12px] bg-canvas border border-hairline rounded px-1">STRIPE_SECRET_KEY</code>, <code className="text-[12px] bg-canvas border border-hairline rounded px-1">STRIPE_WEBHOOK_SECRET</code>, <code className="text-[12px] bg-canvas border border-hairline rounded px-1">STRIPE_PRICE_PRO_MONTHLY</code>, <code className="text-[12px] bg-canvas border border-hairline rounded px-1">STRIPE_PRICE_PRO_ANNUAL</code>, <code className="text-[12px] bg-canvas border border-hairline rounded px-1">STRIPE_PRICE_PREMIUM_MONTHLY</code>, <code className="text-[12px] bg-canvas border border-hairline rounded px-1">STRIPE_PRICE_PREMIUM_ANNUAL</code>.</li>
-          <li>Configurar webhook en Stripe que apunte a <code className="text-[12px] bg-canvas border border-hairline rounded px-1">https://genealogic.io/api/billing/webhook</code> con eventos: <code className="text-[11px]">checkout.session.completed</code>, <code className="text-[11px]">customer.subscription.updated</code>, <code className="text-[11px]">customer.subscription.deleted</code>, <code className="text-[11px]">invoice.paid</code>, <code className="text-[11px]">invoice.payment_failed</code>.</li>
-          <li>Habilitar el Billing Portal en Stripe Dashboard (Settings → Billing → Customer portal).</li>
-        </ol>
+      {/* ═════ Footer info ═════ */}
+      <p className="text-xs text-muted text-center mt-8">
+        ¿Dudas con tu facturación? Escríbenos a{' '}
+        <a href="mailto:hola@genealogic.io" className="text-ink underline">hola@genealogic.io</a>.
+      </p>
+    </div>
+  )
+}
+
+function PlanCard({
+  name, price, period, description, highlight, onSelect, disabled,
+}: {
+  name: string
+  price: string
+  period: string
+  description: string
+  highlight?: boolean
+  onSelect: () => void
+  disabled?: boolean
+}) {
+  return (
+    <div className={`rounded-xl border-2 p-5 flex flex-col ${
+      highlight ? 'border-ink bg-canvas shadow-[0_4px_24px_rgba(0,0,0,0.06)]' : 'border-hairline bg-canvas'
+    }`}>
+      {highlight && (
+        <div className="inline-flex self-start items-center rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-on-primary mb-3">
+          Recomendado
+        </div>
+      )}
+      <h3 className="text-lg font-bold text-ink">{name}</h3>
+      <div className="flex items-baseline gap-1 mt-1">
+        <span className="text-2xl font-bold text-ink">{price}</span>
+        <span className="text-xs text-muted">{period}</span>
       </div>
+      <p className="text-[13px] text-body mt-2 mb-4 leading-relaxed">{description}</p>
+      <button
+        onClick={onSelect}
+        disabled={disabled}
+        className={`mt-auto inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-bold transition disabled:opacity-50 ${
+          highlight
+            ? 'bg-ink text-on-primary hover:opacity-90'
+            : 'border border-hairline bg-canvas text-ink hover:border-ink/40'
+        }`}
+      >
+        Empezar {name}
+        <ArrowRight className="w-3.5 h-3.5" />
+      </button>
     </div>
   )
 }

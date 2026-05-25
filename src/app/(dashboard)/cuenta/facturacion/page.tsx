@@ -6,8 +6,7 @@ import EmailbotUsageSection, {
   type ScopeBreakdown,
 } from '@/components/billing/emailbot-usage-section'
 import { checkBotReplyQuota } from '@/lib/ai/quotas'
-import { isEarlyAccessKennel } from '@/lib/early-access'
-import ComingSoon from '@/components/early-access/coming-soon'
+import { isSubscriptionCheckoutAvailable } from '@/lib/stripe/server'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Facturación · Genealogic Pro' }
@@ -31,23 +30,15 @@ export default async function FacturacionPage() {
     .order('created_at', { ascending: false })
     .limit(50)
 
-  // Datos del Emailbot (uso del mes + historial)
+  // Datos del Emailbot (uso del mes + historial). Solo aplica a kennels.
   const { data: kennel } = await supabase
     .from('kennels')
     .select('id')
     .eq('owner_id', user.id)
     .maybeSingle()
 
-  // Gate Early Access: la facturación con Stripe + uso del bot todavía
-  // está incompleta (sin billing real). Solo el fundador la ve.
-  if (!isEarlyAccessKennel(kennel?.id)) {
-    return <ComingSoon
-      featureId="billing"
-      description="Historial de facturas, método de pago y datos fiscales con integración Stripe. Llegará para todos en las próximas semanas. Mientras tanto, si necesitas factura escríbenos."
-      backHref="/settings"
-      backLabel="← Volver a Ajustes"
-    />
-  }
+  // Stripe ya está configurado en producción — sin gate Early Access.
+  const stripeReady = isSubscriptionCheckoutAvailable()
 
   let usageBlock: React.ReactNode = null
   if (kennel) {
@@ -118,6 +109,8 @@ export default async function FacturacionPage() {
       <BillingClient
         profile={profile as any}
         invoices={invoices || []}
+        stripeReady={stripeReady}
+        hasKennel={!!kennel}
       />
     </div>
   )
