@@ -92,6 +92,17 @@ function DogsSearch({ initialQuery = '' }: { initialQuery?: string }) {
     return `/api/public/dogs?${params.toString()}`
   }, [query, breedFilter, sexFilter, forSaleOnly])
 
+  /** Defensive: ordena perros con thumbnail antes que los que no lo tienen,
+   *  preservando el orden relativo del servidor (stable sort). El backend ya
+   *  prioriza con-foto, pero esto cubre el edge case de que algun row venga
+   *  con thumbnail_url null mezclado (e.g. importer en mitad de subir fotos). */
+  const sortByHasPhoto = (rows: any[]) =>
+    [...rows].sort((a, b) => {
+      const ap = a.thumbnail_url ? 0 : 1
+      const bp = b.thumbnail_url ? 0 : 1
+      return ap - bp
+    })
+
   /** Búsqueda nueva: resetea results y empieza por página 1. */
   const handleSearch = useCallback(async () => {
     setLoading(true)
@@ -99,7 +110,7 @@ function DogsSearch({ initialQuery = '' }: { initialQuery?: string }) {
     try {
       const res = await fetch(buildUrl(1))
       const json = await res.json()
-      setResults(json.rows || [])
+      setResults(sortByHasPhoto(json.rows || []))
       setTotal(json.total || 0)
       setHasMore(!!json.has_more)
       setLoaded(true)
@@ -119,7 +130,7 @@ function DogsSearch({ initialQuery = '' }: { initialQuery?: string }) {
     try {
       const res = await fetch(buildUrl(next))
       const json = await res.json()
-      setResults((prev) => [...prev, ...(json.rows || [])])
+      setResults((prev) => sortByHasPhoto([...prev, ...(json.rows || [])]))
       setPage(next)
       setHasMore(!!json.has_more)
     } catch {
@@ -167,23 +178,29 @@ function DogsSearch({ initialQuery = '' }: { initialQuery?: string }) {
       {/* Filters */}
       {filtersOpen && (
         <div className="flex flex-col gap-2 rounded-xl border border-hairline bg-surface-soft p-3 sm:flex-row sm:flex-wrap">
-          <select
-            value={breedFilter}
-            onChange={e => setBreedFilter(e.target.value)}
-            className="flex-1 min-w-0 rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-[13px] text-body focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none"
-          >
-            <option value="">Todas las razas</option>
-            {breeds.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-          </select>
-          <select
-            value={sexFilter}
-            onChange={e => setSexFilter(e.target.value)}
-            className="flex-1 min-w-0 rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-[13px] text-body focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none sm:flex-initial sm:min-w-[140px]"
-          >
-            <option value="">Ambos sexos</option>
-            <option value="male">Macho</option>
-            <option value="female">Hembra</option>
-          </select>
+          <div className="relative flex-1 min-w-0">
+            <select
+              value={breedFilter}
+              onChange={e => setBreedFilter(e.target.value)}
+              className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 pr-9 text-[13px] text-body focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none"
+            >
+              <option value="">Todas las razas</option>
+              {breeds.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
+          </div>
+          <div className="relative flex-1 min-w-0 sm:flex-initial sm:min-w-[140px]">
+            <select
+              value={sexFilter}
+              onChange={e => setSexFilter(e.target.value)}
+              className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 pr-9 text-[13px] text-body focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none"
+            >
+              <option value="">Ambos sexos</option>
+              <option value="male">Macho</option>
+              <option value="female">Hembra</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
+          </div>
           <button
             onClick={() => setForSaleOnly(!forSaleOnly)}
             className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-[13px] font-medium transition-colors ${
@@ -204,7 +221,7 @@ function DogsSearch({ initialQuery = '' }: { initialQuery?: string }) {
       )}
 
       {loading ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
           <SkeletonGrid count={8} type="dog" />
         </div>
       ) : results.length === 0 && loaded ? (
@@ -214,7 +231,7 @@ function DogsSearch({ initialQuery = '' }: { initialQuery?: string }) {
           <p className="text-[12.5px] text-muted">Prueba con otros filtros.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
           {results.map((dog: any) => {
             const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
             const breedName = dog.breed?.name
@@ -290,7 +307,7 @@ function DogsSearch({ initialQuery = '' }: { initialQuery?: string }) {
           onLoadMore={loadMore}
         >
           {loadingMore && (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
               <SkeletonGrid count={4} type="dog" />
             </div>
           )}

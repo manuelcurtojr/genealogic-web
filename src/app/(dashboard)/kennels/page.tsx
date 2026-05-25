@@ -54,9 +54,12 @@ export default async function KennelsPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-ink tracking-tight">Directorio de Criaderos</h1>
-        <p className="mt-1 text-sm text-muted">
-          {total.toLocaleString('es-ES')} criadero{total === 1 ? '' : 's'} registrado{total === 1 ? '' : 's'} en Genealogic
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Descubrimiento</p>
+        <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
+          Directorio de criaderos
+        </h1>
+        <p className="mt-2 text-[14px] text-body">
+          {total.toLocaleString('es-ES')} criadero{total === 1 ? '' : 's'} registrado{total === 1 ? '' : 's'} en Genealogic.
         </p>
       </div>
       <KennelsClient

@@ -69,17 +69,17 @@ export default async function SuscripcionPage({
 
       {/* Current plan card */}
       <div className="rounded-2xl border border-ink bg-canvas p-6 lg:p-8 mb-6 relative overflow-hidden">
-        <div className="absolute top-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-ink text-on-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 inline-flex items-center gap-1.5 rounded-full bg-ink text-on-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
           <Sparkles className="w-3 h-3" />
           Activa
         </div>
-        <div className="mb-4">
+        <div className="mb-4 pr-16 sm:pr-20">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted mb-1">Plan actual</p>
           <div className="flex items-baseline gap-3 flex-wrap">
-            <h2 className="text-3xl font-bold text-ink">Genealogic {getPlanLabel(plan)}</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink break-words">Genealogic {getPlanLabel(plan)}</h2>
             {isFounder && (
               <span className="inline-flex items-center rounded-full bg-surface-card border border-hairline px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-ink">
-                Founder · 39€/mes para siempre
+                Founder · 49€/mes para siempre
               </span>
             )}
           </div>

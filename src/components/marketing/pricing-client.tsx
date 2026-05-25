@@ -177,13 +177,13 @@ export default function PricingClient({
 
         {tab === 'breeder' ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {breederTiers.map((tier) => (
                 <div
                   key={tier.id}
                   className={`rounded-2xl border p-5 sm:p-6 lg:p-8 flex flex-col ${
                     tier.highlight
-                      ? 'border-ink bg-canvas shadow-[0_8px_24px_rgba(0,0,0,0.06)] md:scale-[1.03]'
+                      ? 'border-ink bg-canvas shadow-[0_8px_24px_rgba(0,0,0,0.06)] lg:-translate-y-1'
                       : 'border-hairline bg-canvas'
                   }`}
                 >

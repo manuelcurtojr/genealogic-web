@@ -33,8 +33,8 @@ export default function OwnersLanding() {
                 Para propietarios
               </span>
               <h1
-                className="mt-4 sm:mt-5 max-w-[15ch] font-semibold text-ink"
-                style={{ fontSize: 'clamp(32px, 6vw, 64px)', lineHeight: 1.04, letterSpacing: '-0.04em' }}
+                className="mt-4 sm:mt-5 max-w-[20ch] sm:max-w-[15ch] font-semibold text-ink"
+                style={{ fontSize: 'clamp(28px, 6vw, 64px)', lineHeight: 1.04, letterSpacing: '-0.04em' }}
               >
                 Tu perro merece su historia bien contada.
               </h1>
@@ -164,8 +164,8 @@ export default function OwnersLanding() {
                   <p className="text-sm font-bold text-ink truncate">Rocky de los Pirineos</p>
                   <p className="text-[11px] text-muted truncate">Importado desde club nacional · Sin propietario</p>
                 </div>
-                <span className="hidden sm:inline-flex items-center gap-1 rounded-lg bg-ink text-on-primary px-3 py-1.5 text-xs font-bold flex-shrink-0">
-                  Reclamar
+                <span className="inline-flex items-center gap-1 rounded-lg bg-ink text-on-primary px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-bold flex-shrink-0">
+                  <span className="hidden sm:inline">Reclamar</span>
                   <ArrowRight className="w-3 h-3" />
                 </span>
               </div>

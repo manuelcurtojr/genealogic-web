@@ -286,7 +286,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
         {recentDogsRes.data && recentDogsRes.data.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 sm:gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 sm:gap-4">
             {recentDogsRes.data.map((dog: any) => {
               const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#888'
               return (

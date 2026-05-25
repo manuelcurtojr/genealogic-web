@@ -229,7 +229,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
 
         {/* Name + badges */}
         <div>
-          <h1 className="text-[32px] sm:text-[44px] font-semibold leading-[1.05] tracking-[-0.04em] text-ink">
+          <h1 className="text-[28px] sm:text-[44px] font-semibold leading-[1.05] tracking-[-0.04em] text-ink break-words hyphens-auto">
             {dog.name}
           </h1>
           <div className="mt-3 flex flex-wrap items-center gap-2">
