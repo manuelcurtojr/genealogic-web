@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const field = isUUID(id) ? 'id' : 'slug'
   const { data: dog } = await supabase
     .from('dogs')
-    .select('name, slug, sex, birth_date, thumbnail_url, breed:breeds(name), color:colors(name), kennel:kennels(name)')
+    .select('id, name, slug, sex, birth_date, thumbnail_url, father_id, mother_id, breed:breeds(name), color:colors(name), kennel:kennels(name)')
     .eq(field, id)
     .single()
 
@@ -31,16 +31,79 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const breed = (Array.isArray(dog.breed) ? dog.breed[0]?.name : (dog.breed as any)?.name) || ''
   const color = (Array.isArray(dog.color) ? dog.color[0]?.name : (dog.color as any)?.name) || ''
   const kennel = (Array.isArray(dog.kennel) ? dog.kennel[0]?.name : (dog.kennel as any)?.name) || ''
-  const sex = dog.sex === 'male' ? 'Macho' : dog.sex === 'female' ? 'Hembra' : ''
+  const sexNoun = dog.sex === 'male' ? 'macho' : dog.sex === 'female' ? 'hembra' : null
 
-  const parts = [breed, sex, color].filter(Boolean)
-  const description = `${dog.name}${parts.length ? ' — ' + parts.join(' · ') : ''}${kennel ? ' | Criadero ' + kennel : ''} | Genealogic`
+  // Padres (consulta auxiliar — añade ~10ms pero da una descripción mucho más rica)
+  let fatherName: string | null = null
+  let motherName: string | null = null
+  if (dog.father_id || dog.mother_id) {
+    const parentIds = [dog.father_id, dog.mother_id].filter(Boolean) as string[]
+    const { data: parents } = await supabase
+      .from('dogs')
+      .select('id, name')
+      .in('id', parentIds)
+    for (const p of parents || []) {
+      if (p.id === dog.father_id) fatherName = p.name
+      if (p.id === dog.mother_id) motherName = p.name
+    }
+  }
+
+  // Fecha en español: "12 de marzo de 2020"
+  let dobText: string | null = null
+  if (dog.birth_date) {
+    const d = new Date(dog.birth_date)
+    if (!isNaN(d.getTime())) {
+      const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+      dobText = `${d.getUTCDate()} de ${meses[d.getUTCMonth()]} de ${d.getUTCFullYear()}`
+    }
+  }
+
+  // Descripción natural y específica. Ejemplo:
+  // "Isis Rr, hembra de Presa Canario color Bardino, nacida el 12 de marzo de 2020.
+  //  Hija de Washintaul's Katho y Ventania. Criadero El Nieto. Pedigree completo en Genealogic."
+  const sentences: string[] = []
+  // Frase 1: identificación
+  const ident: string[] = [dog.name]
+  if (sexNoun || breed) {
+    let frag = ''
+    if (sexNoun && breed) frag = `, ${sexNoun} de raza ${breed}`
+    else if (sexNoun) frag = `, ${sexNoun}`
+    else if (breed) frag = `, de raza ${breed}`
+    ident.push(frag)
+  }
+  if (color) ident.push(`, color ${color.toLowerCase()}`)
+  if (dobText) ident.push(`, nacid${dog.sex === 'female' ? 'a' : 'o'} el ${dobText}`)
+  sentences.push(ident.join('') + '.')
+
+  // Frase 2: padres
+  if (fatherName && motherName) {
+    sentences.push(`Hij${dog.sex === 'female' ? 'a' : 'o'} de ${fatherName} y ${motherName}.`)
+  } else if (fatherName) {
+    sentences.push(`Padre: ${fatherName}.`)
+  } else if (motherName) {
+    sentences.push(`Madre: ${motherName}.`)
+  }
+
+  // Frase 3: criadero
+  if (kennel) sentences.push(`Criadero ${kennel}.`)
+
+  // Frase 4: CTA
+  sentences.push('Pedigree completo y árbol genealógico en Genealogic.')
+
+  let description = sentences.join(' ')
+  // Google trunca alrededor de 160 chars; intentamos que la primera frase quede entera y completa <= 320
+  if (description.length > 320) description = description.slice(0, 317) + '…'
 
   const url = `https://genealogic.io/dogs/${dog.slug || id}`
   const image = dog.thumbnail_url || 'https://genealogic.io/icon.svg'
 
+  // Title más rico: incluye raza para keyword matching ("Isis Rr — Presa Canario | Genealogic")
+  const titleParts: string[] = [dog.name]
+  if (breed) titleParts.push(breed)
+  const title = `${titleParts.join(' — ')} | Genealogic`
+
   return {
-    title: `${dog.name} — Genealogic`,
+    title,
     description,
     alternates: { canonical: url },
     openGraph: {
@@ -49,7 +112,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       url,
       siteName: 'Genealogic',
       images: [{ url: image, width: 800, height: 800, alt: dog.name }],
-      type: 'website',
+      type: 'profile',
     },
     twitter: {
       card: 'summary_large_image',
