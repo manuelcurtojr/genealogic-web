@@ -93,10 +93,10 @@ export default function LiveCounter({
 
   return (
     <div className={className}>
-      <p className={`text-[clamp(40px,7vw,72px)] font-semibold tabular-nums tracking-[-0.04em] text-ink leading-none transition-colors ${pulse ? 'text-[#FE6620]' : ''}`}>
+      <p className={`text-[22px] sm:text-[clamp(40px,7vw,72px)] font-semibold tabular-nums tracking-[-0.03em] sm:tracking-[-0.04em] text-ink leading-none transition-colors ${pulse ? 'text-[#FE6620]' : ''}`}>
         {displayed.toLocaleString('es-ES')}
       </p>
-      <p className="mt-2 text-[13.5px] uppercase tracking-[0.08em] text-muted font-semibold">{label}</p>
+      <p className="mt-1.5 sm:mt-2 text-[10px] sm:text-[13.5px] uppercase tracking-[0.06em] sm:tracking-[0.08em] text-muted font-semibold">{label}</p>
     </div>
   )
 }

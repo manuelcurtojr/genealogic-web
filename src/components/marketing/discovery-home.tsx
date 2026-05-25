@@ -151,19 +151,19 @@ export default function DiscoveryHome({
               w-fit + max-w-full + overflow-x-auto: la caja se ajusta al
               contenido en desktop y permite scroll horizontal en mobile
               si los números son extremadamente largos (caso edge). */}
-          <div className="mt-10 sm:mt-16 lg:mt-20 rounded-2xl border border-hairline bg-canvas/95 backdrop-blur-md px-5 sm:px-8 lg:px-10 py-5 sm:py-7 lg:py-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] w-fit max-w-full overflow-x-auto">
-            <div className="flex items-center gap-2 mb-4 sm:mb-5">
-              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted">El catálogo crece en tiempo real</p>
+          <div className="mt-10 sm:mt-16 lg:mt-20 rounded-2xl border border-hairline bg-canvas/95 backdrop-blur-md px-4 sm:px-8 lg:px-10 py-4 sm:py-7 lg:py-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] w-fit max-w-full">
+            <div className="flex items-center gap-2 mb-3 sm:mb-5">
+              <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <p className="text-[9.5px] sm:text-[11px] font-bold uppercase tracking-wider text-muted">El catálogo crece en tiempo real</p>
             </div>
-            <div className="flex items-end gap-6 sm:gap-12 lg:gap-16">
-              <div className="min-w-[70px] sm:min-w-[90px]">
+            <div className="flex items-end gap-4 sm:gap-12 lg:gap-16">
+              <div className="min-w-[44px] sm:min-w-[90px]">
                 <LiveCounter initial={counts.kennels} kind="kennels" label="Criaderos" />
               </div>
-              <div className="min-w-[55px] sm:min-w-[70px]">
+              <div className="min-w-[36px] sm:min-w-[70px]">
                 <LiveCounter initial={counts.breeds} kind="breeds" label="Razas" />
               </div>
-              <div className="min-w-[110px] sm:min-w-[160px] lg:min-w-[180px]">
+              <div className="min-w-[60px] sm:min-w-[160px] lg:min-w-[180px]">
                 <LiveCounter initial={counts.dogs} kind="dogs" label="Perros" />
               </div>
             </div>
