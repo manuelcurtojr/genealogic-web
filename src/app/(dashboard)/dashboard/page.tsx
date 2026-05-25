@@ -5,8 +5,12 @@ import { BRAND } from '@/lib/constants'
 import StatCard from '@/components/dashboard/stat-card'
 import DailyCheckIn from '@/components/dashboard/daily-checkin'
 import OnboardingCard from '@/components/onboarding/onboarding-card'
+import OnboardingCardOwner from '@/components/onboarding/onboarding-card-owner'
 import WelcomeNoKennel from '@/components/onboarding/welcome-no-kennel'
+import WelcomeOwner from '@/components/onboarding/welcome-owner'
+import RoleSelector from '@/components/onboarding/role-selector'
 import { getOnboardingStatus } from '@/lib/onboarding/checklist'
+import { getOwnerOnboardingStatus } from '@/lib/onboarding/checklist-owner'
 import { hasProAccess } from '@/lib/permissions'
 import { getEffectiveRoles } from '@/lib/auth/roles'
 import Link from 'next/link'
@@ -22,7 +26,7 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('display_name, avatar_url, email, created_at, plan')
+    .select('display_name, avatar_url, email, created_at, plan, onboarding_intent')
     .eq('id', user.id)
     .single()
 
@@ -31,10 +35,42 @@ export default async function DashboardPage() {
   const kennel = kennelArr?.[0] || null
   const isBreeder = !!kennel
 
-  // SIN KENNEL: pantalla welcome (criador nuevo) o redirect a /mis-reservas
-  // si es client puro. Reemplaza el dashboard "frío" antiguo.
+  // SIN KENNEL: ramificar según onboarding_intent
+  //   - null              → RoleSelector (Paso 0, elegir rol)
+  //   - 'owner'           → WelcomeOwner + checklist owner
+  //   - 'breeder'         → WelcomeNoKennel ("crea tu kennel")
+  // El campo se rellena automáticamente con backfill para users existentes
+  // (ver migration 20260610_profiles_onboarding_intent.sql).
   if (!isBreeder) {
+    const intent = (profile as { onboarding_intent?: 'breeder' | 'owner' | null })?.onboarding_intent ?? null
+
+    // Paso 0: todavía no eligió
+    if (!intent) {
+      return <RoleSelector displayName={profile?.display_name || null} />
+    }
+
     const roles = await getEffectiveRoles(user.id)
+
+    // Rama owner: welcome + checklist propio
+    if (intent === 'owner') {
+      const ownerStatus = await getOwnerOnboardingStatus({
+        userId: user.id,
+        hasReservations: roles.isClient,
+      })
+      return (
+        <div className="space-y-6 sm:space-y-8">
+          <WelcomeOwner
+            displayName={profile?.display_name || null}
+            hasReservations={roles.isClient}
+          />
+          {!ownerStatus.requiredComplete && (
+            <OnboardingCardOwner userId={user.id} status={ownerStatus} />
+          )}
+        </div>
+      )
+    }
+
+    // Rama breeder (sin kennel todavía): CTA crear criadero
     return (
       <WelcomeNoKennel
         displayName={profile?.display_name || null}
