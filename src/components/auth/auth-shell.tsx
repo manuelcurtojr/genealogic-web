@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeft, GitBranch, Sparkles, ShieldCheck } from 'lucide-react'
 import { Wordmark } from '@/components/ui/wordmark'
+import LiveStatsLine from './live-stats-line'
 
 interface AuthShellProps {
   /** Big headline on top of the form (e.g. "Bienvenido de vuelta") */
@@ -145,9 +146,7 @@ function BrandPanel() {
           <p className="text-[14.5px] leading-[1.55] text-on-dark">
             Pedigree verificable. Para siempre.
           </p>
-          <p className="mt-2 text-[12px] uppercase tracking-[0.1em] text-on-dark-soft">
-            16.000 perros · 990 criaderos · 240 razas
-          </p>
+          <LiveStatsLine className="mt-2 text-[12px] uppercase tracking-[0.1em] text-on-dark-soft tabular-nums" />
         </blockquote>
       </div>
     </aside>
