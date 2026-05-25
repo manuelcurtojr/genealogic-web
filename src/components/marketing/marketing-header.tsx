@@ -93,14 +93,14 @@ export default function MarketingHeader() {
         </div>
       </header>
 
-      {/* Drawer */}
+      {/* Drawer — sale por la izquierda (más cerca del icono hamburguesa) */}
       {drawerOpen && (
         <>
           <div
             className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px]"
             onClick={() => setDrawerOpen(false)}
           />
-          <aside className="fixed top-0 right-0 h-full w-full max-w-sm z-[70] bg-canvas border-l border-hairline shadow-2xl flex flex-col animate-slide-in">
+          <aside className="fixed top-0 left-0 h-full w-full max-w-sm z-[70] bg-canvas border-r border-hairline shadow-2xl flex flex-col animate-slide-in-left">
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-hairline">
               <Wordmark size="text-lg" asLink={false} />
               <button
@@ -168,11 +168,11 @@ export default function MarketingHeader() {
       )}
 
       <style jsx>{`
-        @keyframes slide-in {
-          from { transform: translateX(100%); }
+        @keyframes slide-in-left {
+          from { transform: translateX(-100%); }
           to { transform: translateX(0); }
         }
-        .animate-slide-in { animation: slide-in 0.25s ease-out; }
+        .animate-slide-in-left { animation: slide-in-left 0.25s ease-out; }
       `}</style>
     </>
   )

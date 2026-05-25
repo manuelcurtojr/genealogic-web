@@ -14,6 +14,7 @@ import { redirect } from 'next/navigation'
 import MarketingHeader from '@/components/marketing/marketing-header'
 import MarketingFooter from '@/components/marketing/marketing-footer'
 import DiscoveryHome from '@/components/marketing/discovery-home'
+import { allPosts } from '@/content/blog'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,13 +35,15 @@ export default async function Home() {
     admin.from('dogs').select('id', { count: 'exact', head: true }),
     admin.from('kennels').select('id', { count: 'exact', head: true }),
     admin.from('breeds').select('id', { count: 'exact', head: true }),
+    // Pedimos 12: las 6 primeras se usan en el grid editorial; el resto
+    // alimenta el mosaico de fondo del hero.
     admin
       .from('dogs')
       .select('id, name, slug, thumbnail_url, breed:breeds(name)')
       .not('thumbnail_url', 'is', null)
       .eq('is_public', true)
       .order('created_at', { ascending: false })
-      .limit(6),
+      .limit(12),
     admin
       .from('kennels')
       .select('id, name, slug, logo_url, country, city')
@@ -48,6 +51,20 @@ export default async function Home() {
       .order('created_at', { ascending: false })
       .limit(6),
   ])
+
+  // Blog: tomamos los 8 más recientes para el slider.
+  const blogPosts = allPosts
+    .slice(0, 8)
+    .map((p) => ({
+      slug: p.meta.slug,
+      title: p.meta.title,
+      excerpt: p.meta.excerpt,
+      category: p.meta.category,
+      heroImage: p.meta.heroImage,
+      heroAlt: p.meta.heroAlt,
+      readMinutes: p.meta.readMinutes,
+      date: p.meta.date,
+    }))
 
   return (
     <div className="min-h-screen bg-canvas text-[var(--foreground)] flex flex-col">
@@ -61,6 +78,7 @@ export default async function Home() {
           }}
           featuredDogs={featuredDogsRes.data || []}
           featuredKennels={featuredKennelsRes.data || []}
+          blogPosts={blogPosts}
         />
       </main>
       <MarketingFooter />
