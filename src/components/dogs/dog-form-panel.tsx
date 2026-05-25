@@ -423,7 +423,7 @@ function SearchList({ items, value, onChange, placeholder, sexColor }: { items: 
             className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2.5 transition ${item.id === value ? 'bg-surface-card text-ink' : 'text-ink hover:bg-surface-card'}`}>
             {item.image !== null && (
               <div className="w-7 h-7 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor || 'rgba(255,255,255,0.1)' }}>
-                {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-3 h-3 opacity-30" /></div>}
+                {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg?v=2" alt="" className="w-3 h-3 opacity-30" /></div>}
               </div>
             )}
             <span className="truncate">{item.name}</span>

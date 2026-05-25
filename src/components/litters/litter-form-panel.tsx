@@ -402,7 +402,7 @@ function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
                     >
                       {item.image
                         ? <img src={item.image} alt="" className="h-full w-full object-cover" />
-                        : <div className="flex h-full w-full items-center justify-center"><img src="/icon.svg" alt="" className="h-3.5 w-3.5 opacity-30" /></div>
+                        : <div className="flex h-full w-full items-center justify-center"><img src="/icon.svg?v=2" alt="" className="h-3.5 w-3.5 opacity-30" /></div>
                       }
                     </div>
                   )}

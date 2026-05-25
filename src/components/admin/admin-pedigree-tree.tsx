@@ -87,7 +87,7 @@ function Card({ n, isRoot, onClickDog }: { n: PN; isRoot?: boolean; onClickDog: 
       style={{ width: CW, height: CH, flexShrink: 0 }}>
       <div className="flex-shrink-0 bg-surface-card relative" style={{ width: PH }}>
         {n.photo_url ? <img src={n.photo_url} alt="" className="w-full h-full object-cover" /> :
-          <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg" alt="" className="w-5 h-5 opacity-20" /></div>}
+          <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg?v=2" alt="" className="w-5 h-5 opacity-20" /></div>}
         <div className="absolute top-0 right-0 bottom-0 w-[3px]" style={{ backgroundColor: sc }} />
       </div>
       <div className="flex-1 min-w-0 px-2.5 py-1.5 flex flex-col justify-center overflow-hidden">

@@ -318,7 +318,7 @@ function ParentCard({ parent, role }: { parent: any; role: string }) {
       >
         {parent.thumbnail_url
           ? <img src={parent.thumbnail_url} alt="" className="h-full w-full object-cover" />
-          : <div className="flex h-full w-full items-center justify-center"><img src="/icon.svg" alt="" className="h-5 w-5 opacity-20" /></div>}
+          : <div className="flex h-full w-full items-center justify-center"><img src="/icon.svg?v=2" alt="" className="h-5 w-5 opacity-20" /></div>}
       </div>
       <div className="min-w-0">
         <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{role}</p>

@@ -69,7 +69,7 @@ export default function DogGallery({ photos, name, sex }: DogGalleryProps) {
           </>
         ) : (
           <div className="flex aspect-square w-full items-center justify-center">
-            <img src="/icon.svg" alt="" className="h-16 w-16 opacity-10" />
+            <img src="/icon.svg?v=2" alt="" className="h-16 w-16 opacity-10" />
           </div>
         )}
       </div>
@@ -100,7 +100,7 @@ export default function DogGallery({ photos, name, sex }: DogGalleryProps) {
               className="relative aspect-square w-1/4 flex-shrink-0 border-l border-hairline bg-surface-card"
             >
               <div className="flex h-full w-full items-center justify-center">
-                <img src="/icon.svg" alt="" className="h-10 w-10 opacity-[0.08]" />
+                <img src="/icon.svg?v=2" alt="" className="h-10 w-10 opacity-[0.08]" />
               </div>
             </div>
           ))}

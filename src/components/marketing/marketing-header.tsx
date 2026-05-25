@@ -54,7 +54,7 @@ export default function MarketingHeader() {
           </button>
           <Link href="/" aria-label="Genealogic" className="shrink-0 inline-flex items-center">
             <img
-              src="/icon.svg"
+              src="/icon.svg?v=2"
               alt="Genealogic"
               className="h-7 w-7"
             />

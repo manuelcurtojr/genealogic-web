@@ -110,7 +110,7 @@ export default function SearchableSelect({ options, value, onChange, placeholder
                         <img src={opt.image} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <img src="/icon.svg" alt="" className="w-3.5 h-3.5 opacity-30" />
+                          <img src="/icon.svg?v=2" alt="" className="w-3.5 h-3.5 opacity-30" />
                         </div>
                       )}
                     </div>
