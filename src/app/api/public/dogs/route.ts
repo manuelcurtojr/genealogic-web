@@ -72,31 +72,93 @@ export async function GET(request: NextRequest) {
 
   const selectFields = 'id, slug, name, sex, thumbnail_url, birth_date, sale_price, sale_currency, sale_location, is_for_sale, breed:breeds(name), kennel:kennels(name)'
 
+  // ¿Hay algún filtro aplicado? Sin filtros → balancear por raza
+  // (RPC search_dogs_balanced) para evitar mostrar solo galgos italianos
+  // (último import masivo). Con filtros → query directa por created_at.
+  const hasFilters = !!(q || breedId || sex || forSale)
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let rows: any[] = []
 
-  // Slice 1: perros con foto (si la página los toca)
-  if (startGlobal < totalWithPhoto) {
-    const sliceStart = startGlobal
-    const sliceEnd = Math.min(endGlobal, totalWithPhoto)
-    const { data: withPhoto } = await applyFilters(
-      admin.from('dogs').select(selectFields).not('thumbnail_url', 'is', null),
-    )
-      .order('created_at', { ascending: false })
-      .range(sliceStart, sliceEnd - 1)
-    rows = rows.concat(withPhoto || [])
-  }
-
-  // Slice 2: perros sin foto (si la página los toca)
-  if (endGlobal > totalWithPhoto) {
-    const sliceStart = Math.max(0, startGlobal - totalWithPhoto)
-    const sliceEnd = endGlobal - totalWithPhoto
-    const { data: withoutPhoto } = await applyFilters(
-      admin.from('dogs').select(selectFields).is('thumbnail_url', null),
-    )
-      .order('created_at', { ascending: false })
-      .range(sliceStart, sliceEnd - 1)
-    rows = rows.concat(withoutPhoto || [])
+  if (!hasFilters) {
+    // Modo balanceado: 1 perro por raza, luego 2, etc.
+    // ─ Slice con foto ─
+    if (startGlobal < totalWithPhoto) {
+      const sliceStart = startGlobal
+      const sliceEnd = Math.min(endGlobal, totalWithPhoto)
+      const { data: withPhoto } = await admin.rpc('search_dogs_balanced', {
+        p_with_photo: true,
+        p_offset: sliceStart,
+        p_limit: sliceEnd - sliceStart,
+      })
+      // Mapear nombres de columnas RPC → estructura esperada por el cliente
+      rows = rows.concat(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (withPhoto || []).map((r: any) => ({
+          id: r.id,
+          slug: r.slug,
+          name: r.name,
+          sex: r.sex,
+          thumbnail_url: r.thumbnail_url,
+          birth_date: r.birth_date,
+          sale_price: r.sale_price,
+          sale_currency: r.sale_currency,
+          sale_location: r.sale_location,
+          is_for_sale: r.is_for_sale,
+          breed: r.breed_name ? { name: r.breed_name } : null,
+          kennel: r.kennel_name ? { name: r.kennel_name } : null,
+        })),
+      )
+    }
+    // ─ Slice sin foto ─
+    if (endGlobal > totalWithPhoto) {
+      const sliceStart = Math.max(0, startGlobal - totalWithPhoto)
+      const sliceEnd = endGlobal - totalWithPhoto
+      const { data: withoutPhoto } = await admin.rpc('search_dogs_balanced', {
+        p_with_photo: false,
+        p_offset: sliceStart,
+        p_limit: sliceEnd - sliceStart,
+      })
+      rows = rows.concat(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (withoutPhoto || []).map((r: any) => ({
+          id: r.id,
+          slug: r.slug,
+          name: r.name,
+          sex: r.sex,
+          thumbnail_url: r.thumbnail_url,
+          birth_date: r.birth_date,
+          sale_price: r.sale_price,
+          sale_currency: r.sale_currency,
+          sale_location: r.sale_location,
+          is_for_sale: r.is_for_sale,
+          breed: r.breed_name ? { name: r.breed_name } : null,
+          kennel: r.kennel_name ? { name: r.kennel_name } : null,
+        })),
+      )
+    }
+  } else {
+    // Con filtros: query directa, orden created_at desc
+    if (startGlobal < totalWithPhoto) {
+      const sliceStart = startGlobal
+      const sliceEnd = Math.min(endGlobal, totalWithPhoto)
+      const { data: withPhoto } = await applyFilters(
+        admin.from('dogs').select(selectFields).not('thumbnail_url', 'is', null),
+      )
+        .order('created_at', { ascending: false })
+        .range(sliceStart, sliceEnd - 1)
+      rows = rows.concat(withPhoto || [])
+    }
+    if (endGlobal > totalWithPhoto) {
+      const sliceStart = Math.max(0, startGlobal - totalWithPhoto)
+      const sliceEnd = endGlobal - totalWithPhoto
+      const { data: withoutPhoto } = await applyFilters(
+        admin.from('dogs').select(selectFields).is('thumbnail_url', null),
+      )
+        .order('created_at', { ascending: false })
+        .range(sliceStart, sliceEnd - 1)
+      rows = rows.concat(withoutPhoto || [])
+    }
   }
 
   const hasMore = endGlobal < total
