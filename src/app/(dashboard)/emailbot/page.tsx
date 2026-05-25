@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import EmailbotConfigClient from '@/components/emailbot/emailbot-config-client'
 import EmailbotSubnav from '@/components/emailbot/emailbot-subnav'
+import { checkBotReplyQuota } from '@/lib/ai/quotas'
 
 export const metadata = { title: 'Emailbot · Genealogic Pro' }
 
@@ -26,7 +27,7 @@ export default async function EmailbotPage() {
     )
   }
 
-  const [cfgRes, knowledgeRes, threadsRes, threads30dRes, escalated30dRes] = await Promise.all([
+  const [cfgRes, knowledgeRes, threadsRes, threads30dRes, escalated30dRes, quota] = await Promise.all([
     supabase.from('emailbot_config').select('*').eq('kennel_id', kennel.id).maybeSingle(),
     supabase.from('knowledge_entries').select('id', { count: 'exact', head: true })
       .eq('kennel_id', kennel.id).eq('is_active', true),
@@ -36,6 +37,7 @@ export default async function EmailbotPage() {
       .gte('last_message_at', new Date(Date.now() - 30 * 86400000).toISOString()),
     supabase.from('emailbot_threads').select('id', { count: 'exact', head: true })
       .eq('kennel_id', kennel.id).eq('status', 'derived_to_human'),
+    checkBotReplyQuota({ kennelId: kennel.id, ownerId: user.id }),
   ])
 
   return (
@@ -47,6 +49,7 @@ export default async function EmailbotPage() {
         kennelSlug={kennel.slug}
         initialConfig={cfgRes.data || null}
         initialBotModel={(kennel as any).bot_model || null}
+        quota={quota}
         stats={{
           knowledgeCount: knowledgeRes.count || 0,
           threadsTotal: threadsRes.count || 0,

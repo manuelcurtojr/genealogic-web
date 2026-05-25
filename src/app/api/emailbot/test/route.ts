@@ -30,6 +30,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Kennel no encontrado o no es tuyo' }, { status: 403 })
   }
 
+  // Plan check — el playground NO consume cuota, pero si el plan no incluye
+  // bot (free) bloqueamos para evitar onboarding confuso. quota_exceeded NO
+  // bloquea el playground (queremos que pueda seguir afinando aunque haya
+  // gastado sus respuestas reales del mes).
+  const quota = await checkBotReplyQuota({ kennelId: kennel.id, ownerId: user.id })
+  if (quota.reason === 'plan_no_bot') {
+    return NextResponse.json({
+      error: quotaReasonMessage(quota),
+      quota_blocked: true,
+      plan: quota.plan,
+    }, { status: 402 })
+  }
+
   const { data: entries } = await supabase
     .from('knowledge_entries')
     .select('category, title, content')

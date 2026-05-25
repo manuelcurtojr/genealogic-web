@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Mail, BookOpen, MessageSquare, Beaker, AlertTriangle, Power, ExternalLink, Copy, Check, Cpu, Zap, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AI_MODELS, getDefaultModel, getModel } from '@/lib/ai/models'
+import type { QuotaStatus } from '@/lib/ai/quotas'
 
 interface Config {
   kennel_id: string
@@ -23,6 +24,7 @@ interface Props {
   kennelSlug: string
   initialConfig: Config | null
   initialBotModel: string | null
+  quota: QuotaStatus
   stats: {
     knowledgeCount: number
     threadsTotal: number
@@ -32,7 +34,7 @@ interface Props {
 }
 
 export default function EmailbotConfigClient({
-  kennelId, kennelName, kennelSlug, initialConfig, initialBotModel, stats,
+  kennelId, kennelName, kennelSlug, initialConfig, initialBotModel, quota, stats,
 }: Props) {
   const [botModel, setBotModel] = useState<string>(initialBotModel || getDefaultModel().id)
   const [savingModel, setSavingModel] = useState(false)
@@ -146,6 +148,9 @@ export default function EmailbotConfigClient({
           </div>
         </div>
       )}
+
+      {/* Uso mensual + barra de cuota */}
+      <QuotaCard quota={quota} />
 
       {/* Selector de modelo IA */}
       <div className="rounded-2xl border border-hairline bg-canvas p-5 lg:p-6 mb-4">
@@ -353,5 +358,96 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-muted mb-1.5">{label}</span>
       {children}
     </label>
+  )
+}
+
+function QuotaCard({ quota }: { quota: QuotaStatus }) {
+  const isUnlimited = quota.limit < 0
+  const isBlocked = !quota.allowed
+  const pct = isUnlimited || quota.limit === 0
+    ? 0
+    : Math.min(100, Math.round((quota.used / quota.limit) * 100))
+
+  // Color de la barra y el ribete
+  let barColor = 'bg-emerald-500'
+  let ringColor = 'border-hairline'
+  if (isBlocked) { barColor = 'bg-red-500'; ringColor = 'border-red-300' }
+  else if (quota.isNearLimit) { barColor = 'bg-amber-500'; ringColor = 'border-amber-300' }
+  else if (pct >= 75) { barColor = 'bg-amber-500' }
+
+  const planLabel = quota.plan.charAt(0).toUpperCase() + quota.plan.slice(1)
+
+  return (
+    <div className={`rounded-2xl border-2 ${ringColor} bg-canvas p-5 lg:p-6 mb-4`}>
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+            Uso este mes · plan {planLabel}
+          </p>
+          <p className="mt-1 text-2xl font-bold text-ink tabular-nums">
+            {quota.used.toLocaleString('es-ES')}
+            {!isUnlimited && (
+              <span className="text-muted font-normal text-base"> / {quota.limit.toLocaleString('es-ES')}</span>
+            )}
+            <span className="text-muted font-normal text-sm ml-2">
+              respuesta{quota.used === 1 ? '' : 's'} del bot
+            </span>
+          </p>
+        </div>
+        {isBlocked && (
+          <Link
+            href="/cuenta/suscripcion"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-ink text-on-primary px-4 py-2 text-sm font-semibold hover:opacity-90"
+          >
+            Subir de plan
+          </Link>
+        )}
+        {isUnlimited && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-800 px-3 py-1 text-[11px] font-bold uppercase tracking-wider">
+            Ilimitado
+          </span>
+        )}
+      </div>
+
+      {!isUnlimited && quota.limit > 0 && (
+        <>
+          <div className="h-2 rounded-full bg-surface-card overflow-hidden">
+            <div
+              className={`h-full ${barColor} transition-all duration-300`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between mt-1.5">
+            <p className="text-[11px] text-muted">
+              {quota.remaining > 0
+                ? `${quota.remaining.toLocaleString('es-ES')} respuestas restantes`
+                : 'Cuota agotada'}
+            </p>
+            <p className="text-[11px] text-muted">{pct}%</p>
+          </div>
+        </>
+      )}
+
+      {isBlocked && (
+        <p className="mt-3 text-xs text-red-700">
+          {quota.reason === 'plan_no_bot'
+            ? `Tu plan ${planLabel} no incluye el emailbot. Sube a Starter (100) o Pro (500).`
+            : `Has agotado las respuestas del mes. El bot dejará de contestar emails hasta el día 1. Los emails entrantes siguen guardándose en /emailbot/hilos para que respondas tú.`}
+        </p>
+      )}
+      {!isBlocked && quota.isNearLimit && !isUnlimited && (
+        <p className="mt-3 text-xs text-amber-700">
+          ⚠️ Te quedan {quota.remaining} respuestas este mes. Considera subir de plan si tu volumen crece.
+        </p>
+      )}
+
+      <p className="mt-3 text-[11px] text-muted">
+        Detalles e historial en{' '}
+        <Link href="/cuenta/facturacion" className="font-semibold text-ink hover:underline">
+          /cuenta/facturación
+        </Link>
+        . Solo cuentan las respuestas reales del bot; el playground y los imports no consumen cuota.
+      </p>
+    </div>
   )
 }
