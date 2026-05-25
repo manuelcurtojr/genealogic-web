@@ -35,10 +35,13 @@ export function isEarlyAccessKennel(kennelId: string | null | undefined): boolea
 export const EARLY_ACCESS_FEATURES = {
   stripe_payments:   { label: 'Pagos online (Stripe)', eta: 'próximas semanas' },
   newsletter_send:   { label: 'Envío de newsletter',    eta: 'próximas semanas' },
+  newsletter:        { label: 'Newsletter',             eta: 'próximas semanas' },
   bot_test_suite:    { label: 'Test suite del Emailbot', eta: 'próximamente' },
   ai_importer:       { label: 'Importar a la biblioteca con IA', eta: 'próximamente' },
   contracts:         { label: 'Contratos con firma electrónica', eta: 'próximamente' },
   billing:           { label: 'Facturación con Stripe', eta: 'próximas semanas' },
+  web_builder:       { label: 'Web pública del criadero', eta: 'próximamente' },
+  emailbot:          { label: 'Emailbot',                eta: 'próximamente' },
 } as const
 
 export type EarlyAccessFeatureId = keyof typeof EARLY_ACCESS_FEATURES
