@@ -59,19 +59,21 @@ type BlogCard = {
 }
 
 export default function DiscoveryHome({
-  counts, featuredDogs, featuredKennels, blogPosts,
+  counts, featuredDogs, featuredKennels, blogPosts, mosaicPhotos,
 }: {
   counts: { dogs: number; kennels: number; breeds: number }
   featuredDogs: Dog[]
   featuredKennels: Kennel[]
   blogPosts: BlogCard[]
+  /** 12 thumbnails de razas distintas para el mosaico del hero.
+   *  Se eligen server-side cada request (cambian al recargar). */
+  mosaicPhotos: string[]
 }) {
-  // Mosaico del hero: pool de thumbnails reales. El componente HeroMosaic
-  // rota fotos cada 4s con cross-fade. Cuantas más fotos pasemos, más
-  // variedad antes de repetir.
-  const heroThumbs = featuredDogs
-    .map((d) => d.thumbnail_url)
-    .filter(Boolean) as string[]
+  // Mosaico del hero: ya viene filtrado por raza única desde page.tsx.
+  // Si por lo que sea viene vacío, fallback a thumbnails de featuredDogs.
+  const heroThumbs = mosaicPhotos.length > 0
+    ? mosaicPhotos
+    : (featuredDogs.map((d) => d.thumbnail_url).filter(Boolean) as string[])
 
   return (
     <main className="bg-canvas">

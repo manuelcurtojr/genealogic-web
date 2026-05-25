@@ -1,144 +1,87 @@
 /**
- * HeroMosaic — fondo del hero de la home: grid de fotos de perros que se
- * van rotando cada N segundos con cross-fade.
+ * HeroMosaic — fondo del hero de la home: grid de fotos de perros.
+ *
+ * Estático (no client): las fotos solo cambian al recargar la página.
+ * Esto evita el "parpadeo" molesto del cross-fade automático y deja al
+ * server elegir un set distinto cada request.
  *
  * Layout:
- *  - Mobile: 2 columnas, celdas rectangulares más altas (aspect-[4/5])
- *    para que ocupen más espacio hacia abajo.
- *  - Desktop (sm+): 6 columnas cuadradas pegadas (gap-0) sin huecos.
+ *  - Mobile: 2 cols × 3 rows = 6 fotos. Cada celda llena su row (h-full).
+ *  - Desktop (sm+): 6 cols × 2 rows = 12 fotos. Cada celda llena su row.
  *
- * Rotación: cada 4s una celda al azar cambia a otra thumbnail no usada.
- * Cross-fade con dos capas <img> apiladas (opacidad alterna).
+ * Usa grid-rows-N explícito + h-full en celdas (NO aspect-square) para
+ * que las fotos llenen TODO el alto del contenedor sin gaps blancos
+ * entre filas.
  *
- * Degradado bottom muy fuerte a `bg-canvas` para que el contenido encima
- * (counts, search) tenga fondo casi blanco limpio.
+ * Overlays:
+ *  - Base: white/canvas opaca por encima para que las fotos queden muy
+ *    suaves de fondo (no compitan con el texto).
+ *  - Bottom: gradient a blanco sólido empezando alto (60% mobile,
+ *    66% desktop) para que el final de las fotos quede totalmente
+ *    fundido en blanco y la transición a la siguiente sección sea
+ *    invisible.
  */
-'use client'
 
-import { useEffect, useRef, useState } from 'react'
+export default function HeroMosaic({ photos }: { photos: string[] }) {
+  if (!photos || photos.length === 0) return null
 
-const ROTATE_MS = 4000
+  // Mobile: 6 slots (2 cols × 3 rows). Desktop: 12 slots (6 cols × 2 rows).
+  // Renderizamos los 12 y los slots 7-12 se ocultan en mobile vía
+  // grid-rows-3 sm:grid-rows-2 (la 3ª fila tiene 2 cells, las cells 7+
+  // simplemente quedan fuera porque el grid no tiene más rows).
+  // Mejor: dos arrays separados para garantizar que no se "pierdan"
+  // celdas y cada layout use exactamente los slots correctos.
 
-export default function HeroMosaic({
-  photos,
-}: {
-  /** Pool grande de URLs. Cuanto más grande, más variedad antes de repetir. */
-  photos: string[]
-}) {
-  // Slots visibles: en mobile mostramos 6 (2x3 visible above the fold),
-  // en desktop 12 (6x2). Con responsive `grid-cols-2 sm:grid-cols-6` cabe.
-  // Usamos 12 slots SIEMPRE — los slots 7-12 quedan ocultos en mobile por
-  // la altura del contenedor, no por display.
-  const SLOTS = 12
-
-  // Inicializamos cada slot con la primera vuelta de photos. Si hay menos
-  // fotos que slots, repetimos.
-  const initial = Array.from({ length: SLOTS }, (_, i) => photos[i % photos.length] || '')
-  const [current, setCurrent] = useState<string[]>(initial)
-  // Capa secundaria para el cross-fade
-  const [next, setNext] = useState<string[]>(initial)
-  // Cuál capa está visible por slot (true = current, false = next)
-  const [topIsCurrent, setTopIsCurrent] = useState<boolean[]>(
-    Array.from({ length: SLOTS }, () => true)
-  )
-  const indexRef = useRef(0)
-
-  useEffect(() => {
-    if (photos.length <= 1) return
-    const id = setInterval(() => {
-      // Elegir slot al azar
-      const slot = Math.floor(Math.random() * SLOTS)
-      // Buscar próxima foto no presente en ningún slot ahora mismo
-      let candidate = ''
-      for (let i = 0; i < photos.length; i++) {
-        const idx = (indexRef.current + i) % photos.length
-        const cand = photos[idx]
-        if (!current.includes(cand) && !next.includes(cand)) {
-          candidate = cand
-          indexRef.current = (idx + 1) % photos.length
-          break
-        }
-      }
-      // Si no encontramos una nueva (pool muy pequeño), usamos cualquier
-      // otra que no esté en el slot actual
-      if (!candidate) {
-        const idx = indexRef.current % photos.length
-        candidate = photos[idx] === current[slot] ? photos[(idx + 1) % photos.length] : photos[idx]
-        indexRef.current = (idx + 1) % photos.length
-      }
-
-      // Aplicar a la capa que NO está visible y togglear
-      const visibleIsTop = topIsCurrent[slot]
-      if (visibleIsTop) {
-        setNext((arr) => {
-          const copy = [...arr]
-          copy[slot] = candidate
-          return copy
-        })
-      } else {
-        setCurrent((arr) => {
-          const copy = [...arr]
-          copy[slot] = candidate
-          return copy
-        })
-      }
-      // Tras montar la nueva imagen, toggleamos la capa visible
-      setTimeout(() => {
-        setTopIsCurrent((arr) => {
-          const copy = [...arr]
-          copy[slot] = !copy[slot]
-          return copy
-        })
-      }, 50)
-    }, ROTATE_MS)
-
-    return () => clearInterval(id)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [photos])
+  const mobileSlots = Array.from({ length: 6 }, (_, i) => photos[i % photos.length])
+  const desktopSlots = Array.from({ length: 12 }, (_, i) => photos[i % photos.length])
 
   return (
     <div className="absolute inset-0 z-0 pointer-events-none">
-      {/* Grid: 2 cols mobile (fotos verticales grandes), 6 cols desktop sin gap */}
-      <div className="grid grid-cols-2 sm:grid-cols-6 gap-0 h-full w-full">
-        {current.map((_, i) => (
-          <div
-            key={i}
-            className="relative overflow-hidden aspect-[4/5] sm:aspect-square"
-          >
-            {/* Capa A (current) */}
-            {current[i] && (
+      {/* MOBILE: 2 cols × 3 rows */}
+      <div className="grid grid-cols-2 grid-rows-3 gap-0 h-full w-full sm:hidden">
+        {mobileSlots.map((src, i) => (
+          <div key={i} className="relative overflow-hidden">
+            {src && (
               <img
-                src={current[i]}
+                src={src}
                 alt=""
                 aria-hidden="true"
                 loading="eager"
-                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
-                  topIsCurrent[i] ? 'opacity-100' : 'opacity-0'
-                }`}
-              />
-            )}
-            {/* Capa B (next) */}
-            {next[i] && (
-              <img
-                src={next[i]}
-                alt=""
-                aria-hidden="true"
-                loading="eager"
-                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
-                  topIsCurrent[i] ? 'opacity-0' : 'opacity-100'
-                }`}
+                className="h-full w-full object-cover"
               />
             )}
           </div>
         ))}
       </div>
 
-      {/* Overlays: oscurece para legibilidad y FUNDE A BLANCO la parte inferior */}
-      <div className="absolute inset-0 bg-canvas/35 sm:bg-canvas/30" />
-      <div className="absolute inset-0 bg-gradient-to-r from-canvas via-canvas/55 to-canvas/30 hidden sm:block" />
-      {/* Fundido a blanco en la parte de abajo — clave para que la transición
-          con la siguiente sección sea limpia y se "diluya". */}
-      <div className="absolute bottom-0 left-0 right-0 h-2/5 sm:h-1/2 bg-gradient-to-b from-transparent via-canvas/85 to-canvas" />
+      {/* DESKTOP: 6 cols × 2 rows */}
+      <div className="hidden sm:grid sm:grid-cols-6 sm:grid-rows-2 sm:gap-0 sm:h-full sm:w-full">
+        {desktopSlots.map((src, i) => (
+          <div key={i} className="relative overflow-hidden">
+            {src && (
+              <img
+                src={src}
+                alt=""
+                aria-hidden="true"
+                loading="eager"
+                className="h-full w-full object-cover"
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* OVERLAY blanco más opaco — las fotos quedan muy suaves de fondo */}
+      <div className="absolute inset-0 bg-canvas/65 sm:bg-canvas/60" />
+
+      {/* Gradiente horizontal SOLO desktop para reforzar el lado izquierdo
+          donde vive el texto del hero. */}
+      <div className="absolute inset-0 hidden sm:block bg-gradient-to-r from-canvas via-canvas/70 to-canvas/40" />
+
+      {/* Fundido a blanco SÓLIDO en la parte inferior — empieza alto para
+          que el final de las fotos quede completamente tapado y la
+          transición a la siguiente sección sea invisible. */}
+      <div className="absolute bottom-0 left-0 right-0 h-3/5 sm:h-2/3 bg-gradient-to-b from-transparent via-canvas to-canvas" />
     </div>
   )
 }
