@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import LiveCounter from './live-counter'
 import BlogSlider from './blog-slider'
+import HeroMosaic from './hero-mosaic'
 
 type Dog = {
   id: string
@@ -65,83 +66,66 @@ export default function DiscoveryHome({
   featuredKennels: Kennel[]
   blogPosts: BlogCard[]
 }) {
-  // Mosaico del hero: usamos thumbnails de perros reales para hacer un fondo
-  // editorial. Si no hay suficientes, repetimos (sin caer en placeholders).
-  const heroThumbs = (
-    featuredDogs.length >= 12
-      ? featuredDogs.slice(0, 12)
-      : [...featuredDogs, ...featuredDogs, ...featuredDogs].slice(0, 12)
-  ).map((d) => d.thumbnail_url).filter(Boolean) as string[]
+  // Mosaico del hero: pool de thumbnails reales. El componente HeroMosaic
+  // rota fotos cada 4s con cross-fade. Cuantas más fotos pasemos, más
+  // variedad antes de repetir.
+  const heroThumbs = featuredDogs
+    .map((d) => d.thumbnail_url)
+    .filter(Boolean) as string[]
 
   return (
     <main className="bg-canvas">
       {/* ═════ HERO CINEMATOGRÁFICO ═════ */}
       <section className="relative overflow-hidden border-b border-hairline">
-        {/* Background mosaico de perros */}
-        <div className="absolute inset-0 z-0">
-          <div className="grid grid-cols-4 sm:grid-cols-6 h-full w-full opacity-[0.35]">
-            {heroThumbs.slice(0, 12).map((src, i) => (
-              <div key={i} className="aspect-square overflow-hidden">
-                <img
-                  src={src}
-                  alt=""
-                  aria-hidden="true"
-                  className="h-full w-full object-cover"
-                  loading="eager"
-                />
-              </div>
-            ))}
-          </div>
-          {/* Degradados sobre el mosaico para legibilidad */}
-          <div className="absolute inset-0 bg-gradient-to-b from-canvas/40 via-canvas/85 to-canvas" />
-          <div className="absolute inset-0 bg-gradient-to-r from-canvas via-canvas/60 to-canvas/30" />
-        </div>
+        {/* Fondo: mosaico rotativo de perros (componente client con cross-fade) */}
+        <HeroMosaic photos={heroThumbs} />
 
         {/* Contenido hero */}
-        <div className="relative z-10 mx-auto max-w-[1200px] px-6 lg:px-12 py-20 sm:py-28 lg:py-36">
+        <div className="relative z-10 mx-auto max-w-[1200px] px-5 sm:px-6 lg:px-12 py-14 sm:py-24 lg:py-32">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-hairline bg-canvas/80 backdrop-blur-md px-3 py-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-hairline bg-canvas/80 backdrop-blur-md px-3 py-1.5 text-[10.5px] sm:text-[11.5px] font-semibold uppercase tracking-[0.08em] sm:tracking-[0.1em] text-ink shadow-sm">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FE6620] animate-pulse" />
-              El registro público de genealogías caninas
+              <span className="line-clamp-1">El registro público de genealogías caninas</span>
             </div>
 
             <h1
-              className="mt-7 font-semibold text-ink"
+              className="mt-5 sm:mt-7 font-semibold text-ink"
               style={{
-                fontSize: 'clamp(44px, 7vw, 80px)',
-                lineHeight: 1.02,
+                fontSize: 'clamp(34px, 7vw, 80px)',
+                lineHeight: 1.05,
                 letterSpacing: '-0.045em',
               }}
             >
-              Cada perro con su pedigree.<br />
+              Cada perro con su pedigree.{' '}
               <span className="text-muted font-medium">Cada criador con su escaparate.</span>
             </h1>
 
             <p
-              className="mt-7 max-w-[580px] text-body"
-              style={{ fontSize: 'clamp(17px, 1.6vw, 21px)', lineHeight: 1.5 }}
+              className="mt-5 sm:mt-7 max-w-[580px] text-body"
+              style={{ fontSize: 'clamp(15px, 1.6vw, 21px)', lineHeight: 1.5 }}
             >
               Genealogía verificable, papeles digitales y calendario veterinario.
               Para criadores que se toman su trabajo en serio y propietarios que
               merecen tenerlo todo documentado.
             </p>
 
-            {/* Search box mega prominente */}
+            {/* Search box prominente — padding reducido en mobile */}
             <form
               action="/search"
               method="get"
-              className="mt-9 flex max-w-2xl items-center gap-2 rounded-2xl border-2 border-ink/10 bg-canvas px-5 py-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] focus-within:border-ink/40 transition-all"
+              className="mt-7 sm:mt-9 flex max-w-2xl items-center gap-2 rounded-2xl border-2 border-ink/10 bg-canvas px-3.5 sm:px-5 py-2.5 sm:py-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] focus-within:border-ink/40 transition-all"
             >
-              <Search className="w-5 h-5 text-muted flex-shrink-0" />
+              <Search className="w-4 h-4 sm:w-5 sm:h-5 text-muted flex-shrink-0" />
               <input
                 name="q"
                 type="text"
                 placeholder="Busca un perro, criador o raza…"
-                className="flex-1 bg-transparent text-[16px] text-ink placeholder:text-muted focus:outline-none"
+                className="flex-1 bg-transparent text-[14px] sm:text-[16px] text-ink placeholder:text-muted focus:outline-none min-w-0"
               />
               <button
                 type="submit"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-2.5 text-[14px] font-bold hover:opacity-90 transition shrink-0"
+                aria-label="Buscar"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-3 sm:px-5 py-2 sm:py-2.5 text-[13px] sm:text-[14px] font-bold hover:opacity-90 transition shrink-0"
               >
                 <span className="hidden sm:inline">Buscar</span>
                 <ArrowRight className="w-4 h-4" />
@@ -149,12 +133,12 @@ export default function DiscoveryHome({
             </form>
 
             {/* CTAs duales secundarios */}
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-[13px] text-muted">
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-muted">
               <span>Empieza:</span>
               <Link href="/register?intent=breeder" className="font-semibold text-ink hover:opacity-80 inline-flex items-center gap-1">
                 <Store className="w-3.5 h-3.5" /> Como criador
               </Link>
-              <span className="opacity-40">·</span>
+              <span className="opacity-40 hidden sm:inline">·</span>
               <Link href="/register?intent=owner" className="font-semibold text-ink hover:opacity-80 inline-flex items-center gap-1">
                 <Dog className="w-3.5 h-3.5" /> Como propietario
               </Link>
@@ -162,23 +146,22 @@ export default function DiscoveryHome({
           </div>
 
           {/* Live counts en card flotante.
-              Usamos w-fit para que la caja crezca según el contenido (el
-              número grande de perros como "97.544" se cortaba con max-w-3xl).
-              Cada columna tiene min-width para que los números grandes
-              tengan su propio espacio garantizado. */}
-          <div className="mt-14 sm:mt-20 rounded-2xl border border-hairline bg-canvas/95 backdrop-blur-md px-6 sm:px-10 py-6 sm:py-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] w-fit max-w-full overflow-hidden">
-            <div className="flex items-center gap-2 mb-5">
+              w-fit + max-w-full + overflow-x-auto: la caja se ajusta al
+              contenido en desktop y permite scroll horizontal en mobile
+              si los números son extremadamente largos (caso edge). */}
+          <div className="mt-10 sm:mt-16 lg:mt-20 rounded-2xl border border-hairline bg-canvas/95 backdrop-blur-md px-5 sm:px-8 lg:px-10 py-5 sm:py-7 lg:py-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] w-fit max-w-full overflow-x-auto">
+            <div className="flex items-center gap-2 mb-4 sm:mb-5">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted">El catálogo crece en tiempo real</p>
+              <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted">El catálogo crece en tiempo real</p>
             </div>
-            <div className="flex items-end gap-8 sm:gap-12 lg:gap-16">
-              <div className="min-w-[90px]">
+            <div className="flex items-end gap-6 sm:gap-12 lg:gap-16">
+              <div className="min-w-[70px] sm:min-w-[90px]">
                 <LiveCounter initial={counts.kennels} kind="kennels" label="Criaderos" />
               </div>
-              <div className="min-w-[70px]">
+              <div className="min-w-[55px] sm:min-w-[70px]">
                 <LiveCounter initial={counts.breeds} kind="breeds" label="Razas" />
               </div>
-              <div className="min-w-[140px] sm:min-w-[180px]">
+              <div className="min-w-[110px] sm:min-w-[160px] lg:min-w-[180px]">
                 <LiveCounter initial={counts.dogs} kind="dogs" label="Perros" />
               </div>
             </div>
@@ -186,43 +169,43 @@ export default function DiscoveryHome({
         </div>
       </section>
 
-      {/* ═════ DUAL CTAs — dos puertas con imagen de fondo ═════ */}
+      {/* ═════ DUAL CTAs ═════ */}
       <section className="border-b border-hairline">
-        <div className="mx-auto max-w-[1280px] px-6 lg:px-12 py-16 sm:py-24">
-          <div className="mb-10 max-w-3xl">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#FE6620]">Dos caminos</p>
-            <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(28px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
+        <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
+          <div className="mb-8 sm:mb-10 max-w-3xl">
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">Dos caminos</p>
+            <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
               ¿Qué te trae a Genealogic?
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
             {/* Criador */}
             <Link
               href="/criadores"
-              className="group relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-orange-50 via-canvas to-amber-50 p-8 sm:p-10 hover:shadow-[0_12px_48px_rgba(254,102,32,0.15)] transition-all hover:-translate-y-1 duration-300"
+              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-hairline bg-gradient-to-br from-orange-50 via-canvas to-amber-50 p-6 sm:p-8 lg:p-10 hover:shadow-[0_12px_48px_rgba(254,102,32,0.15)] transition-all hover:-translate-y-1 duration-300"
             >
-              {/* Big icon de fondo */}
-              <Store className="absolute -bottom-6 -right-6 w-48 h-48 text-[#FE6620]/10 group-hover:text-[#FE6620]/20 transition-colors" strokeWidth={1} />
+              {/* Big icon de fondo — más pequeño en mobile */}
+              <Store className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 w-32 h-32 sm:w-48 sm:h-48 text-[#FE6620]/10 group-hover:text-[#FE6620]/20 transition-colors" strokeWidth={1} />
 
               <div className="relative">
-                <div className="inline-flex w-12 h-12 rounded-2xl bg-[#FE6620] items-center justify-center shadow-[0_8px_24px_rgba(254,102,32,0.3)]">
-                  <Store className="w-6 h-6 text-white" />
+                <div className="inline-flex w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#FE6620] items-center justify-center shadow-[0_8px_24px_rgba(254,102,32,0.3)]">
+                  <Store className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <p className="mt-5 text-[11px] font-bold uppercase tracking-wider text-[#FE6620]">Para criadores</p>
-                <h3 className="mt-1 text-[28px] sm:text-[32px] font-semibold text-ink tracking-[-0.02em] leading-tight">
+                <p className="mt-4 sm:mt-5 text-[11px] font-bold uppercase tracking-wider text-[#FE6620]">Para criadores</p>
+                <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 32px)' }}>
                   Vende más con menos esfuerzo.
                 </h3>
-                <p className="mt-3 text-[15px] text-body leading-[1.55] max-w-md">
+                <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-md">
                   Gestiona tu afijo, publica perros y camadas, recibe reservas y deja que el emailbot responda a leads.
                 </p>
-                <ul className="mt-6 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-body">
+                <ul className="mt-5 sm:mt-6 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px] sm:text-[13px] text-body">
                   <MiniFeature icon={Globe}>Web pública</MiniFeature>
                   <MiniFeature icon={KanbanSquare}>Pipeline</MiniFeature>
                   <MiniFeature icon={Mail}>Emailbot</MiniFeature>
                   <MiniFeature icon={GitBranch}>Pedigrees</MiniFeature>
                 </ul>
-                <span className="mt-7 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
+                <span className="mt-6 sm:mt-7 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
                   Ver herramientas
                   <ArrowRight className="w-4 h-4" />
                 </span>
@@ -232,33 +215,33 @@ export default function DiscoveryHome({
             {/* Propietario */}
             <Link
               href="/propietarios"
-              className="group relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-blue-50 via-canvas to-sky-50 p-8 sm:p-10 hover:shadow-[0_12px_48px_rgba(59,130,246,0.15)] transition-all hover:-translate-y-1 duration-300"
+              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-hairline bg-gradient-to-br from-blue-50 via-canvas to-sky-50 p-6 sm:p-8 lg:p-10 hover:shadow-[0_12px_48px_rgba(59,130,246,0.15)] transition-all hover:-translate-y-1 duration-300"
             >
-              <Dog className="absolute -bottom-6 -right-6 w-48 h-48 text-blue-500/10 group-hover:text-blue-500/20 transition-colors" strokeWidth={1} />
+              <Dog className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 w-32 h-32 sm:w-48 sm:h-48 text-blue-500/10 group-hover:text-blue-500/20 transition-colors" strokeWidth={1} />
 
               <div className="relative">
-                <div className="inline-flex w-12 h-12 rounded-2xl bg-blue-600 items-center justify-center shadow-[0_8px_24px_rgba(59,130,246,0.3)]">
-                  <Dog className="w-6 h-6 text-white" />
+                <div className="inline-flex w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-blue-600 items-center justify-center shadow-[0_8px_24px_rgba(59,130,246,0.3)]">
+                  <Dog className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div className="mt-5 flex items-center gap-2">
+                <div className="mt-4 sm:mt-5 flex items-center gap-2 flex-wrap">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700">Para propietarios</p>
                   <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">
                     Gratis siempre
                   </span>
                 </div>
-                <h3 className="mt-1 text-[28px] sm:text-[32px] font-semibold text-ink tracking-[-0.02em] leading-tight">
+                <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 32px)' }}>
                   Tu perro merece su historia.
                 </h3>
-                <p className="mt-3 text-[15px] text-body leading-[1.55] max-w-md">
+                <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-md">
                   Registra a tu perro, guarda su pedigree y sus papeles, recibe recordatorios de vacunas.
                 </p>
-                <ul className="mt-6 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-body">
+                <ul className="mt-5 sm:mt-6 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px] sm:text-[13px] text-body">
                   <MiniFeature icon={Camera}>Ficha completa</MiniFeature>
                   <MiniFeature icon={GitBranch}>Pedigree</MiniFeature>
                   <MiniFeature icon={Calendar}>Vacunas</MiniFeature>
                   <MiniFeature icon={ShieldCheck}>Reclama tu perro</MiniFeature>
                 </ul>
-                <span className="mt-7 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
+                <span className="mt-6 sm:mt-7 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
                   Crear cuenta gratis
                   <ArrowRight className="w-4 h-4" />
                 </span>
@@ -270,18 +253,21 @@ export default function DiscoveryHome({
 
       {/* ═════ BENTO de FEATURES ═════ */}
       <section className="border-b border-hairline bg-surface-soft/40">
-        <div className="mx-auto max-w-[1280px] px-6 lg:px-12 py-16 sm:py-24">
-          <div className="mb-10 max-w-3xl">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#FE6620]">Una sola plataforma</p>
-            <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(28px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
+        <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
+          <div className="mb-8 sm:mb-10 max-w-3xl">
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">Una sola plataforma</p>
+            <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
               Todo lo que tu perro o criadero necesita.
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 auto-rows-[200px]">
-            {/* Card grande (2x2) — Pedigree */}
+          {/* Auto-rows menor en mobile para que las cards no sean cajas
+              gigantes vacías. La card 2x2 sigue ocupando 2 cols en sm+. */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 auto-rows-[150px] sm:auto-rows-[200px]">
+            {/* Card grande: en mobile fila entera (col-span-2, 1 row),
+                en sm+ es un 2x2 dominante. */}
             <BentoCard
-              className="sm:col-span-2 sm:row-span-2"
+              className="col-span-2 sm:row-span-2"
               icon={GitBranch}
               title="Pedigree verificable"
               desc="Árbol genealógico hasta 5 generaciones, COI calculado, ancestros enlazados al criadero original. Más fiable que un Excel."
@@ -343,11 +329,11 @@ export default function DiscoveryHome({
       {/* ═════ CATÁLOGO PERROS — editorial ═════ */}
       {featuredDogs.length > 0 && (
         <section className="border-b border-hairline">
-          <div className="mx-auto max-w-[1280px] px-6 lg:px-12 py-16 sm:py-24">
-            <div className="mb-8 flex items-end justify-between gap-4">
+          <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
+            <div className="mb-6 sm:mb-8 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#FE6620]">El catálogo</p>
-                <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
+                <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">El catálogo</p>
+                <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
                   Perros recién registrados
                 </h2>
               </div>
@@ -397,14 +383,14 @@ export default function DiscoveryHome({
         </section>
       )}
 
-      {/* ═════ CRIADEROS — fila horizontal con scroll ═════ */}
+      {/* ═════ CRIADEROS ═════ */}
       {featuredKennels.length > 0 && (
         <section className="border-b border-hairline bg-surface-soft/40">
-          <div className="mx-auto max-w-[1280px] px-6 lg:px-12 py-16 sm:py-24">
-            <div className="mb-8 flex items-end justify-between gap-4">
+          <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
+            <div className="mb-6 sm:mb-8 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#FE6620]">La comunidad</p>
-                <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
+                <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">La comunidad</p>
+                <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
                   Criaderos en Genealogic
                 </h2>
               </div>
@@ -449,12 +435,12 @@ export default function DiscoveryHome({
         <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#FE6620]/30 blur-[120px] pointer-events-none" />
         <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-blue-500/20 blur-[120px] pointer-events-none" />
 
-        <div className="relative z-10 mx-auto max-w-[1200px] px-6 lg:px-12 py-20 sm:py-28 text-center">
-          <Sparkles className="w-10 h-10 mx-auto mb-6 text-[#FE6620]" />
+        <div className="relative z-10 mx-auto max-w-[1200px] px-5 sm:px-6 lg:px-12 py-16 sm:py-24 lg:py-28 text-center">
+          <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-5 sm:mb-6 text-[#FE6620]" />
           <h2
             className="font-semibold mx-auto leading-[1.05]"
             style={{
-              fontSize: 'clamp(32px, 5vw, 56px)',
+              fontSize: 'clamp(28px, 5vw, 56px)',
               letterSpacing: '-0.04em',
               maxWidth: '18ch',
             }}
@@ -462,10 +448,10 @@ export default function DiscoveryHome({
             Empieza gratis.{' '}
             <span className="text-white/60 font-medium">Sin tarjeta.</span>
           </h2>
-          <p className="mt-5 text-[16px] sm:text-[18px] text-white/60 max-w-md mx-auto">
+          <p className="mt-4 sm:mt-5 text-[14px] sm:text-[18px] text-white/60 max-w-md mx-auto px-2">
             Únete a los criadores y propietarios que ya documentan a sus perros con Genealogic.
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/register?intent=breeder"
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#FE6620] text-white px-7 py-3.5 text-sm font-bold hover:scale-105 transition-transform"
@@ -518,19 +504,19 @@ function BentoCard({
       />
       <div className="relative flex flex-col h-full">
         <div
-          className={`inline-flex items-center justify-center rounded-xl ${isLarge ? 'w-12 h-12' : 'w-10 h-10'}`}
+          className={`inline-flex items-center justify-center rounded-xl ${isLarge ? 'w-11 h-11 sm:w-12 sm:h-12' : 'w-9 h-9 sm:w-10 sm:h-10'}`}
           style={{ background: `${color}15`, color }}
         >
-          <Icon className={isLarge ? 'w-6 h-6' : 'w-5 h-5'} />
+          <Icon className={isLarge ? 'w-5 h-5 sm:w-6 sm:h-6' : 'w-4 h-4 sm:w-5 sm:h-5'} />
         </div>
-        <h3 className={`mt-4 font-bold text-ink ${isLarge ? 'text-[22px] tracking-[-0.02em]' : 'text-[14.5px]'}`}>
+        <h3 className={`mt-3 sm:mt-4 font-bold text-ink ${isLarge ? 'text-[18px] sm:text-[22px] tracking-[-0.02em]' : 'text-[13px] sm:text-[14.5px]'}`}>
           {title}
         </h3>
-        <p className={`mt-1.5 text-body leading-[1.5] ${isLarge ? 'text-[15px]' : 'text-[12.5px]'}`}>
+        <p className={`mt-1 sm:mt-1.5 text-body leading-[1.5] ${isLarge ? 'text-[13px] sm:text-[15px]' : 'text-[11.5px] sm:text-[12.5px]'}`}>
           {desc}
         </p>
         {isLarge && (
-          <Icon className="absolute -bottom-4 -right-4 w-32 h-32 opacity-[0.04]" strokeWidth={1} />
+          <Icon className="absolute -bottom-4 -right-4 w-24 h-24 sm:w-32 sm:h-32 opacity-[0.04]" strokeWidth={1} />
         )}
       </div>
     </div>

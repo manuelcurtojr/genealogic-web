@@ -253,8 +253,8 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
         }}
       />
 
-      <div className="relative mx-auto max-w-[1200px] px-6 pt-16 pb-20 lg:px-12 lg:pt-24 lg:pb-24">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
+      <div className="relative mx-auto max-w-[1200px] px-5 pt-12 pb-16 sm:px-6 sm:pt-16 sm:pb-20 lg:px-12 lg:pt-24 lg:pb-24">
+        <div className="grid items-center gap-10 sm:gap-12 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
           {/* Left: copy + CTAs */}
           <div>
             {/* Badge */}
@@ -268,18 +268,18 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
 
             {/* Headline */}
             <h1
-              className="mt-7 max-w-[16ch] font-semibold text-ink"
-              style={{ fontSize: 'clamp(40px, 6vw, 68px)', lineHeight: 1.02, letterSpacing: '-0.04em' }}
+              className="mt-5 sm:mt-7 max-w-[16ch] font-semibold text-ink"
+              style={{ fontSize: 'clamp(32px, 6vw, 68px)', lineHeight: 1.02, letterSpacing: '-0.04em' }}
             >
               Tu criadero entero, en un solo sitio.
             </h1>
-            <p className="mt-6 max-w-[520px] text-[17px] leading-[1.55] text-body sm:text-[18px]">
+            <p className="mt-5 sm:mt-6 max-w-[520px] text-[16px] leading-[1.55] text-body sm:text-[18px]">
               Genealogías verificables, reservas, clientes, web propia y emailbot.
               Todo lo que necesita un criadero serio. Gratis para empezar.
             </p>
 
             {/* CTAs */}
-            <div className="mt-9 flex flex-wrap items-center gap-3">
+            <div className="mt-7 sm:mt-9 flex flex-wrap items-center gap-3">
               <Button href="/register?intent=breeder&plan=free" variant="primary" size="lg">
                 Empieza gratis <ArrowRight className="h-4 w-4" />
               </Button>
@@ -295,7 +295,7 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
           {/* Right: app-window mockup with real SearchBar */}
           <div className="relative">
             <AppWindow url="genealogic.io/buscar">
-              <div className="px-6 py-7 sm:px-8 sm:py-8">
+              <div className="px-5 py-6 sm:px-8 sm:py-8">
                 <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
                   Registro público
                 </p>
@@ -393,18 +393,18 @@ function AppWindow({
 function PedigreeShowcase({ cockerPhotos }: { cockerPhotos: string[] }) {
   return (
     <section id="producto" className="border-b border-hairline bg-surface-soft">
-      <div className="mx-auto max-w-[1200px] px-6 py-24 lg:px-12 lg:py-[120px]">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
           01 · Para todos
         </p>
-        <div className="mt-3 grid gap-12 lg:grid-cols-[1fr_1fr] lg:items-end">
+        <div className="mt-3 grid gap-6 sm:gap-12 lg:grid-cols-[1fr_1fr] lg:items-end">
           <h2
             className="max-w-[20ch] font-semibold text-ink"
-            style={{ fontSize: 'clamp(32px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
+            style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
           >
             El registro público de perros con genealogía verificable.
           </h2>
-          <p className="max-w-[460px] text-[17px] leading-[1.55] text-body">
+          <p className="max-w-[460px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
             Cada perro con árbol genealógico ilimitado, datos sanitarios, registro y
             trazabilidad. Importa genealogías existentes en segundos con IA. Comparte
             tu trabajo con un link público.
@@ -412,13 +412,13 @@ function PedigreeShowcase({ cockerPhotos }: { cockerPhotos: string[] }) {
         </div>
 
         {/* Real-looking pedigree mockup inside app window */}
-        <div className="mt-14">
+        <div className="mt-10 sm:mt-14">
           <AppWindow url="genealogic.io/dogs/lord-byron-de-aldenham">
             <RealPedigreeMockup cockerPhotos={cockerPhotos} />
           </AppWindow>
         </div>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-3">
           <MiniFeature
             icon={<GitBranch className="h-5 w-5" />}
             title="Genealogía real"
@@ -637,25 +637,25 @@ function PedCard({
 function FeaturesGrid() {
   return (
     <section id="criadores" className="border-b border-hairline">
-      <div className="mx-auto max-w-[1200px] px-6 py-24 lg:px-12 lg:py-[120px]">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
           02 · Tier Pro
         </p>
-        <div className="mt-3 grid gap-12 lg:grid-cols-[1fr_1fr] lg:items-end">
+        <div className="mt-3 grid gap-6 sm:gap-12 lg:grid-cols-[1fr_1fr] lg:items-end">
           <h2
             className="max-w-[20ch] font-semibold text-ink"
-            style={{ fontSize: 'clamp(32px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
+            style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
           >
             Todo lo que un criadero serio necesita en un sitio.
           </h2>
-          <p className="max-w-[460px] text-[17px] leading-[1.55] text-body">
+          <p className="max-w-[460px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
             Pipeline de reservas con vistas Ventas/Clientes, hub de contactos, web pública con
             dominio propio, emailbot que responde a tus consultas con tu tono y tu
             biblioteca, newsletter, estadísticas. Y la genealogía verificada encima.
           </p>
         </div>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <FeatureCard
             icon={<KanbanSquare className="h-5 w-5" />}
             title="Pipeline de reservas"
@@ -800,17 +800,17 @@ function PipelineShowcase() {
 
   return (
     <section className="border-b border-hairline bg-surface-soft">
-      <div className="mx-auto max-w-[1200px] px-6 py-24 lg:px-12 lg:py-[120px]">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
           03 · Pipeline
         </p>
         <h2
           className="mt-3 max-w-[24ch] font-semibold text-ink"
-          style={{ fontSize: 'clamp(32px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
+          style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
         >
           Tu próxima camada se reserva sola.
         </h2>
-        <p className="mt-6 max-w-[600px] text-[17px] leading-[1.55] text-body">
+        <p className="mt-5 sm:mt-6 max-w-[600px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
           Cada lead con su estado (interesado, seña, asignado, contrato, entregado).
           Cambias estado con un click. Vistas separadas <strong>Ventas</strong>{' '}
           (leads abiertos) y <strong>Clientes</strong> (reservas cerradas). Panel
@@ -833,7 +833,7 @@ function PipelineShowcase() {
 
         <div className="mt-6">
           <AppWindow url="genealogic.io/reservas">
-            <div className="p-5 sm:p-7">
+            <div className="p-4 sm:p-7">
               {/* Switcher Ventas/Clientes */}
               <div className="inline-flex rounded-lg border border-hairline bg-surface-soft p-1 mb-4">
                 <button
@@ -1009,24 +1009,24 @@ function PipelineRow({
 function BotConversation() {
   return (
     <section className="border-b border-hairline">
-      <div className="mx-auto max-w-[1200px] px-6 py-24 lg:px-12 lg:py-[120px]">
-        <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
+        <div className="grid gap-8 sm:gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
           <div>
             <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
               04 · Emailbot
             </p>
             <h2
               className="mt-3 font-semibold text-ink"
-              style={{ fontSize: 'clamp(32px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
+              style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
             >
               Habla con tus compradores incluso cuando duermes.
             </h2>
-            <p className="mt-6 text-[17px] leading-[1.55] text-body">
+            <p className="mt-5 sm:mt-6 text-[16px] leading-[1.55] text-body sm:text-[17px]">
               Conectas tu email del criadero. El bot lee, redacta una respuesta con
               tu tono usando tu biblioteca de conocimiento. Tú revisas y envías. O lo
               dejas en auto-piloto para preguntas frecuentes.
             </p>
-            <div className="mt-8 space-y-3">
+            <div className="mt-6 sm:mt-8 space-y-3">
               <BulletRow text="Lee tu biblioteca: precios, contratos, certificados, salud" />
               <BulletRow text="Responde con tu tono, no con el de ChatGPT" />
               <BulletRow text="Tú decides si auto-envía o si revisas antes" />
@@ -1034,7 +1034,7 @@ function BotConversation() {
           </div>
 
           <AppWindow title="hola@tucriadero.com · Hilo 142">
-            <div className="space-y-3 p-5 sm:p-7">
+            <div className="space-y-3 p-4 sm:p-7">
               <ChatBubble side="left">
                 Hola, ¿tendréis camadas previstas para primavera? Estaba interesado en
                 un macho con padres con certificados de cadera.
@@ -1100,18 +1100,18 @@ function ChatBubble({
 function OnboardingSteps() {
   return (
     <section className="border-b border-hairline bg-surface-soft">
-      <div className="mx-auto max-w-[1200px] px-6 py-24 lg:px-12 lg:py-[120px]">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
           05 · Empezar
         </p>
         <h2
           className="mt-3 max-w-[18ch] font-semibold text-ink"
-          style={{ fontSize: 'clamp(32px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
+          style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
         >
           De cero a operando en un fin de semana.
         </h2>
 
-        <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <Step n="1" duration="30 min" title="Crea tu cuenta">
             Registro gratis. Configura tu criadero, afijo y datos básicos. Sin tarjeta.
           </Step>
@@ -1142,7 +1142,7 @@ function Step({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-[12px] border border-hairline bg-canvas p-6">
+    <div className="rounded-[12px] border border-hairline bg-canvas p-5 sm:p-6">
       <div className="flex items-center justify-between">
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-[13px] font-semibold text-on-primary">
           {n}
@@ -1165,25 +1165,25 @@ function Step({
 function Pricing() {
   return (
     <section id="precios" className="border-b border-hairline">
-      <div className="mx-auto max-w-[1200px] px-6 py-24 lg:px-12 lg:py-[120px]">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
           06 · Precios
         </p>
         <h2
           className="mt-3 max-w-[18ch] font-semibold text-ink"
-          style={{ fontSize: 'clamp(32px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
+          style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
         >
           Datos gratis. Herramientas premium.
         </h2>
-        <p className="mt-6 max-w-[560px] text-[17px] leading-[1.55] text-body">
+        <p className="mt-5 sm:mt-6 max-w-[560px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
           El grafo genealógico es gratis para siempre. El tier Pro añade las
           herramientas que un criador profesional necesita para vender mejor.
           Sin tarjeta para empezar.
         </p>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-6 md:grid-cols-3">
           {/* Free */}
-          <div className="rounded-[16px] border border-hairline bg-canvas p-7 flex flex-col">
+          <div className="rounded-[16px] border border-hairline bg-canvas p-6 sm:p-7 flex flex-col">
             <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">Free</p>
             <p className="mt-3 text-[36px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
               0 € <span className="text-[14px] font-normal text-muted">/ siempre</span>
@@ -1205,7 +1205,7 @@ function Pricing() {
           </div>
 
           {/* Pro (highlighted) */}
-          <div className="relative rounded-[16px] bg-surface-dark p-7 text-on-dark flex flex-col">
+          <div className="relative rounded-[16px] bg-surface-dark p-6 sm:p-7 text-on-dark flex flex-col">
             <span className="absolute -top-3 right-6 rounded-full bg-[color:var(--brand)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
               Founder · 39€/mes para siempre
             </span>
@@ -1235,7 +1235,7 @@ function Pricing() {
           </div>
 
           {/* Premium */}
-          <div className="rounded-[16px] border border-hairline bg-canvas p-7 flex flex-col">
+          <div className="rounded-[16px] border border-hairline bg-canvas p-6 sm:p-7 flex flex-col">
             <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">Premium</p>
             <p className="mt-3 text-[36px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
               149 € <span className="text-[14px] font-normal text-muted">/ mes</span>
@@ -1322,16 +1322,16 @@ function FAQ() {
 
   return (
     <section id="faq" className="border-b border-hairline bg-surface-soft">
-      <div className="mx-auto max-w-[860px] px-6 py-24 lg:px-12 lg:py-[120px]">
+      <div className="mx-auto max-w-[860px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">07 · FAQ</p>
         <h2
           className="mt-3 font-semibold text-ink"
-          style={{ fontSize: 'clamp(32px, 5vw, 48px)', lineHeight: 1.1, letterSpacing: '-0.03em' }}
+          style={{ fontSize: 'clamp(26px, 5vw, 48px)', lineHeight: 1.1, letterSpacing: '-0.03em' }}
         >
           Las dudas habituales.
         </h2>
 
-        <div className="mt-12 divide-y divide-hairline">
+        <div className="mt-8 sm:mt-12 divide-y divide-hairline">
           {faqs.map((f, i) => (
             <FaqItem key={i} q={f.q} a={f.a} />
           ))}
@@ -1347,9 +1347,9 @@ function FaqItem({ q, a }: { q: string; a: string }) {
     <div className="py-5">
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex w-full items-center justify-between gap-6 text-left"
+        className="flex w-full items-center justify-between gap-4 sm:gap-6 text-left"
       >
-        <span className="text-[16px] font-semibold text-ink" style={{ letterSpacing: '-0.01em' }}>
+        <span className="text-[15px] sm:text-[16px] font-semibold text-ink" style={{ letterSpacing: '-0.01em' }}>
           {q}
         </span>
         {open ? (
@@ -1367,17 +1367,17 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 function FinalCta() {
   return (
     <section className="border-b border-hairline">
-      <div className="mx-auto max-w-[1200px] px-6 py-24 text-center lg:px-12 lg:py-[120px]">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 text-center sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <h2
           className="mx-auto max-w-[18ch] font-semibold text-ink"
-          style={{ fontSize: 'clamp(40px, 6vw, 72px)', lineHeight: 1.02, letterSpacing: '-0.035em' }}
+          style={{ fontSize: 'clamp(30px, 6vw, 72px)', lineHeight: 1.02, letterSpacing: '-0.035em' }}
         >
           Tu próxima camada se reserva sola.
         </h2>
-        <p className="mx-auto mt-6 max-w-[480px] text-[17px] leading-[1.55] text-body">
+        <p className="mx-auto mt-5 sm:mt-6 max-w-[480px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
           Genealogía verificable + criadero profesional + IA. En una sola cuenta.
         </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-3">
           <Button href="/register?intent=breeder&plan=free" variant="primary" size="lg">
             Empieza gratis <ArrowRight className="h-4 w-4" />
           </Button>
@@ -1482,7 +1482,7 @@ function MiniFeature({
     emerald: 'var(--badge-emerald)',
   }
   return (
-    <div className="rounded-[12px] border border-hairline bg-canvas p-7">
+    <div className="rounded-[12px] border border-hairline bg-canvas p-6 sm:p-7">
       <div
         className="flex h-10 w-10 items-center justify-center rounded-lg"
         style={{ background: `${map[color]}20`, color: map[color] }}
@@ -1517,7 +1517,7 @@ function FeatureCard({
     emerald: 'var(--badge-emerald)',
   }
   return (
-    <div className="rounded-[12px] border border-hairline bg-canvas p-7 transition hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
+    <div className="rounded-[12px] border border-hairline bg-canvas p-6 sm:p-7 transition hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
       <div
         className="flex h-10 w-10 items-center justify-center rounded-lg"
         style={{ background: `${map[color]}1a`, color: map[color] }}

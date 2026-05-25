@@ -20,7 +20,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, User, Search, Store, Dog, BookOpen, Tag, Zap, LogIn, Sparkles } from 'lucide-react'
+import { Menu, X, Search, Store, Dog, BookOpen, Tag, Zap, LogIn, Sparkles } from 'lucide-react'
 import SearchBar from '@/components/layout/search-bar'
 import { Wordmark } from '@/components/ui/wordmark'
 import { Button } from '@/components/ui/button'
@@ -42,7 +42,8 @@ export default function MarketingHeader() {
   return (
     <>
       <header className="sticky top-0 z-50 bg-canvas/90 backdrop-blur-md border-b border-hairline">
-        {/* Mobile */}
+        {/* Mobile — hamburguesa + ISOTIPO (no wordmark) + search.
+            Sin botón de login a la derecha: ya está en el drawer. */}
         <div className="lg:hidden flex items-center gap-3 px-4 h-14">
           <button
             onClick={() => setDrawerOpen(true)}
@@ -51,17 +52,16 @@ export default function MarketingHeader() {
           >
             <Menu className="w-5 h-5" />
           </button>
-          <Wordmark size="text-lg" />
+          <Link href="/" aria-label="Genealogic" className="shrink-0 inline-flex items-center">
+            <img
+              src="/icon.svg"
+              alt="Genealogic"
+              className="h-7 w-7"
+            />
+          </Link>
           <div className="flex-1 min-w-0">
             <SearchBar />
           </div>
-          <Link
-            href="/login"
-            aria-label="Iniciar sesión"
-            className="w-10 h-10 rounded-full bg-surface-card border border-hairline flex items-center justify-center text-ink hover:bg-hairline transition shrink-0"
-          >
-            <User className="w-5 h-5" />
-          </Link>
         </div>
 
         {/* Desktop — nav minimal: 3 items clave (las dos audiencias + precios).

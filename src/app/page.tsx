@@ -35,15 +35,16 @@ export default async function Home() {
     admin.from('dogs').select('id', { count: 'exact', head: true }),
     admin.from('kennels').select('id', { count: 'exact', head: true }),
     admin.from('breeds').select('id', { count: 'exact', head: true }),
-    // Pedimos 12: las 6 primeras se usan en el grid editorial; el resto
-    // alimenta el mosaico de fondo del hero.
+    // Pedimos 24: las 6 primeras se usan en el grid editorial; el resto
+    // alimenta el mosaico rotativo de fondo del hero (más variedad antes
+    // de que se repitan las fotos durante el cross-fade cada 4s).
     admin
       .from('dogs')
       .select('id, name, slug, thumbnail_url, breed:breeds(name)')
       .not('thumbnail_url', 'is', null)
       .eq('is_public', true)
       .order('created_at', { ascending: false })
-      .limit(12),
+      .limit(24),
     admin
       .from('kennels')
       .select('id, name, slug, logo_url, country, city')

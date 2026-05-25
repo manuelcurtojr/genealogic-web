@@ -25,17 +25,23 @@ export type BlogPost = {
   Content: ComponentType
 }
 
-// Importación estática — Next.js bundlea cada post en el chunk de la página.
-import * as p01 from './posts.archived/leer-un-pedigree'
-import * as p02 from './posts.archived/coeficiente-consanguinidad-coi'
-import * as p03 from './posts.archived/5-errores-arruinan-camada'
-import * as p04 from './posts.archived/afijo-criadero-kennel-espana'
-import * as p05 from './posts.archived/web-criadero-en-una-tarde'
-import * as p06 from './posts.archived/emailbot-criadero'
-import * as p07 from './posts.archived/excel-a-kanban-reservas'
-import * as p08 from './posts.archived/calendario-pruebas-salud-hd-dcm'
-import * as p09 from './posts.archived/importar-pedigree-ia-12-segundos'
-import * as p10 from './posts.archived/como-elegir-cachorro-7-preguntas'
+// Posts de perros legendarios. Cada uno incluye contexto histórico + preview de
+// genealogía con CTA a la ficha del perro en /dogs/[slug].
+import * as p01 from './posts/old-hemp-border-collie-fundador'
+import * as p02 from './posts/horand-von-grafrath-pastor-aleman'
+import * as p03 from './posts/nous-fundador-golden-retriever'
+import * as p04 from './posts/buccleuch-avon-fundador-labrador'
+import * as p05 from './posts/barry-san-bernardo-rescatador'
+import * as p06 from './posts/togo-husky-siberiano-serum-run'
+import * as p07 from './posts/rin-tin-tin-pastor-aleman-hollywood'
+import * as p08 from './posts/hachiko-akita-inu-perro-fiel'
+import * as p09 from './posts/mick-the-miller-greyhound-leyenda'
+import * as p10 from './posts/boatswain-terranova-lord-byron'
+import * as p11 from './posts/master-mcgrath-greyhound-coursing'
+import * as p12 from './posts/pal-von-glamis-lassie'
+import * as p13 from './posts/muhlbauers-flocki-fundador-boxer'
+import * as p14 from './posts/trump-pug-william-hogarth'
+import * as p15 from './posts/warren-remedy-primer-best-in-show-westminster'
 
 const posts: BlogPost[] = [
   { meta: p01.metadata, Content: p01.default },
@@ -48,6 +54,11 @@ const posts: BlogPost[] = [
   { meta: p08.metadata, Content: p08.default },
   { meta: p09.metadata, Content: p09.default },
   { meta: p10.metadata, Content: p10.default },
+  { meta: p11.metadata, Content: p11.default },
+  { meta: p12.metadata, Content: p12.default },
+  { meta: p13.metadata, Content: p13.default },
+  { meta: p14.metadata, Content: p14.default },
+  { meta: p15.metadata, Content: p15.default },
 ]
 
 // Ordenado descendente por fecha (más reciente primero)
