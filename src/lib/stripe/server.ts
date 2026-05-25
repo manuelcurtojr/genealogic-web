@@ -183,10 +183,21 @@ export async function createPaymentCheckoutSession(args: {
   return { url: session.url, sessionId: session.id }
 }
 
-/** Verifica firma del webhook y devuelve el evento parseado. */
-export function constructWebhookEvent(payload: string | Buffer, signature: string): Stripe.Event {
+/**
+ * Verifica firma del webhook y devuelve el evento parseado.
+ *
+ * Stripe genera 1 signing secret distinto POR endpoint. Por eso:
+ *  - /api/billing/webhook (SaaS subs) usa STRIPE_WEBHOOK_SECRET
+ *  - /api/stripe/webhook (Connect + reservas) usa
+ *    STRIPE_WEBHOOK_SECRET_CONNECT (con fallback al primero por compat).
+ */
+export function constructWebhookEvent(
+  payload: string | Buffer,
+  signature: string,
+  secretEnv: 'STRIPE_WEBHOOK_SECRET' | 'STRIPE_WEBHOOK_SECRET_CONNECT' = 'STRIPE_WEBHOOK_SECRET',
+): Stripe.Event {
   const stripe = getStripe()
-  const secret = process.env.STRIPE_WEBHOOK_SECRET
-  if (!secret) throw new Error('STRIPE_WEBHOOK_SECRET no configurado')
+  const secret = process.env[secretEnv] || process.env.STRIPE_WEBHOOK_SECRET
+  if (!secret) throw new Error(`${secretEnv} no configurado`)
   return stripe.webhooks.constructEvent(payload, signature, secret)
 }

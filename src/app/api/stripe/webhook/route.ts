@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   const body = await req.text()
   let event: Stripe.Event
   try {
-    event = constructWebhookEvent(body, signature)
+    event = constructWebhookEvent(body, signature, 'STRIPE_WEBHOOK_SECRET_CONNECT')
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'invalid_signature'
     return NextResponse.json({ error: msg }, { status: 400 })
