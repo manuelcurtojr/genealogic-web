@@ -8,7 +8,8 @@ import { BRAND } from '@/lib/constants'
 import { getLocalizedCountries } from '@/lib/countries'
 import { DogImage } from '@/components/ui/dog-image'
 import { pastelByName } from '@/lib/avatars'
-import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
+import InfiniteScrollSentinel from '@/components/ui/infinite-scroll-sentinel'
+import { SkeletonGrid } from '@/components/ui/skeletons'
 
 type Tab = 'dogs' | 'kennels'
 
@@ -56,40 +57,74 @@ function DogsSearch() {
   const [breeds, setBreeds] = useState<any[]>([])
   const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [loaded, setLoaded] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
+  const [total, setTotal] = useState(0)
 
   const [breedFilter, setBreedFilter] = useState('')
   const [sexFilter, setSexFilter] = useState('')
   const [forSaleOnly, setForSaleOnly] = useState(false)
 
   const hasActiveFilters = !!breedFilter || !!sexFilter || forSaleOnly
+  const PAGE_SIZE = 24
 
   useEffect(() => {
     const supabase = createClient()
     supabase.from('breeds').select('id, name').order('name').then(({ data }) => setBreeds(data || []))
   }, [])
 
-  const handleSearch = useCallback(async () => {
-    setLoading(true)
-    const supabase = createClient()
-    let q = supabase.from('dogs')
-      .select('id, slug, name, sex, thumbnail_url, birth_date, sale_price, sale_currency, sale_location, is_for_sale, breed:breeds(name), kennel:kennels(name)')
-      .order('created_at', { ascending: false })
-      .limit(50)
-
-    if (query.trim()) q = q.ilike('name', `%${query.trim()}%`)
-    if (breedFilter) q = q.eq('breed_id', breedFilter)
-    if (sexFilter) q = q.eq('sex', sexFilter)
-    if (forSaleOnly) q = q.eq('is_for_sale', true)
-
-    const { data } = await q
-    // Foto primero — los que no tienen quedan al final del listado
-    setResults(sortDogsPhotoFirst(data || []))
-    setLoading(false)
-    setLoaded(true)
+  /** Construye URL del endpoint público con los filtros actuales. */
+  const buildUrl = useCallback((p: number) => {
+    const params = new URLSearchParams({ page: String(p), page_size: String(PAGE_SIZE) })
+    if (query.trim()) params.set('q', query.trim())
+    if (breedFilter) params.set('breed_id', breedFilter)
+    if (sexFilter) params.set('sex', sexFilter)
+    if (forSaleOnly) params.set('for_sale', '1')
+    return `/api/public/dogs?${params.toString()}`
   }, [query, breedFilter, sexFilter, forSaleOnly])
 
+  /** Búsqueda nueva: resetea results y empieza por página 1. */
+  const handleSearch = useCallback(async () => {
+    setLoading(true)
+    setPage(1)
+    try {
+      const res = await fetch(buildUrl(1))
+      const json = await res.json()
+      setResults(json.rows || [])
+      setTotal(json.total || 0)
+      setHasMore(!!json.has_more)
+      setLoaded(true)
+    } catch {
+      setResults([])
+      setHasMore(false)
+    } finally {
+      setLoading(false)
+    }
+  }, [buildUrl])
+
+  /** Cargar siguiente página (append a results). */
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return
+    setLoadingMore(true)
+    const next = page + 1
+    try {
+      const res = await fetch(buildUrl(next))
+      const json = await res.json()
+      setResults((prev) => [...prev, ...(json.rows || [])])
+      setPage(next)
+      setHasMore(!!json.has_more)
+    } catch {
+      // no-op: si falla un fetch de "more", el user puede reintentar haciendo
+      // scroll arriba y abajo. No mostramos error feo.
+    } finally {
+      setLoadingMore(false)
+    }
+  }, [buildUrl, hasMore, loadingMore, page])
+
+  // Re-search cuando cambian filtros (no query — query usa Enter o botón)
   useEffect(() => { handleSearch() }, [breedFilter, sexFilter, forSaleOnly]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const currencySymbol: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', MXN: '$' }
@@ -157,12 +192,14 @@ function DogsSearch() {
 
       {loaded && (
         <p className="text-[12.5px] text-muted">
-          {results.length} {results.length === 1 ? 'resultado' : 'resultados'}
+          {results.length} de {total.toLocaleString('es-ES')} {total === 1 ? 'resultado' : 'resultados'}
         </p>
       )}
 
       {loading ? (
-        <div className="py-20 text-center text-[14px] text-muted">Buscando...</div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+          <SkeletonGrid count={8} type="dog" />
+        </div>
       ) : results.length === 0 && loaded ? (
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
           <Dog className="mx-auto h-10 w-10 text-muted" />
@@ -237,6 +274,28 @@ function DogsSearch() {
           })}
         </div>
       )}
+
+      {/* Sentinel infinite scroll + skeletons mientras carga la siguiente página */}
+      {!loading && loaded && results.length > 0 && (
+        <InfiniteScrollSentinel
+          hasMore={hasMore}
+          loading={loadingMore}
+          onLoadMore={loadMore}
+        >
+          {loadingMore && (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+              <SkeletonGrid count={4} type="dog" />
+            </div>
+          )}
+        </InfiniteScrollSentinel>
+      )}
+
+      {/* Mensaje final cuando ya no hay más */}
+      {!loading && !hasMore && results.length > 0 && results.length === total && total > PAGE_SIZE && (
+        <p className="text-center text-[12px] text-muted pt-6">
+          Has llegado al final · {total.toLocaleString('es-ES')} resultados
+        </p>
+      )}
     </div>
   )
 }
@@ -247,7 +306,11 @@ function KennelsSearch() {
   const [breeds, setBreeds] = useState<any[]>([])
   const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [loaded, setLoaded] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
+  const [total, setTotal] = useState(0)
 
   const [selectedCountries, setSelectedCountries] = useState<string[]>([])
   const [selectedBreeds, setSelectedBreeds] = useState<string[]>([])
@@ -260,29 +323,77 @@ function KennelsSearch() {
   const filteredCountries = countryQ ? countries.filter(c => c.name.toLowerCase().includes(countryQ.toLowerCase())) : countries
   const filteredBreedOptions = breedQ ? breeds.filter(b => b.name.toLowerCase().includes(breedQ.toLowerCase())) : breeds
   const hasFilters = selectedCountries.length > 0 || selectedBreeds.length > 0
+  const PAGE_SIZE = 30
 
   useEffect(() => {
     const supabase = createClient()
     supabase.from('breeds').select('id, name').order('name').then(({ data }) => setBreeds(data || []))
   }, [])
 
+  /**
+   * Construye URL del endpoint público. Nota: el API solo soporta filtros
+   * "1 país" y "1 raza" (a diferencia del UI que permite múltiples). Si
+   * el usuario eligió varios, pasamos el PRIMERO y filtramos el resto
+   * client-side al recibir los resultados. Suficiente para v1; si se
+   * vuelve crítico se amplía el API a `country__in` y `breed_id__overlap`.
+   */
+  const buildUrl = useCallback((p: number) => {
+    const params = new URLSearchParams({ page: String(p), page_size: String(PAGE_SIZE) })
+    if (query.trim()) params.set('q', query.trim())
+    if (selectedCountries.length === 1) params.set('country', selectedCountries[0])
+    if (selectedBreeds.length === 1) params.set('breed_id', selectedBreeds[0])
+    return `/api/public/kennels?${params.toString()}`
+  }, [query, selectedCountries, selectedBreeds])
+
+  /** Filtro client-side adicional cuando el user seleccionó >1 país/raza. */
+  const applyClientFilters = useCallback((rows: any[]) => {
+    let out = rows
+    if (selectedCountries.length > 1) {
+      out = out.filter((k) => selectedCountries.includes(k.country))
+    }
+    if (selectedBreeds.length > 1) {
+      out = out.filter((k) => {
+        const ids: string[] = k.breed_ids || []
+        return selectedBreeds.some((b) => ids.includes(b))
+      })
+    }
+    return out
+  }, [selectedCountries, selectedBreeds])
+
   const handleSearch = useCallback(async () => {
     setLoading(true)
-    const supabase = createClient()
-    let q = supabase.from('kennels')
-      .select('id, slug, name, logo_url, description, foundation_date, breed_ids, country, city')
-      .order('name')
-      .limit(60)
+    setPage(1)
+    try {
+      const res = await fetch(buildUrl(1))
+      const json = await res.json()
+      setResults(applyClientFilters(json.rows || []))
+      setTotal(json.total || 0)
+      setHasMore(!!json.has_more)
+      setLoaded(true)
+    } catch {
+      setResults([])
+      setHasMore(false)
+    } finally {
+      setLoading(false)
+    }
+  }, [buildUrl, applyClientFilters])
 
-    if (query.trim()) q = q.ilike('name', `%${query.trim()}%`)
-    if (selectedBreeds.length > 0) q = q.overlaps('breed_ids', selectedBreeds)
-    if (selectedCountries.length > 0) q = q.in('country', selectedCountries)
-
-    const { data } = await q
-    setResults(data || [])
-    setLoading(false)
-    setLoaded(true)
-  }, [query, selectedBreeds, selectedCountries])
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return
+    setLoadingMore(true)
+    const next = page + 1
+    try {
+      const res = await fetch(buildUrl(next))
+      const json = await res.json()
+      setResults((prev) => [...prev, ...applyClientFilters(json.rows || [])])
+      setPage(next)
+      setHasMore(!!json.has_more)
+    } catch {
+      // silent fail
+    } finally {
+      setLoadingMore(false)
+    }
+  }, [buildUrl, applyClientFilters, hasMore, loadingMore, page])
 
   useEffect(() => { handleSearch() }, [selectedBreeds, selectedCountries]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -455,12 +566,14 @@ function KennelsSearch() {
 
       {loaded && (
         <p className="text-[12.5px] text-muted">
-          {results.length} {results.length === 1 ? 'criadero' : 'criaderos'}
+          {results.length} de {total.toLocaleString('es-ES')} {total === 1 ? 'criadero' : 'criaderos'}
         </p>
       )}
 
       {loading ? (
-        <div className="py-20 text-center text-[14px] text-muted">Buscando...</div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+          <SkeletonGrid count={9} type="kennel" />
+        </div>
       ) : results.length === 0 && loaded ? (
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
           <Home className="mx-auto h-10 w-10 text-muted" />
@@ -519,6 +632,27 @@ function KennelsSearch() {
             )
           })}
         </div>
+      )}
+
+      {/* Infinite scroll */}
+      {!loading && loaded && results.length > 0 && (
+        <InfiniteScrollSentinel
+          hasMore={hasMore}
+          loading={loadingMore}
+          onLoadMore={loadMore}
+        >
+          {loadingMore && (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+              <SkeletonGrid count={6} type="kennel" />
+            </div>
+          )}
+        </InfiniteScrollSentinel>
+      )}
+
+      {!loading && !hasMore && results.length > 0 && results.length === total && total > PAGE_SIZE && (
+        <p className="text-center text-[12px] text-muted pt-6">
+          Has llegado al final · {total.toLocaleString('es-ES')} criaderos
+        </p>
       )}
     </div>
   )

@@ -683,12 +683,106 @@ function FeaturesGrid() {
   )
 }
 
-// ─── Pipeline showcase ───────────────────────────────────────────────────
-// Mockup fiel al pipeline real de /reservas: switcher Ventas/Clientes +
-// chips de filtro por estado + tabla con select inline. NO es Kanban con
-// drag&drop; es un pipeline tipo tabla con vistas múltiples — más rápido
-// para un criador con 50+ reservas activas.
+// ─── Pipeline showcase (DEMO INTERACTIVA) ────────────────────────────────
+// Mockup VIVO del pipeline real de /reservas. El visitante puede:
+//   - Cambiar entre Ventas/Clientes (cada vista tiene su set de estados)
+//   - Filtrar por estado (chips con contadores dinámicos)
+//   - Cambiar el estado de cualquier lead (select inline)
+//     Si pasa a un estado de la otra vista (ej: 'assigned' es Clientes),
+//     el lead se mueve automáticamente — comportamiento idéntico al de la
+//     app real.
+//
+// Sin DB, sin backend — todo state local. Perfecto para que un visitor
+// "toque" el producto antes de registrarse.
+
+type DemoStatus =
+  | 'interested' | 'deposit_paid'                           // VENTAS
+  | 'assigned' | 'contract_signed' | 'paid_in_full' | 'delivered' // CLIENTES
+
+const VENTAS_STATUSES: DemoStatus[] = ['interested', 'deposit_paid']
+const CLIENTES_STATUSES: DemoStatus[] = ['assigned', 'contract_signed', 'paid_in_full', 'delivered']
+
+const STATUS_LABEL: Record<DemoStatus, string> = {
+  interested:      'Interesado',
+  deposit_paid:    'Seña pagada',
+  assigned:        'Asignado',
+  contract_signed: 'Contrato firmado',
+  paid_in_full:    'Pagado',
+  delivered:       'Entregado',
+}
+
+const STATUS_COLOR: Record<DemoStatus, string> = {
+  interested:      'badge-orange',
+  deposit_paid:    'badge-violet',
+  assigned:        'badge-emerald',
+  contract_signed: 'badge-emerald',
+  paid_in_full:    'badge-emerald',
+  delivered:       'muted',
+}
+
+type DemoLead = {
+  id: string
+  name: string
+  email: string
+  status: DemoStatus
+  pref: string
+  date: string
+}
+
+const INITIAL_LEADS: DemoLead[] = [
+  // Ventas
+  { id: '1', name: 'Laura Martín',  email: 'laura.m@gmail.com',          status: 'interested',   pref: 'Macho · atigrado',     date: '14 mar' },
+  { id: '2', name: 'Diego Romero',  email: 'diego.rdz@hey.com',          status: 'deposit_paid', pref: 'Hembra',                date: '12 mar' },
+  { id: '3', name: 'Ana Pereira',   email: 'ana.pereira@yahoo.es',       status: 'interested',   pref: 'Sin preferencia',       date: '6 mar' },
+  { id: '4', name: 'Carlos Delgado',email: 'carlos.d@protonmail.com',    status: 'interested',   pref: 'Lista de espera',       date: '2 mar' },
+  { id: '5', name: 'María Lucas',   email: 'marial84@gmail.com',         status: 'deposit_paid', pref: 'Hembra · primavera',    date: '28 feb' },
+  // Clientes
+  { id: '6', name: 'Pablo Gómez',   email: 'pablo@gomezvet.es',          status: 'assigned',        pref: 'Macho · cachorro #7', date: '20 feb' },
+  { id: '7', name: 'Elena Castro',  email: 'elena.castro@outlook.com',   status: 'contract_signed', pref: 'Macho · cachorro #3', date: '14 feb' },
+  { id: '8', name: 'Jorge Trujillo',email: 'jorge.t@trujillobogados.es', status: 'paid_in_full',    pref: 'Hembra · cachorro #5',date: '4 feb' },
+  { id: '9', name: 'Sofía Bermejo', email: 'sofia.bermejo@gmail.com',    status: 'delivered',       pref: 'Macho · cachorro #1', date: '28 ene' },
+  { id: '10', name: 'Iván Costa',   email: 'ivan.costa@me.com',          status: 'delivered',       pref: 'Hembra · cachorro #2',date: '20 ene' },
+]
+
 function PipelineShowcase() {
+  const [leads, setLeads] = useState<DemoLead[]>(INITIAL_LEADS)
+  const [view, setView] = useState<'ventas' | 'clientes'>('ventas')
+  const [filter, setFilter] = useState<DemoStatus | 'all'>('all')
+  const [highlightedId, setHighlightedId] = useState<string | null>(null)
+
+  // Cuando cambia view, reset filter (para no quedar con un filter de la
+  // otra mitad — comportamiento idéntico al pipeline real)
+  function changeView(next: 'ventas' | 'clientes') {
+    setView(next)
+    setFilter('all')
+  }
+
+  function changeStatus(leadId: string, next: DemoStatus) {
+    setLeads((prev) => prev.map((l) => l.id === leadId ? { ...l, status: next } : l))
+    // Pulso visual del cambio (que el visitor vea que algo pasó)
+    setHighlightedId(leadId)
+    setTimeout(() => setHighlightedId((cur) => cur === leadId ? null : cur), 1200)
+  }
+
+  // Counts por status (para chips)
+  const viewStatuses = view === 'ventas' ? VENTAS_STATUSES : CLIENTES_STATUSES
+  const leadsInView = leads.filter((l) => viewStatuses.includes(l.status))
+  const totalVentas = leads.filter((l) => VENTAS_STATUSES.includes(l.status)).length
+  const totalClientes = leads.filter((l) => CLIENTES_STATUSES.includes(l.status)).length
+  const filterCounts = Object.fromEntries(
+    viewStatuses.map((s) => [s, leadsInView.filter((l) => l.status === s).length]),
+  ) as Record<DemoStatus, number>
+
+  const visible = filter === 'all' ? leadsInView : leadsInView.filter((l) => l.status === filter)
+
+  function resetDemo() {
+    setLeads(INITIAL_LEADS)
+    setView('ventas')
+    setFilter('all')
+  }
+
+  const demoTouched = JSON.stringify(leads) !== JSON.stringify(INITIAL_LEADS) || view !== 'ventas' || filter !== 'all'
+
   return (
     <section className="border-b border-hairline bg-surface-soft">
       <div className="mx-auto max-w-[1200px] px-6 py-24 lg:px-12 lg:py-[120px]">
@@ -708,27 +802,74 @@ function PipelineShowcase() {
           lateral con detalle, conversación y acciones.
         </p>
 
-        <div className="mt-12">
+        {/* Demo banner */}
+        <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-[color:var(--brand)]/30 bg-[color:var(--brand-soft)] px-3 py-1 text-[12px] font-medium text-[color:var(--brand)]">
+          <Zap className="h-3 w-3" />
+          Demo interactiva — toca lo que quieras
+          {demoTouched && (
+            <button
+              onClick={resetDemo}
+              className="ml-2 inline-flex items-center gap-1 rounded-full bg-canvas px-2 py-0.5 text-[10px] font-semibold text-ink transition hover:opacity-80"
+            >
+              Reset
+            </button>
+          )}
+        </div>
+
+        <div className="mt-6">
           <AppWindow url="genealogic.io/reservas">
             <div className="p-5 sm:p-7">
               {/* Switcher Ventas/Clientes */}
               <div className="inline-flex rounded-lg border border-hairline bg-surface-soft p-1 mb-4">
-                <span className="inline-flex items-center gap-2 rounded-md bg-ink px-3 py-1 text-[12px] font-medium text-on-primary">
+                <button
+                  onClick={() => changeView('ventas')}
+                  className={`inline-flex items-center gap-2 rounded-md px-3 py-1 text-[12px] font-medium transition ${
+                    view === 'ventas' ? 'bg-ink text-on-primary' : 'text-muted hover:text-ink'
+                  }`}
+                >
                   Ventas
-                  <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px]">6</span>
-                </span>
-                <span className="inline-flex items-center gap-2 px-3 py-1 text-[12px] font-medium text-muted">
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+                      view === 'ventas' ? 'bg-white/20 text-on-primary' : 'bg-canvas'
+                    }`}
+                  >
+                    {totalVentas}
+                  </span>
+                </button>
+                <button
+                  onClick={() => changeView('clientes')}
+                  className={`inline-flex items-center gap-2 rounded-md px-3 py-1 text-[12px] font-medium transition ${
+                    view === 'clientes' ? 'bg-ink text-on-primary' : 'text-muted hover:text-ink'
+                  }`}
+                >
                   Clientes
-                  <span className="rounded-full bg-canvas px-1.5 py-0.5 text-[10px]">14</span>
-                </span>
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+                      view === 'clientes' ? 'bg-white/20 text-on-primary' : 'bg-canvas'
+                    }`}
+                  >
+                    {totalClientes}
+                  </span>
+                </button>
               </div>
 
               {/* Filter chips */}
               <div className="flex flex-wrap gap-2 border-b border-hairline pb-3 mb-3">
-                <FilterChip label="Todas" count={6} active />
-                <FilterChip label="Interesado" count={3} />
-                <FilterChip label="Seña pagada" count={2} />
-                <FilterChip label="Asignado" count={1} />
+                <FilterChip
+                  label="Todas"
+                  count={leadsInView.length}
+                  active={filter === 'all'}
+                  onClick={() => setFilter('all')}
+                />
+                {viewStatuses.map((s) => (
+                  <FilterChip
+                    key={s}
+                    label={STATUS_LABEL[s]}
+                    count={filterCounts[s] || 0}
+                    active={filter === s}
+                    onClick={() => setFilter(s)}
+                  />
+                ))}
               </div>
 
               {/* Tabla */}
@@ -743,57 +884,30 @@ function PipelineShowcase() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-hairline-soft">
-                    <PipelineRow
-                      name="Laura M."
-                      email="laura.m@gmail.com"
-                      status="Interesado"
-                      statusColor="badge-orange"
-                      pref="Macho · atigrado"
-                      date="14 mar"
-                    />
-                    <PipelineRow
-                      name="Diego R."
-                      email="diego.rdz@hey.com"
-                      status="Seña pagada"
-                      statusColor="badge-violet"
-                      pref="Hembra"
-                      date="12 mar"
-                    />
-                    <PipelineRow
-                      name="Pablo G."
-                      email="pablo@gomezvet.es"
-                      status="Asignado"
-                      statusColor="badge-emerald"
-                      pref="Macho · cachorro #7"
-                      date="8 mar"
-                    />
-                    <PipelineRow
-                      name="Ana P."
-                      email="ana.pereira@yahoo.es"
-                      status="Interesado"
-                      statusColor="badge-orange"
-                      pref="—"
-                      date="6 mar"
-                    />
-                    <PipelineRow
-                      name="Carlos D."
-                      email="carlos.d@protonmail.com"
-                      status="Interesado"
-                      statusColor="badge-orange"
-                      pref="Lista de espera"
-                      date="2 mar"
-                    />
-                    <PipelineRow
-                      name="María L."
-                      email="marial84@gmail.com"
-                      status="Seña pagada"
-                      statusColor="badge-violet"
-                      pref="Hembra · primavera"
-                      date="28 feb"
-                    />
+                    {visible.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="px-3 py-12 text-center text-[12px] text-muted">
+                          Ningún lead en este filtro.
+                        </td>
+                      </tr>
+                    ) : (
+                      visible.map((l) => (
+                        <PipelineRow
+                          key={l.id}
+                          lead={l}
+                          highlighted={highlightedId === l.id}
+                          onChangeStatus={(s) => changeStatus(l.id, s)}
+                        />
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
+
+              {/* Hint sutil */}
+              <p className="mt-3 text-[11px] text-muted text-center">
+                Tip: cambia el estado de cualquier fila. Si pasa a Asignado o más, el lead se mueve a la vista Clientes.
+              </p>
             </div>
           </AppWindow>
         </div>
@@ -802,11 +916,19 @@ function PipelineShowcase() {
   )
 }
 
-function FilterChip({ label, count, active }: { label: string; count: number; active?: boolean }) {
+function FilterChip({
+  label, count, active, onClick,
+}: {
+  label: string
+  count: number
+  active?: boolean
+  onClick?: () => void
+}) {
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium ${
-        active ? 'bg-ink text-on-primary' : 'bg-surface-card text-body'
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium transition ${
+        active ? 'bg-ink text-on-primary' : 'bg-surface-card text-body hover:bg-canvas'
       }`}
     >
       {label}
@@ -817,39 +939,53 @@ function FilterChip({ label, count, active }: { label: string; count: number; ac
       >
         {count}
       </span>
-    </span>
+    </button>
   )
 }
 
 function PipelineRow({
-  name, email, status, statusColor, pref, date,
+  lead, highlighted, onChangeStatus,
 }: {
-  name: string
-  email: string
-  status: string
-  statusColor: string
-  pref: string
-  date: string
+  lead: DemoLead
+  highlighted: boolean
+  onChangeStatus: (next: DemoStatus) => void
 }) {
+  const allStatuses: DemoStatus[] = [...VENTAS_STATUSES, ...CLIENTES_STATUSES]
+  const color = STATUS_COLOR[lead.status]
+
   return (
-    <tr className="hover:bg-surface-soft/40 transition">
+    <tr
+      className={`transition-colors duration-300 ${
+        highlighted ? 'bg-[color:var(--brand-soft)]' : 'hover:bg-surface-soft/40'
+      }`}
+    >
       <td className="px-3 py-2.5">
-        <p className="font-medium text-ink">{name}</p>
-        <p className="text-[10.5px] text-muted truncate">{email}</p>
+        <p className="font-medium text-ink">{lead.name}</p>
+        <p className="text-[10.5px] text-muted truncate">{lead.email}</p>
       </td>
       <td className="px-3 py-2.5">
-        <span
-          className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10.5px] font-medium"
+        <select
+          value={lead.status}
+          onChange={(e) => onChangeStatus(e.target.value as DemoStatus)}
+          className="cursor-pointer rounded-md border-0 px-2 py-0.5 text-[10.5px] font-medium focus:outline-none focus:ring-2 focus:ring-ink/20"
           style={{
-            background: `color-mix(in srgb, var(--${statusColor}) 15%, transparent)`,
-            color: `var(--${statusColor})`,
+            background: color === 'muted'
+              ? 'var(--surface-card)'
+              : `color-mix(in srgb, var(--${color}) 15%, transparent)`,
+            color: color === 'muted' ? 'var(--muted)' : `var(--${color})`,
           }}
         >
-          {status}
-        </span>
+          {allStatuses.map((s) => (
+            <option key={s} value={s}>
+              {STATUS_LABEL[s]}
+            </option>
+          ))}
+        </select>
       </td>
-      <td className="px-3 py-2.5 text-muted hidden sm:table-cell">{pref}</td>
-      <td className="px-3 py-2.5 text-right text-[11px] text-muted tabular-nums hidden md:table-cell">{date}</td>
+      <td className="px-3 py-2.5 text-muted hidden sm:table-cell">{lead.pref}</td>
+      <td className="px-3 py-2.5 text-right text-[11px] text-muted tabular-nums hidden md:table-cell">
+        {lead.date}
+      </td>
     </tr>
   )
 }
