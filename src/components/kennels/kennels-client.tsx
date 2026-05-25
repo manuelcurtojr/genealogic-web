@@ -120,7 +120,7 @@ export default function KennelsClient({
       </div>
 
       <p className="text-xs text-muted mb-3">
-        {items.length} de {total.toLocaleString('es-ES')} {total === 1 ? 'criadero' : 'criaderos'}
+        {total.toLocaleString('es-ES')} {total === 1 ? 'criadero' : 'criaderos'}
         {debouncedSearch && ` · "${debouncedSearch}"`}
       </p>
 

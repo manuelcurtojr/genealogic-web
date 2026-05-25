@@ -192,7 +192,7 @@ function DogsSearch() {
 
       {loaded && (
         <p className="text-[12.5px] text-muted">
-          {results.length} de {total.toLocaleString('es-ES')} {total === 1 ? 'resultado' : 'resultados'}
+          {total.toLocaleString('es-ES')} {total === 1 ? 'resultado' : 'resultados'}
         </p>
       )}
 
@@ -566,7 +566,7 @@ function KennelsSearch() {
 
       {loaded && (
         <p className="text-[12.5px] text-muted">
-          {results.length} de {total.toLocaleString('es-ES')} {total === 1 ? 'criadero' : 'criaderos'}
+          {total.toLocaleString('es-ES')} {total === 1 ? 'criadero' : 'criaderos'}
         </p>
       )}
 
