@@ -18,8 +18,12 @@ import {
   ShieldCheck,
   Zap,
   Lock,
+  Menu,
+  X,
+  User,
+  Search,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Wordmark } from '@/components/ui/wordmark'
 import SearchBar from '@/components/layout/search-bar'
@@ -51,28 +55,172 @@ export default function LandingPage({ breeds, featuredDogs, cockerPhotos = [] }:
 }
 
 // ─── Header ──────────────────────────────────────────────────────────────
+// Header limpio: wordmark a la izquierda, hamburguesa a la derecha. El menú
+// (mismo en mobile y desktop para consistencia) abre un drawer estilo
+// sidebar de dashboard con TODAS las secciones + auth + acceso al producto.
 function StickyHeader() {
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
   return (
-    <header className="sticky top-0 z-50 border-b border-hairline bg-canvas/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-6 lg:px-12">
-        <Wordmark size="text-xl" />
-        <nav className="hidden items-center gap-8 text-[14px] text-body md:flex">
-          <a href="#producto" className="transition hover:text-ink">Producto</a>
-          <a href="#criadores" className="transition hover:text-ink">Para criadores</a>
-          <a href="#precios" className="transition hover:text-ink">Precios</a>
-          <Link href="/blog" className="transition hover:text-ink">Blog</Link>
-          <a href="#faq" className="transition hover:text-ink">FAQ</a>
-        </nav>
-        <div className="flex items-center gap-2">
-          <Button href="/login" variant="ghost" size="sm" className="hidden sm:inline-flex">
+    <>
+      <header className="sticky top-0 z-50 border-b border-hairline bg-canvas/85 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:px-6 lg:px-12">
+          <Wordmark size="text-xl" />
+          <button
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Abrir menú"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-ink hover:bg-surface-card transition"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
+      </header>
+
+      <PublicDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+    </>
+  )
+}
+
+// Drawer público — espejado del Sidebar del dashboard pero con secciones
+// para visitantes (sin login, sin kennel todavía).
+function PublicDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  // Cierre con ESC
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    // Bloquear scroll del body mientras drawer abierto
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', handler)
+      document.body.style.overflow = ''
+    }
+  }, [open, onClose])
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${
+          open ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      />
+
+      {/* Drawer */}
+      <aside
+        className={`fixed top-0 right-0 h-screen w-full max-w-[360px] z-[70] bg-canvas border-l border-hairline shadow-2xl flex flex-col transition-transform duration-300 ${
+          open ? 'translate-x-0' : 'translate-x-full pointer-events-none'
+        }`}
+      >
+        {/* Header drawer */}
+        <div className="h-16 flex items-center justify-between px-5 border-b border-hairline flex-shrink-0">
+          <Wordmark size="text-lg" />
+          <button
+            onClick={onClose}
+            aria-label="Cerrar menú"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted hover:text-ink hover:bg-surface-card transition"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* CTAs principales arriba del todo */}
+        <div className="px-5 py-4 border-b border-hairline space-y-2 flex-shrink-0">
+          <Button href="/register?intent=breeder&plan=free" variant="primary" size="md" className="w-full">
+            Empezar gratis
+          </Button>
+          <Button href="/login" variant="secondary" size="md" className="w-full">
+            <User className="h-4 w-4" />
             Iniciar sesión
           </Button>
-          <Button href="/register" variant="primary" size="sm">
-            Empieza gratis
-          </Button>
         </div>
-      </div>
-    </header>
+
+        {/* Navegación scrollable */}
+        <nav className="flex-1 overflow-y-auto py-2 px-2">
+          <DrawerSection label="Explorar">
+            <DrawerLink href="/search" icon={Search} onClick={onClose}>
+              Buscar perros
+            </DrawerLink>
+            <DrawerLink href="/kennels" icon={Dog} onClick={onClose}>
+              Directorio de criaderos
+            </DrawerLink>
+            <DrawerLink href="/blog" icon={GitBranch} onClick={onClose}>
+              Blog
+            </DrawerLink>
+          </DrawerSection>
+
+          <DrawerSection label="Producto">
+            <DrawerAnchor href="#producto" onClick={onClose}>Genealogía pública</DrawerAnchor>
+            <DrawerAnchor href="#criadores" onClick={onClose}>Para criadores</DrawerAnchor>
+            <DrawerAnchor href="#precios" onClick={onClose}>Precios</DrawerAnchor>
+            <DrawerAnchor href="#faq" onClick={onClose}>FAQ</DrawerAnchor>
+          </DrawerSection>
+
+          <DrawerSection label="Recursos">
+            <DrawerLink href="/api-docs" icon={Zap} onClick={onClose}>
+              API pública
+            </DrawerLink>
+            <DrawerLink href="/pricing" icon={Sparkles} onClick={onClose}>
+              Página de precios
+            </DrawerLink>
+          </DrawerSection>
+        </nav>
+
+        {/* Footer drawer */}
+        <div className="border-t border-hairline px-5 py-3 flex-shrink-0">
+          <p className="text-[11px] text-muted">
+            ¿Dudas?{' '}
+            <a href="mailto:hola@genealogic.io" className="text-ink underline">
+              hola@genealogic.io
+            </a>
+          </p>
+        </div>
+      </aside>
+    </>
+  )
+}
+
+function DrawerSection({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-3">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted px-3 mt-2 mb-1.5">
+        {label}
+      </p>
+      {children}
+    </div>
+  )
+}
+
+function DrawerLink({
+  href, icon: Icon, onClick, children,
+}: {
+  href: string
+  icon: React.ElementType
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium text-body hover:bg-surface-soft hover:text-ink transition"
+    >
+      <Icon className="w-[18px] h-[18px] flex-shrink-0" />
+      <span>{children}</span>
+    </Link>
+  )
+}
+
+function DrawerAnchor({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      onClick={onClick}
+      className="block rounded-lg px-3 py-2.5 text-[13px] font-medium text-body hover:bg-surface-soft hover:text-ink transition"
+    >
+      {children}
+    </a>
   )
 }
 
@@ -117,7 +265,7 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
 
             {/* CTAs */}
             <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Button href="/register" variant="primary" size="lg">
+              <Button href="/register?intent=breeder&plan=free" variant="primary" size="lg">
                 Empieza gratis <ArrowRight className="h-4 w-4" />
               </Button>
               <Button href="#producto" variant="secondary" size="lg">
@@ -125,7 +273,7 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
               </Button>
             </div>
             <p className="mt-4 text-[13px] text-muted">
-              Sin tarjeta · Pro a precio Founder por vida
+              Sin tarjeta · 1.366 perros y 148 criaderos ya en el registro
             </p>
           </div>
 
@@ -496,37 +644,37 @@ function FeaturesGrid() {
           <FeatureCard
             icon={<KanbanSquare className="h-5 w-5" />}
             title="Pipeline de reservas"
-            desc="Kanban con 8 estados: interesado → seña pagada → contrato → entregado. No más Excel."
+            desc="Kanban con estados (interesado → seña → asignación → entregado). Cada lead con su ficha y conversación. No más Excel."
             color="brand"
           />
           <FeatureCard
             icon={<Heart className="h-5 w-5" />}
-            title="CRM de clientes"
-            desc="Cada owner con su historial: perros, reservas, contratos, contacto. Todo enlazado."
+            title="Hub de Contactos"
+            desc="3 tabs: suscriptores newsletter, leads sin cerrar y clientes con reserva. Cada contacto con su historial completo."
             color="pink"
           />
           <FeatureCard
             icon={<Globe className="h-5 w-5" />}
-            title="Web pública"
-            desc="Editor visual estilo Webflow. Dominio propio. 8 páginas y 36 secciones."
+            title="Web pública con dominio propio"
+            desc="Editor visual + 3 temas (Clásico, BMW M, Lamborghini). Conecta tu dominio en 5 minutos."
             color="blue"
           />
           <FeatureCard
             icon={<Mail className="h-5 w-5" />}
-            title="Emailbot que vende"
-            desc="Responde consultas con tu tono y tu biblioteca de conocimiento. Tú revisas y envías."
+            title="Emailbot multi-modelo"
+            desc="Elige tu modelo (Claude Sonnet, GPT-4o, Gemini, etc). Carga tu biblioteca con IA desde tu web o un PDF. Responde con tu tono."
             color="violet"
           />
           <FeatureCard
             icon={<Calendar className="h-5 w-5" />}
-            title="Newsletter"
-            desc="Suscriptores + campañas. Aviso automático cuando hay camada disponible."
+            title="Newsletter segmentada"
+            desc="4 audiencias auto-calculadas: todos, clientes, leads, los que recibieron cachorro. Editor con preview live."
             color="orange"
           />
           <FeatureCard
             icon={<TrendingUp className="h-5 w-5" />}
-            title="Estadísticas"
-            desc="Quién visita tu web, qué perro miran, de dónde vienen. Decisiones con datos."
+            title="Analíticas first-party"
+            desc="Visitas a tu web, países, dispositivos, perros más vistos. Sin Google Analytics, sin cookies, GDPR-safe."
             color="emerald"
           />
         </div>
@@ -802,6 +950,8 @@ function Step({
 }
 
 // ─── Pricing ─────────────────────────────────────────────────────────────
+// Refleja exactamente la página /pricing y el flujo signup intent-aware.
+// 3 tiers reales: Free 0€ · Pro 39€ Founder · Premium 149€ (manual sales).
 function Pricing() {
   return (
     <section id="precios" className="border-b border-hairline">
@@ -813,61 +963,98 @@ function Pricing() {
           className="mt-3 max-w-[18ch] font-semibold text-ink"
           style={{ fontSize: 'clamp(32px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
         >
-          Gratis para todos. Pro cuando estés listo.
+          Datos gratis. Herramientas premium.
         </h2>
-        <p className="mt-6 max-w-[520px] text-[17px] leading-[1.55] text-body">
-          Sin freemium tramposo: el tier Free es gratis de verdad y para siempre.
-          Pro tiene precio Founder por vida si te subes ahora.
+        <p className="mt-6 max-w-[560px] text-[17px] leading-[1.55] text-body">
+          El grafo genealógico es gratis para siempre. El tier Pro añade las
+          herramientas que un criador profesional necesita para vender mejor.
+          Sin tarjeta para empezar.
         </p>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-2">
+        <div className="mt-14 grid gap-6 md:grid-cols-3">
           {/* Free */}
-          <div className="rounded-[16px] border border-hairline bg-canvas p-8">
+          <div className="rounded-[16px] border border-hairline bg-canvas p-7 flex flex-col">
             <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">Free</p>
             <p className="mt-3 text-[36px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
               0 € <span className="text-[14px] font-normal text-muted">/ siempre</span>
             </p>
             <p className="mt-2 text-[14px] text-body">
-              Para dueños, criadores hobby y cualquier amante de los perros con linaje.
+              Para dueños y criadores hobby. Sin tarjeta.
             </p>
-            <ul className="mt-7 space-y-2.5 text-[14px]">
+            <ul className="mt-6 space-y-2.5 text-[14px] flex-1">
               <PricingRow>Perros ilimitados con genealogía</PricingRow>
               <PricingRow>Importación de genealogías con IA</PricingRow>
               <PricingRow>Búsqueda pública del registro</PricingRow>
-              <PricingRow>Planificador de cruces</PricingRow>
-              <PricingRow>Calendario de celos y partos</PricingRow>
+              <PricingRow>Simulador de cruces con Punnett</PricingRow>
+              <PricingRow>Calendario de celos, partos y vet</PricingRow>
+              <PricingRow>App móvil iOS / Android</PricingRow>
             </ul>
-            <Button href="/register" variant="secondary" className="mt-8 w-full">
-              Crear cuenta gratis
+            <Button href="/register?intent=breeder&plan=free" variant="secondary" className="mt-7 w-full">
+              Empezar gratis
             </Button>
           </div>
 
-          {/* Pro */}
-          <div className="relative rounded-[16px] bg-surface-dark p-8 text-on-dark">
+          {/* Pro (highlighted) */}
+          <div className="relative rounded-[16px] bg-surface-dark p-7 text-on-dark flex flex-col">
             <span className="absolute -top-3 right-6 rounded-full bg-[color:var(--brand)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
-              Founder · plazas limitadas
+              Founder · 39€/mes para siempre
             </span>
             <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-on-dark-soft">Pro</p>
             <p className="mt-3 text-[36px] font-semibold" style={{ letterSpacing: '-0.02em' }}>
-              89 € <span className="text-[14px] font-normal text-on-dark-soft">/ mes · vitalicio</span>
+              39 € <span className="text-[14px] font-normal text-on-dark-soft">/ mes</span>
             </p>
             <p className="mt-2 text-[14px] text-on-dark-soft">
-              Criadero profesional: reservas, clientes, web, emailbot, newsletter.
+              Criadero profesional. Vende mejor con menos esfuerzo.
             </p>
-            <ul className="mt-7 space-y-2.5 text-[14px]">
-              <PricingRow dark>Todo lo de Free, sin límite</PricingRow>
-              <PricingRow dark>Pipeline de reservas Kanban</PricingRow>
-              <PricingRow dark>CRM de clientes</PricingRow>
-              <PricingRow dark>Web pública + dominio propio</PricingRow>
-              <PricingRow dark>Emailbot con biblioteca</PricingRow>
-              <PricingRow dark>Newsletter + estadísticas</PricingRow>
-              <PricingRow dark>API key para integraciones</PricingRow>
+            <ul className="mt-6 space-y-2.5 text-[14px] flex-1">
+              <PricingRow dark>Todo lo de Free</PricingRow>
+              <PricingRow dark>Pipeline de reservas (Kanban)</PricingRow>
+              <PricingRow dark>Contactos: suscriptores, leads, clientes</PricingRow>
+              <PricingRow dark>Web pública con dominio propio</PricingRow>
+              <PricingRow dark>Emailbot multi-modelo (Claude/GPT/Gemini)</PricingRow>
+              <PricingRow dark>Newsletter a tu lista</PricingRow>
+              <PricingRow dark>Visitas y estadísticas del perfil</PricingRow>
             </ul>
-            <Button href="/register?intent=pro" variant="secondary" className="mt-8 w-full !bg-canvas !text-ink">
-              Reservar plaza Founder
+            <Button
+              href="/register?intent=breeder&plan=pro"
+              variant="secondary"
+              className="mt-7 w-full !bg-canvas !text-ink"
+            >
+              Empezar Pro
+            </Button>
+          </div>
+
+          {/* Premium */}
+          <div className="rounded-[16px] border border-hairline bg-canvas p-7 flex flex-col">
+            <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">Premium</p>
+            <p className="mt-3 text-[36px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
+              149 € <span className="text-[14px] font-normal text-muted">/ mes</span>
+            </p>
+            <p className="mt-2 text-[14px] text-body">
+              Criaderos grandes con multi-afijo y necesidad de API.
+            </p>
+            <ul className="mt-6 space-y-2.5 text-[14px] flex-1">
+              <PricingRow>Todo lo de Pro</PricingRow>
+              <PricingRow>Multi-kennel (varios afijos)</PricingRow>
+              <PricingRow>API B2B para integraciones</PricingRow>
+              <PricingRow>5 verificaciones oficiales /mes</PricingRow>
+              <PricingRow>Featured listing incluido</PricingRow>
+              <PricingRow>Soporte prioritario</PricingRow>
+            </ul>
+            <Button
+              href="mailto:hola@genealogic.io?subject=Plan%20Premium"
+              variant="secondary"
+              className="mt-7 w-full"
+            >
+              Hablar con nosotros
             </Button>
           </div>
         </div>
+
+        <p className="mt-10 text-center text-[13px] text-muted">
+          Add-ons: verificación oficial 25–50€ · featured listing 20€/mes ·
+          custom domain 10€/mes
+        </p>
       </div>
     </section>
   )
@@ -891,27 +1078,35 @@ function FAQ() {
   const faqs = [
     {
       q: '¿Es realmente gratis el tier Free?',
-      a: 'Sí. Perros ilimitados, importación con IA, búsqueda, planificador, calendario. Para siempre. No te pedimos tarjeta.',
+      a: 'Sí. Perros ilimitados, importación con IA, búsqueda, simulador de cruces, calendario reproductivo y vet, app móvil. Para siempre, sin tarjeta. Solo se cobran las herramientas comerciales (pipeline, web, emailbot, newsletter) en los planes Pro y Premium.',
     },
     {
-      q: '¿Qué pasa si subo de Free a Pro?',
-      a: 'Todos tus perros y datos se mantienen. Se activan: pipeline de reservas, CRM, web pública, emailbot, newsletter y estadísticas. Mismo dominio, misma cuenta.',
+      q: '¿Qué incluye el tier Pro a 39€/mes?',
+      a: 'Todo lo de Free + pipeline de reservas estilo Kanban, panel unificado de Contactos (suscriptores newsletter + leads + clientes), web pública con dominio propio, emailbot multi-modelo (Claude/GPT/Gemini elegibles), newsletter a tu lista, visitas y estadísticas. El precio Founder de 39€ se mantiene para siempre si te subes antes del lanzamiento público.',
     },
     {
-      q: '¿Puedo usar mi propio dominio en la web del criadero?',
-      a: 'Sí. Conectas tu dominio desde Ajustes y nuestro sistema lo sirve directamente. Sin redirects raros, sin subdominios feos.',
+      q: '¿Y el plan Premium a 149€/mes?',
+      a: 'Para criaderos grandes con multi-afijo (varios kennels en una cuenta), necesidad de API B2B para integraciones, verificaciones oficiales mensuales y featured listing. Onboarding manual: escríbenos a hola@genealogic.io.',
     },
     {
-      q: '¿Qué tan bueno es el emailbot?',
-      a: 'Usa Claude (Anthropic) + tu biblioteca de conocimiento personal (contratos, salud, precios, política de espera). Responde con tu tono, no con el de ChatGPT genérico. Tú revisas antes de enviar.',
+      q: '¿Qué pasa si paso de Free a Pro o Premium?',
+      a: 'Todos tus perros, genealogías y datos se mantienen idénticos. Solo se desbloquean nuevas secciones en el sidebar (Reservas, Contactos, Emailbot, Newsletter, Web). Misma cuenta, mismo dominio.',
     },
     {
-      q: '¿Y si ya tengo otro sistema (Excel, Notion)?',
-      a: 'La importación de genealogías con IA te ahorra horas. Para clientes y reservas, copias y pegas. La primera tarde es de setup; a partir de ahí, todo en un sitio.',
+      q: '¿Puedo usar mi propio dominio?',
+      a: 'Sí, en Pro y Premium. Conectas un dominio propio (criadero.com) desde Ajustes con un par de DNS records. Nuestro middleware sirve tu web directamente, sin subdominios feos ni redirects extra.',
     },
     {
-      q: '¿Cuántas plazas Founder quedan?',
-      a: 'Cerramos al llegar a 100. Después, el precio Pro pasa a 149 €/mes. Los Founder mantienen 89 €/mes vitalicio.',
+      q: '¿Cómo funciona el emailbot?',
+      a: 'Cargas tu biblioteca de conocimiento (precios, política de reserva, garantías, FAQ) — puedes hacerlo escribiendo o importando con IA desde tu web actual o un PDF. El bot lee cada email entrante y responde con tu tono usando tu biblioteca como fuente. Eliges qué modelo (Claude Sonnet, GPT-4o, Gemini Pro, etc.) y revisas antes de enviar — o lo dejas en auto-piloto para preguntas frecuentes.',
+    },
+    {
+      q: '¿Puedo cancelar cuando quiera?',
+      a: 'Sí. Sin permanencia, sin penalización. Si cancelas Pro/Premium, vuelves a Free conservando todos tus datos. Tu web custom se desactiva pero los datos siguen ahí; si vuelves a Pro más tarde, se reactiva sin tocar nada.',
+    },
+    {
+      q: '¿Y si ya tengo todo en Excel o WhatsApp?',
+      a: 'Para genealogías: la importación con IA (URL, foto o PDF) te ahorra horas. Para clientes y leads existentes: importas un CSV o los añades a mano. La primera tarde es de setup; a partir de ahí todo en un sitio y vendes con menos esfuerzo.',
     },
   ]
 
@@ -973,11 +1168,11 @@ function FinalCta() {
           Genealogía verificable + criadero profesional + IA. En una sola cuenta.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <Button href="/register" variant="primary" size="lg">
+          <Button href="/register?intent=breeder&plan=free" variant="primary" size="lg">
             Empieza gratis <ArrowRight className="h-4 w-4" />
           </Button>
-          <Button href="mailto:hola@genealogic.io" variant="secondary" size="lg">
-            Habla con nosotros
+          <Button href="/register?intent=breeder&plan=pro" variant="secondary" size="lg">
+            Empezar Pro · 39€/mes
           </Button>
         </div>
       </div>
@@ -1001,9 +1196,10 @@ function Footer() {
             title="Producto"
             links={[
               { label: 'Para criadores', href: '#criadores' },
-              { label: 'Precios', href: '#precios' },
+              { label: 'Precios', href: '/pricing' },
+              { label: 'Buscar perros', href: '/search' },
+              { label: 'Directorio criaderos', href: '/kennels' },
               { label: 'Blog', href: '/blog' },
-              { label: 'FAQ', href: '#faq' },
               { label: 'API pública', href: '/api-docs' },
             ]}
           />
@@ -1011,7 +1207,8 @@ function Footer() {
             title="Cuenta"
             links={[
               { label: 'Iniciar sesión', href: '/login' },
-              { label: 'Crear cuenta', href: '/register' },
+              { label: 'Empezar gratis', href: '/register?intent=breeder&plan=free' },
+              { label: 'Empezar Pro', href: '/register?intent=breeder&plan=pro' },
               { label: 'Recuperar contraseña', href: '/forgot-password' },
             ]}
           />
