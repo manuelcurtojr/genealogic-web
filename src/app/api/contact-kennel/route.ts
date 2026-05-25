@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import { getEffectiveConfig, validateForm, splitFormValues } from '@/lib/kennel/contact-form'
+import { sendTransactionalEmail } from '@/lib/email/send'
 
 /**
  * POST /api/contact-kennel
@@ -92,6 +93,55 @@ export async function POST(request: NextRequest) {
     console.error('contact-kennel insert error', insertErr)
     return NextResponse.json({ error: 'Error guardando la solicitud' }, { status: 500 })
   }
+
+  // Email al criador notificándole la reserva nueva (best-effort, async,
+  // no bloquea el response al solicitante).
+  ;(async () => {
+    try {
+      const { data: ownerProfile } = await (admin as ReturnType<typeof createKennelAdminClient>)
+        .from('profiles')
+        .select('id, display_name, email')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .eq('id', (await (admin as any).from('kennels').select('owner_id').eq('id', kennel_id).single()).data?.owner_id || '')
+        .maybeSingle()
+
+      if (ownerProfile?.email) {
+        // Resolver nombre de raza si vino preference_breed_id en el form
+        // (no es campo canónico tipado — viene como string libre del form).
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const breedId = (canonical as any).preference_breed_id || values?.preference_breed_id
+        let preferredBreed: string | null = null
+        if (breedId) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data: b } = await (admin as any).from('breeds').select('name').eq('id', breedId).single()
+          preferredBreed = b?.name || null
+        }
+
+        await sendTransactionalEmail(
+          ownerProfile.email,
+          {
+            template: 'reservation_new',
+            props: {
+              breederName: ownerProfile.display_name || null,
+              kennelName: kennel.name,
+              clientName: String(canonical.applicant_name || 'Cliente'),
+              clientEmail: String(canonical.applicant_email || ''),
+              clientMessage: canonical.applicant_message ? String(canonical.applicant_message) : null,
+              reservationId: insertedRes!.id,
+              preferredSex: (canonical.preference_sex as 'male' | 'female' | null) || null,
+              preferredBreed,
+            },
+          },
+          {
+            userId: ownerProfile.id,
+            dedupeKey: `reservation_new:${insertedRes!.id}`,
+          },
+        )
+      }
+    } catch (err) {
+      console.error('[email] reservation_new failed', err)
+    }
+  })()
 
   return NextResponse.json({ ok: true, id: insertedRes?.id })
 }

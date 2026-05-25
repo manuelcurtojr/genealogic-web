@@ -14,6 +14,7 @@
 
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { sendTransactionalEmail } from '@/lib/email/send'
 import type {
   AdminRequestType,
   AdminRequestStatus,
@@ -21,6 +22,8 @@ import type {
   AdminRequestSource,
   EvidenceFile,
 } from './types'
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -309,7 +312,7 @@ export async function adminReplyToRequestAction(input: {
   const body = input.body?.trim()
   if (!body) throw new Error('empty_body')
 
-  const { error } = await supabase
+  const { data: insertedMsg, error } = await supabase
     .from('admin_request_messages')
     .insert({
       request_id: input.requestId,
@@ -317,6 +320,8 @@ export async function adminReplyToRequestAction(input: {
       author_is_admin: true,
       body,
     })
+    .select('id')
+    .single()
   if (error) throw new Error(error.message)
 
   if (input.setAwaitingUser) {
@@ -325,6 +330,34 @@ export async function adminReplyToRequestAction(input: {
       .update({ status: 'awaiting_user' })
       .eq('id', input.requestId)
   }
+
+  // Email al user con la respuesta del admin (best-effort)
+  try {
+    const { data: req } = await supabase
+      .from('admin_requests')
+      .select('subject, requester_email, requester_name, requester_user_id')
+      .eq('id', input.requestId)
+      .single()
+    if (req?.requester_email) {
+      await sendTransactionalEmail(
+        req.requester_email,
+        {
+          template: 'support_replied',
+          props: {
+            recipientName: req.requester_name || null,
+            requestSubject: req.subject,
+            adminMessagePreview: body,
+            requestId: input.requestId,
+          },
+        },
+        {
+          userId: req.requester_user_id || undefined,
+          // Dedupe por id del mensaje insertado — cada reply un email único
+          dedupeKey: `support_reply:${insertedMsg?.id}`,
+        },
+      )
+    }
+  } catch { /* swallow */ }
 
   revalidatePath(`/admin/solicitudes/${input.requestId}`)
   revalidatePath(`/mis-solicitudes/${input.requestId}`)
@@ -345,6 +378,48 @@ export async function adminApproveClaimAction(input: {
     p_resolution_note: input.resolutionNote || null,
   })
   if (error) throw new Error(error.message)
+
+  // Email al user notificándole la aprobación (best-effort)
+  try {
+    const { data: req } = await supabase
+      .from('admin_requests')
+      .select(`
+        type, subject, requester_email, requester_name, requester_user_id, resolution_note,
+        target_dog:dogs!admin_requests_target_dog_id_fkey(name, slug, id),
+        target_kennel:kennels!admin_requests_target_kennel_id_fkey(name, slug, id)
+      `)
+      .eq('id', input.requestId)
+      .single()
+
+    if (req?.requester_email && (req.type === 'claim_dog' || req.type === 'claim_kennel')) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const dog: any = req.target_dog
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const kennel: any = req.target_kennel
+      const targetType = req.type === 'claim_dog' ? 'dog' : 'kennel'
+      const target = targetType === 'dog' ? dog : kennel
+      if (target) {
+        const targetUrl = `${SITE_URL}/${targetType === 'dog' ? 'dogs' : 'kennels'}/${target.slug || target.id}`
+        await sendTransactionalEmail(
+          req.requester_email,
+          {
+            template: 'claim_approved',
+            props: {
+              recipientName: req.requester_name || null,
+              targetType: targetType as 'dog' | 'kennel',
+              targetName: target.name,
+              targetUrl,
+              resolutionNote: req.resolution_note || input.resolutionNote || null,
+            },
+          },
+          {
+            userId: req.requester_user_id || undefined,
+            dedupeKey: `claim_approved:${input.requestId}`,
+          },
+        )
+      }
+    }
+  } catch { /* swallow */ }
 
   revalidatePath(`/admin/solicitudes/${input.requestId}`)
   revalidatePath('/admin/solicitudes')
@@ -372,6 +447,46 @@ export async function adminRejectRequestAction(input: {
     })
     .eq('id', input.requestId)
   if (error) throw new Error(error.message)
+
+  // Email al user notificándole el rechazo (best-effort). Solo para claims —
+  // los support tickets rechazados ya se comunican via support_replied.
+  try {
+    const { data: req } = await supabase
+      .from('admin_requests')
+      .select(`
+        type, subject, requester_email, requester_name, requester_user_id,
+        target_dog:dogs!admin_requests_target_dog_id_fkey(name),
+        target_kennel:kennels!admin_requests_target_kennel_id_fkey(name)
+      `)
+      .eq('id', input.requestId)
+      .single()
+
+    if (req?.requester_email && (req.type === 'claim_dog' || req.type === 'claim_kennel')) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const dog: any = req.target_dog
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const kennel: any = req.target_kennel
+      const targetType = req.type === 'claim_dog' ? 'dog' : 'kennel'
+      const targetName = (targetType === 'dog' ? dog?.name : kennel?.name) || '—'
+      await sendTransactionalEmail(
+        req.requester_email,
+        {
+          template: 'claim_rejected',
+          props: {
+            recipientName: req.requester_name || null,
+            targetType: targetType as 'dog' | 'kennel',
+            targetName,
+            resolutionNote: input.resolutionNote.trim(),
+            requestId: input.requestId,
+          },
+        },
+        {
+          userId: req.requester_user_id || undefined,
+          dedupeKey: `claim_rejected:${input.requestId}`,
+        },
+      )
+    }
+  } catch { /* swallow */ }
 
   revalidatePath(`/admin/solicitudes/${input.requestId}`)
   revalidatePath('/admin/solicitudes')

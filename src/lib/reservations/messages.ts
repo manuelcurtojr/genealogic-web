@@ -5,6 +5,7 @@
 import 'server-only'
 import { cache } from 'react'
 import { createKennelAdminClient } from '@/lib/supabase/server'
+import { sendTransactionalEmail } from '@/lib/email/send'
 import type {
   MessageRole,
   MessageOrigin,
@@ -64,7 +65,8 @@ export async function markThreadRead(
     .is(readCol, null)
 }
 
-/** Inserta un mensaje. El caller DEBE haber validado permisos. */
+/** Inserta un mensaje. El caller DEBE haber validado permisos.
+ *  Tras insert, dispara (best-effort) un email a la otra parte del hilo. */
 export async function insertMessage(args: {
   reservationId: string
   kennelId: string
@@ -94,5 +96,78 @@ export async function insertMessage(args: {
     .select('*')
     .single()
   if (error) throw new Error(error.message)
-  return data as ReservationMessage
+  const inserted = data as ReservationMessage
+
+  // ─── Email a la otra parte (best-effort, async, no bloquea) ───
+  ;(async () => {
+    try {
+      // Buscar email del destinatario según el rol del sender
+      const { data: reservation } = await admin
+        .from('puppy_reservations')
+        .select(`
+          id, applicant_email, applicant_name, client_user_id,
+          kennel:kennels(id, name, owner_id)
+        `)
+        .eq('id', args.reservationId)
+        .single()
+      if (!reservation) return
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const kennel: any = reservation.kennel
+      const isSenderBreeder = args.senderRole === 'breeder'
+
+      if (isSenderBreeder) {
+        // Email al cliente
+        const toEmail = reservation.applicant_email
+        if (!toEmail) return
+        await sendTransactionalEmail(
+          toEmail,
+          {
+            template: 'message_new',
+            props: {
+              recipientName: reservation.applicant_name || null,
+              senderName: args.senderName || kennel?.name || 'El criador',
+              preview: args.body,
+              reservationId: args.reservationId,
+              recipientIsBreeder: false,
+            },
+          },
+          {
+            userId: reservation.client_user_id || undefined,
+            dedupeKey: `msg_email:${inserted.id}`,
+          },
+        )
+      } else {
+        // Email al criador
+        if (!kennel?.owner_id) return
+        const { data: ownerProfile } = await admin
+          .from('profiles')
+          .select('id, display_name, email')
+          .eq('id', kennel.owner_id)
+          .maybeSingle()
+        if (!ownerProfile?.email) return
+        await sendTransactionalEmail(
+          ownerProfile.email,
+          {
+            template: 'message_new',
+            props: {
+              recipientName: ownerProfile.display_name || null,
+              senderName: args.senderName || reservation.applicant_name || 'El cliente',
+              preview: args.body,
+              reservationId: args.reservationId,
+              recipientIsBreeder: true,
+            },
+          },
+          {
+            userId: ownerProfile.id,
+            dedupeKey: `msg_email:${inserted.id}`,
+          },
+        )
+      }
+    } catch (err) {
+      console.error('[email] message_new failed', err)
+    }
+  })()
+
+  return inserted
 }

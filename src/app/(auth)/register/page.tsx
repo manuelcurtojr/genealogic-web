@@ -86,6 +86,16 @@ function RegisterInner() {
       }
     }
 
+    // Welcome email (best-effort, no bloquea redirect). El intent decide
+    // qué variante manda (breeder vs owner).
+    if (data.user?.id) {
+      fetch('/api/email/welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intent: oi || 'owner' }),
+      }).catch(() => { /* swallow — email no debe bloquear UX */ })
+    }
+
     router.push(destination)
   }
 
