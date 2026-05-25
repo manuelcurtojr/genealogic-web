@@ -108,16 +108,13 @@ export default function DiscoveryHome({
             <h1
               className="mt-7 font-semibold text-ink"
               style={{
-                fontFamily: 'var(--font-fraunces), Georgia, serif',
-                fontSize: 'clamp(48px, 8vw, 92px)',
-                lineHeight: 0.98,
+                fontSize: 'clamp(44px, 7vw, 80px)',
+                lineHeight: 1.02,
                 letterSpacing: '-0.045em',
               }}
             >
-              Cada perro,<br />
-              <span className="italic font-light">su historia</span>.<br />
-              Cada criador,<br />
-              <span className="italic font-light">su escaparate</span>.
+              Cada perro con su pedigree.<br />
+              <span className="text-muted font-medium">Cada criador con su escaparate.</span>
             </h1>
 
             <p
@@ -184,7 +181,7 @@ export default function DiscoveryHome({
         <div className="mx-auto max-w-[1280px] px-6 lg:px-12 py-16 sm:py-24">
           <div className="mb-10 max-w-3xl">
             <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#FE6620]">Dos caminos</p>
-            <h2 className="mt-3 font-semibold text-ink" style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: 'clamp(32px, 4.5vw, 52px)', lineHeight: 1.05, letterSpacing: '-0.035em' }}>
+            <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(28px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
               ¿Qué te trae a Genealogic?
             </h2>
           </div>
@@ -266,7 +263,7 @@ export default function DiscoveryHome({
         <div className="mx-auto max-w-[1280px] px-6 lg:px-12 py-16 sm:py-24">
           <div className="mb-10 max-w-3xl">
             <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#FE6620]">Una sola plataforma</p>
-            <h2 className="mt-3 font-semibold text-ink" style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: 'clamp(32px, 4.5vw, 52px)', lineHeight: 1.05, letterSpacing: '-0.035em' }}>
+            <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(28px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
               Todo lo que tu perro o criadero necesita.
             </h2>
           </div>
@@ -340,7 +337,7 @@ export default function DiscoveryHome({
             <div className="mb-8 flex items-end justify-between gap-4">
               <div>
                 <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#FE6620]">El catálogo</p>
-                <h2 className="mt-3 font-semibold text-ink" style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: 'clamp(28px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.035em' }}>
+                <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
                   Perros recién registrados
                 </h2>
               </div>
@@ -349,14 +346,14 @@ export default function DiscoveryHome({
               </Link>
             </div>
 
+            {/* Grid uniforme 6 columnas en desktop, todas aspect-square — sin
+                card 2x2 que rompe el ritmo y deja huecos en breakpoints intermedios. */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-              {featuredDogs.slice(0, 6).map((dog, i) => (
+              {featuredDogs.slice(0, 6).map((dog) => (
                 <Link
                   key={dog.id}
                   href={`/dogs/${dog.slug || dog.id}`}
-                  className={`group relative block overflow-hidden rounded-2xl bg-surface-card ${
-                    i === 0 ? 'col-span-2 row-span-2 aspect-square sm:aspect-auto' : 'aspect-square'
-                  }`}
+                  className="group relative block overflow-hidden rounded-2xl bg-surface-card aspect-square"
                 >
                   {dog.thumbnail_url ? (
                     <img
@@ -366,12 +363,12 @@ export default function DiscoveryHome({
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted">
-                      <Dog className="w-12 h-12 opacity-20" />
+                      <Dog className="w-10 h-10 opacity-20" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all">
-                    <p className={`font-bold text-white truncate ${i === 0 ? 'text-lg' : 'text-sm'}`}>{dog.name}</p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all">
+                    <p className="text-sm font-bold text-white truncate">{dog.name}</p>
                     {dog.breed?.name && (
                       <p className="text-[11px] text-white/80 truncate">{dog.breed.name}</p>
                     )}
@@ -397,7 +394,7 @@ export default function DiscoveryHome({
             <div className="mb-8 flex items-end justify-between gap-4">
               <div>
                 <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#FE6620]">La comunidad</p>
-                <h2 className="mt-3 font-semibold text-ink" style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: 'clamp(28px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.035em' }}>
+                <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
                   Criaderos en Genealogic
                 </h2>
               </div>
@@ -437,7 +434,7 @@ export default function DiscoveryHome({
       {blogPosts.length > 0 && <BlogSlider posts={blogPosts} />}
 
       {/* ═════ CTA FINAL OSCURO ═════ */}
-      <section className="relative overflow-hidden bg-ink text-on-primary border-b border-hairline">
+      <section className="relative overflow-hidden bg-ink text-on-primary">
         {/* Decoración glow */}
         <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#FE6620]/30 blur-[120px] pointer-events-none" />
         <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-blue-500/20 blur-[120px] pointer-events-none" />
@@ -447,14 +444,13 @@ export default function DiscoveryHome({
           <h2
             className="font-semibold mx-auto leading-[1.05]"
             style={{
-              fontFamily: 'var(--font-fraunces), serif',
-              fontSize: 'clamp(36px, 6vw, 64px)',
+              fontSize: 'clamp(32px, 5vw, 56px)',
               letterSpacing: '-0.04em',
-              maxWidth: '16ch',
+              maxWidth: '18ch',
             }}
           >
-            Empieza gratis.<br />
-            <span className="italic font-light text-white/80">Sin tarjeta.</span>
+            Empieza gratis.{' '}
+            <span className="text-white/60 font-medium">Sin tarjeta.</span>
           </h2>
           <p className="mt-5 text-[16px] sm:text-[18px] text-white/60 max-w-md mx-auto">
             Únete a los criadores y propietarios que ya documentan a sus perros con Genealogic.
