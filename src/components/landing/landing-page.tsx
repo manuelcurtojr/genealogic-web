@@ -39,7 +39,7 @@ export default function LandingPage({ breeds, featuredDogs, cockerPhotos = [] }:
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
-      <StickyHeader />
+      {/* Header eliminado — lo aporta (public)/layout.tsx con MarketingHeader. */}
       <Hero heroDogs={heroDogs} />
       <PedigreeShowcase cockerPhotos={cockerPhotos} />
       <FeaturesGrid />

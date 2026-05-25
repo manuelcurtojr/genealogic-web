@@ -1,0 +1,65 @@
+/**
+ * /criadores — landing dedicada al lado "criador" de Genealogic.
+ *
+ * Antes era el contenido de la home (`/`). Lo movemos aquí para que la
+ * home pueda ser un hub discovery-first y cada audiencia tenga su propia
+ * landing dedicada.
+ *
+ * Reutiliza el componente LandingPage tal cual. El layout del grupo
+ * (public) ya monta el MarketingHeader arriba.
+ */
+import { createClient } from '@/lib/supabase/server'
+import LandingPage from '@/components/landing/landing-page'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Para criadores — Genealogic',
+  description:
+    'Software para criaderos: gestión de afijo, perros, camadas, pipeline de reservas, web pública y emailbot. Empieza gratis.',
+  alternates: { canonical: 'https://genealogic.io/criadores' },
+  openGraph: {
+    title: 'Genealogic para criadores',
+    description: 'Gestiona tu criadero y vende más cachorros con menos esfuerzo.',
+    url: 'https://genealogic.io/criadores',
+    type: 'website',
+    siteName: 'Genealogic',
+  },
+}
+
+async function fetchCockerPhotos(): Promise<string[]> {
+  try {
+    const res = await fetch('https://dog.ceo/api/breed/spaniel/cocker/images/random/7', {
+      signal: AbortSignal.timeout(2000),
+      next: { revalidate: 60 * 60 * 24 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    return Array.isArray(json?.message) ? json.message : []
+  } catch {
+    return []
+  }
+}
+
+export default async function CriadoresPage() {
+  const supabase = await createClient()
+
+  const [{ data: breeds }, { data: featuredDogs }, cockerPhotos] = await Promise.all([
+    supabase.from('breeds').select('id, name').order('name').limit(20),
+    supabase
+      .from('dogs')
+      .select('id, name, slug, thumbnail_url, breed:breeds(id, name)')
+      .not('thumbnail_url', 'is', null)
+      .eq('is_public', true)
+      .order('created_at', { ascending: false })
+      .limit(8),
+    fetchCockerPhotos(),
+  ])
+
+  return (
+    <LandingPage
+      breeds={breeds || []}
+      featuredDogs={featuredDogs || []}
+      cockerPhotos={cockerPhotos}
+    />
+  )
+}

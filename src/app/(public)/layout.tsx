@@ -1,18 +1,17 @@
 /**
- * Layout para rutas públicas (blog, pricing, api-docs).
- * Monta el PublicHeader arriba con la hamburguesa, wordmark, nav inline y CTAs.
+ * Layout para rutas públicas dentro del grupo (public):
+ *   /blog, /pricing, /api-docs, /criadores, /propietarios
  *
- * Las páginas /blog, /pricing, /api-docs antes heredaban solo el root layout
- * y no tenían cabecera ninguna — ahora todas comparten el mismo header
- * público, igual que las páginas de detalle de perro/criadero ven cuando
- * el visitante no está logueado.
+ * La home `/` no está en este grupo (Next.js no permite que un grupo
+ * capture la raíz si hay un page.tsx en `app/`), así que la home importa
+ * MarketingHeader directamente.
  */
-import PublicHeader from '@/components/layout/public-header'
+import MarketingHeader from '@/components/marketing/marketing-header'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-canvas text-[var(--foreground)]">
-      <PublicHeader />
+      <MarketingHeader />
       <main>{children}</main>
     </div>
   )

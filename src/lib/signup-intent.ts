@@ -16,7 +16,7 @@
  * redirigir al sitio final correcto desde /dashboard).
  */
 
-export type SignupIntent = 'breeder' | 'buyer'
+export type SignupIntent = 'breeder' | 'buyer' | 'owner'
 export type SignupPlan = 'free' | 'pro' | 'premium'
 
 export type SignupIntentData = {
@@ -28,7 +28,10 @@ const COOKIE_NAME = 'genealogic_signup_intent'
 const SESSION_KEY = 'genealogic_signup_intent'
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 días
 
-const VALID_INTENTS: SignupIntent[] = ['breeder', 'buyer']
+// 'owner' = nuevo (alineado con profiles.onboarding_intent)
+// 'buyer' = legacy (mantenido por compatibilidad con URLs antiguas).
+//   Internamente se trata como 'owner'.
+const VALID_INTENTS: SignupIntent[] = ['breeder', 'buyer', 'owner']
 const VALID_PLANS: SignupPlan[] = ['free', 'pro', 'premium']
 
 /** Lee intent de query params, normaliza, devuelve null si inválido. */
@@ -106,9 +109,26 @@ export async function readIntentServer(): Promise<SignupIntentData | null> {
  */
 export function destinationForIntent(data: SignupIntentData | null): string {
   if (!data) return '/dashboard'
-  if (data.intent === 'buyer') return '/kennels'
+  // 'buyer' (legacy) y 'owner' van al dashboard que ya detecta su rol
+  // y muestra el WelcomeOwner con el checklist correspondiente.
+  if (data.intent === 'buyer' || data.intent === 'owner') return '/dashboard'
   // breeder: va directo a crear kennel; el plan se propaga para activar
   // después de crear el afijo
   const planParam = data.plan !== 'free' ? `?plan=${data.plan}` : ''
   return `/kennel/new${planParam}`
+}
+
+/**
+ * Mapea el SignupIntent al valor de profiles.onboarding_intent.
+ * - 'breeder' → 'breeder'
+ * - 'owner' o 'buyer' → 'owner'
+ *
+ * Devuelve null si no aplica (no intent provided).
+ */
+export function intentToOnboardingIntent(
+  data: SignupIntentData | null,
+): 'breeder' | 'owner' | null {
+  if (!data) return null
+  if (data.intent === 'breeder') return 'breeder'
+  return 'owner' // 'owner' o 'buyer' (legacy)
 }

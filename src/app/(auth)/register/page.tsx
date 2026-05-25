@@ -10,6 +10,7 @@ import {
   parseIntentFromQuery,
   saveIntentClient,
   destinationForIntent,
+  intentToOnboardingIntent,
   type SignupIntentData,
 } from '@/lib/signup-intent'
 
@@ -62,7 +63,7 @@ function RegisterInner() {
     setLoading(true)
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { display_name: name } },
@@ -72,6 +73,17 @@ function RegisterInner() {
       setError(error.message)
       setLoading(false)
       return
+    }
+
+    // Persistir onboarding_intent si vino marcado desde la landing/CTA.
+    // Esto salta el Paso 0 (RoleSelector) del dashboard.
+    const oi = intentToOnboardingIntent(intentData)
+    if (oi && data.user?.id) {
+      try {
+        await supabase.from('profiles').update({ onboarding_intent: oi }).eq('id', data.user.id)
+      } catch {
+        /* no-op: el user puede elegir manualmente después */
+      }
     }
 
     router.push(destination)

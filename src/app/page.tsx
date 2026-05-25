@@ -1,25 +1,20 @@
-import { createClient } from '@/lib/supabase/server'
+/**
+ * Home master de Genealogic — discovery-first.
+ *
+ * Filosofía: el catálogo público es el mejor argumento de venta. Aquí
+ * mostramos counts en vivo, perros recientes y criaderos destacados, y
+ * dos puertas grandes hacia /criadores y /propietarios.
+ *
+ * Esta página NO está dentro del grupo (public) porque Next.js no permite
+ * que un route group capture la raíz cuando existe app/page.tsx. Por eso
+ * monta el MarketingHeader directamente.
+ */
+import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import LandingPage from '@/components/landing/landing-page'
+import MarketingHeader from '@/components/marketing/marketing-header'
+import DiscoveryHome from '@/components/marketing/discovery-home'
 
-/** Fetches 7 real Cocker Spaniel photos from dog.ceo for the landing mock pedigree.
- *  Failsafe: si dog.ceo está caído o tarda > 2s, devolvemos []. */
-async function fetchCockerPhotos(): Promise<string[]> {
-  try {
-    // dog.ceo usa sub-breed con slash en el path del API (aunque el filename del
-    // CDN sea spaniel-cocker con guion). El endpoint correcto es spaniel/cocker.
-    const res = await fetch('https://dog.ceo/api/breed/spaniel/cocker/images/random/7', {
-      signal: AbortSignal.timeout(2000),
-      // ISR: cachear 1 día — no necesitamos fotos distintas cada request
-      next: { revalidate: 60 * 60 * 24 },
-    })
-    if (!res.ok) return []
-    const json = await res.json()
-    return Array.isArray(json?.message) ? json.message : []
-  } catch {
-    return []
-  }
-}
+export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -30,30 +25,41 @@ export default async function Home() {
     redirect(profile?.role === 'admin' ? '/admin' : '/dashboard')
   }
 
-  // Fetch featured breeds with thumbnail
-  const { data: breeds } = await supabase
-    .from('breeds')
-    .select('id, name')
-    .order('name')
-    .limit(20)
+  // Admin client para que los counts no se trunquen a 1000 en tablas grandes
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createKennelAdminClient() as any
 
-  // Fetch some recent public dogs for the hero showcase
-  const [{ data: featuredDogs }, cockerPhotos] = await Promise.all([
-    supabase
+  const [dogsCount, kennelsCount, breedsCount, featuredDogsRes, featuredKennelsRes] = await Promise.all([
+    admin.from('dogs').select('id', { count: 'exact', head: true }),
+    admin.from('kennels').select('id', { count: 'exact', head: true }),
+    admin.from('breeds').select('id', { count: 'exact', head: true }),
+    admin
       .from('dogs')
-      .select('id, name, slug, thumbnail_url, breed:breeds(id, name)')
+      .select('id, name, slug, thumbnail_url, breed:breeds(name)')
       .not('thumbnail_url', 'is', null)
       .eq('is_public', true)
       .order('created_at', { ascending: false })
-      .limit(8),
-    fetchCockerPhotos(),
+      .limit(6),
+    admin
+      .from('kennels')
+      .select('id, name, slug, logo_url, country, city')
+      .not('logo_url', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(6),
   ])
 
   return (
-    <LandingPage
-      breeds={breeds || []}
-      featuredDogs={featuredDogs || []}
-      cockerPhotos={cockerPhotos}
-    />
+    <div className="min-h-screen bg-canvas text-[var(--foreground)]">
+      <MarketingHeader />
+      <DiscoveryHome
+        counts={{
+          dogs: dogsCount.count || 0,
+          kennels: kennelsCount.count || 0,
+          breeds: breedsCount.count || 0,
+        }}
+        featuredDogs={featuredDogsRes.data || []}
+        featuredKennels={featuredKennelsRes.data || []}
+      />
+    </div>
   )
 }
