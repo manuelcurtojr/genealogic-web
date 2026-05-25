@@ -7,6 +7,7 @@ import { pastelByName } from '@/lib/avatars'
 import KennelPublicTabs from '@/components/kennel/kennel-public-tabs'
 import PageTracker from '@/components/track/page-tracker'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
+import ClaimBanner from '@/components/admin-requests/claim-banner'
 import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
 import { KennelJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
@@ -131,6 +132,11 @@ export default async function KennelDetailPage({
         ]}
       />
       <PageTracker kennelId={kennel.id} />
+
+      {/* Claim banner — solo si el criadero no tiene owner (típicamente importado) */}
+      {!kennel.owner_id && (
+        <ClaimBanner type="kennel" targetId={kennel.slug || kennel.id} targetName={kennel.name} />
+      )}
 
       {/* Back button + CTA web personalizada (si existe) */}
       <div className="flex items-center justify-between gap-3">

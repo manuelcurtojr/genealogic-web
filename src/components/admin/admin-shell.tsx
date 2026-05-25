@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Store, Palette, GitBranch, Stethoscope, ArrowLeft, Shield, Menu, X, Key, BarChart3, Dog, Activity, Globe, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, Users, Store, Palette, GitBranch, Stethoscope, ArrowLeft, Shield, Menu, X, Key, BarChart3, Dog, Activity, Globe, ShieldCheck, Inbox } from 'lucide-react'
 
 const ADMIN_NAV: { section?: string; label: string; href: string; icon: any }[] = [
   // General
   { section: 'General', label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { label: 'Actividad', href: '/admin/activity', icon: Activity },
   { label: 'Estadísticas', href: '/admin/stats', icon: BarChart3 },
+  { label: 'Solicitudes', href: '/admin/solicitudes', icon: Inbox },
   // Gestión
   { section: 'Gestion', label: 'Usuarios', href: '/admin/users', icon: Users },
   { label: 'Perros', href: '/admin/dogs', icon: Dog },

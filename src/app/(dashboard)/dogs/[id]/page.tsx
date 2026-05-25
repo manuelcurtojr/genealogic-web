@@ -10,6 +10,7 @@ import DogGallery from '@/components/dogs/dog-gallery'
 import DogTabs from '@/components/dogs/dog-tabs'
 import DogEditButton from '@/components/dogs/dog-edit-button'
 import ShareButton from '@/components/dogs/share-button'
+import ClaimBanner from '@/components/admin-requests/claim-banner'
 import PageTracker from '@/components/track/page-tracker'
 import { DogJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
@@ -156,6 +157,11 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
 
       {/* Content */}
       <div className="lg:px-[30px] pt-6 sm:pt-8 pb-8 sm:pb-10 space-y-6 sm:space-y-8">
+        {/* Claim banner — solo si el perro no tiene owner asignado */}
+        {!dog.owner_id && (
+          <ClaimBanner type="dog" targetId={dog.slug || dog.id} targetName={dog.name} />
+        )}
+
         {/* Name + badges */}
         <div>
           <h1 className="text-[32px] sm:text-[44px] font-semibold leading-[1.05] tracking-[-0.04em] text-ink">
