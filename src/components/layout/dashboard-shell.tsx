@@ -9,6 +9,7 @@ import { usePathname } from 'next/navigation'
 import Sidebar from './sidebar'
 import SearchBar from './search-bar'
 import NotificationsPanel from './notifications-panel'
+import GenosPanel from '@/components/genos/genos-panel'
 import { CommandBar } from './command-bar'
 import { hasProAccess } from '@/lib/permissions'
 
@@ -30,6 +31,7 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
   const [collapsed, setCollapsed] = useState(false)
   const [isNative, setIsNative] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
+  const [genosOpen, setGenosOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
   // Cuenta de no leídas. Tres fuentes de actualización:
@@ -227,6 +229,13 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
         <div className="flex-1 min-w-0">
           <SearchBar />
         </div>
+        <button
+          onClick={() => setGenosOpen(true)}
+          title="Genos"
+          className={`${iconColor} transition shrink-0`}
+        >
+          <Sparkles className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Desktop header */}
@@ -239,6 +248,13 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={() => setGenosOpen(true)}
+            title="Genos — asistente de Genealogic"
+            className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-surface-card transition`}
+          >
+            <Sparkles className="w-[18px] h-[18px]" />
+          </button>
           <button onClick={() => setNotifOpen(true)} className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-surface-card transition relative`}>
             <Bell className="w-[18px] h-[18px]" />
             {unreadCount > 0 && (
@@ -271,6 +287,9 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
 
       {/* Notifications panel */}
       <NotificationsPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
+
+      {/* Genos — chatbot asistente */}
+      <GenosPanel open={genosOpen} onClose={() => setGenosOpen(false)} />
 
       {/* Command Bar (⌘K) — montado a nivel shell para estar disponible siempre */}
       <CommandBar
