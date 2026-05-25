@@ -228,18 +228,7 @@ export default function OwnersLanding() {
         </div>
       </section>
 
-      <footer className="bg-canvas">
-        <div className="mx-auto max-w-[1200px] px-6 lg:px-12 py-10 text-[12px] text-muted flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>© {new Date().getFullYear()} Genealogic · Hecho en España</p>
-          <nav className="flex gap-5">
-            <Link href="/criadores" className="hover:text-ink">Criadores</Link>
-            <Link href="/propietarios" className="hover:text-ink">Propietarios</Link>
-            <Link href="/pricing" className="hover:text-ink">Precios</Link>
-            <Link href="/blog" className="hover:text-ink">Blog</Link>
-            <Link href="/legal" className="hover:text-ink">Legal</Link>
-          </nav>
-        </div>
-      </footer>
+      {/* Footer global lo aporta (public)/layout.tsx. */}
     </main>
   )
 }

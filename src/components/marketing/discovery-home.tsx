@@ -85,11 +85,12 @@ export default function DiscoveryHome({
             </button>
           </form>
 
-          {/* Live counts */}
-          <div className="mt-12 grid grid-cols-3 gap-6 sm:gap-10 max-w-2xl">
+          {/* Live counts — orden: criaderos · razas · perros (último por ser
+              el más grande visualmente, evita choque con número anterior). */}
+          <div className="mt-12 grid grid-cols-3 gap-x-10 sm:gap-x-16 lg:gap-x-20 max-w-3xl">
             <LiveCounter initial={counts.kennels} kind="kennels" label="Criaderos" />
-            <LiveCounter initial={counts.dogs} kind="dogs" label="Perros" />
             <LiveCounter initial={counts.breeds} kind="breeds" label="Razas" />
+            <LiveCounter initial={counts.dogs} kind="dogs" label="Perros" />
           </div>
           <p className="mt-4 text-[11px] text-muted">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
@@ -290,20 +291,7 @@ export default function DiscoveryHome({
         </div>
       </section>
 
-      {/* ═════ FOOTER MÍNIMO ═════ */}
-      <footer className="bg-canvas">
-        <div className="mx-auto max-w-[1200px] px-6 lg:px-12 py-10 text-[12px] text-muted flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>© {new Date().getFullYear()} Genealogic · Hecho en España</p>
-          <nav className="flex gap-5">
-            <Link href="/criadores" className="hover:text-ink">Criadores</Link>
-            <Link href="/propietarios" className="hover:text-ink">Propietarios</Link>
-            <Link href="/pricing" className="hover:text-ink">Precios</Link>
-            <Link href="/blog" className="hover:text-ink">Blog</Link>
-            <Link href="/api-docs" className="hover:text-ink">API</Link>
-            <Link href="/legal" className="hover:text-ink">Legal</Link>
-          </nav>
-        </div>
-      </footer>
+      {/* Footer global lo aporta el layout. */}
     </main>
   )
 }

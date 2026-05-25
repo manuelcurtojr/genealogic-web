@@ -49,7 +49,7 @@ export default function LandingPage({ breeds, featuredDogs, cockerPhotos = [] }:
       <Pricing />
       <FAQ />
       <FinalCta />
-      <Footer />
+      {/* Footer lo aporta (public)/layout.tsx con MarketingFooter global. */}
     </main>
   )
 }

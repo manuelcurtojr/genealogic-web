@@ -12,6 +12,7 @@
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import MarketingHeader from '@/components/marketing/marketing-header'
+import MarketingFooter from '@/components/marketing/marketing-footer'
 import DiscoveryHome from '@/components/marketing/discovery-home'
 
 export const dynamic = 'force-dynamic'
@@ -49,17 +50,20 @@ export default async function Home() {
   ])
 
   return (
-    <div className="min-h-screen bg-canvas text-[var(--foreground)]">
+    <div className="min-h-screen bg-canvas text-[var(--foreground)] flex flex-col">
       <MarketingHeader />
-      <DiscoveryHome
-        counts={{
-          dogs: dogsCount.count || 0,
-          kennels: kennelsCount.count || 0,
-          breeds: breedsCount.count || 0,
-        }}
-        featuredDogs={featuredDogsRes.data || []}
-        featuredKennels={featuredKennelsRes.data || []}
-      />
+      <main className="flex-1">
+        <DiscoveryHome
+          counts={{
+            dogs: dogsCount.count || 0,
+            kennels: kennelsCount.count || 0,
+            breeds: breedsCount.count || 0,
+          }}
+          featuredDogs={featuredDogsRes.data || []}
+          featuredKennels={featuredKennelsRes.data || []}
+        />
+      </main>
+      <MarketingFooter />
     </div>
   )
 }

@@ -64,8 +64,10 @@ export default function MarketingHeader() {
           </Link>
         </div>
 
-        {/* Desktop */}
-        <div className="hidden lg:flex items-center gap-4 px-6 py-3 max-w-[1280px] mx-auto">
+        {/* Desktop — nav minimal: 3 items clave (las dos audiencias + precios).
+            Perros/Criaderos/Blog viven en el drawer (la búsqueda ya cubre
+            navegación directa al catálogo). */}
+        <div className="hidden lg:flex items-center gap-5 px-6 py-3 max-w-[1280px] mx-auto">
           <button
             onClick={() => setDrawerOpen(true)}
             aria-label="Abrir menú"
@@ -74,15 +76,12 @@ export default function MarketingHeader() {
             <Menu className="w-5 h-5" />
           </button>
           <Wordmark size="text-xl" />
-          <nav className="flex items-center gap-5 ml-2 text-[13.5px] font-medium text-body">
-            <Link href="/search" className="hover:text-ink transition">Perros</Link>
-            <Link href="/kennels" className="hover:text-ink transition">Criaderos</Link>
-            <Link href="/criadores" className="hover:text-ink transition">Para criadores</Link>
-            <Link href="/propietarios" className="hover:text-ink transition">Para propietarios</Link>
+          <nav className="flex items-center gap-6 ml-4 text-[14px] font-medium text-body">
+            <Link href="/criadores" className="hover:text-ink transition">Criadores</Link>
+            <Link href="/propietarios" className="hover:text-ink transition">Propietarios</Link>
             <Link href="/pricing" className="hover:text-ink transition">Precios</Link>
-            <Link href="/blog" className="hover:text-ink transition">Blog</Link>
           </nav>
-          <div className="flex-1 max-w-sm ml-2">
+          <div className="flex-1 max-w-md ml-auto">
             <SearchBar />
           </div>
           <Button href="/login" variant="ghost" size="sm">
