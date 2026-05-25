@@ -1,13 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Mail, Lock, User } from 'lucide-react'
+import { Mail, Lock, User, Store, Search } from 'lucide-react'
 import { AuthShell, Field, AuthSubmit, AuthError, GoogleButton, OAuthDivider } from '@/components/auth/auth-shell'
+import {
+  parseIntentFromQuery,
+  saveIntentClient,
+  destinationForIntent,
+  type SignupIntentData,
+} from '@/lib/signup-intent'
 
-export default function RegisterPage() {
+function RegisterInner() {
+  const searchParams = useSearchParams()
+  const intentData: SignupIntentData | null = parseIntentFromQuery(searchParams)
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,8 +26,15 @@ export default function RegisterPage() {
   const [acceptTerms, setAcceptTerms] = useState(false)
   const router = useRouter()
 
+  // Persistir intent al cargar la página — sobrevive a OAuth redirect
+  useEffect(() => {
+    if (intentData) saveIntentClient(intentData)
+  }, [intentData])
+
+  // Destino post-signup (memoizable — depende de intent)
+  const destination = destinationForIntent(intentData)
+
   const handleGoogle = async () => {
-    // Para registro con Google también exigimos que acepten términos primero
     if (!acceptTerms) {
       setError('Acepta los Términos y la Política de Privacidad para continuar.')
       return
@@ -26,10 +42,12 @@ export default function RegisterPage() {
     setError('')
     setOauthLoading(true)
     const supabase = createClient()
+    // Pasamos destination via ?next= para que /auth/callback lo respete
+    const next = encodeURIComponent(destination)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${next}`,
       },
     })
     if (error) {
@@ -56,20 +74,25 @@ export default function RegisterPage() {
       return
     }
 
-    router.push('/dashboard')
+    router.push(destination)
   }
+
+  // Branding contextual según intent — el header del shell cambia
+  const shellProps = intentBranding(intentData)
 
   return (
     <AuthShell
-      title="Crea tu"
-      titleTail="cuenta."
-      subtitle="Sube tus perros, conecta su genealogía y deja que el mundo encuentre lo que crías. Gratis para empezar, sin tarjeta."
+      title={shellProps.title}
+      titleTail={shellProps.titleTail}
+      subtitle={shellProps.subtitle}
       footer={{
         question: '¿Ya tienes cuenta?',
         label: 'Iniciar sesión',
-        href: '/login',
+        href: intentData ? `/login?intent=${intentData.intent}&plan=${intentData.plan}` : '/login',
       }}
     >
+      {intentData && <IntentBadge data={intentData} />}
+
       <GoogleButton
         onClick={handleGoogle}
         loading={oauthLoading}
@@ -117,7 +140,7 @@ export default function RegisterPage() {
           <input
             type="checkbox"
             checked={acceptTerms}
-            onChange={e => setAcceptTerms(e.target.checked)}
+            onChange={(e) => setAcceptTerms(e.target.checked)}
             className="mt-0.5 h-4 w-4 cursor-pointer rounded border-hairline accent-[color:var(--ink)]"
           />
           <span className="text-[12.5px] leading-[1.5] text-body">
@@ -143,10 +166,65 @@ export default function RegisterPage() {
 
         <div className="pt-2">
           <AuthSubmit loading={loading} loadingLabel="Creando cuenta…" disabled={!acceptTerms}>
-            Crear cuenta gratis
+            {shellProps.submitLabel}
           </AuthSubmit>
         </div>
       </form>
     </AuthShell>
+  )
+}
+
+export default function RegisterPage() {
+  // Suspense porque useSearchParams() es async-aware
+  return (
+    <Suspense fallback={null}>
+      <RegisterInner />
+    </Suspense>
+  )
+}
+
+// ─── Helpers UI ─────────────────────────────────────────────────────────────
+
+function intentBranding(data: SignupIntentData | null) {
+  if (!data) {
+    return {
+      title: 'Crea tu',
+      titleTail: 'cuenta.',
+      subtitle: 'Sube tus perros, conecta su genealogía y deja que el mundo encuentre lo que crías. Gratis para empezar, sin tarjeta.',
+      submitLabel: 'Crear cuenta gratis',
+    }
+  }
+  if (data.intent === 'buyer') {
+    return {
+      title: 'Crea tu',
+      titleTail: 'cuenta.',
+      subtitle: 'Crea cuenta para gestionar tus reservas y ver tus perros recibidos. Sin coste.',
+      submitLabel: 'Crear cuenta',
+    }
+  }
+  // breeder
+  const planLabel = data.plan === 'pro' ? 'Pro' : data.plan === 'premium' ? 'Premium' : 'Free'
+  return {
+    title: data.plan === 'free' ? 'Empieza' : 'Activa',
+    titleTail: data.plan === 'free' ? 'gratis.' : `Genealogic ${planLabel}.`,
+    subtitle: data.plan === 'free'
+      ? 'Crea tu cuenta para registrar tu criadero y empezar a publicar tus perros.'
+      : `Tu cuenta empieza en Free; ${planLabel} se activa cuando hayas creado tu afijo. Sin compromiso, cancelas cuando quieras.`,
+    submitLabel: data.plan === 'free' ? 'Crear cuenta gratis' : `Crear cuenta y continuar`,
+  }
+}
+
+function IntentBadge({ data }: { data: SignupIntentData }) {
+  const Icon = data.intent === 'buyer' ? Search : Store
+  const label = data.intent === 'buyer'
+    ? 'Cuenta de comprador'
+    : data.plan === 'free'
+      ? 'Plan Free · sin tarjeta'
+      : `Plan ${data.plan === 'pro' ? 'Pro' : 'Premium'} · activación tras crear criadero`
+  return (
+    <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-card px-3 py-1.5">
+      <Icon className="h-3.5 w-3.5 text-ink" />
+      <span className="text-[12px] font-semibold text-ink">{label}</span>
+    </div>
   )
 }

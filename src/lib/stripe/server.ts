@@ -44,6 +44,24 @@ export function isStripeConfigured(): boolean {
 }
 
 /**
+ * True si está todo lo necesario para lanzar un Checkout Session de
+ * suscripción (Pro/Premium). Requiere también las IDs de precio
+ * configuradas en Vercel:
+ *   STRIPE_PRICE_PRO_MONTHLY      (price_xxx — Pro 39€/mes recurring)
+ *   STRIPE_PRICE_PREMIUM_MONTHLY  (price_xxx — Premium 149€/mes recurring)
+ *
+ * Si falta cualquiera, la UI debe mostrar lista de espera en vez de
+ * "pagar y activar" — evita botones rotos.
+ */
+export function isSubscriptionCheckoutAvailable(): boolean {
+  return (
+    isStripeConfigured() &&
+    !!process.env.STRIPE_PRICE_PRO_MONTHLY &&
+    !!process.env.STRIPE_PRICE_PREMIUM_MONTHLY
+  )
+}
+
+/**
  * Crea una cuenta Connect Express para un criador y devuelve account_id.
  * Si el criador ya tiene una, devuelve la existente.
  */

@@ -1,12 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Sparkles, Check, ArrowUpRight } from 'lucide-react'
+import { Sparkles, Check, ArrowUpRight, Clock, MailIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getPlanLabel } from '@/lib/permissions'
+import { isSubscriptionCheckoutAvailable } from '@/lib/stripe/server'
 
 export const metadata = { title: 'Suscripción · Genealogic Pro' }
 
-export default async function SuscripcionPage() {
+export default async function SuscripcionPage({
+  searchParams,
+}: { searchParams: Promise<{ activate?: string }> }) {
+  const sp = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -21,6 +25,15 @@ export default async function SuscripcionPage() {
   const isFounder = Boolean((profile as any)?.plan_is_founder)
   const startedAt = (profile as any)?.plan_started_at
   const startedDate = startedAt ? new Date(startedAt) : null
+
+  // Si llega ?activate=pro|premium tras crear kennel, mostrar pantalla
+  // dedicada "activa tu plan" antes que el detalle normal.
+  const activatePlan = (sp.activate === 'pro' || sp.activate === 'premium')
+    ? sp.activate
+    : null
+  // Solo mostrar pantalla "activate" si todavía está en plan free
+  // (si ya está en Pro/Premium, no tiene sentido)
+  const showActivate = activatePlan && plan === 'free'
 
   const proIncluded = [
     'Pipeline de reservas (Kanban con drag&drop)',
@@ -41,6 +54,11 @@ export default async function SuscripcionPage() {
     'Featured listing incluido',
     'Soporte prioritario',
   ]
+
+  // Pantalla "Activa tu plan" — usuario recién registrado con plan elegido
+  if (showActivate) {
+    return <ActivatePlanScreen plan={activatePlan!} />
+  }
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -130,5 +148,136 @@ export default async function SuscripcionPage() {
         </div>
       )}
     </div>
+  )
+}
+
+// ─── Pantalla "Activa tu plan" ──────────────────────────────────────────────
+// Se muestra cuando el user llega con ?activate=pro|premium tras crear su
+// kennel desde el flujo de signup (pricing → register → kennel/new).
+//
+// Comportamiento:
+//   - Si Stripe Checkout está disponible en el server (STRIPE_SECRET_KEY +
+//     productos configurados): botón "Pagar y activar" → Checkout Session.
+//   - Si NO está disponible (situación actual hasta que setup Stripe Subscriptions
+//     en producción): pantalla "Lista de espera" + CTA emailto + botón
+//     "Empezar gratis mientras tanto" → /dashboard.
+//
+// Esto permite que el flujo TENGA SENTIDO end-to-end sin Stripe activado:
+// el user crea cuenta → crea kennel → ve "te avisamos cuando activamos Pro"
+// → usa Free mientras tanto. Sin pantallas rotas, sin promesas vacías.
+
+function ActivatePlanScreen({ plan }: { plan: 'pro' | 'premium' }) {
+  const checkoutReady = isSubscriptionCheckoutAvailable()
+  const planLabel = plan === 'pro' ? 'Pro' : 'Premium'
+  const planPrice = plan === 'pro' ? '39€/mes' : '149€/mes'
+
+  return (
+    <div className="max-w-xl mx-auto py-8">
+      {/* Header con celebración */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-50 mb-3">
+          <Check className="w-6 h-6 text-emerald-700" strokeWidth={3} />
+        </div>
+        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">
+          Criadero creado ✓
+        </p>
+        <h1 className="mt-2 text-3xl font-bold text-ink tracking-tight">
+          Activa Genealogic {planLabel}
+        </h1>
+        <p className="mt-3 text-body">
+          Tu criadero está creado. Falta un último paso para activar tu plan.
+        </p>
+      </div>
+
+      {checkoutReady ? (
+        <CheckoutCard plan={plan} planLabel={planLabel} planPrice={planPrice} />
+      ) : (
+        <WaitlistCard plan={plan} planLabel={planLabel} planPrice={planPrice} />
+      )}
+
+      <p className="mt-6 text-center text-xs text-muted">
+        ¿Cambiaste de idea?{' '}
+        <a href="/dashboard" className="underline text-ink">
+          Ir al dashboard
+        </a>
+      </p>
+    </div>
+  )
+}
+
+function CheckoutCard({
+  plan, planLabel, planPrice,
+}: { plan: string; planLabel: string; planPrice: string }) {
+  return (
+    <div className="rounded-2xl border-2 border-ink bg-canvas p-6">
+      <div className="flex items-baseline justify-between gap-3 mb-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Plan elegido</p>
+          <p className="text-xl font-bold text-ink">Genealogic {planLabel}</p>
+        </div>
+        <p className="text-2xl font-bold text-ink">{planPrice}</p>
+      </div>
+      <p className="text-sm text-body mb-5">
+        Pago seguro con Stripe. Cancela cuando quieras. La primera factura llega tras
+        el primer pago confirmado.
+      </p>
+      <Button
+        href={`/api/checkout/start?plan=${plan}`}
+        variant="primary"
+        size="md"
+        className="w-full"
+      >
+        Pagar y activar {planLabel}
+        <ArrowUpRight className="w-4 h-4" />
+      </Button>
+    </div>
+  )
+}
+
+function WaitlistCard({
+  plan, planLabel, planPrice,
+}: { plan: string; planLabel: string; planPrice: string }) {
+  return (
+    <>
+      <div className="rounded-2xl border-2 border-amber-200 bg-amber-50/50 p-5 mb-4">
+        <div className="flex items-start gap-3">
+          <Clock className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-bold text-amber-900 mb-1">
+              {planLabel} a {planPrice} — abriendo gradualmente
+            </p>
+            <p className="text-sm text-amber-900 leading-relaxed">
+              Estamos abriendo Genealogic {planLabel} por tandas para asegurar buen
+              soporte a cada nuevo criador. Te avisamos en cuanto tu cuenta esté lista
+              (suele ser cuestión de días).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-hairline bg-canvas p-5 mb-4">
+        <p className="text-sm font-semibold text-ink mb-3">¿Quieres saltarte la cola?</p>
+        <p className="text-sm text-body mb-4">
+          Escríbenos y activamos tu cuenta {planLabel} en menos de 24h con el precio
+          Founder (39€/mes para siempre si entras antes del lanzamiento público).
+        </p>
+        <Button
+          href={`mailto:hola@genealogic.io?subject=Activar%20${planLabel}%20-%20Founder&body=Hola,%20acabo%20de%20crear%20mi%20criadero%20en%20Genealogic%20y%20quiero%20activar%20el%20plan%20${planLabel}.%20Mi%20email%20es:%20`}
+          variant="primary"
+          size="md"
+          className="w-full"
+        >
+          <MailIcon className="w-4 h-4" />
+          Pedir activación {planLabel}
+        </Button>
+      </div>
+
+      <a
+        href="/dashboard"
+        className="block text-center rounded-xl border border-hairline bg-canvas px-5 py-3 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink"
+      >
+        Empezar en Free mientras tanto →
+      </a>
+    </>
   )
 }

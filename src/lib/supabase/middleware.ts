@@ -67,10 +67,14 @@ export async function updateSession(request: NextRequest) {
     '/reservas', '/clientes', '/contactos', '/emailbot', '/conocimiento',
     '/web', '/estadisticas', '/visitas', '/newsletter', '/cuenta',
   ]
-  // /newsletter/unsubscribe es PÚBLICO (link desde emails enviados a contactos
-  // que ni siquiera son usuarios de Genealogic). Excluir de pro check.
+  // EXCEPCIONES dentro de las rutas Pro:
+  //  - /newsletter/unsubscribe — público (links en emails a no-usuarios)
+  //  - /cuenta/suscripcion — accesible para FREE (entrada al upgrade desde
+  //    el flujo signup→register?plan=pro→kennel/new→activar plan)
   const isPublicNewsletterPath = pathname.startsWith('/newsletter/unsubscribe')
-  const isProRoute = !isPublicNewsletterPath && proRoutePrefixes.some(p => pathname === p || pathname.startsWith(p + '/'))
+  const isUpgradeEntryPath = pathname === '/cuenta/suscripcion' || pathname.startsWith('/cuenta/suscripcion/')
+  const isProException = isPublicNewsletterPath || isUpgradeEntryPath
+  const isProRoute = !isProException && proRoutePrefixes.some(p => pathname === p || pathname.startsWith(p + '/'))
 
   // Protected routes — redirect to login if not authenticated
   const isProtectedRoute = !isDogDetailPage && !isKennelDetailPage && !isKennelDirectoryPage && !isLitterDetailPage && !isPricingPage && !isSearchPage && (
