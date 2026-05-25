@@ -97,10 +97,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const url = `https://genealogic.io/dogs/${dog.slug || id}`
   const image = dog.thumbnail_url || 'https://genealogic.io/icon.svg'
 
-  // Title más rico: incluye raza para keyword matching ("Isis Rr — Presa Canario | Genealogic")
+  // Title más rico: incluye raza para keyword matching ("Isis Rr — Presa Canario · Genealogic")
+  // El layout añade " · Genealogic" via template, así que NO incluimos sufijo "| Genealogic"
+  // para no duplicar.
   const titleParts: string[] = [dog.name]
   if (breed) titleParts.push(breed)
-  const title = `${titleParts.join(' — ')} | Genealogic`
+  const title = titleParts.join(' — ')
 
   return {
     title,
