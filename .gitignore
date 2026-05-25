@@ -41,3 +41,8 @@ yarn-error.log*
 next-env.d.ts
 supabase/.temp
 setup-ai-keys.sh
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
