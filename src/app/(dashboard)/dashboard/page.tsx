@@ -4,6 +4,11 @@ import { Dog, Baby, PawPrint, Tag, Plus, Stethoscope, ArrowRight, Search, Crown 
 import { BRAND } from '@/lib/constants'
 import StatCard from '@/components/dashboard/stat-card'
 import DailyCheckIn from '@/components/dashboard/daily-checkin'
+import OnboardingCard from '@/components/onboarding/onboarding-card'
+import WelcomeNoKennel from '@/components/onboarding/welcome-no-kennel'
+import { getOnboardingStatus } from '@/lib/onboarding/checklist'
+import { hasProAccess } from '@/lib/permissions'
+import { getEffectiveRoles } from '@/lib/auth/roles'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -17,7 +22,7 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('display_name, avatar_url, email, created_at')
+    .select('display_name, avatar_url, email, created_at, plan')
     .eq('id', user.id)
     .single()
 
@@ -25,6 +30,27 @@ export default async function DashboardPage() {
   const { data: kennelArr } = await supabase.from('kennels').select('id, name').eq('owner_id', user.id).limit(1)
   const kennel = kennelArr?.[0] || null
   const isBreeder = !!kennel
+
+  // SIN KENNEL: pantalla welcome (criador nuevo) o redirect a /mis-reservas
+  // si es client puro. Reemplaza el dashboard "frío" antiguo.
+  if (!isBreeder) {
+    const roles = await getEffectiveRoles(user.id)
+    return (
+      <WelcomeNoKennel
+        displayName={profile?.display_name || null}
+        isClient={roles.isClient}
+      />
+    )
+  }
+
+  // CON KENNEL: cargar estado de onboarding en paralelo al resto
+  const userPlan = (profile as { plan?: string })?.plan || 'free'
+  const isPro = hasProAccess(userPlan)
+  const onboardingStatus = await getOnboardingStatus({
+    kennelId: kennel.id,
+    userId: user.id,
+    isPro,
+  })
 
   // Fetch dashboard data in parallel
   const [
@@ -51,6 +77,13 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8 sm:space-y-10">
+      {/* Onboarding checklist — solo si faltan pasos required y user no la
+       *  ha dismisseado. La card decide visibilidad sola; aquí siempre la
+       *  pasamos para que se hidrate con el localStorage. */}
+      {!onboardingStatus.requiredComplete && (
+        <OnboardingCard kennelId={kennel.id} status={onboardingStatus} />
+      )}
+
       {/* PageHeader Cal — eyebrow + display title + subtitle + CTAs */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
