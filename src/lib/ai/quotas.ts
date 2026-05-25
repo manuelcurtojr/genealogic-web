@@ -19,12 +19,18 @@ import 'server-only'
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import type { PlanTier } from './models'
 
-/** -1 = ilimitado. 0 = sin acceso al bot. */
+/** -1 = ilimitado. 0 = sin acceso al bot.
+ *  Mantenemos los plan tiers legacy (starter/pro/premium) por si llega un
+ *  usuario antiguo con esos valores en profiles.plan; ahora los canónicos
+ *  son free/kennel/kennel_pro. */
 export const BOT_REPLY_QUOTAS: Record<PlanTier, number> = {
-  free:     0,    // Sin bot
-  starter:  100,  // Hobbyist
-  pro:      500,  // Profesional
-  premium:  -1,   // Ilimitado
+  free:        0,    // Sin bot
+  kennel:      100,  // Plan base
+  kennel_pro:  500,  // Plan premium con bot
+  // Legacy mappings (preservan comportamiento histórico)
+  starter:     100,
+  pro:         500,
+  premium:     -1,
 }
 
 export type QuotaStatus = {

@@ -4,8 +4,13 @@ import { createOrGetCustomer, createCheckoutSession } from '@/lib/stripe'
 
 /**
  * POST /api/billing/checkout
- * Body: { plan: 'pro'|'premium', interval: 'monthly'|'annual' }
+ * Body: { plan: 'kennel'|'kennel_pro' (canon) o 'pro'|'premium' (legacy),
+ *         interval: 'monthly'|'annual' }
  * Devuelve { url } a Stripe Checkout.
+ *
+ * Acepta los nombres legacy (pro/premium) y los nuevos (kennel/kennel_pro)
+ * y los mapea a las env vars STRIPE_PRICE_KENNEL_* / STRIPE_PRICE_KENNEL_PRO_*
+ * con fallback a las legacy STRIPE_PRICE_PRO_* / STRIPE_PRICE_PREMIUM_*.
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -13,18 +18,32 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { plan, interval } = body
+  const { plan: rawPlan, interval } = body as { plan?: string; interval?: string }
 
+  // Normalizar plan recibido al canon nuevo
+  const plan =
+    rawPlan === 'kennel_pro' || rawPlan === 'premium' ? 'kennel_pro' :
+    rawPlan === 'kennel' || rawPlan === 'pro' || rawPlan === 'starter' ? 'kennel' :
+    null
+
+  if (!plan || (interval !== 'monthly' && interval !== 'annual')) {
+    return NextResponse.json({ error: 'invalid_plan_or_interval' }, { status: 400 })
+  }
+
+  // Mapeo plan+interval → env var (preferir nuevos, fallback legacy)
   const priceMap: Record<string, string | undefined> = {
-    'pro_monthly': process.env.STRIPE_PRICE_PRO_MONTHLY,
-    'pro_annual': process.env.STRIPE_PRICE_PRO_ANNUAL,
-    'premium_monthly': process.env.STRIPE_PRICE_PREMIUM_MONTHLY,
-    'premium_annual': process.env.STRIPE_PRICE_PREMIUM_ANNUAL,
+    'kennel_monthly':     process.env.STRIPE_PRICE_KENNEL_MONTHLY     || process.env.STRIPE_PRICE_PRO_MONTHLY,
+    'kennel_annual':      process.env.STRIPE_PRICE_KENNEL_ANNUAL      || process.env.STRIPE_PRICE_PRO_ANNUAL,
+    'kennel_pro_monthly': process.env.STRIPE_PRICE_KENNEL_PRO_MONTHLY || process.env.STRIPE_PRICE_PREMIUM_MONTHLY,
+    'kennel_pro_annual':  process.env.STRIPE_PRICE_KENNEL_PRO_ANNUAL  || process.env.STRIPE_PRICE_PREMIUM_ANNUAL,
   }
   const key = `${plan}_${interval}`
   const priceId = priceMap[key]
   if (!priceId) {
-    return NextResponse.json({ error: `Price no configurado para ${key}. Define la env var correspondiente.` }, { status: 400 })
+    return NextResponse.json(
+      { error: `Price no configurado para ${key}. Define la env var STRIPE_PRICE_${plan.toUpperCase()}_${interval.toUpperCase()}.` },
+      { status: 503 },
+    )
   }
 
   const { data: profile } = await supabase
@@ -49,12 +68,13 @@ export async function POST(request: NextRequest) {
     const session = await createCheckoutSession({
       customerId,
       priceId,
-      successUrl: `${origin}/cuenta/suscripcion?checkout=success`,
-      cancelUrl: `${origin}/cuenta/suscripcion?checkout=cancelled`,
+      successUrl: `${origin}/cuenta/facturacion?checkout=success`,
+      cancelUrl: `${origin}/pricing?cancelled=1`,
       metadata: { user_id: user.id, plan, interval },
     })
 
     return NextResponse.json({ url: session.url })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

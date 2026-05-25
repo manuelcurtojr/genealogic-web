@@ -12,11 +12,15 @@ import AdminStatsClient from '@/components/admin/admin-stats-client'
 export const dynamic = 'force-dynamic'
 
 // Precios mensuales asumidos (EUR). Configurables aquí si cambian.
+// Nuevos planes (2026-05): kennel 29, kennel_pro 49 (Founder).
+// Legacy aliases (starter/pro/premium) mapean al precio del plan equivalente.
 const PLAN_PRICES_EUR: Record<string, number> = {
   free: 0,
-  starter: 19,
-  pro: 49,
-  premium: 99,
+  kennel: 29,
+  kennel_pro: 49,
+  starter: 29,   // legacy → kennel
+  pro: 29,       // legacy → kennel
+  premium: 49,   // legacy → kennel_pro (Founder)
 }
 
 type Snapshot = {
@@ -26,7 +30,7 @@ type Snapshot = {
     kennels_total: number; kennels_claimed: number
     paid_users_count: number
   }
-  plan_counts: { free: number; starter: number; pro: number; premium: number }
+  plan_counts: { free: number; starter: number; pro: number; premium: number; kennel?: number; kennel_pro?: number }
   role: { owner: number; breeder: number; admin: number }
   intent: { breeder: number; owner: number; null_intent: number }
   sex: { male: number; female: number; unknown: number }
@@ -78,8 +82,10 @@ export default async function AdminStatsPage() {
 
   const s = data as Snapshot
 
-  // MRR estimado a partir de plan_counts
+  // MRR estimado a partir de plan_counts (incluye nuevos + legacy)
   const mrrEur =
+    (s.plan_counts.kennel ?? 0) * PLAN_PRICES_EUR.kennel +
+    (s.plan_counts.kennel_pro ?? 0) * PLAN_PRICES_EUR.kennel_pro +
     s.plan_counts.starter * PLAN_PRICES_EUR.starter +
     s.plan_counts.pro * PLAN_PRICES_EUR.pro +
     s.plan_counts.premium * PLAN_PRICES_EUR.premium
@@ -128,9 +134,8 @@ export default async function AdminStatsPage() {
         ],
         plan: [
           { name: 'Free', value: s.plan_counts.free, color: '#d1d5db' },
-          { name: 'Starter', value: s.plan_counts.starter, color: '#3b82f6' },
-          { name: 'Pro', value: s.plan_counts.pro, color: '#fb923c' },
-          { name: 'Premium', value: s.plan_counts.premium, color: '#8b5cf6' },
+          { name: 'Kennel', value: (s.plan_counts.kennel ?? 0) + s.plan_counts.starter + s.plan_counts.pro, color: '#fb923c' },
+          { name: 'Kennel Pro', value: (s.plan_counts.kennel_pro ?? 0) + s.plan_counts.premium, color: '#8b5cf6' },
         ],
         sex: [
           { name: 'Machos', value: s.sex.male, color: '#017DFA' },

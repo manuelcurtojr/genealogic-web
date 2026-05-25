@@ -3,6 +3,7 @@ import DashboardShell from '@/components/layout/dashboard-shell'
 import MarketingHeader from '@/components/marketing/marketing-header'
 import MarketingFooter from '@/components/marketing/marketing-footer'
 import { getEffectiveRoles } from '@/lib/auth/roles'
+import { isEnterpriseUser } from '@/lib/permissions'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -36,8 +37,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .limit(1)
   const kennel = kennelArr?.[0] || null
 
-  const plan = (profile as any)?.plan || 'free'
-  const planIsFounder = Boolean((profile as any)?.plan_is_founder)
+  // Enterprise/founder override: usuarios con cuenta "comp" siempre ven
+  // kennel_pro independientemente del plan que tengan en DB. Esto cubre
+  // bugs de propagación de plan, migrations en vuelo, y al fundador.
+  const rawPlan = (profile as any)?.plan || 'free'
+  const plan = isEnterpriseUser(user.id) ? 'kennel_pro' : rawPlan
+  const planIsFounder = isEnterpriseUser(user.id) || Boolean((profile as any)?.plan_is_founder)
 
   // Detecta roles efectivos del user (isClient = tiene reservas o perros transferidos).
   // Si es client, el sidebar muestra el bloque "Propietario" con Mis reservas/perros.

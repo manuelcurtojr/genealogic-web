@@ -272,7 +272,7 @@ export default function DiscoveryHome({
               className="col-span-2 sm:row-span-2"
               icon={GitBranch}
               title="Pedigree verificable"
-              desc="Árbol genealógico hasta 5 generaciones, COI calculado, ancestros enlazados al criadero original. Más fiable que un Excel."
+              desc="Árbol genealógico completo sin límite de generaciones, COI calculado, ancestros enlazados al criadero original. Más fiable que un Excel."
               color="#FE6620"
               size="large"
             />

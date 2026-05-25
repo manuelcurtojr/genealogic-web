@@ -6,14 +6,16 @@ import { EmailLayout, H1, P, Btn, Eyebrow, InfoCard, Divider, Small, SITE_URL, C
 
 export type SubscriptionActivatedProps = {
   recipientName: string | null
-  plan: 'pro' | 'premium'
+  /** Acepta los nuevos nombres canónicos + los legacy pro/premium */
+  plan: 'kennel' | 'kennel_pro' | 'pro' | 'premium'
 }
 
 export default function SubscriptionActivatedEmail({
   recipientName, plan,
 }: SubscriptionActivatedProps) {
   const name = recipientName?.split(' ')[0] || null
-  const planLabel = plan === 'pro' ? 'Pro' : 'Premium'
+  const isKennelPro = plan === 'kennel_pro' || plan === 'premium'
+  const planLabel = isKennelPro ? 'Kennel Pro' : 'Kennel'
 
   return (
     <EmailLayout preview={`Genealogic ${planLabel} activado. Bienvenido al siguiente nivel.`}>

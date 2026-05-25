@@ -17,7 +17,7 @@
  */
 
 export type SignupIntent = 'breeder' | 'buyer' | 'owner'
-export type SignupPlan = 'free' | 'pro' | 'premium'
+export type SignupPlan = 'free' | 'kennel' | 'kennel_pro' | 'pro' | 'premium'
 
 export type SignupIntentData = {
   intent: SignupIntent
@@ -32,7 +32,7 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 días
 // 'buyer' = legacy (mantenido por compatibilidad con URLs antiguas).
 //   Internamente se trata como 'owner'.
 const VALID_INTENTS: SignupIntent[] = ['breeder', 'buyer', 'owner']
-const VALID_PLANS: SignupPlan[] = ['free', 'pro', 'premium']
+const VALID_PLANS: SignupPlan[] = ['free', 'kennel', 'kennel_pro', 'pro', 'premium']
 
 /** Lee intent de query params, normaliza, devuelve null si inválido. */
 export function parseIntentFromQuery(

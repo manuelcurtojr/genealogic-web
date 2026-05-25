@@ -123,7 +123,7 @@ export default function OwnersLanding() {
             <Feature
               icon={GitBranch}
               title="Pedigree y árbol genealógico"
-              desc="Hasta 5 generaciones de ancestros con foto y enlace al criadero original. Investiga la sangre real de tu perro."
+              desc="Genealogía completa sin límite de generaciones, ancestros con foto y enlace al criadero original. Investiga la sangre real de tu perro."
             />
             <Feature
               icon={FileText}

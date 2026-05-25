@@ -126,7 +126,7 @@ function BrandPanel() {
             <FeatureRow
               icon={<GitBranch className="h-4 w-4" />}
               title="Árbol genealógico verificable"
-              desc="Hasta 5 generaciones, cálculo automático de COI."
+              desc="Genealogía completa sin límite de generaciones, COI automático."
             />
             <FeatureRow
               icon={<Sparkles className="h-4 w-4" />}

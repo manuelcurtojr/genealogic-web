@@ -1161,7 +1161,7 @@ function Step({
 
 // ─── Pricing ─────────────────────────────────────────────────────────────
 // Refleja exactamente la página /pricing y el flujo signup intent-aware.
-// 3 tiers reales: Free 0€ · Pro 39€ Founder · Premium 149€ (manual sales).
+// 3 tiers: Free 0€ · Kennel 29€ · Kennel Pro 49€ (precio Founder de por vida).
 function Pricing() {
   return (
     <section id="precios" className="border-b border-hairline">
@@ -1173,12 +1173,13 @@ function Pricing() {
           className="mt-3 max-w-[18ch] font-semibold text-ink"
           style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
         >
-          Datos gratis. Herramientas premium.
+          Datos gratis. Herramientas que venden.
         </h2>
         <p className="mt-5 sm:mt-6 max-w-[560px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
-          El grafo genealógico es gratis para siempre. El tier Pro añade las
-          herramientas que un criador profesional necesita para vender mejor.
-          Sin tarjeta para empezar.
+          La genealogía es siempre completa, sin límite de generaciones, en
+          todos los planes. Los planes de pago añaden las herramientas que un
+          criadero profesional necesita para vender mejor. Sin tarjeta para
+          empezar.
         </p>
 
         <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-6 md:grid-cols-3">
@@ -1192,78 +1193,82 @@ function Pricing() {
               Para dueños y criadores hobby. Sin tarjeta.
             </p>
             <ul className="mt-6 space-y-2.5 text-[14px] flex-1">
-              <PricingRow>Perros ilimitados con genealogía</PricingRow>
+              <PricingRow>Hasta 10 perros con ficha completa</PricingRow>
+              <PricingRow>Genealogía completa, sin límite de generaciones</PricingRow>
               <PricingRow>Importación de genealogías con IA</PricingRow>
               <PricingRow>Búsqueda pública del registro</PricingRow>
               <PricingRow>Simulador de cruces con Punnett</PricingRow>
               <PricingRow>Calendario de celos, partos y vet</PricingRow>
-              <PricingRow>App móvil iOS / Android</PricingRow>
+              <PricingRow>App móvil (cuando salga)</PricingRow>
             </ul>
             <Button href="/register?intent=breeder&plan=free" variant="secondary" className="mt-7 w-full">
               Empezar gratis
             </Button>
           </div>
 
-          {/* Pro (highlighted) */}
+          {/* Kennel (highlighted) */}
           <div className="relative rounded-[16px] bg-surface-dark p-6 sm:p-7 text-on-dark flex flex-col">
             <span className="absolute -top-3 right-6 rounded-full bg-[color:var(--brand)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
-              Founder · 39€/mes para siempre
+              Más popular
             </span>
-            <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-on-dark-soft">Pro</p>
+            <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-on-dark-soft">Kennel</p>
             <p className="mt-3 text-[36px] font-semibold" style={{ letterSpacing: '-0.02em' }}>
-              39 € <span className="text-[14px] font-normal text-on-dark-soft">/ mes</span>
+              29 € <span className="text-[14px] font-normal text-on-dark-soft">/ mes</span>
             </p>
             <p className="mt-2 text-[14px] text-on-dark-soft">
-              Criadero profesional. Vende mejor con menos esfuerzo.
+              Criadero profesional. Gestiona reservas, clientes y vet sin Excel.
             </p>
             <ul className="mt-6 space-y-2.5 text-[14px] flex-1">
-              <PricingRow dark>Todo lo de Free</PricingRow>
+              <PricingRow dark>Todo lo de Free + perros ilimitados</PricingRow>
               <PricingRow dark>Pipeline de reservas (Ventas + Clientes)</PricingRow>
+              <PricingRow dark>Contratos digitales y pagos a plazos</PricingRow>
+              <PricingRow dark>Calendario veterinario y reproductivo</PricingRow>
+              <PricingRow dark>Importador IA sin límite</PricingRow>
               <PricingRow dark>Contactos: suscriptores, leads, clientes</PricingRow>
-              <PricingRow dark>Web pública con dominio propio</PricingRow>
-              <PricingRow dark>Emailbot multi-modelo (Claude/GPT/Gemini)</PricingRow>
-              <PricingRow dark>Newsletter a tu lista</PricingRow>
               <PricingRow dark>Visitas y estadísticas del perfil</PricingRow>
             </ul>
             <Button
-              href="/register?intent=breeder&plan=pro"
+              href="/register?intent=breeder&plan=kennel"
               variant="secondary"
               className="mt-7 w-full !bg-canvas !text-ink"
             >
-              Empezar Pro
+              Empezar Kennel
             </Button>
           </div>
 
-          {/* Premium */}
-          <div className="rounded-[16px] border border-hairline bg-canvas p-6 sm:p-7 flex flex-col">
-            <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">Premium</p>
+          {/* Kennel Pro */}
+          <div className="relative rounded-[16px] border border-hairline bg-canvas p-6 sm:p-7 flex flex-col">
+            <span className="absolute -top-3 right-6 rounded-full bg-[color:var(--brand)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
+              Founder · 49€ para siempre
+            </span>
+            <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">Kennel Pro</p>
             <p className="mt-3 text-[36px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
-              149 € <span className="text-[14px] font-normal text-muted">/ mes</span>
+              49 € <span className="text-[14px] font-normal text-muted">/ mes</span>
             </p>
             <p className="mt-2 text-[14px] text-body">
-              Criaderos grandes con multi-afijo y necesidad de API.
+              Tu marca, tu web, tu emailbot. Vende mientras duermes.
             </p>
             <ul className="mt-6 space-y-2.5 text-[14px] flex-1">
-              <PricingRow>Todo lo de Pro</PricingRow>
-              <PricingRow>Multi-kennel (varios afijos)</PricingRow>
-              <PricingRow>API B2B para integraciones</PricingRow>
-              <PricingRow>5 verificaciones oficiales /mes</PricingRow>
-              <PricingRow>Featured listing incluido</PricingRow>
-              <PricingRow>Soporte prioritario</PricingRow>
+              <PricingRow>Todo lo de Kennel</PricingRow>
+              <PricingRow>Web pública con dominio propio</PricingRow>
+              <PricingRow>Emailbot multi-modelo (Claude/GPT/Gemini)</PricingRow>
+              <PricingRow>Newsletter a tu lista</PricingRow>
+              <PricingRow>Pagos online integrados</PricingRow>
+              <PricingRow>Precio Founder congelado de por vida</PricingRow>
             </ul>
             <Button
-              href="mailto:hola@genealogic.io?subject=Plan%20Premium"
+              href="/register?intent=breeder&plan=kennel_pro"
               variant="secondary"
               className="mt-7 w-full"
             >
-              Hablar con nosotros
+              Empezar Kennel Pro
             </Button>
           </div>
         </div>
 
         <p className="mt-10 text-center text-[13px] text-muted">
-          Add-ons: verificación oficial 25–50€ · featured listing 20€/mes ·
-          custom domain 10€/mes
+          Solo los primeros 50 criaderos consiguen el precio Founder de 49€/mes
+          de por vida en Kennel Pro. Después subirá.
         </p>
       </div>
     </section>
@@ -1288,23 +1293,23 @@ function FAQ() {
   const faqs = [
     {
       q: '¿Es realmente gratis el tier Free?',
-      a: 'Sí. Perros ilimitados, importación con IA, búsqueda, simulador de cruces, calendario reproductivo y vet, app móvil. Para siempre, sin tarjeta. Solo se cobran las herramientas comerciales (pipeline, web, emailbot, newsletter) en los planes Pro y Premium.',
+      a: 'Sí. Hasta 10 perros con ficha completa, genealogía sin límite de generaciones, importación con IA, búsqueda pública, simulador de cruces, calendario reproductivo y vet. Para siempre, sin tarjeta. Solo se cobran las herramientas comerciales en Kennel y Kennel Pro.',
     },
     {
-      q: '¿Qué incluye el tier Pro a 39€/mes?',
-      a: 'Todo lo de Free + pipeline de reservas con vistas Ventas/Clientes y filtros por estado, panel unificado de Contactos (suscriptores newsletter + leads + clientes), web pública con dominio propio, emailbot multi-modelo (Claude/GPT/Gemini elegibles), newsletter a tu lista, visitas y estadísticas. El precio Founder de 39€ se mantiene para siempre si te subes antes del lanzamiento público.',
+      q: '¿Qué incluye Kennel a 29€/mes?',
+      a: 'Todo lo de Free + perros ilimitados, pipeline de reservas con vistas Ventas/Clientes, contratos digitales, pagos a plazos, calendario vet y reproductivo, importador IA sin límite, panel unificado de Contactos (suscriptores + leads + clientes) y estadísticas. Es la base operativa de un criadero profesional.',
     },
     {
-      q: '¿Y el plan Premium a 149€/mes?',
-      a: 'Para criaderos grandes con multi-afijo (varios kennels en una cuenta), necesidad de API B2B para integraciones, verificaciones oficiales mensuales y featured listing. Onboarding manual: escríbenos a hola@genealogic.io.',
+      q: '¿Y Kennel Pro a 49€/mes?',
+      a: 'Todo lo de Kennel + web pública con dominio propio, emailbot multi-modelo (Claude/GPT/Gemini) que responde leads 24/7, newsletter a tu lista y pagos online integrados. Es Kennel + tu marca activa vendiendo mientras duermes. El precio Founder de 49€ se queda congelado de por vida si entras entre los primeros 50 criaderos.',
     },
     {
-      q: '¿Qué pasa si paso de Free a Pro o Premium?',
+      q: '¿Qué pasa si paso de Free a Kennel o Kennel Pro?',
       a: 'Todos tus perros, genealogías y datos se mantienen idénticos. Solo se desbloquean nuevas secciones en el sidebar (Reservas, Contactos, Emailbot, Newsletter, Web). Misma cuenta, mismo dominio.',
     },
     {
       q: '¿Puedo usar mi propio dominio?',
-      a: 'Sí, en Pro y Premium. Conectas un dominio propio (criadero.com) desde Ajustes con un par de DNS records. Nuestro middleware sirve tu web directamente, sin subdominios feos ni redirects extra.',
+      a: 'Sí, en Kennel Pro. Conectas un dominio propio (criadero.com) desde Ajustes con un par de DNS records. Nuestro middleware sirve tu web directamente, sin subdominios feos ni redirects extra.',
     },
     {
       q: '¿Cómo funciona el emailbot?',
@@ -1312,7 +1317,7 @@ function FAQ() {
     },
     {
       q: '¿Puedo cancelar cuando quiera?',
-      a: 'Sí. Sin permanencia, sin penalización. Si cancelas Pro/Premium, vuelves a Free conservando todos tus datos. Tu web custom se desactiva pero los datos siguen ahí; si vuelves a Pro más tarde, se reactiva sin tocar nada.',
+      a: 'Sí. Sin permanencia, sin penalización. Si cancelas Kennel o Kennel Pro, vuelves a Free conservando todos tus datos. Tu web custom se desactiva pero los datos siguen ahí; si vuelves a un plan de pago más tarde, se reactiva sin tocar nada.',
     },
     {
       q: '¿Y si ya tengo todo en Excel o WhatsApp?',
@@ -1381,8 +1386,8 @@ function FinalCta() {
           <Button href="/register?intent=breeder&plan=free" variant="primary" size="lg">
             Empieza gratis <ArrowRight className="h-4 w-4" />
           </Button>
-          <Button href="/register?intent=breeder&plan=pro" variant="secondary" size="lg">
-            Empezar Pro · 39€/mes
+          <Button href="/register?intent=breeder&plan=kennel" variant="secondary" size="lg">
+            Empezar Kennel · 29€/mes
           </Button>
         </div>
       </div>
@@ -1418,7 +1423,7 @@ function Footer() {
             links={[
               { label: 'Iniciar sesión', href: '/login' },
               { label: 'Empezar gratis', href: '/register?intent=breeder&plan=free' },
-              { label: 'Empezar Pro', href: '/register?intent=breeder&plan=pro' },
+              { label: 'Empezar Kennel', href: '/register?intent=breeder&plan=kennel' },
               { label: 'Recuperar contraseña', href: '/forgot-password' },
             ]}
           />

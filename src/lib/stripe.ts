@@ -120,9 +120,16 @@ export async function listInvoices(customerId: string, limit = 24): Promise<any[
   return res.data || []
 }
 
-/** Mapea price_id → tier */
-export function priceIdToPlan(priceId: string): 'pro' | 'premium' | null {
-  if ([process.env.STRIPE_PRICE_PRO_MONTHLY, process.env.STRIPE_PRICE_PRO_ANNUAL].filter(Boolean).includes(priceId)) return 'pro'
-  if ([process.env.STRIPE_PRICE_PREMIUM_MONTHLY, process.env.STRIPE_PRICE_PREMIUM_ANNUAL].filter(Boolean).includes(priceId)) return 'premium'
+/** Mapea price_id → plan canónico actual.
+ *  Mantenemos las env vars STRIPE_PRICE_PRO_* y STRIPE_PRICE_PREMIUM_* como
+ *  legacy por si quedan suscripciones antiguas; los nuevos planes son
+ *  STRIPE_PRICE_KENNEL_* y STRIPE_PRICE_KENNEL_PRO_*. */
+export function priceIdToPlan(priceId: string): 'kennel' | 'kennel_pro' | null {
+  // Nuevos
+  if ([process.env.STRIPE_PRICE_KENNEL_MONTHLY, process.env.STRIPE_PRICE_KENNEL_ANNUAL].filter(Boolean).includes(priceId)) return 'kennel'
+  if ([process.env.STRIPE_PRICE_KENNEL_PRO_MONTHLY, process.env.STRIPE_PRICE_KENNEL_PRO_ANNUAL].filter(Boolean).includes(priceId)) return 'kennel_pro'
+  // Legacy fallback (por si Stripe envía un webhook de una sub antigua)
+  if ([process.env.STRIPE_PRICE_PRO_MONTHLY, process.env.STRIPE_PRICE_PRO_ANNUAL].filter(Boolean).includes(priceId)) return 'kennel'
+  if ([process.env.STRIPE_PRICE_PREMIUM_MONTHLY, process.env.STRIPE_PRICE_PREMIUM_ANNUAL].filter(Boolean).includes(priceId)) return 'kennel_pro'
   return null
 }

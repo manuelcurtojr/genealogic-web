@@ -15,7 +15,7 @@
  */
 
 export type AIProvider = 'anthropic' | 'openai' | 'google'
-export type PlanTier = 'free' | 'starter' | 'pro' | 'premium'
+export type PlanTier = 'free' | 'kennel' | 'kennel_pro' | 'starter' | 'pro' | 'premium'
 
 export type AIModelMeta = {
   id: string

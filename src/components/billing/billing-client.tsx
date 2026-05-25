@@ -54,14 +54,21 @@ function fmtDate(iso: string) {
 
 const PLAN_LABEL: Record<string, string> = {
   free: 'Free',
-  pro: 'Pro',
-  premium: 'Premium',
+  kennel: 'Kennel',
+  kennel_pro: 'Kennel Pro',
+  // Legacy aliases (suscripciones antiguas)
+  pro: 'Kennel',
+  premium: 'Kennel Pro',
+  starter: 'Kennel',
 }
 
 const PLAN_PRICE: Record<string, string> = {
   free: 'Gratis',
-  pro: '39 €/mes',
-  premium: '149 €/mes',
+  kennel: '29 €/mes',
+  kennel_pro: '49 €/mes',
+  pro: '29 €/mes',
+  premium: '49 €/mes',
+  starter: '29 €/mes',
 }
 
 export default function BillingClient({ profile, invoices, stripeReady, hasKennel }: Props) {
@@ -104,7 +111,7 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
   const hasStripe = !!profile?.stripe_customer_id
   const subStatus = profile?.stripe_subscription_status
   const currentPlan = profile?.plan || 'free'
-  const isPaidPlan = currentPlan === 'pro' || currentPlan === 'premium'
+  const isPaidPlan = currentPlan !== 'free' && !!currentPlan
   const isFounder = profile?.plan_is_founder
 
   return (
@@ -186,26 +193,26 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
           {!stripeReady ? (
             <div className="rounded-xl border border-hairline bg-surface-card p-5">
               <p className="text-sm text-body">
-                Los pagos online estarán disponibles muy pronto. Si quieres activar Pro o Premium ahora,
+                Los pagos online estarán disponibles muy pronto. Si quieres activar Kennel ahora,
                 escríbenos a <a href="mailto:hola@genealogic.io" className="text-ink underline">hola@genealogic.io</a>.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <PlanCard
-                name="Pro"
-                price="39 €"
+                name="Kennel"
+                price="29 €"
                 period="/mes"
-                description="Pipeline de reservas, web pública, emailbot, contratos."
+                description="Pipeline de reservas, contratos digitales, vet calendar, importer IA."
                 highlight
                 onSelect={() => startCheckoutFn('pro')}
                 disabled={checkoutPending}
               />
               <PlanCard
-                name="Premium"
-                price="149 €"
-                period="/mes"
-                description="Multi-kennel, API B2B, verificación oficial y soporte prioritario."
+                name="Kennel Pro"
+                price="49 €"
+                period="/mes · Founder"
+                description="Web pública, emailbot, newsletter, pagos online. Precio congelado de por vida."
                 onSelect={() => startCheckoutFn('premium')}
                 disabled={checkoutPending}
               />

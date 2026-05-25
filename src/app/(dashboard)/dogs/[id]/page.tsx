@@ -11,7 +11,6 @@ import DogTabs from '@/components/dogs/dog-tabs'
 import DogEditButton from '@/components/dogs/dog-edit-button'
 import ShareButton from '@/components/dogs/share-button'
 import ClaimBanner from '@/components/admin-requests/claim-banner'
-import PublicMenuButton from '@/components/layout/public-menu-button'
 import PageTracker from '@/components/track/page-tracker'
 import { DogJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
@@ -215,10 +214,9 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
           <ShareButton dog={{ name: dog.name, sex: dog.sex, breed_name: breedName, kennel_name: kennel?.name, thumbnail_url: dog.thumbnail_url, birth_date: dog.birth_date }} dogUrl={`/dogs/${dog.slug || dog.id}`} />
         </div>
 
-        {/* Back button top-left + menu hamburguesa para no logueado */}
+        {/* Back button top-left */}
         <div className="absolute top-4 left-4 flex items-center gap-2">
           <BackButton fallback="/dogs" />
-          {!user && <PublicMenuButton />}
         </div>
       </div>
 
