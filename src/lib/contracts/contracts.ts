@@ -96,6 +96,85 @@ export async function setContractStatus(
     .update({ status, ...extra })
     .eq('id', contractId)
   if (error) throw new Error(error.message)
+
+  // ─── Email a ambas partes cuando se completa la firma (best-effort) ───
+  if (status === 'signed_full') {
+    ;(async () => {
+      try {
+        const { sendTransactionalEmail } = await import('@/lib/email/send')
+        const { data: contract } = await admin
+          .from('reservation_contracts')
+          .select(`
+            id, pdf_url, reservation_id,
+            signature_breeder_name, signature_client_name,
+            reservation:puppy_reservations(
+              applicant_name, applicant_email, client_user_id,
+              kennel:kennels(id, name, owner_id)
+            )
+          `)
+          .eq('id', contractId)
+          .single()
+        if (!contract) return
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res: any = contract.reservation
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const kennel: any = res?.kennel
+        if (!kennel?.owner_id) return
+
+        // 1) Email al CRIADOR
+        const { data: breederProfile } = await admin
+          .from('profiles')
+          .select('display_name, email')
+          .eq('id', kennel.owner_id)
+          .maybeSingle()
+        if (breederProfile?.email) {
+          await sendTransactionalEmail(
+            breederProfile.email,
+            {
+              template: 'contract_signed',
+              props: {
+                recipientName: breederProfile.display_name || null,
+                recipientRole: 'breeder',
+                otherPartyName: res?.applicant_name || contract.signature_client_name || 'El cliente',
+                kennelName: kennel.name,
+                reservationId: contract.reservation_id,
+                contractPdfUrl: contract.pdf_url || null,
+              },
+            },
+            {
+              userId: kennel.owner_id,
+              dedupeKey: `contract_signed:breeder:${contract.id}`,
+            },
+          )
+        }
+
+        // 2) Email al CLIENTE
+        if (res?.applicant_email) {
+          await sendTransactionalEmail(
+            res.applicant_email,
+            {
+              template: 'contract_signed',
+              props: {
+                recipientName: res.applicant_name || null,
+                recipientRole: 'client',
+                otherPartyName: breederProfile?.display_name || kennel.name,
+                kennelName: kennel.name,
+                reservationId: contract.reservation_id,
+                contractPdfUrl: contract.pdf_url || null,
+              },
+            },
+            {
+              userId: res.client_user_id || undefined,
+              dedupeKey: `contract_signed:client:${contract.id}`,
+            },
+          )
+        }
+      } catch (err) {
+        console.error('[email] contract_signed failed', err)
+      }
+    })()
+  }
 }
 
 export async function deleteContract(contractId: string): Promise<void> {
