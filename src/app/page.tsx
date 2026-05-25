@@ -31,7 +31,7 @@ export default async function Home() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createKennelAdminClient() as any
 
-  const [dogsCount, kennelsCount, breedsCount, featuredDogsRes, mosaicPoolRes, featuredKennelsRes] = await Promise.all([
+  const [dogsCount, kennelsCount, breedsCount, featuredDogsRes, mosaicRpcRes, featuredKennelsRes] = await Promise.all([
     admin.from('dogs').select('id', { count: 'exact', head: true }),
     admin.from('kennels').select('id', { count: 'exact', head: true }),
     admin.from('breeds').select('id', { count: 'exact', head: true }),
@@ -43,19 +43,11 @@ export default async function Home() {
       .eq('is_public', true)
       .order('created_at', { ascending: false })
       .limit(6),
-    // Pool del mosaico del hero: pedimos 300 perros recientes con foto y
-    // breed_id, luego filtramos en memoria 1 por raza única para
-    // garantizar variedad visual. Cambia cada recarga porque ORDER BY
-    // created_at en una tabla que crece da resultados ligeramente
-    // distintos según el momento.
-    admin
-      .from('dogs')
-      .select('id, thumbnail_url, breed_id')
-      .not('thumbnail_url', 'is', null)
-      .not('breed_id', 'is', null)
-      .eq('is_public', true)
-      .order('created_at', { ascending: false })
-      .limit(300),
+    // Mosaico del hero: RPC que garantiza 1 perro aleatorio POR RAZA y
+    // mezcla las razas. Sin esto, ORDER BY created_at DESC traía 300
+    // perros de la misma raza (último import masivo) y el filtrado en
+    // memoria solo dejaba 1 raza distinta.
+    admin.rpc('get_hero_mosaic_dogs', { p_limit: 12 }),
     admin
       .from('kennels')
       .select('id, name, slug, logo_url, country, city')
@@ -64,34 +56,10 @@ export default async function Home() {
       .limit(6),
   ])
 
-  // Filtrar pool del mosaico para tener 1 foto por raza única (variedad
-  // visual), luego barajar y tomar 12. Si hay menos razas distintas que
-  // 12, rellenamos con sobrantes para no dejar slots vacíos.
-  type DogPoolRow = { id: string; thumbnail_url: string | null; breed_id: string | null }
-  const pool: DogPoolRow[] = (mosaicPoolRes.data as DogPoolRow[]) || []
-  const seenBreeds = new Set<string>()
-  const uniqueByBreed: DogPoolRow[] = []
-  for (const d of pool) {
-    if (d.breed_id && !seenBreeds.has(d.breed_id)) {
-      seenBreeds.add(d.breed_id)
-      uniqueByBreed.push(d)
-    }
-  }
-  // Fisher-Yates shuffle para que el orden de razas también cambie
-  for (let i = uniqueByBreed.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[uniqueByBreed[i], uniqueByBreed[j]] = [uniqueByBreed[j], uniqueByBreed[i]]
-  }
-  // Rellenar hasta 12 con sobrantes del pool si hace falta
-  const mosaicPhotos = uniqueByBreed.slice(0, 12).map((d) => d.thumbnail_url).filter(Boolean) as string[]
-  if (mosaicPhotos.length < 12) {
-    for (const d of pool) {
-      if (d.thumbnail_url && !mosaicPhotos.includes(d.thumbnail_url)) {
-        mosaicPhotos.push(d.thumbnail_url)
-        if (mosaicPhotos.length >= 12) break
-      }
-    }
-  }
+  type MosaicRow = { id: string; thumbnail_url: string | null; breed_name: string | null }
+  const mosaicPhotos: string[] = ((mosaicRpcRes.data as MosaicRow[] | null) || [])
+    .map((d) => d.thumbnail_url)
+    .filter(Boolean) as string[]
 
   // Blog: tomamos los 8 más recientes para el slider.
   const blogPosts = allPosts
