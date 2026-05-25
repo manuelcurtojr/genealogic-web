@@ -36,8 +36,8 @@ export default async function SuscripcionPage({
   const showActivate = activatePlan && plan === 'free'
 
   const proIncluded = [
-    'Pipeline de reservas (Kanban con drag&drop)',
-    'CRM de clientes con búsqueda',
+    'Pipeline de reservas (vistas Ventas/Clientes + filtros)',
+    'Hub de Contactos (suscriptores + leads + clientes)',
     'Mini-sitio del criador con custom domain',
     'Biblioteca de conocimiento',
     'Emailbot con tu Biblioteca como contexto',

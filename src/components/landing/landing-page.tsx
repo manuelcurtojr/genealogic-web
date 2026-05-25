@@ -43,7 +43,7 @@ export default function LandingPage({ breeds, featuredDogs, cockerPhotos = [] }:
       <Hero heroDogs={heroDogs} />
       <PedigreeShowcase cockerPhotos={cockerPhotos} />
       <FeaturesGrid />
-      <KanbanShowcase />
+      <PipelineShowcase />
       <BotConversation />
       <OnboardingSteps />
       <Pricing />
@@ -390,7 +390,7 @@ function PedigreeShowcase({ cockerPhotos }: { cockerPhotos: string[] }) {
             El registro público de perros con genealogía verificable.
           </h2>
           <p className="max-w-[460px] text-[17px] leading-[1.55] text-body">
-            Cada perro con árbol de hasta 5 generaciones, datos sanitarios, registro y
+            Cada perro con árbol genealógico ilimitado, datos sanitarios, registro y
             trazabilidad. Importa genealogías existentes en segundos con IA. Comparte
             tu trabajo con un link público.
           </p>
@@ -407,7 +407,7 @@ function PedigreeShowcase({ cockerPhotos }: { cockerPhotos: string[] }) {
           <MiniFeature
             icon={<GitBranch className="h-5 w-5" />}
             title="Genealogía real"
-            desc="3-5 generaciones, fotos, registros, salud. No autodeclarado: trazable."
+            desc="Generaciones ilimitadas, fotos, registros, salud. No autodeclarado: trazable."
             color="brand"
           />
           <MiniFeature
@@ -478,7 +478,7 @@ function RealPedigreeMockup({ cockerPhotos }: { cockerPhotos: string[] }) {
           Árbol genealógico
         </div>
         <span className="rounded-full bg-surface-card px-2.5 py-1 text-[11px] font-medium text-body">
-          3 generaciones · 5 disponibles
+          3 generaciones · ilimitadas disponibles
         </span>
       </div>
 
@@ -634,7 +634,7 @@ function FeaturesGrid() {
             Todo lo que un criadero serio necesita en un sitio.
           </h2>
           <p className="max-w-[460px] text-[17px] leading-[1.55] text-body">
-            Pipeline de reservas tipo Kanban, CRM de compradores, web pública con
+            Pipeline de reservas con vistas Ventas/Clientes, hub de contactos, web pública con
             dominio propio, emailbot que responde a tus consultas con tu tono y tu
             biblioteca, newsletter, estadísticas. Y la genealogía verificada encima.
           </p>
@@ -644,7 +644,7 @@ function FeaturesGrid() {
           <FeatureCard
             icon={<KanbanSquare className="h-5 w-5" />}
             title="Pipeline de reservas"
-            desc="Kanban con estados (interesado → seña → asignación → entregado). Cada lead con su ficha y conversación. No más Excel."
+            desc="Pipeline con vistas Ventas y Clientes, filtros por estado y panel de detalle con conversación, contacto y acciones. No más Excel."
             color="brand"
           />
           <FeatureCard
@@ -683,8 +683,12 @@ function FeaturesGrid() {
   )
 }
 
-// ─── Kanban showcase ─────────────────────────────────────────────────────
-function KanbanShowcase() {
+// ─── Pipeline showcase ───────────────────────────────────────────────────
+// Mockup fiel al pipeline real de /reservas: switcher Ventas/Clientes +
+// chips de filtro por estado + tabla con select inline. NO es Kanban con
+// drag&drop; es un pipeline tipo tabla con vistas múltiples — más rápido
+// para un criador con 50+ reservas activas.
+function PipelineShowcase() {
   return (
     <section className="border-b border-hairline bg-surface-soft">
       <div className="mx-auto max-w-[1200px] px-6 py-24 lg:px-12 lg:py-[120px]">
@@ -697,50 +701,98 @@ function KanbanShowcase() {
         >
           Tu próxima camada se reserva sola.
         </h2>
-        <p className="mt-6 max-w-[560px] text-[17px] leading-[1.55] text-body">
-          Mueve cada lead entre columnas. Sabe exactamente quién pagó seña, quién
-          firmó contrato, quién espera la próxima camada.
+        <p className="mt-6 max-w-[600px] text-[17px] leading-[1.55] text-body">
+          Cada lead con su estado (interesado, seña, asignado, contrato, entregado).
+          Cambias estado con un click. Vistas separadas <strong>Ventas</strong>{' '}
+          (leads abiertos) y <strong>Clientes</strong> (reservas cerradas). Panel
+          lateral con detalle, conversación y acciones.
         </p>
 
         <div className="mt-12">
           <AppWindow url="genealogic.io/reservas">
-            <div className="overflow-x-auto p-5 sm:p-7">
-              <div className="grid min-w-[820px] grid-cols-4 gap-4">
-                <KanbanColumn
-                  title="Interesados"
-                  count={3}
-                  accent="badge-orange"
-                  cards={[
-                    { name: 'Laura M.', sub: 'Camada primavera · macho' },
-                    { name: 'Carlos D.', sub: 'Lista de espera' },
-                    { name: 'Ana P.', sub: 'Pregunta por afijo' },
-                  ]}
-                />
-                <KanbanColumn
-                  title="Seña pagada"
-                  count={2}
-                  accent="badge-violet"
-                  cards={[
-                    { name: 'Diego R.', sub: '300 € · 12 mar' },
-                    { name: 'María L.', sub: '300 € · 8 mar' },
-                  ]}
-                />
-                <KanbanColumn
-                  title="Contrato firmado"
-                  count={1}
-                  accent="badge-emerald"
-                  cards={[{ name: 'Pablo G.', sub: 'Cachorro asignado · #7' }]}
-                />
-                <KanbanColumn
-                  title="Entregados"
-                  count={4}
-                  accent="muted"
-                  cards={[
-                    { name: 'Elena C.', sub: 'Recogido 12 feb' },
-                    { name: 'Jorge T.', sub: 'Recogido 5 feb' },
-                    { name: '+2 más', sub: '' },
-                  ]}
-                />
+            <div className="p-5 sm:p-7">
+              {/* Switcher Ventas/Clientes */}
+              <div className="inline-flex rounded-lg border border-hairline bg-surface-soft p-1 mb-4">
+                <span className="inline-flex items-center gap-2 rounded-md bg-ink px-3 py-1 text-[12px] font-medium text-on-primary">
+                  Ventas
+                  <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px]">6</span>
+                </span>
+                <span className="inline-flex items-center gap-2 px-3 py-1 text-[12px] font-medium text-muted">
+                  Clientes
+                  <span className="rounded-full bg-canvas px-1.5 py-0.5 text-[10px]">14</span>
+                </span>
+              </div>
+
+              {/* Filter chips */}
+              <div className="flex flex-wrap gap-2 border-b border-hairline pb-3 mb-3">
+                <FilterChip label="Todas" count={6} active />
+                <FilterChip label="Interesado" count={3} />
+                <FilterChip label="Seña pagada" count={2} />
+                <FilterChip label="Asignado" count={1} />
+              </div>
+
+              {/* Tabla */}
+              <div className="overflow-hidden rounded-lg border border-hairline">
+                <table className="w-full text-[12.5px]">
+                  <thead className="bg-surface-soft/70 text-[10px] uppercase tracking-wider text-muted">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-semibold">Solicitante</th>
+                      <th className="px-3 py-2 text-left font-semibold">Estado</th>
+                      <th className="px-3 py-2 text-left font-semibold hidden sm:table-cell">Preferencia</th>
+                      <th className="px-3 py-2 text-right font-semibold hidden md:table-cell">Recibida</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-hairline-soft">
+                    <PipelineRow
+                      name="Laura M."
+                      email="laura.m@gmail.com"
+                      status="Interesado"
+                      statusColor="badge-orange"
+                      pref="Macho · atigrado"
+                      date="14 mar"
+                    />
+                    <PipelineRow
+                      name="Diego R."
+                      email="diego.rdz@hey.com"
+                      status="Seña pagada"
+                      statusColor="badge-violet"
+                      pref="Hembra"
+                      date="12 mar"
+                    />
+                    <PipelineRow
+                      name="Pablo G."
+                      email="pablo@gomezvet.es"
+                      status="Asignado"
+                      statusColor="badge-emerald"
+                      pref="Macho · cachorro #7"
+                      date="8 mar"
+                    />
+                    <PipelineRow
+                      name="Ana P."
+                      email="ana.pereira@yahoo.es"
+                      status="Interesado"
+                      statusColor="badge-orange"
+                      pref="—"
+                      date="6 mar"
+                    />
+                    <PipelineRow
+                      name="Carlos D."
+                      email="carlos.d@protonmail.com"
+                      status="Interesado"
+                      statusColor="badge-orange"
+                      pref="Lista de espera"
+                      date="2 mar"
+                    />
+                    <PipelineRow
+                      name="María L."
+                      email="marial84@gmail.com"
+                      status="Seña pagada"
+                      statusColor="badge-violet"
+                      pref="Hembra · primavera"
+                      date="28 feb"
+                    />
+                  </tbody>
+                </table>
               </div>
             </div>
           </AppWindow>
@@ -750,48 +802,55 @@ function KanbanShowcase() {
   )
 }
 
-function KanbanColumn({
-  title,
-  count,
-  accent,
-  cards,
+function FilterChip({ label, count, active }: { label: string; count: number; active?: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium ${
+        active ? 'bg-ink text-on-primary' : 'bg-surface-card text-body'
+      }`}
+    >
+      {label}
+      <span
+        className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+          active ? 'bg-white/20 text-on-primary' : 'bg-canvas text-muted'
+        }`}
+      >
+        {count}
+      </span>
+    </span>
+  )
+}
+
+function PipelineRow({
+  name, email, status, statusColor, pref, date,
 }: {
-  title: string
-  count: number
-  accent: string
-  cards: { name: string; sub: string }[]
+  name: string
+  email: string
+  status: string
+  statusColor: string
+  pref: string
+  date: string
 }) {
   return (
-    <div className="rounded-[12px] border border-hairline bg-surface-soft p-3">
-      <div className="mb-3 flex items-center justify-between px-1">
-        <span className="text-[12px] font-semibold text-ink">{title}</span>
+    <tr className="hover:bg-surface-soft/40 transition">
+      <td className="px-3 py-2.5">
+        <p className="font-medium text-ink">{name}</p>
+        <p className="text-[10.5px] text-muted truncate">{email}</p>
+      </td>
+      <td className="px-3 py-2.5">
         <span
-          className="rounded-full bg-canvas px-2 py-0.5 text-[11px] font-medium text-body"
-          style={accent !== 'muted' ? { color: `var(--${accent})` } : undefined}
+          className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10.5px] font-medium"
+          style={{
+            background: `color-mix(in srgb, var(--${statusColor}) 15%, transparent)`,
+            color: `var(--${statusColor})`,
+          }}
         >
-          {count}
+          {status}
         </span>
-      </div>
-      <div className="space-y-2">
-        {cards.map((c, i) => (
-          <div key={i} className="rounded-lg border border-hairline bg-canvas p-3">
-            <div className="flex items-center gap-2">
-              <div
-                className="h-7 w-7 flex-shrink-0 rounded-full"
-                style={{
-                  background: `var(--${accent === 'muted' ? 'hairline' : accent})`,
-                  opacity: accent === 'muted' ? 1 : 0.85,
-                }}
-              />
-              <div className="min-w-0">
-                <p className="truncate text-[12px] font-semibold text-ink">{c.name}</p>
-                {c.sub && <p className="truncate text-[10.5px] text-muted">{c.sub}</p>}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+      </td>
+      <td className="px-3 py-2.5 text-muted hidden sm:table-cell">{pref}</td>
+      <td className="px-3 py-2.5 text-right text-[11px] text-muted tabular-nums hidden md:table-cell">{date}</td>
+    </tr>
   )
 }
 
@@ -1008,7 +1067,7 @@ function Pricing() {
             </p>
             <ul className="mt-6 space-y-2.5 text-[14px] flex-1">
               <PricingRow dark>Todo lo de Free</PricingRow>
-              <PricingRow dark>Pipeline de reservas (Kanban)</PricingRow>
+              <PricingRow dark>Pipeline de reservas (Ventas + Clientes)</PricingRow>
               <PricingRow dark>Contactos: suscriptores, leads, clientes</PricingRow>
               <PricingRow dark>Web pública con dominio propio</PricingRow>
               <PricingRow dark>Emailbot multi-modelo (Claude/GPT/Gemini)</PricingRow>
@@ -1082,7 +1141,7 @@ function FAQ() {
     },
     {
       q: '¿Qué incluye el tier Pro a 39€/mes?',
-      a: 'Todo lo de Free + pipeline de reservas estilo Kanban, panel unificado de Contactos (suscriptores newsletter + leads + clientes), web pública con dominio propio, emailbot multi-modelo (Claude/GPT/Gemini elegibles), newsletter a tu lista, visitas y estadísticas. El precio Founder de 39€ se mantiene para siempre si te subes antes del lanzamiento público.',
+      a: 'Todo lo de Free + pipeline de reservas con vistas Ventas/Clientes y filtros por estado, panel unificado de Contactos (suscriptores newsletter + leads + clientes), web pública con dominio propio, emailbot multi-modelo (Claude/GPT/Gemini elegibles), newsletter a tu lista, visitas y estadísticas. El precio Founder de 39€ se mantiene para siempre si te subes antes del lanzamiento público.',
     },
     {
       q: '¿Y el plan Premium a 149€/mes?',

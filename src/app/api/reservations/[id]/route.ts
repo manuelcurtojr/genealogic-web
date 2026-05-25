@@ -5,7 +5,7 @@ const ALLOWED_STATUS = ['interested', 'waitlisted', 'deposit_paid', 'assigned', 
 
 /**
  * PATCH /api/reservations/[id]
- * Actualiza una reserva. Soporta cambio de status (drag&drop del Kanban) o
+ * Actualiza una reserva. Soporta cambio de status (select inline del pipeline) o
  * edición completa desde el panel lateral. RLS garantiza ownership.
  */
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

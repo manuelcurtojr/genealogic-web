@@ -59,7 +59,7 @@ const tiers: Tier[] = [
     highlight: true,
     features: [
       'Todo lo del plan Free',
-      'Pipeline de reservas (Kanban con drag&drop)',
+      'Pipeline de reservas (vistas Ventas/Clientes + filtros por estado)',
       'Gestión de clientes y lista de espera',
       'Mini-sitio con custom domain',
       'Contratos de reserva con e-firma',
