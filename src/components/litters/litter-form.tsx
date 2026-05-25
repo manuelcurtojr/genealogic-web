@@ -58,6 +58,12 @@ export default function LitterForm({ initialData, breeds, maleDogs, femaleDogs, 
     } else {
       const { data, error: err } = await supabase.from('litters').insert({ ...payload, owner_id: userId }).select('id').single()
       if (err) { setError(err.message); setLoading(false); return }
+      // Notificar a lista de espera (best-effort, no bloquea redirect)
+      fetch('/api/email/notify-litter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ litterId: data.id }),
+      }).catch(() => { /* swallow */ })
       router.push(`/litters/${data.id}`)
     }
   }

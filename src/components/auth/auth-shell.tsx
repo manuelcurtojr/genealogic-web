@@ -114,11 +114,11 @@ function BrandPanel() {
             className="max-w-[16ch] font-semibold text-white"
             style={{ fontSize: 'clamp(34px, 3.4vw, 48px)', lineHeight: 1.05, letterSpacing: '-0.035em' }}
           >
-            Tu criadero entero, en un solo sitio.
+            El pedigree de tu perro, donde tiene que estar.
           </h2>
           <p className="mt-5 max-w-[420px] text-[15.5px] leading-[1.6] text-on-dark-soft">
-            Genealogías verificables, reservas, clientes, web propia y emailbot. Todo lo que
-            necesita un criadero serio.
+            El registro público de genealogías caninas. Para criadores que documentan su
+            trabajo y propietarios que quieren tenerlo todo a mano.
           </p>
 
           <div className="mt-10 space-y-4">
@@ -135,19 +135,18 @@ function BrandPanel() {
             <FeatureRow
               icon={<ShieldCheck className="h-4 w-4" />}
               title="Indexable y trazable"
-              desc="Cada perro y cada criadero, perfil público en Google."
+              desc="Cada perro, perfil público y permanente en Google."
             />
           </div>
         </div>
 
-        {/* Bottom: quote */}
+        {/* Bottom: stats */}
         <blockquote className="border-l-2 border-[color:var(--brand)] pl-4">
-          <p className="text-[14.5px] leading-[1.55] text-on-dark italic">
-            «Lo que faltaba en este sector: un registro mundial donde un comprador serio
-            verifica linaje, salud y trayectoria en un solo sitio.»
+          <p className="text-[14.5px] leading-[1.55] text-on-dark">
+            Pedigree verificable. Para siempre.
           </p>
           <p className="mt-2 text-[12px] uppercase tracking-[0.1em] text-on-dark-soft">
-            Manuel Curtó · 4ª generación de criadores
+            16.000 perros · 990 criaderos · 240 razas
           </p>
         </blockquote>
       </div>

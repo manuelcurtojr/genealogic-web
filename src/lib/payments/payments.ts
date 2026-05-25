@@ -96,6 +96,55 @@ export async function markPaymentPaid(args: {
     })
     .eq('id', args.paymentId)
   if (error) throw new Error(error.message)
+
+  // ─── Email al cliente confirmando el pago (best-effort, async) ───
+  ;(async () => {
+    try {
+      const { sendTransactionalEmail } = await import('@/lib/email/send')
+      const { data: pay } = await admin
+        .from('reservation_payments')
+        .select(`
+          id, amount_cents, currency, description, paid_at, paid_via,
+          reservation_id,
+          reservation:puppy_reservations(
+            applicant_name, applicant_email, client_user_id,
+            kennel:kennels(name)
+          )
+        `)
+        .eq('id', args.paymentId)
+        .single()
+      if (!pay) return
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res: any = pay.reservation
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const kennel: any = res?.kennel
+      const toEmail = res?.applicant_email
+      const kennelName = kennel?.name || 'tu criadero'
+      if (!toEmail) return
+      await sendTransactionalEmail(
+        toEmail,
+        {
+          template: 'payment_received',
+          props: {
+            recipientName: res?.applicant_name || null,
+            kennelName,
+            reservationId: pay.reservation_id,
+            amountCents: pay.amount_cents,
+            currency: pay.currency,
+            description: pay.description,
+            paidVia: pay.paid_via || args.paidVia,
+            paidAt: pay.paid_at,
+          },
+        },
+        {
+          userId: res?.client_user_id || undefined,
+          dedupeKey: `payment_received:${args.paymentId}`,
+        },
+      )
+    } catch (err) {
+      console.error('[email] payment_received failed', err)
+    }
+  })()
 }
 
 export async function cancelPayment(paymentId: string): Promise<void> {

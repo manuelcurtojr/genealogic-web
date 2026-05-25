@@ -30,6 +30,13 @@ import SupportRepliedEmail, { type SupportRepliedProps } from '@/emails/support-
 import SubscriptionActivatedEmail, { type SubscriptionActivatedProps } from '@/emails/subscription-activated'
 import SubscriptionCancelledEmail, { type SubscriptionCancelledProps } from '@/emails/subscription-cancelled'
 import PaymentFailedEmail, { type PaymentFailedProps } from '@/emails/payment-failed'
+import VetReminderEmail, { type VetReminderProps } from '@/emails/vet-reminder'
+import LitterNewEmail, { type LitterNewProps } from '@/emails/litter-new'
+import ContractSignedEmail, { type ContractSignedProps } from '@/emails/contract-signed'
+import PaymentReceivedEmail, { type PaymentReceivedProps } from '@/emails/payment-received'
+import WeeklyDigestBreederEmail, { type WeeklyDigestBreederProps } from '@/emails/weekly-digest-breeder'
+import WeeklyDigestOwnerEmail, { type WeeklyDigestOwnerProps } from '@/emails/weekly-digest-owner'
+import ReEngagementEmail, { type ReEngagementProps } from '@/emails/re-engagement'
 
 const FROM_TRANSACTIONAL = 'Genealogic <hola@genealogic.io>'
 const REPLY_TO = 'hola@genealogic.io'
@@ -46,6 +53,13 @@ export type EmailTemplate =
   | { template: 'subscription_activated'; props: SubscriptionActivatedProps }
   | { template: 'subscription_cancelled'; props: SubscriptionCancelledProps }
   | { template: 'payment_failed';         props: PaymentFailedProps }
+  | { template: 'vet_reminder';           props: VetReminderProps }
+  | { template: 'litter_new';             props: LitterNewProps }
+  | { template: 'contract_signed';        props: ContractSignedProps }
+  | { template: 'payment_received';       props: PaymentReceivedProps }
+  | { template: 'weekly_digest_breeder';  props: WeeklyDigestBreederProps }
+  | { template: 'weekly_digest_owner';    props: WeeklyDigestOwnerProps }
+  | { template: 're_engagement';          props: ReEngagementProps }
 
 /** Categoría → si el user puede hacer opt-out. */
 type Category = 'auth' | 'reservations' | 'messages' | 'vet_reminders' | 'weekly_digest' | 'marketing' | 'critical'
@@ -95,6 +109,48 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
     category: 'critical',
     subject: () => 'No hemos podido cobrar tu suscripción',
   },
+  vet_reminder: {
+    category: 'vet_reminders',
+    subject: (p: VetReminderProps) => {
+      const when = p.bucket === 'today' ? 'Hoy' : p.bucket === 'tomorrow' ? 'Mañana' : 'En 7 días'
+      return `${when}: ${p.reminderTitle} para ${p.dogName}`
+    },
+  },
+  litter_new: {
+    category: 'reservations',
+    subject: (p: LitterNewProps) =>
+      p.status === 'born' || p.status === 'delivered'
+        ? `Han nacido los cachorros en ${p.kennelName}`
+        : `Nueva camada${p.breedName ? ` de ${p.breedName}` : ''} en ${p.kennelName}`,
+  },
+  contract_signed: {
+    category: 'critical',
+    subject: (p: ContractSignedProps) =>
+      p.recipientRole === 'breeder'
+        ? `${p.otherPartyName} ha firmado el contrato`
+        : `Contrato firmado con ${p.kennelName}`,
+  },
+  payment_received: {
+    category: 'critical',
+    subject: (p: PaymentReceivedProps) =>
+      `${p.kennelName} ha confirmado tu pago`,
+  },
+  weekly_digest_breeder: {
+    category: 'weekly_digest',
+    subject: (p: WeeklyDigestBreederProps) =>
+      `Tu semana en ${p.kennelName}`,
+  },
+  weekly_digest_owner: {
+    category: 'weekly_digest',
+    subject: () => 'Tu resumen semanal en Genealogic',
+  },
+  re_engagement: {
+    category: 'marketing',
+    subject: (p: ReEngagementProps) =>
+      p.daysAway >= 30
+        ? '¿Seguimos contando contigo?'
+        : 'Te echamos de menos en Genealogic',
+  },
 }
 
 let _resend: Resend | null = null
@@ -118,6 +174,13 @@ function renderTemplate(t: EmailTemplate): Promise<string> {
     case 'subscription_activated': return render(SubscriptionActivatedEmail(t.props))
     case 'subscription_cancelled': return render(SubscriptionCancelledEmail(t.props))
     case 'payment_failed':         return render(PaymentFailedEmail(t.props))
+    case 'vet_reminder':           return render(VetReminderEmail(t.props))
+    case 'litter_new':             return render(LitterNewEmail(t.props))
+    case 'contract_signed':        return render(ContractSignedEmail(t.props))
+    case 'payment_received':       return render(PaymentReceivedEmail(t.props))
+    case 'weekly_digest_breeder':  return render(WeeklyDigestBreederEmail(t.props))
+    case 'weekly_digest_owner':    return render(WeeklyDigestOwnerEmail(t.props))
+    case 're_engagement':          return render(ReEngagementEmail(t.props))
   }
 }
 

@@ -234,8 +234,8 @@ export function H2({ children }: { children: React.ReactNode }) {
   return <Heading style={heading2}>{children}</Heading>
 }
 
-export function P({ children }: { children: React.ReactNode }) {
-  return <Text style={paragraph}>{children}</Text>
+export function P({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return <Text style={{ ...paragraph, ...(style || {}) }}>{children}</Text>
 }
 
 export function Small({ children }: { children: React.ReactNode }) {

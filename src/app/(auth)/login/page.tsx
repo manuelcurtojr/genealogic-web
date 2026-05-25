@@ -57,7 +57,7 @@ export default function LoginPage() {
     <AuthShell
       title="Bienvenido"
       titleTail="de vuelta."
-      subtitle="Accede a tu cuenta para gestionar tus perros, criadero y camadas."
+      subtitle="Accede a tu cuenta de Genealogic — el registro público de genealogías caninas."
       footer={{
         question: '¿No tienes cuenta?',
         label: 'Crear cuenta',

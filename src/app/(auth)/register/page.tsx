@@ -212,7 +212,7 @@ function intentBranding(data: SignupIntentData | null) {
     return {
       title: 'Crea tu',
       titleTail: 'cuenta.',
-      subtitle: 'Sube tus perros, conecta su genealogía y deja que el mundo encuentre lo que crías. Gratis para empezar, sin tarjeta.',
+      subtitle: 'El registro público de genealogías caninas. Para criadores que documentan su trabajo y propietarios que quieren tenerlo todo a mano. Gratis para empezar, sin tarjeta.',
       submitLabel: 'Crear cuenta gratis',
     }
   }

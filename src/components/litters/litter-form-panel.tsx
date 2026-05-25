@@ -126,9 +126,19 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
       setLoading(false)
       if (err) { setError(err.message); return }
     } else {
-      const { error: err } = await supabase.from('litters').insert({ ...payload, owner_id: userId })
+      const { data: inserted, error: err } = await supabase
+        .from('litters').insert({ ...payload, owner_id: userId })
+        .select('id').single()
       setLoading(false)
       if (err) { setError(err.message); return }
+      // Notificar a la lista de espera (best-effort, no bloquea cierre)
+      if (inserted?.id) {
+        fetch('/api/email/notify-litter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ litterId: inserted.id }),
+        }).catch(() => { /* swallow */ })
+      }
     }
     onClose()
     router.refresh()
