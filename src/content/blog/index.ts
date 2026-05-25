@@ -26,16 +26,16 @@ export type BlogPost = {
 }
 
 // Importación estática — Next.js bundlea cada post en el chunk de la página.
-import * as p01 from './posts/leer-un-pedigree'
-import * as p02 from './posts/coeficiente-consanguinidad-coi'
-import * as p03 from './posts/5-errores-arruinan-camada'
-import * as p04 from './posts/afijo-criadero-kennel-espana'
-import * as p05 from './posts/web-criadero-en-una-tarde'
-import * as p06 from './posts/emailbot-criadero'
-import * as p07 from './posts/excel-a-kanban-reservas'
-import * as p08 from './posts/calendario-pruebas-salud-hd-dcm'
-import * as p09 from './posts/importar-pedigree-ia-12-segundos'
-import * as p10 from './posts/como-elegir-cachorro-7-preguntas'
+import * as p01 from './posts.archived/leer-un-pedigree'
+import * as p02 from './posts.archived/coeficiente-consanguinidad-coi'
+import * as p03 from './posts.archived/5-errores-arruinan-camada'
+import * as p04 from './posts.archived/afijo-criadero-kennel-espana'
+import * as p05 from './posts.archived/web-criadero-en-una-tarde'
+import * as p06 from './posts.archived/emailbot-criadero'
+import * as p07 from './posts.archived/excel-a-kanban-reservas'
+import * as p08 from './posts.archived/calendario-pruebas-salud-hd-dcm'
+import * as p09 from './posts.archived/importar-pedigree-ia-12-segundos'
+import * as p10 from './posts.archived/como-elegir-cachorro-7-preguntas'
 
 const posts: BlogPost[] = [
   { meta: p01.metadata, Content: p01.default },

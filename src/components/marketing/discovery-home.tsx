@@ -161,16 +161,26 @@ export default function DiscoveryHome({
             </div>
           </div>
 
-          {/* Live counts en card flotante */}
-          <div className="mt-14 sm:mt-20 rounded-2xl border border-hairline bg-canvas/95 backdrop-blur-md p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] inline-block max-w-3xl">
+          {/* Live counts en card flotante.
+              Usamos w-fit para que la caja crezca según el contenido (el
+              número grande de perros como "97.544" se cortaba con max-w-3xl).
+              Cada columna tiene min-width para que los números grandes
+              tengan su propio espacio garantizado. */}
+          <div className="mt-14 sm:mt-20 rounded-2xl border border-hairline bg-canvas/95 backdrop-blur-md px-6 sm:px-10 py-6 sm:py-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] w-fit max-w-full overflow-hidden">
             <div className="flex items-center gap-2 mb-5">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <p className="text-[11px] font-bold uppercase tracking-wider text-muted">El catálogo crece en tiempo real</p>
             </div>
-            <div className="grid grid-cols-3 gap-x-10 sm:gap-x-16 lg:gap-x-20">
-              <LiveCounter initial={counts.kennels} kind="kennels" label="Criaderos" />
-              <LiveCounter initial={counts.breeds} kind="breeds" label="Razas" />
-              <LiveCounter initial={counts.dogs} kind="dogs" label="Perros" />
+            <div className="flex items-end gap-8 sm:gap-12 lg:gap-16">
+              <div className="min-w-[90px]">
+                <LiveCounter initial={counts.kennels} kind="kennels" label="Criaderos" />
+              </div>
+              <div className="min-w-[70px]">
+                <LiveCounter initial={counts.breeds} kind="breeds" label="Razas" />
+              </div>
+              <div className="min-w-[140px] sm:min-w-[180px]">
+                <LiveCounter initial={counts.dogs} kind="dogs" label="Perros" />
+              </div>
             </div>
           </div>
         </div>

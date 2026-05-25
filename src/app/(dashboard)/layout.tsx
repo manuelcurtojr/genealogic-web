@@ -1,18 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
 import DashboardShell from '@/components/layout/dashboard-shell'
-import PublicHeader from '@/components/layout/public-header'
+import MarketingHeader from '@/components/marketing/marketing-header'
+import MarketingFooter from '@/components/marketing/marketing-footer'
 import { getEffectiveRoles } from '@/lib/auth/roles'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // For unauthenticated users (public pages like dog detail, kennel profile)
+  // Visitantes no logueados (perfil público de perro/criadero, /search, /kennels)
+  // ven el mismo marketing header + footer que la home, para que la navegación
+  // entre páginas públicas sea consistente y puedan llegar a registrarse.
   if (!user) {
     return (
-      <div className="min-h-screen bg-canvas text-[var(--foreground)]">
-        <PublicHeader />
-        <main className="px-4 sm:px-[30px] py-4 sm:py-6 max-w-7xl mx-auto">{children}</main>
+      <div className="min-h-screen bg-canvas text-[var(--foreground)] flex flex-col">
+        <MarketingHeader />
+        <main className="flex-1 px-4 sm:px-[30px] py-4 sm:py-6 max-w-7xl mx-auto w-full">
+          {children}
+        </main>
+        <MarketingFooter />
       </div>
     )
   }

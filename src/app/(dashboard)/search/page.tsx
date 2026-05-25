@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { Search, Dog, Filter, X, Tag, MapPin, Home, ChevronDown } from 'lucide-react'
@@ -14,7 +15,12 @@ import { SkeletonGrid } from '@/components/ui/skeletons'
 type Tab = 'dogs' | 'kennels'
 
 export default function SearchPage() {
-  const [tab, setTab] = useState<Tab>('dogs')
+  const searchParams = useSearchParams()
+  // Soporta ?tab=kennels para arrancar en la tab de criaderos
+  const initialTab: Tab = searchParams.get('tab') === 'kennels' ? 'kennels' : 'dogs'
+  // Query inicial pasada desde URL (?q=…) — viene del search box de la home
+  const initialQuery = searchParams.get('q') || ''
+  const [tab, setTab] = useState<Tab>(initialTab)
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -46,14 +52,14 @@ export default function SearchPage() {
         </button>
       </div>
 
-      {tab === 'dogs' ? <DogsSearch /> : <KennelsSearch />}
+      {tab === 'dogs' ? <DogsSearch initialQuery={initialQuery} /> : <KennelsSearch initialQuery={initialQuery} />}
     </div>
   )
 }
 
 /* ─── Dogs Search ─── */
-function DogsSearch() {
-  const [query, setQuery] = useState('')
+function DogsSearch({ initialQuery = '' }: { initialQuery?: string }) {
+  const [query, setQuery] = useState(initialQuery)
   const [breeds, setBreeds] = useState<any[]>([])
   const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -124,7 +130,8 @@ function DogsSearch() {
     }
   }, [buildUrl, hasMore, loadingMore, page])
 
-  // Re-search cuando cambian filtros (no query — query usa Enter o botón)
+  // Re-search cuando cambian filtros (no query — query usa Enter o botón).
+  // En mount se ejecuta una vez con initialQuery (si vino por ?q=) o vacío.
   useEffect(() => { handleSearch() }, [breedFilter, sexFilter, forSaleOnly]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const currencySymbol: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', MXN: '$' }
@@ -301,8 +308,8 @@ function DogsSearch() {
 }
 
 /* ─── Kennels Search ─── */
-function KennelsSearch() {
-  const [query, setQuery] = useState('')
+function KennelsSearch({ initialQuery = '' }: { initialQuery?: string }) {
+  const [query, setQuery] = useState(initialQuery)
   const [breeds, setBreeds] = useState<any[]>([])
   const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
