@@ -5,13 +5,15 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  Edit, Globe, ExternalLink, Settings, Camera, Loader2, Dog, Heart, Baby,
-  Eye, Key, Link2, ArrowRight, Inbox, CreditCard, TrendingUp,
+  Edit, Globe, ExternalLink, Camera, Loader2, Dog, Baby,
+  Eye, Heart, Key, Link2, ArrowRight, Inbox, CreditCard, TrendingUp,
+  ChevronDown, Pencil, Sparkles,
 } from 'lucide-react'
 import KennelEditPanel from './kennel-edit-panel'
 import ContactFormBuilder from './contact-form-builder'
 
 interface Props {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   kennel: any
   stats: {
     dogs: number
@@ -25,15 +27,28 @@ interface Props {
 }
 
 /**
- * Vista de "Mi criadero" reducida a CONFIGURACIÓN y ATAJOS.
- * Sustituye al KennelDashboard antiguo que duplicaba la lista de perros
- * de /dogs. Aquí solo se muestran KPIs + cards de acción.
+ * Vista de "Mi criadero" — versión limpia.
+ *
+ * Estructura:
+ *   1) Header card con logo + nombre + Editar (sin botón "Ver" duplicado)
+ *   2) Sección "Tu web pública" prominente con CTA a /kennel/contenido
+ *   3) KPIs compactos (strip horizontal, no 4 cards gigantes)
+ *   4) Herramientas avanzadas (disclosure colapsable, no peso visual por
+ *      defecto): Formulario de contacto · Visitas · Dominio · Pagos · API keys
+ *
+ * Eliminadas redundancias:
+ *   - Card "Web pública → /web" (builder antiguo) → reemplazada por sección
+ *     prominente que apunta a /kennel/contenido (editor nuevo)
+ *   - Card "Ver perfil público" → ya hay link en la sección "Tu web"
+ *   - Botón "Ver" del header card → ya hay CTA en "Tu web"
+ *   - userId silencer hack
  */
-export default function KennelConfigView({ kennel, stats, hasCustomWeb = false, isPro = false, userId }: Props) {
+export default function KennelConfigView({ kennel, stats, isPro = false }: Props) {
   const router = useRouter()
   const [showEdit, setShowEdit] = useState(false)
   const [showFormBuilder, setShowFormBuilder] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [advancedOpen, setAdvancedOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -70,45 +85,32 @@ export default function KennelConfigView({ kennel, stats, hasCustomWeb = false, 
 
   const publicUrl = kennel.slug ? `/kennels/${kennel.slug}` : null
 
-  const kpiCards = [
+  const kpis = [
     { label: 'Perros', value: stats.dogs, icon: Dog, href: '/dogs', color: '#fb923c' },
-    { label: 'Visibles en el criadero', value: stats.visible, icon: Eye, href: '/dogs', color: '#34d399' },
+    { label: 'Visibles', value: stats.visible, icon: Eye, href: '/dogs', color: '#34d399' },
     { label: 'Reproductores', value: stats.reproductive, icon: Heart, href: '/dogs?tab=reproductive', color: '#ec4899' },
     { label: 'Camadas', value: stats.litters, icon: Baby, href: '/litters', color: '#8b5cf6' },
   ]
 
-  const actionCards = [
-    {
-      label: 'Editar datos del criadero',
-      desc: 'Nombre, afijo, descripción, ubicación, redes sociales.',
-      icon: Edit,
-      onClick: () => setShowEdit(true),
-    },
+  // Herramientas avanzadas — solo las que aportan, agrupadas
+  const advancedTools = [
     {
       label: 'Formulario de contacto',
-      desc: 'Configura las preguntas que ven los visitantes en tu perfil y web. 2 plantillas + campos custom.',
+      desc: 'Personaliza las preguntas que ven los visitantes (plantilla + campos custom).',
       icon: Inbox,
       onClick: () => setShowFormBuilder(true),
-    },
-    {
-      label: 'Web pública',
-      desc: 'Diseña la web pública del criadero.',
-      icon: Globe,
-      href: '/web',
     },
     {
       label: 'Visitas a la web',
       desc: 'Analíticas de tráfico, países, dispositivos y páginas más vistas.',
       icon: TrendingUp,
       href: '/visitas',
-      requiresPro: true,
     },
     {
       label: 'Dominio personalizado',
-      desc: 'Conecta tu dominio propio (criadero.com).',
+      desc: 'Conecta tu dominio propio (tucriadero.com).',
       icon: Link2,
       href: '/cuenta/dominio',
-      requiresPro: true,
     },
     {
       label: 'Pagos online (Stripe)',
@@ -122,40 +124,30 @@ export default function KennelConfigView({ kennel, stats, hasCustomWeb = false, 
       icon: Key,
       href: '/kennel/api',
     },
-    {
-      label: 'Ver perfil público',
-      desc: 'Ver el criadero como lo verá cualquier visitante.',
-      icon: ExternalLink,
-      href: publicUrl,
-      external: true,
-    },
   ]
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* PageHeader */}
+      {/* Page header */}
       <div>
         <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Mi cuenta</p>
         <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
           Mi criadero
         </h1>
         <p className="mt-2 text-[14px] text-body">
-          Configura los datos públicos de tu criadero y accede a las herramientas avanzadas.
+          Datos del criadero, contenido público y herramientas.
         </p>
       </div>
 
-      {/* Kennel header card */}
+      {/* ═══ Identidad ═══ */}
       <section className="flex flex-col gap-4 rounded-2xl border border-hairline bg-canvas p-5 sm:flex-row sm:items-center">
         <div className="relative h-16 w-16 flex-shrink-0">
           {kennel.logo_url ? (
-            <img
-              src={kennel.logo_url}
-              alt={kennel.name}
-              className="h-full w-full rounded-2xl object-cover"
-            />
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src={kennel.logo_url} alt={kennel.name} className="h-full w-full rounded-2xl object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-2xl bg-surface-card">
-              <Settings className="h-6 w-6 text-muted" />
+            <div className="flex h-full w-full items-center justify-center rounded-2xl bg-surface-card text-muted text-xl font-semibold">
+              {kennel.name?.[0]?.toUpperCase() || '?'}
             </div>
           )}
           <button
@@ -185,91 +177,150 @@ export default function KennelConfigView({ kennel, stats, hasCustomWeb = false, 
             <p className="mt-1 text-[13px] text-body line-clamp-2">{kennel.description}</p>
           )}
         </div>
-        <div className="flex flex-shrink-0 items-center gap-2">
-          {publicUrl && (
-            <Link
-              href={publicUrl}
-              target="_blank"
-              rel="noopener"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-2 text-[12.5px] font-medium text-body transition-colors hover:bg-surface-soft"
-            >
-              <ExternalLink className="h-3.5 w-3.5" /> Ver
-            </Link>
-          )}
-          <button
-            onClick={() => setShowEdit(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-2 text-[12.5px] font-medium text-on-primary transition-colors hover:opacity-90"
-          >
-            <Edit className="h-3.5 w-3.5" /> Editar
-          </button>
-        </div>
+        <button
+          onClick={() => setShowEdit(true)}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-2 text-[12.5px] font-medium text-on-primary transition-colors hover:opacity-90 flex-shrink-0"
+        >
+          <Edit className="h-3.5 w-3.5" /> Editar datos
+        </button>
       </section>
 
-      {/* KPIs (clickables → llevan a /dogs y /litters, NO duplican listas aquí) */}
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {kpiCards.map((kpi) => {
-          const Icon = kpi.icon
-          return (
-            <Link
-              key={kpi.label}
-              href={kpi.href}
-              className="group rounded-xl border border-hairline bg-canvas p-4 transition-colors hover:bg-surface-soft"
-            >
-              <div className="flex items-center justify-between">
-                <Icon className="h-4 w-4" style={{ color: kpi.color }} />
-                <ArrowRight className="h-3.5 w-3.5 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
+      {/* ═══ Tu web pública ═══ — sección protagonista */}
+      {isPro && (
+        <section className="rounded-2xl border border-hairline bg-gradient-to-br from-orange-50/50 via-canvas to-blue-50/50 p-5 sm:p-6 relative overflow-hidden">
+          {/* Glow decorativo sutil */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-20 -right-20 h-[240px] w-[240px] rounded-full blur-3xl opacity-50"
+            style={{
+              background: 'radial-gradient(circle at 50% 50%, rgba(254,102,32,0.25) 0%, transparent 70%)',
+            }}
+          />
+          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="min-w-0">
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FE6620]">
+                <Sparkles className="h-3 w-3" /> Tu web pública
               </div>
-              <p className="mt-3 text-[28px] font-semibold leading-none tabular-nums tracking-[-0.04em] text-ink">
-                {kpi.value}
+              <h3 className="mt-1.5 text-[18px] sm:text-[20px] font-semibold tracking-[-0.02em] text-ink">
+                Edita lo que ven tus clientes
+              </h3>
+              <p className="mt-1 text-[13px] text-body max-w-prose leading-snug">
+                Sobre nosotros, galería, instalaciones y blog. Sin escribir HTML —
+                se rellena solo con tu contenido.
               </p>
-              <p className="mt-2 text-[12.5px] text-muted">{kpi.label}</p>
-            </Link>
-          )
-        })}
-      </section>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+              <Link
+                href="/kennel/contenido/sobre"
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-ink px-4 py-2.5 text-[13px] font-bold text-on-primary hover:opacity-90 transition"
+              >
+                <Pencil className="h-3.5 w-3.5" /> Editar contenido
+              </Link>
+              {publicUrl && (
+                <Link
+                  href={publicUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2.5 text-[13px] font-semibold text-body hover:border-ink/30 hover:text-ink transition"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" /> Ver mi web
+                </Link>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
-      {/* Acciones avanzadas */}
+      {/* Para no-Pro: enlace simple a ver el perfil público (sin glow) */}
+      {!isPro && publicUrl && (
+        <Link
+          href={publicUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3.5 py-2 text-[12.5px] font-medium text-body hover:border-ink/30 hover:text-ink transition self-start"
+        >
+          <ExternalLink className="h-3.5 w-3.5" /> Ver mi perfil público
+        </Link>
+      )}
+
+      {/* ═══ KPIs compactos ═══ — strip de 4 con números pequeños */}
       <section>
-        <h2 className="mb-4 text-[18px] font-semibold tracking-[-0.02em] text-ink">Herramientas del criadero</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {actionCards.map((a) => {
-            const Icon = a.icon
-            const inner = (
-              <>
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-card">
-                  <Icon className="h-4 w-4 text-ink" />
-                </div>
-                <div className="mt-3">
-                  <p className="text-[14px] font-medium text-ink">{a.label}</p>
-                  <p className="mt-0.5 text-[12.5px] text-body">{a.desc}</p>
-                </div>
-              </>
-            )
-            const cls = 'block rounded-xl border border-hairline bg-canvas p-4 transition-colors hover:bg-surface-soft'
-            if (a.onClick) {
-              return (
-                <button key={a.label} onClick={a.onClick} className={`${cls} text-left w-full`}>
-                  {inner}
-                </button>
-              )
-            }
-            if (!a.href) return null
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+          {kpis.map(kpi => {
+            const Icon = kpi.icon
             return (
               <Link
-                key={a.label}
-                href={a.href}
-                target={a.external ? '_blank' : undefined}
-                rel={a.external ? 'noopener' : undefined}
-                className={cls}
+                key={kpi.label}
+                href={kpi.href}
+                className="group rounded-xl border border-hairline bg-canvas p-3 sm:p-3.5 transition-colors hover:bg-surface-soft"
               >
-                {inner}
+                <div className="flex items-center gap-2">
+                  <Icon className="h-3.5 w-3.5" style={{ color: kpi.color }} />
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted truncate">
+                    {kpi.label}
+                  </p>
+                </div>
+                <p className="mt-1 text-[22px] sm:text-[24px] font-semibold leading-none tabular-nums tracking-[-0.03em] text-ink">
+                  {kpi.value.toLocaleString('es-ES')}
+                </p>
               </Link>
             )
           })}
         </div>
       </section>
 
-      {/* Edit panel */}
+      {/* ═══ Herramientas avanzadas (collapsible) ═══ */}
+      <section>
+        <button
+          onClick={() => setAdvancedOpen(o => !o)}
+          className="flex w-full items-center justify-between gap-3 rounded-xl border border-hairline bg-canvas px-4 py-3 hover:bg-surface-soft transition-colors"
+        >
+          <div className="text-left">
+            <p className="text-[14px] font-semibold text-ink">Herramientas avanzadas</p>
+            <p className="text-[12px] text-muted">
+              Formulario, dominio propio, pagos online, API keys, analíticas.
+            </p>
+          </div>
+          <ChevronDown
+            className={`h-4 w-4 text-muted flex-shrink-0 transition-transform ${advancedOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
+
+        {advancedOpen && (
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {advancedTools.map(a => {
+              const Icon = a.icon
+              const inner = (
+                <>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-card">
+                    <Icon className="h-4 w-4 text-ink" />
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-[13.5px] font-medium text-ink">{a.label}</p>
+                    <p className="mt-0.5 text-[12px] text-body leading-snug">{a.desc}</p>
+                  </div>
+                </>
+              )
+              const cls = 'block rounded-xl border border-hairline bg-canvas p-4 transition-colors hover:bg-surface-soft'
+              if ('onClick' in a && a.onClick) {
+                return (
+                  <button key={a.label} onClick={a.onClick} className={`${cls} text-left w-full`}>
+                    {inner}
+                  </button>
+                )
+              }
+              if (!('href' in a) || !a.href) return null
+              return (
+                <Link key={a.label} href={a.href} className={cls}>
+                  {inner}
+                </Link>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* Modals */}
       <KennelEditPanel
         kennel={kennel}
         open={showEdit}
@@ -278,8 +329,6 @@ export default function KennelConfigView({ kennel, stats, hasCustomWeb = false, 
           router.refresh()
         }}
       />
-
-      {/* Form builder panel */}
       {showFormBuilder && (
         <ContactFormBuilder
           kennelId={kennel.id}
@@ -287,8 +336,6 @@ export default function KennelConfigView({ kennel, stats, hasCustomWeb = false, 
           onClose={() => setShowFormBuilder(false)}
         />
       )}
-      {/* userId silenciado para evitar warning de no-uso */}
-      {false && <span data-user-id={userId} />}
     </div>
   )
 }

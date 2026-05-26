@@ -51,8 +51,10 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
     }
   }
 
-  const dogsRaw = (dogsRes.data || []).map(normalizeDog) as unknown as Parameters<typeof sortDogsPhotoFirst>[0]
-  const dogs = sortDogsPhotoFirst(dogsRaw)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dogsRaw = (dogsRes.data || []).map(normalizeDog) as any[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dogs = sortDogsPhotoFirst(dogsRaw) as any[]
   const litters = (littersRes.data || []).map(normalizeLitter) as unknown as Array<{
     id: string; status: string; birth_date: string | null; mating_date: string | null;
     breed?: { name?: string } | null;
