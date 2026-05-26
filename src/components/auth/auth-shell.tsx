@@ -30,9 +30,22 @@ interface AuthShellProps {
  * On mobile both stack and right panel is hidden.
  */
 export function AuthShell({ title, titleTail, subtitle, children, footer, hideChrome = false }: AuthShellProps) {
+  // En iOS WebView (hideChrome=true): altura exacta de pantalla, sin scroll,
+  // contenido centrado verticalmente. Se siente como una pantalla nativa.
+  // En web normal: min-h-screen + scroll natural cuando el form es largo.
+  const mainCls = hideChrome
+    ? 'h-screen overflow-hidden bg-canvas text-ink'
+    : 'min-h-screen bg-canvas text-ink'
+  const gridCls = hideChrome
+    ? 'grid h-full'
+    : 'grid min-h-screen lg:grid-cols-[1.05fr_1fr]'
+  const leftColCls = hideChrome
+    ? 'relative flex h-full flex-col px-6 py-8 sm:px-10'
+    : 'relative flex flex-col px-6 py-8 sm:px-10 sm:py-10 lg:px-16 lg:py-12'
+
   return (
     <main
-      className="min-h-screen bg-canvas text-ink"
+      className={mainCls}
       style={{
         // Respeta notch + home bar cuando el shell se renderiza dentro del
         // WebView iOS. En web normal estas vars son 0px (ver globals.css).
@@ -40,9 +53,9 @@ export function AuthShell({ title, titleTail, subtitle, children, footer, hideCh
         paddingBottom: 'var(--safe-area-bottom)',
       }}
     >
-      <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
+      <div className={gridCls}>
         {/* ── LEFT — Form column ────────────────────────────────────── */}
-        <div className="relative flex flex-col px-6 py-8 sm:px-10 sm:py-10 lg:px-16 lg:py-12">
+        <div className={leftColCls}>
           {/* Top bar — wordmark + (opcional) volver */}
           <div className="flex items-center justify-between">
             <Wordmark size="text-xl" />

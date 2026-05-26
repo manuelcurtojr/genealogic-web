@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import {
   getPlatformFromRequest,
   isIosAllowedException,
+  isIosAllowedForAnon,
   matchesIosHiddenPath,
   shouldBypassPlatformLogic,
 } from '@/lib/platform'
@@ -39,21 +40,30 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
 
-  // ─── iOS WebView path gating ───────────────────────────────────────────
-  // Antes del Pro-gating: si la sesión es iOS, los paths B2B se redirigen
-  // directamente a /dashboard. Evita ciclos (no redirige /dashboard ni rutas
-  // de auth) y respeta las excepciones explícitas declaradas en platform.ts.
+  // ─── iOS WebView gating ────────────────────────────────────────────────
+  // La app debe sentirse nativa: si no estás logueado, sólo ves auth pages.
+  // Si estás logueado, se ocultan las rutas B2B (pricing/billing/CRM) que
+  // disparan 3.1.1. Antes que el resto de gates para evitar ciclos.
   const isIosSession = getPlatformFromRequest(request) === 'ios'
-  if (
-    isIosSession &&
-    !shouldBypassPlatformLogic(pathname) &&
-    matchesIosHiddenPath(pathname) &&
-    !isIosAllowedException(pathname)
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    url.search = ''
-    return NextResponse.redirect(url)
+  if (isIosSession && !shouldBypassPlatformLogic(pathname)) {
+    // 1. Anon → solo login/register/forgot/reset/legal. Todo lo demás a /login.
+    if (!user && !isIosAllowedForAnon(pathname)) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      url.search = ''
+      return NextResponse.redirect(url)
+    }
+    // 2. Logueado → bloquear rutas B2B (pricing, billing, CRM, etc.).
+    if (
+      user &&
+      matchesIosHiddenPath(pathname) &&
+      !isIosAllowedException(pathname)
+    ) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      url.search = ''
+      return NextResponse.redirect(url)
+    }
   }
 
   // ─── Custom domain rewrite ─────────────────────────────────────────────

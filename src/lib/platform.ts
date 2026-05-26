@@ -95,3 +95,34 @@ export function matchesIosHiddenPath(pathname: string): boolean {
 export function isIosAllowedException(_pathname: string): boolean {
   return false
 }
+
+/**
+ * Rutas accesibles para un usuario NO autenticado dentro del WebView iOS.
+ * Todo lo demás se redirige a /login para que la app se sienta nativa:
+ * no hay landing comercial, no hay search público, no hay browsing de
+ * perros/criaderos antes de identificarse.
+ */
+const IOS_PUBLIC_PATHS = new Set<string>([
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+  '/auth/callback',
+  '/terms',
+  '/privacy',
+  '/legal',
+])
+
+export function isIosAllowedForAnon(pathname: string): boolean {
+  if (IOS_PUBLIC_PATHS.has(pathname)) return true
+  // Permitir subrutas como /reset-password/[token]
+  if (
+    pathname.startsWith('/reset-password/') ||
+    pathname.startsWith('/forgot-password/') ||
+    pathname.startsWith('/auth/') ||
+    pathname.startsWith('/legal/')
+  ) {
+    return true
+  }
+  return false
+}
