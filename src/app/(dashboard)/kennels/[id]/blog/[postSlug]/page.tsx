@@ -1,19 +1,38 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { loadProPage } from '@/lib/kennel/pro-page-loader'
+import { isUUID } from '@/lib/slug'
+import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
 import { ProPageShell } from '@/components/kennel/pro-page-shell'
 import { ArrowLeft } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
-export default async function KennelBlogPostPage({ params }: { params: Promise<{ id: string; postSlug: string }> }) {
+export default async function KennelBlogPostPage({
+  params,
+}: { params: Promise<{ id: string; postSlug: string }> }) {
   const { id, postSlug } = await params
-  // El blog index ya pasó por loadProPage('blog'). Aquí el post individual
-  // solo necesita gate Pro + el post mismo (status=published).
-  const { kennel } = await loadProPage({ kennelId: id, pageId: null })
-
   const supabase = await createClient()
+
+  const field = isUUID(id) ? 'id' : 'slug'
+  const { data: kennel } = await supabase
+    .from('kennels')
+    .select('id, slug, owner_id, name')
+    .eq(field, id)
+    .single()
+  if (!kennel) notFound()
+  if (field === 'id' && kennel.slug && kennel.slug !== id) {
+    redirect(`/kennels/${kennel.slug}/blog/${postSlug}`)
+  }
+
+  let ownerPlan: string | null = null
+  if (kennel.owner_id) {
+    const { data: profile } = await supabase.from('profiles').select('plan').eq('id', kennel.owner_id).single()
+    ownerPlan = profile?.plan || null
+  }
+  const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
+  if (!isPro) redirect(`/kennels/${kennel.slug || kennel.id}`)
+
   const { data: post } = await supabase
     .from('kennel_posts')
     .select('id, slug, title, excerpt, cover_image_url, cover_image_alt, published_at, reading_time_minutes, category_slug, body_text, author_name')
@@ -43,18 +62,12 @@ export default async function KennelBlogPostPage({ params }: { params: Promise<{
       {post.cover_image_url && (
         <div className="aspect-[16/9] overflow-hidden rounded-2xl border border-hairline bg-surface-card">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={post.cover_image_url}
-            alt={post.cover_image_alt || ''}
-            className="h-full w-full object-cover"
-          />
+          <img src={post.cover_image_url} alt={post.cover_image_alt || ''} className="h-full w-full object-cover" />
         </div>
       )}
 
       {post.excerpt && (
-        <p className="text-[16px] sm:text-[18px] text-body leading-[1.55] max-w-prose font-medium">
-          {post.excerpt}
-        </p>
+        <p className="text-[16px] sm:text-[18px] text-body leading-[1.55] max-w-prose font-medium">{post.excerpt}</p>
       )}
 
       {post.body_text && (

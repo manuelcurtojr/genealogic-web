@@ -9,16 +9,20 @@ import Link from 'next/link'
 import { AlertCircle, ArrowRight, Sparkles } from 'lucide-react'
 
 export function ProPageShell({
-  eyebrow, title, description, children,
+  eyebrow, title, description, children, fullWidth = false,
 }: {
   eyebrow?: string
   title: string
   description?: string
   children: React.ReactNode
+  /** Si true, sin max-w (usa el ancho del dashboard). Para galería, instalaciones,
+   *  catálogo de perros. Por defecto las páginas con texto/contenido legible
+   *  se quedan en max-w-5xl. */
+  fullWidth?: boolean
 }) {
   return (
-    <div className="mx-auto max-w-5xl px-0 py-8 sm:py-12 space-y-8 sm:space-y-10">
-      <header>
+    <div className={`${fullWidth ? '' : 'mx-auto max-w-5xl'} px-0 py-8 sm:py-12 space-y-8 sm:space-y-10`}>
+      <header className={fullWidth ? '' : ''}>
         {eyebrow && (
           <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{eyebrow}</p>
         )}

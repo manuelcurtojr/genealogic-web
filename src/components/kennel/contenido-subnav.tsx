@@ -2,13 +2,15 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { User, Image as ImageIcon, Building2, BookOpen } from 'lucide-react'
+import { User, Image as ImageIcon, Building2, BookOpen, HelpCircle, MessageSquare } from 'lucide-react'
 
 const ITEMS = [
   { href: '/kennel/contenido/sobre',         label: 'Sobre nosotros', icon: User },
   { href: '/kennel/contenido/galeria',       label: 'Galería',         icon: ImageIcon },
   { href: '/kennel/contenido/instalaciones', label: 'Instalaciones',   icon: Building2 },
   { href: '/kennel/contenido/blog',          label: 'Blog',            icon: BookOpen },
+  { href: '/kennel/contenido/faq',           label: 'FAQ',             icon: HelpCircle },
+  { href: '/kennel/contenido/resenas',       label: 'Reseñas',         icon: MessageSquare },
 ]
 
 export default function ContenidoSubNav() {

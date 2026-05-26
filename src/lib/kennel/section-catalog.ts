@@ -236,7 +236,7 @@ export const SECTION_CATALOG: SectionCatalogEntry[] = [
   {
     type: 'breeding-dogs-grid',
     label: 'Reproductores',
-    description: 'Grid de sementales y reproductoras con enlace al pedigrí en Genealogic.',
+    description: 'Grid de sementales y reproductoras con enlace a su genealogía en Genealogic.',
     pages: ['perros'],
     liveData: true,
     defaultProps: { filterBy: 'all', showPedigreeLink: true },

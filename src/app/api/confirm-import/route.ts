@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     const importId = `import_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 
     // Save import record
-    const notifTitle = `Pedigrí importado: ${mainDog.name}`
+    const notifTitle = `Genealogía importada: ${mainDog.name}`
     await supabase.from('notifications').insert({
       user_id: safeUserId, type: 'import',
       title: notifTitle,

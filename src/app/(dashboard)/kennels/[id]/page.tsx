@@ -9,7 +9,7 @@ import KennelProHome from '@/components/kennel/pro-home'
 import PageTracker from '@/components/track/page-tracker'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 import ClaimBanner from '@/components/admin-requests/claim-banner'
-import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
+import { sortDogsByPhotoQuality } from '@/lib/dogs/sort-quality'
 import { KennelJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
 import type { Metadata } from 'next'
@@ -84,7 +84,7 @@ export default async function KennelDetailPage({
   const isOwner = user?.id === kennel.owner_id
 
   // ─── Datos comunes ──────────────────────────────────────────────────
-  const [allDogsRes, allLittersRes, breedsRes, faqRes, ownerProfileRes] = await Promise.all([
+  const [allDogsRes, allLittersRes, breedsRes, faqRes, ownerProfileRes, reviewsRes] = await Promise.all([
     supabase
       .from('dogs')
       .select('id, slug, name, sex, thumbnail_url, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, breed:breeds(name)')
@@ -100,7 +100,9 @@ export default async function KennelDetailPage({
     kennel.breed_ids && kennel.breed_ids.length > 0
       ? supabase.from('breeds').select('id, name').in('id', kennel.breed_ids)
       : Promise.resolve({ data: [] }),
-    // FAQ — solo para Pro home; queries todas en paralelo para minimizar latencia
+    // FAQ pública — todas las entries activas de la biblioteca del Emailbot
+    // se muestran (las escribió el criador para que el bot las responda,
+    // así que también son contenido público válido)
     supabase
       .from('knowledge_entries')
       .select('id, title, content, category')
@@ -111,18 +113,42 @@ export default async function KennelDetailPage({
     kennel.owner_id
       ? supabase.from('profiles').select('plan').eq('id', kennel.owner_id).single()
       : Promise.resolve({ data: null }),
+    // Reseñas visibles en la home Pro
+    supabase
+      .from('kennel_reviews')
+      .select('id, author_name, body, rating')
+      .eq('kennel_id', kennel.id)
+      .eq('is_visible', true)
+      .order('position', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: false })
+      .limit(12),
   ])
 
   const allDogs = allDogsRes.data || []
   const allLitters = allLittersRes.data || []
   const breedNames = (breedsRes.data || []).map((b: { name: string }) => b.name)
   const faqEntries = faqRes.data || []
+  const reviews = reviewsRes.data || []
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ownerPlan = (ownerProfileRes.data as any)?.plan || null
   const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
 
-  const dogs = sortDogsPhotoFirst(allDogs)
+  // Count fotos de galería por perro para ordenar por calidad
+  const dogIds = (allDogs as Array<{ id: string }>).map(d => d.id)
+  const photoCount: Record<string, number> = {}
+  if (dogIds.length > 0) {
+    const { data: dphotos } = await supabase
+      .from('dog_photos')
+      .select('dog_id')
+      .in('dog_id', dogIds)
+    for (const p of (dphotos || []) as Array<{ dog_id: string }>) {
+      photoCount[p.dog_id] = (photoCount[p.dog_id] || 0) + 1
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dogs = sortDogsByPhotoQuality(allDogs as any[], photoCount)
   const litters = allLitters
   const forSale = dogs.filter((d: { is_for_sale: boolean | null }) => d.is_for_sale)
   const reproductores = dogs.filter((d: { is_reproductive: boolean | null; is_for_sale: boolean | null }) => d.is_reproductive && !d.is_for_sale)
@@ -217,6 +243,7 @@ export default async function KennelDetailPage({
           }}
           featuredDogs={featured}
           faqEntries={faqEntries}
+          reviews={reviews}
           breedNames={breedNames}
           stats={stats}
         />

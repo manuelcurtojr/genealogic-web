@@ -21,7 +21,7 @@ import Link from 'next/link'
 import { Globe } from 'lucide-react'
 import { pastelByName } from '@/lib/avatars'
 import type { ExtraPageId } from '@/lib/kennel/pro-web'
-import { PAGE_NAV_LABEL } from '@/lib/kennel/pro-web'
+import KennelChromeNav from './kennel-chrome-nav'
 
 type NavItem = { id: 'home' | 'perros' | ExtraPageId | 'contacto'; href: string; label: string }
 
@@ -59,44 +59,30 @@ export default function KennelChrome({
         className="border-b border-hairline bg-canvas/95 backdrop-blur-md"
         data-kennel-chrome="compact"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 h-12 flex items-center gap-3">
-          {/* Identidad sutil */}
-          <Link href={`/kennels/${kennelSlug}`} className="flex items-center gap-2 min-w-0 group">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 h-14 flex items-center gap-3">
+          {/* Identidad — un poco más grande para emparejar el peso del nav */}
+          <Link href={`/kennels/${kennelSlug}`} className="flex items-center gap-2.5 min-w-0 group">
             {logoUrl ? (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={logoUrl} alt={kennelName} className="h-6 w-6 rounded-full object-cover border border-hairline flex-shrink-0" />
+              <img src={logoUrl} alt={kennelName} className="h-7 w-7 rounded-full object-cover border border-hairline flex-shrink-0" />
             ) : (
               <div
-                className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
+                className="h-7 w-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
                 style={{ backgroundColor: pastelByName(kennelName) }}
               >
                 {kennelName[0]?.toUpperCase()}
               </div>
             )}
-            <span className="text-[12.5px] font-semibold text-ink truncate group-hover:text-[#FE6620] transition-colors">
+            <span className="text-[14px] font-semibold text-ink truncate group-hover:text-[#FE6620] transition-colors">
               {kennelName}
             </span>
           </Link>
 
-          {/* Nav — scrollable en mobile, inline en desktop */}
-          <nav className="ml-auto flex items-center gap-0 overflow-x-auto scrollbar-hide -mr-2 sm:mr-0">
-            {navItems.map(item => {
-              const isActive = item.id === activePageId
-              return (
-                <Link
-                  key={item.id}
-                  href={hrefFor(item.id)}
-                  className={`text-[11.5px] font-semibold px-2.5 sm:px-3 py-1.5 rounded-md whitespace-nowrap transition-colors ${
-                    isActive
-                      ? 'text-ink bg-surface-card'
-                      : 'text-muted hover:text-ink hover:bg-surface-soft'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              )
-            })}
-          </nav>
+          <KennelChromeNav
+            items={navItems.map(n => ({ id: n.id, href: n.href, label: n.label }))}
+            kennelSlug={kennelSlug}
+            variant="compact"
+          />
         </div>
       </div>
     )
@@ -131,42 +117,19 @@ export default function KennelChrome({
             </span>
           </Link>
 
-          <nav className="ml-auto hidden md:flex items-center gap-0">
-            {navItems.map(item => {
-              const isActive = item.id === activePageId
-              return (
-                <Link
-                  key={item.id}
-                  href={hrefFor(item.id)}
-                  className={`text-[12px] font-semibold uppercase tracking-[0.1em] px-3 py-2 transition-colors whitespace-nowrap ${
-                    isActive ? 'text-ink' : 'text-body hover:text-[#FE6620]'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              )
-            })}
-          </nav>
-
-          {/* Mobile: scroll horizontal de tabs */}
-          <nav className="ml-auto md:hidden flex items-center gap-0 overflow-x-auto scrollbar-hide -mr-2">
-            {navItems.map(item => {
-              const isActive = item.id === activePageId
-              return (
-                <Link
-                  key={item.id}
-                  href={hrefFor(item.id)}
-                  className={`text-[11.5px] font-semibold px-2.5 py-1.5 rounded-md whitespace-nowrap transition-colors ${
-                    isActive
-                      ? 'text-ink bg-surface-card'
-                      : 'text-muted hover:text-ink hover:bg-surface-soft'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              )
-            })}
-          </nav>
+          <KennelChromeNav
+            items={navItems.map(n => ({ id: n.id, href: n.href, label: n.label }))}
+            kennelSlug={kennelSlug}
+            variant="standalone"
+          />
+          {/* Mobile: usa el mismo client nav en modo compact para tabs scroll */}
+          <div className="ml-auto md:hidden">
+            <KennelChromeNav
+              items={navItems.map(n => ({ id: n.id, href: n.href, label: n.label }))}
+              kennelSlug={kennelSlug}
+              variant="compact"
+            />
+          </div>
         </div>
       </header>
 

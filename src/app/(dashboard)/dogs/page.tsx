@@ -25,7 +25,7 @@ export default async function DogsPage() {
     supabase
       .from('dogs')
       .select(`
-        id, slug, name, sex, birth_date, thumbnail_url, breed_id,
+        id, slug, name, sex, birth_date, thumbnail_url, original_thumbnail_url, thumbnail_upscaled_at, breed_id,
         is_reproductive, is_for_sale, show_in_kennel, breeder_id, kennel_id, created_at, updated_at,
         breed:breeds(name),
         color:colors(name),

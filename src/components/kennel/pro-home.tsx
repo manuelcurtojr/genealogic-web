@@ -16,7 +16,7 @@
 import Link from 'next/link'
 import {
   Sparkles, ArrowRight, MapPin, Calendar, HelpCircle, BadgeCheck,
-  ExternalLink, Globe, Dog as DogIcon,
+  ExternalLink, Globe, Dog as DogIcon, Star, Quote,
 } from 'lucide-react'
 import { pastelByName } from '@/lib/avatars'
 import ContactKennelButton from './contact-kennel-button'
@@ -34,6 +34,13 @@ interface FAQEntry {
   title: string
   content: string | null
   category: string | null
+}
+
+interface Review {
+  id: string
+  author_name: string
+  body: string
+  rating: number | null
 }
 
 interface Props {
@@ -59,12 +66,14 @@ interface Props {
   featuredDogs: Dog[]
   /** FAQ que se muestra dentro de la home Pro */
   faqEntries: FAQEntry[]
+  /** Reseñas de clientes que aparecen en la home Pro */
+  reviews: Review[]
   breedNames: string[]
   stats: { value: number; label: string }[]
 }
 
 export default function KennelProHome({
-  kennel, featuredDogs, faqEntries, breedNames, stats,
+  kennel, featuredDogs, faqEntries, reviews, breedNames, stats,
 }: Props) {
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const foundationYear = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null
@@ -291,7 +300,7 @@ export default function KennelProHome({
       <section>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
           <HighlightCard
-            title="Pedigree verificable"
+            title="Genealogía verificable"
             body={`Cada perro de ${kennel.name} tiene su árbol completo, sus papeles digitalizados y su historial disponible en su ficha.`}
           />
           <HighlightCard
@@ -306,6 +315,44 @@ export default function KennelProHome({
           />
         </div>
       </section>
+
+      {/* ════ RESEÑAS DE CLIENTES ════ */}
+      {reviews.length > 0 && (
+        <section>
+          <div className="mb-5 sm:mb-6">
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">La voz de los clientes</p>
+            <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
+              Lo que dicen las familias
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {reviews.slice(0, 6).map(r => (
+              <div
+                key={r.id}
+                className="relative rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 flex flex-col gap-3"
+              >
+                <Quote className="absolute top-4 right-4 h-5 w-5 text-[#FE6620]/30" />
+                {r.rating && (
+                  <div className="inline-flex items-center gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-3.5 w-3.5 ${i < (r.rating || 0) ? 'fill-amber-400 text-amber-400' : 'text-hairline'}`}
+                      />
+                    ))}
+                  </div>
+                )}
+                <p className="text-[13.5px] sm:text-[14px] text-body leading-[1.6] whitespace-pre-line">
+                  {r.body}
+                </p>
+                <p className="mt-auto pt-2 text-[12.5px] font-semibold text-ink border-t border-hairline">
+                  {r.author_name}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ════ FAQ embebida ════ */}
       {faqEntries.length > 0 && (

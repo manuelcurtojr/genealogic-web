@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { loadProPage, pageNotYetPublicMessage } from '@/lib/kennel/pro-page-loader'
+import { notFound, redirect } from 'next/navigation'
+import { isUUID } from '@/lib/slug'
+import { isKennelOnProPlan, isExtraPageEnabled } from '@/lib/kennel/pro-web'
+import { pageNotYetPublicMessage } from '@/lib/kennel/pro-page-loader'
 import { ProPageShell, OwnerDraftBanner, EmptyContentState } from '@/components/kennel/pro-page-shell'
 import { BookOpen } from 'lucide-react'
 
@@ -9,18 +12,30 @@ export const dynamic = 'force-dynamic'
 export default async function KennelBlogPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-  const { kennel, isOwner } = await loadProPage({
-    kennelId: id,
-    pageId: 'blog',
-    contentChecker: async () => {
-      const { count } = await supabase
-        .from('kennel_posts')
-        .select('id', { count: 'exact', head: true })
-        .eq('kennel_id', id)
-        .eq('status', 'published')
-      return { publishedPostsCount: count || 0 }
-    },
-  })
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const field = isUUID(id) ? 'id' : 'slug'
+  const { data: kennel } = await supabase
+    .from('kennels')
+    .select('id, slug, owner_id, name, enabled_pages')
+    .eq(field, id)
+    .single()
+  if (!kennel) notFound()
+  if (field === 'id' && kennel.slug && kennel.slug !== id) {
+    redirect(`/kennels/${kennel.slug}/blog`)
+  }
+
+  let ownerPlan: string | null = null
+  if (kennel.owner_id) {
+    const { data: profile } = await supabase.from('profiles').select('plan').eq('id', kennel.owner_id).single()
+    ownerPlan = profile?.plan || null
+  }
+  const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
+  if (!isPro) redirect(`/kennels/${kennel.slug || kennel.id}`)
+
+  const isOwner = user?.id === kennel.owner_id
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const enabled = isExtraPageEnabled(kennel.enabled_pages as any, 'blog')
 
   const { data: posts } = await supabase
     .from('kennel_posts')
@@ -31,6 +46,9 @@ export default async function KennelBlogPage({ params }: { params: Promise<{ id:
     .limit(30)
 
   const list = posts || []
+  const hasContent = list.length >= 1
+
+  if (!isOwner && (!enabled || !hasContent)) notFound()
 
   return (
     <ProPageShell
@@ -38,10 +56,12 @@ export default async function KennelBlogPage({ params }: { params: Promise<{ id:
       title="Desde el criadero"
       description="Camadas anunciadas, lecciones aprendidas, novedades y todo lo que merece la pena contar."
     >
-      {isOwner && list.length === 0 && (
+      {isOwner && (!enabled || !hasContent) && (
         <OwnerDraftBanner
-          message={pageNotYetPublicMessage('blog')}
-          ctaHref="/kennel/edit"
+          message={!enabled
+            ? 'Activa la página "Blog" desde Mi criadero para que sea pública.'
+            : pageNotYetPublicMessage('blog')}
+          ctaHref="/kennel/contenido/blog"
           ctaLabel="Crear post"
         />
       )}
@@ -71,12 +91,7 @@ export default async function KennelBlogPage({ params }: { params: Promise<{ id:
                 <div className="relative aspect-[16/10] bg-surface-card overflow-hidden">
                   {post.cover_image_url ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={post.cover_image_url}
-                      alt=""
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
-                    />
+                    <img src={post.cover_image_url} alt="" loading="lazy" className="h-full w-full object-cover transition-transform group-hover:scale-[1.03]" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted">
                       <BookOpen className="h-8 w-8" />
@@ -89,9 +104,7 @@ export default async function KennelBlogPage({ params }: { params: Promise<{ id:
                       {post.category_slug.replace(/-/g, ' ')}
                     </p>
                   )}
-                  <h3 className="text-[15.5px] font-semibold text-ink leading-snug tracking-[-0.01em]">
-                    {post.title}
-                  </h3>
+                  <h3 className="text-[15.5px] font-semibold text-ink leading-snug tracking-[-0.01em]">{post.title}</h3>
                   {post.excerpt && (
                     <p className="mt-1.5 text-[13px] text-body line-clamp-2 leading-[1.55]">{post.excerpt}</p>
                   )}

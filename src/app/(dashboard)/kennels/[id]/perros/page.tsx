@@ -1,23 +1,35 @@
 import { createClient } from '@/lib/supabase/server'
-import { loadProPage } from '@/lib/kennel/pro-page-loader'
-import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
+import { notFound, redirect } from 'next/navigation'
+import { isUUID } from '@/lib/slug'
+import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
+import { sortDogsByPhotoQuality } from '@/lib/dogs/sort-quality'
 import PerrosCatalog from '@/components/kennel/perros-catalog'
 
 export const dynamic = 'force-dynamic'
 
-/**
- * Catálogo completo del criadero. Sin shell estrecho — usa el ancho
- * disponible del dashboard para mostrar más cards por fila. Buscador +
- * filtro de raza/sexo + tabs (Reproductores · Venta · Camadas · Producido).
- *
- * Filtrado es client-side: el server entrega TODO el dataset del kennel
- * (perros + camadas) y el cliente busca/filtra sin round-trips.
- */
 export default async function KennelPerrosPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const { kennel } = await loadProPage({ kennelId: id, pageId: null })
-
   const supabase = await createClient()
+
+  const field = isUUID(id) ? 'id' : 'slug'
+  const { data: kennel } = await supabase
+    .from('kennels')
+    .select('id, slug, owner_id, name')
+    .eq(field, id)
+    .single()
+  if (!kennel) notFound()
+  if (field === 'id' && kennel.slug && kennel.slug !== id) {
+    redirect(`/kennels/${kennel.slug}/perros`)
+  }
+
+  let ownerPlan: string | null = null
+  if (kennel.owner_id) {
+    const { data: profile } = await supabase.from('profiles').select('plan').eq('id', kennel.owner_id).single()
+    ownerPlan = profile?.plan || null
+  }
+  const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
+  if (!isPro) redirect(`/kennels/${kennel.slug || kennel.id}`)
+
   const [dogsRes, littersRes] = await Promise.all([
     supabase
       .from('dogs')
@@ -33,33 +45,44 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
       .order('created_at', { ascending: false }),
   ])
 
-  // Normalización del join `breed` (PostgREST a veces lo tipa como array)
+  // Normalización joins
   type RawDog = Record<string, unknown> & { breed?: unknown }
   const normalizeDog = (d: RawDog) => {
     const br = d.breed
-    const breed = Array.isArray(br) ? br[0] : br
-    return { ...d, breed: breed || null }
+    return { ...d, breed: Array.isArray(br) ? br[0] : br || null }
   }
   type RawLitter = Record<string, unknown> & { breed?: unknown; father?: unknown; mother?: unknown }
-  const normalizeLitter = (l: RawLitter) => {
-    const br = l.breed, fa = l.father, mo = l.mother
-    return {
-      ...l,
-      breed:  Array.isArray(br) ? br[0] : br,
-      father: Array.isArray(fa) ? fa[0] : fa,
-      mother: Array.isArray(mo) ? mo[0] : mo,
+  const normalizeLitter = (l: RawLitter) => ({
+    ...l,
+    breed:  Array.isArray(l.breed)  ? l.breed[0]  : l.breed,
+    father: Array.isArray(l.father) ? l.father[0] : l.father,
+    mother: Array.isArray(l.mother) ? l.mother[0] : l.mother,
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dogsRaw = (dogsRes.data || []).map(normalizeDog) as any[]
+
+  // Ordenamos por CALIDAD DE FOTO (más fotos en galería = mejor candidato).
+  // Cuenta de dog_photos por dog para los del kennel, en una sola query.
+  const dogIds = dogsRaw.map(d => d.id as string)
+  const photoCount: Record<string, number> = {}
+  if (dogIds.length > 0) {
+    const { data: photos } = await supabase
+      .from('dog_photos')
+      .select('dog_id')
+      .in('dog_id', dogIds)
+    for (const p of (photos || []) as Array<{ dog_id: string }>) {
+      photoCount[p.dog_id] = (photoCount[p.dog_id] || 0) + 1
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dogsRaw = (dogsRes.data || []).map(normalizeDog) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dogs = sortDogsPhotoFirst(dogsRaw) as any[]
+  const dogs = sortDogsByPhotoQuality(dogsRaw, photoCount) as any[]
   const litters = (littersRes.data || []).map(normalizeLitter) as unknown as Array<{
-    id: string; status: string; birth_date: string | null; mating_date: string | null;
-    breed?: { name?: string } | null;
-    father?: { id: string; name: string; thumbnail_url: string | null } | null;
-    mother?: { id: string; name: string; thumbnail_url: string | null } | null;
+    id: string; status: string; birth_date: string | null; mating_date: string | null
+    breed?: { name?: string } | null
+    father?: { id: string; name: string; thumbnail_url: string | null } | null
+    mother?: { id: string; name: string; thumbnail_url: string | null } | null
   }>
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

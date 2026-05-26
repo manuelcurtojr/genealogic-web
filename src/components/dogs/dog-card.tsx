@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Eye, Edit, ArrowRightLeft, GitBranch, Globe, EyeOff, Heart } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { DogImage } from '@/components/ui/dog-image'
+import AiUpscaledBadge from '@/components/dogs/ai-upscaled-badge'
 
 interface DogCardProps {
   dog: {
@@ -13,6 +14,8 @@ interface DogCardProps {
     sex: string | null
     birth_date: string | null
     thumbnail_url: string | null
+    original_thumbnail_url?: string | null
+    thumbnail_upscaled_at?: string | null
     breed: any
     color: any
     kennel?: any
@@ -65,6 +68,11 @@ export default function DogCard({
             {breedName}
           </span>
         )}
+        <AiUpscaledBadge
+          upscaledAt={dog.thumbnail_upscaled_at}
+          originalUrl={dog.original_thumbnail_url}
+          position="top-left"
+        />
         <div className="absolute bottom-0 left-0 right-0 z-10 h-1" style={{ background: sexColor }} />
       </Link>
 

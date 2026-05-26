@@ -275,7 +275,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
       {pedigree && pedigree.length > 1 && (
         <div className="-mx-4 lg:mx-0 mt-4 sm:mt-8">
           <h2 className="mb-5 px-4 text-[22px] font-semibold tracking-[-0.04em] text-ink lg:px-0 sm:mb-6">
-            Pedigrí
+            Genealogía
           </h2>
           <PedigreeTree data={pedigree} rootId={dog.id} />
         </div>

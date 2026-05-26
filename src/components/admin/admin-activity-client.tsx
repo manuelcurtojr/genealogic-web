@@ -21,7 +21,7 @@ const PAGE_SIZE = 50
 // Pastels Cal solid — icon en blanco sobre pastel sólido
 const ACTION_CONFIG: Record<string, { icon: any; color: string; bg: string; label: string }> = {
   dog_created: { icon: Dog, color: 'text-white', bg: '#34d399', label: 'Perro creado' },
-  dog_imported: { icon: Link2, color: 'text-white', bg: '#3b82f6', label: 'Pedigrí importado' },
+  dog_imported: { icon: Link2, color: 'text-white', bg: '#3b82f6', label: 'Genealogía importada' },
   kennel_created: { icon: Store, color: 'text-white', bg: '#8b5cf6', label: 'Criadero creado' },
   litter_created: { icon: Baby, color: 'text-white', bg: '#ec4899', label: 'Camada creada' },
   vet_added: { icon: Stethoscope, color: 'text-white', bg: '#06b6d4', label: 'Registro veterinario' },
@@ -106,7 +106,9 @@ export default function AdminActivityClient() {
     for (const i of (importsRes.data || [])) {
       let count = 0
       try { count = JSON.parse(i.message)?.createdIds?.length || 0 } catch {}
-      all.push({ id: `import-${i.id}`, type: 'dog_imported', action: 'dog_imported', entityName: i.title.replace('Pedigrí importado: ', ''), userName: nameMap.get(i.user_id) || '', userId: i.user_id, timestamp: i.created_at, details: `${count} perros` })
+      // Soportamos tanto el título nuevo "Genealogía importada: X" como el legacy "Pedigrí importado: X"
+      const entityName = i.title.replace('Genealogía importada: ', '').replace('Pedigrí importado: ', '')
+      all.push({ id: `import-${i.id}`, type: 'dog_imported', action: 'dog_imported', entityName, userName: nameMap.get(i.user_id) || '', userId: i.user_id, timestamp: i.created_at, details: `${count} perros` })
     }
     for (const u of (usersRes.data || [])) {
       all.push({ id: `user-${u.id}`, type: 'user_registered', action: 'user_registered', entityName: u.display_name || u.email, userId: u.id, userName: u.display_name || u.email, timestamp: u.created_at })

@@ -315,6 +315,166 @@ export async function deletePostAction(input: { postId: string; kennelId: string
   return { ok: true }
 }
 
+// ═══ FAQ (knowledge_entries con kennel_id, is_active=true) ════════════════
+//
+// Las preguntas frecuentes viven en `knowledge_entries` — la misma tabla
+// que usa el Emailbot. Las entries activas son tanto contexto para el bot
+// como contenido público en la home Pro: el criador las escribe para
+// responder a sus clientes y son siempre contenido válido para mostrar.
+// Categoría default 'faq' (la del schema check constraint).
+
+const FAQ_DEFAULT_CATEGORY = 'faq'
+
+export async function upsertFAQEntryAction(input: {
+  kennelId: string
+  entryId?: string
+  title: string
+  content: string
+}): Promise<{ id: string }> {
+  const { supabase, kennel } = await requireOwnerOfProKennel(input.kennelId)
+  const title = input.title.trim()
+  const content = input.content.trim()
+  if (title.length < 3) throw new Error('title_too_short')
+  if (content.length < 5) throw new Error('content_too_short')
+
+  if (input.entryId) {
+    // Solo title/content/is_active — preservamos la category original
+    const { data, error } = await supabase
+      .from('knowledge_entries')
+      .update({ title, content, is_active: true })
+      .eq('id', input.entryId)
+      .eq('kennel_id', input.kennelId)
+      .select('id')
+      .single()
+    if (error) throw new Error(error.message)
+    revalidateKennelPages(kennel.slug)
+    return { id: data.id }
+  }
+
+  // INSERT
+  const { data: maxRow } = await supabase
+    .from('knowledge_entries')
+    .select('position')
+    .eq('kennel_id', input.kennelId)
+    .order('position', { ascending: false, nullsFirst: false })
+    .limit(1)
+    .maybeSingle()
+  const nextPos = ((maxRow?.position as number | null) || 0) + 10
+
+  const { data, error } = await supabase
+    .from('knowledge_entries')
+    .insert({
+      kennel_id: input.kennelId,
+      title, content,
+      is_active: true,
+      category: FAQ_DEFAULT_CATEGORY,
+      position: nextPos,
+    })
+    .select('id')
+    .single()
+  if (error) throw new Error(error.message)
+  revalidateKennelPages(kennel.slug)
+  return { id: data.id }
+}
+
+export async function deleteFAQEntryAction(input: { entryId: string; kennelId: string }): Promise<{ ok: true }> {
+  const { supabase, kennel } = await requireOwnerOfProKennel(input.kennelId)
+  const { error } = await supabase
+    .from('knowledge_entries')
+    .delete()
+    .eq('id', input.entryId)
+    .eq('kennel_id', input.kennelId)
+  if (error) throw new Error(error.message)
+  revalidateKennelPages(kennel.slug)
+  return { ok: true }
+}
+
+// ═══ Reseñas de clientes ═══════════════════════════════════════════════════
+
+export async function upsertReviewAction(input: {
+  kennelId: string
+  reviewId?: string
+  authorName: string
+  body: string
+  rating: number | null
+}): Promise<{ id: string }> {
+  const { supabase, kennel } = await requireOwnerOfProKennel(input.kennelId)
+  const authorName = input.authorName.trim()
+  const body = input.body.trim()
+  if (authorName.length < 2) throw new Error('author_too_short')
+  if (body.length < 10) throw new Error('body_too_short')
+  if (input.rating !== null && (input.rating < 1 || input.rating > 5)) throw new Error('invalid_rating')
+
+  if (input.reviewId) {
+    const { data, error } = await supabase
+      .from('kennel_reviews')
+      .update({
+        author_name: authorName,
+        body,
+        rating: input.rating,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', input.reviewId)
+      .eq('kennel_id', input.kennelId)
+      .select('id')
+      .single()
+    if (error) throw new Error(error.message)
+    revalidateKennelPages(kennel.slug)
+    return { id: data.id }
+  }
+
+  const { data: maxRow } = await supabase
+    .from('kennel_reviews')
+    .select('position')
+    .eq('kennel_id', input.kennelId)
+    .order('position', { ascending: false, nullsFirst: false })
+    .limit(1)
+    .maybeSingle()
+  const nextPos = ((maxRow?.position as number | null) || 0) + 10
+
+  const { data, error } = await supabase
+    .from('kennel_reviews')
+    .insert({
+      kennel_id: input.kennelId,
+      author_name: authorName,
+      body,
+      rating: input.rating,
+      position: nextPos,
+      is_visible: true,
+    })
+    .select('id')
+    .single()
+  if (error) throw new Error(error.message)
+  revalidateKennelPages(kennel.slug)
+  return { id: data.id }
+}
+
+export async function deleteReviewAction(input: { reviewId: string; kennelId: string }): Promise<{ ok: true }> {
+  const { supabase, kennel } = await requireOwnerOfProKennel(input.kennelId)
+  const { error } = await supabase
+    .from('kennel_reviews')
+    .delete()
+    .eq('id', input.reviewId)
+    .eq('kennel_id', input.kennelId)
+  if (error) throw new Error(error.message)
+  revalidateKennelPages(kennel.slug)
+  return { ok: true }
+}
+
+export async function toggleReviewVisibilityAction(input: {
+  reviewId: string; kennelId: string; visible: boolean
+}): Promise<{ ok: true }> {
+  const { supabase, kennel } = await requireOwnerOfProKennel(input.kennelId)
+  const { error } = await supabase
+    .from('kennel_reviews')
+    .update({ is_visible: input.visible, updated_at: new Date().toISOString() })
+    .eq('id', input.reviewId)
+    .eq('kennel_id', input.kennelId)
+  if (error) throw new Error(error.message)
+  revalidateKennelPages(kennel.slug)
+  return { ok: true }
+}
+
 // ═══ Upload de cover image para posts ══════════════════════════════════════
 
 export async function uploadPostCoverAction(formData: FormData): Promise<{ url: string }> {

@@ -21,7 +21,7 @@ import Link from 'next/link'
 import {
   Lock, Loader2, Check, AlertCircle, Home as HomeIcon, Dog,
   HelpCircle, MessageSquare, BookOpen, Image as ImageIcon, Building2,
-  User as UserIcon, Pencil, ArrowRight,
+  User as UserIcon, ArrowRight,
 } from 'lucide-react'
 import { EXTRA_PAGES, PAGE_NAV_LABEL, isExtraPageEnabled, type ExtraPageId } from '@/lib/kennel/pro-web'
 import { toggleKennelPageAction } from '@/lib/kennel/pages-actions'
@@ -107,24 +107,14 @@ export default function PagesToggles({ kennelId, enabledPages, canUsePro, conten
 
   return (
     <div className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6">
-      <div className="mb-4 flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Tu web pública</p>
-          <h2 className="mt-1 text-[18px] sm:text-[20px] font-semibold tracking-[-0.02em] text-ink">
-            Páginas de tu web
-          </h2>
-          <p className="mt-1 text-[13px] text-body">
-            Activa las páginas que quieras tener. Solo se publican cuando añades contenido.
-          </p>
-        </div>
-        {canUsePro && (
-          <Link
-            href="/kennel/contenido/sobre"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-2 text-[12.5px] font-bold text-on-primary hover:opacity-90 transition self-start"
-          >
-            <Pencil className="h-3.5 w-3.5" /> Editar contenido
-          </Link>
-        )}
+      <div className="mb-4">
+        <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Páginas</p>
+        <h2 className="mt-1 text-[18px] sm:text-[20px] font-semibold tracking-[-0.02em] text-ink">
+          Páginas de tu web
+        </h2>
+        <p className="mt-1 text-[13px] text-body">
+          Activa las que quieras tener. Solo se publican cuando añades contenido (pulsa "Editar" para añadirlo).
+        </p>
       </div>
 
       {/* Base — siempre on */}

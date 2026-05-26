@@ -1,28 +1,40 @@
 import { createClient } from '@/lib/supabase/server'
-import { loadProPage, pageNotYetPublicMessage } from '@/lib/kennel/pro-page-loader'
+import { notFound, redirect } from 'next/navigation'
+import { isUUID } from '@/lib/slug'
+import { isKennelOnProPlan, isExtraPageEnabled } from '@/lib/kennel/pro-web'
+import { pageNotYetPublicMessage } from '@/lib/kennel/pro-page-loader'
 import { ProPageShell, OwnerDraftBanner, EmptyContentState } from '@/components/kennel/pro-page-shell'
+import KennelPhotosGallery from '@/components/kennel/photos-gallery'
 
 export const dynamic = 'force-dynamic'
 
 export default async function KennelGaleriaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  // Carga el kennel primero (sin gate de content) para poder hacer la query de
-  // fotos. Luego comprobamos manualmente si pasa los gates.
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // Esta llamada hace todos los gates excepto el de content (que necesita
-  // counts). Si pasa, ya hicimos auth + slug canonical + Pro check.
-  const { kennel, isOwner } = await loadProPage({
-    kennelId: id,
-    pageId: 'galeria',
-    contentChecker: async () => {
-      const { data } = await supabase
-        .from('kennel_photos')
-        .select('id', { count: 'exact', head: false })
-        .eq('kennel_id', id) // id puede ser slug aquí — la query no rompe
-      return { galleryCount: (data || []).length }
-    },
-  })
+  const field = isUUID(id) ? 'id' : 'slug'
+  const { data: kennel } = await supabase
+    .from('kennels')
+    .select('id, slug, owner_id, name, enabled_pages')
+    .eq(field, id)
+    .single()
+  if (!kennel) notFound()
+  if (field === 'id' && kennel.slug && kennel.slug !== id) {
+    redirect(`/kennels/${kennel.slug}/galeria`)
+  }
+
+  let ownerPlan: string | null = null
+  if (kennel.owner_id) {
+    const { data: profile } = await supabase.from('profiles').select('plan').eq('id', kennel.owner_id).single()
+    ownerPlan = profile?.plan || null
+  }
+  const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
+  if (!isPro) redirect(`/kennels/${kennel.slug || kennel.id}`)
+
+  const isOwner = user?.id === kennel.owner_id
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const enabled = isExtraPageEnabled(kennel.enabled_pages as any, 'galeria')
 
   const { data: photos } = await supabase
     .from('kennel_photos')
@@ -35,16 +47,16 @@ export default async function KennelGaleriaPage({ params }: { params: Promise<{ 
   const list = photos || []
   const hasEnough = list.length >= 3
 
+  if (!isOwner && (!enabled || !hasEnough)) notFound()
+
   return (
-    <ProPageShell
-      eyebrow="Imágenes"
-      title="Galería"
-      description={list.length > 0 ? undefined : 'Próximamente.'}
-    >
-      {isOwner && !hasEnough && (
+    <ProPageShell eyebrow="Imágenes" title="Galería" fullWidth>
+      {isOwner && (!enabled || !hasEnough) && (
         <OwnerDraftBanner
-          message={pageNotYetPublicMessage('galeria')}
-          ctaHref="/kennel/edit"
+          message={!enabled
+            ? 'Activa la página "Galería" desde Mi criadero para que sea pública.'
+            : pageNotYetPublicMessage('galeria')}
+          ctaHref="/kennel/contenido/galeria"
           ctaLabel="Subir fotos"
         />
       )}
@@ -62,24 +74,7 @@ export default async function KennelGaleriaPage({ params }: { params: Promise<{ 
           />
         )
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          {list.map(p => (
-            <figure key={p.id} className="group overflow-hidden rounded-2xl border border-hairline bg-canvas">
-              <div className="aspect-square overflow-hidden bg-surface-card">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.url}
-                  alt={p.caption || ''}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
-                />
-              </div>
-              {p.caption && (
-                <figcaption className="px-3 py-2 text-[11.5px] text-muted truncate">{p.caption}</figcaption>
-              )}
-            </figure>
-          ))}
-        </div>
+        <KennelPhotosGallery photos={list} />
       )}
     </ProPageShell>
   )
