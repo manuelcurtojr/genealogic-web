@@ -65,60 +65,77 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
     }
   }
 
+  // Estilo del trigger:
+  //  - 'primary' (default): fondo ink + texto blanco — igual peso visual
+  //    que el botón "Ver nuestros perros" pero invertido para destacar
+  //    como CTA principal en el hero y la sección contacto.
+  //  - 'light': fondo blanco + ink (versión sobre fondos oscuros como
+  //    webs custom con tema BMW etc).
   const triggerClass =
     variant === 'light'
-      ? 'inline-flex items-center gap-1.5 rounded-md bg-white text-ink shadow-sm ring-1 ring-black/10 px-3 py-1.5 text-[12px] font-medium transition-colors hover:bg-white/95'
-      : 'inline-flex items-center gap-1.5 rounded-md bg-ink px-3 py-1.5 text-[12px] font-medium text-on-primary transition-colors hover:opacity-90'
+      ? 'inline-flex items-center gap-1.5 rounded-xl bg-white text-ink shadow-sm ring-1 ring-black/10 px-4 py-2.5 text-[13.5px] font-bold transition hover:bg-white/95'
+      : 'inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-[13.5px] font-bold transition hover:opacity-90'
 
   return (
     <>
       <button onClick={() => setOpen(true)} className={triggerClass}>
         <Send className="h-3.5 w-3.5" />
-        Solicitudes
+        Pedir información
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" onClick={close}>
+        <div
+          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
+          onClick={close}
+        >
           <div
-            className="w-full max-w-md rounded-2xl bg-canvas shadow-xl max-h-[90vh] overflow-y-auto"
+            className="w-full sm:max-w-lg bg-canvas rounded-t-3xl sm:rounded-3xl shadow-[0_24px_64px_rgba(0,0,0,0.18)] border border-hairline max-h-[92vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-hairline bg-canvas px-5 py-4">
-              <div>
-                <h2 className="text-[16px] font-semibold tracking-[-0.02em] text-ink">
-                  {config.title || `Contactar con ${kennelName}`}
+            {/* Drag handle mobile */}
+            <div className="sm:hidden flex justify-center pt-2.5 pb-1">
+              <div className="h-1 w-10 rounded-full bg-hairline" />
+            </div>
+            <div className="flex items-start justify-between gap-3 px-5 sm:px-6 pt-4 sm:pt-6 pb-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[#FE6620]">
+                  Pedir información
+                </p>
+                <h2 className="mt-1 text-[18px] sm:text-[20px] font-semibold tracking-[-0.025em] text-ink leading-snug">
+                  {config.title || `Contacta con ${kennelName}`}
                 </h2>
-                <p className="mt-0.5 text-[12px] text-muted">
-                  {config.subtitle || 'Tu mensaje llegará directamente al criador.'}
+                <p className="mt-1.5 text-[13px] text-body leading-snug max-w-prose">
+                  {config.subtitle || 'Cuéntanos qué buscas y te respondemos en breve. Sin compromiso.'}
                 </p>
               </div>
               <button
                 onClick={close}
-                className="rounded-lg p-1 text-muted hover:bg-surface-soft hover:text-ink"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-surface-soft hover:text-ink flex-shrink-0"
                 aria-label="Cerrar"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
+            <div className="flex-1 overflow-y-auto">
 
             {done ? (
-              <div className="px-5 py-10 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-                  <Check className="h-6 w-6 text-emerald-600" />
+              <div className="px-5 sm:px-6 py-10 text-center">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50">
+                  <Check className="h-7 w-7 text-emerald-700" strokeWidth={2.5} />
                 </div>
-                <p className="mt-4 text-[15px] font-semibold text-ink">¡Enviado!</p>
-                <p className="mt-1 text-[13px] text-body">
-                  {config.success_message || `${kennelName} la verá en su bandeja y te responderá pronto.`}
+                <p className="mt-4 text-[17px] font-semibold text-ink">¡Enviado!</p>
+                <p className="mt-1.5 text-[13.5px] text-body max-w-sm mx-auto leading-snug">
+                  {config.success_message || `${kennelName} verá tu mensaje y te responderá en breve.`}
                 </p>
                 <button
                   onClick={close}
-                  className="mt-5 inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2 text-[13px] font-medium text-body hover:bg-surface-soft"
+                  className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-ink px-5 py-2.5 text-[13px] font-bold text-on-primary hover:opacity-90 transition"
                 >
                   Cerrar
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-3 px-5 py-4">
+              <form id="kennel-contact-form" onSubmit={handleSubmit} className="space-y-4 px-5 sm:px-6 pb-2">
                 {config.fields.map((field) => (
                   <FieldRenderer
                     key={field.id}
@@ -130,29 +147,34 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
                 ))}
 
                 {serverError && (
-                  <div className="rounded-lg bg-[color:var(--error)]/10 px-3 py-2 text-[12.5px] text-[color:var(--error)]">
+                  <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-[12.5px] text-red-700">
                     {serverError}
                   </div>
                 )}
-
-                <div className="flex justify-end gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={close}
-                    className="rounded-lg border border-hairline bg-canvas px-4 py-2 text-[13px] font-medium text-body hover:bg-surface-soft"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90 disabled:opacity-50"
-                  >
-                    {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                    {config.submit_label || 'Enviar'}
-                  </button>
-                </div>
               </form>
+            )}
+            </div>{/* /flex-1 overflow */}
+
+            {/* Footer sticky con CTAs — solo en modo form */}
+            {!done && (
+              <div className="border-t border-hairline bg-surface-soft px-5 sm:px-6 py-3 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={close}
+                  className="rounded-lg px-3.5 py-2 text-[13px] font-semibold text-body hover:text-ink transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  form="kennel-contact-form"
+                  disabled={submitting}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-5 py-2.5 text-[13px] font-bold text-on-primary hover:opacity-90 disabled:opacity-40 transition"
+                >
+                  {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  {submitting ? 'Enviando…' : (config.submit_label || 'Enviar')}
+                </button>
+              </div>
             )}
           </div>
         </div>

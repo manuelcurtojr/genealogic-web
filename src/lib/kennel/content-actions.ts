@@ -397,6 +397,7 @@ export async function upsertReviewAction(input: {
   authorName: string
   body: string
   rating: number | null
+  authorAvatarUrl?: string | null
 }): Promise<{ id: string }> {
   const { supabase, kennel } = await requireOwnerOfProKennel(input.kennelId)
   const authorName = input.authorName.trim()
@@ -412,6 +413,7 @@ export async function upsertReviewAction(input: {
         author_name: authorName,
         body,
         rating: input.rating,
+        author_avatar_url: input.authorAvatarUrl ?? null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', input.reviewId)
@@ -439,8 +441,10 @@ export async function upsertReviewAction(input: {
       author_name: authorName,
       body,
       rating: input.rating,
+      author_avatar_url: input.authorAvatarUrl ?? null,
       position: nextPos,
       is_visible: true,
+      is_manual: true,
     })
     .select('id')
     .single()
@@ -472,6 +476,99 @@ export async function toggleReviewVisibilityAction(input: {
     .eq('kennel_id', input.kennelId)
   if (error) throw new Error(error.message)
   revalidateKennelPages(kennel.slug)
+  return { ok: true }
+}
+
+// ═══ Featured dogs en home Pro ════════════════════════════════════════════
+
+export async function toggleDogFeaturedInHomeAction(input: {
+  dogId: string
+  featured: boolean
+}): Promise<{ ok: true }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('unauthorized')
+
+  const { data: dog } = await supabase
+    .from('dogs')
+    .select('id, kennel_id, kennel:kennels(owner_id, slug)')
+    .eq('id', input.dogId)
+    .single()
+  if (!dog) throw new Error('dog_not_found')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const kennel = Array.isArray((dog as any).kennel) ? (dog as any).kennel[0] : (dog as any).kennel
+  if (!kennel || kennel.owner_id !== user.id) throw new Error('forbidden')
+
+  const { error } = await supabase
+    .from('dogs')
+    .update({ featured_in_home: input.featured })
+    .eq('id', input.dogId)
+  if (error) throw new Error(error.message)
+
+  if (kennel.slug) revalidatePath(`/kennels/${kennel.slug}`)
+  revalidatePath('/kennel/contenido/perros-destacados')
+  return { ok: true }
+}
+
+// ═══ Upload avatar para reseñas ═══════════════════════════════════════════
+
+export async function uploadReviewAvatarAction(formData: FormData): Promise<{ url: string }> {
+  const kennelId = formData.get('kennelId') as string
+  const file = formData.get('file')
+  if (!kennelId) throw new Error('missing_kennel_id')
+  if (!(file instanceof File)) throw new Error('no_file')
+  if (!ALLOWED_MIME.includes(file.type)) throw new Error('invalid_mime')
+  if (file.size > MAX_SIZE) throw new Error('file_too_large')
+
+  const { kennel } = await requireOwnerOfProKennel(kennelId)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createKennelAdminClient() as any
+
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().slice(0, 5)
+  const ts = Date.now()
+  const path = `${kennel.slug || kennel.id}/reviews/avatars/${ts}.${ext}`
+  const bytes = new Uint8Array(await file.arrayBuffer())
+
+  const { error: upErr } = await admin.storage
+    .from(STORAGE_BUCKET)
+    .upload(path, bytes, { contentType: file.type, upsert: false })
+  if (upErr) throw new Error(upErr.message)
+
+  const { data: pub } = admin.storage.from(STORAGE_BUCKET).getPublicUrl(path)
+  return { url: pub.publicUrl }
+}
+
+// ═══ Newsletter público (visitante no logueado) ═══════════════════════════
+
+export async function subscribePublicNewsletterAction(input: {
+  kennelId: string
+  email: string
+  source?: string
+}): Promise<{ ok: true; duplicate?: boolean }> {
+  const email = input.email.trim().toLowerCase()
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('invalid_email')
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createKennelAdminClient() as any
+  const { data: kennel } = await admin
+    .from('kennels')
+    .select('id')
+    .eq('id', input.kennelId)
+    .single()
+  if (!kennel) throw new Error('kennel_not_found')
+
+  const { error } = await admin
+    .from('newsletter_subscribers')
+    .insert({
+      kennel_id: input.kennelId,
+      email,
+      source: input.source || 'public_kennel_home',
+      is_active: true,
+    })
+  if (error) {
+    if (error.code === '23505') return { ok: true, duplicate: true }
+    throw new Error(error.message)
+  }
   return { ok: true }
 }
 

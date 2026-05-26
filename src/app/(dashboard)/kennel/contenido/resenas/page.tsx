@@ -20,7 +20,7 @@ export default async function KennelReviewsEditorPage() {
 
   const { data: reviews } = await supabase
     .from('kennel_reviews')
-    .select('id, author_name, body, rating, is_visible')
+    .select('id, author_name, body, rating, is_visible, author_avatar_url')
     .eq('kennel_id', kennel.id)
     .order('position', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: true })

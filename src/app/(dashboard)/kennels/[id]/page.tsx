@@ -84,10 +84,10 @@ export default async function KennelDetailPage({
   const isOwner = user?.id === kennel.owner_id
 
   // ─── Datos comunes ──────────────────────────────────────────────────
-  const [allDogsRes, allLittersRes, breedsRes, faqRes, ownerProfileRes, reviewsRes] = await Promise.all([
+  const [allDogsRes, allLittersRes, breedsRes, faqRes, ownerProfileRes, reviewsRes, postsRes] = await Promise.all([
     supabase
       .from('dogs')
-      .select('id, slug, name, sex, thumbnail_url, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, breed:breeds(name)')
+      .select('id, slug, name, sex, thumbnail_url, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, featured_in_home, breed:breeds(name)')
       .eq('kennel_id', kennel.id)
       .or('show_in_kennel.is.null,show_in_kennel.eq.true')
       .order('name'),
@@ -113,22 +113,66 @@ export default async function KennelDetailPage({
     kennel.owner_id
       ? supabase.from('profiles').select('plan').eq('id', kennel.owner_id).single()
       : Promise.resolve({ data: null }),
-    // Reseñas visibles en la home Pro
+    // Reseñas visibles en la home Pro (campos extra para resolver badges)
     supabase
       .from('kennel_reviews')
-      .select('id, author_name, body, rating')
+      .select('id, author_name, body, rating, author_avatar_url, submitted_by_user_id, is_manual')
       .eq('kennel_id', kennel.id)
       .eq('is_visible', true)
       .order('position', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: false })
       .limit(12),
+    // Últimos posts del blog para el slider de la home Pro
+    supabase
+      .from('kennel_posts')
+      .select('id, slug, title, excerpt, cover_image_url, published_at, reading_time_minutes')
+      .eq('kennel_id', kennel.id)
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(6),
   ])
+  const recentPosts = postsRes.data || []
 
   const allDogs = allDogsRes.data || []
   const allLitters = allLittersRes.data || []
   const breedNames = (breedsRes.data || []).map((b: { name: string }) => b.name)
   const faqEntries = faqRes.data || []
-  const reviews = reviewsRes.data || []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const reviewsRaw = (reviewsRes.data || []) as any[]
+
+  // Resolver badges Cliente / Usuario / null (manual) en una pasada.
+  // Cliente = el user que dejó la reseña tiene al menos 1 reservation con
+  // este kennel en estado delivered/confirmed.
+  const submitterIds = Array.from(new Set(
+    reviewsRaw
+      .filter(r => !r.is_manual && r.submitted_by_user_id)
+      .map(r => r.submitted_by_user_id as string),
+  ))
+  const clientUserIds = new Set<string>()
+  if (submitterIds.length > 0) {
+    // En puppy_reservations el "comprador" es owner_id (no client_id).
+    // Cualquier estado de reserva activa o cerrada cuenta como cliente
+    // (confirmed/paid/delivered).
+    const { data: resv } = await supabase
+      .from('puppy_reservations')
+      .select('owner_id')
+      .eq('kennel_id', kennel.id)
+      .in('owner_id', submitterIds)
+      .in('status', ['delivered', 'confirmed', 'paid', 'paid_in_full'])
+    for (const r of (resv || []) as Array<{ owner_id: string }>) {
+      if (r.owner_id) clientUserIds.add(r.owner_id)
+    }
+  }
+  const reviews = reviewsRaw.map(r => ({
+    id: r.id,
+    author_name: r.author_name,
+    body: r.body,
+    rating: r.rating,
+    author_avatar_url: r.author_avatar_url,
+    badge: r.is_manual
+      ? null
+      : (r.submitted_by_user_id && clientUserIds.has(r.submitted_by_user_id) ? 'client' as const : 'user' as const),
+  }))
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ownerPlan = (ownerProfileRes.data as any)?.plan || null
@@ -203,23 +247,33 @@ export default async function KennelDetailPage({
   // KENNEL PRO — landing Pro completa
   // ═══════════════════════════════════════════════════════════════════
   if (isPro) {
-    // Para perros destacados de la home, mostramos los primeros 6 con foto.
-    // Normalizamos el join breed (PostgREST a veces lo tipa como array).
-    type RawDog = { id: string; slug: string | null; name: string; thumbnail_url: string | null; breed?: { name?: string } | { name?: string }[] | null }
-    const featured = (dogs as RawDog[])
-      .filter(d => d.thumbnail_url)
-      .slice(0, 6)
-      .map(d => {
-        const breedRel = d.breed
-        const breed = Array.isArray(breedRel) ? breedRel[0] : breedRel
-        return {
-          id: d.id,
-          slug: d.slug,
-          name: d.name,
-          thumbnail_url: d.thumbnail_url,
-          breed: breed || null,
-        }
-      })
+    // Para perros destacados de la home Pro:
+    // 1) Si el criador ha marcado perros con featured_in_home=true, esos son
+    //    los que se muestran (en el orden que vinieron del fetch).
+    // 2) Si no, fallback al orden automático por calidad de fotos (los 6
+    //    primeros del array `dogs` que ya está sorteado).
+    type RawDog = {
+      id: string; slug: string | null; name: string;
+      thumbnail_url: string | null;
+      featured_in_home?: boolean;
+      breed?: { name?: string } | { name?: string }[] | null
+    }
+    const all = dogs as RawDog[]
+    const manualFeatured = all.filter(d => d.featured_in_home).slice(0, 6)
+    const featuredSource = manualFeatured.length > 0
+      ? manualFeatured
+      : all.filter(d => d.thumbnail_url).slice(0, 6)
+    const featured = featuredSource.map(d => {
+      const breedRel = d.breed
+      const breed = Array.isArray(breedRel) ? breedRel[0] : breedRel
+      return {
+        id: d.id,
+        slug: d.slug,
+        name: d.name,
+        thumbnail_url: d.thumbnail_url,
+        breed: breed || null,
+      }
+    })
     return (
       <div className="space-y-0">
         {seo}
@@ -244,6 +298,7 @@ export default async function KennelDetailPage({
           featuredDogs={featured}
           faqEntries={faqEntries}
           reviews={reviews}
+          recentPosts={recentPosts}
           breedNames={breedNames}
           stats={stats}
         />

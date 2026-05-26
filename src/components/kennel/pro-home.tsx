@@ -18,6 +18,9 @@ import {
   Sparkles, ArrowRight, MapPin, Calendar, HelpCircle, BadgeCheck,
   ExternalLink, Globe, Dog as DogIcon, Star, Quote,
 } from 'lucide-react'
+import ReviewAvatar from './review-avatar'
+import LeaveReviewButton from './leave-review-button'
+import NewsletterSubscribe from './newsletter-subscribe'
 import { pastelByName } from '@/lib/avatars'
 import ContactKennelButton from './contact-kennel-button'
 
@@ -41,6 +44,10 @@ interface Review {
   author_name: string
   body: string
   rating: number | null
+  author_avatar_url?: string | null
+  /** Calculado server-side: 'client' = ha reservado en este kennel,
+   *  'user' = registered en Genealogic pero no cliente, null = manual (sin badge). */
+  badge?: 'client' | 'user' | null
 }
 
 interface Props {
@@ -68,12 +75,22 @@ interface Props {
   faqEntries: FAQEntry[]
   /** Reseñas de clientes que aparecen en la home Pro */
   reviews: Review[]
+  /** Últimos posts del blog para el slider — opcional */
+  recentPosts?: Array<{
+    id: string
+    slug: string
+    title: string
+    excerpt: string | null
+    cover_image_url: string | null
+    published_at: string | null
+    reading_time_minutes: number | null
+  }>
   breedNames: string[]
   stats: { value: number; label: string }[]
 }
 
 export default function KennelProHome({
-  kennel, featuredDogs, faqEntries, reviews, breedNames, stats,
+  kennel, featuredDogs, faqEntries, reviews, recentPosts = [], breedNames, stats,
 }: Props) {
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const foundationYear = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null
@@ -317,17 +334,20 @@ export default function KennelProHome({
       </section>
 
       {/* ════ RESEÑAS DE CLIENTES ════ */}
-      {reviews.length > 0 && (
-        <section>
-          <div className="mb-5 sm:mb-6">
+      <section>
+        <div className="flex items-end justify-between gap-3 flex-wrap mb-5 sm:mb-6">
+          <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">La voz de los clientes</p>
             <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
-              Lo que dicen las familias
+              {reviews.length > 0 ? 'Lo que dicen las familias' : 'Comparte tu experiencia'}
             </h2>
           </div>
+          <LeaveReviewButton kennelId={kennel.id} kennelSlug={kennel.slug || kennel.id} />
+        </div>
+        {reviews.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {reviews.slice(0, 6).map(r => (
-              <div
+              <article
                 key={r.id}
                 className="relative rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 flex flex-col gap-3"
               >
@@ -345,14 +365,34 @@ export default function KennelProHome({
                 <p className="text-[13.5px] sm:text-[14px] text-body leading-[1.6] whitespace-pre-line">
                   {r.body}
                 </p>
-                <p className="mt-auto pt-2 text-[12.5px] font-semibold text-ink border-t border-hairline">
-                  {r.author_name}
-                </p>
-              </div>
+                <div className="mt-auto pt-3 border-t border-hairline flex items-center gap-2.5">
+                  <ReviewAvatar name={r.author_name} avatarUrl={r.author_avatar_url} size={36} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[12.5px] font-semibold text-ink truncate">{r.author_name}</p>
+                    {r.badge === 'client' && (
+                      <span className="inline-flex items-center gap-1 mt-0.5 rounded-full bg-emerald-100 text-emerald-800 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider">
+                        <BadgeCheck className="h-2.5 w-2.5" /> Cliente
+                      </span>
+                    )}
+                    {r.badge === 'user' && (
+                      <span className="inline-flex items-center mt-0.5 rounded-full bg-blue-100 text-blue-900 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider">
+                        Usuario
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </article>
             ))}
           </div>
-        </section>
-      )}
+        ) : (
+          <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft p-8 text-center">
+            <p className="text-[14px] font-semibold text-ink">Sé el primero en dejar una reseña</p>
+            <p className="mt-1 text-[12.5px] text-body max-w-md mx-auto leading-snug">
+              ¿Has tratado con {kennel.name}? Cuenta tu experiencia y ayuda a otras familias a decidir.
+            </p>
+          </div>
+        )}
+      </section>
 
       {/* ════ FAQ embebida ════ */}
       {faqEntries.length > 0 && (
@@ -383,6 +423,72 @@ export default function KennelProHome({
           </div>
         </section>
       )}
+
+      {/* ════ BLOG SLIDER ════ */}
+      {recentPosts.length > 0 && kennel.slug && (
+        <section>
+          <div className="flex items-end justify-between gap-3 flex-wrap mb-5 sm:mb-6">
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Desde el blog</p>
+              <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
+                Últimas notas
+              </h2>
+            </div>
+            <Link
+              href={`/kennels/${kennel.slug}/blog`}
+              className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-body hover:text-ink transition"
+            >
+              Ver todas <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+          {/* Scroll horizontal en mobile, grid 3 cols en desktop */}
+          <div className="-mx-4 sm:mx-0 overflow-x-auto scrollbar-hide sm:overflow-visible">
+            <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 px-4 sm:px-0 snap-x snap-mandatory">
+              {recentPosts.slice(0, 6).map(post => {
+                const date = post.published_at ? new Date(post.published_at) : null
+                return (
+                  <Link
+                    key={post.id}
+                    href={`/kennels/${kennel.slug}/blog/${post.slug}`}
+                    className="group flex-shrink-0 w-[78%] sm:w-auto snap-start flex flex-col overflow-hidden rounded-2xl border border-hairline bg-canvas hover:border-ink/20 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition"
+                  >
+                    <div className="relative aspect-[16/10] bg-surface-card overflow-hidden">
+                      {post.cover_image_url ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img src={post.cover_image_url} alt="" loading="lazy" className="h-full w-full object-cover transition-transform group-hover:scale-[1.03]" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-muted">
+                          <DogIcon className="h-8 w-8" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-1 flex-col p-4">
+                      <h3 className="text-[14.5px] font-semibold text-ink leading-snug tracking-[-0.01em]">
+                        {post.title}
+                      </h3>
+                      {post.excerpt && (
+                        <p className="mt-1.5 text-[12.5px] text-body line-clamp-2 leading-snug">{post.excerpt}</p>
+                      )}
+                      <div className="mt-3 pt-3 border-t border-hairline flex items-center gap-2 text-[11px] text-muted">
+                        {date && <span>{date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
+                        {post.reading_time_minutes && (
+                          <>
+                            <span>·</span>
+                            <span>{post.reading_time_minutes} min</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ════ NEWSLETTER SUBSCRIBE ════ */}
+      <NewsletterSubscribe kennelId={kennel.id} kennelName={kennel.name} />
 
       {/* ════ CTA FINAL ════ */}
       {hasOwner && (

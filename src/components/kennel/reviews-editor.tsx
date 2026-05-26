@@ -1,13 +1,15 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Loader2, Check, Trash2, Pencil, X, MessageSquare, AlertCircle, Eye, EyeOff, Star } from 'lucide-react'
+import { Plus, Loader2, Check, Trash2, Pencil, X, MessageSquare, AlertCircle, Eye, EyeOff, Star, ImagePlus } from 'lucide-react'
 import {
   upsertReviewAction,
   deleteReviewAction,
   toggleReviewVisibilityAction,
+  uploadReviewAvatarAction,
 } from '@/lib/kennel/content-actions'
+import ReviewAvatar from './review-avatar'
 
 type Review = {
   id: string
@@ -15,6 +17,7 @@ type Review = {
   body: string
   rating: number | null
   is_visible: boolean
+  author_avatar_url?: string | null
 }
 
 export default function ReviewsEditor({
@@ -134,6 +137,7 @@ function ReviewRow({
   return (
     <li className={`rounded-2xl border border-hairline bg-canvas p-4 sm:p-5 ${!review.is_visible ? 'opacity-60' : ''}`}>
       <div className="flex items-start justify-between gap-3">
+        <ReviewAvatar name={review.author_name} avatarUrl={review.author_avatar_url} size={40} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-[14px] font-semibold text-ink">{review.author_name}</p>
@@ -197,7 +201,27 @@ function ReviewForm({
   const [authorName, setAuthorName] = useState(initialReview?.author_name || '')
   const [body, setBody] = useState(initialReview?.body || '')
   const [rating, setRating] = useState<number | null>(initialReview?.rating ?? 5)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialReview?.author_avatar_url || null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [pending, startTransition] = useTransition()
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  async function handleAvatarUpload(file: File) {
+    onError(null)
+    setUploadingAvatar(true)
+    try {
+      const fd = new FormData()
+      fd.set('kennelId', kennelId)
+      fd.set('file', file)
+      const { url } = await uploadReviewAvatarAction(fd)
+      setAvatarUrl(url)
+    } catch (err) {
+      onError(err instanceof Error ? err.message : 'No se pudo subir la foto')
+    } finally {
+      setUploadingAvatar(false)
+      if (fileRef.current) fileRef.current.value = ''
+    }
+  }
 
   function save() {
     onError(null)
@@ -207,6 +231,7 @@ function ReviewForm({
           kennelId,
           reviewId: initialReview?.id,
           authorName, body, rating,
+          authorAvatarUrl: avatarUrl,
         })
         onDone()
       } catch (err) {
@@ -222,14 +247,48 @@ function ReviewForm({
 
   return (
     <div className="rounded-2xl border border-ink bg-canvas p-4 sm:p-5 space-y-3">
-      <input
-        type="text"
-        value={authorName}
-        onChange={e => setAuthorName(e.target.value)}
-        placeholder="Nombre del cliente (ej: Familia García, Madrid)"
-        autoFocus={!initialReview}
-        className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] font-semibold text-ink placeholder:text-muted/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
-      />
+      {/* Avatar uploader + nombre */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-shrink-0">
+          <ReviewAvatar name={authorName || '?'} avatarUrl={avatarUrl} size={48} />
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploadingAvatar}
+            className="absolute -bottom-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-ink text-on-primary shadow hover:opacity-90 disabled:opacity-50"
+            title="Subir foto del cliente"
+          >
+            {uploadingAvatar ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImagePlus className="h-3 w-3" />}
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/heic"
+            className="hidden"
+            onChange={e => {
+              const f = e.target.files?.[0]
+              if (f) handleAvatarUpload(f)
+            }}
+          />
+        </div>
+        <input
+          type="text"
+          value={authorName}
+          onChange={e => setAuthorName(e.target.value)}
+          placeholder="Nombre del cliente (ej: Familia García, Madrid)"
+          autoFocus={!initialReview}
+          className="flex-1 min-w-0 rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] font-semibold text-ink placeholder:text-muted/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
+        />
+        {avatarUrl && (
+          <button
+            type="button"
+            onClick={() => setAvatarUrl(null)}
+            className="text-[11px] text-muted hover:text-red-600 transition flex-shrink-0"
+          >
+            Quitar
+          </button>
+        )}
+      </div>
       <textarea
         value={body}
         onChange={e => setBody(e.target.value)}
