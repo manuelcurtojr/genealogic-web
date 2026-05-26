@@ -22,6 +22,7 @@ import ReviewAvatar from './review-avatar'
 import LeaveReviewButton from './leave-review-button'
 import NewsletterSubscribe from './newsletter-subscribe'
 import BlogSlider from './blog-slider'
+import SectionTeasers from './section-teasers'
 import { pastelByName } from '@/lib/avatars'
 import ContactKennelButton from './contact-kennel-button'
 
@@ -88,9 +89,19 @@ interface Props {
   }>
   breedNames: string[]
   stats: { value: number; label: string }[]
-  /** Trayectoria — números reales del criadero (años, camadas entregadas,
-   *  perros documentados, logros). Filtra los que son 0. */
-  trayectoria: { value: number; label: string }[]
+  /** 3 bloques alternados (Sobre nosotros · Nuestros perros · Galería)
+   *  con foto + texto + CTA. Sustituye al antiguo bloque "Trayectoria".
+   *  Solo se renderizan los que tienen contenido real disponible. */
+  teasers: Array<{
+    id: string
+    eyebrow: string
+    title: string
+    body: string
+    ctaLabel: string
+    ctaHref: string
+    imageUrl: string | null
+    imageAlt: string
+  }>
   /** Próxima camada / disponibilidad — si hay una próxima camada
    *  planificada o cachorros disponibles, info para destacarlo. */
   availability: {
@@ -130,7 +141,7 @@ function truncateAtWord(text: string, maxChars: number): string {
 
 export default function KennelProHome({
   kennel, featuredDogs, faqEntries, reviews, recentPosts = [],
-  breedNames, stats, trayectoria, availability,
+  breedNames, stats, teasers, availability,
 }: Props) {
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const foundationYear = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null
@@ -303,61 +314,9 @@ export default function KennelProHome({
         </div>
       </section>
 
-      {/* ════ PERROS DESTACADOS ════ */}
-      {featuredDogs.length > 0 && (
-        <section>
-          <div className="flex items-end justify-between gap-3 mb-5 sm:mb-6">
-            <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Conoce a los protagonistas</p>
-              <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
-                Nuestros perros
-              </h2>
-            </div>
-            <Link
-              href={`/kennels/${kennel.slug}/perros`}
-              className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-body hover:text-ink transition"
-            >
-              Ver todo el catálogo <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {featuredDogs.slice(0, 6).map(d => (
-              <Link
-                key={d.id}
-                href={`/dogs/${d.slug || d.id}`}
-                className="group overflow-hidden rounded-2xl border border-hairline bg-canvas hover:border-ink/30 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition"
-              >
-                <div className="relative aspect-square overflow-hidden bg-surface-card">
-                  {d.thumbnail_url ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={d.thumbnail_url}
-                      alt={d.name}
-                      className="h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-muted">
-                      <DogIcon className="h-8 w-8" />
-                    </div>
-                  )}
-                </div>
-                <div className="p-3">
-                  <p className="truncate text-[13.5px] font-medium text-ink">{d.name}</p>
-                  {d.breed?.name && (
-                    <p className="mt-0.5 truncate text-[11px] text-muted">{d.breed.name}</p>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* ════ DISPONIBILIDAD — qué hay disponible AHORA ════
-           Sustituye a los antiguos highlights genéricos por datos reales:
-           próxima camada, cachorros disponibles, lista de espera. Es la
-           sección que el visitante busca cuando aterriza en la home. */}
+           Va arriba porque es la sección que el visitante busca cuando
+           aterriza: próxima camada / cachorros disponibles. */}
       {(availability.nextLitter || availability.availablePuppiesCount > 0) && (
         <AvailabilitySection
           availability={availability}
@@ -369,33 +328,15 @@ export default function KennelProHome({
         />
       )}
 
-      {/* ════ TRAYECTORIA — números reales del criadero ════
-           Cuando no hay nada que vender ahora mismo (sin camadas próximas
-           ni cachorros), esta sección sigue siendo concreta: años criando,
-           camadas entregadas, perros documentados, logros. Si todos los
-           valores son 0 (criadero recién creado), la sección se oculta. */}
-      {trayectoria.length > 0 && (
-        <section className="rounded-2xl border border-hairline bg-gradient-to-br from-canvas via-canvas to-surface-soft p-6 sm:p-8">
-          <div className="mb-5">
-            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Trayectoria</p>
-            <h2 className="mt-1 text-[20px] sm:text-[24px] font-semibold tracking-[-0.03em] text-ink">
-              El criadero en números
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
-            {trayectoria.map(s => (
-              <div key={s.label} className="min-w-0">
-                <p className="text-[28px] sm:text-[36px] font-semibold tabular-nums tracking-[-0.04em] text-ink leading-none">
-                  {s.value.toLocaleString('es-ES')}
-                </p>
-                <p className="mt-2 text-[11px] sm:text-[11.5px] font-semibold uppercase tracking-[0.08em] text-muted">
-                  {s.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* ════ TEASERS DE SECCIONES — tour visual ════
+           3 filas alternadas (foto IZQ → DCHA → IZQ) que presentan:
+           Sobre nosotros · Nuestros perros · Galería. Sustituyen al
+           grid "Perros destacados" y al bloque "Trayectoria en números"
+           con algo más vendedor y narrativo: foto grande + cuento corto
+           + CTA al detalle.
+           Cada fila solo se renderiza si la sección tiene contenido
+           real disponible (about_md, dogs con foto, galería con fotos). */}
+      <SectionTeasers teasers={teasers} />
 
       {/* ════ RESEÑAS DE CLIENTES ════ */}
       <section>

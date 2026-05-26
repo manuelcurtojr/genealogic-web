@@ -273,26 +273,89 @@ export default async function KennelDetailPage({
       }
     })
 
-    // ─── Trayectoria (números reales para el bloque "El criadero en números") ──
+    // ─── Section teasers (3 filas alternadas: Sobre · Perros · Galería) ──
+    // Cada fila tiene foto + texto + CTA y solo se renderiza si tiene
+    // contenido real disponible. Sustituye al antiguo bloque "Trayectoria
+    // en números".
+    //
+    // Imágenes: cogemos de kennel_photos (kind='gallery' para Sobre y
+    // Galería; un perro con foto para Nuestros perros). Sin trampas de
+    // imágenes externas, todo del catálogo del propio criadero.
+    const { data: kennelPhotos } = await supabase
+      .from('kennel_photos')
+      .select('id, url, kind')
+      .eq('kennel_id', kennel.id)
+      .order('position', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: true })
+      .limit(20)
+    const galleryPhotos = (kennelPhotos || []).filter(p => p.kind === 'gallery')
+    const facilitiesPhotos = (kennelPhotos || []).filter(p => p.kind === 'facilities')
+    const aboutImage =
+      facilitiesPhotos[0]?.url
+      || galleryPhotos[0]?.url
+      || kennel.hero_image_url
+      || kennel.logo_url
+      || null
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const allDogsCount = (allDogs as any[]).length
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const deliveredLittersCount = (allLitters as any[])
-      .filter(l => l.status === 'delivered' || l.status === 'born').length
-    const yearsCriando = foundationYear ? Math.max(0, new Date().getFullYear() - foundationYear) : 0
-    // Count de awards públicos de perros del criadero (separa query — barata)
-    const awardsCountRes = await supabase
-      .from('awards')
-      .select('id', { count: 'exact', head: true })
-      .eq('is_public', true)
-      .in('dog_id', (allDogs as Array<{ id: string }>).map(d => d.id))
-    const awardsCount = awardsCountRes.count || 0
+    const firstDogWithPhoto = (dogs as any[]).find(d => d.thumbnail_url) as { thumbnail_url: string; name: string } | undefined
+    const perrosImage = firstDogWithPhoto?.thumbnail_url || null
+    const galleryImage = galleryPhotos[1]?.url || galleryPhotos[0]?.url || null
 
-    const trayectoria: { value: number; label: string }[] = []
-    if (yearsCriando > 0) trayectoria.push({ value: yearsCriando, label: yearsCriando === 1 ? 'Año criando' : 'Años criando' })
-    if (deliveredLittersCount > 0) trayectoria.push({ value: deliveredLittersCount, label: deliveredLittersCount === 1 ? 'Camada entregada' : 'Camadas entregadas' })
-    if (allDogsCount > 0) trayectoria.push({ value: allDogsCount, label: allDogsCount === 1 ? 'Perro documentado' : 'Perros documentados' })
-    if (awardsCount > 0) trayectoria.push({ value: awardsCount, label: awardsCount === 1 ? 'Logro' : 'Logros' })
+    const teasers: Array<{
+      id: string
+      eyebrow: string
+      title: string
+      body: string
+      ctaLabel: string
+      ctaHref: string
+      imageUrl: string | null
+      imageAlt: string
+    }> = []
+
+    // 1) Sobre nosotros (si hay about_md ≥50 chars)
+    if (kennel.about_md && kennel.about_md.trim().length >= 50 && aboutImage) {
+      teasers.push({
+        id: 'sobre',
+        eyebrow: 'Quiénes somos',
+        title: `${kennel.name}, ${foundationYear ? `desde ${foundationYear}` : 'criadero familiar'}`,
+        body: kennel.about_md.split(/\n\n+/)[0].replace(/\*\*([^*]+)\*\*/g, '$1').slice(0, 220).trim(),
+        ctaLabel: 'Conoce nuestra historia',
+        ctaHref: `/kennels/${kennel.slug}/sobre`,
+        imageUrl: aboutImage,
+        imageAlt: `${kennel.name} — sobre nosotros`,
+      })
+    }
+
+    // 2) Nuestros perros (si hay perros con foto)
+    if (perrosImage) {
+      const breedHint = breedNames[0] ? ` especializado en ${breedNames[0]}` : ''
+      teasers.push({
+        id: 'perros',
+        eyebrow: 'Nuestros perros',
+        title: 'Conoce a los protagonistas',
+        body: `Catálogo completo de reproductores, cachorros en venta, camadas y producidos por el criadero${breedHint}. Cada perro con su genealogía completa documentada en Genealogic.`,
+        ctaLabel: 'Ver todos los perros',
+        ctaHref: `/kennels/${kennel.slug}/perros`,
+        imageUrl: perrosImage,
+        imageAlt: firstDogWithPhoto?.name || 'Nuestros perros',
+      })
+    }
+
+    // 3) Galería (si la página está enabled y tiene ≥3 fotos)
+    const galleryEnabled =
+      (kennel.enabled_pages as Record<string, unknown> | null)?.galeria === true
+    if (galleryEnabled && galleryImage && galleryPhotos.length >= 3) {
+      teasers.push({
+        id: 'galeria',
+        eyebrow: 'Imágenes',
+        title: 'Cinco décadas en imágenes',
+        body: `Fotos del día a día del criadero, eventos, familias que ya tienen su cachorro y los perros que han marcado la trayectoria de ${kennel.name}.`,
+        ctaLabel: 'Ver galería',
+        ctaHref: `/kennels/${kennel.slug}/galeria`,
+        imageUrl: galleryImage,
+        imageAlt: `${kennel.name} — galería`,
+      })
+    }
 
     // ─── Disponibilidad (próxima camada + cachorros en venta) ────────
     // Próxima camada: priorizamos status 'mated/confirmed/pending' (en
@@ -343,7 +406,7 @@ export default async function KennelDetailPage({
           recentPosts={recentPosts}
           breedNames={breedNames}
           stats={stats}
-          trayectoria={trayectoria}
+          teasers={teasers}
           availability={availability}
         />
       </div>
