@@ -109,13 +109,6 @@ export default function HeroMosaic({ photos }: { photos: string[] }) {
           mucho más visibles a esa escala) y algo más translúcido en desktop. */}
       <div className="absolute inset-0 bg-canvas/85 sm:bg-canvas/60" />
 
-      {/* NEBULOSA — capa de "aurora" con blobs radiales borrosos en colores
-          de marca + cool. Sutil pero da el aire moderno tipo Linear/Vercel.
-          Va por encima del overlay blanco para que el color "ilumine" la
-          escena sin tapar el mosaico. mix-blend-multiply tinta la zona blanca
-          sin sobrecargar las fotos. */}
-      <NebulaLayer />
-
       {/* Gradiente horizontal SOLO desktop para reforzar el lado izquierdo
           donde vive el texto del hero. */}
       <div className="absolute inset-0 hidden sm:block bg-gradient-to-r from-canvas via-canvas/70 to-canvas/40" />
@@ -124,14 +117,27 @@ export default function HeroMosaic({ photos }: { photos: string[] }) {
           que el final de las fotos quede completamente tapado y la
           transición a la siguiente sección sea invisible. */}
       <div className="absolute bottom-0 left-0 right-0 h-3/5 sm:h-2/3 bg-gradient-to-b from-transparent via-canvas to-canvas" />
+
+      {/* NEBULOSA — capa de "aurora" con blobs radiales borrosos en colores
+          de marca + cool. Se monta POR ENCIMA de los overlays blancos para
+          que el color tinte visiblemente la escena (sin blending tricky).
+          Las opacidades de los gradientes están ya bajas, así que el efecto
+          es presente pero no satura el texto del hero. */}
+      <NebulaLayer />
     </div>
   )
 }
 
 /**
- * Capa de nebulosa: 3 blobs radiales que se "respiran" con CSS animation.
- * Usa mix-blend-multiply para tintar la zona blanca del overlay sin lavar
- * las fotos del mosaico. Performance: solo transform + opacity, GPU-friendly.
+ * Capa de nebulosa: 3 blobs radiales borrosos que se "respiran" con CSS
+ * animation (drift + scale + opacity, todo GPU-friendly).
+ *
+ * Se monta POR ENCIMA del overlay blanco — sin blending modes — para que
+ * el color sea visible sin trucos. Las opacidades de los radial-gradients
+ * son intencionalmente altas (0.7-0.85) porque el blur-3xl + el tamaño
+ * 80-100vh las dispersan mucho; aún así el texto del hero se lee bien por
+ * estar el contenido encima en su propia capa.
+ *
  * Respeta prefers-reduced-motion deteniendo la animación.
  */
 function NebulaLayer() {
@@ -139,47 +145,47 @@ function NebulaLayer() {
     <>
       <style>{`
         @keyframes nebula-drift-a {
-          0%, 100% { transform: translate3d(-10%, -8%, 0) scale(1);   opacity: 0.55; }
-          50%      { transform: translate3d(8%, 6%, 0) scale(1.15);   opacity: 0.75; }
+          0%, 100% { transform: translate3d(-10%, -8%, 0) scale(1);    opacity: 0.7;  }
+          50%      { transform: translate3d(8%, 6%, 0)   scale(1.15);  opacity: 0.95; }
         }
         @keyframes nebula-drift-b {
-          0%, 100% { transform: translate3d(10%, 6%, 0) scale(1.1);   opacity: 0.45; }
-          50%      { transform: translate3d(-6%, -10%, 0) scale(0.95); opacity: 0.65; }
+          0%, 100% { transform: translate3d(10%, 6%, 0)  scale(1.1);   opacity: 0.55; }
+          50%      { transform: translate3d(-6%, -10%, 0) scale(0.95); opacity: 0.8;  }
         }
         @keyframes nebula-drift-c {
-          0%, 100% { transform: translate3d(-4%, 12%, 0) scale(0.95); opacity: 0.4; }
-          50%      { transform: translate3d(6%, -4%, 0) scale(1.1);   opacity: 0.6; }
+          0%, 100% { transform: translate3d(-4%, 12%, 0) scale(0.95);  opacity: 0.5;  }
+          50%      { transform: translate3d(6%, -4%, 0)  scale(1.1);   opacity: 0.75; }
         }
-        .nebula-a { animation: nebula-drift-a 22s ease-in-out infinite; }
-        .nebula-b { animation: nebula-drift-b 28s ease-in-out infinite; }
-        .nebula-c { animation: nebula-drift-c 32s ease-in-out infinite; }
+        .nebula-a { animation: nebula-drift-a 22s ease-in-out infinite; will-change: transform, opacity; }
+        .nebula-b { animation: nebula-drift-b 28s ease-in-out infinite; will-change: transform, opacity; }
+        .nebula-c { animation: nebula-drift-c 32s ease-in-out infinite; will-change: transform, opacity; }
         @media (prefers-reduced-motion: reduce) {
           .nebula-a, .nebula-b, .nebula-c { animation: none; }
         }
       `}</style>
-      <div className="absolute inset-0 overflow-hidden mix-blend-multiply">
+      <div className="absolute inset-0 overflow-hidden">
         {/* Blob A — naranja marca, top-left */}
         <div
-          className="nebula-a absolute -top-1/4 -left-1/4 h-[80vh] w-[80vh] rounded-full blur-3xl"
+          className="nebula-a absolute -top-1/3 -left-1/4 h-[90vh] w-[90vh] rounded-full blur-3xl"
           style={{
             background:
-              'radial-gradient(circle at 30% 30%, rgba(254,102,32,0.55) 0%, rgba(254,102,32,0.15) 40%, transparent 70%)',
+              'radial-gradient(circle at 30% 30%, rgba(254,102,32,0.85) 0%, rgba(254,102,32,0.35) 40%, transparent 70%)',
           }}
         />
         {/* Blob B — azul cool, top-right */}
         <div
-          className="nebula-b absolute -top-1/4 -right-1/4 h-[70vh] w-[70vh] rounded-full blur-3xl"
+          className="nebula-b absolute -top-1/4 -right-1/4 h-[80vh] w-[80vh] rounded-full blur-3xl"
           style={{
             background:
-              'radial-gradient(circle at 50% 50%, rgba(59,130,246,0.45) 0%, rgba(59,130,246,0.12) 40%, transparent 70%)',
+              'radial-gradient(circle at 50% 50%, rgba(59,130,246,0.75) 0%, rgba(59,130,246,0.3) 40%, transparent 70%)',
           }}
         />
-        {/* Blob C — magenta/púrpura, center-bottom (sutil) */}
+        {/* Blob C — magenta/púrpura, center-bottom */}
         <div
-          className="nebula-c absolute bottom-1/4 left-1/3 h-[60vh] w-[60vh] rounded-full blur-3xl"
+          className="nebula-c absolute top-1/3 left-1/4 h-[70vh] w-[70vh] rounded-full blur-3xl"
           style={{
             background:
-              'radial-gradient(circle at 50% 50%, rgba(217,70,239,0.35) 0%, rgba(217,70,239,0.1) 40%, transparent 70%)',
+              'radial-gradient(circle at 50% 50%, rgba(217,70,239,0.7) 0%, rgba(217,70,239,0.25) 40%, transparent 70%)',
           }}
         />
       </div>
