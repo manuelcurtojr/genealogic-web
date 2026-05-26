@@ -145,16 +145,16 @@ function NebulaLayer() {
     <>
       <style>{`
         @keyframes nebula-drift-a {
-          0%, 100% { transform: translate3d(-10%, -8%, 0) scale(1);    opacity: 0.7;  }
-          50%      { transform: translate3d(8%, 6%, 0)   scale(1.15);  opacity: 0.95; }
+          0%, 100% { transform: translate3d(-10%, -8%, 0) scale(1);    opacity: 0.35; }
+          50%      { transform: translate3d(8%, 6%, 0)   scale(1.15);  opacity: 0.5;  }
         }
         @keyframes nebula-drift-b {
-          0%, 100% { transform: translate3d(10%, 6%, 0)  scale(1.1);   opacity: 0.55; }
-          50%      { transform: translate3d(-6%, -10%, 0) scale(0.95); opacity: 0.8;  }
+          0%, 100% { transform: translate3d(10%, 6%, 0)  scale(1.1);   opacity: 0.28; }
+          50%      { transform: translate3d(-6%, -10%, 0) scale(0.95); opacity: 0.42; }
         }
         @keyframes nebula-drift-c {
-          0%, 100% { transform: translate3d(-4%, 12%, 0) scale(0.95);  opacity: 0.5;  }
-          50%      { transform: translate3d(6%, -4%, 0)  scale(1.1);   opacity: 0.75; }
+          0%, 100% { transform: translate3d(-4%, 12%, 0) scale(0.95);  opacity: 0.22; }
+          50%      { transform: translate3d(6%, -4%, 0)  scale(1.1);   opacity: 0.38; }
         }
         .nebula-a { animation: nebula-drift-a 22s ease-in-out infinite; will-change: transform, opacity; }
         .nebula-b { animation: nebula-drift-b 28s ease-in-out infinite; will-change: transform, opacity; }
@@ -169,7 +169,7 @@ function NebulaLayer() {
           className="nebula-a absolute -top-1/3 -left-1/4 h-[90vh] w-[90vh] rounded-full blur-3xl"
           style={{
             background:
-              'radial-gradient(circle at 30% 30%, rgba(254,102,32,0.85) 0%, rgba(254,102,32,0.35) 40%, transparent 70%)',
+              'radial-gradient(circle at 30% 30%, rgba(254,102,32,0.55) 0%, rgba(254,102,32,0.18) 40%, transparent 70%)',
           }}
         />
         {/* Blob B — azul cool, top-right */}
@@ -177,7 +177,7 @@ function NebulaLayer() {
           className="nebula-b absolute -top-1/4 -right-1/4 h-[80vh] w-[80vh] rounded-full blur-3xl"
           style={{
             background:
-              'radial-gradient(circle at 50% 50%, rgba(59,130,246,0.75) 0%, rgba(59,130,246,0.3) 40%, transparent 70%)',
+              'radial-gradient(circle at 50% 50%, rgba(59,130,246,0.45) 0%, rgba(59,130,246,0.15) 40%, transparent 70%)',
           }}
         />
         {/* Blob C — magenta/púrpura, center-bottom */}
@@ -185,7 +185,7 @@ function NebulaLayer() {
           className="nebula-c absolute top-1/3 left-1/4 h-[70vh] w-[70vh] rounded-full blur-3xl"
           style={{
             background:
-              'radial-gradient(circle at 50% 50%, rgba(217,70,239,0.7) 0%, rgba(217,70,239,0.25) 40%, transparent 70%)',
+              'radial-gradient(circle at 50% 50%, rgba(217,70,239,0.4) 0%, rgba(217,70,239,0.12) 40%, transparent 70%)',
           }}
         />
       </div>
