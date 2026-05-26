@@ -206,7 +206,14 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
       {/* Gallery — full bleed: public = 100vw, logged-in = cancel padding */}
       <div className={`relative overflow-hidden ${user ? '-mx-4 -mt-4 sm:-mx-[30px] sm:-mt-[30px]' : ''}`}
         style={!user ? { marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)', marginTop: '-24px', width: '100vw' } : undefined}>
-        <DogGallery photos={galleryPhotos} name={dog.name} sex={dog.sex} />
+        <DogGallery
+          photos={galleryPhotos}
+          name={dog.name}
+          sex={dog.sex}
+          upscaledPhotoUrl={dog.thumbnail_url}
+          upscaledOriginalUrl={dog.original_thumbnail_url}
+          upscaledAt={dog.thumbnail_upscaled_at}
+        />
 
         {/* Action buttons top-right */}
         <div className="absolute top-4 right-4 flex items-center gap-2">

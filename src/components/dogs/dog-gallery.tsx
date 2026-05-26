@@ -4,14 +4,21 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Lightbox from '@/components/ui/lightbox'
+import AiUpscaledBadge from '@/components/dogs/ai-upscaled-badge'
 
 interface DogGalleryProps {
   photos: string[]
   name: string
   sex: string | null
+  /** URL del thumbnail que SÍ es upscaled — badge solo se muestra sobre esa foto */
+  upscaledPhotoUrl?: string | null
+  /** Si está, badge muestra "ver foto original" */
+  upscaledOriginalUrl?: string | null
+  /** Timestamp del upscale — si null no se muestra badge */
+  upscaledAt?: string | null
 }
 
-export default function DogGallery({ photos, name, sex }: DogGalleryProps) {
+export default function DogGallery({ photos, name, sex, upscaledPhotoUrl, upscaledOriginalUrl, upscaledAt }: DogGalleryProps) {
   const [mobileIdx, setMobileIdx] = useState(0)
   const [desktopOffset, setDesktopOffset] = useState(0)
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
@@ -43,6 +50,14 @@ export default function DogGallery({ photos, name, sex }: DogGalleryProps) {
                 className="cursor-pointer object-cover"
                 onClick={() => setLightboxIdx(mobileIdx)}
               />
+              {upscaledAt && upscaledPhotoUrl && photos[mobileIdx] === upscaledPhotoUrl && (
+                <AiUpscaledBadge
+                  upscaledAt={upscaledAt}
+                  originalUrl={upscaledOriginalUrl}
+                  position="top-right"
+                  size="md"
+                />
+              )}
               {photos.length > 1 && (
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-[12px] font-medium text-white backdrop-blur-sm">
                   {mobileIdx + 1} / {photos.length}
@@ -91,6 +106,14 @@ export default function DogGallery({ photos, name, sex }: DogGalleryProps) {
                 className="cursor-pointer object-cover transition-opacity hover:opacity-90"
                 onClick={() => setLightboxIdx(i)}
               />
+              {upscaledAt && upscaledPhotoUrl && url === upscaledPhotoUrl && (
+                <AiUpscaledBadge
+                  upscaledAt={upscaledAt}
+                  originalUrl={upscaledOriginalUrl}
+                  position="top-right"
+                  size="sm"
+                />
+              )}
             </div>
           ))}
           {/* Placeholders grises para completar hasta 4 slots */}
