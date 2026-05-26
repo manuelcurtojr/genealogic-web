@@ -92,9 +92,14 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Public dog detail pages (e.g. /dogs/uuid) and public kennel pages
+  // Public dog detail pages (e.g. /dogs/uuid) and public kennel pages.
+  // Para kennels: TODO `/kennels/[slug]/*` es público (home + sobre + perros
+  // + galería + instalaciones + blog + blog/[postSlug] + contacto). El
+  // middleware tenía aquí una regex que solo dejaba el detail level-1
+  // (`/kennels/[slug]`) y mandaba a login en cualquier subpágina —
+  // rompía la navegación de la web Pro para visitantes no logueados.
   const isDogDetailPage = /^\/dogs\/[^/]+$/.test(pathname)
-  const isKennelDetailPage = /^\/kennels\/[^/]+$/.test(pathname)
+  const isKennelDetailPage = pathname.startsWith('/kennels/')
   const isLitterDetailPage = /^\/litters\/[^/]+$/.test(pathname)
   const isPricingPage = pathname === '/pricing'
   const isSearchPage = pathname === '/search'
