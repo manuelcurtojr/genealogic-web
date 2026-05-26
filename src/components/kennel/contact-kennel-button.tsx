@@ -10,7 +10,7 @@ interface Props {
   /** Config del form publicado del kennel. Si null, usa TEMPLATE_GENERIC. */
   config?: ContactFormConfig | null
   /** Estilo del botón trigger. Por defecto: 'primary' (negro). 'light' usa fondo claro para webs custom. */
-  variant?: 'primary' | 'light'
+  variant?: 'primary' | 'light' | 'sticky-mobile'
 }
 
 /**
@@ -74,7 +74,10 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
   const triggerClass =
     variant === 'light'
       ? 'inline-flex items-center gap-1.5 rounded-xl bg-white text-ink shadow-sm ring-1 ring-black/10 px-4 py-2.5 text-[13.5px] font-bold transition hover:bg-white/95'
-      : 'inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-[13.5px] font-bold transition hover:opacity-90'
+      : variant === 'sticky-mobile'
+        // Full-width para el dock flotante en mobile
+        ? 'flex w-full items-center justify-center gap-1.5 rounded-full bg-ink text-on-primary px-5 py-3 text-[14px] font-bold transition hover:opacity-90 shadow-[0_4px_16px_rgba(0,0,0,0.18)]'
+        : 'inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-[13.5px] font-bold transition hover:opacity-90'
 
   return (
     <>

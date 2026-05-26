@@ -23,6 +23,7 @@ import LeaveReviewButton from './leave-review-button'
 import NewsletterSubscribe from './newsletter-subscribe'
 import BlogSlider from './blog-slider'
 import SectionTeasers from './section-teasers'
+import StickyContactMobile from './sticky-contact-mobile'
 import { pastelByName } from '@/lib/avatars'
 import ContactKennelButton from './contact-kennel-button'
 
@@ -154,7 +155,16 @@ export default function KennelProHome({
   const hasOwner = !!kennel.owner_id
 
   return (
-    <div className="space-y-14 sm:space-y-20">
+    <div className="space-y-16 sm:space-y-24 lg:space-y-28 pb-20 sm:pb-0">
+
+      {/* Sticky mobile CTA (solo aparece tras pasar el hero) */}
+      {hasOwner && (
+        <StickyContactMobile
+          kennelId={kennel.id}
+          kennelName={kennel.name}
+          contactFormConfig={kennel.contact_form_config}
+        />
+      )}
 
       {/* ════ HERO ════ */}
       <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-orange-50/70 via-canvas to-blue-50/70">
@@ -225,6 +235,24 @@ export default function KennelProHome({
               <p className="text-[16px] sm:text-[18px] text-body leading-[1.5] max-w-[640px]">
                 {tagline}
               </p>
+            )}
+
+            {/* Hint dinámico de disponibilidad en el hero — solo si hay novedad
+                que vender ahora mismo. Pequeño badge animado tipo "señal
+                en vivo" que ancla al bloque AvailabilitySection más abajo. */}
+            {(availability.nextLitter || availability.availablePuppiesCount > 0) && (
+              <a
+                href="#disponibilidad"
+                className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[12px] font-semibold text-emerald-900 hover:bg-emerald-100 transition w-fit"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+                {availability.availablePuppiesCount > 0
+                  ? `${availability.availablePuppiesCount} ${availability.availablePuppiesCount === 1 ? 'cachorro disponible' : 'cachorros disponibles'} ahora`
+                  : 'Próxima camada planificada'}
+              </a>
             )}
 
             {breedNames.length > 0 && (
@@ -338,6 +366,36 @@ export default function KennelProHome({
            real disponible (about_md, dogs con foto, galería con fotos). */}
       <SectionTeasers teasers={teasers} />
 
+      {/* ════ ESTADO VACÍO — solo si el criador acaba de empezar ════
+           Si no hay teasers (sin about_md, sin perros con foto, sin
+           galería con fotos), Y no hay disponibilidad, mostramos una
+           guía visible al visitante explicando que el criadero está
+           recién montando su web. Para el owner es además un CTA grande
+           hacia el editor. */}
+      {teasers.length === 0
+        && !availability.nextLitter
+        && availability.availablePuppiesCount === 0 && (
+        <section className="rounded-3xl border border-dashed border-hairline bg-surface-soft p-8 sm:p-12 text-center">
+          <Sparkles className="mx-auto h-8 w-8 text-muted" />
+          <h2 className="mt-4 text-[20px] sm:text-[24px] font-semibold tracking-[-0.03em] text-ink">
+            {hasOwner ? `Acabas de crear ${kennel.name}` : `${kennel.name} está empezando`}
+          </h2>
+          <p className="mt-2 text-[14px] sm:text-[15px] text-body max-w-md mx-auto leading-snug">
+            {hasOwner
+              ? 'Sube fotos a tu galería, escribe tu historia y añade tus perros para que tu web se vea increíble.'
+              : 'Pronto encontrarás aquí los perros, la historia y todo lo que hace único a este criadero.'}
+          </p>
+          {hasOwner && (
+            <Link
+              href="/kennel/contenido/sobre"
+              className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[13.5px] font-bold hover:opacity-90 transition"
+            >
+              Empezar a llenar mi web <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
+        </section>
+      )}
+
       {/* ════ RESEÑAS DE CLIENTES ════ */}
       <section>
         <div className="flex items-end justify-between gap-3 flex-wrap mb-5 sm:mb-6">
@@ -346,6 +404,31 @@ export default function KennelProHome({
             <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
               {reviews.length > 0 ? 'Lo que dicen las familias' : 'Comparte tu experiencia'}
             </h2>
+            {/* Calificación media + count — solo si hay >=2 reseñas con rating */}
+            {(() => {
+              const rated = reviews.filter(r => r.rating && r.rating > 0)
+              if (rated.length < 2) return null
+              const avg = rated.reduce((sum, r) => sum + (r.rating || 0), 0) / rated.length
+              const rounded = Math.round(avg * 10) / 10
+              return (
+                <div className="mt-2.5 inline-flex items-center gap-2">
+                  <div className="inline-flex items-center gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${i < Math.round(avg) ? 'fill-amber-400 text-amber-400' : 'text-hairline'}`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-[14px] font-semibold text-ink tabular-nums">
+                    {rounded.toLocaleString('es-ES')}
+                  </span>
+                  <span className="text-[12.5px] text-muted">
+                    · {reviews.length} {reviews.length === 1 ? 'reseña' : 'reseñas'}
+                  </span>
+                </div>
+              )
+            })()}
           </div>
           <LeaveReviewButton kennelId={kennel.id} kennelSlug={kennel.slug || kennel.id} />
         </div>
@@ -458,7 +541,97 @@ export default function KennelProHome({
            primario sin redundancia. */}
       <NewsletterSubscribe kennelId={kennel.id} kennelName={kennel.name} />
 
+      {/* ════ FOOTER DEL KENNEL ════
+           Cierre limpio con datos del criadero, redes sociales como
+           botones grandes y un link sutil "creado con Genealogic".
+           Cumple la función de footer típico de web pero con tono propio. */}
+      <KennelFooter
+        kennelName={kennel.name}
+        kennelSlug={kennel.slug || kennel.id}
+        location={location}
+        socials={{
+          website: kennel.website,
+          instagram: kennel.social_instagram,
+          facebook: kennel.social_facebook,
+        }}
+      />
+
     </div>
+  )
+}
+
+function KennelFooter({
+  kennelName, kennelSlug, location, socials,
+}: {
+  kennelName: string
+  kennelSlug: string
+  location: string
+  socials: { website: string | null; instagram: string | null; facebook: string | null }
+}) {
+  const hasAnySocial = !!(socials.website || socials.instagram || socials.facebook)
+  return (
+    <footer className="rounded-3xl border border-hairline bg-surface-soft p-6 sm:p-10">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
+        <div>
+          <p className="text-[20px] sm:text-[22px] font-semibold tracking-[-0.025em] text-ink">
+            {kennelName}
+          </p>
+          {location && (
+            <p className="mt-1 text-[13px] text-muted">{location}</p>
+          )}
+          <p className="mt-3 text-[12px] text-muted">
+            © {new Date().getFullYear()} {kennelName}. Todos los derechos reservados.
+          </p>
+        </div>
+        <div className="flex flex-col sm:items-end gap-3">
+          {hasAnySocial && (
+            <div className="flex flex-wrap gap-1.5">
+              {socials.website && (
+                <a
+                  href={socials.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
+                >
+                  <Globe className="h-3.5 w-3.5" /> Web
+                </a>
+              )}
+              {socials.instagram && (
+                <a
+                  href={socials.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" /> Instagram
+                </a>
+              )}
+              {socials.facebook && (
+                <a
+                  href={socials.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" /> Facebook
+                </a>
+              )}
+            </div>
+          )}
+          <p className="text-[11px] text-muted inline-flex items-center gap-1">
+            Web creada con{' '}
+            <Link
+              href="/"
+              className="font-semibold text-body hover:text-[#FE6620] transition-colors uppercase tracking-[0.1em]"
+            >
+              Genealogic
+            </Link>
+          </p>
+          {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
+          <span className="hidden" data-slug={kennelSlug} />
+        </div>
+      </div>
+    </footer>
   )
 }
 
@@ -499,7 +672,7 @@ function AvailabilitySection({
   const both = showLitter && hasPuppies
 
   return (
-    <section>
+    <section id="disponibilidad" className="scroll-mt-20">
       <div className="mb-5 sm:mb-6 flex items-end justify-between gap-3 flex-wrap">
         <div>
           <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#FE6620]">Disponible ahora</p>
