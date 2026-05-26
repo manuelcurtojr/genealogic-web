@@ -29,6 +29,8 @@ interface Tier {
   ctaHref?: string
   highlight?: boolean
   founderBadge?: boolean
+  /** Si true, el plan se muestra como "Próximamente" — sin CTA accionable. */
+  comingSoon?: boolean
   features: string[]
 }
 
@@ -77,9 +79,10 @@ const breederTiers: Tier[] = [
     name: 'Kennel Pro',
     price: '49€',
     period: '/mes · Founder',
-    description: 'Para criaderos con volumen alto que quieren escalar al máximo. Prueba 15 días gratis.',
-    cta: 'Probar 15 días gratis',
+    description: 'Para criaderos con volumen alto que quieren escalar al máximo. Disponible próximamente.',
+    cta: 'Próximamente',
     founderBadge: true,
+    comingSoon: true,
     features: [
       'Todo lo de Kennel',
       'Web pública con builder visual',
@@ -199,6 +202,11 @@ export default function PricingClient({
                         Founder
                       </span>
                     )}
+                    {tier.comingSoon && (
+                      <span className="inline-flex items-center rounded-full bg-blue-100 text-blue-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
+                        Próximamente
+                      </span>
+                    )}
                   </div>
                   <h2 className="text-xl font-bold text-ink mb-1">{tier.name}</h2>
                   <div className="flex items-baseline gap-1 mb-1">
@@ -216,7 +224,15 @@ export default function PricingClient({
                     ))}
                   </ul>
 
-                  {tier.ctaHref ? (
+                  {tier.comingSoon ? (
+                    <button
+                      type="button"
+                      disabled
+                      className="inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-xl border border-hairline bg-surface-soft px-5 py-3 text-sm font-bold text-muted"
+                    >
+                      Próximamente
+                    </button>
+                  ) : tier.ctaHref ? (
                     <Button
                       href={tier.ctaHref}
                       variant={tier.highlight ? 'primary' : 'secondary'}
@@ -239,9 +255,11 @@ export default function PricingClient({
                   )}
                   {tier.id !== 'free' && (
                     <p className="mt-2 text-[11px] text-muted text-center">
-                      {isLoggedIn
-                        ? '15 días gratis · Tarjeta requerida · Cancela cuando quieras'
-                        : `Crea tu cuenta y prueba ${tier.name} 15 días gratis`}
+                      {tier.comingSoon
+                        ? 'Te avisaremos en cuanto esté disponible.'
+                        : isLoggedIn
+                          ? '15 días gratis · Tarjeta requerida · Cancela cuando quieras'
+                          : `Crea tu cuenta y prueba ${tier.name} 15 días gratis`}
                     </p>
                   )}
                 </div>

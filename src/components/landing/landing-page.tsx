@@ -1236,17 +1236,18 @@ function Pricing() {
             </Button>
           </div>
 
-          {/* Kennel Pro */}
-          <div className="relative rounded-[16px] border border-hairline bg-canvas p-6 sm:p-7 flex flex-col">
-            <span className="absolute -top-3 right-6 rounded-full bg-[color:var(--brand)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
-              Founder · 49€ para siempre
+          {/* Kennel Pro — próximamente */}
+          <div className="relative rounded-[16px] border border-hairline bg-canvas p-6 sm:p-7 flex flex-col opacity-90">
+            <span className="absolute -top-3 right-6 inline-flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
+              Próximamente
             </span>
             <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">Kennel Pro</p>
             <p className="mt-3 text-[36px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
               49 € <span className="text-[14px] font-normal text-muted">/ mes</span>
             </p>
             <p className="mt-2 text-[14px] text-body">
-              Tu marca, tu web, tu emailbot. Vende mientras duermes.
+              Tu marca, tu web, tu emailbot. Vende mientras duermes. Lo estamos
+              abriendo en privado a los primeros 50 criaderos.
             </p>
             <ul className="mt-6 space-y-2.5 text-[14px] flex-1">
               <PricingRow>Todo lo de Kennel</PricingRow>
@@ -1254,21 +1255,24 @@ function Pricing() {
               <PricingRow>Emailbot multi-modelo (Claude/GPT/Gemini)</PricingRow>
               <PricingRow>Newsletter a tu lista</PricingRow>
               <PricingRow>Pagos online integrados</PricingRow>
-              <PricingRow>Precio Founder congelado de por vida</PricingRow>
+              <PricingRow>Precio Founder congelado de por vida (49€)</PricingRow>
             </ul>
-            <Button
-              href="/register?intent=breeder&plan=kennel_pro"
-              variant="secondary"
-              className="mt-7 w-full"
+            <button
+              type="button"
+              disabled
+              className="mt-7 w-full cursor-not-allowed rounded-xl border border-hairline bg-surface-soft px-5 py-3 text-sm font-bold text-muted"
             >
-              Probar 15 días gratis
-            </Button>
+              Próximamente
+            </button>
+            <p className="mt-2 text-center text-[11px] text-muted">
+              Te avisaremos en cuanto esté disponible.
+            </p>
           </div>
         </div>
 
         <p className="mt-10 text-center text-[13px] text-muted">
-          Solo los primeros 50 criaderos consiguen el precio Founder de 49€/mes
-          de por vida en Kennel Pro. Después subirá.
+          Empieza hoy con Kennel (29€/mes, 15 días gratis). Cuando abramos
+          Kennel Pro, podrás cambiar de plan desde tu cuenta sin perder datos.
         </p>
       </div>
     </section>

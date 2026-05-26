@@ -225,9 +225,10 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
                 name="Kennel Pro"
                 price="49 €"
                 period="/mes · Founder"
-                description="Web pública, emailbot, newsletter, pagos online. 15 días gratis. Precio Founder de por vida."
+                description="Web pública, emailbot, newsletter, pagos online. Lo estamos abriendo en privado a los primeros 50 criaderos. Te avisamos cuando esté disponible."
                 onSelect={() => startCheckoutFn('premium')}
                 disabled={checkoutPending}
+                comingSoon
               />
             </div>
           )}
@@ -309,7 +310,7 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
 }
 
 function PlanCard({
-  name, price, period, description, highlight, onSelect, disabled,
+  name, price, period, description, highlight, onSelect, disabled, comingSoon,
 }: {
   name: string
   price: string
@@ -318,34 +319,53 @@ function PlanCard({
   highlight?: boolean
   onSelect: () => void
   disabled?: boolean
+  /** Si true, deshabilita el CTA y muestra etiqueta "Próximamente". */
+  comingSoon?: boolean
 }) {
   return (
     <div className={`rounded-xl border-2 p-5 flex flex-col ${
       highlight ? 'border-ink bg-canvas shadow-[0_4px_24px_rgba(0,0,0,0.06)]' : 'border-hairline bg-canvas'
-    }`}>
-      {highlight && (
-        <div className="inline-flex self-start items-center rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-on-primary mb-3">
-          Recomendado
-        </div>
-      )}
+    } ${comingSoon ? 'opacity-90' : ''}`}>
+      <div className="flex items-center gap-2 flex-wrap mb-3">
+        {highlight && (
+          <div className="inline-flex items-center rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-on-primary">
+            Recomendado
+          </div>
+        )}
+        {comingSoon && (
+          <div className="inline-flex items-center rounded-full bg-blue-100 text-blue-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
+            Próximamente
+          </div>
+        )}
+      </div>
       <h3 className="text-lg font-bold text-ink">{name}</h3>
       <div className="flex items-baseline gap-1 mt-1">
         <span className="text-2xl font-bold text-ink">{price}</span>
         <span className="text-xs text-muted">{period}</span>
       </div>
       <p className="text-[13px] text-body mt-2 mb-4 leading-relaxed">{description}</p>
-      <button
-        onClick={onSelect}
-        disabled={disabled}
-        className={`mt-auto inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-bold transition disabled:opacity-50 ${
-          highlight
-            ? 'bg-ink text-on-primary hover:opacity-90'
-            : 'border border-hairline bg-canvas text-ink hover:border-ink/40'
-        }`}
-      >
-        Empezar {name}
-        <ArrowRight className="w-3.5 h-3.5" />
-      </button>
+      {comingSoon ? (
+        <button
+          type="button"
+          disabled
+          className="mt-auto inline-flex cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-hairline bg-surface-soft px-4 py-2 text-sm font-bold text-muted"
+        >
+          Próximamente
+        </button>
+      ) : (
+        <button
+          onClick={onSelect}
+          disabled={disabled}
+          className={`mt-auto inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-bold transition disabled:opacity-50 ${
+            highlight
+              ? 'bg-ink text-on-primary hover:opacity-90'
+              : 'border border-hairline bg-canvas text-ink hover:border-ink/40'
+          }`}
+        >
+          Probar {name} 15 días gratis
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      )}
     </div>
   )
 }

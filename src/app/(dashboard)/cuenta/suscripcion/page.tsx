@@ -158,15 +158,20 @@ export default async function SuscripcionPage({
         </div>
       </div>
 
-      {/* Premium upsell */}
-      {plan !== 'premium' && (
+      {/* Kennel Pro upsell — todavía no disponible públicamente */}
+      {plan !== 'premium' && plan !== 'kennel_pro' && (
         <div className="rounded-2xl border border-hairline bg-canvas p-6 lg:p-8">
           <div className="flex items-baseline gap-3 mb-1 flex-wrap">
-            <h3 className="text-lg font-bold text-ink">Genealogic Premium</h3>
-            <span className="text-xl font-bold text-ink">149€<span className="text-sm text-muted font-normal">/mes</span></span>
+            <h3 className="text-lg font-bold text-ink">Genealogic Kennel Pro</h3>
+            <span className="text-xl font-bold text-ink">49€<span className="text-sm text-muted font-normal">/mes</span></span>
+            <span className="inline-flex items-center rounded-full bg-blue-100 text-blue-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
+              Próximamente
+            </span>
           </div>
           <p className="text-sm text-body mb-5">
-            Para criaderos grandes, multi-afijo, con necesidad de API y verificaciones oficiales mensuales.
+            Web pública con dominio propio, emailbot 24/7, newsletter y pagos online.
+            Lo estamos abriendo en privado a los primeros 50 criaderos. El precio Founder
+            de 49€/mes se queda congelado de por vida.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mb-6">
             {premiumExtras.map(f => (
@@ -177,11 +182,11 @@ export default async function SuscripcionPage({
             ))}
           </div>
           <Button
-            variant="primary" size="md"
-            href="mailto:hola@genealogic.io?subject=Upgrade%20a%20Premium"
+            variant="secondary" size="md"
+            href="mailto:hola@genealogic.io?subject=Lista%20de%20espera%20Kennel%20Pro%20Founder"
           >
-            Hablar con nosotros para Premium
-            <ArrowUpRight className="w-4 h-4" />
+            <MailIcon className="w-4 h-4" />
+            Apuntarme a la lista de espera
           </Button>
         </div>
       )}
