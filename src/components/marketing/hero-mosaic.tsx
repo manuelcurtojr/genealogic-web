@@ -180,12 +180,14 @@ function NebulaLayer() {
               'radial-gradient(circle at 50% 50%, rgba(59,130,246,0.45) 0%, rgba(59,130,246,0.15) 40%, transparent 70%)',
           }}
         />
-        {/* Blob C — magenta/púrpura, center-bottom */}
+        {/* Blob C — refuerzo naranja en center-bottom para equilibrar la
+            composición (sustituye al magenta que se descartó). Más sutil que
+            el blob A para no recargar la zona caliente del hero. */}
         <div
           className="nebula-c absolute top-1/3 left-1/4 h-[70vh] w-[70vh] rounded-full blur-3xl"
           style={{
             background:
-              'radial-gradient(circle at 50% 50%, rgba(217,70,239,0.4) 0%, rgba(217,70,239,0.12) 40%, transparent 70%)',
+              'radial-gradient(circle at 50% 50%, rgba(254,102,32,0.35) 0%, rgba(254,102,32,0.1) 40%, transparent 70%)',
           }}
         />
       </div>
