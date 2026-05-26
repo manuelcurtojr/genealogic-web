@@ -12,6 +12,9 @@
  */
 import { createClient } from '@/lib/supabase/server'
 import PricingClient from '@/components/marketing/pricing-client'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { isIosFromCookieStore } from '@/lib/platform'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -28,6 +31,12 @@ export default async function PricingPage({
 }: {
   searchParams: Promise<{ for?: string }>
 }) {
+  // Defensa en profundidad: si la sesión es iOS (App Store 3.1.1) no se debe
+  // ver pricing dentro de la app. El middleware ya redirige antes, esto cubre
+  // cualquier bypass (cache, race, llamada server-side directa).
+  if (isIosFromCookieStore(await cookies())) {
+    redirect('/dashboard')
+  }
   const sp = await searchParams
   const initialTab: 'breeder' | 'owner' = sp.for === 'owner' ? 'owner' : 'breeder'
 

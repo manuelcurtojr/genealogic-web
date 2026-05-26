@@ -12,6 +12,7 @@ import NotificationsPanel from './notifications-panel'
 import GenosPanel from '@/components/genos/genos-panel'
 import { CommandBar } from './command-bar'
 import { hasProAccess } from '@/lib/permissions'
+import { usePlatform } from '@/components/platform/platform-provider'
 
 interface DashboardShellProps {
   user: { display_name: string; email: string; role: string; avatar_url: string | null } | null
@@ -27,6 +28,7 @@ interface DashboardShellProps {
 
 export default function DashboardShell({ user, kennel, plan, planIsFounder, userId, isClient, children }: DashboardShellProps) {
   const pathname = usePathname()
+  const { isIos } = usePlatform()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [isNative, setIsNative] = useState(false)
@@ -215,6 +217,7 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
         plan={plan}
         planIsFounder={planIsFounder}
         isClient={isClient ?? false}
+        isIos={isIos}
         mobileOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
         collapsed={collapsed}

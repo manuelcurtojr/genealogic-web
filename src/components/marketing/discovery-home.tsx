@@ -206,13 +206,13 @@ export default function DiscoveryHome({
                 </p>
                 <div className="grid grid-cols-3 gap-3 sm:gap-4">
                   <CompactCounter>
-                    <LiveCounter initial={counts.kennels} kind="kennels" label="Criaderos" />
+                    <LiveCounter size="compact" initial={counts.kennels} kind="kennels" label="Criaderos" />
                   </CompactCounter>
                   <CompactCounter>
-                    <LiveCounter initial={counts.breeds} kind="breeds" label="Razas" />
+                    <LiveCounter size="compact" initial={counts.breeds} kind="breeds" label="Razas" />
                   </CompactCounter>
                   <CompactCounter>
-                    <LiveCounter initial={counts.dogs} kind="dogs" label="Perros" />
+                    <LiveCounter size="compact" initial={counts.dogs} kind="dogs" label="Perros" />
                   </CompactCounter>
                 </div>
               </div>

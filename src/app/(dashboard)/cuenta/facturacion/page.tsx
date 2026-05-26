@@ -1,5 +1,7 @@
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
+import { isIosFromCookieStore } from '@/lib/platform'
 import BillingClient from '@/components/billing/billing-client'
 import EmailbotUsageSection, {
   type UsageRow,
@@ -13,6 +15,8 @@ export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Facturación · Genealogic Pro' }
 
 export default async function FacturacionPage() {
+  // App Store 3.1.1 — facturación nunca accesible desde el WebView iOS.
+  if (isIosFromCookieStore(await cookies())) redirect('/dashboard')
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')

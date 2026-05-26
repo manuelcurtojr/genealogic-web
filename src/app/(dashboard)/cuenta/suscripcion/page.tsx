@@ -1,15 +1,19 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { Sparkles, Check, ArrowUpRight, Clock, MailIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getPlanLabel } from '@/lib/permissions'
 import { isSubscriptionCheckoutAvailable } from '@/lib/stripe/server'
+import { isIosFromCookieStore } from '@/lib/platform'
 
 export const metadata = { title: 'Suscripción · Genealogic Pro' }
 
 export default async function SuscripcionPage({
   searchParams,
 }: { searchParams: Promise<{ activate?: string }> }) {
+  // App Store 3.1.1 — esta ruta no debe ser accesible desde el WebView iOS.
+  if (isIosFromCookieStore(await cookies())) redirect('/dashboard')
   const sp = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

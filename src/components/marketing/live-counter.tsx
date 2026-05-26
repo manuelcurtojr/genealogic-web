@@ -20,12 +20,19 @@ export default function LiveCounter({
   label,
   pollMs = 15000,
   className,
+  size = 'large',
 }: {
   initial: number
   kind: Kind
   label: string
   pollMs?: number
   className?: string
+  /**
+   * - 'large': hero protagonista (~40-72px desktop)
+   * - 'compact': dentro de tarjetas (~22-30px desktop). Cabe en 3 columnas
+   *   sin desbordar incluso con números de 6+ cifras como 73.000+ perros.
+   */
+  size?: 'large' | 'compact'
 }) {
   const [value, setValue] = useState(initial)
   const [displayed, setDisplayed] = useState(0)
@@ -91,12 +98,23 @@ export default function LiveCounter({
     return () => { active = false; clearInterval(id) }
   }, [kind, pollMs, value])
 
+  const isCompact = size === 'compact'
+  const numberClasses = isCompact
+    // Compact: estable en celdas de 3-col dentro de cards. Min-w-0 + truncate
+    // por seguridad si la celda es muy estrecha.
+    ? 'text-[20px] sm:text-[22px] lg:text-[26px]'
+    // Large: hero protagonista (versión histórica).
+    : 'text-[22px] sm:text-[clamp(40px,7vw,72px)]'
+  const labelClasses = isCompact
+    ? 'mt-1 text-[9.5px] sm:text-[10px]'
+    : 'mt-1.5 sm:mt-2 text-[10px] sm:text-[13.5px]'
+
   return (
     <div className={className}>
-      <p className={`text-[22px] sm:text-[clamp(40px,7vw,72px)] font-semibold tabular-nums tracking-[-0.03em] sm:tracking-[-0.04em] text-ink leading-none transition-colors ${pulse ? 'text-[#FE6620]' : ''}`}>
+      <p className={`${numberClasses} font-semibold tabular-nums tracking-[-0.03em] sm:tracking-[-0.04em] text-ink leading-none transition-colors ${pulse ? 'text-[#FE6620]' : ''}`}>
         {displayed.toLocaleString('es-ES')}
       </p>
-      <p className="mt-1.5 sm:mt-2 text-[10px] sm:text-[13.5px] uppercase tracking-[0.06em] sm:tracking-[0.08em] text-muted font-semibold">{label}</p>
+      <p className={`${labelClasses} uppercase tracking-[0.06em] sm:tracking-[0.08em] text-muted font-semibold`}>{label}</p>
     </div>
   )
 }
