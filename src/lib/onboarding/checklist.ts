@@ -17,10 +17,21 @@ import type { OnboardingStep, OnboardingStatus, StepImportance } from './types'
 
 export type { OnboardingStep, OnboardingStatus, StepImportance }
 
+// IDs de pasos puramente B2B (web pública, formulario, emailbot, knowledge
+// base). En el WebView iOS no se muestran porque exponen flujos pricing/CRM
+// que disparan Guideline 3.1.1 de App Store.
+const IOS_HIDDEN_STEP_IDS = new Set([
+  'public_web',
+  'contact_form',
+  'knowledge_base',
+  'activate_bot',
+])
+
 export async function getOnboardingStatus(args: {
   kennelId: string
   userId: string
   isPro: boolean
+  isIos?: boolean
 }): Promise<OnboardingStatus> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createKennelAdminClient() as any
@@ -140,19 +151,24 @@ export async function getOnboardingStatus(args: {
     })
   }
 
-  // 3) Métricas agregadas
-  const considered = steps.filter((s) => s.importance !== 'optional')
+  // 3) Filtro iOS: ocultar pasos que llevan a rutas B2B (web/form/bot/kb).
+  const visibleSteps = args.isIos
+    ? steps.filter((s) => !IOS_HIDDEN_STEP_IDS.has(s.id))
+    : steps
+
+  // 4) Métricas agregadas
+  const considered = visibleSteps.filter((s) => s.importance !== 'optional')
   const consideredDone = considered.filter((s) => s.done).length
   const progressPct = considered.length === 0
     ? 100
     : Math.round((consideredDone / considered.length) * 100)
-  const requiredComplete = steps
+  const requiredComplete = visibleSteps
     .filter((s) => s.importance === 'required')
     .every((s) => s.done)
-  const allComplete = steps.every((s) => s.done)
+  const allComplete = visibleSteps.every((s) => s.done)
 
   return {
-    steps,
+    steps: visibleSteps,
     completedCount: consideredDone,
     totalCount: considered.length,
     progressPct,

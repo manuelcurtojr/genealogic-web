@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
+import { isIosUserAgent } from '@/lib/platform'
 import { Dog, Baby, PawPrint, Tag, Plus, Stethoscope, ArrowRight, Search, Crown } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import StatCard from '@/components/dashboard/stat-card'
@@ -19,6 +21,10 @@ export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
+
+  // Detección iOS WebView (App Store 3.1.1) — filtra pasos B2B del onboarding
+  const hdrs = await headers()
+  const isIos = isIosUserAgent(hdrs.get('user-agent'))
 
   // Admins go to admin panel
   const { data: roleCheck } = await supabase.from('profiles').select('role').eq('id', user.id).single()
@@ -86,6 +92,7 @@ export default async function DashboardPage() {
     kennelId: kennel.id,
     userId: user.id,
     isPro,
+    isIos,
   })
 
   // Fetch dashboard data in parallel
