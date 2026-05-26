@@ -60,13 +60,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export default async function KennelDetailPage({
-  params, searchParams,
+  params,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ force?: string }>
 }) {
   const { id } = await params
-  const sp = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -78,26 +76,12 @@ export default async function KennelDetailPage({
     redirect(`/kennels/${kennel.slug}`)
   }
 
-  // Redirect a web custom (default_public_view=custom_web) — sin cambios.
-  // Irema mantiene este flow: por defecto va a /c/irema-curto desde
-  // genealogic.io/kennels/irema-curto a menos que añadan ?force=standard.
+  // Nota: anteriormente había un redirect a /c/[slug] cuando el kennel tenía
+  // `default_public_view='custom_web'`. Ya no aplica — los criaderos Pro
+  // tienen directamente su web vitaminada en /kennels/[slug] (chrome + páginas).
+  // /c/[slug] sigue accesible para quien lo enlace directamente, pero NO es
+  // la vista por defecto para nadie.
   const isOwner = user?.id === kennel.owner_id
-  const forceStandard = sp.force === 'standard'
-  const forceCustom = sp.force === 'custom'
-  const wantsCustomRedirect =
-    kennel.default_public_view === 'custom_web' && !!kennel.slug
-  if (wantsCustomRedirect && !forceStandard && (!isOwner || forceCustom)) {
-    const { data: customPageCheck } = await supabase
-      .from('kennel_pages')
-      .select('id')
-      .eq('kennel_id', kennel.id)
-      .eq('slug', 'home')
-      .eq('enabled', true)
-      .maybeSingle()
-    if (customPageCheck) {
-      redirect(`/c/${kennel.slug}`)
-    }
-  }
 
   // ─── Datos comunes ──────────────────────────────────────────────────
   const [allDogsRes, allLittersRes, breedsRes, faqRes, ownerProfileRes] = await Promise.all([
