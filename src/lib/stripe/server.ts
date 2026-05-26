@@ -45,10 +45,12 @@ export function isStripeConfigured(): boolean {
 
 /**
  * True si está todo lo necesario para lanzar un Checkout Session de
- * suscripción (Pro/Premium). Requiere también las IDs de precio
- * configuradas en Vercel:
- *   STRIPE_PRICE_PRO_MONTHLY      (price_xxx — Pro 39€/mes recurring)
- *   STRIPE_PRICE_PREMIUM_MONTHLY  (price_xxx — Premium 149€/mes recurring)
+ * suscripción Kennel (con 15 días de trial). Requiere al menos el price
+ * de Kennel mensual configurado:
+ *   STRIPE_PRICE_KENNEL_MONTHLY     (price_xxx — Kennel 29€/mes recurring)
+ *   STRIPE_PRICE_KENNEL_PRO_MONTHLY (price_xxx — Kennel Pro 49€/mes Founder, hoy en privado)
+ *   Legacy: STRIPE_PRICE_PRO_MONTHLY / STRIPE_PRICE_PREMIUM_MONTHLY
+ *           todavía aceptados como fallback.
  *
  * Si falta cualquiera, la UI debe mostrar lista de espera en vez de
  * "pagar y activar" — evita botones rotos.
@@ -56,8 +58,9 @@ export function isStripeConfigured(): boolean {
 export function isSubscriptionCheckoutAvailable(): boolean {
   return (
     isStripeConfigured() &&
-    !!process.env.STRIPE_PRICE_PRO_MONTHLY &&
-    !!process.env.STRIPE_PRICE_PREMIUM_MONTHLY
+    // Aceptamos el nuevo nombre canónico o el legacy como fallback,
+    // para no romper deploys que aún tengan las env vars antiguas.
+    !!(process.env.STRIPE_PRICE_KENNEL_MONTHLY || process.env.STRIPE_PRICE_PRO_MONTHLY)
   )
 }
 

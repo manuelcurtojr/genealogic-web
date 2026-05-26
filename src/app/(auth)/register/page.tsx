@@ -225,24 +225,36 @@ function intentBranding(data: SignupIntentData | null) {
     }
   }
   // breeder
-  const planLabel = data.plan === 'pro' ? 'Pro' : data.plan === 'premium' ? 'Premium' : 'Free'
+  // Plan canónico nuevo: free / kennel / kennel_pro. Aceptamos legacy pro/premium
+  // por si llega por URL antigua, mapeando al label nuevo.
+  const isKennelPro = data.plan === 'kennel_pro' || data.plan === 'premium'
+  const isKennel = data.plan === 'kennel' || data.plan === 'pro'
+  const planLabel = isKennelPro ? 'Kennel Pro' : isKennel ? 'Kennel' : 'Free'
+  const isFree = data.plan === 'free'
   return {
-    title: data.plan === 'free' ? 'Empieza' : 'Activa',
-    titleTail: data.plan === 'free' ? 'gratis.' : `Genealogic ${planLabel}.`,
-    subtitle: data.plan === 'free'
+    title: isFree ? 'Empieza' : 'Activa',
+    titleTail: isFree ? 'gratis.' : `Genealogic ${planLabel}.`,
+    subtitle: isFree
       ? 'Crea tu cuenta para registrar tu criadero y empezar a publicar tus perros.'
-      : `Tu cuenta empieza en Free; ${planLabel} se activa cuando hayas creado tu afijo. Sin compromiso, cancelas cuando quieras.`,
-    submitLabel: data.plan === 'free' ? 'Crear cuenta gratis' : `Crear cuenta y continuar`,
+      : isKennelPro
+        ? `Kennel Pro está abriéndose en privado a los primeros 50 criaderos. Crea tu cuenta y te avisamos en cuanto esté disponible — mientras tanto puedes usar Kennel con 15 días gratis.`
+        : `Tu cuenta empieza en Free; al elegir ${planLabel} arranca una prueba de 15 días con tarjeta. Cobro automático al día 15. Cancelas cuando quieras.`,
+    submitLabel: isFree ? 'Crear cuenta gratis' : `Crear cuenta y continuar`,
   }
 }
 
 function IntentBadge({ data }: { data: SignupIntentData }) {
   const Icon = data.intent === 'buyer' ? Search : Store
+  const isKennelPro = data.plan === 'kennel_pro' || data.plan === 'premium'
+  const isKennel = data.plan === 'kennel' || data.plan === 'pro'
+  const planLabel = isKennelPro ? 'Kennel Pro' : isKennel ? 'Kennel' : null
   const label = data.intent === 'buyer'
     ? 'Cuenta de comprador'
     : data.plan === 'free'
       ? 'Plan Free · sin tarjeta'
-      : `Plan ${data.plan === 'pro' ? 'Pro' : 'Premium'} · activación tras crear criadero`
+      : isKennelPro
+        ? 'Plan Kennel Pro · próximamente · lista de espera'
+        : `Plan ${planLabel} · 15 días gratis con tarjeta`
   return (
     <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-card px-3 py-1.5">
       <Icon className="h-3.5 w-3.5 text-ink" />

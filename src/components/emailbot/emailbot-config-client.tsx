@@ -431,7 +431,7 @@ function QuotaCard({ quota }: { quota: QuotaStatus }) {
       {isBlocked && (
         <p className="mt-3 text-xs text-red-700">
           {quota.reason === 'plan_no_bot'
-            ? `Tu plan ${planLabel} no incluye el emailbot. Sube a Starter (100) o Pro (500).`
+            ? `Tu plan ${planLabel} no incluye el emailbot. El emailbot está en Kennel Pro (próximamente). Apúntate a la lista de espera en /pricing.`
             : `Has agotado las respuestas del mes. El bot dejará de contestar emails hasta el día 1. Los emails entrantes siguen guardándose en /emailbot/hilos para que respondas tú.`}
         </p>
       )}

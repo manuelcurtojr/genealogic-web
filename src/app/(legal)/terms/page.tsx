@@ -24,9 +24,9 @@ export default function TermsPage() {
       <h2>4. Planes y Pagos</h2>
       <h3>4.1 Planes disponibles</h3>
       <ul>
-        <li><strong>Propietario (Gratuito):</strong> hasta 5 perros, funcionalidades básicas</li>
-        <li><strong>Amateur (7,99 €/mes o 79 €/año):</strong> hasta 25 perros, criadero, camadas</li>
-        <li><strong>Profesional (14,99 €/mes o 139 €/año):</strong> ilimitado, CRM completo</li>
+        <li><strong>Free (gratuito):</strong> hasta 10 perros con ficha completa, genealogía sin límite de generaciones, importador IA, búsqueda pública, simulador de cruces, calendario veterinario. Para propietarios y criadores que empiezan. Sin tarjeta.</li>
+        <li><strong>Kennel (29 €/mes o 290 €/año):</strong> perros y camadas ilimitadas, pipeline de reservas, contratos digitales, calendario veterinario con recordatorios, importador IA sin límite, hub de contactos, estadísticas del perfil público y soporte por email. Requiere tarjeta para el periodo de prueba.</li>
+        <li><strong>Kennel Pro (49 €/mes — precio Founder):</strong> todo lo de Kennel más web pública con dominio propio, emailbot multi-modelo (Claude/GPT/Gemini), newsletter a la lista de suscriptores y pagos online integrados. Disponibilidad limitada: en apertura privada para los primeros 50 criaderos. Mantiene el precio Founder de por vida para quien entra en esa primera tanda.</li>
       </ul>
 
       <h3>4.2 Facturación</h3>
@@ -34,7 +34,7 @@ export default function TermsPage() {
         <li>Los pagos se procesan de forma segura a través de <strong>Stripe</strong></li>
         <li>Las suscripciones se renuevan automáticamente al final de cada periodo</li>
         <li>Los precios incluyen IVA cuando sea aplicable</li>
-        <li>Puedes cancelar tu suscripción en cualquier momento desde Ajustes</li>
+        <li>Puedes cancelar tu suscripción en cualquier momento desde Ajustes &gt; Facturación, accediendo al portal de Stripe</li>
       </ul>
 
       <h3>4.3 Derecho de desistimiento</h3>
@@ -44,7 +44,10 @@ export default function TermsPage() {
       <p>Tras el periodo de desistimiento, no se realizan reembolsos por periodos parciales. Al cancelar, mantendrás el acceso hasta el final del periodo facturado.</p>
 
       <h3>4.5 Periodo de prueba</h3>
-      <p>Ofrecemos un periodo de prueba gratuito de 14 días para nuevos suscriptores. No se realiza ningún cargo durante la prueba. Si no cancelas antes de que finalice, se iniciará la facturación automática.</p>
+      <p>Para los planes Kennel y Kennel Pro ofrecemos un periodo de prueba gratuito de <strong>15 días naturales</strong> para nuevos suscriptores. Se requiere registrar una tarjeta válida al iniciar la prueba; no se efectúa ningún cargo durante esos 15 días. Si no cancelas antes de que finalice, el día 15 se realizará el primer cargo automáticamente en la tarjeta registrada y la suscripción continuará en facturación periódica.</p>
+
+      <h3>4.6 Cobros fallidos</h3>
+      <p>Si tras finalizar el periodo de prueba (o en cualquier renovación posterior) el cobro no puede realizarse — por ejemplo, por tarjeta caducada, fondos insuficientes, o autenticación 3-D Secure no completada — Stripe reintentará automáticamente el cargo durante varios días. Si tras la cadena de reintentos el cobro sigue fallando, la suscripción se cancelará y tu cuenta volverá al plan Free, conservando íntegramente tus datos. Recibirás avisos por email en cada reintento fallido para que puedas actualizar tu método de pago.</p>
 
       <h2>5. Contenido del Usuario</h2>
       <ul>

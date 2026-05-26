@@ -126,10 +126,10 @@ export async function checkBotReplyQuota(args: {
 /** Mensaje humano para mostrar al criador cuando se excede. */
 export function quotaReasonMessage(status: QuotaStatus): string {
   if (status.reason === 'plan_no_bot') {
-    return `Tu plan ${status.plan} no incluye el emailbot. Sube a Starter o superior.`
+    return `Tu plan ${status.plan} no incluye el emailbot. El emailbot vive en Kennel Pro (próximamente). Apúntate a la lista de espera en /pricing.`
   }
   if (status.reason === 'quota_exceeded') {
-    return `Has agotado las ${status.limit} respuestas del bot incluidas en tu plan ${status.plan} este mes. Sube de plan o espera al próximo mes.`
+    return `Has agotado las ${status.limit} respuestas del bot incluidas en tu plan ${status.plan} este mes. El bot se reanuda el día 1 del próximo mes.`
   }
   return 'Cuota disponible'
 }

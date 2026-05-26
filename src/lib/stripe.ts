@@ -8,12 +8,14 @@
  *   - POST /v1/invoices (list via GET)
  *
  * Setup necesario (env vars):
- *   STRIPE_SECRET_KEY          — sk_live_… o sk_test_…
- *   STRIPE_WEBHOOK_SECRET      — para verificar webhooks
- *   STRIPE_PRICE_PRO_MONTHLY   — price_xxx (Pro 39€ Founder o 79€ standard)
- *   STRIPE_PRICE_PRO_ANNUAL    — price_xxx (790€/año)
- *   STRIPE_PRICE_PREMIUM_MONTHLY
- *   STRIPE_PRICE_PREMIUM_ANNUAL
+ *   STRIPE_SECRET_KEY               — sk_live_… o sk_test_…
+ *   STRIPE_WEBHOOK_SECRET           — para verificar webhooks
+ *   STRIPE_PRICE_KENNEL_MONTHLY     — price_xxx (Kennel 29€/mes)
+ *   STRIPE_PRICE_KENNEL_ANNUAL      — price_xxx (Kennel 290€/año)
+ *   STRIPE_PRICE_KENNEL_PRO_MONTHLY — price_xxx (Kennel Pro 49€/mes Founder · Próximamente)
+ *   STRIPE_PRICE_KENNEL_PRO_ANNUAL  — price_xxx
+ *   Legacy: STRIPE_PRICE_PRO_*, STRIPE_PRICE_PREMIUM_* todavía se aceptan
+ *           como fallback en priceIdToPlan para subs antiguas.
  */
 
 const STRIPE_API = 'https://api.stripe.com/v1'

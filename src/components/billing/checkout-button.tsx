@@ -1,10 +1,15 @@
 /**
- * Botón "Empezar Pro/Premium" que dispara el Checkout de Stripe.
+ * Botón "Probar 15 días gratis" que dispara el Checkout de Stripe.
  *
  * Usado en /pricing. Si el user NO está logueado, redirige a
  * /register?intent=breeder&plan=X que tras signup vuelve aquí.
- * Si SÍ está logueado, llama a POST /api/stripe/checkout/subscription
- * y redirige a la URL de Stripe.
+ * Si SÍ está logueado, llama a POST /api/billing/checkout y redirige
+ * a la URL de Stripe Checkout (que arranca el trial de 15 días con
+ * tarjeta upfront).
+ *
+ * Nota: la prop `plan` sigue aceptando los nombres legacy 'pro'/'premium'
+ * porque el endpoint los normaliza a kennel/kennel_pro internamente.
+ * Esto evita romper otros sitios que lo siguen usando con el nombre viejo.
  *
  * Si Stripe no está configurado (falta env var), el endpoint devuelve 503
  * y mostramos un mensaje de "próximamente" en lugar de romper.

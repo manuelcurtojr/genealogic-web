@@ -2,12 +2,12 @@
  * /pricing — precios con toggle Criador / Propietario.
  *
  * Propietario: gratis para siempre (sin tiers).
- * Criador: 3 tiers (Free, Pro, Premium).
+ * Criador: 3 tiers (Free, Kennel 29€, Kennel Pro 49€ Founder · Próximamente).
  *
  * El toggle vive en query string (?for=breeder|owner) para permitir
  * deep-linking desde landing y ads.
  *
- * Detecta si el visitante está logueado para que el CTA "Empezar Pro"
+ * Detecta si el visitante está logueado para que el CTA "Probar 15 días gratis"
  * vaya directo a Stripe Checkout en vez de pedir registro primero.
  */
 import { createClient } from '@/lib/supabase/server'
@@ -17,7 +17,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Precios — Genealogic',
   description:
-    'Gratis para propietarios. Para criadores: free, pro y premium. Sin tarjeta para empezar.',
+    'Gratis para propietarios. Para criadores: Free (10 perros), Kennel (29€/mes con 15 días de prueba gratis) y Kennel Pro (próximamente).',
   alternates: { canonical: 'https://genealogic.io/pricing' },
 }
 
