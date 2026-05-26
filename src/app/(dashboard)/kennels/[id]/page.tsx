@@ -1,34 +1,31 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft, Globe, Calendar, MapPin, ExternalLink, Sparkles, BadgeCheck } from 'lucide-react'
 import { isUUID } from '@/lib/slug'
+import { pastelByName } from '@/lib/avatars'
 import KennelPublicTabs from '@/components/kennel/kennel-public-tabs'
-import KennelProfileHero from '@/components/kennel/profile-hero'
-import {
-  KennelAbout, KennelAwards, KennelBlog, KennelFAQ,
-  KennelGalleryPlaceholder, KennelFacilitiesPlaceholder, KennelContact,
-} from '@/components/kennel/profile-sections'
 import PageTracker from '@/components/track/page-tracker'
+import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 import ClaimBanner from '@/components/admin-requests/claim-banner'
 import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
 import { KennelJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
-import { isSectionEnabled, ALL_SECTION_IDS, type SectionId } from '@/lib/kennel/sections'
 import type { Metadata } from 'next'
 
 /**
- * Perfil público de criadero (/kennels/[slug]).
+ * Perfil público de criadero (versión "básica") — una sola landing.
  *
- * Filosofía: el perfil ES la web del criadero. Cada sección extra (awards,
- * blog, galería, faq, instalaciones) se activa desde el panel admin y se
- * autorellena desde tablas canónicas. Cero builders, cero HTML manual.
+ * Para Free/Kennel este es el destino final: una landing simple pero
+ * vendedora con hero + catálogo de perros + contacto.
  *
- * Para Irema (enterprise): todas las secciones extra están on. Para los
- * demás criaderos, el toggle aparece pero deshabilitado con badge
- * "Próximamente" hasta que Kennel Pro abra públicamente.
+ * Para Kennel Pro (Irema y futuros) este perfil seguirá existiendo, pero
+ * además habrá una web multi-página con chrome propio (separado, en otra
+ * fase). Mientras tanto, si el kennel tiene `default_public_view='custom_web'`
+ * el redirect a /c/[slug] sigue funcionando intacto.
  *
- * La web custom (/c/[slug]) sigue existiendo y funcionando — quien tenga
- * `default_public_view='custom_web'` se redirige allí como antes.
+ * Foco del diseño: el hero. Es lo único que cambia respecto al anterior
+ * — visual más fuerte, CTA contacto destacado (si el kennel tiene owner),
+ * stats claras del criadero, redes como botones (no links texto suelto).
  */
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -84,7 +81,8 @@ export default async function KennelDetailPage({
     redirect(`/kennels/${kennel.slug}`)
   }
 
-  // Mismo flujo de redirect a web custom que antes — sin tocar nada
+  // Mismo flujo de redirect a web custom — sin tocar nada (Irema sigue con
+  // su /c/irema-curto cuando default_public_view='custom_web').
   const isOwner = user?.id === kennel.owner_id
   const forceStandard = sp.force === 'standard'
   const forceCustom = sp.force === 'custom'
@@ -104,10 +102,7 @@ export default async function KennelDetailPage({
   }
 
   // ─── Datos del perfil ──────────────────────────────────────────────
-  // Cargamos en paralelo: perros, camadas, awards públicos, posts publicados,
-  // FAQ activas, razas. Algunas queries solo importan si su sección está on,
-  // pero al ser counts/short selects no merece la pena gating.
-  const [allDogsRes, allLittersRes, awardsRes, postsRes, faqRes, breedsRes, customPageRes] = await Promise.all([
+  const [allDogsRes, allLittersRes, breedsRes, customPageRes] = await Promise.all([
     supabase
       .from('dogs')
       .select('id, slug, name, sex, thumbnail_url, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, breed:breeds(name)')
@@ -120,32 +115,9 @@ export default async function KennelDetailPage({
       .eq('owner_id', kennel.owner_id)
       .eq('show_in_kennel', true)
       .order('created_at', { ascending: false }),
-    // Awards: solo los is_public de perros de este criadero
-    supabase
-      .from('awards')
-      .select('id, award_type, event_name, date, judge, notes, is_public, dog:dogs!awards_dog_id_fkey(id, name, slug, kennel_id)')
-      .eq('is_public', true)
-      .order('date', { ascending: false })
-      .limit(20),
-    supabase
-      .from('kennel_posts')
-      .select('id, slug, title, excerpt, cover_image_url, published_at, reading_time_minutes, category_slug')
-      .eq('kennel_id', kennel.id)
-      .eq('status', 'published')
-      .order('published_at', { ascending: false })
-      .limit(6),
-    supabase
-      .from('knowledge_entries')
-      .select('id, title, content, category, position')
-      .eq('kennel_id', kennel.id)
-      .eq('is_active', true)
-      .order('position', { ascending: true })
-      .limit(20),
-    // Resolver nombres de razas que cría
     kennel.breed_ids && kennel.breed_ids.length > 0
       ? supabase.from('breeds').select('id, name').in('id', kennel.breed_ids)
       : Promise.resolve({ data: [] }),
-    // Custom web indicator (para mostrar CTA "Ver web" en owner view)
     supabase
       .from('kennel_pages')
       .select('id')
@@ -157,36 +129,9 @@ export default async function KennelDetailPage({
 
   const allDogs = allDogsRes.data || []
   const allLitters = allLittersRes.data || []
-  // Filtramos awards a perros de este kennel (el join no permite where por
-  // FK indirecta; se filtra en memoria — son pocas filas).
-  // PostgREST devuelve el join `dog:dogs!fk(...)` como objeto cuando es
-  // a-one-row, pero el cliente TypeScript a veces lo infiere como array.
-  // Normalizamos a objeto plano para alimentar el componente.
-  const allAwards = (awardsRes.data || [])
-    .map((row: Record<string, unknown>) => {
-      const dogRel = row.dog as unknown
-      const dog = Array.isArray(dogRel) ? dogRel[0] : dogRel
-      return { ...row, dog: dog || null }
-    })
-    .filter((a: Record<string, unknown>) => {
-      const dog = a.dog as { kennel_id?: string } | null
-      return dog && dog.kennel_id === kennel.id
-    }) as Array<{
-      id: string
-      award_type: string | null
-      event_name: string | null
-      date: string | null
-      judge: string | null
-      notes: string | null
-      is_public: boolean | null
-      dog: { id: string; name: string; slug: string | null } | null
-    }>
-  const posts = postsRes.data || []
-  const faqEntries = faqRes.data || []
   const breedNames = (breedsRes.data || []).map((b: { name: string }) => b.name)
   const hasCustomWeb = !!customPageRes.data && !!kennel.slug
 
-  // Foto primero — nunca cajas vacías en el primer pantallazo
   const dogs = sortDogsPhotoFirst(allDogs)
   const litters = allLitters
   const forSale = dogs.filter((d: { is_for_sale: boolean | null }) => d.is_for_sale)
@@ -198,33 +143,23 @@ export default async function KennelDetailPage({
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const foundationYear = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null
 
-  // ─── Secciones extra: enabled + autoshow si hay datos ──────────────
-  // Si una sección está enabled pero su tabla está vacía, igual la
-  // ocultamos (cada componente devuelve null si no hay datos relevantes).
-  // Para sections placeholder (gallery/facilities) la mostramos como
-  // "Coming soon" solo si está enabled — refuerza la promesa al visitante.
-  const enabled = kennel.enabled_sections || {}
-  const isEnabled = (id: SectionId) => isSectionEnabled(enabled, id)
-
-  const enabledSectionIds: string[] = ALL_SECTION_IDS.filter(id => {
-    if (!isEnabled(id)) return false
-    // Solo añadir al nav del hero si la sección tendrá contenido para
-    // mostrar o es un placeholder informativo válido.
-    if (id === 'awards')     return allAwards.length > 0
-    if (id === 'blog')       return posts.length > 0
-    if (id === 'faq')        return faqEntries.length > 0
-    if (id === 'gallery')    return true
-    if (id === 'facilities') return true
-    return false
-  })
-
-  // Stats para el hero
+  // Stats para mostrar en el hero (solo las que tengan valor positivo)
   const stats = [
-    { value: dogs.length, label: 'Perros' },
+    { value: dogs.length, label: dogs.length === 1 ? 'Perro' : 'Perros' },
     { value: litters.filter((l: { status: string }) => l.status === 'born' || l.status === 'delivered').length, label: 'Camadas' },
-    { value: breedNames.length, label: 'Razas' },
-    ...(allAwards.length > 0 ? [{ value: allAwards.length, label: 'Logros' }] : []),
-  ].slice(0, 4)
+    { value: breedNames.length, label: breedNames.length === 1 ? 'Raza' : 'Razas' },
+  ].filter(s => s.value > 0)
+
+  // Tagline = primeros 180 chars de la descripción (sin cortar palabras feas)
+  const tagline = kennel.description
+    ? (kennel.description.length > 180
+        ? kennel.description.slice(0, 180).trimEnd().replace(/[,;:.\s]+$/, '') + '…'
+        : kennel.description)
+    : null
+
+  // Mostrar CTA "Contactar" funcional solo si el kennel tiene owner real.
+  // Si está sin reclamar (importado), el claim banner ya guía al user.
+  const hasOwner = !!kennel.owner_id
 
   return (
     <div className="space-y-8 sm:space-y-12">
@@ -247,12 +182,11 @@ export default async function KennelDetailPage({
       />
       <PageTracker kennelId={kennel.id} />
 
-      {/* Claim banner si el criadero no tiene owner asignado */}
       {!kennel.owner_id && (
         <ClaimBanner type="kennel" targetId={kennel.slug || kennel.id} targetName={kennel.name} />
       )}
 
-      {/* Back + CTA web personalizada (solo si existe) */}
+      {/* Back + CTA web custom (si existe — Irema lo tiene) */}
       <div className="flex items-center justify-between gap-3">
         <Link
           href={isOwner ? '/kennel' : '/kennels'}
@@ -270,41 +204,148 @@ export default async function KennelDetailPage({
         )}
       </div>
 
-      {/* HERO — el "presenta" del perfil */}
-      <KennelProfileHero
-        kennelId={kennel.id}
-        kennelName={kennel.name}
-        logoUrl={kennel.logo_url}
-        description={kennel.description}
-        location={location}
-        foundationYear={foundationYear}
-        topBreeds={breedNames}
-        stats={stats}
-        verified={!!kennel.owner_id}
-        perrosAnchor="#perros"
-        contactFormConfig={kennel.contact_form_config}
-        enabledSectionIds={enabledSectionIds}
-      />
+      {/* ═══ HERO ═══ */}
+      <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-orange-50/60 via-canvas to-blue-50/60">
+        {/* Glow decorativo en esquina sup-derecha (palette marca) */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-32 -right-32 h-[400px] w-[400px] rounded-full blur-3xl opacity-50"
+          style={{
+            background:
+              'radial-gradient(circle at 50% 50%, rgba(254,102,32,0.35) 0%, rgba(254,102,32,0.1) 40%, transparent 70%)',
+          }}
+        />
+        <div className="relative grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 lg:gap-12 p-6 sm:p-8 lg:p-12">
 
-      {/* SOBRE EL CRIADERO — siempre */}
-      <KennelAbout
-        description={kennel.description}
-        breedNames={breedNames}
-        socials={{
-          instagram: kennel.social_instagram,
-          facebook: kennel.social_facebook,
-          youtube: kennel.social_youtube,
-          tiktok: kennel.social_tiktok,
-          website: kennel.website,
-          whatsapp: kennel.whatsapp_enabled ? kennel.whatsapp_phone : null,
-        }}
-      />
+          {/* Izquierda — identidad + tagline + CTAs */}
+          <div className="flex flex-col gap-5 sm:gap-6">
+            <div className="flex items-start gap-4 sm:gap-5">
+              <div className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
+                {kennel.logo_url ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={kennel.logo_url} alt={kennel.name} className="h-full w-full object-cover" />
+                ) : (
+                  <div
+                    className="flex h-full w-full items-center justify-center"
+                    style={{ backgroundColor: pastelByName(kennel.name) }}
+                  >
+                    <span className="text-3xl sm:text-4xl font-semibold text-white">{kennel.name[0]?.toUpperCase()}</span>
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                    Criadero
+                  </span>
+                  {hasOwner && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                      <BadgeCheck className="h-3 w-3" /> Verificado
+                    </span>
+                  )}
+                </div>
+                <h1 className="mt-1 text-[30px] sm:text-[40px] lg:text-[44px] font-semibold leading-[1.05] tracking-[-0.04em] text-ink break-words">
+                  {kennel.name}
+                </h1>
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-muted">
+                  {location && (
+                    <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {location}</span>
+                  )}
+                  {foundationYear && (
+                    <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> Desde {foundationYear}</span>
+                  )}
+                </div>
+              </div>
+            </div>
 
-      {/* NUESTROS PERROS — siempre */}
+            {tagline && (
+              <p className="text-[15.5px] sm:text-[17px] text-body leading-[1.55] max-w-prose">
+                {tagline}
+              </p>
+            )}
+
+            {breedNames.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {breedNames.slice(0, 5).map(b => (
+                  <span key={b} className="inline-flex items-center rounded-full bg-canvas border border-hairline px-2.5 py-1 text-[11.5px] font-medium text-body">
+                    {b}
+                  </span>
+                ))}
+                {breedNames.length > 5 && (
+                  <span className="inline-flex items-center px-2 py-1 text-[11.5px] text-muted">
+                    +{breedNames.length - 5}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* CTAs primarios */}
+            <div className="flex flex-wrap gap-2 pt-1">
+              {hasOwner ? (
+                <ContactKennelButton
+                  kennelId={kennel.id}
+                  kennelName={kennel.name}
+                  config={kennel.contact_form_config || null}
+                />
+              ) : null}
+              <Link
+                href="#perros"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas text-ink px-4 py-2.5 text-[13px] font-bold hover:border-ink/30 transition"
+              >
+                Ver perros
+              </Link>
+              {kennel.social_instagram && (
+                <a
+                  href={kennel.social_instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas/70 backdrop-blur-sm text-body px-3 py-2.5 text-[12.5px] font-semibold hover:border-ink/30 hover:text-ink transition"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" /> Instagram
+                </a>
+              )}
+              {kennel.website && (
+                <a
+                  href={kennel.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas/70 backdrop-blur-sm text-body px-3 py-2.5 text-[12.5px] font-semibold hover:border-ink/30 hover:text-ink transition"
+                >
+                  <Globe className="h-3.5 w-3.5" /> Web
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Derecha — card de stats */}
+          {stats.length > 0 && (
+            <aside className="rounded-2xl bg-canvas/80 backdrop-blur-md border border-hairline p-5 sm:p-6 self-start w-full">
+              <div className="flex items-center gap-1.5 mb-4">
+                <Sparkles className="h-3.5 w-3.5 text-[#FE6620]" />
+                <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-ink">El criadero en números</p>
+              </div>
+              <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                {stats.map(s => (
+                  <div key={s.label} className="min-w-0">
+                    <p className="text-[24px] sm:text-[28px] font-semibold tabular-nums tracking-[-0.03em] text-ink leading-none">
+                      {s.value.toLocaleString('es-ES')}
+                    </p>
+                    <p className="mt-1.5 text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted">
+                      {s.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </aside>
+          )}
+        </div>
+      </section>
+
+      {/* ═══ NUESTROS PERROS — anchor #perros ═══ */}
       <section id="perros" className="scroll-mt-24">
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-5 sm:mb-6">
           <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Catálogo</p>
-          <h2 className="mt-1.5 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
+          <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
             Nuestros perros
           </h2>
         </div>
@@ -318,29 +359,29 @@ export default async function KennelDetailPage({
         />
       </section>
 
-      {/* AWARDS — toggleable */}
-      {isEnabled('awards') && <KennelAwards awards={allAwards} />}
-
-      {/* GALLERY — toggleable (placeholder hasta tener tabla kennel_photos) */}
-      {isEnabled('gallery') && <KennelGalleryPlaceholder />}
-
-      {/* FACILITIES — toggleable (placeholder) */}
-      {isEnabled('facilities') && <KennelFacilitiesPlaceholder />}
-
-      {/* BLOG — toggleable */}
-      {isEnabled('blog') && kennel.slug && <KennelBlog posts={posts} kennelSlug={kennel.slug} />}
-
-      {/* FAQ — toggleable */}
-      {isEnabled('faq') && <KennelFAQ entries={faqEntries} />}
-
-      {/* CONTACTO — siempre, al final */}
-      <KennelContact
-        kennelId={kennel.id}
-        kennelName={kennel.name}
-        location={location}
-        foundationYear={foundationYear}
-        contactFormConfig={kennel.contact_form_config}
-      />
+      {/* ═══ CONTACTO — siempre al final si hay owner ═══ */}
+      {hasOwner && (
+        <section className="rounded-2xl border border-hairline bg-canvas p-6 sm:p-8">
+          <div className="grid grid-cols-1 sm:grid-cols-[1.4fr_0.6fr] gap-5 sm:gap-8 items-center">
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Hablemos</p>
+              <h2 className="mt-1 text-[20px] sm:text-[24px] font-semibold tracking-[-0.02em] text-ink">
+                ¿Te interesa una camada o un perro?
+              </h2>
+              <p className="mt-2 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-prose">
+                Escríbenos por el formulario y te respondemos en breve. Sin compromiso.
+              </p>
+            </div>
+            <div className="flex sm:justify-end">
+              <ContactKennelButton
+                kennelId={kennel.id}
+                kennelName={kennel.name}
+                config={kennel.contact_form_config || null}
+              />
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   )
 }
