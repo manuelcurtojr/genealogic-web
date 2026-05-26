@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import KennelConfigView from '@/components/kennel/kennel-config-view'
-import { hasProAccess } from '@/lib/permissions'
+import SectionsToggles from '@/components/kennel/sections-toggles'
+import { hasProAccess, isKennelPro, isEnterpriseUser, normalizePlan } from '@/lib/permissions'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,19 +48,28 @@ export default async function KennelPage() {
 
   const hasCustomWeb = !!customPageRes.data && !!kennel.slug
   const isPro = hasProAccess(profileRes.data?.plan)
+  // Para los toggles de secciones Pro: enterprise users + kennel_pro plan.
+  const canUsePro = isEnterpriseUser(user.id) || isKennelPro(normalizePlan(profileRes.data?.plan))
 
   return (
-    <KennelConfigView
-      kennel={kennel}
-      stats={{
-        dogs: dogsCountRes.count || 0,
-        visible: visibleCountRes.count || 0,
-        reproductive: reproductiveCountRes.count || 0,
-        litters: littersCountRes.count || 0,
-      }}
-      hasCustomWeb={hasCustomWeb}
-      isPro={isPro}
-      userId={user.id}
-    />
+    <div className="space-y-6">
+      <KennelConfigView
+        kennel={kennel}
+        stats={{
+          dogs: dogsCountRes.count || 0,
+          visible: visibleCountRes.count || 0,
+          reproductive: reproductiveCountRes.count || 0,
+          litters: littersCountRes.count || 0,
+        }}
+        hasCustomWeb={hasCustomWeb}
+        isPro={isPro}
+        userId={user.id}
+      />
+      <SectionsToggles
+        kennelId={kennel.id}
+        enabledSections={kennel.enabled_sections || null}
+        canUsePro={canUsePro}
+      />
+    </div>
   )
 }
