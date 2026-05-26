@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import "./globals.css";
 import CookieBanner from "@/components/ui/cookie-banner";
 import { PlatformProvider } from "@/components/platform/platform-provider";
-import { isIosFromCookieStore } from "@/lib/platform";
+import { isIosFromCookieStore, isIosUserAgent } from "@/lib/platform";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -72,7 +72,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isIos = isIosFromCookieStore(await cookies());
+  const [cookieStore, headerStore] = await Promise.all([cookies(), headers()]);
+  const isIos =
+    isIosUserAgent(headerStore.get("user-agent")) ||
+    isIosFromCookieStore(cookieStore);
   return (
     <html
       lang="es"

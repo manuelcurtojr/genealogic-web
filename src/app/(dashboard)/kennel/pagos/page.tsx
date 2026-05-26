@@ -14,8 +14,8 @@
  */
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
-import { isIosFromCookieStore } from '@/lib/platform'
+import { cookies, headers } from 'next/headers'
+import { isIosFromCookieStore, isIosUserAgent } from '@/lib/platform'
 import Link from 'next/link'
 import { isStripeConfigured } from '@/lib/stripe/server'
 import { startStripeOnboardingAction, syncStripeStatusAction } from './actions'
@@ -32,7 +32,8 @@ export default async function KennelPagosPage({
   searchParams: Promise<{ refresh?: string }>
 }) {
   // App Store 3.1.1 — Stripe Connect onboarding/cobros nunca desde el WebView iOS.
-  if (isIosFromCookieStore(await cookies())) redirect('/dashboard')
+  const [c, h] = await Promise.all([cookies(), headers()])
+  if (isIosUserAgent(h.get('user-agent')) || isIosFromCookieStore(c)) redirect('/dashboard')
   const sp = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

@@ -18,6 +18,13 @@ export const APP_PLATFORM_COOKIE = 'app_platform'
 export const PLATFORM_QUERY_PARAM = 'platform'
 
 /**
+ * Fragmento del User-Agent que el wrapper Capacitor iOS añade vía
+ * `appendUserAgent` en `capacitor.config.ts`. Es la señal primaria y más
+ * fiable de que estamos sirviendo dentro del WebView de la app.
+ */
+export const IOS_APP_UA_MARKER = 'GenealogicIOSApp'
+
+/**
  * Prefijos de ruta que deben redirigir a `/dashboard` cuando la sesión viene
  * del WebView iOS. Cubre pricing, billing, kennel-as-business management,
  * CRM, comms (newsletter/emailbot), pagos de reservas y contratos.
@@ -54,8 +61,18 @@ export function isIosPlatformValue(value: string | undefined | null): boolean {
   return value === 'ios'
 }
 
+export function isIosUserAgent(userAgent: string | null | undefined): boolean {
+  return !!userAgent && userAgent.includes(IOS_APP_UA_MARKER)
+}
+
 export function getPlatformFromRequest(request: NextRequest): 'ios' | 'web' {
-  return isIosPlatformValue(request.cookies.get(APP_PLATFORM_COOKIE)?.value) ? 'ios' : 'web'
+  // 1. User-Agent: fuente primaria, inmutable durante la sesión, no requiere
+  //    redirect ni cookie pre-sembrada.
+  if (isIosUserAgent(request.headers.get('user-agent'))) return 'ios'
+  // 2. Cookie: fallback / compatibilidad con sesiones previas que se
+  //    establecieron vía el antiguo `?platform=ios`.
+  if (isIosPlatformValue(request.cookies.get(APP_PLATFORM_COOKIE)?.value)) return 'ios'
+  return 'web'
 }
 
 export function isIosFromCookieStore(cookies: ReadonlyRequestCookies): boolean {

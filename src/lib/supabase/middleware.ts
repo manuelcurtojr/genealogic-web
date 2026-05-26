@@ -1,8 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import {
-  APP_PLATFORM_COOKIE,
-  PLATFORM_QUERY_PARAM,
   getPlatformFromRequest,
   isIosAllowedException,
   matchesIosHiddenPath,
@@ -13,24 +11,9 @@ export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   // ─── Platform detection (Capacitor iOS WebView) ────────────────────────
-  // Si Capacitor inyecta `?platform=ios` en la URL, persistimos la señal en
-  // cookie y limpiamos el query string para que las URLs compartidas no
-  // arrastren el flag. Bypaseamos rutas de auth/_next/api para no romper el
-  // OAuth callback ni servir assets con redirect.
-  const platformParam = request.nextUrl.searchParams.get(PLATFORM_QUERY_PARAM)
-  const pathnameForBypass = request.nextUrl.pathname
-  if (platformParam === 'ios' && !shouldBypassPlatformLogic(pathnameForBypass)) {
-    const cleanUrl = request.nextUrl.clone()
-    cleanUrl.searchParams.delete(PLATFORM_QUERY_PARAM)
-    const redirect = NextResponse.redirect(cleanUrl)
-    redirect.cookies.set(APP_PLATFORM_COOKIE, 'ios', {
-      path: '/',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 365,
-      secure: process.env.NODE_ENV === 'production',
-    })
-    return redirect
-  }
+  // Identificamos al wrapper iOS por el User-Agent suffix `GenealogicIOSApp`
+  // que Capacitor añade en cada request. Sin redirects ni query params en
+  // el path crítico — eso provocaba que WKWebView abriera externamente.
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
