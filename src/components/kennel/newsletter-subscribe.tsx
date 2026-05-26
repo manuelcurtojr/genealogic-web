@@ -7,9 +7,13 @@ import { subscribePublicNewsletterAction } from '@/lib/kennel/content-actions'
 interface Props {
   kennelId: string
   kennelName: string
+  /** Si true, renderiza SOLO el form + estado (sin card grande con título/glow).
+   *  Pensado para usar dentro del footer fusionado donde el título y el body
+   *  los pone el wrapper. */
+  inline?: boolean
 }
 
-export default function NewsletterSubscribe({ kennelId, kennelName }: Props) {
+export default function NewsletterSubscribe({ kennelId, kennelName, inline = false }: Props) {
   const [email, setEmail] = useState('')
   const [pending, startTransition] = useTransition()
   const [done, setDone] = useState(false)
@@ -33,6 +37,60 @@ export default function NewsletterSubscribe({ kennelId, kennelName }: Props) {
         setError(human)
       }
     })
+  }
+
+  // Renderiza solo el formulario + estado cuando es inline.
+  const formBlock = (
+    <>
+      {done ? (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 flex items-start gap-3">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100">
+            <Check className="h-4 w-4 text-emerald-700" strokeWidth={2.5} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13.5px] font-semibold text-emerald-900">
+              {duplicate ? '¡Ya estabas suscrito!' : '¡Apuntado!'}
+            </p>
+            <p className="text-[12px] text-emerald-900/80 leading-snug">
+              {duplicate
+                ? 'Recibirás todas las novedades de este criadero.'
+                : 'Te avisamos cuando haya novedades.'}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={submit} className="flex gap-2">
+          <div className="relative flex-1">
+            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              placeholder="tu@email.com"
+              className="w-full rounded-xl border border-hairline bg-canvas py-2.5 pl-10 pr-3 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={pending || !email}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2.5 text-[13px] font-bold text-on-primary hover:opacity-90 disabled:opacity-40 transition flex-shrink-0"
+          >
+            {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Suscribirme'}
+          </button>
+        </form>
+      )}
+      {error && (
+        <div className="mt-2 flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-[12px] text-red-700">
+          <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+          {error}
+        </div>
+      )}
+    </>
+  )
+
+  if (inline) {
+    return <div className="w-full max-w-[440px]">{formBlock}</div>
   }
 
   return (

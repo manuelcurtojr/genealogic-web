@@ -166,8 +166,23 @@ export default function KennelProHome({
         />
       )}
 
-      {/* ════ HERO ════ */}
-      <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-orange-50/70 via-canvas to-blue-50/70">
+      {/* ════ HERO ════
+           Full-bleed: extiende a 100vw para que el fondo llegue a los
+           extremos de la pantalla (sin borders ni rounded). El contenido
+           se mantiene dentro de max-w-7xl centrado, alineado con el
+           resto de secciones del home.
+           El truco margin-left: calc(50% - 50vw) rompe el max-w del
+           dashboard padre. El padre tiene overflow controlado, así que
+           no causa scrollbar horizontal. */}
+      <section
+        className="relative overflow-hidden bg-gradient-to-br from-orange-50/70 via-canvas to-blue-50/70"
+        style={{
+          marginLeft: 'calc(50% - 50vw)',
+          marginRight: 'calc(50% - 50vw)',
+          width: '100vw',
+          maxWidth: '100vw',
+        }}
+      >
         {/* Glow marca */}
         <div
           aria-hidden="true"
@@ -187,7 +202,9 @@ export default function KennelProHome({
           }}
         />
 
-        <div className="relative grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-8 lg:gap-12 p-6 sm:p-10 lg:p-14">
+        {/* Contenedor interno con el ancho del dashboard para que el
+            contenido quede alineado al resto del home */}
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-8 lg:gap-12 py-10 sm:py-14 lg:py-20">
 
           <div className="flex flex-col gap-6">
             <div className="flex items-start gap-4">
@@ -533,21 +550,17 @@ export default function KennelProHome({
         </section>
       )}
 
-      {/* ════ NEWSLETTER SUBSCRIBE ════
-           Sustituye al CTA "¿Te interesa una camada o un perro?" que antes
-           cerraba la home. Mismo diseño tipo card grande + gradient los dos
-           hace que se peleen visualmente — la newsletter ya es un cierre
-           efectivo, y el botón "Pedir información" del hero queda como CTA
-           primario sin redundancia. */}
-      <NewsletterSubscribe kennelId={kennel.id} kennelName={kennel.name} />
-
-      {/* ════ FOOTER DEL KENNEL ════
-           Cierre limpio con datos del criadero, redes sociales como
-           botones grandes y un link sutil "creado con Genealogic".
-           Cumple la función de footer típico de web pero con tono propio. */}
-      <KennelFooter
+      {/* ════ FOOTER + NEWSLETTER (fusionados) ════
+           Una sola sección full-bleed que cierra la home. Grid 2 columnas
+           en desktop: izquierda info del criadero (logo + ubicación +
+           redes + powered), derecha form de newsletter. En mobile stacked.
+           Sin border ni rounded — extiende hasta los extremos como una
+           tira de cierre de página web real. */}
+      <KennelFooterMerged
+        kennelId={kennel.id}
         kennelName={kennel.name}
         kennelSlug={kennel.slug || kennel.id}
+        kennelLogoUrl={kennel.logo_url}
         location={location}
         socials={{
           website: kennel.website,
@@ -560,75 +573,139 @@ export default function KennelProHome({
   )
 }
 
-function KennelFooter({
-  kennelName, kennelSlug, location, socials,
+/**
+ * KennelFooterMerged — footer + newsletter fusionados en una sola sección
+ * full-bleed que cierra la home. Grid 2 columnas en desktop:
+ *   IZQ: identidad (logo + nombre + ubicación + redes + powered)
+ *   DCHA: form de newsletter con CTA principal
+ *
+ * Mobile: stacked (identidad arriba, newsletter abajo).
+ *
+ * Extiende a 100vw (sin border, sin rounded) para que parezca el footer
+ * de una web de verdad — no una card más del scroll.
+ */
+function KennelFooterMerged({
+  kennelId, kennelName, kennelSlug, kennelLogoUrl, location, socials,
 }: {
+  kennelId: string
   kennelName: string
   kennelSlug: string
+  kennelLogoUrl: string | null
   location: string
   socials: { website: string | null; instagram: string | null; facebook: string | null }
 }) {
   const hasAnySocial = !!(socials.website || socials.instagram || socials.facebook)
   return (
-    <footer className="rounded-3xl border border-hairline bg-surface-soft p-6 sm:p-10">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
-        <div>
-          <p className="text-[20px] sm:text-[22px] font-semibold tracking-[-0.025em] text-ink">
-            {kennelName}
-          </p>
-          {location && (
-            <p className="mt-1 text-[13px] text-muted">{location}</p>
-          )}
-          <p className="mt-3 text-[12px] text-muted">
-            © {new Date().getFullYear()} {kennelName}. Todos los derechos reservados.
-          </p>
-        </div>
-        <div className="flex flex-col sm:items-end gap-3">
-          {hasAnySocial && (
-            <div className="flex flex-wrap gap-1.5">
-              {socials.website && (
-                <a
-                  href={socials.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
-                >
-                  <Globe className="h-3.5 w-3.5" /> Web
-                </a>
+    <footer
+      className="relative bg-gradient-to-br from-blue-50/40 via-canvas to-orange-50/40 border-t border-hairline"
+      style={{
+        marginLeft: 'calc(50% - 50vw)',
+        marginRight: 'calc(50% - 50vw)',
+        width: '100vw',
+        maxWidth: '100vw',
+      }}
+    >
+      {/* Glow sutil */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 h-[260px] w-[260px] rounded-full blur-3xl opacity-50"
+        style={{ background: 'radial-gradient(circle at 50% 50%, rgba(59,130,246,0.2) 0%, transparent 70%)' }}
+      />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 py-10 sm:py-16 lg:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-10 lg:gap-16 items-start">
+
+          {/* ── IZQ — identidad del kennel ─────────────────────────── */}
+          <div>
+            <div className="flex items-center gap-3">
+              {kennelLogoUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={kennelLogoUrl}
+                  alt={kennelName}
+                  className="h-12 w-12 rounded-2xl object-cover border border-hairline"
+                />
+              ) : (
+                <div className="h-12 w-12 rounded-2xl bg-surface-card flex items-center justify-center text-xl font-bold text-ink">
+                  {kennelName[0]?.toUpperCase()}
+                </div>
               )}
-              {socials.instagram && (
-                <a
-                  href={socials.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" /> Instagram
-                </a>
-              )}
-              {socials.facebook && (
-                <a
-                  href={socials.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" /> Facebook
-                </a>
-              )}
+              <div>
+                <p className="text-[20px] sm:text-[22px] font-semibold tracking-[-0.025em] text-ink">
+                  {kennelName}
+                </p>
+                {location && (
+                  <p className="text-[12.5px] text-muted">{location}</p>
+                )}
+              </div>
             </div>
-          )}
-          <p className="text-[11px] text-muted inline-flex items-center gap-1">
-            Web creada con{' '}
-            <Link
-              href="/"
-              className="font-semibold text-body hover:text-[#FE6620] transition-colors uppercase tracking-[0.1em]"
-            >
-              Genealogic
-            </Link>
-          </p>
-          {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
-          <span className="hidden" data-slug={kennelSlug} />
+
+            {hasAnySocial && (
+              <div className="mt-5 flex flex-wrap gap-1.5">
+                {socials.website && (
+                  <a
+                    href={socials.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
+                  >
+                    <Globe className="h-3.5 w-3.5" /> Web
+                  </a>
+                )}
+                {socials.instagram && (
+                  <a
+                    href={socials.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> Instagram
+                  </a>
+                )}
+                {socials.facebook && (
+                  <a
+                    href={socials.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> Facebook
+                  </a>
+                )}
+              </div>
+            )}
+
+            <p className="mt-6 text-[11.5px] text-muted">
+              © {new Date().getFullYear()} {kennelName}. Todos los derechos reservados.
+            </p>
+            <p className="mt-1 text-[11px] text-muted inline-flex items-center gap-1">
+              Web creada con{' '}
+              <Link
+                href="/"
+                className="font-semibold text-body hover:text-[#FE6620] transition-colors uppercase tracking-[0.1em]"
+              >
+                Genealogic
+              </Link>
+            </p>
+            {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
+            <span className="hidden" data-slug={kennelSlug} />
+          </div>
+
+          {/* ── DCHA — newsletter inline (sin la card propia de
+                NewsletterSubscribe que duplicaría el bloque) ──────── */}
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#3b82f6]">Newsletter</p>
+            <h3 className="mt-1 text-[20px] sm:text-[24px] font-semibold tracking-[-0.025em] text-ink leading-[1.2]">
+              Mantente al día con {kennelName}
+            </h3>
+            <p className="mt-2 text-[13.5px] text-body leading-snug max-w-prose">
+              Próximas camadas, novedades, eventos. Cero spam. Te das de baja
+              con un click.
+            </p>
+            <div className="mt-5">
+              <NewsletterSubscribe kennelId={kennelId} kennelName={kennelName} inline />
+            </div>
+          </div>
+
         </div>
       </div>
     </footer>
