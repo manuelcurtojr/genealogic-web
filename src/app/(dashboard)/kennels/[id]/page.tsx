@@ -272,6 +272,50 @@ export default async function KennelDetailPage({
         breed: breed || null,
       }
     })
+
+    // ─── Trayectoria (números reales para el bloque "El criadero en números") ──
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allDogsCount = (allDogs as any[]).length
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const deliveredLittersCount = (allLitters as any[])
+      .filter(l => l.status === 'delivered' || l.status === 'born').length
+    const yearsCriando = foundationYear ? Math.max(0, new Date().getFullYear() - foundationYear) : 0
+    // Count de awards públicos de perros del criadero (separa query — barata)
+    const awardsCountRes = await supabase
+      .from('awards')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_public', true)
+      .in('dog_id', (allDogs as Array<{ id: string }>).map(d => d.id))
+    const awardsCount = awardsCountRes.count || 0
+
+    const trayectoria: { value: number; label: string }[] = []
+    if (yearsCriando > 0) trayectoria.push({ value: yearsCriando, label: yearsCriando === 1 ? 'Año criando' : 'Años criando' })
+    if (deliveredLittersCount > 0) trayectoria.push({ value: deliveredLittersCount, label: deliveredLittersCount === 1 ? 'Camada entregada' : 'Camadas entregadas' })
+    if (allDogsCount > 0) trayectoria.push({ value: allDogsCount, label: allDogsCount === 1 ? 'Perro documentado' : 'Perros documentados' })
+    if (awardsCount > 0) trayectoria.push({ value: awardsCount, label: awardsCount === 1 ? 'Logro' : 'Logros' })
+
+    // ─── Disponibilidad (próxima camada + cachorros en venta) ────────
+    // Próxima camada: priorizamos status 'mated/confirmed/pending' (en
+    // gestación) > 'planned' (planificada) > 'born' (nacida reciente).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const lits = allLitters as any[]
+    const priority = { mated: 1, confirmed: 1, pending: 1, planned: 2, born: 3, delivered: 99 } as Record<string, number>
+    const upcomingLitter = lits
+      .filter(l => l.status !== 'delivered')
+      .sort((a, b) => (priority[a.status] ?? 50) - (priority[b.status] ?? 50))[0] || null
+
+    const availablePuppiesCount = forSale.length
+    const availability = {
+      nextLitter: upcomingLitter ? {
+        id: upcomingLitter.id as string,
+        father: Array.isArray(upcomingLitter.father) ? upcomingLitter.father[0] : upcomingLitter.father,
+        mother: Array.isArray(upcomingLitter.mother) ? upcomingLitter.mother[0] : upcomingLitter.mother,
+        breedName: (Array.isArray(upcomingLitter.breed) ? upcomingLitter.breed[0]?.name : upcomingLitter.breed?.name) || null,
+        expectedDate: upcomingLitter.birth_date || upcomingLitter.mating_date || null,
+        status: upcomingLitter.status as string,
+      } : null,
+      availablePuppiesCount,
+    }
     return (
       <div className="space-y-0">
         {seo}
@@ -299,6 +343,8 @@ export default async function KennelDetailPage({
           recentPosts={recentPosts}
           breedNames={breedNames}
           stats={stats}
+          trayectoria={trayectoria}
+          availability={availability}
         />
       </div>
     )
