@@ -33,13 +33,15 @@ interface SidebarProps {
   planIsFounder?: boolean
   /** Si el user tiene reservas vinculadas o perros transferidos como cliente. */
   isClient?: boolean
+  /** True cuando la web se carga dentro del WebView iOS (App Store 3.1.1). */
+  isIos?: boolean
   mobileOpen: boolean
   onClose: () => void
   collapsed: boolean
   onToggleCollapse: () => void
 }
 
-export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = false, mobileOpen, onClose, collapsed, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = false, isIos = false, mobileOpen, onClose, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const userRole = user?.role || 'owner'
@@ -62,6 +64,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
       if (section.requiresKennel && !isBreeder) return false
       if (section.requiresPro && !userHasPro) return false
       if (section.requiresClient && !isClient) return false
+      if (section.hideOnIos && isIos) return false
       return true
     })
     .map(section => ({
@@ -72,6 +75,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
         if (item.requiresPro && !userHasPro) return false
         if (item.requiresClient && !isClient) return false
         if (item.hideIfPro && userHasPro) return false
+        if (item.hideOnIos && isIos) return false
         return true
       }),
     }))

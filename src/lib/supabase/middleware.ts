@@ -1,8 +1,36 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import {
+  APP_PLATFORM_COOKIE,
+  PLATFORM_QUERY_PARAM,
+  getPlatformFromRequest,
+  isIosAllowedException,
+  matchesIosHiddenPath,
+  shouldBypassPlatformLogic,
+} from '@/lib/platform'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
+
+  // ─── Platform detection (Capacitor iOS WebView) ────────────────────────
+  // Si Capacitor inyecta `?platform=ios` en la URL, persistimos la señal en
+  // cookie y limpiamos el query string para que las URLs compartidas no
+  // arrastren el flag. Bypaseamos rutas de auth/_next/api para no romper el
+  // OAuth callback ni servir assets con redirect.
+  const platformParam = request.nextUrl.searchParams.get(PLATFORM_QUERY_PARAM)
+  const pathnameForBypass = request.nextUrl.pathname
+  if (platformParam === 'ios' && !shouldBypassPlatformLogic(pathnameForBypass)) {
+    const cleanUrl = request.nextUrl.clone()
+    cleanUrl.searchParams.delete(PLATFORM_QUERY_PARAM)
+    const redirect = NextResponse.redirect(cleanUrl)
+    redirect.cookies.set(APP_PLATFORM_COOKIE, 'ios', {
+      path: '/',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 365,
+      secure: process.env.NODE_ENV === 'production',
+    })
+    return redirect
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,6 +55,23 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
+
+  // ─── iOS WebView path gating ───────────────────────────────────────────
+  // Antes del Pro-gating: si la sesión es iOS, los paths B2B se redirigen
+  // directamente a /dashboard. Evita ciclos (no redirige /dashboard ni rutas
+  // de auth) y respeta las excepciones explícitas declaradas en platform.ts.
+  const isIosSession = getPlatformFromRequest(request) === 'ios'
+  if (
+    isIosSession &&
+    !shouldBypassPlatformLogic(pathname) &&
+    matchesIosHiddenPath(pathname) &&
+    !isIosAllowedException(pathname)
+  ) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    url.search = ''
+    return NextResponse.redirect(url)
+  }
 
   // ─── Custom domain rewrite ─────────────────────────────────────────────
   // Si el host no es genealogic.io ni vercel.app ni localhost, buscar si es

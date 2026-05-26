@@ -31,6 +31,8 @@ export interface NavItem {
   hideIfPro?: boolean
   /** Solo visible si el user tiene reservas/perros como cliente */
   requiresClient?: boolean
+  /** Oculto cuando la web se sirve dentro del WebView iOS (App Store 3.1.1) */
+  hideOnIos?: boolean
 }
 
 export interface NavSection {
@@ -41,6 +43,8 @@ export interface NavSection {
   requiresAdmin?: boolean
   /** Solo visible si el user es cliente (tiene reservas/perros recibidos) */
   requiresClient?: boolean
+  /** Oculto cuando la web se sirve dentro del WebView iOS (App Store 3.1.1) */
+  hideOnIos?: boolean
   items: NavItem[]
 }
 
@@ -96,9 +100,10 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Pipeline',
     requiresPro: true,
     requiresKennel: true,
+    hideOnIos: true,
     items: [
-      { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare', requiresPro: true, requiresKennel: true },
-      { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresPro: true, requiresKennel: true },
+      { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare', requiresPro: true, requiresKennel: true, hideOnIos: true },
+      { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresPro: true, requiresKennel: true, hideOnIos: true },
     ],
   },
 
@@ -109,9 +114,10 @@ export const NAV_SECTIONS: NavSection[] = [
     id: 'comms',
     label: 'Comunicación',
     requiresPro: true,
+    hideOnIos: true,
     items: [
-      { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresPro: true },
-      { label: 'Newsletter', href: '/newsletter', icon: 'Send', requiresPro: true },
+      { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresPro: true, hideOnIos: true },
+      { label: 'Newsletter', href: '/newsletter', icon: 'Send', requiresPro: true, hideOnIos: true },
     ],
   },
 
@@ -126,8 +132,8 @@ export const NAV_SECTIONS: NavSection[] = [
     requiresKennel: true,
     items: [
       { label: 'Mi criadero', href: '/kennel', icon: 'Store', requiresKennel: true },
-      { label: 'Páginas web', href: '/web', icon: 'Globe', requiresPro: true, requiresKennel: true },
-      { label: 'Estadísticas', href: '/estadisticas', icon: 'BarChart3', requiresPro: true, requiresKennel: true },
+      { label: 'Páginas web', href: '/web', icon: 'Globe', requiresPro: true, requiresKennel: true, hideOnIos: true },
+      { label: 'Estadísticas', href: '/estadisticas', icon: 'BarChart3', requiresPro: true, requiresKennel: true, hideOnIos: true },
     ],
   },
 

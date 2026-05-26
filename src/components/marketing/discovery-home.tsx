@@ -77,96 +77,147 @@ export default function DiscoveryHome({
 
   return (
     <main className="bg-canvas">
-      {/* ═════ HERO CINEMATOGRÁFICO ═════ */}
+      {/* ═════ HERO CINEMATOGRÁFICO ═════
+           Layout 2 columnas en desktop: texto a la izquierda, card mockup a
+           la derecha con search + counters integrados. Mobile y tablet:
+           apilado en 1 columna (card debajo del texto). */}
       <section className="relative overflow-hidden border-b border-hairline">
         {/* Fondo: mosaico rotativo de perros (componente client con cross-fade) */}
         <HeroMosaic photos={heroThumbs} />
 
         {/* Contenido hero */}
-        <div className="relative z-10 mx-auto max-w-[1200px] px-5 sm:px-6 lg:px-12 py-14 sm:py-24 lg:py-32">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-hairline bg-canvas/80 backdrop-blur-md px-3 py-1.5 text-[10.5px] sm:text-[11.5px] font-semibold uppercase tracking-[0.08em] sm:tracking-[0.1em] text-ink shadow-sm">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FE6620] animate-pulse" />
-              <span className="line-clamp-1">El registro público de genealogías caninas</span>
-            </div>
+        <div className="relative z-10 mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-14 sm:py-20 lg:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-14 items-center">
 
-            <h1
-              className="mt-5 sm:mt-7 font-semibold text-ink"
-              style={{
-                fontSize: 'clamp(34px, 7vw, 80px)',
-                lineHeight: 1.05,
-                letterSpacing: '-0.045em',
-              }}
-            >
-              Cada perro con su pedigree.{' '}
-              <span style={{ color: '#FE6620' }} className="font-medium">Cada criador con su escaparate.</span>
-            </h1>
+            {/* ── Columna izquierda — texto ───────────────────────────── */}
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-hairline bg-canvas/80 backdrop-blur-md px-3 py-1.5 text-[10.5px] sm:text-[11.5px] font-semibold uppercase tracking-[0.08em] sm:tracking-[0.1em] text-ink shadow-sm">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FE6620] animate-pulse" />
+                <span className="line-clamp-1">El registro público de genealogías caninas</span>
+              </div>
 
-            <p
-              className="mt-5 sm:mt-7 max-w-[580px] text-body"
-              style={{ fontSize: 'clamp(15px, 1.6vw, 21px)', lineHeight: 1.5 }}
-            >
-              Genealogía verificable, papeles digitales y calendario veterinario.
-              Para criadores que se toman su trabajo en serio y propietarios que
-              merecen tenerlo todo documentado.
-            </p>
-
-            {/* Search box prominente — padding reducido en mobile */}
-            <form
-              action="/search"
-              method="get"
-              className="mt-7 sm:mt-9 flex max-w-2xl items-center gap-2 rounded-2xl border-2 border-ink/10 bg-canvas px-3.5 sm:px-5 py-2.5 sm:py-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.1)] focus-within:border-ink/40 transition-all"
-            >
-              <Search className="w-4 h-4 sm:w-5 sm:h-5 text-muted flex-shrink-0" />
-              <input
-                name="q"
-                type="text"
-                placeholder="Busca un perro, criador o raza…"
-                className="flex-1 bg-transparent text-[14px] sm:text-[16px] text-ink placeholder:text-muted focus:outline-none min-w-0"
-              />
-              <button
-                type="submit"
-                aria-label="Buscar"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-3 sm:px-5 py-2 sm:py-2.5 text-[13px] sm:text-[14px] font-bold hover:opacity-90 transition shrink-0"
+              <h1
+                className="mt-5 sm:mt-7 font-semibold text-ink"
+                style={{
+                  // El clamp se ajusta al ancho ahora menor de la columna
+                  // izquierda; mantiene presencia sin saltar a 3+ líneas en lg.
+                  fontSize: 'clamp(34px, 5.4vw, 64px)',
+                  lineHeight: 1.05,
+                  letterSpacing: '-0.045em',
+                }}
               >
-                <span className="hidden sm:inline">Buscar</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
+                Cada perro con su pedigree.{' '}
+                <span style={{ color: '#FE6620' }} className="font-medium">Cada criador con su escaparate.</span>
+              </h1>
 
-            {/* CTAs duales secundarios */}
-            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-muted">
-              <span>Empieza:</span>
-              <Link href="/register?intent=breeder" className="font-semibold text-ink hover:opacity-80 inline-flex items-center gap-1">
-                <Store className="w-3.5 h-3.5" /> Como criador
-              </Link>
-              <span className="opacity-40 hidden sm:inline">·</span>
-              <Link href="/register?intent=owner" className="font-semibold text-ink hover:opacity-80 inline-flex items-center gap-1">
-                <Dog className="w-3.5 h-3.5" /> Como propietario
-              </Link>
-            </div>
-          </div>
+              <p
+                className="mt-5 sm:mt-7 max-w-[580px] text-body"
+                style={{ fontSize: 'clamp(15px, 1.4vw, 19px)', lineHeight: 1.5 }}
+              >
+                Genealogía verificable, papeles digitales y calendario veterinario.
+                Para criadores que se toman su trabajo en serio y propietarios que
+                merecen tenerlo todo documentado.
+              </p>
 
-          {/* Live counts en card flotante.
-              w-fit + max-w-full + overflow-x-auto: la caja se ajusta al
-              contenido en desktop y permite scroll horizontal en mobile
-              si los números son extremadamente largos (caso edge). */}
-          <div className="mt-10 sm:mt-16 lg:mt-20 rounded-2xl border border-hairline bg-canvas/95 backdrop-blur-md px-4 sm:px-8 lg:px-10 py-4 sm:py-7 lg:py-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] w-fit max-w-full">
-            <div className="flex items-center gap-2 mb-3 sm:mb-5">
-              <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <p className="text-[9.5px] sm:text-[11px] font-bold uppercase tracking-wider text-muted">El catálogo crece en tiempo real</p>
+              {/* CTAs primarios — ahora son los protagonistas del lado
+                  izquierdo (la búsqueda y stats viven en la card derecha). */}
+              <div className="mt-7 flex flex-wrap gap-2.5">
+                <Link
+                  href="/register?intent=breeder"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[14px] font-bold hover:opacity-90 transition"
+                >
+                  <Store className="w-4 h-4" />
+                  Empezar como criador
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/register?intent=owner"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas/80 backdrop-blur-md text-ink px-5 py-3 text-[14px] font-bold hover:border-ink/30 transition"
+                >
+                  <Dog className="w-4 h-4" />
+                  Empezar como propietario
+                </Link>
+              </div>
             </div>
-            <div className="flex items-end gap-4 sm:gap-12 lg:gap-16">
-              <div className="min-w-[44px] sm:min-w-[90px]">
-                <LiveCounter initial={counts.kennels} kind="kennels" label="Criaderos" />
-              </div>
-              <div className="min-w-[36px] sm:min-w-[70px]">
-                <LiveCounter initial={counts.breeds} kind="breeds" label="Razas" />
-              </div>
-              <div className="min-w-[60px] sm:min-w-[160px] lg:min-w-[180px]">
-                <LiveCounter initial={counts.dogs} kind="dogs" label="Perros" />
+
+            {/* ── Columna derecha — Card mockup con search + counters ──
+                Estilo coherente con la sección "Dos caminos": gradient bg,
+                rounded-3xl, border + sombra suave. Sirve como "ventana
+                al producto" desde el primer scroll. */}
+            <div className="relative">
+              <div className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-orange-50 via-canvas to-blue-50 p-5 sm:p-7 lg:p-8 shadow-[0_12px_48px_rgba(0,0,0,0.08)]">
+
+                {/* Header de la card */}
+                <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
+                  <div className="inline-flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-[#FE6620]" />
+                    <p className="text-[11px] sm:text-[11.5px] font-bold uppercase tracking-[0.08em] text-ink">
+                      Explora el catálogo
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    En vivo
+                  </span>
+                </div>
+
+                {/* Search box — protagonista de la card */}
+                <form
+                  action="/search"
+                  method="get"
+                  className="flex items-center gap-2 rounded-2xl border-2 border-ink/10 bg-canvas px-3.5 sm:px-4 py-2.5 sm:py-3 shadow-[0_4px_16px_rgba(0,0,0,0.04)] focus-within:border-ink/40 hover:shadow-[0_6px_20px_rgba(0,0,0,0.06)] transition-all"
+                >
+                  <Search className="w-4 h-4 sm:w-5 sm:h-5 text-muted flex-shrink-0" />
+                  <input
+                    name="q"
+                    type="text"
+                    placeholder="Busca un perro, criador o raza…"
+                    className="flex-1 bg-transparent text-[14px] sm:text-[15px] text-ink placeholder:text-muted focus:outline-none min-w-0"
+                  />
+                  <button
+                    type="submit"
+                    aria-label="Buscar"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-3 sm:px-4 py-2 text-[13px] font-bold hover:opacity-90 transition shrink-0"
+                  >
+                    <span className="hidden sm:inline">Buscar</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </form>
+
+                {/* Hint atajos de búsqueda */}
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {['Galgo Italiano', 'Bulldog Francés', 'Pastor Alemán'].map((q) => (
+                    <Link
+                      key={q}
+                      href={`/search?q=${encodeURIComponent(q)}`}
+                      className="inline-flex items-center rounded-full border border-hairline bg-canvas/70 backdrop-blur-sm px-2.5 py-1 text-[11px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
+                    >
+                      {q}
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Separador */}
+                <div className="my-5 sm:my-6 border-t border-hairline" />
+
+                {/* Counters live — versión compacta integrada en la card */}
+                <p className="text-[10px] sm:text-[10.5px] font-bold uppercase tracking-[0.1em] text-muted mb-3 sm:mb-4">
+                  El catálogo crece en tiempo real
+                </p>
+                <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                  <CompactCounter>
+                    <LiveCounter initial={counts.kennels} kind="kennels" label="Criaderos" />
+                  </CompactCounter>
+                  <CompactCounter>
+                    <LiveCounter initial={counts.breeds} kind="breeds" label="Razas" />
+                  </CompactCounter>
+                  <CompactCounter>
+                    <LiveCounter initial={counts.dogs} kind="dogs" label="Perros" />
+                  </CompactCounter>
+                </div>
               </div>
             </div>
+
           </div>
         </div>
       </section>
@@ -481,6 +532,21 @@ function MiniFeature({ icon: Icon, children }: { icon: React.ElementType; childr
       <Icon className="w-3.5 h-3.5 text-muted flex-shrink-0" />
       <span>{children}</span>
     </li>
+  )
+}
+
+/**
+ * Wrapper compacto para los LiveCounter dentro de la card del hero.
+ * Centra el contenido en cada celda del grid y limita ancho a ~min para
+ * que los 3 counters se alineen perfecto en 3 cols en cualquier viewport.
+ * El propio LiveCounter ya escala el número via clamp() — aquí solo lo
+ * ponemos en una celda de tamaño consistente.
+ */
+function CompactCounter({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-w-0 flex flex-col items-start">
+      {children}
+    </div>
   )
 }
 

@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
 import CookieBanner from "@/components/ui/cookie-banner";
+import { PlatformProvider } from "@/components/platform/platform-provider";
+import { isIosFromCookieStore } from "@/lib/platform";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -64,19 +67,22 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isIos = isIosFromCookieStore(await cookies());
   return (
     <html
       lang="es"
       className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="font-sans min-h-full flex flex-col bg-white text-ink">
-        {children}
-        <CookieBanner />
+        <PlatformProvider isIos={isIos}>
+          {children}
+          {!isIos && <CookieBanner />}
+        </PlatformProvider>
       </body>
     </html>
   );
