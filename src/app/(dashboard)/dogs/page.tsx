@@ -15,6 +15,12 @@ export default async function DogsPage() {
   const myKennelId = kennelArr?.[0]?.id || null
   const isBreeder = !!myKennelId
 
+  // Traer perros donde el usuario es owner OR breeder OR el kennel del perro es el suyo.
+  // Esto cubre: 'Todos' (owner), 'Criados por mí' (breeder o kennel_id),
+  // y perros históricos sin owner pero con breeder/kennel.
+  const orFilters = [`owner_id.eq.${user!.id}`, `breeder_id.eq.${user!.id}`]
+  if (myKennelId) orFilters.push(`kennel_id.eq.${myKennelId}`)
+
   const [dogsRes, breedsRes] = await Promise.all([
     supabase
       .from('dogs')
@@ -25,7 +31,7 @@ export default async function DogsPage() {
         color:colors(name),
         kennel:kennels(id, name, logo_url)
       `)
-      .eq('owner_id', user!.id)
+      .or(orFilters.join(','))
       .order('created_at', { ascending: false }),
     supabase.from('breeds').select('id, name').order('name'),
   ])
