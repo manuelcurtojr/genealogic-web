@@ -19,7 +19,7 @@ export default async function FacturacionPage() {
   // Datos de billing tradicionales
   const { data: profile } = await supabase
     .from('profiles')
-    .select('stripe_customer_id, stripe_subscription_id, stripe_subscription_status, billing_email, billing_name, billing_tax_id, billing_country, billing_address, billing_city, billing_postal_code, plan, plan_is_founder')
+    .select('stripe_customer_id, stripe_subscription_id, stripe_subscription_status, billing_email, billing_name, billing_tax_id, billing_country, billing_address, billing_city, billing_postal_code, plan, plan_is_founder, trial_started_at, trial_ends_at')
     .eq('id', user.id)
     .single()
 

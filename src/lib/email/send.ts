@@ -37,6 +37,7 @@ import PaymentReceivedEmail, { type PaymentReceivedProps } from '@/emails/paymen
 import WeeklyDigestBreederEmail, { type WeeklyDigestBreederProps } from '@/emails/weekly-digest-breeder'
 import WeeklyDigestOwnerEmail, { type WeeklyDigestOwnerProps } from '@/emails/weekly-digest-owner'
 import ReEngagementEmail, { type ReEngagementProps } from '@/emails/re-engagement'
+import TrialEndingSoonEmail, { type TrialEndingSoonProps } from '@/emails/trial-ending-soon'
 
 const FROM_TRANSACTIONAL = 'Genealogic <hola@genealogic.io>'
 const REPLY_TO = 'hola@genealogic.io'
@@ -60,6 +61,7 @@ export type EmailTemplate =
   | { template: 'weekly_digest_breeder';  props: WeeklyDigestBreederProps }
   | { template: 'weekly_digest_owner';    props: WeeklyDigestOwnerProps }
   | { template: 're_engagement';          props: ReEngagementProps }
+  | { template: 'trial_ending_soon';      props: TrialEndingSoonProps }
 
 /** Categoría → si el user puede hacer opt-out. */
 type Category = 'auth' | 'reservations' | 'messages' | 'vet_reminders' | 'weekly_digest' | 'marketing' | 'critical'
@@ -98,8 +100,22 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
   },
   subscription_activated: {
     category: 'critical',
-    subject: (p: SubscriptionActivatedProps) =>
-      `✓ Genealogic ${p.plan === 'pro' ? 'Pro' : 'Premium'} activado`,
+    subject: (p: SubscriptionActivatedProps) => {
+      const isPro = p.plan === 'kennel_pro' || p.plan === 'premium'
+      const label = isPro ? 'Kennel Pro' : 'Kennel'
+      // Si el email se manda durante el trial, lo decimos en el subject.
+      return p.trialEndsAt
+        ? `✓ Prueba de Genealogic ${label} activada`
+        : `✓ Genealogic ${label} activado`
+    },
+  },
+  trial_ending_soon: {
+    category: 'critical',
+    subject: (p: TrialEndingSoonProps) => {
+      const isPro = p.plan === 'kennel_pro' || p.plan === 'premium'
+      const label = isPro ? 'Kennel Pro' : 'Kennel'
+      return `Tu prueba de Genealogic ${label} termina pronto`
+    },
   },
   subscription_cancelled: {
     category: 'critical',
@@ -181,6 +197,7 @@ function renderTemplate(t: EmailTemplate): Promise<string> {
     case 'weekly_digest_breeder':  return render(WeeklyDigestBreederEmail(t.props))
     case 'weekly_digest_owner':    return render(WeeklyDigestOwnerEmail(t.props))
     case 're_engagement':          return render(ReEngagementEmail(t.props))
+    case 'trial_ending_soon':      return render(TrialEndingSoonEmail(t.props))
   }
 }
 

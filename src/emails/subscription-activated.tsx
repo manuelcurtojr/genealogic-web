@@ -8,39 +8,78 @@ export type SubscriptionActivatedProps = {
   recipientName: string | null
   /** Acepta los nuevos nombres canónicos + los legacy pro/premium */
   plan: 'kennel' | 'kennel_pro' | 'pro' | 'premium'
+  /** Si está en trial, ISO date de cuándo termina. null = ya activo / sin trial. */
+  trialEndsAt?: string | null
+}
+
+function formatTrialDate(iso: string | null | undefined): string | null {
+  if (!iso) return null
+  try {
+    return new Date(iso).toLocaleDateString('es-ES', {
+      day: 'numeric', month: 'long', year: 'numeric',
+    })
+  } catch {
+    return null
+  }
 }
 
 export default function SubscriptionActivatedEmail({
-  recipientName, plan,
+  recipientName, plan, trialEndsAt = null,
 }: SubscriptionActivatedProps) {
   const name = recipientName?.split(' ')[0] || null
   const isKennelPro = plan === 'kennel_pro' || plan === 'premium'
   const planLabel = isKennelPro ? 'Kennel Pro' : 'Kennel'
+  const trialEnd = formatTrialDate(trialEndsAt)
+  const isTrial = !!trialEnd
+
+  const preview = isTrial
+    ? `Tu prueba de 15 días de Genealogic ${planLabel} está activa. Termina el ${trialEnd}.`
+    : `Genealogic ${planLabel} activado. Bienvenido al siguiente nivel.`
 
   return (
-    <EmailLayout preview={`Genealogic ${planLabel} activado. Bienvenido al siguiente nivel.`}>
-      <Eyebrow color={COLORS.success}>✓ Plan activado</Eyebrow>
+    <EmailLayout preview={preview}>
+      <Eyebrow color={COLORS.success}>{isTrial ? '✓ Prueba activa' : '✓ Plan activado'}</Eyebrow>
       <H1>
         {name ? `${name}, ` : ''}
-        Genealogic {planLabel} ya está activo.
+        {isTrial
+          ? <>tu prueba de Genealogic {planLabel} ya está activa.</>
+          : <>Genealogic {planLabel} ya está activo.</>}
       </H1>
       <P>
-        Gracias por confiar en nosotros. Tu suscripción <strong style={{ color: COLORS.ink }}>{planLabel}</strong> está activa
-        y todas las herramientas profesionales ya las tienes desbloqueadas.
+        {isTrial ? (
+          <>
+            Tienes <strong style={{ color: COLORS.ink }}>15 días para probar todas las herramientas</strong> de
+            Genealogic {planLabel} sin coste. El primer cargo se hará el <strong style={{ color: COLORS.ink }}>{trialEnd}</strong>;
+            puedes cancelar antes desde tu cuenta sin pagar nada.
+          </>
+        ) : (
+          <>
+            Gracias por confiar en nosotros. Tu suscripción <strong style={{ color: COLORS.ink }}>{planLabel}</strong> está activa
+            y todas las herramientas profesionales ya las tienes desbloqueadas.
+          </>
+        )}
       </P>
 
       <InfoCard>
         <table cellPadding={0} cellSpacing={0} style={{ borderCollapse: 'collapse', width: '100%' }}>
           <tr>
-            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted, width: '110px' }}>Plan</td>
+            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted, width: '140px' }}>Plan</td>
             <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.ink, fontWeight: 600 }}>
               Genealogic {planLabel}
             </td>
           </tr>
           <tr>
-            <td style={{ fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>Estado</td>
-            <td style={{ fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.body }}>Activo · facturación mensual</td>
+            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>Estado</td>
+            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.body }}>
+              {isTrial ? 'En prueba · sin coste hasta el primer cargo' : 'Activo · facturación mensual'}
+            </td>
           </tr>
+          {isTrial && (
+            <tr>
+              <td style={{ fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>Primer cargo</td>
+              <td style={{ fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.body }}>El {trialEnd}</td>
+            </tr>
+          )}
         </table>
       </InfoCard>
 

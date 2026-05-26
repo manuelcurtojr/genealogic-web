@@ -87,7 +87,28 @@ export async function createCheckoutSession(args: {
   successUrl: string
   cancelUrl: string
   metadata?: Record<string, string>
+  /**
+   * Días de trial gratis antes del primer cargo. Stripe requiere tarjeta al
+   * iniciar checkout (`payment_method_collection=always`), pero no cobra
+   * nada hasta que el trial termina. Si la primera tarjeta falla:
+   * past_due → unpaid → canceled (vía Smart Retries de Stripe) y el webhook
+   * baja el plan a 'free'.
+   *
+   * Si no se pasa, no hay trial (cobro inmediato).
+   */
+  trialDays?: number
 }): Promise<{ url: string; id: string }> {
+  const subscriptionData: Record<string, unknown> = {}
+  if (args.trialDays && args.trialDays > 0) {
+    subscriptionData.trial_period_days = args.trialDays
+    // Si por algún motivo Stripe no consigue un método de pago al final del
+    // trial (no debería pasar con payment_method_collection=always pero por
+    // si acaso), que cancele la sub en vez de dejarla en limbo.
+    subscriptionData.trial_settings = {
+      end_behavior: { missing_payment_method: 'cancel' },
+    }
+  }
+
   const body = formEncode({
     mode: 'subscription',
     customer: args.customerId,
@@ -96,6 +117,10 @@ export async function createCheckoutSession(args: {
     line_items: [{ price: args.priceId, quantity: 1 }],
     allow_promotion_codes: true,
     billing_address_collection: 'auto',
+    // Card upfront: el usuario DEBE introducir tarjeta para empezar el trial.
+    // Evita signups anónimos que nunca convierten.
+    payment_method_collection: 'always',
+    ...(Object.keys(subscriptionData).length > 0 ? { subscription_data: subscriptionData } : {}),
     ...(args.metadata ? { metadata: args.metadata } : {}),
   })
   const s = await stripeFetch('/checkout/sessions', { method: 'POST', body })

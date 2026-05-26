@@ -17,7 +17,7 @@ export default async function SuscripcionPage({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan, plan_is_founder, plan_started_at, plan_expires_at')
+    .select('plan, plan_is_founder, plan_started_at, plan_expires_at, stripe_subscription_status, trial_started_at, trial_ends_at')
     .eq('id', user.id)
     .single()
 
@@ -25,6 +25,13 @@ export default async function SuscripcionPage({
   const isFounder = Boolean((profile as any)?.plan_is_founder)
   const startedAt = (profile as any)?.plan_started_at
   const startedDate = startedAt ? new Date(startedAt) : null
+  const subStatus = (profile as any)?.stripe_subscription_status as string | null
+  const trialEndsAt = (profile as any)?.trial_ends_at as string | null
+  const trialEndsDate = trialEndsAt ? new Date(trialEndsAt) : null
+  const isInTrial = subStatus === 'trialing' && trialEndsDate && trialEndsDate.getTime() > Date.now()
+  const trialDaysLeft = isInTrial && trialEndsDate
+    ? Math.ceil((trialEndsDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : 0
 
   // Si llega ?activate=pro|premium tras crear kennel, mostrar pantalla
   // dedicada "activa tu plan" antes que el detalle normal.
@@ -69,11 +76,17 @@ export default async function SuscripcionPage({
 
       {/* Current plan card */}
       <div className="rounded-2xl border border-ink bg-canvas p-6 lg:p-8 mb-6 relative overflow-hidden">
-        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 inline-flex items-center gap-1.5 rounded-full bg-ink text-on-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
+        <div className={`absolute top-3 right-3 sm:top-4 sm:right-4 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] ${
+          isInTrial
+            ? 'bg-amber-500 text-white'
+            : subStatus === 'past_due'
+              ? 'bg-red-500 text-white'
+              : 'bg-ink text-on-primary'
+        }`}>
           <Sparkles className="w-3 h-3" />
-          Activa
+          {isInTrial ? 'En prueba' : subStatus === 'past_due' ? 'Pago pendiente' : 'Activa'}
         </div>
-        <div className="mb-4 pr-16 sm:pr-20">
+        <div className="mb-4 pr-20 sm:pr-24">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted mb-1">Plan actual</p>
           <div className="flex items-baseline gap-3 flex-wrap">
             <h2 className="text-2xl sm:text-3xl font-bold text-ink break-words">Genealogic {getPlanLabel(plan)}</h2>
@@ -85,7 +98,32 @@ export default async function SuscripcionPage({
           </div>
         </div>
 
-        {startedDate && (
+        {/* Banda de trial: días restantes + fecha de primer cargo */}
+        {isInTrial && trialEndsDate && (
+          <div className="mb-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+            <p className="text-sm font-semibold text-amber-900">
+              Te quedan <strong>{trialDaysLeft} día{trialDaysLeft === 1 ? '' : 's'}</strong> de prueba gratis.
+            </p>
+            <p className="mt-1 text-[13px] text-amber-900/90">
+              El primer cargo se hará automáticamente el{' '}
+              <strong>{trialEndsDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>{' '}
+              en la tarjeta que registraste. Puedes cancelar antes desde el botón "Facturación" sin coste.
+            </p>
+          </div>
+        )}
+
+        {/* Aviso pago fallido — Stripe sigue reintentando */}
+        {subStatus === 'past_due' && (
+          <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3">
+            <p className="text-sm font-semibold text-red-900">No hemos podido cobrar tu última factura.</p>
+            <p className="mt-1 text-[13px] text-red-900/90">
+              Stripe reintentará automáticamente las próximas horas. Revisa o cambia tu método
+              de pago desde "Facturación" para evitar perder el acceso a tu plan.
+            </p>
+          </div>
+        )}
+
+        {startedDate && !isInTrial && (
           <p className="text-sm text-body mb-4">
             Activo desde el <strong>{startedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>.
             {isFounder && ' Como Founder mantienes el precio original mientras la cuenta esté activa.'}

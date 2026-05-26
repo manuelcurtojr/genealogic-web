@@ -9,12 +9,29 @@ export const runtime = 'nodejs'
 /**
  * POST /api/billing/webhook
  *
- * Webhook de Stripe para SUSCRIPCIONES SaaS (Pro/Premium). Eventos:
- *   - checkout.session.completed    → marcar plan + customer_id + welcome email
- *   - customer.subscription.updated → actualizar status, cambio plan
- *   - customer.subscription.deleted → bajar a free + email cancelled
- *   - invoice.paid                  → guardar en plan_invoices
- *   - invoice.payment_failed        → past_due + email aviso pago
+ * Webhook de Stripe para SUSCRIPCIONES SaaS (Kennel / Kennel Pro).
+ *
+ * Modelo: trial de 15 días con tarjeta requerida upfront. El usuario
+ * obtiene acceso completo desde el momento del checkout (status='trialing')
+ * y a los 15 días Stripe intenta cobrar. Si falla, Smart Retries reintentan
+ * durante ~3 semanas; tras eso la sub se cancela y volvemos a free.
+ *
+ * Estados de Stripe → plan en nuestra DB:
+ *   trialing  → plan = kennel / kennel_pro (acceso completo)
+ *   active    → plan = kennel / kennel_pro (acceso completo)
+ *   past_due  → mantenemos el plan + bandera de "pago pendiente"
+ *   unpaid    → bajamos a free
+ *   canceled  → bajamos a free
+ *
+ * Eventos manejados:
+ *   - checkout.session.completed       → set customer/sub ids, trial_*_at
+ *   - customer.subscription.created    → set plan + trial dates (cubre el caso
+ *                                        en que checkout.session llega después)
+ *   - customer.subscription.updated    → status, cambio de plan, fin de trial
+ *   - customer.subscription.trial_will_end → email "tu trial acaba en 3 días"
+ *   - customer.subscription.deleted    → bajar a free + email cancelled
+ *   - invoice.paid                     → guardar en plan_invoices
+ *   - invoice.payment_failed           → status past_due + email aviso pago
  *
  * Idempotencia via tabla stripe_events: cada evento se intenta insertar
  * por event.id; si ya existe (Stripe reintenta), respondemos 200 sin
@@ -70,6 +87,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true, duplicate: true })
   }
 
+  // ─── Helpers ──────────────────────────────────────────────────────────
+  /** Normaliza el "plan canónico" desde un objeto de Stripe subscription. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const planFromSub = (sub: any): 'kennel' | 'kennel_pro' | null => {
+    const priceId = sub?.items?.data?.[0]?.price?.id
+    if (!priceId) return null
+    return priceIdToPlan(priceId)
+  }
+
+  /** Stripe → ISO date (sub.trial_end / current_period_end vienen en epoch s). */
+  const epochToIso = (epoch: number | null | undefined): string | null =>
+    epoch ? new Date(epoch * 1000).toISOString() : null
+
+  /** Estados que conceden acceso al producto pagado. */
+  const isAccessGrantingStatus = (status: string): boolean =>
+    status === 'active' || status === 'trialing' || status === 'past_due'
+
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -78,13 +112,34 @@ export async function POST(request: NextRequest) {
         if (!userId) break
         const customerId = session.customer
         const subscriptionId = session.subscription
-        const plan = session.metadata?.plan === 'premium' ? 'premium' : 'pro'
+
+        // El status real (trialing vs active) viene en el subscription object.
+        // En checkout.session.completed solo tenemos los ids — pedimos la sub
+        // a Stripe para conocer trial_end, current_period_end, etc.
+        let sub: any = null
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const r: any = await fetch(`https://api.stripe.com/v1/subscriptions/${subscriptionId}`, {
+            headers: { Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}` },
+          })
+          sub = await r.json()
+        } catch { /* fallback abajo */ }
+
+        const status = sub?.status || 'trialing'
+        const plan = (sub && planFromSub(sub))
+          || (session.metadata?.plan === 'kennel_pro' || session.metadata?.plan === 'premium' ? 'kennel_pro' : 'kennel')
+
+        const trialStart = epochToIso(sub?.trial_start)
+        const trialEnd = epochToIso(sub?.trial_end)
+
         await admin.from('profiles').update({
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
-          stripe_subscription_status: 'active',
+          stripe_subscription_status: status,
           plan,
           plan_started_at: new Date().toISOString(),
+          trial_started_at: trialStart,
+          trial_ends_at: trialEnd,
         }).eq('id', userId)
 
         // Email de bienvenida al plan (best-effort, dedupeado por sub_id)
@@ -100,7 +155,12 @@ export async function POST(request: NextRequest) {
               toEmail,
               {
                 template: 'subscription_activated',
-                props: { recipientName: profile?.display_name || null, plan: plan as 'pro' | 'premium' },
+                props: {
+                  recipientName: profile?.display_name || null,
+                  // El template acepta los nombres canónicos + legacy
+                  plan: plan as 'kennel' | 'kennel_pro',
+                  trialEndsAt: trialEnd,
+                },
               },
               { userId, dedupeKey: `sub_activated:${subscriptionId}` },
             )
@@ -111,19 +171,66 @@ export async function POST(request: NextRequest) {
         break
       }
 
-      case 'customer.subscription.updated': {
+      case 'customer.subscription.updated':
+      case 'customer.subscription.created': {
         const sub = event.data.object
         const customerId = sub.customer
-        const status = sub.status
-        const priceId = sub.items?.data?.[0]?.price?.id
-        const plan = priceId ? priceIdToPlan(priceId) : null
+        const status = sub.status as string
+        const plan = planFromSub(sub)
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const updates: any = { stripe_subscription_status: status }
-        if (status === 'active' && plan) updates.plan = plan
-        if (sub.cancel_at_period_end) {
-          updates.plan_expires_at = new Date(sub.current_period_end * 1000).toISOString()
+        const updates: any = {
+          stripe_subscription_status: status,
+          trial_started_at: epochToIso(sub.trial_start),
+          trial_ends_at: epochToIso(sub.trial_end),
         }
+
+        if (isAccessGrantingStatus(status) && plan) {
+          // trialing / active / past_due → conceden acceso al plan
+          updates.plan = plan
+        } else if (status === 'unpaid' || status === 'canceled' || status === 'incomplete_expired') {
+          // Dunning agotado → degradar a free. Los datos del usuario se
+          // conservan, solo se pierde el acceso a features de pago.
+          updates.plan = 'free'
+          updates.plan_expires_at = new Date().toISOString()
+        }
+
+        if (sub.cancel_at_period_end) {
+          updates.plan_expires_at = epochToIso(sub.current_period_end)
+        }
+
         await admin.from('profiles').update(updates).eq('stripe_customer_id', customerId)
+        break
+      }
+
+      case 'customer.subscription.trial_will_end': {
+        // Fires ~3 días antes del fin de trial. Mandamos email recordatorio.
+        const sub = event.data.object
+        const customerId = sub.customer
+        try {
+          const { data: profile } = await admin
+            .from('profiles')
+            .select('id, display_name, email, billing_email, plan')
+            .eq('stripe_customer_id', customerId)
+            .single()
+          const toEmail = profile?.billing_email || profile?.email
+          if (toEmail && profile?.id) {
+            await sendTransactionalEmail(
+              toEmail,
+              {
+                template: 'trial_ending_soon',
+                props: {
+                  recipientName: profile.display_name || null,
+                  plan: profile.plan as 'kennel' | 'kennel_pro',
+                  trialEndsAt: epochToIso(sub.trial_end),
+                },
+              },
+              { userId: profile.id, dedupeKey: `trial_ending:${sub.id}` },
+            )
+          }
+        } catch (err) {
+          console.error('[billing webhook] trial_ending_soon email failed', err)
+        }
         break
       }
 
@@ -134,6 +241,10 @@ export async function POST(request: NextRequest) {
           plan: 'free',
           stripe_subscription_status: 'canceled',
           plan_expires_at: new Date().toISOString(),
+          // Limpiamos trial dates para que la UI no muestre "trial activo"
+          // residual cuando ya bajaron a free.
+          trial_started_at: null,
+          trial_ends_at: null,
         }).eq('stripe_customer_id', customerId)
 
         // Email de cancelación al user (best-effort)

@@ -55,8 +55,8 @@ const breederTiers: Tier[] = [
     name: 'Kennel',
     price: '29€',
     period: '/mes · 290€/año',
-    description: 'Las herramientas que un criador profesional usa cada día.',
-    cta: 'Empezar Kennel',
+    description: 'Las herramientas que un criador profesional usa cada día. Prueba 15 días gratis.',
+    cta: 'Probar 15 días gratis',
     highlight: true,
     features: [
       'Todo lo del plan Free',
@@ -77,8 +77,8 @@ const breederTiers: Tier[] = [
     name: 'Kennel Pro',
     price: '49€',
     period: '/mes · Founder',
-    description: 'Para criaderos con volumen alto que quieren escalar al máximo.',
-    cta: 'Empezar Kennel Pro',
+    description: 'Para criaderos con volumen alto que quieren escalar al máximo. Prueba 15 días gratis.',
+    cta: 'Probar 15 días gratis',
     founderBadge: true,
     features: [
       'Todo lo de Kennel',
@@ -240,8 +240,8 @@ export default function PricingClient({
                   {tier.id !== 'free' && (
                     <p className="mt-2 text-[11px] text-muted text-center">
                       {isLoggedIn
-                        ? 'Pago seguro con Stripe · Cancela cuando quieras'
-                        : `Crea tu cuenta y activa ${tier.name}`}
+                        ? '15 días gratis · Tarjeta requerida · Cancela cuando quieras'
+                        : `Crea tu cuenta y prueba ${tier.name} 15 días gratis`}
                     </p>
                   )}
                 </div>

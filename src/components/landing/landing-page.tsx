@@ -1232,7 +1232,7 @@ function Pricing() {
               variant="secondary"
               className="mt-7 w-full !bg-canvas !text-ink"
             >
-              Empezar Kennel
+              Probar 15 días gratis
             </Button>
           </div>
 
@@ -1261,7 +1261,7 @@ function Pricing() {
               variant="secondary"
               className="mt-7 w-full"
             >
-              Empezar Kennel Pro
+              Probar 15 días gratis
             </Button>
           </div>
         </div>
@@ -1291,6 +1291,10 @@ function PricingRow({ dark, children }: { dark?: boolean; children: React.ReactN
 // ─── FAQ ────────────────────────────────────────────────────────────────
 function FAQ() {
   const faqs = [
+    {
+      q: '¿Cómo funciona la prueba de 15 días?',
+      a: 'Al elegir Kennel o Kennel Pro pides la prueba con tarjeta (Stripe Checkout). Durante 15 días tienes acceso completo sin coste — puedes usar todas las herramientas y traer tus datos. A los 15 días se hace el primer cargo automático. Si cambias de idea, cancelas desde tu cuenta antes del cargo y no pagas nada. Si la tarjeta falla en el cobro, Stripe la reintenta unos días; si finalmente no se cobra, tu plan vuelve a Free conservando todos tus datos.',
+    },
     {
       q: '¿Es realmente gratis el tier Free?',
       a: 'Sí. Hasta 10 perros con ficha completa, genealogía sin límite de generaciones, importación con IA, búsqueda pública, simulador de cruces, calendario reproductivo y vet. Para siempre, sin tarjeta. Solo se cobran las herramientas comerciales en Kennel y Kennel Pro.',
@@ -1387,7 +1391,7 @@ function FinalCta() {
             Empieza gratis <ArrowRight className="h-4 w-4" />
           </Button>
           <Button href="/register?intent=breeder&plan=kennel" variant="secondary" size="lg">
-            Empezar Kennel · 29€/mes
+            Probar Kennel 15 días gratis
           </Button>
         </div>
       </div>

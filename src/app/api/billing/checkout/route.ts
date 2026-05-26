@@ -65,12 +65,17 @@ export async function POST(request: NextRequest) {
     }
 
     const origin = request.nextUrl.origin
+    // 15 días de trial gratis con tarjeta requerida. Stripe maneja todo el
+    // ciclo trialing → active → past_due → unpaid → canceled y nuestro
+    // webhook actualiza profiles.plan en consecuencia.
+    const TRIAL_DAYS = 15
     const session = await createCheckoutSession({
       customerId,
       priceId,
       successUrl: `${origin}/cuenta/facturacion?checkout=success`,
       cancelUrl: `${origin}/pricing?cancelled=1`,
       metadata: { user_id: user.id, plan, interval },
+      trialDays: TRIAL_DAYS,
     })
 
     return NextResponse.json({ url: session.url })

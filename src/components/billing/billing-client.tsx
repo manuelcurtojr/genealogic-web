@@ -30,6 +30,8 @@ interface Profile {
   billing_postal_code: string | null
   plan: string
   plan_is_founder: boolean
+  trial_started_at?: string | null
+  trial_ends_at?: string | null
 }
 
 interface Props {
@@ -113,6 +115,12 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
   const currentPlan = profile?.plan || 'free'
   const isPaidPlan = currentPlan !== 'free' && !!currentPlan
   const isFounder = profile?.plan_is_founder
+  const trialEndsAt = profile?.trial_ends_at
+  const trialEndsDate = trialEndsAt ? new Date(trialEndsAt) : null
+  const isInTrial = subStatus === 'trialing' && trialEndsDate && trialEndsDate.getTime() > Date.now()
+  const trialDaysLeft = isInTrial && trialEndsDate
+    ? Math.ceil((trialEndsDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : 0
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -152,8 +160,13 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
             <p className="text-sm text-body mt-3">
               {isFounder ? (
                 <>Cuenta vitalicia — no se cobra nunca.</>
+              ) : isInTrial && trialEndsDate ? (
+                <span className="text-amber-700">
+                  Prueba gratis · Te quedan <strong>{trialDaysLeft} día{trialDaysLeft === 1 ? '' : 's'}</strong>.
+                  Primer cargo el {trialEndsDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}.
+                </span>
               ) : !hasStripe ? (
-                <>Aún sin método de pago. {hasKennel ? 'Suscríbete para desbloquear Pro o Premium.' : 'Crea tu criadero para acceder a planes de pago.'}</>
+                <>Aún sin método de pago. {hasKennel ? 'Suscríbete para desbloquear Kennel o Kennel Pro.' : 'Crea tu criadero para acceder a planes de pago.'}</>
               ) : subStatus === 'active' ? (
                 <>Suscripción activa en Stripe.</>
               ) : subStatus === 'past_due' ? (
@@ -203,7 +216,7 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
                 name="Kennel"
                 price="29 €"
                 period="/mes"
-                description="Pipeline de reservas, contratos digitales, vet calendar, importer IA."
+                description="Pipeline de reservas, contratos digitales, vet calendar, importer IA. 15 días gratis."
                 highlight
                 onSelect={() => startCheckoutFn('pro')}
                 disabled={checkoutPending}
@@ -212,7 +225,7 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
                 name="Kennel Pro"
                 price="49 €"
                 period="/mes · Founder"
-                description="Web pública, emailbot, newsletter, pagos online. Precio congelado de por vida."
+                description="Web pública, emailbot, newsletter, pagos online. 15 días gratis. Precio Founder de por vida."
                 onSelect={() => startCheckoutFn('premium')}
                 disabled={checkoutPending}
               />
@@ -227,7 +240,8 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
           )}
 
           <p className="text-xs text-muted mt-3">
-            Pago seguro con Stripe. Cancela cuando quieras desde el portal.{' '}
+            15 días de prueba gratis · Tarjeta requerida · Cobro automático al terminar la prueba ·
+            Cancela cuando quieras desde el portal.{' '}
             <Link href="/pricing" className="text-ink underline">Ver todas las diferencias</Link>.
           </p>
         </div>
