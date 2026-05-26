@@ -44,10 +44,19 @@ async function requireOwnerOfProKennel(kennelId: string) {
 }
 
 function revalidateKennelPages(slug: string | null) {
+  // Paths concretos en vez de 'layout' — más predecible, evita confundir a
+  // los RSC payloads cuando el server action se llama desde un sub-route.
   revalidatePath('/kennel')
-  revalidatePath('/kennel/contenido', 'layout')
+  revalidatePath('/kennel/contenido/sobre')
+  revalidatePath('/kennel/contenido/galeria')
+  revalidatePath('/kennel/contenido/instalaciones')
+  revalidatePath('/kennel/contenido/blog')
   if (slug) {
-    revalidatePath(`/kennels/${slug}`, 'layout')
+    revalidatePath(`/kennels/${slug}`)
+    revalidatePath(`/kennels/${slug}/sobre`)
+    revalidatePath(`/kennels/${slug}/galeria`)
+    revalidatePath(`/kennels/${slug}/instalaciones`)
+    revalidatePath(`/kennels/${slug}/blog`)
   }
 }
 

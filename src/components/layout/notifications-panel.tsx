@@ -140,6 +140,7 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
         className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-canvas border-l border-hairline shadow-2xl transition-transform duration-300 flex flex-col ${
           open ? 'translate-x-0' : 'translate-x-full pointer-events-none'
         }`}
+        style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-hairline flex-shrink-0">

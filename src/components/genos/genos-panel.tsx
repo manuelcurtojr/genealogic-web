@@ -240,7 +240,7 @@ export default function GenosPanel({
                 <ChevronLeft className="w-5 h-5" />
               </button>
             )}
-            <div className="w-8 h-8 rounded-lg bg-ink flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 min-w-[2rem] min-h-[2rem] rounded-lg bg-ink flex items-center justify-center flex-shrink-0 flex-grow-0 aspect-square">
               <Sparkles className="w-4 h-4 text-on-primary" />
             </div>
             <div>

@@ -198,7 +198,10 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
       {panelOpen && (
         <>
           <div className="fixed inset-0 z-[90] bg-black/50 backdrop-blur-[2px]" onClick={() => setPanelOpen(false)} />
-          <div className="fixed top-0 right-0 h-full w-full sm:max-w-md z-[100] bg-surface-card border-l border-hairline shadow-2xl flex flex-col">
+          <div
+            className="fixed top-0 right-0 h-full w-full sm:max-w-md z-[100] bg-surface-card border-l border-hairline shadow-2xl flex flex-col"
+            style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
+          >
 
             {panelMode === 'add' && panelTarget && (
               <>

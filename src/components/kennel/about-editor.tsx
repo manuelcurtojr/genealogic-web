@@ -30,7 +30,16 @@ export default function AboutEditor({ kennelId, initialAboutMd }: Props) {
         setSavedAt(new Date())
         router.refresh()
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'No se pudo guardar')
+        // Mensaje al user + log a consola para inspección rápida en DevTools.
+        // eslint-disable-next-line no-console
+        console.error('[saveAboutMdAction] failed', err)
+        const raw = err instanceof Error ? err.message : String(err)
+        const human =
+          raw === 'unauthorized' ? 'Tienes que iniciar sesión otra vez.' :
+          raw === 'forbidden' ? 'No tienes permisos sobre este criadero.' :
+          raw === 'requires_kennel_pro' ? 'Esta función está en Kennel Pro.' :
+          `No se pudo guardar: ${raw}`
+        setError(human)
       }
     })
   }

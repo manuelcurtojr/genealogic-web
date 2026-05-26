@@ -1,11 +1,18 @@
 import { createClient } from '@/lib/supabase/server'
 import { loadProPage } from '@/lib/kennel/pro-page-loader'
 import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
-import KennelPublicTabs from '@/components/kennel/kennel-public-tabs'
-import { ProPageShell } from '@/components/kennel/pro-page-shell'
+import PerrosCatalog from '@/components/kennel/perros-catalog'
 
 export const dynamic = 'force-dynamic'
 
+/**
+ * Catálogo completo del criadero. Sin shell estrecho — usa el ancho
+ * disponible del dashboard para mostrar más cards por fila. Buscador +
+ * filtro de raza/sexo + tabs (Reproductores · Venta · Camadas · Producido).
+ *
+ * Filtrado es client-side: el server entrega TODO el dataset del kennel
+ * (perros + camadas) y el cliente busca/filtra sin round-trips.
+ */
 export default async function KennelPerrosPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { kennel } = await loadProPage({ kennelId: id, pageId: null })
@@ -26,20 +33,54 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
       .order('created_at', { ascending: false }),
   ])
 
-  const dogs = sortDogsPhotoFirst(dogsRes.data || [])
-  const litters = littersRes.data || []
-  const forSale = dogs.filter((d: { is_for_sale: boolean | null }) => d.is_for_sale)
-  const reproductores = dogs.filter((d: { is_reproductive: boolean | null; is_for_sale: boolean | null }) => d.is_reproductive && !d.is_for_sale)
-  const criados = dogs.filter((d: { is_reproductive: boolean | null; is_for_sale: boolean | null }) => !d.is_reproductive && !d.is_for_sale)
+  // Normalización del join `breed` (PostgREST a veces lo tipa como array)
+  type RawDog = Record<string, unknown> & { breed?: unknown }
+  const normalizeDog = (d: RawDog) => {
+    const br = d.breed
+    const breed = Array.isArray(br) ? br[0] : br
+    return { ...d, breed: breed || null }
+  }
+  type RawLitter = Record<string, unknown> & { breed?: unknown; father?: unknown; mother?: unknown }
+  const normalizeLitter = (l: RawLitter) => {
+    const br = l.breed, fa = l.father, mo = l.mother
+    return {
+      ...l,
+      breed:  Array.isArray(br) ? br[0] : br,
+      father: Array.isArray(fa) ? fa[0] : fa,
+      mother: Array.isArray(mo) ? mo[0] : mo,
+    }
+  }
+
+  const dogsRaw = (dogsRes.data || []).map(normalizeDog) as unknown as Parameters<typeof sortDogsPhotoFirst>[0]
+  const dogs = sortDogsPhotoFirst(dogsRaw)
+  const litters = (littersRes.data || []).map(normalizeLitter) as unknown as Array<{
+    id: string; status: string; birth_date: string | null; mating_date: string | null;
+    breed?: { name?: string } | null;
+    father?: { id: string; name: string; thumbnail_url: string | null } | null;
+    mother?: { id: string; name: string; thumbnail_url: string | null } | null;
+  }>
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const forSale = dogs.filter((d: any) => d.is_for_sale)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const reproductores = dogs.filter((d: any) => d.is_reproductive && !d.is_for_sale)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const criados = dogs.filter((d: any) => !d.is_reproductive && !d.is_for_sale)
   const currencySymbol: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', MXN: '$', COP: '$', ARS: '$', CLP: '$' }
 
   return (
-    <ProPageShell
-      eyebrow="Catálogo"
-      title="Nuestros perros"
-      description="Reproductores activos, cachorros en venta, camadas planificadas y producidos por el criadero."
-    >
-      <KennelPublicTabs
+    <div className="space-y-6 sm:space-y-8">
+      <header>
+        <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Catálogo</p>
+        <h1 className="mt-1 text-[28px] sm:text-[36px] font-semibold leading-[1.08] tracking-[-0.03em] text-ink">
+          Nuestros perros
+        </h1>
+        <p className="mt-2 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-prose">
+          Reproductores activos, cachorros en venta, camadas planificadas y producidos por el criadero.
+        </p>
+      </header>
+
+      <PerrosCatalog
         kennelName={kennel.name}
         reproductores={reproductores}
         forSale={forSale}
@@ -47,6 +88,6 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
         criados={criados}
         currencySymbol={currencySymbol}
       />
-    </ProPageShell>
+    </div>
   )
 }

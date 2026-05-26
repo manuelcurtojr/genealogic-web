@@ -297,11 +297,12 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
         style={
           isIos
             ? {
-                // En iOS el header ya tiene height 3.5rem + safe-area-top. El
-                // main empieza justo donde acaba el header, sin "respiro" extra
-                // (ese gap quedaba feo al top y desaparecía al scrollear, que
-                // es exactamente lo que el usuario veía).
-                paddingTop: 'calc(3.5rem + var(--safe-area-top))',
+                // En iOS el header tiene height 3.5rem + safe-area-top. El
+                // main empieza justo después con 1rem de respiro entre header
+                // y contenido — eso garantiza separación visual en TODAS las
+                // páginas, incluidas las que empiezan con hero full-bleed
+                // (ej. /dogs/[id]) que no tienen margin-top propio.
+                paddingTop: 'calc(3.5rem + var(--safe-area-top) + 1rem)',
                 paddingBottom: 'calc(1rem + var(--safe-area-bottom))',
               }
             : undefined

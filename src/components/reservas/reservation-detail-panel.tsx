@@ -156,6 +156,7 @@ export default function ReservationDetailPanel({ reservation: r, dogs, isPro, on
     <div className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={onClose}>
       <div
         className="h-full w-full max-w-xl overflow-y-auto bg-canvas shadow-xl"
+        style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
