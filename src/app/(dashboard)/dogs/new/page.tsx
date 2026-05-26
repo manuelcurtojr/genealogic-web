@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import DogForm from '@/components/dogs/dog-form'
+import FeedbackButton from '@/components/feedback/feedback-button'
 
 export default async function NewDogPage() {
   const supabase = await createClient()
@@ -16,13 +17,16 @@ export default async function NewDogPage() {
   ])
 
   return (
-    <DogForm
-      breeds={breedsRes.data || []}
-      colors={colorsRes.data || []}
-      kennels={kennelsRes.data || []}
-      maleDogs={maleDogsRes.data || []}
-      femaleDogs={femaleDogsRes.data || []}
-      userId={user.id}
-    />
+    <>
+      <DogForm
+        breeds={breedsRes.data || []}
+        colors={colorsRes.data || []}
+        kennels={kennelsRes.data || []}
+        maleDogs={maleDogsRes.data || []}
+        femaleDogs={femaleDogsRes.data || []}
+        userId={user.id}
+      />
+      <FeedbackButton scope="dog_form" pageLabel="Crear perro (/dogs/new)" />
+    </>
   )
 }

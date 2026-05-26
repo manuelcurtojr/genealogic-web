@@ -3,7 +3,21 @@
  * Importables desde client y server.
  */
 
-export type AdminRequestType = 'support' | 'claim_dog' | 'claim_kennel'
+export type AdminRequestType = 'support' | 'claim_dog' | 'claim_kennel' | 'feedback'
+
+/** Zonas de la web donde el FeedbackButton puede aparecer.
+ *  Se guarda en source_metadata.scope y permite filtrar feedback por área. */
+export type FeedbackScope =
+  | 'importer'           // importador de pedigrees (URL/PDF/IA)
+  | 'dog_form'           // formulario añadir/editar perro
+  | 'litter_form'        // formulario de camadas
+  | 'transfer'           // flujo de transferencia de propiedad
+  | 'reservation_form'   // formulario de reservas
+  | 'kennel_form'        // formulario crear/editar criadero
+  | 'web_builder'        // editor de web pública (Kennel Pro)
+  | 'emailbot'           // configuración emailbot (Kennel Pro)
+  | 'billing'            // checkout / facturación
+  | 'other'
 
 export type AdminRequestStatus =
   | 'pending'
@@ -22,6 +36,7 @@ export type AdminRequestSource =
   | 'dog_page'
   | 'soporte_form'
   | 'api'
+  | 'feedback_widget'
 
 export type EvidenceFile = {
   path: string
@@ -72,6 +87,21 @@ export const TYPE_LABELS: Record<AdminRequestType, string> = {
   support: 'Soporte',
   claim_dog: 'Reclamar perro',
   claim_kennel: 'Reclamar criadero',
+  feedback: 'Feedback',
+}
+
+/** Labels humanos de cada zona donde puede vivir el FeedbackButton. */
+export const FEEDBACK_SCOPE_LABELS: Record<FeedbackScope, string> = {
+  importer:         'Importador de pedigrees',
+  dog_form:         'Formulario de perro',
+  litter_form:      'Formulario de camadas',
+  transfer:         'Transferencia de propiedad',
+  reservation_form: 'Reservas',
+  kennel_form:      'Datos del criadero',
+  web_builder:      'Web pública',
+  emailbot:         'Emailbot',
+  billing:          'Facturación / pagos',
+  other:            'Otro',
 }
 
 export const STATUS_LABELS: Record<AdminRequestStatus, string> = {

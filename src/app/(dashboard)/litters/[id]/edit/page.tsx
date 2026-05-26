@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import LitterForm from '@/components/litters/litter-form'
+import FeedbackButton from '@/components/feedback/feedback-button'
 
 export default async function EditLitterPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -25,12 +26,15 @@ export default async function EditLitterPage({ params }: { params: Promise<{ id:
   ])
 
   return (
-    <LitterForm
-      initialData={litter}
-      breeds={breedsRes.data || []}
-      maleDogs={maleDogsRes.data || []}
-      femaleDogs={femaleDogsRes.data || []}
-      userId={user.id}
-    />
+    <>
+      <LitterForm
+        initialData={litter}
+        breeds={breedsRes.data || []}
+        maleDogs={maleDogsRes.data || []}
+        femaleDogs={femaleDogsRes.data || []}
+        userId={user.id}
+      />
+      <FeedbackButton scope="litter_form" pageLabel="Editar camada" />
+    </>
   )
 }

@@ -21,7 +21,14 @@ import type {
   AdminRequestPriority,
   AdminRequestSource,
   EvidenceFile,
+  FeedbackScope,
 } from './types'
+import { FEEDBACK_SCOPE_LABELS } from './types'
+
+// Si está seteada, se manda email directo al super admin con cada feedback
+// (además de quedar en /admin/solicitudes). Útil para reaccionar rápido
+// en los primeros meses post-launch.
+const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || 'gestion@manuelcurto.com'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'
 
@@ -97,6 +104,127 @@ export async function createSupportRequestAction(input: {
     .single()
 
   if (error) throw new Error(error.message)
+  revalidatePath('/mis-solicitudes')
+  revalidatePath('/admin/solicitudes')
+  return { id: data.id }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USER: crear feedback rápido desde el widget "¿Algo ha salido mal?"
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Diferente del support form:
+//  - Subject se autocompleta a partir del scope (no se le pide al user)
+//  - Captura automáticamente página, URL, viewport, user_agent
+//  - Si el user habló con la IA antes, guardamos el transcript en metadata
+//  - Manda email directo al super admin para reacción rápida (opt-in via env)
+//
+// Pensado para fricción mínima: el user solo escribe el problema.
+
+export async function createFeedbackAction(input: {
+  scope: FeedbackScope
+  message: string
+  pageLabel: string          // ej. "Importador de pedigrees" — texto humano del contexto
+  pageUrl: string            // location.pathname + search (cliente lo manda)
+  viewport?: string          // "375x812" — útil para diferenciar mobile vs desktop
+  userAgent?: string         // navigator.userAgent
+  aiConversation?: Array<{ role: 'user' | 'assistant'; content: string }>
+}): Promise<{ id: string }> {
+  const { supabase, user } = await requireUser()
+  const message = input.message?.trim()
+  if (!message || message.length < 5) throw new Error('message_too_short')
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('email, display_name')
+    .eq('id', user.id)
+    .single()
+
+  const scopeLabel = FEEDBACK_SCOPE_LABELS[input.scope] || 'Otro'
+  // Subject autogenerado: hace que el admin de un vistazo sepa de dónde viene
+  const subject = `[Feedback · ${scopeLabel}] ${message.slice(0, 80)}${message.length > 80 ? '…' : ''}`
+
+  const sourceMetadata = {
+    scope: input.scope,
+    scope_label: scopeLabel,
+    page_label: input.pageLabel,
+    viewport: input.viewport || null,
+    user_agent: input.userAgent || null,
+    ai_conversation: input.aiConversation || null,
+    captured_at: new Date().toISOString(),
+  }
+
+  const { data, error } = await supabase
+    .from('admin_requests')
+    .insert({
+      type: 'feedback',
+      status: 'pending',
+      // Feedback es "high" por defecto — queremos verlo rápido para iterar producto
+      priority: 'high',
+      requester_user_id: user.id,
+      requester_email: profile?.email || user.email || 'unknown',
+      requester_name: profile?.display_name || null,
+      subject,
+      message,
+      source: 'feedback_widget' as AdminRequestSource,
+      source_url: input.pageUrl,
+      source_metadata: sourceMetadata,
+    })
+    .select('id')
+    .single()
+
+  if (error) throw new Error(error.message)
+
+  // Notificar al super admin por email (best-effort, no rompe si falla)
+  if (SUPER_ADMIN_EMAIL) {
+    try {
+      const aiSummary = input.aiConversation && input.aiConversation.length > 0
+        ? `\n\n--- Conversación previa con la IA ---\n${input.aiConversation
+            .map(m => `${m.role === 'user' ? 'USER' : 'AI'}: ${m.content}`)
+            .join('\n\n')}`
+        : ''
+
+      const plainBody = [
+        `Nuevo feedback en Genealogic`,
+        ``,
+        `Zona: ${scopeLabel} (${input.scope})`,
+        `Página: ${input.pageLabel}`,
+        `URL: ${input.pageUrl}`,
+        `Viewport: ${input.viewport || '—'}`,
+        `Usuario: ${profile?.display_name || '—'} <${profile?.email || user.email}>`,
+        `Ticket ID: ${data.id}`,
+        ``,
+        `--- Mensaje ---`,
+        message,
+        aiSummary,
+        ``,
+        `Ver en admin: ${SITE_URL}/admin/solicitudes/${data.id}`,
+      ].join('\n')
+
+      // Reusamos el sistema de email enviando directamente con Resend en plain
+      // text (no merece la pena un template React para esto — es para nosotros).
+      const apiKey = process.env.RESEND_API_KEY
+      if (apiKey) {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'Genealogic Feedback <feedback@genealogic.io>',
+            to: SUPER_ADMIN_EMAIL,
+            reply_to: profile?.email || user.email || undefined,
+            subject: `🐛 [${scopeLabel}] ${message.slice(0, 60)}${message.length > 60 ? '…' : ''}`,
+            text: plainBody,
+          }),
+        })
+      }
+    } catch (err) {
+      console.error('[feedback] super admin email failed', err)
+    }
+  }
+
   revalidatePath('/mis-solicitudes')
   revalidatePath('/admin/solicitudes')
   return { id: data.id }

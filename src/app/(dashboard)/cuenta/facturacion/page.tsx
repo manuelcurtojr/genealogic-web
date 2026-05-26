@@ -7,6 +7,7 @@ import EmailbotUsageSection, {
 } from '@/components/billing/emailbot-usage-section'
 import { checkBotReplyQuota } from '@/lib/ai/quotas'
 import { isSubscriptionCheckoutAvailable } from '@/lib/stripe/server'
+import FeedbackButton from '@/components/feedback/feedback-button'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Facturación · Genealogic Pro' }
@@ -112,6 +113,7 @@ export default async function FacturacionPage() {
         stripeReady={stripeReady}
         hasKennel={!!kennel}
       />
+      <FeedbackButton scope="billing" pageLabel="Facturación / Pagos (/cuenta/facturacion)" />
     </div>
   )
 }

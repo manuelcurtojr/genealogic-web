@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Loader2, Globe, ExternalLink } from 'lucide-react'
+import FeedbackButton from '@/components/feedback/feedback-button'
 
 export default function EditKennelPage() {
   const router = useRouter()
@@ -83,6 +84,7 @@ export default function EditKennelPage() {
 
   return (
     <div className="max-w-2xl">
+      <FeedbackButton scope="kennel_form" pageLabel="Editar criadero" />
       <div className="flex items-center gap-4 mb-8">
         <Link href="/kennel" className="text-muted hover:text-ink transition">
           <ArrowLeft className="w-5 h-5" />

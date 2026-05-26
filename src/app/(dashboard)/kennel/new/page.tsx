@@ -16,6 +16,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Loader2, Sparkles } from 'lucide-react'
 import { readIntentClient, clearIntentClient } from '@/lib/signup-intent'
+import FeedbackButton from '@/components/feedback/feedback-button'
 
 function NewKennelInner() {
   const router = useRouter()
@@ -143,6 +144,7 @@ export default function NewKennelPage() {
   return (
     <Suspense fallback={null}>
       <NewKennelInner />
+      <FeedbackButton scope="kennel_form" pageLabel="Crear criadero (/kennel/new)" />
     </Suspense>
   )
 }

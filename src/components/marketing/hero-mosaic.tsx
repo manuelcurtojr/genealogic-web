@@ -109,6 +109,13 @@ export default function HeroMosaic({ photos }: { photos: string[] }) {
           mucho más visibles a esa escala) y algo más translúcido en desktop. */}
       <div className="absolute inset-0 bg-canvas/85 sm:bg-canvas/60" />
 
+      {/* NEBULOSA — capa de "aurora" con blobs radiales borrosos en colores
+          de marca + cool. Sutil pero da el aire moderno tipo Linear/Vercel.
+          Va por encima del overlay blanco para que el color "ilumine" la
+          escena sin tapar el mosaico. mix-blend-multiply tinta la zona blanca
+          sin sobrecargar las fotos. */}
+      <NebulaLayer />
+
       {/* Gradiente horizontal SOLO desktop para reforzar el lado izquierdo
           donde vive el texto del hero. */}
       <div className="absolute inset-0 hidden sm:block bg-gradient-to-r from-canvas via-canvas/70 to-canvas/40" />
@@ -118,5 +125,64 @@ export default function HeroMosaic({ photos }: { photos: string[] }) {
           transición a la siguiente sección sea invisible. */}
       <div className="absolute bottom-0 left-0 right-0 h-3/5 sm:h-2/3 bg-gradient-to-b from-transparent via-canvas to-canvas" />
     </div>
+  )
+}
+
+/**
+ * Capa de nebulosa: 3 blobs radiales que se "respiran" con CSS animation.
+ * Usa mix-blend-multiply para tintar la zona blanca del overlay sin lavar
+ * las fotos del mosaico. Performance: solo transform + opacity, GPU-friendly.
+ * Respeta prefers-reduced-motion deteniendo la animación.
+ */
+function NebulaLayer() {
+  return (
+    <>
+      <style>{`
+        @keyframes nebula-drift-a {
+          0%, 100% { transform: translate3d(-10%, -8%, 0) scale(1);   opacity: 0.55; }
+          50%      { transform: translate3d(8%, 6%, 0) scale(1.15);   opacity: 0.75; }
+        }
+        @keyframes nebula-drift-b {
+          0%, 100% { transform: translate3d(10%, 6%, 0) scale(1.1);   opacity: 0.45; }
+          50%      { transform: translate3d(-6%, -10%, 0) scale(0.95); opacity: 0.65; }
+        }
+        @keyframes nebula-drift-c {
+          0%, 100% { transform: translate3d(-4%, 12%, 0) scale(0.95); opacity: 0.4; }
+          50%      { transform: translate3d(6%, -4%, 0) scale(1.1);   opacity: 0.6; }
+        }
+        .nebula-a { animation: nebula-drift-a 22s ease-in-out infinite; }
+        .nebula-b { animation: nebula-drift-b 28s ease-in-out infinite; }
+        .nebula-c { animation: nebula-drift-c 32s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .nebula-a, .nebula-b, .nebula-c { animation: none; }
+        }
+      `}</style>
+      <div className="absolute inset-0 overflow-hidden mix-blend-multiply">
+        {/* Blob A — naranja marca, top-left */}
+        <div
+          className="nebula-a absolute -top-1/4 -left-1/4 h-[80vh] w-[80vh] rounded-full blur-3xl"
+          style={{
+            background:
+              'radial-gradient(circle at 30% 30%, rgba(254,102,32,0.55) 0%, rgba(254,102,32,0.15) 40%, transparent 70%)',
+          }}
+        />
+        {/* Blob B — azul cool, top-right */}
+        <div
+          className="nebula-b absolute -top-1/4 -right-1/4 h-[70vh] w-[70vh] rounded-full blur-3xl"
+          style={{
+            background:
+              'radial-gradient(circle at 50% 50%, rgba(59,130,246,0.45) 0%, rgba(59,130,246,0.12) 40%, transparent 70%)',
+          }}
+        />
+        {/* Blob C — magenta/púrpura, center-bottom (sutil) */}
+        <div
+          className="nebula-c absolute bottom-1/4 left-1/3 h-[60vh] w-[60vh] rounded-full blur-3xl"
+          style={{
+            background:
+              'radial-gradient(circle at 50% 50%, rgba(217,70,239,0.35) 0%, rgba(217,70,239,0.1) 40%, transparent 70%)',
+          }}
+        />
+      </div>
+    </>
   )
 }

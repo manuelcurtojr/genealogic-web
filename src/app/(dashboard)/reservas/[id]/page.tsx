@@ -14,6 +14,7 @@ import Link from 'next/link'
 import { listReservationMessages, markThreadRead } from '@/lib/reservations/messages'
 import ReservationThread from '@/components/reservations/reservation-thread'
 import { sendBreederMessageAction } from './actions'
+import FeedbackButton from '@/components/feedback/feedback-button'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Reserva · Genealogic' }
@@ -49,6 +50,7 @@ export default async function BreederReservationDetailPage({
 
   return (
     <div>
+      <FeedbackButton scope="reservation_form" pageLabel="Detalle de reserva" />
       <Link
         href="/reservas"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted hover:text-ink mb-5"

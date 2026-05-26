@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Search, ArrowRightLeft, Dog, Check, AlertTriangle } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
+import FeedbackButton from '@/components/feedback/feedback-button'
 
 interface Props {
   open: boolean
@@ -117,7 +118,15 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
             <ArrowRightLeft className="w-4 h-4 text-ink" />
             <h2 className="text-base sm:text-lg font-semibold">Transferir perro</h2>
           </div>
-          <button onClick={onClose} className="text-muted hover:text-ink transition"><X className="w-5 h-5" /></button>
+          <div className="flex items-center gap-2">
+            <FeedbackButton
+              scope="transfer"
+              pageLabel={dog?.name ? `Transferir perro: ${dog.name}` : 'Transferir perro'}
+              variant="inline"
+              label="¿Algo falla?"
+            />
+            <button onClick={onClose} className="text-muted hover:text-ink transition"><X className="w-5 h-5" /></button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">

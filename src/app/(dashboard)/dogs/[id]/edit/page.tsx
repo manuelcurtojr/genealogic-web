@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import DogForm from '@/components/dogs/dog-form'
+import FeedbackButton from '@/components/feedback/feedback-button'
 
 export default async function EditDogPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -27,14 +28,20 @@ export default async function EditDogPage({ params }: { params: Promise<{ id: st
   ])
 
   return (
-    <DogForm
-      initialData={dog}
-      breeds={breedsRes.data || []}
-      colors={colorsRes.data || []}
-      kennels={kennelsRes.data || []}
-      maleDogs={maleDogsRes.data || []}
-      femaleDogs={femaleDogsRes.data || []}
-      userId={user.id}
-    />
+    <>
+      <DogForm
+        initialData={dog}
+        breeds={breedsRes.data || []}
+        colors={colorsRes.data || []}
+        kennels={kennelsRes.data || []}
+        maleDogs={maleDogsRes.data || []}
+        femaleDogs={femaleDogsRes.data || []}
+        userId={user.id}
+      />
+      {/* La pestaña "Importador" vive aquí también, así que mandamos scope=dog_form
+          y el user puede aclarar en el mensaje si era el importer. Si en el futuro
+          el importador se separa a otra ruta, cambiar el scope a "importer". */}
+      <FeedbackButton scope="dog_form" pageLabel={`Editar perro: ${dog.name} (incluye importador)`} />
+    </>
   )
 }
