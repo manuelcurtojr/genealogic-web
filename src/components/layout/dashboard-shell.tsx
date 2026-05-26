@@ -293,13 +293,19 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
       {/* Main content — NO stacking context here, so slide panels rendered
           inside `children` can layer above the sidebar (z-50) and top bar (z-40). */}
       <main
-        className="p-4 transition-all duration-300"
-        style={{
-          // Empuja el contenido por debajo del header fixed (3.5rem) y, en iOS,
-          // también por debajo del safe-area-top que el header absorbe.
-          paddingTop: 'calc(4.5rem + var(--safe-area-top))',
-          paddingBottom: 'calc(1rem + var(--safe-area-bottom))',
-        }}
+        className={`p-4 transition-all duration-300 ${isIos ? '' : 'pt-18 lg:pt-[74px]'}`}
+        style={
+          isIos
+            ? {
+                // En iOS el header ya tiene height 3.5rem + safe-area-top. El
+                // main empieza justo donde acaba el header, sin "respiro" extra
+                // (ese gap quedaba feo al top y desaparecía al scrollear, que
+                // es exactamente lo que el usuario veía).
+                paddingTop: 'calc(3.5rem + var(--safe-area-top))',
+                paddingBottom: 'calc(1rem + var(--safe-area-bottom))',
+              }
+            : undefined
+        }
       >
         <div className={`transition-all duration-300 ${collapsed ? 'lg:ml-[68px]' : 'lg:ml-64'} lg:px-[30px] lg:py-[30px]`}>
           {children}
