@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 import "./globals.css";
 import CookieBanner from "@/components/ui/cookie-banner";
 import { PlatformProvider } from "@/components/platform/platform-provider";
-import { isIosFromCookieStore, isIosUserAgent } from "@/lib/platform";
+import { isIosUserAgent } from "@/lib/platform";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -72,10 +72,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [cookieStore, headerStore] = await Promise.all([cookies(), headers()]);
-  const isIos =
-    isIosUserAgent(headerStore.get("user-agent")) ||
-    isIosFromCookieStore(cookieStore);
+  const headerStore = await headers();
+  // SOLO User-Agent. La cookie se descartó como fallback (ver platform.ts):
+  // se quedaba pegada en navegadores móviles normales y los redirigía a /login.
+  const isIos = isIosUserAgent(headerStore.get("user-agent"));
   return (
     <html
       lang="es"

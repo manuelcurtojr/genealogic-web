@@ -66,13 +66,12 @@ export function isIosUserAgent(userAgent: string | null | undefined): boolean {
 }
 
 export function getPlatformFromRequest(request: NextRequest): 'ios' | 'web' {
-  // 1. User-Agent: fuente primaria, inmutable durante la sesión, no requiere
-  //    redirect ni cookie pre-sembrada.
-  if (isIosUserAgent(request.headers.get('user-agent'))) return 'ios'
-  // 2. Cookie: fallback / compatibilidad con sesiones previas que se
-  //    establecieron vía el antiguo `?platform=ios`.
-  if (isIosPlatformValue(request.cookies.get(APP_PLATFORM_COOKIE)?.value)) return 'ios'
-  return 'web'
+  // ÚNICA fuente de verdad: el User-Agent suffix `GenealogicIOSApp` que añade
+  // Capacitor. La cookie se descartó como fallback porque podía quedar
+  // pegada en navegadores móviles normales (Safari/Chrome) tras alguna visita
+  // que pasase por flujos antiguos, y disparaba la redirección a /login en
+  // usuarios web reales. El UA, en cambio, sólo existe dentro del WebView.
+  return isIosUserAgent(request.headers.get('user-agent')) ? 'ios' : 'web'
 }
 
 export function isIosFromCookieStore(cookies: ReadonlyRequestCookies): boolean {
