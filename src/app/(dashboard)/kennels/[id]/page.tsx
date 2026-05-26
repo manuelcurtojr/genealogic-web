@@ -209,11 +209,9 @@ export default async function KennelDetailPage({
     { value: breedNames.length, label: breedNames.length === 1 ? 'Raza' : 'Razas' },
   ].filter(s => s.value > 0)
 
-  const tagline = kennel.description
-    ? (kennel.description.length > 180
-        ? kennel.description.slice(0, 180).trimEnd().replace(/[,;:.\s]+$/, '') + '…'
-        : kennel.description)
-    : null
+  // Tagline del hero del perfil básico — corta en límite de palabra
+  // (sin '…') hasta ~280 chars, o devuelve completo si es corto.
+  const tagline = kennel.description ? truncateAtWord(kennel.description, 280) : null
   const hasOwner = !!kennel.owner_id
 
   // ─── JSON-LD + tracking común ───────────────────────────────────────
@@ -459,4 +457,15 @@ export default async function KennelDetailPage({
       )}
     </div>
   )
+}
+
+/** Trunca un texto en el último límite de palabra antes de maxChars, sin
+ *  añadir "…". Si es más corto que maxChars devuelve el original. */
+function truncateAtWord(text: string, maxChars: number): string {
+  const t = text.trim()
+  if (t.length <= maxChars) return t
+  const slice = t.slice(0, maxChars)
+  const lastBreak = Math.max(slice.lastIndexOf(' '), slice.lastIndexOf('\n'))
+  if (lastBreak < maxChars * 0.6) return slice.trimEnd()
+  return slice.slice(0, lastBreak).trimEnd()
 }

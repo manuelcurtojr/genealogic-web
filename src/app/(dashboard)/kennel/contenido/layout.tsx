@@ -68,7 +68,12 @@ export default async function KennelContenidoLayout({ children }: { children: Re
 
       <ContenidoSubNav />
 
-      {children}
+      {/* Margen propio entre la subnav y el contenido para que las páginas
+          editor respiren — el space-y-6 del layout no aplica aquí porque
+          el subnav tiene -mb-px que come 1px y el ojo pide más aire. */}
+      <div className="pt-4 sm:pt-6">
+        {children}
+      </div>
     </div>
   )
 }

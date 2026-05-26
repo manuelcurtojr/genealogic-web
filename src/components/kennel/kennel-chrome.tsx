@@ -59,7 +59,9 @@ export default function KennelChrome({
         className="border-b border-hairline bg-canvas/95 backdrop-blur-md"
         data-kennel-chrome="compact"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 h-14 flex items-center gap-3">
+        {/* Full-width: logo pegado a la izquierda, menú pegado a la derecha,
+            sin contenedor max-w. El padding lateral viene del dashboard. */}
+        <div className="w-full px-4 sm:px-6 lg:px-8 h-14 flex items-center gap-3">
           {/* Identidad — un poco más grande para emparejar el peso del nav */}
           <Link href={`/kennels/${kennelSlug}`} className="flex items-center gap-2.5 min-w-0 group">
             {logoUrl ? (
@@ -95,7 +97,8 @@ export default function KennelChrome({
         className="border-b border-hairline bg-canvas/90 backdrop-blur-md sticky top-0 z-40"
         data-kennel-chrome="standalone"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 h-16 sm:h-[72px] flex items-center gap-3">
+        {/* Full-width también en standalone: logo izq, nav der */}
+        <div className="w-full px-4 sm:px-6 lg:px-10 h-16 sm:h-[72px] flex items-center gap-3">
           <Link href={`/kennels/${kennelSlug}`} className="flex items-center gap-2.5 min-w-0 group">
             {logoUrl ? (
               /* eslint-disable-next-line @next/next/no-img-element */

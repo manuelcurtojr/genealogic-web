@@ -89,15 +89,38 @@ interface Props {
   stats: { value: number; label: string }[]
 }
 
+/**
+ * Trunca un texto en el último límite de palabra antes de maxChars.
+ * Sin "…" — corta limpio. Si el texto es más corto que maxChars devuelve
+ * el original. Si maxChars cae a mitad de palabra, retrocede al espacio
+ * anterior; si tampoco hay, hace un slice duro.
+ */
+function truncateAtWord(text: string, maxChars: number): string {
+  const t = text.trim()
+  if (t.length <= maxChars) return t
+  const slice = t.slice(0, maxChars)
+  // Busca el último espacio/punto/coma antes del límite
+  const lastBreak = Math.max(
+    slice.lastIndexOf(' '),
+    slice.lastIndexOf('\n'),
+  )
+  if (lastBreak < maxChars * 0.6) {
+    // No hay buen punto de corte; usamos el slice duro
+    return slice.trimEnd()
+  }
+  return slice.slice(0, lastBreak).trimEnd()
+}
+
 export default function KennelProHome({
   kennel, featuredDogs, faqEntries, reviews, recentPosts = [], breedNames, stats,
 }: Props) {
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const foundationYear = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null
+  // Tagline del hero: usamos hasta 320 chars y cortamos en el último
+  // límite de palabra (espacio o salto de línea), NO en medio de palabra
+  // ni con '…'. Si el description es más corto, se muestra entero.
   const tagline = kennel.description
-    ? (kennel.description.length > 200
-        ? kennel.description.slice(0, 200).trimEnd().replace(/[,;:.\s]+$/, '') + '…'
-        : kennel.description)
+    ? truncateAtWord(kennel.description, 320)
     : null
   const hasOwner = !!kennel.owner_id
 
@@ -487,32 +510,13 @@ export default function KennelProHome({
         </section>
       )}
 
-      {/* ════ NEWSLETTER SUBSCRIBE ════ */}
+      {/* ════ NEWSLETTER SUBSCRIBE ════
+           Sustituye al CTA "¿Te interesa una camada o un perro?" que antes
+           cerraba la home. Mismo diseño tipo card grande + gradient los dos
+           hace que se peleen visualmente — la newsletter ya es un cierre
+           efectivo, y el botón "Pedir información" del hero queda como CTA
+           primario sin redundancia. */}
       <NewsletterSubscribe kennelId={kennel.id} kennelName={kennel.name} />
-
-      {/* ════ CTA FINAL ════ */}
-      {hasOwner && (
-        <section className="rounded-2xl border border-hairline bg-surface-soft p-6 sm:p-10">
-          <div className="grid grid-cols-1 sm:grid-cols-[1.4fr_0.6fr] gap-5 sm:gap-8 items-center">
-            <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Hablemos</p>
-              <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold tracking-[-0.03em] text-ink leading-[1.15]">
-                ¿Te interesa una camada o un perro?
-              </h2>
-              <p className="mt-2 text-[14.5px] sm:text-[15.5px] text-body leading-[1.55] max-w-prose">
-                Escríbenos por el formulario. Te respondemos en menos de 24 horas. Sin compromiso.
-              </p>
-            </div>
-            <div className="flex sm:justify-end">
-              <ContactKennelButton
-                kennelId={kennel.id}
-                kennelName={kennel.name}
-                config={kennel.contact_form_config || null}
-              />
-            </div>
-          </div>
-        </section>
-      )}
 
     </div>
   )
