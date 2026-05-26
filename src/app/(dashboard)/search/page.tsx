@@ -20,6 +20,11 @@ export default function SearchPage() {
   const initialTab: Tab = searchParams.get('tab') === 'kennels' ? 'kennels' : 'dogs'
   // Query inicial pasada desde URL (?q=…) — viene del search box de la home
   const initialQuery = searchParams.get('q') || ''
+  // Filtro de raza inicial (?breed_id=…) — usado por los chips del hero
+  // de la home, que llevan directamente al filtro sin pasar por el campo
+  // de búsqueda. Si llega un breed_id, el filtro se aplica automáticamente
+  // y abrimos el panel de filtros para que el user vea qué está aplicado.
+  const initialBreedId = searchParams.get('breed_id') || ''
   const [tab, setTab] = useState<Tab>(initialTab)
 
   return (
@@ -52,25 +57,35 @@ export default function SearchPage() {
         </button>
       </div>
 
-      {tab === 'dogs' ? <DogsSearch initialQuery={initialQuery} /> : <KennelsSearch initialQuery={initialQuery} />}
+      {tab === 'dogs'
+        ? <DogsSearch initialQuery={initialQuery} initialBreedId={initialBreedId} />
+        : <KennelsSearch initialQuery={initialQuery} />}
     </div>
   )
 }
 
 /* ─── Dogs Search ─── */
-function DogsSearch({ initialQuery = '' }: { initialQuery?: string }) {
+function DogsSearch({
+  initialQuery = '',
+  initialBreedId = '',
+}: {
+  initialQuery?: string
+  initialBreedId?: string
+}) {
   const [query, setQuery] = useState(initialQuery)
   const [breeds, setBreeds] = useState<any[]>([])
   const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [loaded, setLoaded] = useState(false)
-  const [filtersOpen, setFiltersOpen] = useState(false)
+  // Si llega un breed_id en URL (deep-link desde chips de hero), abrimos
+  // ya con el panel de filtros expandido para que el user lo vea aplicado.
+  const [filtersOpen, setFiltersOpen] = useState(!!initialBreedId)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [total, setTotal] = useState(0)
 
-  const [breedFilter, setBreedFilter] = useState('')
+  const [breedFilter, setBreedFilter] = useState(initialBreedId)
   const [sexFilter, setSexFilter] = useState('')
   const [forSaleOnly, setForSaleOnly] = useState(false)
 

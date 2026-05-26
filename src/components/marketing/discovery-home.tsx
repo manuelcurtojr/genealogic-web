@@ -184,15 +184,22 @@ export default function DiscoveryHome({
                   </button>
                 </form>
 
-                {/* Hint atajos de búsqueda */}
+                {/* Hint atajos por raza — aplican filtro de raza, NO texto libre,
+                    así el user va directo al listado completo de esa raza en
+                    vez de a una búsqueda por nombre que matchea poco.
+                    Los IDs vienen de breeds en DB y son estables. */}
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {['Galgo Italiano', 'Bulldog Francés', 'Pastor Alemán'].map((q) => (
+                  {[
+                    { name: 'Galgo Italiano',  id: '2a8dc30c-681b-4f9c-ad8e-45c031a6d223' },
+                    { name: 'Bulldog Francés', id: '0f3686e7-f131-4f04-8773-eb334ef872a5' },
+                    { name: 'Pastor Alemán',   id: '96decbe3-08e1-4402-9ac1-7c02aa217fc8' },
+                  ].map((breed) => (
                     <Link
-                      key={q}
-                      href={`/search?q=${encodeURIComponent(q)}`}
+                      key={breed.id}
+                      href={`/search?breed_id=${breed.id}`}
                       className="inline-flex items-center rounded-full border border-hairline bg-canvas/70 backdrop-blur-sm px-2.5 py-1 text-[11px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
                     >
-                      {q}
+                      {breed.name}
                     </Link>
                   ))}
                 </div>
