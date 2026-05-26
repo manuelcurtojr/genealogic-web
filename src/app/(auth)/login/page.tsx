@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock } from 'lucide-react'
 import { AuthShell, Field, AuthSubmit, AuthError, GoogleButton, OAuthDivider } from '@/components/auth/auth-shell'
+import { usePlatform } from '@/components/platform/platform-provider'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -14,6 +15,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [oauthLoading, setOauthLoading] = useState(false)
   const router = useRouter()
+  const { isIos } = usePlatform()
+  // Google OAuth no funciona dentro de WKWebView (Google bloquea su
+  // "disallowed_useragent"). Ocultamos el botón en iOS y dejamos solo
+  // email/password. La opción nativa (Sign in with Apple o Google Sign-In
+  // SDK) se implementará en una iteración posterior.
 
   const handleGoogle = async () => {
     setError('')
@@ -63,9 +69,14 @@ export default function LoginPage() {
         label: 'Crear cuenta',
         href: '/register',
       }}
+      hideChrome={isIos}
     >
-      <GoogleButton onClick={handleGoogle} loading={oauthLoading} />
-      <OAuthDivider />
+      {!isIos && (
+        <>
+          <GoogleButton onClick={handleGoogle} loading={oauthLoading} />
+          <OAuthDivider />
+        </>
+      )}
 
       <form onSubmit={handleLogin} className="space-y-4">
         {error && <AuthError>{error}</AuthError>}

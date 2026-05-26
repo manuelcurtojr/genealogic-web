@@ -177,8 +177,27 @@ body {
   background-color: var(--surface);
   color: var(--ink);
   font-family: var(--font-inter), 'Inter', ui-sans-serif, system-ui, sans-serif;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/*
+ * iOS Capacitor WebView (App Store wrapper).
+ *
+ * Antes el body llevaba padding-top: env(safe-area-inset-top) global, lo que
+ * provocaba que los headers fixed/sticky (que se anclan al viewport, no al
+ * body) se metieran por debajo del notch al hacer scroll. La solución es no
+ * tocar el body y aplicar el safe area inset directamente sobre cada
+ * elemento fixed (header del dashboard, sidebar, etc.).
+ *
+ * `data-platform="ios"` lo escribe el server (app/layout.tsx) leyendo el
+ * User-Agent del WebView, así que el CSS no llega al navegador web normal.
+ */
+:root {
+  --safe-area-top: 0px;
+  --safe-area-bottom: 0px;
+}
+[data-platform="ios"] {
+  --safe-area-top: env(safe-area-inset-top);
+  --safe-area-bottom: env(safe-area-inset-bottom);
 }
 
 ::selection {

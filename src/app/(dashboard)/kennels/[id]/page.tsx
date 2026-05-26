@@ -5,27 +5,25 @@ import { ArrowLeft, Globe, Calendar, MapPin, ExternalLink, Sparkles, BadgeCheck 
 import { isUUID } from '@/lib/slug'
 import { pastelByName } from '@/lib/avatars'
 import KennelPublicTabs from '@/components/kennel/kennel-public-tabs'
+import KennelProHome from '@/components/kennel/pro-home'
 import PageTracker from '@/components/track/page-tracker'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 import ClaimBanner from '@/components/admin-requests/claim-banner'
 import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
 import { KennelJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
+import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
 import type { Metadata } from 'next'
 
 /**
- * Perfil público de criadero (versión "básica") — una sola landing.
+ * Home pública del criadero.
  *
- * Para Free/Kennel este es el destino final: una landing simple pero
- * vendedora con hero + catálogo de perros + contacto.
+ * - Free / Kennel: perfil simple (hero rediseñado + tabs de perros + contacto).
+ * - Kennel Pro / enterprise: landing Pro completa (KennelProHome) — el chrome
+ *   con menú lo añade el layout superior. Las páginas secundarias (sobre,
+ *   instalaciones, galería, blog, contacto, perros) viven en subdirectorios
+ *   y comparten ese mismo chrome.
  *
- * Para Kennel Pro (Irema y futuros) este perfil seguirá existiendo, pero
- * además habrá una web multi-página con chrome propio (separado, en otra
- * fase). Mientras tanto, si el kennel tiene `default_public_view='custom_web'`
- * el redirect a /c/[slug] sigue funcionando intacto.
- *
- * Foco del diseño: el hero. Es lo único que cambia respecto al anterior
- * — visual más fuerte, CTA contacto destacado (si el kennel tiene owner),
- * stats claras del criadero, redes como botones (no links texto suelto).
+ * /c/[slug] sigue funcionando tal cual — Irema sigue accesible por ambos.
  */
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -76,13 +74,13 @@ export default async function KennelDetailPage({
   const { data: kennel } = await supabase.from('kennels').select('*').eq(field, id).single()
   if (!kennel) notFound()
 
-  // 301 canónica UUID → slug
   if (field === 'id' && kennel.slug && kennel.slug !== id) {
     redirect(`/kennels/${kennel.slug}`)
   }
 
-  // Mismo flujo de redirect a web custom — sin tocar nada (Irema sigue con
-  // su /c/irema-curto cuando default_public_view='custom_web').
+  // Redirect a web custom (default_public_view=custom_web) — sin cambios.
+  // Irema mantiene este flow: por defecto va a /c/irema-curto desde
+  // genealogic.io/kennels/irema-curto a menos que añadan ?force=standard.
   const isOwner = user?.id === kennel.owner_id
   const forceStandard = sp.force === 'standard'
   const forceCustom = sp.force === 'custom'
@@ -101,8 +99,8 @@ export default async function KennelDetailPage({
     }
   }
 
-  // ─── Datos del perfil ──────────────────────────────────────────────
-  const [allDogsRes, allLittersRes, breedsRes, customPageRes] = await Promise.all([
+  // ─── Datos comunes ──────────────────────────────────────────────────
+  const [allDogsRes, allLittersRes, breedsRes, faqRes, ownerProfileRes] = await Promise.all([
     supabase
       .from('dogs')
       .select('id, slug, name, sex, thumbnail_url, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, breed:breeds(name)')
@@ -118,19 +116,27 @@ export default async function KennelDetailPage({
     kennel.breed_ids && kennel.breed_ids.length > 0
       ? supabase.from('breeds').select('id, name').in('id', kennel.breed_ids)
       : Promise.resolve({ data: [] }),
+    // FAQ — solo para Pro home; queries todas en paralelo para minimizar latencia
     supabase
-      .from('kennel_pages')
-      .select('id')
+      .from('knowledge_entries')
+      .select('id, title, content, category')
       .eq('kennel_id', kennel.id)
-      .eq('slug', 'home')
-      .eq('enabled', true)
-      .maybeSingle(),
+      .eq('is_active', true)
+      .order('position', { ascending: true })
+      .limit(20),
+    kennel.owner_id
+      ? supabase.from('profiles').select('plan').eq('id', kennel.owner_id).single()
+      : Promise.resolve({ data: null }),
   ])
 
   const allDogs = allDogsRes.data || []
   const allLitters = allLittersRes.data || []
   const breedNames = (breedsRes.data || []).map((b: { name: string }) => b.name)
-  const hasCustomWeb = !!customPageRes.data && !!kennel.slug
+  const faqEntries = faqRes.data || []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ownerPlan = (ownerProfileRes.data as any)?.plan || null
+  const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
 
   const dogs = sortDogsPhotoFirst(allDogs)
   const litters = allLitters
@@ -143,26 +149,22 @@ export default async function KennelDetailPage({
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const foundationYear = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null
 
-  // Stats para mostrar en el hero (solo las que tengan valor positivo)
   const stats = [
     { value: dogs.length, label: dogs.length === 1 ? 'Perro' : 'Perros' },
     { value: litters.filter((l: { status: string }) => l.status === 'born' || l.status === 'delivered').length, label: 'Camadas' },
     { value: breedNames.length, label: breedNames.length === 1 ? 'Raza' : 'Razas' },
   ].filter(s => s.value > 0)
 
-  // Tagline = primeros 180 chars de la descripción (sin cortar palabras feas)
   const tagline = kennel.description
     ? (kennel.description.length > 180
         ? kennel.description.slice(0, 180).trimEnd().replace(/[,;:.\s]+$/, '') + '…'
         : kennel.description)
     : null
-
-  // Mostrar CTA "Contactar" funcional solo si el kennel tiene owner real.
-  // Si está sin reclamar (importado), el claim banner ya guía al user.
   const hasOwner = !!kennel.owner_id
 
-  return (
-    <div className="space-y-8 sm:space-y-12">
+  // ─── JSON-LD + tracking común ───────────────────────────────────────
+  const seo = (
+    <>
       <KennelJsonLd
         name={kennel.name}
         url={canonicalUrl}
@@ -181,12 +183,71 @@ export default async function KennelDetailPage({
         ]}
       />
       <PageTracker kennelId={kennel.id} />
-
       {!kennel.owner_id && (
         <ClaimBanner type="kennel" targetId={kennel.slug || kennel.id} targetName={kennel.name} />
       )}
+    </>
+  )
 
-      {/* Back + CTA web custom (si existe — Irema lo tiene) */}
+  // ═══════════════════════════════════════════════════════════════════
+  // KENNEL PRO — landing Pro completa
+  // ═══════════════════════════════════════════════════════════════════
+  if (isPro) {
+    // Para perros destacados de la home, mostramos los primeros 6 con foto.
+    // Normalizamos el join breed (PostgREST a veces lo tipa como array).
+    type RawDog = { id: string; slug: string | null; name: string; thumbnail_url: string | null; breed?: { name?: string } | { name?: string }[] | null }
+    const featured = (dogs as RawDog[])
+      .filter(d => d.thumbnail_url)
+      .slice(0, 6)
+      .map(d => {
+        const breedRel = d.breed
+        const breed = Array.isArray(breedRel) ? breedRel[0] : breedRel
+        return {
+          id: d.id,
+          slug: d.slug,
+          name: d.name,
+          thumbnail_url: d.thumbnail_url,
+          breed: breed || null,
+        }
+      })
+    return (
+      <div className="space-y-0">
+        {seo}
+        <KennelProHome
+          kennel={{
+            id: kennel.id,
+            name: kennel.name,
+            slug: kennel.slug,
+            logo_url: kennel.logo_url,
+            description: kennel.description,
+            about_md: kennel.about_md,
+            hero_image_url: kennel.hero_image_url,
+            foundation_date: kennel.foundation_date,
+            city: kennel.city,
+            country: kennel.country,
+            website: kennel.website,
+            social_instagram: kennel.social_instagram,
+            social_facebook: kennel.social_facebook,
+            contact_form_config: kennel.contact_form_config,
+            owner_id: kennel.owner_id,
+          }}
+          featuredDogs={featured}
+          faqEntries={faqEntries}
+          breedNames={breedNames}
+          stats={stats}
+        />
+      </div>
+    )
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // FREE / KENNEL — perfil básico (1 landing)
+  // ═══════════════════════════════════════════════════════════════════
+  return (
+    <div className="space-y-8 sm:space-y-12">
+      {seo}
+
+      {/* Back nav */}
       <div className="flex items-center justify-between gap-3">
         <Link
           href={isOwner ? '/kennel' : '/kennels'}
@@ -194,19 +255,10 @@ export default async function KennelDetailPage({
         >
           <ArrowLeft className="h-4 w-4" /> Volver
         </Link>
-        {hasCustomWeb && (
-          <Link
-            href={`/c/${kennel.slug}`}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90"
-          >
-            <Sparkles className="h-3.5 w-3.5" /> Ver web del criadero
-          </Link>
-        )}
       </div>
 
-      {/* ═══ HERO ═══ */}
+      {/* HERO simple */}
       <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-orange-50/60 via-canvas to-blue-50/60">
-        {/* Glow decorativo en esquina sup-derecha (palette marca) */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -top-32 -right-32 h-[400px] w-[400px] rounded-full blur-3xl opacity-50"
@@ -216,8 +268,6 @@ export default async function KennelDetailPage({
           }}
         />
         <div className="relative grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 lg:gap-12 p-6 sm:p-8 lg:p-12">
-
-          {/* Izquierda — identidad + tagline + CTAs */}
           <div className="flex flex-col gap-5 sm:gap-6">
             <div className="flex items-start gap-4 sm:gap-5">
               <div className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
@@ -225,19 +275,14 @@ export default async function KennelDetailPage({
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img src={kennel.logo_url} alt={kennel.name} className="h-full w-full object-cover" />
                 ) : (
-                  <div
-                    className="flex h-full w-full items-center justify-center"
-                    style={{ backgroundColor: pastelByName(kennel.name) }}
-                  >
+                  <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: pastelByName(kennel.name) }}>
                     <span className="text-3xl sm:text-4xl font-semibold text-white">{kennel.name[0]?.toUpperCase()}</span>
                   </div>
                 )}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-                    Criadero
-                  </span>
+                  <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Criadero</span>
                   {hasOwner && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
                       <BadgeCheck className="h-3 w-3" /> Verificado
@@ -248,20 +293,14 @@ export default async function KennelDetailPage({
                   {kennel.name}
                 </h1>
                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-muted">
-                  {location && (
-                    <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {location}</span>
-                  )}
-                  {foundationYear && (
-                    <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> Desde {foundationYear}</span>
-                  )}
+                  {location && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {location}</span>}
+                  {foundationYear && <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> Desde {foundationYear}</span>}
                 </div>
               </div>
             </div>
 
             {tagline && (
-              <p className="text-[15.5px] sm:text-[17px] text-body leading-[1.55] max-w-prose">
-                {tagline}
-              </p>
+              <p className="text-[15.5px] sm:text-[17px] text-body leading-[1.55] max-w-prose">{tagline}</p>
             )}
 
             {breedNames.length > 0 && (
@@ -272,22 +311,15 @@ export default async function KennelDetailPage({
                   </span>
                 ))}
                 {breedNames.length > 5 && (
-                  <span className="inline-flex items-center px-2 py-1 text-[11.5px] text-muted">
-                    +{breedNames.length - 5}
-                  </span>
+                  <span className="inline-flex items-center px-2 py-1 text-[11.5px] text-muted">+{breedNames.length - 5}</span>
                 )}
               </div>
             )}
 
-            {/* CTAs primarios */}
             <div className="flex flex-wrap gap-2 pt-1">
-              {hasOwner ? (
-                <ContactKennelButton
-                  kennelId={kennel.id}
-                  kennelName={kennel.name}
-                  config={kennel.contact_form_config || null}
-                />
-              ) : null}
+              {hasOwner && (
+                <ContactKennelButton kennelId={kennel.id} kennelName={kennel.name} config={kennel.contact_form_config || null} />
+              )}
               <Link
                 href="#perros"
                 className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas text-ink px-4 py-2.5 text-[13px] font-bold hover:border-ink/30 transition"
@@ -295,29 +327,18 @@ export default async function KennelDetailPage({
                 Ver perros
               </Link>
               {kennel.social_instagram && (
-                <a
-                  href={kennel.social_instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas/70 backdrop-blur-sm text-body px-3 py-2.5 text-[12.5px] font-semibold hover:border-ink/30 hover:text-ink transition"
-                >
+                <a href={kennel.social_instagram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas/70 backdrop-blur-sm text-body px-3 py-2.5 text-[12.5px] font-semibold hover:border-ink/30 hover:text-ink transition">
                   <ExternalLink className="h-3.5 w-3.5" /> Instagram
                 </a>
               )}
               {kennel.website && (
-                <a
-                  href={kennel.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas/70 backdrop-blur-sm text-body px-3 py-2.5 text-[12.5px] font-semibold hover:border-ink/30 hover:text-ink transition"
-                >
+                <a href={kennel.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas/70 backdrop-blur-sm text-body px-3 py-2.5 text-[12.5px] font-semibold hover:border-ink/30 hover:text-ink transition">
                   <Globe className="h-3.5 w-3.5" /> Web
                 </a>
               )}
             </div>
           </div>
 
-          {/* Derecha — card de stats */}
           {stats.length > 0 && (
             <aside className="rounded-2xl bg-canvas/80 backdrop-blur-md border border-hairline p-5 sm:p-6 self-start w-full">
               <div className="flex items-center gap-1.5 mb-4">
@@ -330,9 +351,7 @@ export default async function KennelDetailPage({
                     <p className="text-[24px] sm:text-[28px] font-semibold tabular-nums tracking-[-0.03em] text-ink leading-none">
                       {s.value.toLocaleString('es-ES')}
                     </p>
-                    <p className="mt-1.5 text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted">
-                      {s.label}
-                    </p>
+                    <p className="mt-1.5 text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted">{s.label}</p>
                   </div>
                 ))}
               </div>
@@ -341,13 +360,11 @@ export default async function KennelDetailPage({
         </div>
       </section>
 
-      {/* ═══ NUESTROS PERROS — anchor #perros ═══ */}
+      {/* NUESTROS PERROS */}
       <section id="perros" className="scroll-mt-24">
         <div className="mb-5 sm:mb-6">
           <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Catálogo</p>
-          <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
-            Nuestros perros
-          </h2>
+          <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">Nuestros perros</h2>
         </div>
         <KennelPublicTabs
           kennelName={kennel.name}
@@ -359,25 +376,17 @@ export default async function KennelDetailPage({
         />
       </section>
 
-      {/* ═══ CONTACTO — siempre al final si hay owner ═══ */}
+      {/* CTA contacto */}
       {hasOwner && (
         <section className="rounded-2xl border border-hairline bg-canvas p-6 sm:p-8">
           <div className="grid grid-cols-1 sm:grid-cols-[1.4fr_0.6fr] gap-5 sm:gap-8 items-center">
             <div>
               <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Hablemos</p>
-              <h2 className="mt-1 text-[20px] sm:text-[24px] font-semibold tracking-[-0.02em] text-ink">
-                ¿Te interesa una camada o un perro?
-              </h2>
-              <p className="mt-2 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-prose">
-                Escríbenos por el formulario y te respondemos en breve. Sin compromiso.
-              </p>
+              <h2 className="mt-1 text-[20px] sm:text-[24px] font-semibold tracking-[-0.02em] text-ink">¿Te interesa una camada o un perro?</h2>
+              <p className="mt-2 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-prose">Escríbenos por el formulario y te respondemos en breve. Sin compromiso.</p>
             </div>
             <div className="flex sm:justify-end">
-              <ContactKennelButton
-                kennelId={kennel.id}
-                kennelName={kennel.name}
-                config={kennel.contact_form_config || null}
-              />
+              <ContactKennelButton kennelId={kennel.id} kennelName={kennel.name} config={kennel.contact_form_config || null} />
             </div>
           </div>
         </section>

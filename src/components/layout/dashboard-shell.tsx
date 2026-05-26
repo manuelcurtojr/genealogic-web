@@ -224,8 +224,16 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
         onToggleCollapse={toggleCollapse}
       />
 
-      {/* Mobile top bar */}
-      <div className={`lg:hidden fixed top-0 left-0 right-0 h-14 ${headerBg} border-b flex items-center gap-3 px-4 z-40 transition-colors duration-300`}>
+      {/* Mobile top bar. En iOS el WebView empuja safe-area-top via CSS var
+          (definida en globals.css con data-platform="ios"). El header crece
+          para cubrir el notch con fondo blanco. */}
+      <div
+        className={`lg:hidden fixed top-0 left-0 right-0 ${headerBg} border-b flex items-center gap-3 px-4 z-40 transition-colors duration-300`}
+        style={{
+          paddingTop: 'var(--safe-area-top)',
+          height: 'calc(3.5rem + var(--safe-area-top))',
+        }}
+      >
         <button onClick={() => setMobileOpen(true)} className={`${iconColor} transition shrink-0`}>
           <Menu className="w-6 h-6" />
         </button>
@@ -241,10 +249,14 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
         </button>
       </div>
 
-      {/* Desktop header */}
+      {/* Desktop header — también respeta safe-area-top en iPad. */}
       <div
-        className={`hidden lg:flex fixed top-0 right-0 h-14 ${headerBg} border-b items-center px-6 z-40 transition-all duration-300`}
-        style={{ left: sidebarWidth }}
+        className={`hidden lg:flex fixed top-0 right-0 ${headerBg} border-b items-center px-6 z-40 transition-all duration-300`}
+        style={{
+          left: sidebarWidth,
+          paddingTop: 'var(--safe-area-top)',
+          height: 'calc(3.5rem + var(--safe-area-top))',
+        }}
       >
         <div className="flex-1 mr-4">
           <SearchBar />
@@ -280,7 +292,15 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
 
       {/* Main content — NO stacking context here, so slide panels rendered
           inside `children` can layer above the sidebar (z-50) and top bar (z-40). */}
-      <main className="p-4 pt-18 lg:pt-[74px] transition-all duration-300">
+      <main
+        className="p-4 transition-all duration-300"
+        style={{
+          // Empuja el contenido por debajo del header fixed (3.5rem) y, en iOS,
+          // también por debajo del safe-area-top que el header absorbe.
+          paddingTop: 'calc(4.5rem + var(--safe-area-top))',
+          paddingBottom: 'calc(1rem + var(--safe-area-bottom))',
+        }}
+      >
         <div className={`transition-all duration-300 ${collapsed ? 'lg:ml-[68px]' : 'lg:ml-64'} lg:px-[30px] lg:py-[30px]`}>
           {children}
         </div>

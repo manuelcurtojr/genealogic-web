@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock, User, Store, Search } from 'lucide-react'
 import { AuthShell, Field, AuthSubmit, AuthError, GoogleButton, OAuthDivider } from '@/components/auth/auth-shell'
+import { usePlatform } from '@/components/platform/platform-provider'
 import {
   parseIntentFromQuery,
   saveIntentClient,
@@ -26,6 +27,8 @@ function RegisterInner() {
   const [oauthLoading, setOauthLoading] = useState(false)
   const [acceptTerms, setAcceptTerms] = useState(false)
   const router = useRouter()
+  const { isIos } = usePlatform()
+  // Mismo motivo que en /login: Google OAuth no funciona en WKWebView.
 
   // Persistir intent al cargar la página — sobrevive a OAuth redirect
   useEffect(() => {
@@ -112,15 +115,20 @@ function RegisterInner() {
         label: 'Iniciar sesión',
         href: intentData ? `/login?intent=${intentData.intent}&plan=${intentData.plan}` : '/login',
       }}
+      hideChrome={isIos}
     >
-      {intentData && <IntentBadge data={intentData} />}
+      {intentData && !isIos && <IntentBadge data={intentData} />}
 
-      <GoogleButton
-        onClick={handleGoogle}
-        loading={oauthLoading}
-        label="Continuar con Google"
-      />
-      <OAuthDivider label="o regístrate con email" />
+      {!isIos && (
+        <>
+          <GoogleButton
+            onClick={handleGoogle}
+            loading={oauthLoading}
+            label="Continuar con Google"
+          />
+          <OAuthDivider label="o regístrate con email" />
+        </>
+      )}
 
       <form onSubmit={handleRegister} className="space-y-4">
         {error && <AuthError>{error}</AuthError>}

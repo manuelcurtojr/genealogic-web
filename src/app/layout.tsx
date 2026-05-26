@@ -79,6 +79,7 @@ export default async function RootLayout({
   return (
     <html
       lang="es"
+      data-platform={isIos ? "ios" : "web"}
       className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="font-sans min-h-full flex flex-col bg-white text-ink">

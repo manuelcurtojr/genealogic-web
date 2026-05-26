@@ -91,10 +91,19 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
         <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={onClose} />
       )}
 
-      <aside className={`fixed left-0 top-0 h-screen bg-canvas border-r border-hairline flex flex-col z-50 w-64 ${collapsed ? 'lg:w-[68px]' : 'lg:w-64'} lg:transition-all lg:duration-300 ${
-        mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 pointer-events-none lg:pointer-events-auto'
-      }`}>
-        {/* Logo + toggle */}
+      <aside
+        className={`fixed left-0 top-0 h-screen bg-canvas border-r border-hairline flex flex-col z-50 w-64 ${collapsed ? 'lg:w-[68px]' : 'lg:w-64'} lg:transition-all lg:duration-300 ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 pointer-events-none lg:pointer-events-auto'
+        }`}
+        style={{
+          // En iOS el WebView llena la pantalla bajo el notch y la home bar.
+          // Aplicamos el inset directamente al <aside>: el header queda bajo
+          // el notch y el footer (Settings/Logout) por encima de la home bar.
+          paddingTop: 'var(--safe-area-top)',
+          paddingBottom: 'var(--safe-area-bottom)',
+        }}
+      >
+        {/* Logo + toggle — fijo arriba, no scrollea */}
         <div className="h-14 border-b border-hairline flex items-center px-3 gap-2 flex-shrink-0">
           <button
             onClick={mobileOpen ? onClose : onToggleCollapse}
@@ -181,8 +190,8 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
           })}
         </nav>
 
-        {/* Bottom: Settings + Logout (Admin ya está como sección si aplica) */}
-        <div className="border-t border-hairline p-2">
+        {/* Bottom: Settings + Logout — fijo abajo (flex-shrink-0), nunca scrollea */}
+        <div className="border-t border-hairline p-2 flex-shrink-0">
           <a
             href="/settings"
             title={collapsed && !mobileOpen ? t('Ajustes') : undefined}
@@ -207,7 +216,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
 
         {/* User avatar at bottom (collapsed only) */}
         {collapsed && !mobileOpen && user && (
-          <div className="border-t border-hairline p-2 flex justify-center">
+          <div className="border-t border-hairline p-2 flex justify-center flex-shrink-0">
             <div className="w-9 h-9 rounded-full overflow-hidden border border-hairline">
               {user.avatar_url ? (
                 <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />

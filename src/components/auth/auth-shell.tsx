@@ -14,6 +14,12 @@ interface AuthShellProps {
   children: React.ReactNode
   /** Bottom link e.g. { question: '¿No tienes cuenta?', label: 'Regístrate', href: '/register' } */
   footer?: { question: string; label: string; href: string }
+  /**
+   * Cuando true, oculta el botón "Volver" y la línea de copyright para
+   * presentar una versión limpia adecuada al WebView iOS. El caller (un
+   * client component como /login) decide leyendo `usePlatform()`.
+   */
+  hideChrome?: boolean
 }
 
 /**
@@ -23,21 +29,31 @@ interface AuthShellProps {
  *     pitch corto y 3 features iconadas. Subtle gradient.
  * On mobile both stack and right panel is hidden.
  */
-export function AuthShell({ title, titleTail, subtitle, children, footer }: AuthShellProps) {
+export function AuthShell({ title, titleTail, subtitle, children, footer, hideChrome = false }: AuthShellProps) {
   return (
-    <main className="min-h-screen bg-canvas text-ink">
+    <main
+      className="min-h-screen bg-canvas text-ink"
+      style={{
+        // Respeta notch + home bar cuando el shell se renderiza dentro del
+        // WebView iOS. En web normal estas vars son 0px (ver globals.css).
+        paddingTop: 'var(--safe-area-top)',
+        paddingBottom: 'var(--safe-area-bottom)',
+      }}
+    >
       <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
         {/* ── LEFT — Form column ────────────────────────────────────── */}
         <div className="relative flex flex-col px-6 py-8 sm:px-10 sm:py-10 lg:px-16 lg:py-12">
-          {/* Top bar — wordmark + back to home */}
+          {/* Top bar — wordmark + (opcional) volver */}
           <div className="flex items-center justify-between">
             <Wordmark size="text-xl" />
-            <Link
-              href="/"
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium text-muted transition-colors hover:bg-surface-soft hover:text-ink"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" /> Volver
-            </Link>
+            {!hideChrome && (
+              <Link
+                href="/"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium text-muted transition-colors hover:bg-surface-soft hover:text-ink"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" /> Volver
+              </Link>
+            )}
           </div>
 
           {/* Centered content */}
@@ -73,14 +89,16 @@ export function AuthShell({ title, titleTail, subtitle, children, footer }: Auth
             </div>
           </div>
 
-          {/* Bottom legal */}
-          <p className="text-[12px] text-muted">
-            © {new Date().getFullYear()} Genealogic · El registro público mundial de perros con genealogía
-          </p>
+          {/* Bottom legal — oculto en WebView iOS para layout limpio */}
+          {!hideChrome && (
+            <p className="text-[12px] text-muted">
+              © {new Date().getFullYear()} Genealogic · El registro público mundial de perros con genealogía
+            </p>
+          )}
         </div>
 
-        {/* ── RIGHT — Brand panel (lg only) ─────────────────────────── */}
-        <BrandPanel />
+        {/* ── RIGHT — Brand panel — oculto en WebView iOS (no aporta nada en móvil) */}
+        {!hideChrome && <BrandPanel />}
       </div>
     </main>
   )
