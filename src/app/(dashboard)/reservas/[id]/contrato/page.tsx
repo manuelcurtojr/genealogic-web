@@ -17,11 +17,13 @@ import { CONTRACT_TEMPLATES } from '@/lib/contracts/templates'
 import ContractEditor from '@/components/contracts/contract-editor'
 import {
   createOrInitContractAction,
+  createFromUserTemplateAction,
   saveContractDraftAction,
   sendContractAction,
   signContractAsBreederAction,
   cancelContractAction,
 } from './actions'
+import { listContractTemplatesForUser } from '@/lib/contracts/templates-actions'
 import { CheckCircle2, FileText, AlertCircle } from 'lucide-react'
 import { isEarlyAccessKennel } from '@/lib/early-access'
 import ComingSoon from '@/components/early-access/coming-soon'
@@ -76,7 +78,10 @@ export default async function BreederContractPage({
       </div>
 
       {!contract ? (
-        <CreateContractCard reservationId={reservation.id} />
+        <CreateContractCard
+          reservationId={reservation.id}
+          userTemplates={await listContractTemplatesForUser()}
+        />
       ) : contract.status === 'draft' ? (
         <ContractEditor
           reservationId={reservation.id}
@@ -112,7 +117,20 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-function CreateContractCard({ reservationId }: { reservationId: string }) {
+function CreateContractCard({
+  reservationId,
+  userTemplates,
+}: {
+  reservationId: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  userTemplates: any[]
+}) {
+  // Plantilla por defecto del kennel (si la marcó como default en /contratos)
+  // sale destacada como CTA principal.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const defaultTpl = userTemplates.find((t: any) => t.is_default) || null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const otherUserTpls = userTemplates.filter((t: any) => !t.is_default)
   return (
     <div className="rounded-2xl border border-dashed border-hairline bg-canvas p-8">
       <div className="flex items-center gap-3 mb-3">
@@ -124,24 +142,80 @@ function CreateContractCard({ reservationId }: { reservationId: string }) {
         precio). Después la editas con markdown ligero (negrita, listas, separadores) y la
         envías al cliente para firma.
       </p>
-      <div className="flex flex-wrap gap-2">
-        {CONTRACT_TEMPLATES.map((tpl) => (
-          <form
-            key={tpl.id}
-            action={async () => {
-              'use server'
-              await createOrInitContractAction(reservationId, tpl.id)
-            }}
-          >
-            <button
-              type="submit"
-              className="rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90"
+
+      {/* Plantillas del propio criador (contract_templates) */}
+      {userTemplates.length > 0 && (
+        <div className="mb-6 space-y-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+            Tus plantillas
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {defaultTpl && (
+              <form
+                action={async () => {
+                  'use server'
+                  await createFromUserTemplateAction(reservationId, defaultTpl.id)
+                }}
+              >
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90"
+                >
+                  ★ {defaultTpl.name} <span className="text-[10px] opacity-75">(por defecto)</span>
+                </button>
+              </form>
+            )}
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {otherUserTpls.map((tpl: any) => (
+              <form
+                key={tpl.id}
+                action={async () => {
+                  'use server'
+                  await createFromUserTemplateAction(reservationId, tpl.id)
+                }}
+              >
+                <button
+                  type="submit"
+                  className="rounded-lg border border-hairline bg-canvas text-ink px-4 py-2 text-sm font-semibold hover:border-ink/30 transition"
+                >
+                  {tpl.name}
+                </button>
+              </form>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Plantillas base (hardcoded) — fallback siempre disponible */}
+      <div className="space-y-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+          {userTemplates.length > 0 ? 'O empieza desde modelo base' : 'Modelos base'}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {CONTRACT_TEMPLATES.map((tpl) => (
+            <form
+              key={tpl.id}
+              action={async () => {
+                'use server'
+                await createOrInitContractAction(reservationId, tpl.id)
+              }}
             >
-              Usar: {tpl.label}
-            </button>
-          </form>
-        ))}
+              <button
+                type="submit"
+                className="rounded-lg border border-hairline bg-canvas text-ink px-4 py-2 text-sm font-semibold hover:border-ink/30 transition"
+              >
+                Usar: {tpl.label}
+              </button>
+            </form>
+          ))}
+        </div>
       </div>
+
+      <p className="mt-6 text-[12px] text-muted">
+        ¿Quieres crear tu propia plantilla? Ve a{' '}
+        <a href="/contratos" className="text-ink underline">Contratos</a> y guarda tus modelos
+        para reusarlos en cada reserva.
+      </p>
     </div>
   )
 }

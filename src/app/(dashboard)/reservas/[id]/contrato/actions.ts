@@ -21,6 +21,7 @@ import {
   type ContractTemplateId,
   type ContractTemplateVars,
 } from '@/lib/contracts/templates'
+import { getContractTemplate } from '@/lib/contracts/templates-actions'
 
 async function getClientIp(): Promise<string | null> {
   const h = await headers()
@@ -96,6 +97,51 @@ export async function createOrInitContractAction(
       kennelId: reservation.kennel.id,
       createdBy: userId,
       title: tpl.label,
+      bodyMarkdown: body,
+    })
+    revalidatePath(`/reservas/${reservationId}/contrato`)
+    return { ok: true, contractId: created.id }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'unknown' }
+  }
+}
+
+/** Sustituye `{{var}}` en el body de la plantilla con los valores de la
+ *  reserva. Si la variable no existe o es vacía, queda en blanco (sin
+ *  romper el layout). Sintaxis simple — sin condicionales ni lógica. */
+function interpolateUserTemplate(body: string, vars: Record<string, string | undefined>): string {
+  return body.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, key: string) => {
+    const v = vars[key]
+    return v == null ? '' : String(v)
+  })
+}
+
+/** Crea el contrato de una reserva a partir de una plantilla del propio
+ *  criador (contract_templates) en lugar de los templates hardcoded.
+ *  Se llama desde el dropdown "Empezar desde plantilla" en
+ *  /reservas/[id]/contrato cuando aún no existe el contrato. */
+export async function createFromUserTemplateAction(
+  reservationId: string,
+  userTemplateId: string,
+): Promise<{ ok: true; contractId: string } | { ok: false; error: string }> {
+  try {
+    const { userId, reservation } = await assertBreeder(reservationId)
+    const existing = await getContractByReservation(reservationId)
+    if (existing) return { ok: true, contractId: existing.id }
+
+    const tpl = await getContractTemplate(userTemplateId)
+    if (!tpl) return { ok: false, error: 'Plantilla no encontrada' }
+    if (tpl.kennel_id !== reservation.kennel.id) {
+      return { ok: false, error: 'Plantilla no pertenece a este criadero' }
+    }
+
+    const vars = buildVars(reservation) as unknown as Record<string, string | undefined>
+    const body = interpolateUserTemplate(tpl.body_md, vars)
+    const created = await createContract({
+      reservationId,
+      kennelId: reservation.kennel.id,
+      createdBy: userId,
+      title: tpl.name,
       bodyMarkdown: body,
     })
     revalidatePath(`/reservas/${reservationId}/contrato`)
