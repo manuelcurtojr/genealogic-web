@@ -16,7 +16,22 @@ export const revalidate = 3600 // cachea 1h en CDN para no hammerizar la DB
 const SHARD_SIZE = 40000
 const MAX_SHARDS = 10
 
+/** Detecta si estamos en la fase de build de Next.
+ *  Durante "Collecting page data", Next invoca igualmente las rutas dinámicas
+ *  para resolver metadata. Si la query a Supabase es lenta (caso real:
+ *  tabla dogs con 70k+ filas), el build se va a SIGTERM por timeout de 60s
+ *  por worker.
+ *  Devolvemos respuestas vacías/mínimas durante el build y delegamos toda
+ *  la generación al runtime — con force-dynamic + revalidate=3600 la
+ *  primera request en producción regenera el sitemap real y queda en CDN. */
+const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
+
 export async function generateSitemaps() {
+  // En build devolvemos siempre los 10 shards sin consultar la BD.
+  // Si algún shard queda vacío en runtime, Google se lo come bien.
+  if (isBuildPhase) {
+    return Array.from({ length: MAX_SHARDS }, (_, i) => ({ id: i }))
+  }
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return [{ id: 0 }]
   }
@@ -36,6 +51,11 @@ export async function generateSitemaps() {
 }
 
 export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
+  // Build: respuesta mínima (sólo static en shard 0) — todo lo demás se
+  // resuelve en runtime para no bloquear el deploy.
+  if (isBuildPhase) {
+    return id === 0 ? staticEntries() : []
+  }
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return id === 0 ? staticEntries() : []
   }
