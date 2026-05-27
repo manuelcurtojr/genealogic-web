@@ -12,6 +12,7 @@ import ClaimBanner from '@/components/admin-requests/claim-banner'
 import { sortDogsByPhotoQuality } from '@/lib/dogs/sort-quality'
 import { KennelJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
+import { getKennelHomeData } from '@/lib/kennel/kennel-home-cache'
 import type { Metadata } from 'next'
 
 /**
@@ -83,86 +84,25 @@ export default async function KennelDetailPage({
   // la vista por defecto para nadie.
   const isOwner = user?.id === kennel.owner_id
 
-  // ─── Datos comunes ──────────────────────────────────────────────────
-  const [allDogsRes, allLittersRes, breedsRes, faqRes, ownerProfileRes, reviewsRes, postsRes] = await Promise.all([
-    supabase
-      .from('dogs')
-      .select('id, slug, name, sex, thumbnail_url, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, featured_in_home, breed:breeds(name)')
-      .eq('kennel_id', kennel.id)
-      .or('show_in_kennel.is.null,show_in_kennel.eq.true')
-      .order('name'),
-    supabase
-      .from('litters')
-      .select('id, status, birth_date, mating_date, breed:breeds(name), father:dogs!litters_father_id_fkey(id, name, thumbnail_url), mother:dogs!litters_mother_id_fkey(id, name, thumbnail_url)')
-      .eq('owner_id', kennel.owner_id)
-      .eq('show_in_kennel', true)
-      .order('created_at', { ascending: false }),
-    kennel.breed_ids && kennel.breed_ids.length > 0
-      ? supabase.from('breeds').select('id, name').in('id', kennel.breed_ids)
-      : Promise.resolve({ data: [] }),
-    // FAQ pública — todas las entries activas de la biblioteca del Emailbot
-    // se muestran (las escribió el criador para que el bot las responda,
-    // así que también son contenido público válido)
-    supabase
-      .from('knowledge_entries')
-      .select('id, title, content, category')
-      .eq('kennel_id', kennel.id)
-      .eq('is_active', true)
-      .order('position', { ascending: true })
-      .limit(20),
-    kennel.owner_id
-      ? supabase.from('profiles').select('plan').eq('id', kennel.owner_id).single()
-      : Promise.resolve({ data: null }),
-    // Reseñas visibles en la home Pro (campos extra para resolver badges)
-    supabase
-      .from('kennel_reviews')
-      .select('id, author_name, body, rating, author_avatar_url, submitted_by_user_id, is_manual')
-      .eq('kennel_id', kennel.id)
-      .eq('is_visible', true)
-      .order('position', { ascending: true, nullsFirst: false })
-      .order('created_at', { ascending: false })
-      .limit(12),
-    // Últimos posts del blog para el slider de la home Pro
-    supabase
-      .from('kennel_posts')
-      .select('id, slug, title, excerpt, cover_image_url, published_at, reading_time_minutes')
-      .eq('kennel_id', kennel.id)
-      .eq('status', 'published')
-      .order('published_at', { ascending: false })
-      .limit(6),
-  ])
-  const recentPosts = postsRes.data || []
+  // ─── Datos comunes (cacheados 120s vía unstable_cache) ─────────────
+  // Todas las queries pesadas de la home viven en getKennelHomeData,
+  // que se cachea por kennel.id durante 120s. Visitas repetidas (común
+  // en una web pública) golpean el caché, no la BD. La auth (getUser
+  // arriba) se mantiene dinámica fuera del caché.
+  const homeData = await getKennelHomeData(
+    kennel.id,
+    kennel.owner_id || null,
+    (kennel.breed_ids as string[] | null) || null,
+  )
+  const allDogs = homeData.allDogs
+  const allLitters = homeData.allLitters
+  const breedNames = homeData.breedNames
+  const faqEntries = homeData.faqEntries
+  const reviewsRaw = homeData.reviewsRaw
+  const ownerPlan = homeData.ownerPlan
+  const recentPosts = homeData.recentPosts
+  const clientUserIds = new Set(homeData.clientUserIds)
 
-  const allDogs = allDogsRes.data || []
-  const allLitters = allLittersRes.data || []
-  const breedNames = (breedsRes.data || []).map((b: { name: string }) => b.name)
-  const faqEntries = faqRes.data || []
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const reviewsRaw = (reviewsRes.data || []) as any[]
-
-  // Resolver badges Cliente / Usuario / null (manual) en una pasada.
-  // Cliente = el user que dejó la reseña tiene al menos 1 reservation con
-  // este kennel en estado delivered/confirmed.
-  const submitterIds = Array.from(new Set(
-    reviewsRaw
-      .filter(r => !r.is_manual && r.submitted_by_user_id)
-      .map(r => r.submitted_by_user_id as string),
-  ))
-  const clientUserIds = new Set<string>()
-  if (submitterIds.length > 0) {
-    // En puppy_reservations el "comprador" es owner_id (no client_id).
-    // Cualquier estado de reserva activa o cerrada cuenta como cliente
-    // (confirmed/paid/delivered).
-    const { data: resv } = await supabase
-      .from('puppy_reservations')
-      .select('owner_id')
-      .eq('kennel_id', kennel.id)
-      .in('owner_id', submitterIds)
-      .in('status', ['delivered', 'confirmed', 'paid', 'paid_in_full'])
-    for (const r of (resv || []) as Array<{ owner_id: string }>) {
-      if (r.owner_id) clientUserIds.add(r.owner_id)
-    }
-  }
   const reviews = reviewsRaw.map(r => ({
     id: r.id,
     author_name: r.author_name,
@@ -174,25 +114,14 @@ export default async function KennelDetailPage({
       : (r.submitted_by_user_id && clientUserIds.has(r.submitted_by_user_id) ? 'client' as const : 'user' as const),
   }))
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ownerPlan = (ownerProfileRes.data as any)?.plan || null
   const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
 
-  // Count fotos de galería por perro para ordenar por calidad
-  const dogIds = (allDogs as Array<{ id: string }>).map(d => d.id)
-  const photoCount: Record<string, number> = {}
-  if (dogIds.length > 0) {
-    const { data: dphotos } = await supabase
-      .from('dog_photos')
-      .select('dog_id')
-      .in('dog_id', dogIds)
-    for (const p of (dphotos || []) as Array<{ dog_id: string }>) {
-      photoCount[p.dog_id] = (photoCount[p.dog_id] || 0) + 1
-    }
-  }
-
+  // Sort 3-tier (count fotos): perros con galería rica primero, después
+  // los que solo tienen thumbnail, al final los sin foto. El photoCount
+  // ya viene cacheado dentro de getKennelHomeData — sin penalización en
+  // visitas repetidas.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dogs = sortDogsByPhotoQuality(allDogs as any[], photoCount)
+  const dogs = sortDogsByPhotoQuality(allDogs as any[], homeData.photoCount)
   const litters = allLitters
   const forSale = dogs.filter((d: { is_for_sale: boolean | null }) => d.is_for_sale)
   const reproductores = dogs.filter((d: { is_reproductive: boolean | null; is_for_sale: boolean | null }) => d.is_reproductive && !d.is_for_sale)
@@ -326,14 +255,8 @@ export default async function KennelDetailPage({
     // Imágenes: cogemos de kennel_photos (kind='gallery' para Sobre y
     // Galería; un perro con foto para Nuestros perros). Sin trampas de
     // imágenes externas, todo del catálogo del propio criadero.
-    const { data: kennelPhotos } = await supabase
-      .from('kennel_photos')
-      .select('id, url, kind')
-      .eq('kennel_id', kennel.id)
-      .order('position', { ascending: true, nullsFirst: false })
-      .order('created_at', { ascending: true })
-      .limit(20)
-    const galleryPhotos = (kennelPhotos || []).filter(p => p.kind === 'gallery')
+    // kennel_photos ya viene cacheado en homeData (solo kind='gallery')
+    const galleryPhotos = homeData.kennelPhotos
     // Las 3 fotos de los teasers son SIEMPRE perros distintos del criadero
     // (los 3 primeros con foto, que ya están ordenados por calidad). Si hay
     // menos de 3 perros con foto, las filas que no tengan imagen se descartan.

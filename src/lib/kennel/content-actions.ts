@@ -14,6 +14,7 @@
 
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { revalidateKennelHome } from '@/lib/kennel/kennel-home-cache'
 import { isKennelPro, isEnterpriseUser, normalizePlan } from '@/lib/permissions'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -43,7 +44,16 @@ async function requireOwnerOfProKennel(kennelId: string) {
   return { supabase, user, kennel }
 }
 
-function revalidateKennelPages(slug: string | null) {
+/** Server action pública: cualquier componente cliente puede invocarla
+ *  tras una mutación directa (p.ej. el panel de edición del kennel que
+ *  hace update() desde el cliente) para invalidar el caché de la home.
+ *  Idempotente — si no hay nada que invalidar es no-op. */
+export async function revalidateKennelHomeAction(kennelId: string, slug?: string | null): Promise<{ ok: true }> {
+  revalidateKennelPages(slug || null, kennelId)
+  return { ok: true }
+}
+
+function revalidateKennelPages(slug: string | null, kennelId?: string | null) {
   // Paths concretos en vez de 'layout' — más predecible, evita confundir a
   // los RSC payloads cuando el server action se llama desde un sub-route.
   revalidatePath('/kennel')
@@ -58,6 +68,10 @@ function revalidateKennelPages(slug: string | null) {
     revalidatePath(`/kennels/${slug}/instalaciones`)
     revalidatePath(`/kennels/${slug}/blog`)
   }
+  // Invalida el caché de datos `unstable_cache` de la home del kennel
+  // (TTL 120s) para que la siguiente request vea los cambios al instante
+  // en lugar de esperar a que expire el TTL.
+  if (kennelId) revalidateKennelHome(kennelId)
 }
 
 // ═══ Sobre nosotros ═════════════════════════════════════════════════════════
@@ -77,7 +91,7 @@ export async function saveAboutMdAction(input: {
     .eq('id', input.kennelId)
   if (error) throw new Error(error.message)
 
-  revalidateKennelPages(kennel.slug)
+  revalidateKennelPages(kennel.slug, kennel.id)
   return { ok: true }
 }
 
@@ -148,7 +162,7 @@ export async function uploadKennelPhotoAction(formData: FormData): Promise<{
     .single()
   if (insErr) throw new Error(insErr.message)
 
-  revalidateKennelPages(kennel.slug)
+  revalidateKennelPages(kennel.slug, kennel.id)
   return { id: row.id, url }
 }
 
@@ -178,7 +192,7 @@ export async function deleteKennelPhotoAction(input: {
   const { error } = await admin.from('kennel_photos').delete().eq('id', input.photoId)
   if (error) throw new Error(error.message)
 
-  revalidateKennelPages(kennel.slug)
+  revalidateKennelPages(kennel.slug, kennel.id)
   return { ok: true }
 }
 
@@ -198,7 +212,7 @@ export async function updatePhotoCaptionAction(input: {
     .eq('kennel_id', input.kennelId)
   if (error) throw new Error(error.message)
 
-  revalidateKennelPages(kennel.slug)
+  revalidateKennelPages(kennel.slug, kennel.id)
   return { ok: true }
 }
 
@@ -264,7 +278,7 @@ export async function upsertPostAction(input: {
       .select('id, slug')
       .single()
     if (error) throw new Error(error.message)
-    revalidateKennelPages(kennel.slug)
+    revalidateKennelPages(kennel.slug, kennel.id)
     return { id: data.id, slug: data.slug }
   }
 
@@ -299,7 +313,7 @@ export async function upsertPostAction(input: {
     .single()
   if (error) throw new Error(error.message)
 
-  revalidateKennelPages(kennel.slug)
+  revalidateKennelPages(kennel.slug, kennel.id)
   return { id: data.id, slug: data.slug }
 }
 
@@ -311,7 +325,7 @@ export async function deletePostAction(input: { postId: string; kennelId: string
     .eq('id', input.postId)
     .eq('kennel_id', input.kennelId)
   if (error) throw new Error(error.message)
-  revalidateKennelPages(kennel.slug)
+  revalidateKennelPages(kennel.slug, kennel.id)
   return { ok: true }
 }
 
@@ -347,7 +361,7 @@ export async function upsertFAQEntryAction(input: {
       .select('id')
       .single()
     if (error) throw new Error(error.message)
-    revalidateKennelPages(kennel.slug)
+    revalidateKennelPages(kennel.slug, kennel.id)
     return { id: data.id }
   }
 
@@ -373,7 +387,7 @@ export async function upsertFAQEntryAction(input: {
     .select('id')
     .single()
   if (error) throw new Error(error.message)
-  revalidateKennelPages(kennel.slug)
+  revalidateKennelPages(kennel.slug, kennel.id)
   return { id: data.id }
 }
 
@@ -385,7 +399,7 @@ export async function deleteFAQEntryAction(input: { entryId: string; kennelId: s
     .eq('id', input.entryId)
     .eq('kennel_id', input.kennelId)
   if (error) throw new Error(error.message)
-  revalidateKennelPages(kennel.slug)
+  revalidateKennelPages(kennel.slug, kennel.id)
   return { ok: true }
 }
 
@@ -421,7 +435,7 @@ export async function upsertReviewAction(input: {
       .select('id')
       .single()
     if (error) throw new Error(error.message)
-    revalidateKennelPages(kennel.slug)
+    revalidateKennelPages(kennel.slug, kennel.id)
     return { id: data.id }
   }
 
@@ -449,7 +463,7 @@ export async function upsertReviewAction(input: {
     .select('id')
     .single()
   if (error) throw new Error(error.message)
-  revalidateKennelPages(kennel.slug)
+  revalidateKennelPages(kennel.slug, kennel.id)
   return { id: data.id }
 }
 
@@ -461,7 +475,7 @@ export async function deleteReviewAction(input: { reviewId: string; kennelId: st
     .eq('id', input.reviewId)
     .eq('kennel_id', input.kennelId)
   if (error) throw new Error(error.message)
-  revalidateKennelPages(kennel.slug)
+  revalidateKennelPages(kennel.slug, kennel.id)
   return { ok: true }
 }
 
@@ -475,7 +489,7 @@ export async function toggleReviewVisibilityAction(input: {
     .eq('id', input.reviewId)
     .eq('kennel_id', input.kennelId)
   if (error) throw new Error(error.message)
-  revalidateKennelPages(kennel.slug)
+  revalidateKennelPages(kennel.slug, kennel.id)
   return { ok: true }
 }
 

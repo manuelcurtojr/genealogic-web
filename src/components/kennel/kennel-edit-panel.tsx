@@ -8,6 +8,7 @@ import { X, Loader2, Globe, ExternalLink, MessageCircle, MapPin, ChevronDown } f
 import { Portal } from '@/components/ui/portal'
 import { AFFIX_FORMATS, getAffixPreview, type AffixFormat } from '@/lib/affix'
 import { getLocalizedCountries, searchCities } from '@/lib/countries'
+import { revalidateKennelHomeAction } from '@/lib/kennel/content-actions'
 
 interface Props {
   open: boolean
@@ -110,8 +111,12 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
       city: form.city || null,
     }).eq('id', kennel.id)
 
+    if (err) { setSaving(false); setError(err.message); return }
+    // Invalida el caché `unstable_cache` de la home pública (TTL 120s) para
+    // que la siguiente request vea los cambios al instante. Best-effort —
+    // si falla, el TTL acabará refrescando.
+    try { await revalidateKennelHomeAction(kennel.id, kennel.slug) } catch { /* swallow */ }
     setSaving(false)
-    if (err) { setError(err.message); return }
     onClose()
     router.refresh()
   }

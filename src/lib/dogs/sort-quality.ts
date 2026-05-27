@@ -12,13 +12,14 @@
  * o created_at desde el caller).
  *
  * El caller pasa un map { dogId → photoCount } con la cuenta de dog_photos
- * de cada perro — calcularlo aquí supondría queries extra.
+ * de cada perro. La query que computa ese map vive cacheada dentro del
+ * bloque `getKennelHomeData` (TTL 120s), así que no penaliza visitas
+ * repetidas.
  */
 
 type DogLike = {
   id: string
   thumbnail_url: string | null
-  // permitimos campos extra sin tiparlos
   [k: string]: unknown
 }
 
@@ -26,7 +27,6 @@ export function sortDogsByPhotoQuality<T extends DogLike>(
   dogs: T[],
   photoCount: Record<string, number>,
 ): T[] {
-  // Score: 3 = many photos, 2 = one photo, 1 = thumbnail only, 0 = no photo
   function score(d: T): number {
     const count = photoCount[d.id] || 0
     if (count >= 2) return 3
@@ -34,7 +34,5 @@ export function sortDogsByPhotoQuality<T extends DogLike>(
     if (d.thumbnail_url) return 1
     return 0
   }
-
-  // Stable sort por score desc (Array.prototype.sort en V8 es estable)
   return [...dogs].sort((a, b) => score(b) - score(a))
 }

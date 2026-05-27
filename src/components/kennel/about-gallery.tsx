@@ -13,6 +13,7 @@
  */
 import Link from 'next/link'
 import { ArrowRight, ImageIcon } from 'lucide-react'
+import { transformImageUrl, ImagePresets } from '@/lib/storage/image-url'
 
 type Photo = {
   id: string
@@ -99,7 +100,7 @@ export default function AboutGallery({
               {p.url ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
-                  src={p.url}
+                  src={transformImageUrl(p.url, ImagePresets.galleryTile) || p.url}
                   alt={p.caption || `${kennelName} — foto`}
                   loading="lazy"
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"

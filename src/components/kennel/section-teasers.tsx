@@ -17,6 +17,7 @@
  */
 import Link from 'next/link'
 import { ArrowRight, Dog as DogIcon } from 'lucide-react'
+import { transformImageUrl, ImagePresets } from '@/lib/storage/image-url'
 
 type Teaser = {
   id: string
@@ -57,7 +58,7 @@ function FeatureRow({ teaser, reversed }: { teaser: Teaser; reversed: boolean })
           {teaser.imageUrl ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
-              src={teaser.imageUrl}
+              src={transformImageUrl(teaser.imageUrl, ImagePresets.teaserHero) || teaser.imageUrl}
               alt={teaser.imageAlt}
               loading="lazy"
               className="h-full w-full object-cover"

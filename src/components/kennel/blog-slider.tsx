@@ -13,6 +13,7 @@
 import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, BookOpen } from 'lucide-react'
+import { transformImageUrl, ImagePresets } from '@/lib/storage/image-url'
 
 type Post = {
   id: string
@@ -107,7 +108,7 @@ export default function BlogSlider({ posts, kennelSlug }: Props) {
                   {post.cover_image_url ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
-                      src={post.cover_image_url}
+                      src={transformImageUrl(post.cover_image_url, ImagePresets.blogCover) || post.cover_image_url}
                       alt=""
                       loading="lazy"
                       className="h-full w-full object-cover transition-transform group-hover/card:scale-[1.03]"
