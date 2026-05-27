@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, Lock, Globe, Shield, Dna, Heart } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, Lock, Globe, Shield, Dna, Heart, History } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import { BRAND } from '@/lib/constants'
 import { formatDogName, type AffixFormat } from '@/lib/affix'
@@ -16,6 +16,7 @@ import PedigreePdfTab from './edit-tabs/pedigree-pdf-tab'
 import GeneticaTab from './edit-tabs/genetica-tab'
 import ReproduccionTab from './edit-tabs/reproduccion-tab'
 import ImportPedigreeTab from './import-pedigree-tab'
+import HistoricoTab from './edit-tabs/historico-tab'
 
 interface DogFormPanelProps {
   open: boolean
@@ -39,6 +40,7 @@ const TABS = [
   { key: 'genetica', label: 'Genética', icon: Dna },
   { key: 'palmares', label: 'Palmarés', icon: Trophy },
   { key: 'pedigree-pdf', label: 'Genealogía PDF', icon: FileText },
+  { key: 'historico', label: 'Histórico', icon: History },
 ] as const
 
 type TabKey = typeof TABS[number]['key']
@@ -60,6 +62,13 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   const [femaleDogs, setFemaleDogs] = useState<any[]>([])
   const [allMaleDogs, setAllMaleDogs] = useState<any[]>([])
   const [allFemaleDogs, setAllFemaleDogs] = useState<any[]>([])
+  // Si el perro tiene un owner distinto al criador (transferido al cliente),
+  // mostramos su info en el form para que el criador SEPA con quién está
+  // tratando. No se puede editar desde aquí (los cambios de propietario
+  // van por /reservas → transfer).
+  const [externalOwner, setExternalOwner] = useState<{
+    id: string; display_name: string | null; email: string | null; avatar_url: string | null
+  } | null>(null)
 
   const [form, setForm] = useState({
     name: '', sex: 'male', birth_date: '', registration: '', microchip: '',
@@ -89,6 +98,26 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           const f = { name: dog.name || '', sex: dog.sex || 'male', birth_date: dog.birth_date || '', registration: dog.registration || '', microchip: dog.microchip || '', weight: dog.weight?.toString() || '', height: dog.height?.toString() || '', breed_id: dog.breed_id || '', color_id: dog.color_id || '', kennel_id: dog.kennel_id || '', father_id: dog.father_id || '', mother_id: dog.mother_id || '', is_public: dog.is_public ?? true }
           setForm(f)
           if (dog.breed_id) filterByBreed(dog.breed_id, cRes.data || [], mRes.data || [], fRes.data || [])
+
+          // Cargar info de quien posee el perro AHORA (puede ser distinto al
+          // criador si el perro ya fue transferido al cliente). Util para
+          // que el criador vea "Este perro ya tiene otro propietario" sin
+          // confusión al editar.
+          if (dog.owner_id && dog.owner_id !== userId) {
+            const { data: ownerProfile } = await supabase
+              .from('profiles')
+              .select('display_name, email, avatar_url')
+              .eq('id', dog.owner_id)
+              .maybeSingle()
+            setExternalOwner(ownerProfile ? {
+              id: dog.owner_id,
+              display_name: ownerProfile.display_name,
+              email: ownerProfile.email,
+              avatar_url: ownerProfile.avatar_url,
+            } : null)
+          } else {
+            setExternalOwner(null)
+          }
         }
       } else {
         setForm({ name: '', sex: 'male', birth_date: '', registration: '', microchip: '', weight: '', height: '', breed_id: defaultBreedId || '', color_id: '', kennel_id: defaultKennelId || '', father_id: defaultFatherId || '', mother_id: defaultMotherId || '', is_public: true })
@@ -300,10 +329,30 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                       {form.breed_id && (
                         <>
                           <DropdownSearch label="Color" items={colors.map(c => ({ id: c.id, name: c.name, image: null }))} value={form.color_id} onChange={v => set('color_id', v)} placeholder="Buscar color..." />
-                          <SelectCard label="Padre" name={selFather?.name} image={selFather?.thumbnail_url} sexColor={BRAND.male} onClear={() => set('father_id', '')}
-                            selector={<SearchList items={maleDogs.filter(d => d.id !== editDogId).map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))} value={form.father_id} onChange={v => set('father_id', v)} placeholder="Buscar padre..." sexColor={BRAND.male} />} />
-                          <SelectCard label="Madre" name={selMother?.name} image={selMother?.thumbnail_url} sexColor={BRAND.female} onClear={() => set('mother_id', '')}
-                            selector={<SearchList items={femaleDogs.filter(d => d.id !== editDogId).map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))} value={form.mother_id} onChange={v => set('mother_id', v)} placeholder="Buscar madre..." sexColor={BRAND.female} />} />
+
+                          {/* Padre y Madre — BLOQUEADOS en modo edición.
+                              Editar pedigree desde aquí rompería el árbol
+                              genealógico (descendientes, COI, hermanos).
+                              Para cambiarlos hay que usar el editor de
+                              pedigree dedicado (PedigreeEditor o el
+                              importador). */}
+                          {isEdit ? (
+                            <>
+                              <LockedParentCard label="Padre" dog={selFather} sexColor={BRAND.male} />
+                              <LockedParentCard label="Madre" dog={selMother} sexColor={BRAND.female} />
+                              <p className="text-[11px] text-muted leading-snug px-1">
+                                Los padres están bloqueados aquí para proteger la integridad del pedigree.
+                                Para modificarlos usa el <strong>editor de genealogía</strong> desde la ficha pública del perro.
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <SelectCard label="Padre" name={selFather?.name} image={selFather?.thumbnail_url} sexColor={BRAND.male} onClear={() => set('father_id', '')}
+                                selector={<SearchList items={maleDogs.filter(d => d.id !== editDogId).map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))} value={form.father_id} onChange={v => set('father_id', v)} placeholder="Buscar padre..." sexColor={BRAND.male} />} />
+                              <SelectCard label="Madre" name={selMother?.name} image={selMother?.thumbnail_url} sexColor={BRAND.female} onClear={() => set('mother_id', '')}
+                                selector={<SearchList items={femaleDogs.filter(d => d.id !== editDogId).map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))} value={form.mother_id} onChange={v => set('mother_id', v)} placeholder="Buscar madre..." sexColor={BRAND.female} />} />
+                            </>
+                          )}
                         </>
                       )}
                       <SelectCard label="Criadero" name={selKennel?.name} image={selKennel?.logo_url} onClear={() => set('kennel_id', '')}
@@ -311,6 +360,34 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                     </div>
                   )}
                 </Section>
+
+                {/* Owner externo — solo si el perro está en manos de otro
+                    usuario (transferido al cliente final). El criador necesita
+                    saber con quién está tratando sin tener que ir a /reservas. */}
+                {isEdit && externalOwner && (
+                  <Section icon={Shield} title="Propietario actual">
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-3">
+                      {externalOwner.avatar_url ? (
+                        <img src={externalOwner.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                          <Shield className="w-4 h-4 text-amber-700" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-ink truncate">
+                          {externalOwner.display_name || externalOwner.email || 'Propietario sin nombre'}
+                        </p>
+                        {externalOwner.display_name && externalOwner.email && (
+                          <p className="text-xs text-muted truncate">{externalOwner.email}</p>
+                        )}
+                        <p className="text-[11px] text-amber-700 mt-0.5 leading-snug">
+                          Este perro ya fue transferido. Para cambiar el propietario usa <strong>Reservas → Transferencia</strong>.
+                        </p>
+                      </div>
+                    </div>
+                  </Section>
+                )}
 
                 {/* Measurements */}
                 {!isFromLitter && (
@@ -352,6 +429,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             {activeTab === 'genetica' && editDogId && <GeneticaTab dogId={editDogId} userId={userId} />}
             {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
             {activeTab === 'pedigree-pdf' && editDogId && <PedigreePdfTab dogId={editDogId} dogName={form.name} userId={userId} />}
+            {activeTab === 'historico' && editDogId && <HistoricoTab dogId={editDogId} />}
           </div>
         )}
 
@@ -506,6 +584,37 @@ function LockedCard({ label, name, sexColor }: { label: string; name?: string; s
         <p className="truncate text-[14px] font-medium text-ink">{name || '—'}</p>
       </div>
       <Lock className="w-3.5 h-3.5 text-muted flex-shrink-0" />
+    </div>
+  )
+}
+
+/**
+ * LockedParentCard — versión read-only para padres en modo edición.
+ *
+ * Padre/Madre NUNCA deben editarse desde el form del perro (rompe el árbol:
+ * descendientes, COI, hermanos quedan inconsistentes). Aquí solo mostramos
+ * lo que hay, con el thumbnail, y un atajo a la ficha para que el usuario
+ * pueda navegar al editor de pedigree si quiere cambiar la relación.
+ */
+function LockedParentCard({ label, dog, sexColor }: {
+  label: string
+  dog?: { id: string; name: string; thumbnail_url?: string | null } | null
+  sexColor?: string
+}) {
+  return (
+    <div>
+      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">{label}</label>
+      <div className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 flex items-center gap-3 opacity-90">
+        {dog?.thumbnail_url ? (
+          <div className="w-8 h-8 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor || 'rgba(255,255,255,0.1)' }}>
+            <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" />
+          </div>
+        ) : sexColor ? (
+          <div className="w-1 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: sexColor }} />
+        ) : null}
+        <span className="flex-1 text-[14px] text-ink truncate">{dog?.name || 'Sin asignar'}</span>
+        <Lock className="w-3.5 h-3.5 text-muted flex-shrink-0" />
+      </div>
     </div>
   )
 }
