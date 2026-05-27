@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { NextRequest } from 'next/server'
+import { logAdminAction } from '@/lib/admin/audit-log'
+import { getClientIp } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +22,16 @@ export async function POST(request: NextRequest) {
     })
 
     if (error) return Response.json({ error: error.message }, { status: 500 })
+
+    // Audit log — dispara email "reset password" en nombre del admin.
+    await logAdminAction({
+      adminId: user.id,
+      action: 'password_reset',
+      targetTable: 'profiles',
+      payload: { target_email: email },
+      ip: getClientIp(request.headers),
+      userAgent: request.headers.get('user-agent'),
+    })
     return Response.json({ ok: true })
   } catch (err: any) {
     return Response.json({ error: err.message }, { status: 500 })

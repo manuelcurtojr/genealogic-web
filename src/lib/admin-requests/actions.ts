@@ -16,6 +16,7 @@ import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { sendTransactionalEmail } from '@/lib/email/send'
 import { notifySuperAdmin } from '@/lib/admin/notify'
+import { logAdminAction } from '@/lib/admin/audit-log'
 import type {
   AdminRequestType,
   AdminRequestStatus,
@@ -448,7 +449,22 @@ export async function adminUpdateRequestAction(input: {
     .eq('id', input.requestId)
   if (error) throw new Error(error.message)
 
-  void user // silence
+  // Audit log: solo registra cambios estructurales (status/priority/asignación),
+  // las admin_notes son texto libre y no aportan valor en el feed.
+  if (input.status || input.priority || input.assignedAdminId !== undefined) {
+    void logAdminAction({
+      adminId: user.id,
+      action: 'claim_resolve',
+      targetTable: 'admin_requests',
+      targetId: input.requestId,
+      payload: {
+        status: input.status,
+        priority: input.priority,
+        assigned_admin_id: input.assignedAdminId,
+      },
+    })
+  }
+
   revalidatePath(`/admin/solicitudes/${input.requestId}`)
   revalidatePath('/admin/solicitudes')
 }
@@ -525,13 +541,22 @@ export async function adminApproveClaimAction(input: {
   requestId: string
   resolutionNote?: string
 }): Promise<void> {
-  const { supabase } = await requireAdmin()
+  const { supabase, user } = await requireAdmin()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase as any).rpc('approve_claim_request', {
     p_request_id: input.requestId,
     p_resolution_note: input.resolutionNote || null,
   })
   if (error) throw new Error(error.message)
+
+  // Audit log: aprobar un claim transfiere ownership (acción crítica).
+  void logAdminAction({
+    adminId: user.id,
+    action: 'claim_approve',
+    targetTable: 'admin_requests',
+    targetId: input.requestId,
+    payload: { resolution_note: input.resolutionNote || null },
+  })
 
   // Email al user notificándole la aprobación (best-effort)
   try {
@@ -601,6 +626,14 @@ export async function adminRejectRequestAction(input: {
     })
     .eq('id', input.requestId)
   if (error) throw new Error(error.message)
+
+  void logAdminAction({
+    adminId: user.id,
+    action: 'claim_reject',
+    targetTable: 'admin_requests',
+    targetId: input.requestId,
+    payload: { resolution_note: input.resolutionNote.trim() },
+  })
 
   // Email al user notificándole el rechazo (best-effort). Solo para claims —
   // los support tickets rechazados ya se comunican via support_replied.

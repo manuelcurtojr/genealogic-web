@@ -31,9 +31,15 @@ export default function AdminUsersClient({ initialUsers }: Props) {
   })
 
   const updateRole = async (userId: string, newRole: string) => {
-    const supabase = createClient()
-    await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
-    setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u))
+    // Server action en lugar de cliente directo → el cambio queda
+    // registrado en admin_audit_log con before/after.
+    try {
+      const { adminChangeUserRoleAction } = await import('@/lib/admin/profile-actions')
+      await adminChangeUserRoleAction({ userId, newRole: newRole as 'admin' | 'breeder' | 'owner' })
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u))
+    } catch (e) {
+      alert((e as Error).message || 'Error al cambiar rol')
+    }
     setEditingRole(null)
   }
 

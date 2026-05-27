@@ -91,19 +91,31 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
 
   const handleSave = async () => {
     setSaving(true); setError('')
-    const supabase = createClient()
-    const { error: err } = await supabase.from('profiles').update({
-      display_name: form.display_name.trim() || null, email: form.email.trim() || null,
-      phone: form.phone.trim() || null, country: form.country.trim() || null,
-      city: form.city.trim() || null, bio: form.bio.trim() || null,
-      language: form.language, currency: form.currency, timezone: form.timezone.trim() || null,
-      date_format: form.date_format, role: form.role, status: form.status,
-      admin_notes: form.admin_notes.trim() || null,
-      public_profile: form.public_profile, show_email: form.show_email, show_phone: form.show_phone,
-      notif_email: form.notif_email, notif_submissions: form.notif_submissions,
-      notif_vet: form.notif_vet,
-    }).eq('id', userId)
-    if (err) setError(err.message)
+    // Server action en lugar de UPDATE cliente directo: registra el
+    // cambio en admin_audit_log con before/after de los campos. Cambios
+    // de role/status se loggean como acción semántica propia; el resto
+    // como 'edit_profile' genérico.
+    try {
+      const { adminEditProfileAction } = await import('@/lib/admin/profile-actions')
+      await adminEditProfileAction({
+        userId: userId!,
+        patch: {
+          display_name: form.display_name.trim() || null, email: form.email.trim() || null,
+          phone: form.phone.trim() || null, country: form.country.trim() || null,
+          city: form.city.trim() || null, bio: form.bio.trim() || null,
+          language: form.language, currency: form.currency, timezone: form.timezone.trim() || null,
+          date_format: form.date_format, role: form.role, status: form.status,
+          admin_notes: form.admin_notes.trim() || null,
+          public_profile: form.public_profile, show_email: form.show_email, show_phone: form.show_phone,
+          notif_email: form.notif_email, notif_submissions: form.notif_submissions,
+          notif_vet: form.notif_vet,
+        },
+      })
+    } catch (e) {
+      setError((e as Error).message || 'Error al guardar')
+      setSaving(false)
+      return
+    }
     setSaving(false)
     onSaved()
     onClose()

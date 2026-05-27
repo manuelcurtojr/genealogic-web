@@ -72,9 +72,20 @@ export default function AdminKennelsClient({ kennels: initKennels }: Props) {
                     {new Date(k.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
                   </td>
                   <td className="px-4 py-3">
-                    <Link href={`/kennels/${k.id}`} target="_blank" className="text-ink hover:opacity-80 transition">
-                      <ExternalLink className="w-4 h-4" />
-                    </Link>
+                    <div className="inline-flex items-center gap-1.5">
+                      {/* Vista 360 admin (interna) */}
+                      <Link
+                        href={`/admin/kennels/${k.id}`}
+                        title="Ver 360"
+                        className="inline-flex items-center gap-1 rounded-md border border-hairline bg-canvas px-2 py-1 text-[10.5px] font-semibold text-body hover:text-ink hover:border-ink/30 transition"
+                      >
+                        360 →
+                      </Link>
+                      {/* Web pública del kennel (target=_blank) */}
+                      <Link href={`/kennels/${k.id}`} target="_blank" className="text-ink hover:opacity-80 transition" title="Ver web pública">
+                        <ExternalLink className="w-4 h-4" />
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               )

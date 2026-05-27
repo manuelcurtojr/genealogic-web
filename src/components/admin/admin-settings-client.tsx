@@ -43,25 +43,24 @@ export default function AdminSettingsClient({ settings: initSettings }: Props) {
   const getSettingId = (key: string) => settings.find(s => s.key === key)?.id
   const getEditValue = (key: string) => editValues[key] ?? getSettingValue(key)
 
+  // Todas las mutaciones pasan por server actions con audit log automático
+  // (lib/admin/settings-actions.ts). Antes hacíamos UPDATE/INSERT/DELETE
+  // directos desde cliente y no quedaba rastro. Crítico para keys
+  // sensibles (API keys, webhook secrets) que también alertan al super
+  // admin si cambian.
   const saveSetting = async (key: string) => {
     const value = getEditValue(key)
     setSaving(key)
-    const supabase = createClient()
-
-    const existingId = getSettingId(key)
     const knownInfo = KNOWN_KEYS.find(k => k.key === key)
-
-    if (existingId) {
-      await supabase.from('platform_settings').update({ value, updated_at: new Date().toISOString() }).eq('id', existingId)
-    } else {
-      await supabase.from('platform_settings').insert({
-        key,
-        value,
-        description: knownInfo?.description || null,
-      })
+    try {
+      const { adminUpsertSettingAction } = await import('@/lib/admin/settings-actions')
+      await adminUpsertSettingAction({ key, value, description: knownInfo?.description || null })
+    } catch (e) {
+      alert((e as Error).message || 'Error al guardar')
+      setSaving(null)
+      return
     }
-
-    // Refresh
+    const supabase = createClient()
     const { data } = await supabase.from('platform_settings').select('id, key, value, description, updated_at').order('key')
     setSettings(data || [])
     setEditValues(prev => { const next = { ...prev }; delete next[key]; return next })
@@ -71,20 +70,33 @@ export default function AdminSettingsClient({ settings: initSettings }: Props) {
   const deleteSetting = async (key: string) => {
     const existingId = getSettingId(key)
     if (!existingId) return
-    const supabase = createClient()
-    await supabase.from('platform_settings').delete().eq('id', existingId)
+    try {
+      const { adminDeleteSettingAction } = await import('@/lib/admin/settings-actions')
+      await adminDeleteSettingAction({ key })
+    } catch (e) {
+      alert((e as Error).message || 'Error al borrar')
+      return
+    }
     setSettings(prev => prev.filter(s => s.key !== key))
   }
 
   const addCustom = async () => {
     if (!customKey.trim() || !customValue.trim()) return
     setSaving('custom')
+    const normalizedKey = customKey.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '_')
+    try {
+      const { adminUpsertSettingAction } = await import('@/lib/admin/settings-actions')
+      await adminUpsertSettingAction({
+        key: normalizedKey,
+        value: customValue.trim(),
+        description: customDesc.trim() || null,
+      })
+    } catch (e) {
+      alert((e as Error).message || 'Error al añadir')
+      setSaving(null)
+      return
+    }
     const supabase = createClient()
-    await supabase.from('platform_settings').insert({
-      key: customKey.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '_'),
-      value: customValue.trim(),
-      description: customDesc.trim() || null,
-    })
     const { data } = await supabase.from('platform_settings').select('id, key, value, description, updated_at').order('key')
     setSettings(data || [])
     setCustomKey('')
