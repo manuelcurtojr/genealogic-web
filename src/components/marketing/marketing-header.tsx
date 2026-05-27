@@ -77,6 +77,7 @@ export default function MarketingHeader() {
           </button>
           <Wordmark size="text-xl" />
           <nav className="flex items-center gap-6 ml-4 text-[14px] font-medium text-body">
+            <Link href="/features" className="hover:text-ink transition">Producto</Link>
             <Link href="/criadores" className="hover:text-ink transition">Criadores</Link>
             <Link href="/propietarios" className="hover:text-ink transition">Propietarios</Link>
             <Link href="/pricing" className="hover:text-ink transition">Precios</Link>
@@ -123,6 +124,9 @@ export default function MarketingHeader() {
               </DrawerSection>
 
               <DrawerSection label="Producto">
+                <DrawerLink href="/features" icon={Sparkles} onClick={() => setDrawerOpen(false)}>
+                  Todas las features
+                </DrawerLink>
                 <DrawerLink href="/criadores" icon={Store} onClick={() => setDrawerOpen(false)}>
                   Para criadores
                 </DrawerLink>
