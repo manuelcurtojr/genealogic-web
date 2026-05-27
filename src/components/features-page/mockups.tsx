@@ -16,10 +16,10 @@
  * `<Mockup slug=... />` despacha al correcto.
  */
 import {
-  GitBranch, KanbanSquare, Mail, ChevronDown, Search,
-  Heart, MoreHorizontal, Calendar, MapPin, Star,
-  ArrowUp, FileText, Send, Check,
-  CreditCard, Dna, TrendingUp,
+  Search, Calendar, Check, CreditCard, Dna,
+  Database, Globe2, Upload, Stethoscope,
+  Plus, Camera, Edit3, Clock, Dog as DogIcon,
+  ArrowRightLeft, Trophy,
 } from 'lucide-react'
 
 interface MockupProps {
@@ -563,8 +563,465 @@ function StatsDashboard() {
   )
 }
 
+// ─── 12. Public directory — 250k+ perros indexados ────────────────────
+function PublicDirectory() {
+  const dogs = [
+    { name: 'Achille Boris di Casa', breed: 'Cane Corso', loc: 'IT', sex: '♂' },
+    { name: 'Bara de Gran Reserva', breed: 'Presa Canario', loc: 'ES', sex: '♀' },
+    { name: 'Chango del Sol Naciente', breed: 'Dogo Argentino', loc: 'AR', sex: '♂' },
+    { name: 'Diva van der Heide', breed: 'Bouvier', loc: 'NL', sex: '♀' },
+    { name: 'Elia di San Mauro', breed: 'Galgo Italiano', loc: 'IT', sex: '♀' },
+    { name: 'Falcón de Tenerife', breed: 'Presa Canario', loc: 'ES', sex: '♂' },
+  ]
+  return (
+    <MockupFrame topBar="genealogic.io/search?q=presa+canario">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1.5">
+            <Database className="h-3.5 w-3.5 text-[#FE6620]" />
+            <p className="text-[12px] font-semibold text-ink">Directorio internacional</p>
+          </div>
+          <span className="text-[9.5px] text-muted tabular-nums">257.788 perros · 180+ razas</span>
+        </div>
+        <div className="flex items-center gap-1.5 mb-3">
+          <div className="flex items-center flex-1 rounded border border-hairline bg-canvas px-2 py-1">
+            <Search className="h-3 w-3 text-muted" />
+            <span className="text-[9.5px] text-ink ml-1.5 font-medium">presa canario</span>
+          </div>
+          <span className="text-[8.5px] px-1.5 py-0.5 rounded border border-hairline text-body">Raza</span>
+          <span className="text-[8.5px] px-1.5 py-0.5 rounded border border-hairline text-body">País</span>
+          <span className="text-[8.5px] px-1.5 py-0.5 rounded bg-ink text-on-primary font-semibold">Con foto</span>
+        </div>
+        <div className="space-y-1.5">
+          {dogs.map((d, i) => (
+            <div key={i} className="flex items-center gap-2 rounded border border-hairline bg-canvas px-2 py-1.5">
+              <div className={`h-8 w-8 rounded ${d.sex === '♂' ? 'bg-gradient-to-br from-blue-100 to-blue-50 text-blue-400' : 'bg-gradient-to-br from-pink-100 to-pink-50 text-pink-400'} flex items-center justify-center text-[12px]`}>{d.sex}</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-semibold text-ink truncate">{d.name}</p>
+                <p className="text-[8.5px] text-muted truncate">{d.breed} · {d.loc}</p>
+              </div>
+              <Globe2 className="h-3 w-3 text-muted" />
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 text-center">
+          <span className="text-[8.5px] text-muted">Mostrando 6 de 12.481 · página 1 de 2.080</span>
+        </div>
+      </div>
+    </MockupFrame>
+  )
+}
+
+// ─── 13. Pedigree importer ────────────────────────────────────────────
+function PedigreeImporter() {
+  return (
+    <MockupFrame topBar="genealogic.io/dogs/import">
+      <div className="p-4">
+        <div className="flex items-center gap-1.5 mb-3">
+          <Upload className="h-3.5 w-3.5 text-[#FE6620]" />
+          <p className="text-[12px] font-semibold text-ink">Importar genealogía</p>
+        </div>
+        <div className="rounded-lg border-2 border-dashed border-hairline bg-surface-soft p-3 mb-3">
+          <p className="text-[9px] font-semibold uppercase tracking-wider text-muted mb-1">URL de origen</p>
+          <p className="text-[10px] text-ink font-mono truncate">https://www.dogsfiles.com/.../xian-de-irema-curto</p>
+          <div className="flex items-center gap-1 mt-1">
+            <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">Dogsfiles ✓</span>
+            <span className="text-[8px] text-muted">soportado · 10+ sitios</span>
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          {[
+            { step: 'Scrapeando ficha del perro', done: true },
+            { step: 'Extrayendo padres y abuelos (4 gen)', done: true },
+            { step: 'Descargando fotos (12)', done: true },
+            { step: 'Importando palmarés (3 títulos)', done: true },
+            { step: 'Self-verify con LLM', done: true },
+            { step: 'De-duplicación con ancestros existentes…', done: false },
+          ].map((s, i) => (
+            <div key={i} className="flex items-center gap-2 text-[9.5px]">
+              {s.done ? (
+                <Check className="h-3 w-3 text-emerald-600" />
+              ) : (
+                <div className="h-3 w-3 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
+              )}
+              <span className={s.done ? 'text-ink' : 'text-body font-medium'}>{s.step}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 pt-3 border-t border-hairline flex items-center justify-between">
+          <span className="text-[9px] text-muted">Tiempo restante: ~8s</span>
+          <span className="text-[9px] px-2 py-0.5 rounded bg-ink text-on-primary font-semibold">Cancelar</span>
+        </div>
+      </div>
+    </MockupFrame>
+  )
+}
+
+// ─── 14. Audit history — histórico de cambios por perro ──────────────
+function AuditHistory() {
+  const events = [
+    { when: '14:23', who: 'Manuel C.', what: 'Subió una nueva foto', icon: Camera, color: '#3b82f6' },
+    { when: '14:18', who: 'Manuel C.', what: 'Actualizó peso de 32.1 a 33.4 kg', icon: Edit3, color: '#6366f1' },
+    { when: '09:02', who: 'Irema C.', what: 'Añadió vacuna: Polivalente anual', icon: Stethoscope, color: '#06b6d4' },
+    { when: 'Ayer 18:40', who: 'Manuel C.', what: 'Transfirió la propiedad', icon: ArrowRightLeft, color: '#f59e0b' },
+    { when: '12 Mar 11:00', who: 'Manuel C.', what: 'Creó el perro "Xían de Irema Curtó"', icon: DogIcon, color: '#10b981' },
+  ]
+  return (
+    <MockupFrame topBar="genealogic.io/dogs/xian/edit · Histórico">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-[#FE6620]" />
+            <p className="text-[12px] font-semibold text-ink">Histórico de cambios</p>
+          </div>
+          <span className="text-[9px] text-muted">128 eventos</span>
+        </div>
+        <div className="space-y-2 pl-4 border-l-2 border-hairline">
+          {events.map((e, i) => {
+            const Icon = e.icon
+            return (
+              <div key={i} className="relative">
+                <div
+                  className="absolute -left-[21px] top-0.5 h-4 w-4 rounded-full flex items-center justify-center border-2 border-canvas"
+                  style={{ backgroundColor: e.color }}
+                >
+                  <Icon className="h-2 w-2 text-white" />
+                </div>
+                <div className="rounded border border-hairline bg-canvas px-2 py-1.5">
+                  <p className="text-[10px] text-ink">{e.what}</p>
+                  <p className="text-[8.5px] text-muted mt-0.5">
+                    <span className="font-semibold">{e.who}</span> · {e.when}
+                  </p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </MockupFrame>
+  )
+}
+
+// ─── 15. Pedigree PDF ─────────────────────────────────────────────────
+function PedigreePdfMockup() {
+  return (
+    <MockupFrame topBar="genealogic.io/dogs/xian/pedigree.pdf">
+      <div className="p-4 bg-gradient-to-br from-amber-50/40 to-canvas">
+        {/* Marca del kennel */}
+        <div className="flex items-center justify-between mb-2 pb-2 border-b-2 border-ink">
+          <div>
+            <p className="text-[10px] font-bold text-ink tracking-wide">CRIADERO IREMA CURTÓ</p>
+            <p className="text-[8px] text-muted">Pedigree oficial · La Esperanza, Tenerife</p>
+          </div>
+          <Trophy className="h-5 w-5 text-amber-600" />
+        </div>
+        {/* Datos del perro */}
+        <div className="text-center mb-3">
+          <p className="text-[8px] font-semibold uppercase tracking-wider text-muted">PRESA CANARIO · MACHO</p>
+          <p className="text-[14px] font-bold text-ink italic">Xían de Irema Curtó</p>
+          <p className="text-[8.5px] text-body">LOE 2019/12345 · Microchip 941…3287</p>
+        </div>
+        {/* Mini pedigree 3 gen */}
+        <div className="grid grid-cols-3 gap-1.5 text-[8px]">
+          <div className="rounded border border-amber-300 bg-canvas p-1.5">
+            <p className="font-bold text-ink truncate">Xían</p>
+            <p className="text-muted">2019</p>
+          </div>
+          <div className="space-y-1">
+            <div className="rounded border border-blue-300 bg-canvas px-1.5 py-1">
+              <p className="font-bold text-blue-700 truncate">Toby II</p>
+            </div>
+            <div className="rounded border border-pink-300 bg-canvas px-1.5 py-1">
+              <p className="font-bold text-pink-700 truncate">Anita</p>
+            </div>
+          </div>
+          <div className="space-y-0.5 text-[7.5px]">
+            <div className="rounded border border-blue-200 bg-canvas px-1 py-0.5"><p className="text-blue-600 truncate">Boby</p></div>
+            <div className="rounded border border-pink-200 bg-canvas px-1 py-0.5"><p className="text-pink-600 truncate">Piba</p></div>
+            <div className="rounded border border-blue-200 bg-canvas px-1 py-0.5"><p className="text-blue-600 truncate">Toby I</p></div>
+            <div className="rounded border border-pink-200 bg-canvas px-1 py-0.5"><p className="text-pink-600 truncate">Gey</p></div>
+          </div>
+        </div>
+        {/* Sello y QR */}
+        <div className="mt-3 flex items-center justify-between">
+          <div>
+            <p className="text-[7.5px] text-muted">Firmado digitalmente</p>
+            <p className="text-[8px] font-bold text-ink italic">Manuel Curtó</p>
+          </div>
+          <div className="h-10 w-10 rounded bg-ink/90 grid grid-cols-4 gap-0.5 p-1">
+            {Array.from({ length: 16 }).map((_, i) => (
+              <div key={i} className={`${i % 3 === 0 ? 'bg-on-primary' : 'bg-transparent'} rounded-sm`} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </MockupFrame>
+  )
+}
+
+// ─── 16. Reproduction Gantt — celos, montas, partos ──────────────────
+function ReproductionGantt() {
+  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago']
+  const females = [
+    { name: 'Yula', events: [{ start: 0, span: 1, type: 'celo' }, { start: 1, span: 2, type: 'gestacion' }, { start: 3, span: 1, type: 'parto' }] },
+    { name: 'Anita', events: [{ start: 2, span: 1, type: 'celo' }, { start: 3, span: 2, type: 'gestacion' }, { start: 5, span: 1, type: 'parto' }] },
+    { name: 'Pipa', events: [{ start: 4, span: 1, type: 'celo' }, { start: 5, span: 2, type: 'gestacion' }, { start: 7, span: 1, type: 'parto' }] },
+  ]
+  const colorOf = (t: string) => t === 'celo' ? 'bg-pink-300' : t === 'gestacion' ? 'bg-amber-300' : 'bg-emerald-400'
+  return (
+    <MockupFrame topBar="genealogic.io/reproduccion">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5 text-[#FE6620]" />
+            <p className="text-[12px] font-semibold text-ink">Calendario reproductivo · 2026</p>
+          </div>
+          <div className="flex items-center gap-1.5 text-[8px]">
+            <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-pink-300" />celo</span>
+            <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-300" />gestación</span>
+            <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-400" />parto</span>
+          </div>
+        </div>
+        {/* Header de meses */}
+        <div className="grid grid-cols-[70px_repeat(8,1fr)] gap-0.5 mb-1">
+          <span />
+          {months.map(m => (
+            <span key={m} className="text-[8px] text-muted text-center font-semibold">{m}</span>
+          ))}
+        </div>
+        {/* Filas */}
+        {females.map(f => (
+          <div key={f.name} className="grid grid-cols-[70px_repeat(8,1fr)] gap-0.5 mb-1.5 items-center">
+            <span className="text-[9px] font-semibold text-ink">♀ {f.name}</span>
+            {months.map((_, i) => {
+              const evt = f.events.find(e => i >= e.start && i < e.start + e.span)
+              return (
+                <div key={i} className="h-4 rounded bg-surface-soft relative overflow-hidden">
+                  {evt && i === evt.start && (
+                    <div className={`absolute inset-y-0 left-0 ${colorOf(evt.type)} rounded`} style={{ width: `${evt.span * 100}%` }} />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        ))}
+        <div className="mt-3 pt-2 border-t border-hairline flex items-center justify-between text-[8.5px] text-muted">
+          <span>3 partos previstos · 24 cachorros estimados</span>
+          <span>Próximo: Yula · 8 Abr</span>
+        </div>
+      </div>
+    </MockupFrame>
+  )
+}
+
+// ─── 17. Litter detail ───────────────────────────────────────────────
+function LitterDetail() {
+  const puppies = [
+    { name: 'Bermudo', sex: '♂', tag: 'Reservado' },
+    { name: 'Báltico', sex: '♂', tag: 'Disponible' },
+    { name: 'Bárbara', sex: '♀', tag: 'Reservado' },
+    { name: 'Bera', sex: '♀', tag: 'Disponible' },
+    { name: 'Brisa', sex: '♀', tag: 'Entregado' },
+    { name: 'Bruno', sex: '♂', tag: 'Disponible' },
+  ]
+  return (
+    <MockupFrame topBar="genealogic.io/litters/camada-mayo-2026">
+      <div className="p-4">
+        <div className="flex items-baseline justify-between mb-2">
+          <div>
+            <p className="text-[8px] font-semibold uppercase tracking-wider text-[#FE6620]">CAMADA · MAYO 2026</p>
+            <p className="text-[13px] font-bold text-ink mt-0.5">Xían × Yula</p>
+            <p className="text-[9px] text-body">6 cachorros · 8 semanas · entrega 5 Jul</p>
+          </div>
+          <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold">3 disponibles</span>
+        </div>
+        <div className="grid grid-cols-3 gap-1.5 mt-3">
+          {puppies.map(p => (
+            <div key={p.name} className="rounded border border-hairline bg-canvas overflow-hidden">
+              <div className={`aspect-square ${p.sex === '♂' ? 'bg-gradient-to-br from-blue-100 to-blue-50 text-blue-400' : 'bg-gradient-to-br from-pink-100 to-pink-50 text-pink-400'} flex items-center justify-center text-[18px]`}>
+                {p.sex}
+              </div>
+              <div className="p-1">
+                <p className="text-[9px] font-semibold text-ink truncate">{p.name}</p>
+                <span className={`text-[7.5px] px-1 rounded font-semibold ${
+                  p.tag === 'Disponible' ? 'bg-emerald-50 text-emerald-700' :
+                  p.tag === 'Reservado' ? 'bg-amber-50 text-amber-700' :
+                  'bg-slate-100 text-slate-600'
+                }`}>{p.tag}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 flex items-center gap-1.5">
+          <span className="text-[9px] px-2 py-1 rounded bg-ink text-on-primary font-semibold inline-flex items-center gap-1">
+            <Plus className="h-3 w-3" /> Añadir cachorro
+          </span>
+          <span className="text-[9px] px-2 py-1 rounded border border-hairline text-body">Newsletter camada (12 suscritos)</span>
+        </div>
+      </div>
+    </MockupFrame>
+  )
+}
+
+// ─── 18. Vet records — cartilla veterinaria digital ──────────────────
+function VetRecords() {
+  const records = [
+    { type: 'vaccine', name: 'Polivalente anual', date: '12 Mar', next: '12 Mar 2027', color: 'emerald' },
+    { type: 'deworming', name: 'Milpro 12.5mg', date: '5 Mar', next: '5 Jun', color: 'blue' },
+    { type: 'test', name: 'Displasia cadera (OFA)', date: '14 Feb', next: null, color: 'violet' },
+    { type: 'treatment', name: 'Otitis externa derecha', date: '20 Ene', next: null, color: 'amber' },
+  ]
+  return (
+    <MockupFrame topBar="genealogic.io/dogs/xian/salud">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1.5">
+            <Stethoscope className="h-3.5 w-3.5 text-[#FE6620]" />
+            <p className="text-[12px] font-semibold text-ink">Cartilla veterinaria</p>
+          </div>
+          <span className="text-[9px] px-2 py-0.5 rounded bg-ink text-on-primary font-semibold inline-flex items-center gap-1">
+            <Plus className="h-3 w-3" /> Añadir
+          </span>
+        </div>
+        <div className="space-y-1.5">
+          {records.map((r, i) => (
+            <div key={i} className="flex items-center gap-2 rounded border border-hairline bg-canvas px-2 py-2">
+              <div className={`h-7 w-7 rounded bg-${r.color}-50 text-${r.color}-700 flex items-center justify-center`}>
+                <Stethoscope className="h-3.5 w-3.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-semibold text-ink truncate">{r.name}</p>
+                <p className="text-[8.5px] text-muted">{r.date} · {r.type}</p>
+              </div>
+              {r.next && (
+                <span className="text-[8.5px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 font-semibold whitespace-nowrap">
+                  ⏰ {r.next}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 pt-3 border-t border-hairline text-[8.5px] text-muted">
+          Próximo recordatorio: Milpro en 13 días
+        </div>
+      </div>
+    </MockupFrame>
+  )
+}
+
+// ─── 19. Genotypes ───────────────────────────────────────────────────
+function Genotypes() {
+  const loci = [
+    { locus: 'E (Extension)', value: 'E/E', meaning: 'No mascarilla negra', risk: false },
+    { locus: 'B (Brown)', value: 'B/b', meaning: 'Portador marrón', risk: false },
+    { locus: 'K (Dominant black)', value: 'kbr/ky', meaning: 'Atigrado (bardino)', risk: false },
+    { locus: 'D (Dilute)', value: 'D/D', meaning: 'Color pleno', risk: false },
+  ]
+  const tests = [
+    { name: 'DM (Mielopatía degenerativa)', result: 'Clear', lab: 'Embark', ok: true },
+    { name: 'Displasia codo (OFA)', result: 'Normal', lab: 'OFA', ok: true },
+    { name: 'PLL (Luxación cristalino)', result: 'Carrier', lab: 'Optimal', ok: false },
+  ]
+  return (
+    <MockupFrame topBar="genealogic.io/dogs/xian/genetica">
+      <div className="p-4">
+        <div className="flex items-center gap-1.5 mb-3">
+          <Dna className="h-3.5 w-3.5 text-[#FE6620]" />
+          <p className="text-[12px] font-semibold text-ink">Genotipos y pruebas</p>
+        </div>
+        <p className="text-[8.5px] font-semibold uppercase tracking-wider text-muted mb-1.5">Color (loci)</p>
+        <div className="space-y-1 mb-3">
+          {loci.map((l, i) => (
+            <div key={i} className="flex items-center justify-between rounded border border-hairline bg-canvas px-2 py-1.5">
+              <span className="text-[9.5px] text-ink">{l.locus}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[9.5px] font-bold tabular-nums text-ink font-mono">{l.value}</span>
+                <span className="text-[8.5px] text-muted">{l.meaning}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-[8.5px] font-semibold uppercase tracking-wider text-muted mb-1.5">Pruebas raciales</p>
+        <div className="space-y-1">
+          {tests.map((t, i) => (
+            <div key={i} className="flex items-center gap-2 rounded border border-hairline bg-canvas px-2 py-1.5">
+              <div className={`h-5 w-5 rounded-full flex items-center justify-center ${t.ok ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                {t.ok ? <Check className="h-2.5 w-2.5" /> : '!'}
+              </div>
+              <span className="flex-1 text-[9.5px] text-ink truncate">{t.name}</span>
+              <span className={`text-[8.5px] font-semibold ${t.ok ? 'text-emerald-700' : 'text-amber-700'}`}>{t.result}</span>
+              <span className="text-[8px] text-muted">{t.lab}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </MockupFrame>
+  )
+}
+
+// ─── 20. Reservations table — el pipeline moderno (no kanban) ────────
+function ReservationsTable() {
+  const rows = [
+    { client: 'María G. López', dog: 'Xenia · Camada Abril #3', state: 'Seña', value: '300€', when: 'hace 2h', stateColor: 'blue' },
+    { client: 'Carlos M.', dog: 'Macho · Camada Mayo', state: 'Contrato', value: '1.200€', when: 'hace 6h', stateColor: 'violet' },
+    { client: 'Sara H.', dog: 'Hembra · Camada Abril #1', state: 'Seña', value: '300€', when: 'ayer', stateColor: 'blue' },
+    { client: 'Pedro B.', dog: 'Macho · Camada Mayo', state: 'Entrega', value: '1.200€', when: 'ayer', stateColor: 'emerald' },
+    { client: 'Lucía F.', dog: 'Camada Mayo (info)', state: 'Evaluando', value: '—', when: '2 días', stateColor: 'amber' },
+    { client: 'Antonio R.', dog: 'Cachorro futuro', state: 'Nueva', value: '—', when: '3 días', stateColor: 'slate' },
+  ]
+  return (
+    <MockupFrame topBar="genealogic.io/reservas">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[12px] font-semibold text-ink">Reservas · 17 activas</p>
+          <div className="flex items-center gap-1">
+            <span className="text-[8.5px] px-2 py-0.5 rounded bg-ink text-on-primary font-semibold">Activas</span>
+            <span className="text-[8.5px] px-2 py-0.5 rounded border border-hairline text-body">Cerradas (143)</span>
+          </div>
+        </div>
+        {/* Tabs por estado */}
+        <div className="flex items-center gap-2 mb-2 border-b border-hairline pb-1.5 overflow-hidden">
+          {['Todas', 'Nueva', 'Evaluando', 'Seña', 'Contrato', 'Entrega'].map((t, i) => (
+            <span key={t} className={`text-[8.5px] whitespace-nowrap ${i === 0 ? 'text-ink font-bold border-b-2 border-ink pb-1' : 'text-muted'}`}>
+              {t} <span className="text-muted tabular-nums">{['17', '2', '4', '5', '4', '2'][i]}</span>
+            </span>
+          ))}
+        </div>
+        {/* Tabla densa */}
+        <table className="w-full text-[9px]">
+          <thead>
+            <tr className="text-muted text-left font-semibold uppercase tracking-wider">
+              <th className="py-1">Cliente</th>
+              <th className="py-1">Perro</th>
+              <th className="py-1">Estado</th>
+              <th className="py-1 text-right">Valor</th>
+              <th className="py-1 text-right">Últ.</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i} className="border-t border-hairline hover:bg-surface-soft">
+                <td className="py-1.5 font-semibold text-ink">{r.client}</td>
+                <td className="py-1.5 text-body truncate max-w-[80px]">{r.dog}</td>
+                <td className="py-1.5">
+                  <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-semibold bg-${r.stateColor}-50 text-${r.stateColor}-700`}>
+                    {r.state}
+                  </span>
+                </td>
+                <td className="py-1.5 text-right tabular-nums font-semibold text-ink">{r.value}</td>
+                <td className="py-1.5 text-right text-muted">{r.when}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </MockupFrame>
+  )
+}
+
 // ─── Despatcher ─────────────────────────────────────────────────────────
 const MOCKUPS: Record<string, () => React.ReactElement> = {
+  // Originales
   'pipeline-kanban': PipelineKanban,
   'contract-editor': ContractEditor,
   'payments-timeline': PaymentsTimeline,
@@ -576,6 +1033,16 @@ const MOCKUPS: Record<string, () => React.ReactElement> = {
   'bot-conversation': BotConversation,
   'newsletter-composer': NewsletterComposer,
   'stats-dashboard': StatsDashboard,
+  // Nuevos
+  'public-directory': PublicDirectory,
+  'pedigree-importer': PedigreeImporter,
+  'audit-history': AuditHistory,
+  'pedigree-pdf': PedigreePdfMockup,
+  'reproduction-gantt': ReproductionGantt,
+  'litter-detail': LitterDetail,
+  'vet-records': VetRecords,
+  'genotypes': Genotypes,
+  'reservations-table': ReservationsTable,
 }
 
 export default function Mockup({ slug }: MockupProps) {
