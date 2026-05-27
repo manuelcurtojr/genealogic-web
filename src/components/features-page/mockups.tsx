@@ -19,7 +19,7 @@ import {
   Search, Calendar, Check, CreditCard, Dna,
   Database, Globe2, Upload, Stethoscope,
   Plus, Camera, Edit3, Clock, Dog as DogIcon,
-  ArrowRightLeft, Trophy,
+  ArrowRightLeft, Trophy, Activity, TrendingUp,
 } from 'lucide-react'
 
 interface MockupProps {
@@ -1019,6 +1019,113 @@ function ReservationsTable() {
   )
 }
 
+// ─── 21. COI detail — ciencia detrás del coeficiente Wright ──────────
+function CoiDetail() {
+  // % de contribución de cada ancestro duplicado al COI total
+  const ancestors = [
+    { name: 'Falcón de la Plata', paths: 3, contrib: 2.1 },
+    { name: 'Bermudo del Sol', paths: 2, contrib: 1.4 },
+    { name: 'Toby II', paths: 2, contrib: 0.5 },
+    { name: 'Anita de Tenerife', paths: 1, contrib: 0.2 },
+  ]
+  // Distribución de la raza (histograma); barra del perro destacada
+  const breedHist = [
+    { range: '0–2%', pct: 18 },
+    { range: '2–4%', pct: 28, current: true },
+    { range: '4–6%', pct: 22 },
+    { range: '6–10%', pct: 18 },
+    { range: '10–15%', pct: 9 },
+    { range: '15%+', pct: 5 },
+  ]
+  return (
+    <MockupFrame topBar="genealogic.io/dogs/xian · COI">
+      <div className="p-4">
+        {/* Header con el número grande */}
+        <div className="flex items-center justify-between mb-3 pb-3 border-b border-hairline">
+          <div>
+            <div className="flex items-center gap-1.5">
+              <Activity className="h-3.5 w-3.5 text-[#FE6620]" />
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Coeficiente de consanguinidad</p>
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-[28px] font-bold tabular-nums text-emerald-700 leading-none">4.2%</span>
+              <span className="text-[9px] text-muted">Wright · 10 generaciones</span>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] text-muted">Percentil en la raza</p>
+            <p className="text-[14px] font-bold text-emerald-700">35º</p>
+            <p className="text-[8.5px] text-muted">mejor que el 65%</p>
+          </div>
+        </div>
+
+        {/* Comparativa vs raza */}
+        <p className="text-[8.5px] font-semibold uppercase tracking-wider text-muted mb-1.5">
+          <TrendingUp className="inline h-3 w-3 mr-1" />
+          Vs media de la raza (Presa Canario)
+        </p>
+        <div className="rounded-lg border border-hairline bg-canvas p-2.5 mb-3">
+          <div className="flex items-end gap-1 h-12">
+            {breedHist.map((b, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center justify-end gap-0.5">
+                <div
+                  className={`w-full rounded-t ${b.current ? 'bg-[#FE6620]' : 'bg-surface-card border border-hairline'}`}
+                  style={{ height: `${b.pct * 2}%` }}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-1 mt-1">
+            {breedHist.map((b, i) => (
+              <span key={i} className={`flex-1 text-[7.5px] text-center ${b.current ? 'text-[#FE6620] font-bold' : 'text-muted'}`}>
+                {b.range}
+              </span>
+            ))}
+          </div>
+          <div className="mt-1.5 pt-1.5 border-t border-hairline flex items-center justify-between text-[8.5px]">
+            <span className="text-muted">Media raza: <span className="text-ink font-semibold tabular-nums">5.8%</span></span>
+            <span className="text-emerald-700 font-semibold">Tu perro está por debajo ✓</span>
+          </div>
+        </div>
+
+        {/* Ancestros duplicados */}
+        <p className="text-[8.5px] font-semibold uppercase tracking-wider text-muted mb-1.5">
+          Ancestros que contribuyen al COI
+        </p>
+        <div className="space-y-1">
+          {ancestors.map((a, i) => (
+            <div key={i} className="rounded border border-hairline bg-canvas px-2 py-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold text-ink truncate">{a.name}</span>
+                <span className="text-[9.5px] font-bold tabular-nums text-[#FE6620]">+{a.contrib.toFixed(1)}%</span>
+              </div>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[8px] text-muted">{a.paths} caminos Wright</span>
+                <div className="flex-1 h-1 rounded-full bg-surface-card overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-amber-300 to-[#FE6620]" style={{ width: `${(a.contrib / 4.2) * 100}%` }} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Semáforo umbrales */}
+        <div className="mt-3 pt-2 border-t border-hairline">
+          <div className="flex h-1.5 rounded-full overflow-hidden">
+            <div className="flex-1 bg-emerald-400" />
+            <div className="flex-1 bg-amber-400" />
+            <div className="flex-1 bg-orange-400" />
+            <div className="flex-1 bg-rose-400" />
+          </div>
+          <div className="flex justify-between text-[7px] text-muted mt-0.5">
+            <span>0%</span><span>6.25%</span><span>12.5%</span><span>25%+</span>
+          </div>
+        </div>
+      </div>
+    </MockupFrame>
+  )
+}
+
 // ─── Despatcher ─────────────────────────────────────────────────────────
 const MOCKUPS: Record<string, () => React.ReactElement> = {
   // Originales
@@ -1043,6 +1150,7 @@ const MOCKUPS: Record<string, () => React.ReactElement> = {
   'vet-records': VetRecords,
   'genotypes': Genotypes,
   'reservations-table': ReservationsTable,
+  'coi-detail': CoiDetail,
 }
 
 export default function Mockup({ slug }: MockupProps) {

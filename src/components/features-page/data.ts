@@ -148,6 +148,22 @@ export const CATEGORIES: Category[] = [
         mockup: 'pedigree-tree',
       },
       {
+        slug: 'coi',
+        icon: Activity,
+        problem: 'Sabes que la consanguinidad es mala, pero no sabes cuánto tienen tus perros',
+        title: 'COI explicado, no solo calculado',
+        description: 'Coeficiente de consanguinidad (Wright) para cada perro, calculado con hasta 10 generaciones. No te damos solo el número: te enseñamos QUÉ ancestros lo causan, cuántas veces aparecen y cómo se compara con la media de tu raza. Decisiones de cría con base científica.',
+        bullets: [
+          'Cálculo Wright sobre 10 generaciones (no las 4-5 típicas de PDFs FCI)',
+          'Lista de ancestros duplicados ordenados por contribución %',
+          'Wright path: cada camino genealógico que repite a un ancestro',
+          'Comparativa vs media de la raza en Genealogic (percentil)',
+          'Semáforo verde/ámbar/rojo según umbrales recomendados por la raza',
+          'Histórico: ve cómo evoluciona el COI medio de tu criadero año tras año',
+        ],
+        mockup: 'coi-detail',
+      },
+      {
         slug: 'pdf-pedigree',
         icon: FileText,
         problem: 'Generar una genealogía imprimible requiere Photoshop o pagar a un diseñador',
@@ -166,6 +182,7 @@ export const CATEGORIES: Category[] = [
     featurettes: [
       { icon: Upload, title: 'Importar genealogía', description: 'URL de Presadb, Dogsfiles, Working-dog, K9data → árbol completo en 30s.' },
       { icon: Sparkles, title: 'Cálculo automático COI', description: 'Cada perro lo muestra al abrirlo, con la lista de ancestros duplicados.' },
+      { icon: TrendingUp, title: 'COI medio de tu criadero', description: 'Tendencia anual de cuánto sube o baja la consanguinidad media en tus camadas.' },
       { icon: Network, title: 'Hermanos y descendientes', description: 'Auto-detectados al subir padres. No tienes que enlazarlos manualmente.' },
       { icon: Tag, title: 'Trazabilidad LOE / FCI', description: 'Registro oficial vinculado al perro como campo dedicado.' },
       { icon: FileBarChart, title: 'Exportable a PDF', description: 'Cualquier rama de la genealogía, descargable con tu logo.' },
