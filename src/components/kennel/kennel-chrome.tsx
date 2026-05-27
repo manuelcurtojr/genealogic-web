@@ -58,9 +58,10 @@ export default function KennelChrome({
       <div
         className="border-b border-hairline bg-canvas/95 backdrop-blur-md"
         data-kennel-chrome="compact"
-        // Full-bleed: rompemos el max-w-7xl del dashboard para que el chrome
-        // se extienda hasta los bordes de la pantalla. El padding lateral
-        // dentro mantiene el contenido alineado con el resto del layout.
+        // Full-bleed SOLO el fondo + divisor inferior — para que la línea
+        // separadora cruce de lado a lado de la pantalla. El contenido
+        // (logo + nav) sigue dentro de max-w-7xl mx-auto para mantener
+        // la alineación con el resto del layout del dashboard.
         style={{
           marginLeft: 'calc(50% - 50vw)',
           marginRight: 'calc(50% - 50vw)',
@@ -68,7 +69,7 @@ export default function KennelChrome({
           maxWidth: '100vw',
         }}
       >
-        <div className="w-full px-4 sm:px-6 lg:px-10 h-14 flex items-center gap-3">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 h-14 flex items-center gap-3">
           {/* Identidad — un poco más grande para emparejar el peso del nav */}
           <Link href={`/kennels/${kennelSlug}`} className="flex items-center gap-2.5 min-w-0 group">
             {logoUrl ? (

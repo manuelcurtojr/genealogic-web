@@ -289,17 +289,17 @@ export default async function KennelDetailPage({
       .order('created_at', { ascending: true })
       .limit(20)
     const galleryPhotos = (kennelPhotos || []).filter(p => p.kind === 'gallery')
-    const facilitiesPhotos = (kennelPhotos || []).filter(p => p.kind === 'facilities')
-    const aboutImage =
-      facilitiesPhotos[0]?.url
-      || galleryPhotos[0]?.url
-      || kennel.hero_image_url
-      || kennel.logo_url
-      || null
+    // Las 3 fotos de los teasers son SIEMPRE perros distintos del criadero
+    // (los 3 primeros con foto, que ya están ordenados por calidad). Si hay
+    // menos de 3 perros con foto, las filas que no tengan imagen se descartan.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const firstDogWithPhoto = (dogs as any[]).find(d => d.thumbnail_url) as { thumbnail_url: string; name: string } | undefined
-    const perrosImage = firstDogWithPhoto?.thumbnail_url || null
-    const galleryImage = galleryPhotos[1]?.url || galleryPhotos[0]?.url || null
+    const dogsWithPhoto = (dogs as any[]).filter(d => d.thumbnail_url) as Array<{ thumbnail_url: string; name: string }>
+    const aboutImage = dogsWithPhoto[0]?.thumbnail_url || kennel.logo_url || null
+    const aboutImageAlt = dogsWithPhoto[0]?.name || `${kennel.name} — sobre nosotros`
+    const perrosImage = dogsWithPhoto[1]?.thumbnail_url || dogsWithPhoto[0]?.thumbnail_url || null
+    const perrosImageAlt = dogsWithPhoto[1]?.name || dogsWithPhoto[0]?.name || 'Nuestros perros'
+    const galleryImage = dogsWithPhoto[2]?.thumbnail_url || dogsWithPhoto[0]?.thumbnail_url || null
+    const galleryImageAlt = dogsWithPhoto[2]?.name || `${kennel.name} — galería`
 
     const teasers: Array<{
       id: string
@@ -322,7 +322,7 @@ export default async function KennelDetailPage({
         ctaLabel: 'Conoce nuestra historia',
         ctaHref: `/kennels/${kennel.slug}/sobre`,
         imageUrl: aboutImage,
-        imageAlt: `${kennel.name} — sobre nosotros`,
+        imageAlt: aboutImageAlt,
       })
     }
 
@@ -337,7 +337,7 @@ export default async function KennelDetailPage({
         ctaLabel: 'Ver todos los perros',
         ctaHref: `/kennels/${kennel.slug}/perros`,
         imageUrl: perrosImage,
-        imageAlt: firstDogWithPhoto?.name || 'Nuestros perros',
+        imageAlt: perrosImageAlt,
       })
     }
 
@@ -353,7 +353,7 @@ export default async function KennelDetailPage({
         ctaLabel: 'Ver galería',
         ctaHref: `/kennels/${kennel.slug}/galeria`,
         imageUrl: galleryImage,
-        imageAlt: `${kennel.name} — galería`,
+        imageAlt: galleryImageAlt,
       })
     }
 

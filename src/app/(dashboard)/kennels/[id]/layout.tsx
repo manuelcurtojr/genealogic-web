@@ -125,11 +125,11 @@ export default async function KennelLayout({
         activePageId="home"
         variant="compact"
       />
-      {/* Espacio entre el chrome del kennel y el hero/contenido para que la
-          web no se pegue al menú. Mantiene el rítmo vertical del dashboard. */}
-      <div className="pt-6 sm:pt-8">
-        {children}
-      </div>
+      {/* El hero se pega directamente al chrome — sin gap intermedio para
+          que la web se sienta como un sitio web real (header → hero sin
+          aire blanco). Los demás layouts del dashboard ya tienen su
+          propio padding interno. */}
+      {children}
     </>
   )
 }

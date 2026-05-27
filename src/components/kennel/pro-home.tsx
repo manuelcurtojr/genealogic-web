@@ -594,7 +594,8 @@ function KennelFooterMerged({
   location: string
   socials: { website: string | null; instagram: string | null; facebook: string | null }
 }) {
-  const hasAnySocial = !!(socials.website || socials.instagram || socials.facebook)
+  // No mostramos "Web" en el footer porque ya estamos en la propia web del kennel.
+  const hasAnySocial = !!(socials.instagram || socials.facebook)
   return (
     <footer
       className="relative bg-gradient-to-br from-blue-50/40 via-canvas to-orange-50/40 border-t border-hairline"
@@ -615,7 +616,10 @@ function KennelFooterMerged({
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-10 lg:gap-16 items-start">
 
           {/* ── IZQ — identidad del kennel ─────────────────────────── */}
-          <div>
+          {/* En mobile, el copyright debe ir DEBAJO del newsletter, así que
+              invertimos el orden con order-* y dejamos el visual layout en
+              desktop intacto. */}
+          <div className="order-2 lg:order-1">
             <div className="flex items-center gap-3">
               {kennelLogoUrl ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
@@ -641,16 +645,6 @@ function KennelFooterMerged({
 
             {hasAnySocial && (
               <div className="mt-5 flex flex-wrap gap-1.5">
-                {socials.website && (
-                  <a
-                    href={socials.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
-                  >
-                    <Globe className="h-3.5 w-3.5" /> Web
-                  </a>
-                )}
                 {socials.instagram && (
                   <a
                     href={socials.instagram}
@@ -692,7 +686,7 @@ function KennelFooterMerged({
 
           {/* ── DCHA — newsletter inline (sin la card propia de
                 NewsletterSubscribe que duplicaría el bloque) ──────── */}
-          <div>
+          <div className="order-1 lg:order-2">
             <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#3b82f6]">Newsletter</p>
             <h3 className="mt-1 text-[20px] sm:text-[24px] font-semibold tracking-[-0.025em] text-ink leading-[1.2]">
               Mantente al día con {kennelName}

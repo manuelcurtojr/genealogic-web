@@ -95,11 +95,11 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
             className="w-full sm:max-w-lg bg-canvas rounded-t-3xl sm:rounded-3xl shadow-[0_24px_64px_rgba(0,0,0,0.18)] border border-hairline max-h-[92vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Drag handle mobile */}
-            <div className="sm:hidden flex justify-center pt-2.5 pb-1">
+            {/* Drag handle mobile — sticky junto al header */}
+            <div className="flex-shrink-0 sm:hidden flex justify-center pt-2.5 pb-1 bg-canvas">
               <div className="h-1 w-10 rounded-full bg-hairline" />
             </div>
-            <div className="flex items-start justify-between gap-3 px-5 sm:px-6 pt-4 sm:pt-6 pb-4">
+            <div className="flex-shrink-0 flex items-start justify-between gap-3 px-5 sm:px-6 pt-4 sm:pt-6 pb-4 bg-canvas border-b border-hairline sm:border-b-0">
               <div className="min-w-0 flex-1">
                 <p className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[#FE6620]">
                   Pedir información
@@ -119,7 +119,7 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 min-h-0 overflow-y-auto">
 
             {done ? (
               <div className="px-5 sm:px-6 py-10 text-center">
@@ -160,7 +160,10 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
 
             {/* Footer sticky con CTAs — solo en modo form */}
             {!done && (
-              <div className="border-t border-hairline bg-surface-soft px-5 sm:px-6 py-3 flex items-center justify-end gap-2">
+              <div
+                className="flex-shrink-0 border-t border-hairline bg-surface-soft px-5 sm:px-6 py-3 flex items-center justify-end gap-2"
+                style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.75rem)' }}
+              >
                 <button
                   type="button"
                   onClick={close}
