@@ -38,7 +38,8 @@ export async function GET(request: NextRequest) {
     if (q) query = query.ilike('name', `%${q}%`)
     if (country) query = query.eq('country', country)
     if (breedId) query = query.contains('breed_ids', [breedId])
-    return query
+    // Excluir criaderos ocultos por moderación
+    return query.is('hidden_at', null)
   }
 
   // Total con logo

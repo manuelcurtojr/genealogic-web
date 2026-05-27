@@ -34,6 +34,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     `)
     .eq('kennel_id', auth.auth.kennelId)
     .eq(isUuid ? 'id' : 'slug', slug)
+    .is('hidden_at', null)
     .single()
 
   if (error || !dog) return jsonResponse({ error: 'Dog not found' }, 404)

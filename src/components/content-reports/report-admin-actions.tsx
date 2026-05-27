@@ -17,22 +17,34 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Check, X, Loader2, AlertCircle, Trash2, Eye, FileX, Copy,
+  Check, X, Loader2, AlertCircle, Trash2, Eye, FileX, Copy, EyeOff,
 } from 'lucide-react'
 import {
-  type ReportStatus,
+  type ReportStatus, type ReportReason,
   REPORT_STATUS_LABELS,
   REPORT_STATUS_COLORS,
   OPEN_STATUSES,
 } from '@/lib/content-reports/types'
+import type { HiddenReason } from '@/lib/moderation/types'
 
 interface Props {
   report: {
     id: string
     status: ReportStatus
+    reason: ReportReason
+    target_type: string  // 'dog' | 'kennel' | 'photo' | ...
+    target_id: string
+    target_is_hidden?: boolean
     resolution_notes: string | null
     resolution_action: string | null
   }
+}
+
+/** Mapeo report reason → hidden reason (mismo enum salvo "other"). */
+function reasonToHidden(reason: ReportReason): HiddenReason {
+  // El enum es prácticamente idéntico, solo cambia el slug en algunos casos
+  if (reason === 'personal_data') return 'rgpd_request'
+  return reason as HiddenReason
 }
 
 export default function ReportAdminActions({ report }: Props) {
@@ -45,6 +57,13 @@ export default function ReportAdminActions({ report }: Props) {
   >(null)
   const [notes, setNotes] = useState(report.resolution_notes || '')
   const [action, setAction] = useState(report.resolution_action || '')
+
+  // Si el target es perro/criadero y aún no está oculto, ofrecemos
+  // ocultarlo automáticamente al resolver con "Retirar contenido"
+  const canSoftHide =
+    (report.target_type === 'dog' || report.target_type === 'kennel') &&
+    !report.target_is_hidden
+  const [alsoHide, setAlsoHide] = useState(canSoftHide)
 
   const isOpen = OPEN_STATUSES.includes(report.status)
 
@@ -113,6 +132,27 @@ export default function ReportAdminActions({ report }: Props) {
     const cfg = RESOLVE_OPTIONS[resolveMode]
     startTransition(async () => {
       try {
+        // Paso 1: si procede, ocultar el contenido en BBDD (soft-hide reversible)
+        if (resolveMode === 'removed' && alsoHide && canSoftHide) {
+          const hideRes = await fetch('/api/admin/moderate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              targetType: report.target_type,
+              targetId: report.target_id,
+              action: 'hide',
+              reason: reasonToHidden(report.reason),
+              notes: notes.trim(),
+              reportId: report.id,
+            }),
+          })
+          if (!hideRes.ok) {
+            const data = await hideRes.json().catch(() => ({}))
+            throw new Error(`No se pudo ocultar el contenido: ${data.error || hideRes.statusText}`)
+          }
+        }
+
+        // Paso 2: marcar el reporte como resuelto
         const res = await fetch(`/api/admin/reports/${report.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -238,6 +278,40 @@ export default function ReportAdminActions({ report }: Props) {
                   className="w-full resize-y rounded-lg border border-hairline bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none"
                 />
               </div>
+
+              {/* Opción de ocultar automáticamente — solo aplica a "Retirar contenido"
+                  cuando el target es dog/kennel y aún no está oculto */}
+              {resolveMode === 'removed' && canSoftHide && (
+                <label className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={alsoHide}
+                    onChange={(e) => setAlsoHide(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-ink"
+                  />
+                  <span className="text-[12px] text-amber-900 leading-snug">
+                    <strong className="flex items-center gap-1.5">
+                      <EyeOff className="h-3 w-3" />
+                      Ocultar el {report.target_type === 'dog' ? 'perro' : 'criadero'} automáticamente
+                    </strong>
+                    <span className="block mt-0.5">
+                      Soft-hide reversible: el perfil se retira del público pero queda
+                      como placeholder en la genealogía. Restaurable en cualquier momento.
+                    </span>
+                  </span>
+                </label>
+              )}
+
+              {/* Recordatorio si el target ya está oculto */}
+              {resolveMode === 'removed' && report.target_is_hidden && (
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[12px] text-emerald-900 flex items-start gap-2">
+                  <Check className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+                  <span>
+                    Este {report.target_type === 'dog' ? 'perro' : 'criadero'} ya está oculto.
+                    No hace falta repetir la acción.
+                  </span>
+                </div>
+              )}
 
               {error && (
                 <div className="flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-900">

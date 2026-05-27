@@ -12,6 +12,9 @@ import DogEditButton from '@/components/dogs/dog-edit-button'
 import ShareButton from '@/components/dogs/share-button'
 import ReportButton from '@/components/legal/report-dialog'
 import ClaimBanner from '@/components/admin-requests/claim-banner'
+import ModerateButton from '@/components/moderation/moderate-button'
+import { HIDDEN_REASON_LABELS, type HiddenReason } from '@/lib/moderation/types'
+import { EyeOff } from 'lucide-react'
 import PageTracker from '@/components/track/page-tracker'
 import { DogJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
@@ -147,6 +150,27 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
     redirect(`/dogs/${dog.slug}`)
   }
 
+  // ── Soft-hide gating ─────────────────────────────────────────────────
+  // Si el perro está oculto:
+  //  · Admin → ve la página completa con banner rojo + botón restaurar
+  //  · Owner → ve la página (para que pueda apelar)
+  //  · Resto / anónimo → 404 (no indexable)
+  // Comprobación de admin: lookup directo del role del usuario.
+  let userIsAdmin = false
+  if (user) {
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+    userIsAdmin = prof?.role === 'admin'
+  }
+  const isOwnerOfDog = !!(user && dog.owner_id && user.id === dog.owner_id)
+  const isHidden = !!dog.hidden_at
+  if (isHidden && !userIsAdmin && !isOwnerOfDog) {
+    notFound()
+  }
+
   const [fatherRes, motherRes] = await Promise.all([
     dog.father_id ? supabase.from('dogs').select('id, name, sex, thumbnail_url, slug').eq('id', dog.father_id).single() : { data: null },
     dog.mother_id ? supabase.from('dogs').select('id, name, sex, thumbnail_url, slug').eq('id', dog.mother_id).single() : { data: null },
@@ -242,8 +266,43 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
 
       {/* Content */}
       <div className="lg:px-[30px] pt-6 sm:pt-8 pb-8 sm:pb-10 space-y-6 sm:space-y-8">
+        {/* Banner de moderación — solo admin si el perro está oculto */}
+        {isHidden && userIsAdmin && dog.hidden_reason && (
+          <ModerateButton
+            targetType="dog"
+            targetId={dog.id}
+            targetLabel={dog.name}
+            hidden={{
+              reason: dog.hidden_reason as HiddenReason,
+              notes: dog.hidden_notes || null,
+              at: dog.hidden_at,
+            }}
+            reportId={dog.hidden_report_id || null}
+            variant="banner"
+          />
+        )}
+
+        {/* Aviso al owner cuando su perro está oculto (para que pueda apelar) */}
+        {isHidden && !userIsAdmin && isOwnerOfDog && (
+          <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 flex items-start gap-3">
+            <EyeOff className="h-5 w-5 text-red-700 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-red-900">
+                Este perro está oculto al público
+              </p>
+              <p className="text-[12px] text-red-800 mt-1">
+                Motivo: <strong>{dog.hidden_reason && HIDDEN_REASON_LABELS[dog.hidden_reason as HiddenReason]}</strong>.
+                Si crees que es un error o quieres aportar pruebas, escríbenos a{' '}
+                <a href="mailto:hola@genealogic.io?subject=Apelaci%C3%B3n%20perro%20oculto" className="font-medium underline">
+                  hola@genealogic.io
+                </a>.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Claim banner — solo si el perro no tiene owner asignado */}
-        {!dog.owner_id && (
+        {!dog.owner_id && !isHidden && (
           <ClaimBanner type="dog" targetId={dog.slug || dog.id} targetName={dog.name} />
         )}
 

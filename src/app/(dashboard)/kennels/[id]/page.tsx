@@ -10,6 +10,9 @@ import PageTracker from '@/components/track/page-tracker'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 import ClaimBanner from '@/components/admin-requests/claim-banner'
 import ReportButton from '@/components/legal/report-dialog'
+import ModerateButton from '@/components/moderation/moderate-button'
+import { HIDDEN_REASON_LABELS, type HiddenReason } from '@/lib/moderation/types'
+import { EyeOff } from 'lucide-react'
 import { sortDogsByPhotoQuality } from '@/lib/dogs/sort-quality'
 import { KennelJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
@@ -76,6 +79,26 @@ export default async function KennelDetailPage({
 
   if (field === 'id' && kennel.slug && kennel.slug !== id) {
     redirect(`/kennels/${kennel.slug}`)
+  }
+
+  // ── Soft-hide gating ─────────────────────────────────────────────────
+  // Si el criadero está oculto:
+  //  · Admin → ve la página con banner rojo + botón restaurar
+  //  · Owner → ve la página (puede apelar)
+  //  · Resto → 404
+  let userIsAdmin = false
+  if (user) {
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+    userIsAdmin = prof?.role === 'admin'
+  }
+  const isOwnerOfKennel = !!(user && kennel.owner_id && user.id === kennel.owner_id)
+  const isHidden = !!kennel.hidden_at
+  if (isHidden && !userIsAdmin && !isOwnerOfKennel) {
+    notFound()
   }
 
   // Nota: anteriormente había un redirect a /c/[slug] cuando el kennel tenía
@@ -210,7 +233,43 @@ export default async function KennelDetailPage({
         ]}
       />
       <PageTracker kennelId={kennel.id} />
-      {!kennel.owner_id && (
+
+      {/* Banner moderación admin si el criadero está oculto */}
+      {isHidden && userIsAdmin && kennel.hidden_reason && (
+        <ModerateButton
+          targetType="kennel"
+          targetId={kennel.id}
+          targetLabel={kennel.name}
+          hidden={{
+            reason: kennel.hidden_reason as HiddenReason,
+            notes: kennel.hidden_notes || null,
+            at: kennel.hidden_at,
+          }}
+          reportId={kennel.hidden_report_id || null}
+          variant="banner"
+        />
+      )}
+
+      {/* Aviso al owner cuando su criadero está oculto */}
+      {isHidden && !userIsAdmin && isOwnerOfKennel && (
+        <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 flex items-start gap-3">
+          <EyeOff className="h-5 w-5 text-red-700 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-red-900">
+              Este criadero está oculto al público
+            </p>
+            <p className="text-[12px] text-red-800 mt-1">
+              Motivo: <strong>{kennel.hidden_reason && HIDDEN_REASON_LABELS[kennel.hidden_reason as HiddenReason]}</strong>.
+              Para apelar o aportar pruebas, contacta con{' '}
+              <a href="mailto:hola@genealogic.io?subject=Apelaci%C3%B3n%20criadero%20oculto" className="font-medium underline">
+                hola@genealogic.io
+              </a>.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {!kennel.owner_id && !isHidden && (
         <ClaimBanner type="kennel" targetId={kennel.slug || kennel.id} targetName={kennel.name} />
       )}
     </>

@@ -62,7 +62,8 @@ export async function GET(request: NextRequest) {
     if (breedId) query = query.eq('breed_id', breedId)
     if (sex) query = query.eq('sex', sex)
     if (forSale) query = query.eq('is_for_sale', true)
-    return query.eq('is_public', true)
+    // Solo perros públicos y NO ocultos por moderación (notice-and-action / RGPD)
+    return query.eq('is_public', true).is('hidden_at', null)
   }
 
   // Total con foto — usamos count: 'estimated' (rápido, ±5%) en vez de

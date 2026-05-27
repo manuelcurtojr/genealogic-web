@@ -79,7 +79,7 @@ export default async function AdminReportDetailPage({
   // Lookup del target — intentamos resolver según el target_type
   // (best-effort: si no se puede, mostramos el id raw)
   let targetData:
-    | { name: string; slug?: string | null; url: string; thumbnail?: string | null }
+    | { name: string; slug?: string | null; url: string; thumbnail?: string | null; isHidden?: boolean }
     | null = null
 
   // El target_id de foto viene con formato "<dogId>#photo-N", normalizamos.
@@ -88,7 +88,7 @@ export default async function AdminReportDetailPage({
   if (r.target_type === 'dog' || r.target_type === 'photo') {
     const { data: dog } = await admin
       .from('dogs')
-      .select('id, name, slug, thumbnail_url')
+      .select('id, name, slug, thumbnail_url, hidden_at')
       .eq('id', cleanTargetId)
       .maybeSingle()
     if (dog) {
@@ -97,12 +97,13 @@ export default async function AdminReportDetailPage({
         slug: dog.slug,
         url: `/dogs/${dog.slug || dog.id}`,
         thumbnail: dog.thumbnail_url,
+        isHidden: !!dog.hidden_at,
       }
     }
   } else if (r.target_type === 'kennel') {
     const { data: kennel } = await admin
       .from('kennels')
-      .select('id, name, slug, logo_url')
+      .select('id, name, slug, logo_url, hidden_at')
       .eq('id', cleanTargetId)
       .maybeSingle()
     if (kennel) {
@@ -111,6 +112,7 @@ export default async function AdminReportDetailPage({
         slug: kennel.slug,
         url: `/kennels/${kennel.slug || kennel.id}`,
         thumbnail: kennel.logo_url,
+        isHidden: !!kennel.hidden_at,
       }
     }
   }
@@ -365,6 +367,10 @@ export default async function AdminReportDetailPage({
             report={{
               id: r.id,
               status: r.status,
+              reason: r.reason,
+              target_type: r.target_type,
+              target_id: cleanTargetId,
+              target_is_hidden: targetData?.isHidden,
               resolution_notes: r.resolution_notes,
               resolution_action: r.resolution_action,
             }}

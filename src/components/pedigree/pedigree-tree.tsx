@@ -7,7 +7,7 @@ import { Search, ArrowLeftRight, GitBranch, ChevronLeft, ChevronRight, Dna, Chec
 const PedigreeCtx = createContext<{ onClickDog?: (id: string) => void; onClickEmpty?: (parentId: string, role: 'father' | 'mother') => void }>({})
 import { calculateCOI, getCOILevel, getCOIInterpretation } from './coi-calculator'
 
-interface PN { id:string;name:string;sex:string;registration:string|null;father_id:string|null;mother_id:string|null;generation:number;photo_url:string|null;breed_name:string|null;color_name:string|null }
+interface PN { id:string;name:string;sex:string;registration:string|null;father_id:string|null;mother_id:string|null;generation:number;photo_url:string|null;breed_name:string|null;color_name:string|null;is_hidden?:boolean;slug?:string|null }
 interface Props { data:PN[];rootId:string;onClickDog?:(dogId:string)=>void;onClickEmpty?:(parentDogId:string,role:'father'|'mother')=>void }
 
 function countOcc(nId:string|null,nm:Map<string,PN>,mx:number,g:number,c:Map<string,number>){if(!nId||g>mx)return;const n=nm.get(nId);if(!n)return;c.set(nId,(c.get(nId)||0)+1);countOcc(n.father_id,nm,mx,g+1,c);countOcc(n.mother_id,nm,mx,g+1,c)}
@@ -217,6 +217,38 @@ function Card({n,isRoot,si,rc}:{n:PN;isRoot?:boolean;si:boolean;rc:Map<string,nu
   const sc=n.sex==='male'?'#017DFA':'#e84393'
   const reps=rc.get(n.id)||0
   const repC=reps>=2?(RC[Math.min(reps,RC.length-1)]||'#ef4444'):''
+
+  // ── Caja "oculta" — perro retirado por notice-and-action / RGPD.
+  // Renderizamos un placeholder no clickable manteniendo la posición en
+  // el grafo para que la genealogía siga teniendo sentido.
+  if(n.is_hidden){
+    return (
+      <div
+        className="group flex items-stretch overflow-hidden rounded-xl border border-dashed border-hairline bg-surface-soft/60 relative cursor-default"
+        style={{width:CW,height:CH,flexShrink:0}}
+        title="Perro oculto a petición del titular o por moderación"
+        aria-label="Perro oculto"
+      >
+        <div className="relative flex-shrink-0 bg-surface-card flex items-center justify-center" style={{width:PH}}>
+          {/* Lock icon — usamos SVG inline para evitar import nuevo de lucide */}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-muted opacity-50">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <div className="absolute right-0 top-0 bottom-0 w-[3px] bg-muted/30"/>
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden px-2.5 py-1.5">
+          <p className="truncate text-[12px] font-medium leading-tight text-muted">
+            Perro oculto
+          </p>
+          <p className="mt-0.5 truncate text-[10.5px] text-muted/70">
+            Retirado a petición
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   const cls=`group flex items-stretch overflow-hidden rounded-xl border bg-canvas transition-colors hover:bg-surface-soft cursor-pointer relative ${isRoot?'border-ink shadow-[0_0_0_1px_rgba(17,17,17,0.04)]':'border-hairline'}`
   const inner=<>
     <div className="relative flex-shrink-0 bg-surface-card" style={{width:PH}}>
