@@ -55,6 +55,24 @@ function admin() {
 }
 
 export const getDogsByKennel = cache(async (kennelId: string): Promise<SiteDog[]> => {
+  // Necesitamos el owner del kennel para incluir perros adquiridos por el criador
+  // que él haya marcado como sementales (reproductores) — caso típico: un macho
+  // comprado a otro criadero que ahora se usa como semental propio.
+  const { data: kennelRow } = await admin()
+    .from('kennels')
+    .select('owner_id')
+    .eq('id', kennelId)
+    .maybeSingle()
+  const ownerId = kennelRow?.owner_id
+
+  // Filtro:
+  //   - perros nacidos en el kennel (kennel_id = X)
+  //   - O perros del propietario marcados como reproductores Y visibles en kennel
+  // Ambos casos requieren is_public=true (visibilidad pública).
+  const reproPart = ownerId
+    ? `,and(owner_id.eq.${ownerId},is_reproductive.eq.true,show_in_kennel.eq.true)`
+    : ''
+
   const { data } = await admin()
     .from('dogs')
     .select(`
@@ -64,7 +82,7 @@ export const getDogsByKennel = cache(async (kennelId: string): Promise<SiteDog[]
       father_id, mother_id,
       breed:breeds(id, name), color:colors(id, name)
     `)
-    .eq('kennel_id', kennelId)
+    .or(`kennel_id.eq.${kennelId}${reproPart}`)
     .eq('is_public', true)
     .order('birth_date', { ascending: false })
   // Primero los que tienen foto: en el primer pantallazo de la web nunca
