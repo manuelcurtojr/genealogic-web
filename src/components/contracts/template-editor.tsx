@@ -189,11 +189,34 @@ export default function TemplateEditor({
             placeholder="# Contrato de compraventa de cachorro&#10;&#10;Empieza a escribir aquí…"
             className="w-full min-h-[60vh] rounded-xl border border-hairline bg-canvas px-4 py-3.5 text-[13.5px] text-ink font-mono leading-[1.55] resize-y focus:outline-none focus:border-ink/30 transition-colors"
           />
-          <p className="mt-2 text-[11px] text-muted">
-            Usa <code className="bg-surface-card px-1 rounded">{'{{variable}}'}</code> para
-            insertar datos de la reserva (nombre del cliente, raza, fecha…).
-            Las variables se sustituyen al instanciar el contrato.
-          </p>
+          <details className="mt-2 group">
+            <summary className="cursor-pointer text-[11px] text-muted hover:text-ink transition list-none inline-flex items-center gap-1">
+              <span>Variables disponibles ↓</span>
+            </summary>
+            <div className="mt-2 rounded-lg border border-hairline bg-surface-soft p-3 text-[11.5px] text-body leading-relaxed">
+              <p className="mb-2 text-muted">
+                Escribe <code className="bg-canvas px-1 rounded">{'{{nombreVariable}}'}</code> donde
+                quieras que se inserten datos de la reserva al crear el contrato.
+                Si la variable no tiene valor, queda en blanco.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 font-mono text-[11px]">
+                <div><code className="text-[#FE6620]">{'{{kennelName}}'}</code> Nombre del criadero</div>
+                <div><code className="text-[#FE6620]">{'{{kennelAddress}}'}</code> Domicilio del criadero</div>
+                <div><code className="text-[#FE6620]">{'{{clientName}}'}</code> Nombre del cliente</div>
+                <div><code className="text-[#FE6620]">{'{{clientEmail}}'}</code> Email del cliente</div>
+                <div><code className="text-[#FE6620]">{'{{clientId}}'}</code> DNI/NIE del cliente</div>
+                <div><code className="text-[#FE6620]">{'{{clientAddress}}'}</code> Dirección del cliente</div>
+                <div><code className="text-[#FE6620]">{'{{dogName}}'}</code> Nombre del cachorro</div>
+                <div><code className="text-[#FE6620]">{'{{breed}}'}</code> Raza</div>
+                <div><code className="text-[#FE6620]">{'{{birthDate}}'}</code> Fecha de nacimiento</div>
+                <div><code className="text-[#FE6620]">{'{{microchip}}'}</code> Nº microchip</div>
+                <div><code className="text-[#FE6620]">{'{{registration}}'}</code> Inscripción / LOE</div>
+                <div><code className="text-[#FE6620]">{'{{totalPrice}}'}</code> Precio total</div>
+                <div><code className="text-[#FE6620]">{'{{depositAmount}}'}</code> Importe de la señal</div>
+                <div><code className="text-[#FE6620]">{'{{todayDate}}'}</code> Fecha actual</div>
+              </div>
+            </div>
+          </details>
         </div>
 
         {/* Preview */}

@@ -188,8 +188,14 @@ export default function ReservationsBoard({
         </Button>
       </div>
 
-      {/* Kanban board */}
-      <div className="flex gap-3 overflow-x-auto pb-4 -mx-2 px-2">
+      {/* Kanban board.
+          Desktop (sm+): scroll horizontal con columnas 288px.
+          Mobile (<sm): apilado en columna única — cada estado pinta como
+          un acordeón con su contador. El drag-and-drop nativo HTML5 no
+          funciona bien en iOS Safari de todos modos, así que en mobile
+          el flujo es: tocar card → panel detalle → cambiar estado vía
+          dropdown. Más usable que kanban con scroll horizontal de 2000px. */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:overflow-x-auto pb-4 sm:-mx-2 sm:px-2">
         {COLUMNS.map(col => {
           const items = reservationsByStatus[col.key] || []
           const isOver = dragOverCol === col.key
@@ -199,15 +205,18 @@ export default function ReservationsBoard({
               onDragOver={(e) => handleDragOver(e, col.key)}
               onDragLeave={() => setDragOverCol(null)}
               onDrop={(e) => handleDrop(e, col.key)}
-              className={`flex-shrink-0 w-72 rounded-xl border bg-canvas ${isOver ? 'border-ink' : 'border-hairline'} transition`}
+              className={`sm:flex-shrink-0 w-full sm:w-72 rounded-xl border bg-canvas ${isOver ? 'border-ink' : 'border-hairline'} transition`}
             >
               <div className="flex items-center justify-between px-3 py-2.5 border-b border-hairline">
                 <h3 className="text-xs font-semibold uppercase tracking-[0.06em] text-ink">{col.label}</h3>
                 <span className="text-[11px] text-muted bg-surface-card rounded-full px-2 py-0.5">{items.length}</span>
               </div>
-              <div className="p-2 space-y-2 min-h-[200px]">
+              <div className="p-2 space-y-2 sm:min-h-[200px]">
                 {items.length === 0 && (
-                  <p className="text-xs text-muted text-center py-8 px-3">Arrastra aquí o crea una reserva</p>
+                  <p className="text-xs text-muted text-center py-4 sm:py-8 px-3">
+                    <span className="hidden sm:inline">Arrastra aquí o crea una reserva</span>
+                    <span className="sm:hidden">Sin reservas en este estado</span>
+                  </p>
                 )}
                 {items.map(r => {
                   const owner = r.owner_id ? ownerById.get(r.owner_id) : null

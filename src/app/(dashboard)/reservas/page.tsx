@@ -4,7 +4,7 @@ import ReservationsPipeline from '@/components/reservas/reservations-pipeline'
 import { hasProAccess } from '@/lib/permissions'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Solicitudes · Genealogic' }
+export const metadata = { title: 'Reservas · Genealogic' }
 
 /**
  * /reservas refactorizado al modelo Pawdoq Breeders:
@@ -27,7 +27,7 @@ export default async function ReservasPage() {
   if (!kennel) {
     return (
       <div className="max-w-2xl mx-auto py-10">
-        <h1 className="text-3xl font-bold text-ink mb-3">Solicitudes</h1>
+        <h1 className="text-3xl font-bold text-ink mb-3">Reservas</h1>
         <p className="text-body">
           Para gestionar solicitudes necesitas un criadero registrado.
           Crea tu kennel desde Mi Criadero.

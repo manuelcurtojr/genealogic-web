@@ -72,6 +72,11 @@ export default function SettingsPage() {
   const [passwordError, setPasswordError] = useState('')
   const [passwordSuccess, setPasswordSuccess] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
+  // Typed confirmation: el user debe escribir literalmente "ELIMINAR" para
+  // habilitar el botón final. Defensa contra clicks accidentales (la acción
+  // borra perfil, perros sin descendientes, camadas y criadero entero).
+  const [deleteTypedConfirm, setDeleteTypedConfirm] = useState('')
+  const [deleting, setDeleting] = useState(false)
   const [closingAllSessions, setClosingAllSessions] = useState(false)
   const [sessionsSuccess, setSessionsSuccess] = useState(false)
 
@@ -440,6 +445,7 @@ export default function SettingsPage() {
                 {sessionsSuccess && <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm text-green-400 mb-3 flex items-center gap-2"><Check className="w-4 h-4" /> Todas las sesiones han sido cerradas</div>}
                 <button
                   onClick={async () => {
+                    if (!confirm('¿Cerrar la sesión en TODOS tus dispositivos? Tendrás que volver a iniciar sesión en cada uno.')) return
                     setClosingAllSessions(true)
                     const supabase = createClient()
                     await supabase.auth.signOut({ scope: 'global' })
@@ -546,9 +552,46 @@ export default function SettingsPage() {
                   <div className="space-y-3">
                     <p className="text-sm text-red-400 font-semibold">¿Estás completamente seguro?</p>
                     <p className="text-xs text-muted">Esta acción no se puede deshacer. La información genealógica importante se preservará de forma anónima.</p>
+                    <div>
+                      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">
+                        Escribe <code className="bg-red-500/15 text-red-400 px-1 rounded font-mono">ELIMINAR</code> para confirmar
+                      </label>
+                      <input
+                        type="text"
+                        value={deleteTypedConfirm}
+                        onChange={(e) => setDeleteTypedConfirm(e.target.value)}
+                        autoComplete="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        placeholder="ELIMINAR"
+                        className="w-full bg-canvas border border-red-500/30 rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted focus:border-red-500 focus:outline-none transition"
+                      />
+                    </div>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                      <button onClick={async () => { await fetch('/api/delete-account', { method: 'POST' }); window.location.href = '/' }} className="text-xs sm:text-sm text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition font-semibold">Confirmar eliminación</button>
-                      <button onClick={() => setDeleteConfirm(false)} className="text-xs sm:text-sm text-muted hover:text-ink transition">Cancelar</button>
+                      <button
+                        onClick={async () => {
+                          if (deleteTypedConfirm.trim() !== 'ELIMINAR') return
+                          setDeleting(true)
+                          try {
+                            await fetch('/api/delete-account', { method: 'POST' })
+                            window.location.href = '/'
+                          } catch {
+                            setDeleting(false)
+                          }
+                        }}
+                        disabled={deleteTypedConfirm.trim() !== 'ELIMINAR' || deleting}
+                        className="text-xs sm:text-sm text-white bg-red-500 hover:bg-red-600 disabled:bg-red-500/30 disabled:cursor-not-allowed px-4 py-2 rounded-lg transition font-semibold flex items-center gap-2"
+                      >
+                        {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {deleting ? 'Eliminando…' : 'Confirmar eliminación'}
+                      </button>
+                      <button
+                        onClick={() => { setDeleteConfirm(false); setDeleteTypedConfirm('') }}
+                        disabled={deleting}
+                        className="text-xs sm:text-sm text-muted hover:text-ink transition disabled:opacity-50"
+                      >
+                        Cancelar
+                      </button>
                     </div>
                   </div>
                 )}

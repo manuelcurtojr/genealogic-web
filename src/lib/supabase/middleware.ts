@@ -107,8 +107,11 @@ export async function updateSession(request: NextRequest) {
   const isKennelDirectoryPage = pathname === '/kennels'
 
   // Rutas Pro (requieren plan kennel_pro o estar en ENTERPRISE_USERS)
+  // Reservas se mueve fuera de Pro: cualquier criador con kennel puede ver
+  // sus solicitudes. La vista Free es simplificada (bandeja); Pro desbloquea
+  // pipeline avanzado, contactos y contratos (que sí siguen Pro).
   const proRoutePrefixes = [
-    '/reservas', '/clientes', '/contactos', '/contratos', '/emailbot', '/conocimiento',
+    '/clientes', '/contactos', '/contratos', '/emailbot', '/conocimiento',
     '/web', '/estadisticas', '/visitas', '/newsletter', '/cuenta',
   ]
   // EXCEPCIONES dentro de las rutas Pro:
@@ -152,9 +155,10 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Pro route gating — usuarios sin plan Pro van a /pricing.
-  // Usamos hasProAccess() (cubre 'kennel_pro' + legacy 'pro'/'premium')
-  // y el override ENTERPRISE_USERS (cuentas founder / partners con todo
+  // Pro route gating — usuarios sin plan de pago van a /pricing.
+  // Usamos hasProAccess() (alias actual de hasPaidPlan: cualquier plan
+  // de pago — kennel, kennel_pro y legacy pro/premium/starter) y el
+  // override ENTERPRISE_USERS (cuentas founder / partners con todo
   // desbloqueado independientemente del plan en DB).
   if (isProRoute && user) {
     if (!isEnterpriseUser(user.id)) {

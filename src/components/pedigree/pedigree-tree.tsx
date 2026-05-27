@@ -45,18 +45,38 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
     <>
       <div className="relative" onClick={close}>
         <PedigreeCtx.Provider value={{onClickDog,onClickEmpty}}>
-        <div className="overflow-auto pb-20" style={{transform:`scale(${zoom/100})`,transformOrigin:'top left'}}>
+        {/* Container con scroll horizontal + vertical. Aplicamos `zoom`
+            (CSS no-estándar pero soportado en WebKit, Blink, Edge) en lugar
+            de `transform: scale`, porque scale NO recalcula el bounding box
+            del hijo — el contenedor padre cree que el árbol "cabe" cuando en
+            realidad escalado se sale del viewport. Con zoom el child reflowea
+            con las dimensiones aparentes, así el overflow-auto scrollea bien. */}
+        <div className="overflow-auto pb-20" style={{ zoom: zoom / 100 } as React.CSSProperties}>
           <div className="min-w-max py-4 px-4 lg:px-2">
             {vert?<VN n={root} nm={nm} g={0} mx={maxGen} isRoot si={showIB} rc={rc}/>:<HN n={root} nm={nm} g={0} mx={maxGen} isRoot si={showIB} rc={rc}/>}
           </div>
         </div>
       </PedigreeCtx.Provider>
       </div>
-      {/* COI Panel — outside transform context */}
-      <div className={`fixed top-[56px] right-0 bottom-0 z-[45] flex w-[320px] flex-col border-l border-hairline bg-canvas shadow-[-8px_0_24px_rgba(0,0,0,0.06)] transition-transform duration-300 ${coiPanel?'translate-x-0':'translate-x-full pointer-events-none'}`}>
+      {/* COI Panel — outside transform context.
+          Mobile (<sm): full-screen overlay con backdrop. Antes era panel
+          320px que tapaba el header sin backdrop ni botón cerrar visible.
+          Desktop: panel lateral 320px como antes.
+          Posicionamiento respeta safe-area-top en iPhones con notch. */}
+      {coiPanel && (
+        <div
+          className="sm:hidden fixed inset-0 z-[44] bg-black/45 backdrop-blur-[2px]"
+          onClick={() => setCoiPanel(false)}
+          aria-hidden="true"
+        />
+      )}
+      <div
+        className={`fixed right-0 z-[45] flex flex-col border-l border-hairline bg-canvas shadow-[-8px_0_24px_rgba(0,0,0,0.06)] transition-transform duration-300 w-full sm:w-[320px] inset-0 sm:inset-auto sm:bottom-0 ${coiPanel?'translate-x-0':'translate-x-full pointer-events-none'}`}
+        style={{ top: 'calc(3.5rem + var(--safe-area-top, 0px))' }}
+      >
         <button
           onClick={()=>setCoiPanel(!coiPanel)}
-          className="pointer-events-auto absolute -left-7 top-1/2 flex h-14 w-7 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 border-hairline bg-canvas text-muted transition-colors hover:text-ink"
+          className="pointer-events-auto absolute -left-7 top-1/2 hidden sm:flex h-14 w-7 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 border-hairline bg-canvas text-muted transition-colors hover:text-ink"
         >
           {coiPanel?<ChevronRight className="h-3.5 w-3.5"/>:<ChevronLeft className="h-3.5 w-3.5"/>}
         </button>
@@ -95,10 +115,18 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
           <p className="text-center text-[10.5px] text-muted">Calculado con 10 generaciones.</p>
         </div>
       </div>
-      {/* Floating buttons — outside transform context so fixed works */}
+      {/* Floating buttons — outside transform context so fixed works.
+          bottom respeta safe-area-inset-bottom para iPhones con home bar:
+          - isNative: 106px (TabBar nativa) + safe-area
+          - resto: 16px + safe-area */}
       <div
         className="fixed z-50 flex items-center gap-2"
-        style={{left: 'max(16px, calc(var(--sidebar-width, 0px) + 30px))', bottom: isNative ? '106px' : '16px'}}
+        style={{
+          left: 'max(16px, calc(var(--sidebar-width, 0px) + 30px))',
+          bottom: isNative
+            ? 'calc(106px + env(safe-area-inset-bottom, 0px))'
+            : 'calc(16px + env(safe-area-inset-bottom, 0px))',
+        }}
         onClick={close}
       >
         <div className="relative">

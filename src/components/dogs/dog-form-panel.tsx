@@ -190,21 +190,42 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           </div>
         )}
 
-        {/* Edit tabs */}
+        {/* Edit tabs — en mobile usamos un <select> nativo (mejor UX que
+            tabs con solo iconos). En sm+ vuelven los tabs horizontales. */}
         {isEdit && (
-          <div className="flex border-b border-hairline px-4 overflow-x-auto flex-shrink-0">
-            {TABS
-              .filter((t) => !('femaleOnly' in t && t.femaleOnly) || form.sex === 'female')
-              .map(t => {
-              const Icon = t.icon
-              return (
-                <button key={t.key} onClick={() => setActiveTab(t.key)}
-                  className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${activeTab === t.key ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}>
-                  <Icon className="w-3.5 h-3.5" /><span className="hidden sm:inline">{t.label}</span>
-                </button>
-              )
-            })}
-          </div>
+          <>
+            {/* Mobile: select */}
+            <div className="sm:hidden px-4 py-2.5 border-b border-hairline flex-shrink-0">
+              <label className="text-[10.5px] font-semibold text-muted uppercase tracking-wider block mb-1">
+                Sección
+              </label>
+              <select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value as TabKey)}
+                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-[16px] text-ink focus:border-ink focus:outline-none"
+              >
+                {TABS
+                  .filter((t) => !('femaleOnly' in t && t.femaleOnly) || form.sex === 'female')
+                  .map(t => (
+                    <option key={t.key} value={t.key}>{t.label}</option>
+                  ))}
+              </select>
+            </div>
+            {/* Desktop: tabs */}
+            <div className="hidden sm:flex border-b border-hairline px-4 overflow-x-auto flex-shrink-0">
+              {TABS
+                .filter((t) => !('femaleOnly' in t && t.femaleOnly) || form.sex === 'female')
+                .map(t => {
+                const Icon = t.icon
+                return (
+                  <button key={t.key} onClick={() => setActiveTab(t.key)}
+                    className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${activeTab === t.key ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}>
+                    <Icon className="w-3.5 h-3.5" /><span>{t.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </>
         )}
 
         {/* Content */}
@@ -364,8 +385,11 @@ function Field({ label, value, onChange, type = 'text', placeholder }: { label: 
   return (
     <div>
       <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">{label}</label>
+      {/* text-base (16px) en mobile para evitar el zoom automático de iOS
+          Safari al hacer focus en inputs <16px. Reduce a sm en desktop
+          (14px) para mantener la densidad visual. */}
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
+        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
     </div>
   )
 }

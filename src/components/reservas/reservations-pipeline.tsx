@@ -112,18 +112,22 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
 
   return (
     <div className="space-y-6">
+      {/* Header con copy ESTABLE: el H1 dice siempre "Reservas". El subtítulo
+          y los tabs (más abajo) son los que indican qué subconjunto se está
+          viendo. Antes el H1 saltaba entre "Solicitudes / Ventas / Clientes"
+          dejando al usuario sin saber qué sección era — fix de la auditoría UX. */}
       <div>
         <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">
           {isPro ? 'Pipeline' : 'Bandeja'}
         </p>
         <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-          {isPro ? (pipeline === 'ventas' ? 'Ventas' : 'Clientes') : 'Solicitudes'}
+          Reservas
         </h1>
         <p className="mt-2 text-[14px] text-body">
           {isPro
             ? pipeline === 'ventas'
-              ? `${totalVentas} ${totalVentas === 1 ? 'lead' : 'leads'} en pipeline · ${kennelName}`
-              : `${totalClientes} ${totalClientes === 1 ? 'cliente reservado' : 'clientes reservados'} · ${kennelName}`
+              ? `${totalVentas} ${totalVentas === 1 ? 'reserva activa' : 'reservas activas'} en pipeline · ${kennelName}`
+              : `${totalClientes} ${totalClientes === 1 ? 'reserva cerrada' : 'reservas cerradas'} · ${kennelName}`
             : `${reservations.length} ${reservations.length === 1 ? 'solicitud recibida' : 'solicitudes recibidas'} · ${kennelName}`}
         </p>
       </div>
@@ -138,7 +142,7 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
             }`}
           >
             <ShoppingCart className="h-3.5 w-3.5" />
-            Ventas
+            Activas
             <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${pipeline === 'ventas' ? 'bg-white/20 text-on-primary' : 'bg-surface-card text-muted'}`}>{totalVentas}</span>
           </button>
           <button
@@ -148,7 +152,7 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
             }`}
           >
             <Users2 className="h-3.5 w-3.5" />
-            Clientes
+            Cerradas
             <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${pipeline === 'clientes' ? 'bg-white/20 text-on-primary' : 'bg-surface-card text-muted'}`}>{totalClientes}</span>
           </button>
         </div>

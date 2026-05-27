@@ -98,11 +98,15 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     id: 'pipeline',
     label: 'Pipeline',
-    requiresPro: true,
+    // Pipeline está disponible para cualquier criador con kennel — no requiere
+    // Pro. La vista Free es una bandeja simple de Reservas; Pro desbloquea
+    // Contactos (CRM) y Contratos. Antes el sidebar ocultaba "Reservas" en
+    // Free, así que los Free no veían las solicitudes que les llegaban por
+    // su web pública. Fix de auditoría UX (A5).
     requiresKennel: true,
     hideOnIos: true,
     items: [
-      { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare', requiresPro: true, requiresKennel: true, hideOnIos: true },
+      { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare', requiresKennel: true, hideOnIos: true },
       { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresPro: true, requiresKennel: true, hideOnIos: true },
       { label: 'Contratos', href: '/contratos', icon: 'FileText', requiresPro: true, requiresKennel: true, hideOnIos: true },
     ],

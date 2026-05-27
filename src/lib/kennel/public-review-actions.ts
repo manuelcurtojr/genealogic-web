@@ -20,6 +20,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { revalidateKennelHome } from '@/lib/kennel/kennel-home-cache'
 
 export async function submitPublicReviewAction(input: {
   kennelId: string
@@ -77,5 +78,8 @@ export async function submitPublicReviewAction(input: {
 
   if (kennel.slug) revalidatePath(`/kennels/${kennel.slug}`)
   revalidatePath('/kennel/contenido/resenas')
+  // Invalidar el caché `unstable_cache` de la home Pro de este kennel
+  // para que la nueva reseña aparezca de inmediato (no espera al TTL 120s).
+  revalidateKennelHome(input.kennelId)
   return { ok: true, id: row.id }
 }

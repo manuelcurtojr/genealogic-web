@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Grid3X3, List, Search, Plus, Eye, EyeOff, Edit, ArrowRightLeft, GitBranch, Globe, Heart } from 'lucide-react'
+import { Grid3X3, List, Search, Plus, EyeOff, Edit, ArrowRightLeft, GitBranch, Globe, Heart } from 'lucide-react'
 import DogCard from './dog-card'
 import DogFormPanel from './dog-form-panel'
 import TransferPanel from '../kennel/transfer-panel'
@@ -314,18 +314,19 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
         Mostrando {paged.length} de {filtered.length} {filtered.length === 1 ? 'perro' : 'perros'}
       </p>
 
-      {/* Grid view */}
+      {/* Grid view — en mobile (1 columna) usa la card híbrida horizontal del
+          DogCard responsive; desde sm vuelve a grid 2/3/4 con cards verticales. */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
           {/* Add new dog card */}
           <button
             onClick={openAdd}
-            className="group flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-hairline bg-surface-soft transition-colors hover:bg-surface-card sm:min-h-[220px]"
+            className="group flex min-h-[80px] cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-hairline bg-surface-soft transition-colors hover:bg-surface-card sm:min-h-[220px] sm:flex-col"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-canvas border border-hairline transition-colors group-hover:bg-ink group-hover:border-ink sm:h-14 sm:w-14">
               <Plus className="h-5 w-5 text-muted transition-colors group-hover:text-on-primary sm:h-6 sm:w-6" />
             </div>
-            <p className="mt-3 text-[13px] font-medium text-body">Añadir perro</p>
+            <p className="text-[13px] font-medium text-body sm:mt-3">Añadir perro</p>
           </button>
 
           {paged.map((dog) => (
@@ -379,14 +380,8 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
                   </div>
                 </div>
                 <div className="flex flex-shrink-0 items-center gap-1.5">
-                  <Link
-                    href={`/dogs/${dog.slug || dog.id}`}
-                    onClick={e => e.stopPropagation()}
-                    title="Ver perfil"
-                    className="inline-flex items-center gap-1 rounded-md bg-ink px-2.5 py-1.5 text-[11px] font-medium text-on-primary transition-colors hover:opacity-90"
-                  >
-                    <Eye className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Ver</span>
-                  </Link>
+                  {/* Botón "Ver perfil" eliminado: clickar la fila ya abre el
+                      perfil del perro (línea ~362 onClick = window.location). */}
                   <button
                     onClick={e => { e.stopPropagation(); openEdit(dog.id) }}
                     title="Editar"

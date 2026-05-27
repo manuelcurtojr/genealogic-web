@@ -14,9 +14,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const kennel = await getKennelBySlug(slug)
   if (!kennel) return { title: 'No encontrado' }
   const page = await getPage(kennel.id, 'home')
+  // Canonical apunta a la URL principal /kennels/[slug] — esto evita el
+  // SEO duplicado entre las dos rutas que conviven (legacy /c y la
+  // nueva /kennels Pro), sin tener que migrar contenido todavía.
+  const canonical = `https://genealogic.io/kennels/${kennel.slug || slug}`
   return {
     title: page?.meta_title || kennel.name,
     description: page?.meta_description || kennel.description || undefined,
+    alternates: { canonical },
   }
 }
 
