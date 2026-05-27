@@ -71,18 +71,20 @@ export default function ClaimForm({
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-8">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-ink mb-4">
-          <ShieldCheck className="w-7 h-7 text-on-primary" />
+    // Padding lateral propio: la page padre solo envuelve el breadcrumb,
+    // este componente vive aparte y sin px-* en mobile se pegaba a los bordes.
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="text-center mb-6 sm:mb-8">
+        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-ink mb-3 sm:mb-4">
+          <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-on-primary" />
         </div>
         <p className="text-[11px] uppercase tracking-[0.08em] font-semibold text-muted">
           Reclamación de {targetType === 'dog' ? 'perro' : 'criadero'}
         </p>
-        <h1 className="mt-2 text-2xl sm:text-3xl font-bold text-ink tracking-tight">
+        <h1 className="mt-2 text-[22px] sm:text-3xl font-bold text-ink tracking-tight leading-tight">
           ¿{targetName} es tuyo?
         </h1>
-        <p className="mt-2 text-sm text-body">
+        <p className="mt-2 text-[13.5px] sm:text-sm text-body leading-snug max-w-md mx-auto">
           Aporta pruebas y un miembro del equipo verificará tu reclamación en menos de 72h.
         </p>
       </div>
@@ -110,7 +112,9 @@ export default function ClaimForm({
               ? 'Soy el titular del afijo X registrado en la RSCE desde 1998…'
               : 'Compré este perro al criador X en 2022. Tengo el pedigree y los papeles a mi nombre…'
           }
-          className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none resize-none"
+          // text-base (16px) en mobile evita el zoom auto de iOS Safari
+          // al hacer focus en inputs <16px. Reduce a sm en desktop.
+          className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none resize-none"
         />
         <p className="text-[11px] text-muted">{message.trim().length} caracteres (mínimo 20)</p>
       </div>
