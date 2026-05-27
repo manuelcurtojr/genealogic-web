@@ -48,13 +48,38 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
     return () => clearTimeout(searchTimer.current)
   }, [search])
 
+  // Normaliza el query igual que la columna generada `search_text` de la DB
+  // (lower + unaccent + sin caracteres no-alfanuméricos) para que el ILIKE
+  // golpee el índice GIN trigram. Antes ilike('name', %q%) hacía seq scan
+  // sobre 230k filas y la página se quedaba colgada o petaba por timeout.
+  function normalizeSearch(s: string): string {
+    return s
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9 ]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
+
   async function fetchDogs() {
     setLoading(true)
     const supabase = createClient()
     let query = supabase.from('dogs')
-      .select('id, name, slug, sex, birth_date, thumbnail_url, registration, owner_id, kennel_id, breed:breeds(name), kennel:kennels(name)', { count: 'exact' })
+      // count: 'estimated' (no 'exact') — sobre 230k filas el exact requería
+      // seq scan completo. estimated usa estadísticas del planner: ±5% de
+      // precisión, suficiente para la UI de paginación.
+      .select(
+        'id, name, slug, sex, birth_date, thumbnail_url, registration, owner_id, kennel_id, breed:breeds(name), kennel:kennels(name)',
+        { count: 'estimated' },
+      )
 
-    if (search.trim()) query = query.ilike('name', `%${search.trim()}%`)
+    if (search.trim()) {
+      const normalized = normalizeSearch(search)
+      if (normalized.length >= 2) {
+        query = query.ilike('search_text', `%${normalized}%`)
+      }
+    }
     if (breedFilter) query = query.eq('breed_id', breedFilter)
     if (kennelFilter) query = query.eq('kennel_id', kennelFilter)
     if (sexFilter) query = query.eq('sex', sexFilter)
