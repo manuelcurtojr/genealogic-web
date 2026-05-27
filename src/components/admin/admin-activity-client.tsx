@@ -132,6 +132,43 @@ export default function AdminActivityClient() {
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
+  // Stats por tipo en la ventana visible (página actual)
+  const statsByType: Record<string, number> = {}
+  for (const i of items) statsByType[i.type] = (statsByType[i.type] || 0) + 1
+
+  // Agrupar items por bucket de fecha relativa
+  function dateBucket(iso: string): { key: string; label: string; order: number } {
+    const d = new Date(iso)
+    const now = new Date()
+    const isSameDay = d.toDateString() === now.toDateString()
+    const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1)
+    const isYesterday = d.toDateString() === yesterday.toDateString()
+    const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000)
+    if (isSameDay) return { key: 'today', label: 'Hoy', order: 0 }
+    if (isYesterday) return { key: 'yesterday', label: 'Ayer', order: 1 }
+    if (diffDays < 7) return { key: 'week', label: 'Esta semana', order: 2 }
+    if (diffDays < 30) return { key: 'month', label: 'Este mes', order: 3 }
+    if (d.getFullYear() === now.getFullYear()) {
+      const monthLabel = d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
+      return { key: `m-${d.getFullYear()}-${d.getMonth()}`, label: monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1), order: 4 + (12 - d.getMonth()) }
+    }
+    return { key: `y-${d.getFullYear()}`, label: String(d.getFullYear()), order: 99 - d.getFullYear() }
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const grouped: Array<{ key: string; label: string; order: number; items: ActivityItem[] }> = []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bucketIndex: Record<string, any> = {}
+  for (const item of items) {
+    const b = dateBucket(item.timestamp)
+    if (!bucketIndex[b.key]) {
+      const entry = { ...b, items: [] as ActivityItem[] }
+      bucketIndex[b.key] = entry
+      grouped.push(entry)
+    }
+    bucketIndex[b.key].items.push(item)
+  }
+  grouped.sort((a, b) => a.order - b.order)
+
   return (
     <div className="space-y-6 sm:space-y-8">
       <div>
@@ -141,6 +178,40 @@ export default function AdminActivityClient() {
         </h1>
         <p className="mt-2 text-[14px] text-body">Historial de acciones en la plataforma.</p>
       </div>
+
+      {/* Stats por tipo en la ventana visible — chips clickables que actúan
+          como filtro rápido. */}
+      {!loading && items.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(statsByType)
+            .sort((a, b) => b[1] - a[1])
+            .map(([type, count]) => {
+              const cfg = ACTION_CONFIG[type] || { label: type, bg: '#6b7280', icon: Edit, color: 'text-white' }
+              const CIcon = cfg.icon
+              const active = typeFilter === type
+              return (
+                <button
+                  key={type}
+                  onClick={() => { setTypeFilter(active ? '' : type); setPage(0) }}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] transition ${
+                    active
+                      ? 'border-ink bg-ink text-on-primary'
+                      : 'border-hairline bg-canvas text-body hover:border-ink/30'
+                  }`}
+                >
+                  <span
+                    className="flex h-4 w-4 items-center justify-center rounded-full"
+                    style={{ backgroundColor: active ? 'rgba(255,255,255,0.2)' : cfg.bg }}
+                  >
+                    <CIcon className="h-2.5 w-2.5 text-white" />
+                  </span>
+                  <span className="font-medium">{cfg.label}</span>
+                  <span className={`tabular-nums ${active ? 'text-on-primary/80' : 'text-muted'}`}>{count}</span>
+                </button>
+              )
+            })}
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-[200px] flex-1">
@@ -179,38 +250,100 @@ export default function AdminActivityClient() {
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-6 w-6 animate-spin text-muted" />
         </div>
+      ) : items.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft p-12 text-center">
+          <Filter className="mx-auto h-8 w-8 text-muted" />
+          <p className="mt-3 text-[14px] text-body">
+            Sin actividad con los filtros actuales.
+          </p>
+          {(typeFilter || search) && (
+            <button
+              onClick={() => { setTypeFilter(''); setSearch(''); setPage(0) }}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12.5px] font-semibold text-body hover:text-ink transition"
+            >
+              Limpiar filtros
+            </button>
+          )}
+        </div>
       ) : (
         <>
-          <div className="overflow-hidden rounded-xl border border-hairline bg-canvas">
-            <ul className="divide-y divide-hairline-soft">
-              {items.map(item => {
-                const config = ACTION_CONFIG[item.type] || { icon: Edit, color: 'text-white', bg: '#6b7280', label: item.type }
-                const Icon = config.icon
-                const date = new Date(item.timestamp)
-                const formatted = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+          {/* Timeline agrupada por bucket de fecha. Cada grupo tiene un
+              header sticky con la línea vertical de timeline conectando
+              los eventos del bucket. */}
+          <div className="space-y-8">
+            {grouped.map(group => (
+              <section key={group.key}>
+                <div className="sticky top-0 z-10 -mx-2 mb-2 bg-canvas/95 backdrop-blur-sm px-2 py-1.5">
+                  <p className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-muted">
+                    {group.label}
+                    <span className="ml-2 text-muted/60 font-normal normal-case tracking-normal">
+                      · {group.items.length} {group.items.length === 1 ? 'evento' : 'eventos'}
+                    </span>
+                  </p>
+                </div>
+                <ol className="relative">
+                  {/* Línea vertical de timeline a la altura del centro del icono */}
+                  <span
+                    aria-hidden
+                    className="absolute left-[17px] top-3 bottom-3 w-px bg-hairline"
+                  />
+                  <div className="space-y-1">
+                    {group.items.map(item => {
+                      const config = ACTION_CONFIG[item.type] || { icon: Edit, color: 'text-white', bg: '#6b7280', label: item.type }
+                      const Icon = config.icon
+                      const date = new Date(item.timestamp)
+                      const timeStr = date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+                      const dateStr = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
 
-                return (
-                  <li key={item.id} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-surface-soft">
-                    <div
-                      className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${config.color}`}
-                      style={{ backgroundColor: config.bg }}
-                    >
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[14px]">
-                        <span className="font-medium text-ink">{item.userName || 'Sistema'}</span>
-                        <span className="text-muted"> · </span>
-                        <span className="text-body">{config.label}:</span>{' '}
-                        <span className="text-ink">{item.entityName}</span>
-                      </p>
-                      {item.details && <p className="truncate text-[11.5px] text-muted">{item.details}</p>}
-                    </div>
-                    <span className="flex-shrink-0 whitespace-nowrap text-[11.5px] tabular-nums text-muted">{formatted}</span>
-                  </li>
-                )
-              })}
-            </ul>
+                      return (
+                        <li
+                          key={item.id}
+                          className="relative flex items-start gap-3 rounded-xl border border-transparent hover:border-hairline hover:bg-surface-soft px-2 py-2 transition-colors"
+                        >
+                          {/* Icono dot — alineado con la línea de timeline */}
+                          <div
+                            className="relative z-10 flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-full ring-4 ring-canvas"
+                            style={{ backgroundColor: config.bg }}
+                          >
+                            <Icon className="h-4 w-4 text-white" />
+                          </div>
+
+                          {/* Contenido */}
+                          <div className="min-w-0 flex-1 pt-1">
+                            <div className="flex items-baseline gap-2 flex-wrap">
+                              <span className="text-[13.5px] font-semibold text-ink truncate">
+                                {item.userName || 'Sistema'}
+                              </span>
+                              <span className="inline-flex items-center rounded-full bg-surface-card px-1.5 py-0.5 text-[10px] font-medium text-body">
+                                {config.label}
+                              </span>
+                            </div>
+                            <p className="mt-0.5 text-[13px] text-body truncate">
+                              <span className="text-ink">{item.entityName}</span>
+                              {item.details && (
+                                <span className="ml-1.5 text-muted">· {item.details}</span>
+                              )}
+                            </p>
+                          </div>
+
+                          {/* Tiempo — más compacto: HH:mm si es hoy, día+mes si no */}
+                          <div className="flex-shrink-0 pt-1 text-right">
+                            <span
+                              className="block text-[11px] tabular-nums text-muted"
+                              title={date.toLocaleString('es-ES')}
+                            >
+                              {group.key === 'today' || group.key === 'yesterday'
+                                ? timeStr
+                                : `${dateStr} · ${timeStr}`}
+                            </span>
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </div>
+                </ol>
+              </section>
+            ))}
           </div>
 
           {totalPages > 1 && (

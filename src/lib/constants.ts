@@ -156,6 +156,20 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
 
+  // ── Soporte — accesible para TODO usuario logueado (free incluido).
+  // Antes /mis-solicitudes y /soporte vivían sin entrada en sidebar y el
+  // usuario no podía abrir un ticket ni ver el histórico de sus claims
+  // (perros/criaderos reclamados, tickets, feedback). El acceso solo
+  // estaba vía URL directa o a través del widget de feedback.
+  {
+    id: 'support',
+    label: 'Soporte',
+    items: [
+      { label: 'Mis solicitudes', href: '/mis-solicitudes', icon: 'Inbox' },
+      { label: 'Contactar soporte', href: '/soporte', icon: 'LifeBuoy' },
+    ],
+  },
+
   // ── Admin — solo profiles.role='admin' ──────────────────────────────
   {
     id: 'admin',
