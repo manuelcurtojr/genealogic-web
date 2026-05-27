@@ -1,19 +1,19 @@
 /**
- * /razas/[slug] — ficha pública de una raza.
+ * /razas/[slug] — ficha pública de una raza con estándar Genealogic.
  *
- * Secciones:
- *  - Hero: nombre, origen, FCI nº, descripción
- *  - Estándares oficiales (FCI, RSCE, AKC, KC, etc.) con enlaces verificados
- *  - Colores admitidos según estándar
- *  - Catálogo de ejemplares (primeros 24, link a "ver más")
- *  - Top kennels especializados
+ * Layout 2 columnas tipo /legal:
+ *   sidebar (12 secciones del estándar) + contenido scrollable con anchors.
+ *
+ * Fuente de datos: campos breeds.{description, synonyms, standard_data,
+ * genealogic_standard, club_differences} + breed_colors + ejemplares.
  */
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, AlertCircle } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { DogImage } from '@/components/ui/dog-image'
+import BreedStandardSidebar, { BREED_SECTIONS } from '@/components/breeds/breed-standard-sidebar'
 import type { Metadata } from 'next'
 
 export const revalidate = 3600
@@ -27,7 +27,6 @@ type Standard = {
   official?: boolean
   notes?: string | null
   date_valid?: string | null
-  year?: number | null
 }
 
 type StandardData = {
@@ -37,11 +36,19 @@ type StandardData = {
   standards?: Standard[]
 }
 
+type GenealogicStandard = {
+  sections?: { key: string; title: string; content: string }[]
+}
+
+type ClubDifferences = {
+  differences?: { topic: string; items: { entity: string; position: string }[] }[]
+}
+
 async function getBreed(slug: string) {
   const supabase = await createClient()
   const { data: breed } = await supabase
     .from('breeds')
-    .select('id, name, slug, description, synonyms, standard_data')
+    .select('id, name, slug, description, synonyms, standard_data, genealogic_standard, club_differences')
     .eq('slug', slug)
     .maybeSingle()
   return breed
@@ -53,11 +60,12 @@ export async function generateMetadata(
   const { slug } = await params
   const breed = await getBreed(slug)
   if (!breed) return { title: 'Raza no encontrada — Genealogic' }
+  const std: StandardData = breed.standard_data || {}
   const desc = breed.description
     ? breed.description.slice(0, 200) + (breed.description.length > 200 ? '…' : '')
-    : `Estándares oficiales, colores admitidos y ejemplares de la raza ${breed.name} en Genealogic.`
+    : `Estándar oficial, características y ejemplares de la raza ${breed.name}.`
   return {
-    title: `${breed.name} — Estándar, características y ejemplares · Genealogic`,
+    title: `${breed.name} — Estándar oficial y características · Genealogic`,
     description: desc,
     alternates: { canonical: `https://genealogic.io/razas/${slug}` },
     openGraph: {
@@ -70,6 +78,30 @@ export async function generateMetadata(
   }
 }
 
+// Renderiza el contenido de una sección. Soporta **bold** y newlines.
+function renderContent(text: string) {
+  // Split por dobles saltos en párrafos
+  const paragraphs = text.split(/\n\n+/).map((p) => p.trim()).filter(Boolean)
+  return paragraphs.map((p, i) => {
+    // Bold inline: **texto**
+    const parts = p.split(/(\*\*[^*]+\*\*)/g)
+    return (
+      <p key={i} className="text-[14.5px] leading-[1.75] text-body">
+        {parts.map((part, j) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return (
+              <strong key={j} className="font-semibold text-ink">
+                {part.slice(2, -2)}
+              </strong>
+            )
+          }
+          return part
+        })}
+      </p>
+    )
+  })
+}
+
 export default async function BreedPage(
   { params }: { params: Promise<{ slug: string }> },
 ) {
@@ -79,6 +111,8 @@ export default async function BreedPage(
 
   const supabase = await createClient()
   const std: StandardData = breed.standard_data || {}
+  const gStandard: GenealogicStandard = breed.genealogic_standard || {}
+  const diffs: ClubDifferences = breed.club_differences || {}
 
   const [{ data: colorsLink }, { data: sampleDogs }, dogCountResult] = await Promise.all([
     supabase
@@ -92,7 +126,7 @@ export default async function BreedPage(
       .eq('is_public', true)
       .not('thumbnail_url', 'is', null)
       .order('created_at', { ascending: false })
-      .limit(24),
+      .limit(12),
     supabase
       .from('dogs')
       .select('id', { count: 'exact', head: true })
@@ -106,11 +140,16 @@ export default async function BreedPage(
   const totalDogs = dogCountResult.count || 0
   const synonyms = (breed.synonyms as string[] | null) || []
 
+  // Lookup sections by key for ordered render
+  const sectionsByKey = new Map((gStandard.sections || []).map((s) => [s.key, s]))
+
+  const hasStandard = (gStandard.sections || []).length > 0
+
   return (
     <div className="min-h-screen bg-canvas">
       {/* Breadcrumb */}
       <nav className="border-b border-hairline">
-        <div className="mx-auto max-w-[1100px] px-6 py-3 lg:px-12">
+        <div className="mx-auto max-w-[1200px] px-4 py-3 sm:px-6">
           <ol className="flex items-center gap-2 text-[12.5px] text-muted">
             <li>
               <Link href="/razas" className="hover:text-ink">
@@ -123,9 +162,9 @@ export default async function BreedPage(
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="border-b border-hairline">
-        <div className="mx-auto max-w-[1100px] px-6 pt-12 pb-10 lg:px-12 lg:pt-20 lg:pb-14">
+      <main className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 sm:py-12">
+        {/* Hero */}
+        <header>
           <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">Raza canina</p>
           <h1
             className="mt-3 font-semibold text-ink"
@@ -133,20 +172,14 @@ export default async function BreedPage(
           >
             {breed.name}
           </h1>
-
-          {/* Metadata pills */}
           <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-muted">
             {std.origin && (
-              <span>
-                Origen: <strong className="font-semibold text-ink">{std.origin}</strong>
-              </span>
+              <span>Origen: <strong className="font-semibold text-ink">{std.origin}</strong></span>
             )}
             {std.fci_number && (
               <>
                 <span aria-hidden>·</span>
-                <span>
-                  FCI nº <strong className="font-semibold text-ink">{std.fci_number}</strong>
-                </span>
+                <span>FCI nº <strong className="font-semibold text-ink">{std.fci_number}</strong></span>
               </>
             )}
             <span aria-hidden>·</span>
@@ -155,116 +188,193 @@ export default async function BreedPage(
               ejemplares en Genealogic
             </span>
           </div>
-
-          {std.fci_group && (
-            <p className="mt-4 text-[13.5px] text-muted">{std.fci_group}</p>
-          )}
-
           {synonyms.length > 0 && (
             <p className="mt-3 text-[13px] text-muted">
-              También conocida como: <span className="text-body">{synonyms.join(' · ')}</span>
+              También: <span className="text-body">{synonyms.join(' · ')}</span>
             </p>
           )}
-
           {breed.description && (
             <p className="mt-7 max-w-[680px] text-[17px] leading-[1.6] text-body">
               {breed.description}
             </p>
           )}
-        </div>
-      </section>
+        </header>
 
-      {/* Standards */}
-      {std.standards && std.standards.length > 0 && (
-        <section className="border-b border-hairline">
-          <div className="mx-auto max-w-[1100px] px-6 py-12 lg:px-12 lg:py-16">
-            <h2
-              className="font-semibold text-ink"
-              style={{ fontSize: 'clamp(24px, 3vw, 32px)', lineHeight: 1.15, letterSpacing: '-0.025em' }}
-            >
-              Estándares oficiales
-            </h2>
-            <p className="mt-3 max-w-[560px] text-[14.5px] text-muted">
-              Documentos oficiales de las entidades cinológicas que reconocen y regulan la raza.
+        {/* Si no hay estándar Genealogic todavía, mostrar formato simple antiguo */}
+        {!hasStandard && (
+          <section className="mt-12 rounded-2xl border border-hairline bg-surface-soft/40 p-8 text-center">
+            <p className="text-[14.5px] text-muted">
+              El estándar canónico de Genealogic para esta raza está en preparación.
             </p>
-
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              {std.standards.map((s, i) => (
-                <a
-                  key={i}
-                  href={s.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-start justify-between gap-3 rounded-[10px] border border-hairline p-4 transition-colors hover:bg-surface-soft"
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-ink text-[15px]">{s.entity}</p>
-                      {s.official && (
-                        <span className="rounded-full bg-emerald-50 px-1.5 py-px text-[10px] font-medium text-emerald-700">
-                          Oficial
-                        </span>
-                      )}
+            {std.standards && std.standards.length > 0 && (
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 text-left">
+                {std.standards.map((s, i) => (
+                  <a key={i} href={s.url} target="_blank" rel="noopener noreferrer"
+                     className="flex items-center justify-between gap-2 rounded-lg border border-hairline bg-canvas p-3 hover:bg-surface-soft">
+                    <div>
+                      <p className="text-[13.5px] font-semibold text-ink">{s.entity}</p>
+                      <p className="text-[12px] text-muted">{s.country}{s.standard_number && ` · nº ${s.standard_number}`}</p>
                     </div>
-                    <p className="mt-1 text-[12.5px] text-muted">
-                      {s.country}
-                      {s.standard_number && ` · Estándar nº ${s.standard_number}`}
-                      {s.language && ` · ${s.language.toUpperCase()}`}
-                      {s.date_valid && ` · vigente desde ${s.date_valid}`}
-                    </p>
-                    {s.notes && (
-                      <p className="mt-1.5 text-[12px] leading-[1.5] text-muted/80">{s.notes}</p>
-                    )}
+                    <ExternalLink className="h-4 w-4 text-muted" />
+                  </a>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Layout 2 columnas con sidebar */}
+        {hasStandard && (
+          <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr] lg:gap-10">
+            {/* Sidebar */}
+            <aside className="lg:py-2">
+              <BreedStandardSidebar
+                breedName={breed.name}
+                origin={std.origin}
+                fciNumber={std.fci_number}
+              />
+            </aside>
+
+            {/* Contenido del estándar */}
+            <article className="min-w-0">
+              <div className="rounded-2xl border border-hairline bg-canvas px-6 py-8 sm:px-10 sm:py-10 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+                {/* Secciones 1-12 (estándar Genealogic) */}
+                {BREED_SECTIONS.slice(0, 12).map((meta) => {
+                  const sec = sectionsByKey.get(meta.id)
+                  if (!sec) return null
+                  return (
+                    <section key={meta.id} id={meta.id} className="scroll-mt-20 mb-10 last:mb-0">
+                      <h2 className="text-[20px] font-semibold tracking-[-0.02em] text-ink pb-2 border-b border-hairline-soft">
+                        {sec.title}
+                      </h2>
+                      <div className="mt-4 space-y-3">{renderContent(sec.content)}</div>
+                    </section>
+                  )
+                })}
+
+                {/* Colores admitidos (entre Manto y Faltas si quieres, lo dejamos al final del bloque) */}
+                {colors.length > 0 && (
+                  <section className="mb-10">
+                    <h3 className="text-[15px] font-semibold text-ink mb-3">Colores en Genealogic</h3>
+                    <ul className="flex flex-wrap gap-2">
+                      {colors.map((c: any) => (
+                        <li key={c.id} className="rounded-full border border-hairline bg-canvas px-3 py-1.5 text-[13px] text-ink">
+                          {c.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+
+                {/* Disclaimer + reinterpretación */}
+                <section id="reinterpretacion" className="scroll-mt-20 mb-10">
+                  <h2 className="text-[20px] font-semibold tracking-[-0.02em] text-ink pb-2 border-b border-hairline-soft">
+                    Sobre este estándar
+                  </h2>
+                  <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/60 p-4 flex gap-3">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0 text-amber-700 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-[13.5px] leading-[1.7] text-amber-900">
+                        Este estándar es una <strong>reinterpretación de Genealogic</strong> de las
+                        fuentes oficiales (FCI, RSCE, AKC, KC, ENCI…) reorganizada en una estructura
+                        común a todas las razas para facilitar la comparación entre criadores y
+                        propietarios. <strong>No sustituye al estándar oficial</strong>.
+                      </p>
+                      <p className="mt-2 text-[13px] leading-[1.7] text-amber-900">
+                        Para uso oficial — jueces, expositores, criadores que registran cachorros —
+                        consulta siempre los documentos originales de cada entidad que enlazamos
+                        debajo.
+                      </p>
+                    </div>
                   </div>
-                  <ExternalLink className="h-4 w-4 flex-shrink-0 text-muted transition-colors group-hover:text-ink" />
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
-      {/* Colors */}
-      {colors.length > 0 && (
-        <section className="border-b border-hairline">
-          <div className="mx-auto max-w-[1100px] px-6 py-12 lg:px-12 lg:py-16">
-            <h2
-              className="font-semibold text-ink"
-              style={{ fontSize: 'clamp(24px, 3vw, 32px)', lineHeight: 1.15, letterSpacing: '-0.025em' }}
-            >
-              Colores admitidos
-            </h2>
-            <p className="mt-3 max-w-[560px] text-[14.5px] text-muted">
-              Capas y patrones de pelaje contemplados en el estándar oficial de la raza.
-            </p>
-            <ul className="mt-6 flex flex-wrap gap-2">
-              {colors.map((c: any) => (
-                <li
-                  key={c.id}
-                  className="rounded-full border border-hairline bg-canvas px-3 py-1.5 text-[13px] text-ink"
-                >
-                  {c.name}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
+                  {/* Fuentes oficiales */}
+                  {std.standards && std.standards.length > 0 && (
+                    <div className="mt-6">
+                      <h3 className="text-[14px] font-semibold text-ink mb-3">Fuentes oficiales consultadas</h3>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {std.standards.map((s, i) => (
+                          <a
+                            key={i}
+                            href={s.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group flex items-start justify-between gap-3 rounded-lg border border-hairline p-3 transition-colors hover:bg-surface-soft"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="font-semibold text-ink text-[13.5px]">{s.entity}</p>
+                                {s.official && (
+                                  <span className="rounded-full bg-emerald-50 px-1.5 py-px text-[9.5px] font-medium text-emerald-700">
+                                    Oficial
+                                  </span>
+                                )}
+                              </div>
+                              <p className="mt-0.5 text-[11.5px] text-muted">
+                                {s.country}
+                                {s.standard_number && ` · nº ${s.standard_number}`}
+                                {s.language && ` · ${s.language.toUpperCase()}`}
+                              </p>
+                              {s.notes && (
+                                <p className="mt-1 text-[11px] leading-[1.5] text-muted/80">{s.notes}</p>
+                              )}
+                            </div>
+                            <ExternalLink className="h-3.5 w-3.5 flex-shrink-0 text-muted transition-colors group-hover:text-ink" />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </section>
 
-      {/* Ejemplares destacados */}
-      {sampleDogs && sampleDogs.length > 0 && (
-        <section>
-          <div className="mx-auto max-w-[1100px] px-6 py-12 lg:px-12 lg:py-16">
+                {/* Diferencias entre clubes */}
+                {diffs.differences && diffs.differences.length > 0 && (
+                  <section id="diferencias-clubes" className="scroll-mt-20">
+                    <h2 className="text-[20px] font-semibold tracking-[-0.02em] text-ink pb-2 border-b border-hairline-soft">
+                      Diferencias entre clubes
+                    </h2>
+                    <p className="mt-4 max-w-[600px] text-[14px] leading-[1.7] text-body">
+                      Distintas entidades cinológicas mantienen criterios ligeramente diferentes
+                      sobre la misma raza. Estas son las divergencias principales.
+                    </p>
+
+                    <div className="mt-6 space-y-6">
+                      {diffs.differences.map((d, i) => (
+                        <div key={i} className="rounded-xl border border-hairline overflow-hidden">
+                          <div className="bg-surface-soft/60 px-4 py-2.5 border-b border-hairline">
+                            <p className="text-[13px] font-semibold text-ink">{d.topic}</p>
+                          </div>
+                          <ul className="divide-y divide-hairline-soft">
+                            {d.items.map((it, j) => (
+                              <li key={j} className="px-4 py-3 grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-2">
+                                <p className="text-[12.5px] font-semibold text-ink">{it.entity}</p>
+                                <p className="text-[13px] leading-[1.65] text-body">{it.position}</p>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </div>
+            </article>
+          </div>
+        )}
+
+        {/* Ejemplares destacados — debajo de todo, ancho completo */}
+        {sampleDogs && sampleDogs.length > 0 && (
+          <section className="mt-16 pt-12 border-t border-hairline">
             <div className="flex items-baseline justify-between gap-4 flex-wrap">
               <div>
                 <h2
                   className="font-semibold text-ink"
-                  style={{ fontSize: 'clamp(24px, 3vw, 32px)', lineHeight: 1.15, letterSpacing: '-0.025em' }}
+                  style={{ fontSize: 'clamp(22px, 2.5vw, 28px)', lineHeight: 1.15, letterSpacing: '-0.025em' }}
                 >
-                  Ejemplares registrados
+                  Ejemplares en Genealogic
                 </h2>
-                <p className="mt-2 text-[14.5px] text-muted">
-                  Algunos perros de la raza con su pedigree completo en Genealogic.
+                <p className="mt-2 text-[14px] text-muted">
+                  Algunos perros de la raza con su pedigree completo.
                 </p>
               </div>
               {totalDogs > sampleDogs.length && (
@@ -276,8 +386,7 @@ export default async function BreedPage(
                 </Link>
               )}
             </div>
-
-            <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               {sampleDogs.map((d) => {
                 const sexColor =
                   d.sex === 'male' ? BRAND.male : d.sex === 'female' ? BRAND.female : '#888'
@@ -292,7 +401,7 @@ export default async function BreedPage(
                         src={d.thumbnail_url}
                         alt={d.name}
                         fill
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 17vw"
                         width={0}
                         height={0}
                         className="absolute inset-0 h-full w-full"
@@ -303,9 +412,9 @@ export default async function BreedPage(
                       />
                     </div>
                     <div className="p-3">
-                      <p className="truncate text-[13.5px] font-medium text-ink">{d.name}</p>
+                      <p className="truncate text-[13px] font-medium text-ink">{d.name}</p>
                       {d.birth_date && (
-                        <p className="mt-0.5 text-[11.5px] text-muted">
+                        <p className="mt-0.5 text-[11px] text-muted">
                           {new Date(d.birth_date).toLocaleDateString('es-ES', {
                             day: '2-digit',
                             month: 'short',
@@ -318,9 +427,9 @@ export default async function BreedPage(
                 )
               })}
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
+      </main>
     </div>
   )
 }
