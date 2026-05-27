@@ -54,12 +54,15 @@ export default function AdminUsersClient({ initialUsers }: Props) {
             placeholder="Buscar por nombre o email..."
             className="w-full bg-canvas border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
         </div>
+        {/* Fix bug: el filtro antes ofrecía 'pro' y 'free' como roles, pero
+            profiles.role solo toma los valores admin/breeder/owner. El filtro
+            quedaba siempre vacío. Ahora coincide con los valores reales. */}
         <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)}
           className="bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-body focus:border-ink focus:outline-none transition appearance-none">
           <option value="">Todos los roles</option>
           <option value="admin">Admin</option>
-          <option value="pro">Pro</option>
-          <option value="free">Free</option>
+          <option value="breeder">Criador</option>
+          <option value="owner">Propietario</option>
         </select>
       </div>
 
@@ -117,6 +120,18 @@ export default function AdminUsersClient({ initialUsers }: Props) {
                   <td className="px-4 py-3 text-xs text-muted">{u.country || '—'}</td>
                   <td className="px-4 py-3 text-[10px] text-muted">
                     {new Date(u.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
+                  </td>
+                  <td className="px-4 py-3 text-right" onClick={e => e.stopPropagation()}>
+                    {/* Link a /admin/users/[id] (vista 360). stopPropagation
+                        para que no se dispare el onClick de la <tr> que abre
+                        el panel de edición. */}
+                    <a
+                      href={`/admin/users/${u.id}`}
+                      className="inline-flex items-center gap-1 rounded-md border border-hairline bg-canvas px-2 py-1 text-[10.5px] font-semibold text-body hover:text-ink hover:border-ink/30 transition"
+                      title="Ver vista 360"
+                    >
+                      360 →
+                    </a>
                   </td>
                 </tr>
               )

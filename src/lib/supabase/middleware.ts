@@ -177,5 +177,40 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
+  // ─── Captura UTM / referrer en cookie first-touch ───────────────────
+  // Si el visitante llega con ?utm_* o desde un dominio externo, guardamos
+  // los params + referrer + landing_page en una cookie httpOnly durante 30
+  // días. Al registrarse, /api/track-signup la lee y persiste en
+  // profiles.signup_meta. Así sabemos de dónde vienen los usuarios sin
+  // depender de localStorage (que se pierde en sesiones distintas).
+  const url = request.nextUrl
+  const sp = url.searchParams
+  const hasUtm = sp.has('utm_source') || sp.has('utm_medium') || sp.has('utm_campaign')
+  const existingMeta = request.cookies.get('signup_meta')?.value
+
+  if (hasUtm || !existingMeta) {
+    // Solo escribimos si NO hay cookie todavía (respetamos first-touch) o
+    // si llegan UTM nuevos explícitos.
+    const referrer = request.headers.get('referer') || ''
+    const meta: Record<string, string> = {}
+    if (sp.get('utm_source')) meta.utm_source = sp.get('utm_source')!
+    if (sp.get('utm_medium')) meta.utm_medium = sp.get('utm_medium')!
+    if (sp.get('utm_campaign')) meta.utm_campaign = sp.get('utm_campaign')!
+    if (sp.get('utm_term')) meta.utm_term = sp.get('utm_term')!
+    if (sp.get('utm_content')) meta.utm_content = sp.get('utm_content')!
+    if (referrer && !referrer.includes(url.host)) meta.referrer = referrer
+    if (!meta.landing_page) meta.landing_page = url.pathname
+
+    // Solo persistimos si tenemos algo útil que registrar
+    if (Object.keys(meta).length > 0 && (hasUtm || !existingMeta)) {
+      supabaseResponse.cookies.set('signup_meta', JSON.stringify(meta), {
+        maxAge: 30 * 24 * 60 * 60, // 30 días
+        httpOnly: false,           // accesible desde server actions + cliente
+        sameSite: 'lax',
+        path: '/',
+      })
+    }
+  }
+
   return supabaseResponse
 }

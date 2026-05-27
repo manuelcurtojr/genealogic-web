@@ -97,6 +97,14 @@ function RegisterInner() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ intent: oi || 'owner' }),
       }).catch(() => { /* swallow — email no debe bloquear UX */ })
+
+      // Persistir signup_meta (UTM/referrer/landing) en profiles + alerta
+      // al super admin. Lee la cookie que el middleware setea al primer hit.
+      // Best-effort, no bloquea el redirect.
+      fetch('/api/track-signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      }).catch(() => { /* swallow */ })
     }
 
     router.push(destination)

@@ -6,6 +6,10 @@ import { usePathname } from 'next/navigation'
 interface Props {
   kennelId?: string | null
   dogId?: string | null
+  /** Si la página conoce el user logueado (server-rendered), pásalo para que
+   *  el page_view se asocie a su user_id. Sin este prop el tracking sigue
+   *  siendo anónimo (session_id hash diario). */
+  userId?: string | null
 }
 
 /**
@@ -13,7 +17,7 @@ interface Props {
  * Se incluye en páginas públicas (kennel profile, dog profile, kennel pages).
  * Dedupe en sessionStorage para no contar el mismo path múltiples veces por sesión.
  */
-export default function PageTracker({ kennelId, dogId }: Props) {
+export default function PageTracker({ kennelId, dogId, userId }: Props) {
   const pathname = usePathname()
   const sent = useRef(false)
 
@@ -37,11 +41,12 @@ export default function PageTracker({ kennelId, dogId }: Props) {
       body: JSON.stringify({
         kennel_id: kennelId || null,
         dog_id: dogId || null,
+        user_id: userId || null,
         path: pathname,
         referrer,
       }),
     }).catch(() => { /* silent */ })
-  }, [pathname, kennelId, dogId])
+  }, [pathname, kennelId, dogId, userId])
 
   return null
 }

@@ -38,7 +38,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => null)
     if (!body || !body.path) return NO_CONTENT()
 
-    const { kennel_id, dog_id } = body as { kennel_id?: string; dog_id?: string }
+    const { kennel_id, dog_id, user_id } = body as { kennel_id?: string; dog_id?: string; user_id?: string }
+    // Validar UUID si viene user_id (anti-injection)
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    const safeUserId = (typeof user_id === 'string' && UUID_RE.test(user_id)) ? user_id : null
     const path = String(body.path || '/').split('?')[0]!.split('#')[0]!
     if (!path.startsWith('/') || path.length > 512) return NO_CONTENT()
     if (shouldIgnorePath(path)) return NO_CONTENT()
@@ -85,6 +88,7 @@ export async function POST(request: NextRequest) {
     await supabase.from('page_views').insert({
       kennel_id: kennel_id || null,
       dog_id: dog_id || null,
+      user_id: safeUserId,
       path,
       session_id,
       visitor_hash: session_id, // backfill legacy column

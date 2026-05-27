@@ -1,11 +1,12 @@
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Users, Dog, Store, Baby, Stethoscope, FileText } from 'lucide-react'
+import { Users, Dog, Store, Baby, Stethoscope, FileText, AlertCircle, ArrowRight } from 'lucide-react'
 import { pastelByName } from '@/lib/avatars'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
 
-  const [usersRes, dogsRes, kennelsRes, littersRes, vetRes, breedsRes, recentUsersRes] = await Promise.all([
+  const [usersRes, dogsRes, kennelsRes, littersRes, vetRes, breedsRes, recentUsersRes, urgentRes, pendingRes] = await Promise.all([
     supabase.from('profiles').select('id', { count: 'exact', head: true }),
     supabase.from('dogs').select('id', { count: 'exact', head: true }),
     supabase.from('kennels').select('id', { count: 'exact', head: true }),
@@ -13,7 +14,21 @@ export default async function AdminDashboard() {
     supabase.from('vet_reminders').select('id', { count: 'exact', head: true }),
     supabase.from('breeds').select('id', { count: 'exact', head: true }),
     supabase.from('profiles').select('id, display_name, email, role, created_at').order('created_at', { ascending: false }).limit(10),
+    // Solicitudes URGENTES sin resolver — alerta principal del admin.
+    supabase
+      .from('admin_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('priority', 'urgent')
+      .not('status', 'in', '("approved","rejected","cancelled")'),
+    // Solicitudes en estado pending (sin urgencia) — secundario
+    supabase
+      .from('admin_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
   ])
+
+  const urgentCount = urgentRes.count || 0
+  const pendingCount = pendingRes.count || 0
 
   const stats = [
     { label: 'Usuarios', value: usersRes.count || 0, icon: Users, color: '#fb923c' },
@@ -39,6 +54,46 @@ export default async function AdminDashboard() {
         </h1>
         <p className="mt-2 text-[14px] text-body">Vista general de Genealogic.</p>
       </div>
+
+      {/* Banners de acción inmediata — solicitudes urgentes / pendientes */}
+      {(urgentCount > 0 || pendingCount > 0) && (
+        <div className="flex flex-col sm:flex-row gap-3">
+          {urgentCount > 0 && (
+            <Link
+              href="/admin/solicitudes?priority=urgent"
+              className="flex-1 group flex items-center gap-3 rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 hover:border-rose-400 transition"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-500 text-white">
+                <AlertCircle className="h-4 w-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[14px] font-semibold text-rose-900">
+                  {urgentCount} {urgentCount === 1 ? 'solicitud urgente' : 'solicitudes urgentes'}
+                </p>
+                <p className="text-[12px] text-rose-700">Requieren acción inmediata.</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-rose-600 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          )}
+          {pendingCount > 0 && (
+            <Link
+              href="/admin/solicitudes?status=pending"
+              className="flex-1 group flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 hover:border-amber-300 transition"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500 text-white">
+                <FileText className="h-4 w-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[14px] font-semibold text-amber-900">
+                  {pendingCount} {pendingCount === 1 ? 'pendiente' : 'pendientes'}
+                </p>
+                <p className="text-[12px] text-amber-700">Sin revisar todavía.</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-amber-600 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* Stats */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">

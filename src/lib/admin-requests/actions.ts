@@ -15,6 +15,7 @@
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { sendTransactionalEmail } from '@/lib/email/send'
+import { notifySuperAdmin } from '@/lib/admin/notify'
 import type {
   AdminRequestType,
   AdminRequestStatus,
@@ -106,6 +107,18 @@ export async function createSupportRequestAction(input: {
   if (error) throw new Error(error.message)
   revalidatePath('/mis-solicitudes')
   revalidatePath('/admin/solicitudes')
+
+  // Notificación al super admin (best-effort, no rompe si falla).
+  // Dedupe por request_id para que no se mande 2x si la action se reintenta.
+  notifySuperAdmin({
+    kind: 'support_request',
+    subject: `Soporte: ${subject}`,
+    body: `De: ${profile?.display_name || profile?.email || 'usuario'} (${profile?.email || 'sin email'})\n\n${message}`,
+    dedupeKey: `admin_alert:support:${data.id}`,
+    ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'}/admin/solicitudes/${data.id}`,
+    ctaLabel: 'Ver ticket',
+  }).catch(() => {})
+
   return { id: data.id }
 }
 
@@ -304,6 +317,19 @@ export async function createClaimRequestAction(input: {
 
   revalidatePath('/mis-solicitudes')
   revalidatePath('/admin/solicitudes')
+
+  // Alerta al super admin — los claims son críticos (transfieren ownership).
+  notifySuperAdmin({
+    kind: input.type === 'claim_dog' ? 'claim_dog' : 'claim_kennel',
+    subject: input.type === 'claim_dog'
+      ? `Nuevo claim de perro`
+      : `Nuevo claim de criadero`,
+    body: `De: ${profile?.display_name || profile?.email || 'usuario'} (${profile?.email})\n\n${message}\n\nEvidencias adjuntas: ${input.evidence.length}`,
+    dedupeKey: `admin_alert:claim:${data.id}`,
+    ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'}/admin/solicitudes/${data.id}`,
+    ctaLabel: 'Revisar claim',
+  }).catch(() => {})
+
   return { id: data.id }
 }
 

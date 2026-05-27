@@ -169,6 +169,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Catálogo', href: '/admin/catalog', icon: 'Tag', requiresAdmin: true },
       { label: 'Stats', href: '/admin/stats', icon: 'BarChart3', requiresAdmin: true },
       { label: 'Importador', href: '/admin/import', icon: 'Upload', requiresAdmin: true },
+      { label: 'Audit log', href: '/admin/audit', icon: 'ShieldAlert', requiresAdmin: true },
     ],
   },
 ]

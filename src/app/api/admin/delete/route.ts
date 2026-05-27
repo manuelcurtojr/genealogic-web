@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
+import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rate-limit'
+import { logAdminAction, type AdminAction } from '@/lib/admin/audit-log'
+import { notifySuperAdmin } from '@/lib/admin/notify'
 
 export async function POST(request: NextRequest) {
   // Verify caller is admin
@@ -10,6 +13,17 @@ export async function POST(request: NextRequest) {
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Not admin' }, { status: 403 })
+
+  // Rate limit: max 30 deletes por admin por hora. Borrar es destructivo
+  // y NO debería ser bulk. Un admin comprometido frenado aquí.
+  const ip = getClientIp(request.headers)
+  const rl = checkRateLimit(`admin-delete:${user.id}`, { tokens: 30, windowMs: 60 * 60_000 })
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded' },
+      { status: 429, headers: rateLimitHeaders(rl, 30) },
+    )
+  }
 
   const { table, id } = await request.json()
   if (!table || !id) return NextResponse.json({ error: 'table and id required' }, { status: 400 })
@@ -77,6 +91,29 @@ export async function POST(request: NextRequest) {
       break
     }
   }
+
+  // Audit log + alerta al super admin para acciones destructivas.
+  const actionMap: Record<string, AdminAction> = {
+    dogs: 'delete_dog',
+    kennels: 'delete_kennel',
+    litters: 'delete_dog',  // sin enum específico, lo agrupamos
+    profiles: 'delete_user',
+  }
+  const userAgent = request.headers.get('user-agent')
+  await logAdminAction({
+    adminId: user.id,
+    action: actionMap[table] || 'delete_user',
+    targetTable: table,
+    targetId: id,
+    ip,
+    userAgent,
+  })
+  notifySuperAdmin({
+    kind: 'system_alert',
+    subject: `Admin delete: ${table}`,
+    body: `Admin ${user.email} borró ${table}/${id}.\nIP: ${ip}`,
+    dedupeKey: `audit:delete:${table}:${id}:${Date.now()}`,
+  }).catch(() => {})
 
   return NextResponse.json({ success: true })
 }
