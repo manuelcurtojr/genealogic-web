@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Search, X, Dog, Home, Palette } from 'lucide-react'
+import { Search, Dog, Home, Palette } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
@@ -47,7 +47,10 @@ export default function SearchBar() {
     return () => document.removeEventListener('keydown', handler)
   }, [])
 
-  // Search debounce
+  // Search debounce — usa RPCs `search_*_smart` que combinan ILIKE rápido
+  // (vía índice GIN trgm sobre search_text normalizado) + fallback word_
+  // similarity para queries con apóstrofes, acentos o typos. El ranking
+  // viene por score word_similarity DESC.
   useEffect(() => {
     if (query.trim().length < 2) { setResults([]); return }
 
@@ -57,19 +60,22 @@ export default function SearchBar() {
       const q = query.trim()
 
       const [dogsRes, kennelsRes, breedsRes] = await Promise.all([
-        supabase.from('dogs').select('id, slug, name, sex, thumbnail_url, breed:breeds(name)').ilike('name', `%${q}%`).limit(3),
-        supabase.from('kennels').select('id, slug, name, logo_url').ilike('name', `%${q}%`).limit(3),
-        supabase.from('breeds').select('id, name').ilike('name', `%${q}%`).limit(3),
+        supabase.rpc('search_dogs_smart', { q, lim: 8 }),
+        supabase.rpc('search_kennels_smart', { q, lim: 5 }),
+        supabase.rpc('search_breeds_smart', { q, lim: 5 }),
       ])
 
       const items: SearchResult[] = [
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(dogsRes.data || []).map((d: any) => ({
           id: d.id, slug: d.slug, name: d.name, type: 'dog' as const,
-          subtitle: d.breed?.name, image: d.thumbnail_url, sex: d.sex,
+          subtitle: d.breed_name, image: d.thumbnail_url, sex: d.sex,
         })),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(kennelsRes.data || []).map((k: any) => ({
           id: k.id, slug: k.slug, name: k.name, type: 'kennel' as const, image: k.logo_url,
         })),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(breedsRes.data || []).map((b: any) => ({
           id: b.id, name: b.name, type: 'breed' as const,
         })),
