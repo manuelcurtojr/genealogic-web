@@ -17,6 +17,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Menu, X } from 'lucide-react'
 
 export type NavItem = {
@@ -34,6 +35,11 @@ export default function KennelChromeNav({
 }) {
   const pathname = usePathname() || ''
   const [open, setOpen] = useState(false)
+  // Portal target — sólo cliente. Sin esto el drawer queda atrapado en el
+  // stacking context del KennelChrome (backdrop-blur-md crea contexto nuevo)
+  // y desaparece detrás del hero por mucho z-index que le metamos.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
   const homeHref = `/kennels/${kennelSlug}`
 
   function isActive(href: string): boolean {
@@ -109,11 +115,13 @@ export default function KennelChromeNav({
   )
 
   // ─── Drawer (mobile <md) ──────────────────────────────────────────────
+  // Se renderiza vía portal a document.body para escapar del stacking
+  // context del header (backdrop-blur-md en KennelChrome crea uno nuevo).
   const drawer = (
     <div className="md:hidden">
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-[55] bg-black/45 backdrop-blur-[2px] transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[9998] bg-black/45 backdrop-blur-[2px] transition-opacity duration-300 ${
           open ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setOpen(false)}
@@ -121,7 +129,7 @@ export default function KennelChromeNav({
       {/* Panel — full screen en mobile, fondo blanco sólido (sin transparencia
           para que el hero no se vea por detrás) */}
       <aside
-        className={`fixed inset-0 z-[60] flex flex-col transition-transform duration-300 ${
+        className={`fixed inset-0 z-[9999] flex flex-col transition-transform duration-300 ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{
@@ -170,7 +178,11 @@ export default function KennelChromeNav({
     <>
       {desktopNav}
       {mobileTrigger}
-      {drawer}
+      {/* Portal a document.body — escapa de cualquier stacking context
+          creado por ancestros (backdrop-filter, transform, etc). */}
+      {mounted && typeof document !== 'undefined'
+        ? createPortal(drawer, document.body)
+        : null}
     </>
   )
 }

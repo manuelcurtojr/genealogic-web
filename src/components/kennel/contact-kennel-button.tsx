@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { Send, X, Loader2, Check } from 'lucide-react'
 import { getEffectiveConfig, validateForm, type ContactFormConfig, type FormField } from '@/lib/kennel/contact-form'
 
@@ -27,6 +28,10 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
+  // Portal target — el modal vive en document.body para escapar de cualquier
+  // ancestro con transform/filter/backdrop-filter que confine `fixed`.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   const reset = () => {
     setValues({}); setErrors({}); setServerError(null); setDone(false); setSubmitting(false)
@@ -79,18 +84,11 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
         ? 'flex w-full items-center justify-center gap-1.5 rounded-full bg-ink text-on-primary px-5 py-3 text-[14px] font-bold transition hover:opacity-90 shadow-[0_4px_16px_rgba(0,0,0,0.18)]'
         : 'inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-[13.5px] font-bold transition hover:opacity-90'
 
-  return (
-    <>
-      <button onClick={() => setOpen(true)} className={triggerClass}>
-        <Send className="h-3.5 w-3.5" />
-        Pedir información
-      </button>
-
-      {open && (
-        <div
-          className="fixed inset-0 z-[60] flex items-stretch sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
-          onClick={close}
-        >
+  const modal = open ? (
+    <div
+      className="fixed inset-0 z-[9999] flex items-stretch sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
+      onClick={close}
+    >
           <div
             className="w-full h-full sm:h-auto sm:max-w-lg bg-canvas sm:rounded-3xl shadow-[0_24px_64px_rgba(0,0,0,0.18)] sm:border sm:border-hairline sm:max-h-[92vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
@@ -187,7 +185,19 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
             )}
           </div>
         </div>
-      )}
+  ) : null
+
+  return (
+    <>
+      <button onClick={() => setOpen(true)} className={triggerClass}>
+        <Send className="h-3.5 w-3.5" />
+        Pedir información
+      </button>
+      {/* Portal a document.body — escapa de cualquier ancestro con
+          transform / filter / backdrop-filter que confine `fixed`. */}
+      {mounted && typeof document !== 'undefined'
+        ? createPortal(modal, document.body)
+        : null}
     </>
   )
 }

@@ -13,6 +13,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import ContactKennelButton from './contact-kennel-button'
 
 interface Props {
@@ -24,6 +25,12 @@ interface Props {
 
 export default function StickyContactMobile({ kennelId, kennelName, contactFormConfig }: Props) {
   const [visible, setVisible] = useState(false)
+  // Portal target — sin esto el `fixed` se vuelve relativo a algún ancestro
+  // con transform/filter/backdrop-filter en el layout dashboard, dejando
+  // el botón "flotante" pegado a la parte de abajo de su contenedor
+  // (no a la del viewport).
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     function onScroll() {
@@ -38,9 +45,9 @@ export default function StickyContactMobile({ kennelId, kennelName, contactFormC
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  return (
+  const node = (
     <div
-      className={`sm:hidden fixed bottom-0 left-0 right-0 z-30 pointer-events-none transition-all duration-300 ${
+      className={`sm:hidden fixed bottom-0 left-0 right-0 z-[9997] pointer-events-none transition-all duration-300 ${
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
       style={{ paddingBottom: '10px' }}
@@ -56,4 +63,7 @@ export default function StickyContactMobile({ kennelId, kennelName, contactFormC
       </div>
     </div>
   )
+
+  if (!mounted || typeof document === 'undefined') return null
+  return createPortal(node, document.body)
 }
