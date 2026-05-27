@@ -318,10 +318,11 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
           DogCard responsive; desde sm vuelve a grid 2/3/4 con cards verticales. */}
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
-          {/* Add new dog card */}
+          {/* Add new dog card — mismo alto que las DogCards mobile (~140px
+              cuando llevan info+botones) para que el grid no quede irregular. */}
           <button
             onClick={openAdd}
-            className="group flex min-h-[80px] cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-hairline bg-surface-soft transition-colors hover:bg-surface-card sm:min-h-[220px] sm:flex-col"
+            className="group flex min-h-[140px] cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-hairline bg-surface-soft transition-colors hover:bg-surface-card sm:min-h-[220px] sm:flex-col"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-canvas border border-hairline transition-colors group-hover:bg-ink group-hover:border-ink sm:h-14 sm:w-14">
               <Plus className="h-5 w-5 text-muted transition-colors group-hover:text-on-primary sm:h-6 sm:w-6" />

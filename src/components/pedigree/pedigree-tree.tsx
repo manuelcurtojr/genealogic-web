@@ -65,7 +65,7 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
           Posicionamiento respeta safe-area-top en iPhones con notch. */}
       {coiPanel && (
         <div
-          className="sm:hidden fixed inset-0 z-[44] bg-black/45 backdrop-blur-[2px]"
+          className="sm:hidden fixed inset-0 z-[9099] bg-black/45 backdrop-blur-[2px]"
           onClick={() => setCoiPanel(false)}
           aria-hidden="true"
         />
@@ -76,9 +76,14 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
           Antes usaba `inset-0 sm:inset-auto` pero `inset-0` setea TODOS los
           insets a 0 y el `sm:inset-auto` no resetea el `right` ni `bottom`
           de forma consistente — el panel quedaba flotando en medio. */}
+      {/* Panel COI:
+            mobile: full-screen — top:0 right:0 bottom:0 left:0 con padding-top
+              que respeta safe-area-inset-top (notch iPhone). Igual que el
+              panel de editar perro y añadir perro.
+            desktop: panel lateral 320px desde el top de la viewport. */}
       <div
-        className={`fixed bottom-0 right-0 left-0 sm:left-auto z-[45] flex flex-col border-l border-hairline bg-canvas shadow-[-8px_0_24px_rgba(0,0,0,0.06)] transition-transform duration-300 w-full sm:w-[320px] ${coiPanel?'translate-x-0':'translate-x-full pointer-events-none'}`}
-        style={{ top: 'calc(3.5rem + var(--safe-area-top, 0px))' }}
+        className={`fixed top-0 bottom-0 right-0 left-0 sm:left-auto z-[9100] flex flex-col border-l border-hairline bg-canvas shadow-[-8px_0_24px_rgba(0,0,0,0.06)] transition-transform duration-300 w-full sm:w-[320px] ${coiPanel?'translate-x-0':'translate-x-full pointer-events-none'}`}
+        style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
       >
         <button
           onClick={()=>setCoiPanel(!coiPanel)}
@@ -122,13 +127,14 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
         </div>
       </div>
       {/* Floating buttons — outside transform context so fixed works.
-          bottom respeta safe-area-inset-bottom para iPhones con home bar:
-          - isNative: 106px (TabBar nativa) + safe-area
-          - resto: 16px + safe-area */}
+          - left: en mobile (`left-4` = 16px) ignoramos la var --sidebar-width
+            que el dashboard-shell setea siempre a 256px aunque la sidebar
+            mobile sea un drawer oculto. En desktop (lg+) sí usamos la var
+            para que los botones queden a la derecha de la sidebar.
+          - bottom: respeta safe-area-inset-bottom (iPhones con home bar). */}
       <div
-        className="fixed z-50 flex items-center gap-2"
+        className="fixed z-50 flex items-center gap-2 left-4 lg:left-[max(16px,calc(var(--sidebar-width,0px)+30px))]"
         style={{
-          left: 'max(16px, calc(var(--sidebar-width, 0px) + 30px))',
           bottom: isNative
             ? 'calc(106px + env(safe-area-inset-bottom, 0px))'
             : 'calc(16px + env(safe-area-inset-bottom, 0px))',

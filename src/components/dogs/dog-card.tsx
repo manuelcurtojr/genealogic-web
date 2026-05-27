@@ -143,16 +143,21 @@ export default function DogCard({
   )
 
   // ─── Layout MOBILE (<sm): híbrido foto-izquierda + info-derecha ─────
-  // Similar a las cards de pedigree-tree: foto grande a la izquierda
-  // ocupando todo el alto, barra vertical de color (sexo) como separador,
-  // info arriba a la derecha y botones cuadrados debajo.
+  // Patrón "Link overlay + botones z-10": el Link envuelve toda la card
+  // de forma ABSOLUTA (z-0) y los botones tienen z-10 + relative para
+  // recibir clicks sin que se propaguen al Link. Antes el <Link> envolvía
+  // <button>s dentro, lo que es HTML inválido y hacía que el click de
+  // editar/etc disparase navegación al perfil del perro.
   const mobileLayout = (
-    <Link
-      href={dogHref}
-      className="sm:hidden flex overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft"
-    >
+    <article className="sm:hidden relative flex overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft">
+      {/* Link overlay — cubre toda la card detrás (z-0). Aria-label para SR. */}
+      <Link
+        href={dogHref}
+        aria-label={`Ver perfil de ${dog.name}`}
+        className="absolute inset-0 z-0"
+      />
       {/* Columna foto — ocupa el alto completo de la card */}
-      <div className="relative flex-shrink-0 w-[120px] bg-surface-card overflow-hidden">
+      <div className="relative flex-shrink-0 w-[120px] bg-surface-card overflow-hidden pointer-events-none">
         <DogImage
           src={dog.thumbnail_url}
           alt={dog.name}
@@ -164,10 +169,11 @@ export default function DogCard({
         />
       </div>
       {/* Barra vertical de sexo — separa foto de info */}
-      <div className="w-1 flex-shrink-0" style={{ background: sexColor }} aria-hidden="true" />
+      <div className="w-1 flex-shrink-0 pointer-events-none" style={{ background: sexColor }} aria-hidden="true" />
       {/* Columna info + botones */}
-      <div className="flex-1 min-w-0 p-3 flex flex-col">
-        <div className="min-w-0">
+      <div className="relative flex-1 min-w-0 p-3 flex flex-col">
+        {/* Texto: pointer-events-none deja pasar el click al Link de fondo. */}
+        <div className="min-w-0 pointer-events-none">
           <p className="truncate text-[15px] font-semibold text-ink leading-snug">{dog.name}</p>
           {breedName && (
             <p className="mt-0.5 truncate text-[12px] text-body">{breedName}</p>
@@ -178,12 +184,13 @@ export default function DogCard({
             {colorName && <span className="truncate">{colorName}</span>}
           </div>
         </div>
-        {/* Botones cuadrados — fila horizontal con wrap si no caben */}
-        <div className="mt-auto pt-3 flex items-center gap-1.5 flex-wrap">
+        {/* Botones — z-10 + relative para estar encima del Link y recibir
+            clicks propios sin disparar la navegación. */}
+        <div className="relative z-10 mt-auto pt-3 flex items-center gap-1.5 flex-wrap">
           {actionButtons}
         </div>
       </div>
-    </Link>
+    </article>
   )
 
   // ─── Layout DESKTOP (sm+): grid card clásica ──────────────────────────

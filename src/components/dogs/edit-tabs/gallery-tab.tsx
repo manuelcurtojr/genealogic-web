@@ -14,8 +14,50 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
   const supabase = createClient()
 
   async function loadPhotos() {
-    const { data } = await supabase.from('dog_photos').select('*').eq('dog_id', dogId).order('position')
-    setPhotos(data || [])
+    // Cargamos las dog_photos del perro + el thumbnail_url propio del dogs.
+    // Algunos perros (sobre todo los importados desde fuentes externas)
+    // tienen thumbnail_url SIN una fila en dog_photos. Antes la galería
+    // mostraba vacío para ellos aunque la foto principal estuviera ahí.
+    // Si detectamos esa situación, hidratamos dog_photos de forma lazy
+    // con la thumbnail para que sea visible y editable como las demás.
+    const [{ data: ph }, { data: dog }] = await Promise.all([
+      supabase.from('dog_photos').select('*').eq('dog_id', dogId).order('position'),
+      supabase.from('dogs').select('thumbnail_url').eq('id', dogId).maybeSingle(),
+    ])
+    const photos = ph || []
+    const thumbnailUrl = dog?.thumbnail_url || null
+
+    // Si hay thumbnail pero no está en dog_photos → la añadimos para que
+    // aparezca como una foto editable más (no sintética).
+    const hasThumbnailInPhotos = thumbnailUrl
+      ? photos.some(p => p.url === thumbnailUrl)
+      : true
+    if (thumbnailUrl && !hasThumbnailInPhotos) {
+      const { data: inserted } = await supabase
+        .from('dog_photos')
+        .insert({
+          dog_id: dogId,
+          url: thumbnailUrl,
+          storage_path: null, // legacy thumbnail — borrar storage no aplica
+          position: 0,
+        })
+        .select('*')
+        .single()
+      if (inserted) {
+        // Desplaza el resto +1 en position para mantener la thumbnail primera
+        for (let i = 0; i < photos.length; i++) {
+          if (photos[i].position !== i + 1) {
+            await supabase
+              .from('dog_photos')
+              .update({ position: i + 1 })
+              .eq('id', photos[i].id)
+          }
+        }
+        setPhotos([inserted, ...photos.map((p, i) => ({ ...p, position: i + 1 }))])
+        return
+      }
+    }
+    setPhotos(photos)
   }
   useEffect(() => { loadPhotos() }, [dogId])
 

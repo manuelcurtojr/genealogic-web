@@ -168,7 +168,11 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
       <div
-        className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+        // overflow-x-hidden corta cualquier desbordamiento horizontal de
+        // hijos (autocompletes, inputs con contenido largo, breadcrumb URLs
+        // de pedigrees) — el panel mobile tenía scroll horizontal cuando
+        // algún field interior excedía el viewport.
+        className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
         style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
       >
 
@@ -228,15 +232,17 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           </>
         )}
 
-        {/* Content */}
+        {/* Content. min-w-0 imprescindible en mobile: sin él, un hijo con
+            min-w intrínseco (ej autocomplete dropdown w-full sobre contenido
+            largo) forzaba al flex-1 a expandirse y rompía el scroll horizontal. */}
         {!isEdit && !isFromLitter && createMode === 'import' ? (
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
             <ImportPedigreeTab userId={userId} kennelId={defaultKennelId || undefined} onImported={() => { onClose(); onSaved?.(); router.refresh() }} />
           </div>
         ) : dataLoading ? (
           <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-muted" /></div>
         ) : (
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
             {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400 mb-4">{error}</div>}
 
             {activeTab === 'datos' && (
