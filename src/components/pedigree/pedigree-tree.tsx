@@ -70,8 +70,14 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
           aria-hidden="true"
         />
       )}
+      {/* Posicionamiento responsive:
+            mobile: full-width (left-0 right-0 bottom-0), top respeta safe-area
+            desktop sm+: pegado a la derecha 320px de ancho
+          Antes usaba `inset-0 sm:inset-auto` pero `inset-0` setea TODOS los
+          insets a 0 y el `sm:inset-auto` no resetea el `right` ni `bottom`
+          de forma consistente — el panel quedaba flotando en medio. */}
       <div
-        className={`fixed right-0 z-[45] flex flex-col border-l border-hairline bg-canvas shadow-[-8px_0_24px_rgba(0,0,0,0.06)] transition-transform duration-300 w-full sm:w-[320px] inset-0 sm:inset-auto sm:bottom-0 ${coiPanel?'translate-x-0':'translate-x-full pointer-events-none'}`}
+        className={`fixed bottom-0 right-0 left-0 sm:left-auto z-[45] flex flex-col border-l border-hairline bg-canvas shadow-[-8px_0_24px_rgba(0,0,0,0.06)] transition-transform duration-300 w-full sm:w-[320px] ${coiPanel?'translate-x-0':'translate-x-full pointer-events-none'}`}
         style={{ top: 'calc(3.5rem + var(--safe-area-top, 0px))' }}
       >
         <button
