@@ -69,7 +69,7 @@ const breederTiers: Tier[] = [
       'Historial clínico por perro',
       'Contratos digitales con firma electrónica',
       'Galería ampliada (50 fotos por perro)',
-      'Importador IA de pedigrees (URL + PDF)',
+      'Importador IA de genealogías (URL + PDF)',
       'Estadísticas básicas del perfil público',
       'Soporte por email',
     ],
@@ -101,7 +101,7 @@ const breederTiers: Tier[] = [
 const ownerFeatures = [
   'Ficha completa de cada perro (foto, microchip, color, medidas)',
   'Genealogía completa y verificable',
-  'Papeles digitalizados (cartilla, contrato, pedigree)',
+  'Papeles digitalizados (cartilla, contrato, genealogía)',
   'Calendario veterinario con recordatorios automáticos',
   'Historial clínico buscable',
   'Reclama el perfil de tu perro si está importado en el catálogo',

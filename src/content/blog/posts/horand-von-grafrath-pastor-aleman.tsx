@@ -6,7 +6,7 @@ export const metadata: BlogPostMeta = {
   slug: 'horand-von-grafrath-pastor-aleman',
   title: 'Horand von Grafrath: el pastor alemán #1',
   excerpt:
-    'El 22 de abril de 1899, el capitán Max von Stephanitz vio a un perro en una exposición de Karlsruhe y lo compró en el acto. Esa decisión fundó la raza más popular del mundo. Esta es la historia de Horand y su pedigree.',
+    'El 22 de abril de 1899, el capitán Max von Stephanitz vio a un perro en una exposición de Karlsruhe y lo compró en el acto. Esa decisión fundó la raza más popular del mundo. Esta es la historia de Horand y su genealogía.',
   date: '2026-05-26',
   category: 'Para criadores',
   heroImage:
@@ -79,7 +79,7 @@ export default function Post() {
         <Strong>Hektor von Schwaben</Strong> (SZ 13, ganador del primer Sieger en 1900) y{' '}
         <Strong>Beowulf</Strong>, que a su vez engendró a la generación que estableció la raza.
         Estudios genealógicos modernos calculan que <Strong>el 100% de los pastores alemanes con
-        pedigree del mundo</Strong> descienden de Horand por al menos una línea, y la mayoría por
+        genealogía del mundo</Strong> descienden de Horand por al menos una línea, y la mayoría por
         múltiples.
       </P>
 

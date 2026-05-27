@@ -57,7 +57,7 @@ export default function PrivacyPage() {
 
       <h3>2.3 Datos sobre terceros que tú nos proporcionas</h3>
       <p>
-        Cuando importas un pedigree o añades manualmente datos genealógicos, puedes estar
+        Cuando importas una genealogía o añades manualmente datos genealógicos, puedes estar
         introduciendo datos sobre terceros (otros criadores, propietarios anteriores). Estos
         datos son hechos genealógicos públicos extraídos de registros oficiales o de fuentes
         comunitarias. Al introducirlos, garantizas que tienes derecho a hacerlo y que la
@@ -102,7 +102,7 @@ export default function PrivacyPage() {
           <tr><td>Supabase Inc.</td><td>Base de datos, autenticación, almacenamiento de archivos</td><td>UE (Frankfurt) — datos almacenados en territorio UE</td></tr>
           <tr><td>Vercel Inc.</td><td>Alojamiento web y serverless</td><td>EE.UU. — SCC + DPF</td></tr>
           <tr><td>Stripe Payments Europe Ltd</td><td>Procesamiento de pagos y datos de tarjeta</td><td>Irlanda (UE) / EE.UU. — SCC</td></tr>
-          <tr><td>Anthropic PBC</td><td>Asistente de IA (Genos), parseo de pedigrees</td><td>EE.UU. — SCC. Anthropic NO usa los datos para entrenar modelos por defecto en planes API.</td></tr>
+          <tr><td>Anthropic PBC</td><td>Asistente de IA (Genos), parseo de genealogías</td><td>EE.UU. — SCC. Anthropic NO usa los datos para entrenar modelos por defecto en planes API.</td></tr>
           <tr><td>Resend (Drift Inc.)</td><td>Envío de emails transaccionales</td><td>EE.UU. — SCC</td></tr>
           <tr><td>Apple Inc.</td><td>Notificaciones push (APNs)</td><td>EE.UU. — SCC</td></tr>
           <tr><td>ScrapingBee SAS</td><td>Proxy técnico para acceso a páginas públicas durante el importador</td><td>UE (Francia)</td></tr>
@@ -204,7 +204,7 @@ export default function PrivacyPage() {
       </p>
       <ul>
         <li><strong>Genos (asistente IA):</strong> usa modelos de Anthropic (Claude) para responder preguntas. Las conversaciones se procesan en servidores de Anthropic en EE.UU. bajo cláusulas SCC. Anthropic no utiliza las consultas para entrenar modelos.</li>
-        <li><strong>Importador de pedigrees:</strong> usa IA para extraer datos estructurados de páginas públicas o documentos que tú aportas. Tú confirmas siempre el resultado antes de guardarlo.</li>
+        <li><strong>Importador de genealogías:</strong> usa IA para extraer datos estructurados de páginas públicas o documentos que tú aportas. Tú confirmas siempre el resultado antes de guardarlo.</li>
         <li><strong>Emailbot (Pro):</strong> los emails entrantes pueden ser parseados por modelos de Anthropic/OpenAI/Google para sugerir respuestas. Tú revisas y apruebas cada respuesta antes de enviarla.</li>
         <li><strong>Antifraude y rate-limit:</strong> tratamiento automatizado para detectar abuso. No produce efectos jurídicos sobre el usuario más allá de ralentizar o bloquear acciones técnicas.</li>
       </ul>

@@ -16,7 +16,7 @@ export default function WelcomeOwnerEmail({ displayName }: WelcomeOwnerProps) {
       <H1>Hola{name ? `, ${name}` : ''}. La ficha de tu perro empieza aquí.</H1>
       <P>
         Genealogic es gratis para propietarios. Tu cuenta ya está activa y puedes
-        empezar a documentar a tu perro: pedigree, papeles, vacunas y galería en un solo
+        empezar a documentar a tu perro: genealogía, papeles, vacunas y galería en un solo
         sitio.
       </P>
 
@@ -28,7 +28,7 @@ export default function WelcomeOwnerEmail({ displayName }: WelcomeOwnerProps) {
           y fecha de nacimiento.
         </li>
         <li style={{ marginBottom: '8px', color: '#374151', fontSize: '15px', lineHeight: 1.6 }}>
-          <strong style={{ color: '#111111' }}>Sube los papeles</strong> (cartilla, pedigree,
+          <strong style={{ color: '#111111' }}>Sube los papeles</strong> (cartilla, genealogía,
           contrato). Todo escaneado y a mano cuando los necesites.
         </li>
         <li style={{ marginBottom: '8px', color: '#374151', fontSize: '15px', lineHeight: 1.6 }}>

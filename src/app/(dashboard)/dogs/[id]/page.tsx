@@ -63,7 +63,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   // Descripción natural y específica. Ejemplo:
   // "Isis Rr, hembra de Presa Canario color Bardino, nacida el 12 de marzo de 2020.
-  //  Hija de Washintaul's Katho y Ventania. Criadero El Nieto. Pedigree completo en Genealogic."
+  //  Hija de Washintaul's Katho y Ventania. Criadero El Nieto. Genealogía completa en Genealogic."
   const sentences: string[] = []
   // Frase 1: identificación
   const ident: string[] = [dog.name]
@@ -91,7 +91,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (kennel) sentences.push(`Criadero ${kennel}.`)
 
   // Frase 4: CTA
-  sentences.push('Pedigree completo y árbol genealógico en Genealogic.')
+  sentences.push('Genealogía completa y árbol genealógico en Genealogic.')
 
   let description = sentences.join(' ')
   // Google trunca alrededor de 160 chars; intentamos que la primera frase quede entera y completa <= 320

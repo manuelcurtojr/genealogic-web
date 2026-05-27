@@ -30,7 +30,7 @@ export default async function MisPerrosPage() {
       </p>
       <h1 className="mt-2 text-4xl font-bold tracking-tight text-ink">Mis perros</h1>
       <p className="mt-2 text-body max-w-2xl">
-        Los perros que has recibido oficialmente de los criadores. Su pedigree,
+        Los perros que has recibido oficialmente de los criadores. Su genealogía,
         papeles y datos están aquí siempre.
       </p>
 
@@ -55,7 +55,7 @@ function EmptyState() {
       <p className="text-base font-semibold text-ink">Aún no tienes perros recibidos</p>
       <p className="mt-2 text-sm text-muted max-w-md mx-auto">
         Cuando un criador marque tu reserva como entregada, el perro aparecerá
-        aquí automáticamente con todos sus datos y pedigree.
+        aquí automáticamente con todos sus datos y genealogía.
       </p>
       <Link
         href="/mis-reservas"

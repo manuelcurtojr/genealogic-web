@@ -60,7 +60,7 @@ export default function IpPolicyPage() {
         sistemática contraria a la explotación normal de la base.
       </p>
 
-      <h2>2. Importador de Pedigrees — Política de Respeto a Terceros</h2>
+      <h2>2. Importador de Genealogías — Política de Respeto a Terceros</h2>
       <p>
         El importador de Genealogic permite extraer datos de páginas públicas mediante
         URL aportada por el Usuario, archivos PDF o capturas de pantalla. Aplicamos las

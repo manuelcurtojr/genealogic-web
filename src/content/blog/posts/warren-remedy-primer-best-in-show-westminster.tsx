@@ -124,7 +124,7 @@ export default function Post() {
       </UL>
       <P>
         Su sangre está en casi todas las líneas modernas de fox terrier smooth americano. Los
-        criadores serios de la raza pueden trazar pedigrees verificados hasta ella en 7-9
+        criadores serios de la raza pueden trazar genealogías verificadas hasta ella en 7-9
         generaciones.
       </P>
 

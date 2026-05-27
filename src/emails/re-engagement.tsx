@@ -45,7 +45,7 @@ export default function ReEngagementEmail({
               Emailbot que responde a leads 24/7
             </li>
             <li style={{ marginBottom: '6px', color: COLORS.body, fontSize: '14.5px', lineHeight: 1.6 }}>
-              Importer IA: tu pedigree en 12 segundos
+              Importer IA: tu genealogía en 12 segundos
             </li>
           </ul>
         </>
@@ -56,7 +56,7 @@ export default function ReEngagementEmail({
           </P>
           <ul style={{ paddingLeft: '20px', margin: '0 0 18px 0' }}>
             <li style={{ marginBottom: '6px', color: COLORS.body, fontSize: '14.5px', lineHeight: 1.6 }}>
-              Pedigree completo con árbol genealógico
+              Genealogía completa con árbol genealógico
             </li>
             <li style={{ marginBottom: '6px', color: COLORS.body, fontSize: '14.5px', lineHeight: 1.6 }}>
               Recordatorios automáticos de vacunas

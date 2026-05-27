@@ -61,7 +61,7 @@ export default function MarketingFooter() {
 
         <div className="mt-12 pt-6 flex flex-col gap-2 text-[12px] text-on-dark-soft sm:flex-row sm:items-center sm:justify-between">
           <span>© {new Date().getFullYear()} <strong className="font-medium text-white/90">Manuel Curtó SL</strong> · B56932098 · Tenerife, España</span>
-          <span>El pedigree de tu perro, donde tiene que estar.</span>
+          <span>La genealogía de tu perro, donde tiene que estar.</span>
         </div>
       </div>
     </footer>

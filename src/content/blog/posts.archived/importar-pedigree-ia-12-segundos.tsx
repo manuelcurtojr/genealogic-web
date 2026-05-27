@@ -3,9 +3,9 @@ import type { BlogPostMeta } from '../index'
 
 export const metadata: BlogPostMeta = {
   slug: 'importar-pedigree-ia-12-segundos',
-  title: 'Importar un pedigree de 5 generaciones en 12 segundos: cómo lo hace la IA',
+  title: 'Importar una genealogía de 5 generaciones en 12 segundos: cómo lo hace la IA',
   excerpt:
-    'Subes una foto del papel del pedigree y la IA construye el árbol completo. Cómo funciona, qué precisión tiene, qué hace cuando se equivoca y por qué cambia el trabajo del criador.',
+    'Subes una foto del papel de la genealogía y la IA construye el árbol completo. Cómo funciona, qué precisión tiene, qué hace cuando se equivoca y por qué cambia el trabajo del criador.',
   date: '2026-04-28',
   category: 'Plataforma',
   heroImage:
@@ -28,12 +28,12 @@ export default function Post() {
       <H2>El problema que resuelve</H2>
       <P>
         Cualquier criador que ha intentado digitalizar su archivo histórico sabe el dolor. Un
-        pedigree típico tiene <Strong>30 - 60 entradas de texto</Strong> entre nombres, números
+        genealogía típica tiene <Strong>30 - 60 entradas de texto</Strong> entre nombres, números
         de registro, fechas de nacimiento, títulos, razas y colores. Multiplicado por todos los
         perros del criadero, son cientos de horas de transcripción manual.
       </P>
       <P>
-        La consecuencia: la mayoría de criaderos no digitalizan. Sus pedigrees viven en una
+        La consecuencia: la mayoría de criaderos no digitalizan. Sus genealogías viven en una
         carpeta de plástico, y cuando hay que enseñarlos a un comprador, se manda una foto del
         papel. Sin búsqueda, sin verificación cruzada, sin cálculo automático de COI.
       </P>
@@ -42,7 +42,7 @@ export default function Post() {
 
       <H3>1. Subes la foto</H3>
       <P>
-        Desde tu dashboard, <Strong>Mis perros → Nuevo → Importar pedigree</Strong>. Aceptamos
+        Desde tu dashboard, <Strong>Mis perros → Nuevo → Importar genealogía</Strong>. Aceptamos
         formatos JPG, PNG, HEIC y PDF. La foto puede ser:
       </P>
       <UL>
@@ -68,7 +68,7 @@ export default function Post() {
         <LI>Posición en la genealogía (padre/madre/abuelos).</LI>
       </UL>
       <P>
-        Tiempo medio para un pedigree de 5 generaciones (31 perros): <Strong>8 - 14 segundos</Strong>.
+        Tiempo medio para una genealogía de 5 generaciones (31 perros): <Strong>8 - 14 segundos</Strong>.
         Lo cobramos como uso de tokens, contado por el plan (Free tiene 5 importaciones/mes;
         Pro tiene ilimitadas).
       </P>
@@ -118,11 +118,11 @@ export default function Post() {
           entradas extraídas correctamente sin intervención humana.
         </LI>
         <LI>
-          <Strong>Pedigrees manuscritos antiguos (pre-1990)</Strong>: 78 - 85 %, con tasas más
+          <Strong>Genealogías manuscritas antiguas (pre-1990)</Strong>: 78 - 85 %, con tasas más
           bajas en fechas y números de registro.
         </LI>
         <LI>
-          <Strong>Pedigrees fotografiados con móvil con baja luz</Strong>: 88 - 92 %.
+          <Strong>Genealogías fotografiadas con móvil con baja luz</Strong>: 88 - 92 %.
         </LI>
         <LI>
           <Strong>PDFs vectoriales de clubes oficiales</Strong>: 99,5 % (es básicamente texto
@@ -132,7 +132,7 @@ export default function Post() {
       <P>
         Las dificultades clásicas son los <Em>nombres extranjeros con caracteres
         especiales</Em> (rusos, escandinavos, polacos), las firmas manuscritas que se cruzan
-        con texto, y los pedigrees viejos con tinta desvanecida.
+        con texto, y las genealogías viejas con tinta desvanecida.
       </P>
 
       <H2>Qué pasa si se equivoca</H2>

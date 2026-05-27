@@ -3,7 +3,7 @@
  *
  * Mensaje principal: tu perro tiene una ficha digital seria y privada.
  * Sub-mensajes:
- *   - Pedigree real y verificable
+ *   - Genealogía real y verificable
  *   - Papeles del cachorro siempre a mano
  *   - Calendario vet con recordatorios
  *   - Vincular con tu criador (si vino de uno en la plataforma)
@@ -42,7 +42,7 @@ export default function OwnersLanding() {
                 className="mt-4 sm:mt-5 max-w-[480px] text-body"
                 style={{ fontSize: 'clamp(15px, 1.5vw, 19px)', lineHeight: 1.55 }}
               >
-                Genealogic guarda el pedigree, los papeles, las vacunas y la galería de tu perro en un solo sitio. Privado por defecto. Gratis para siempre.
+                Genealogic guarda la genealogía, los papeles, las vacunas y la galería de tu perro en un solo sitio. Privado por defecto. Gratis para siempre.
               </p>
               <div className="mt-6 sm:mt-7 flex flex-col sm:flex-row gap-2.5">
                 <Link
@@ -82,7 +82,7 @@ export default function OwnersLanding() {
                   <p className="text-[12.5px] sm:text-[13px] text-muted mt-0.5">Hembra · Pastor Alemán · 3 años</p>
                   <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                     <div className="rounded-lg bg-surface-card p-2 sm:p-2.5">
-                      <p className="text-[10px] uppercase tracking-wider text-muted font-bold">Pedigree</p>
+                      <p className="text-[10px] uppercase tracking-wider text-muted font-bold">Genealogía</p>
                       <p className="mt-1 text-sm font-bold text-ink">5 gen</p>
                     </div>
                     <div className="rounded-lg bg-surface-card p-2 sm:p-2.5">
@@ -122,13 +122,13 @@ export default function OwnersLanding() {
             />
             <Feature
               icon={GitBranch}
-              title="Pedigree y árbol genealógico"
+              title="Genealogía y árbol genealógico"
               desc="Genealogía completa sin límite de generaciones, ancestros con foto y enlace al criadero original. Investiga la sangre real de tu perro."
             />
             <Feature
               icon={FileText}
               title="Papeles digitalizados"
-              desc="Cartilla sanitaria, contrato de venta, certificado de pedigree, microchip. Todo escaneado y a mano."
+              desc="Cartilla sanitaria, contrato de venta, certificado de genealogía, microchip. Todo escaneado y a mano."
             />
             <Feature
               icon={Calendar}
@@ -177,11 +177,11 @@ export default function OwnersLanding() {
                 ¿Tu perro ya está aquí?
               </h2>
               <p className="mt-3 sm:mt-4 text-body text-[14px] sm:text-[16px] leading-[1.55]">
-                Genealogic tiene importados miles de perros de pedigrees, clubes de raza y federaciones. Es posible que el tuyo ya tenga un perfil esperando dueño.
+                Genealogic tiene importados miles de perros de genealogías, clubes de raza y federaciones. Es posible que el tuyo ya tenga un perfil esperando dueño.
               </p>
               <ul className="mt-5 sm:mt-6 space-y-2.5 text-[13.5px] sm:text-[14.5px]">
                 <Check>Búscalo por nombre, microchip o afijo.</Check>
-                <Check>Pulsa "Reclamar" y sube tus papeles (pedigree, cartilla, contrato).</Check>
+                <Check>Pulsa "Reclamar" y sube tus papeles (genealogía, cartilla, contrato).</Check>
                 <Check>Un humano revisa en menos de 72h y te transfiere la titularidad.</Check>
               </ul>
               <Link

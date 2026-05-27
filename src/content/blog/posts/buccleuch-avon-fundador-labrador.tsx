@@ -105,7 +105,7 @@ export default function Post() {
       <P>
         Buccleuch Avon murió en 1899 a los 14 años. No tuvo lápida — los Duques no marcaban a sus
         perros de caza. Pero el archivo de cría de Drumlanrig conserva sus papeles, y cada
-        labrador con pedigree del mundo puede trazar su línea hasta él.
+        labrador con genealogía del mundo puede trazar su línea hasta él.
       </P>
     </>
   )

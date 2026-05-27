@@ -23,7 +23,7 @@ const translations: Record<string, Record<string, string>> = {
     // ─── Dog ───
     'Macho': 'Male', 'Hembra': 'Female', 'Nombre': 'Name', 'Raza': 'Breed',
     'Color': 'Color', 'Nacimiento': 'Birth', 'Peso': 'Weight', 'Altura': 'Height',
-    'Padre': 'Sire', 'Madre': 'Dam', 'Criadero': 'Kennel', 'Pedigree': 'Pedigree',
+    'Padre': 'Sire', 'Madre': 'Dam', 'Criadero': 'Kennel', 'Genealogía': 'Genealogy',
     'Salud': 'Health', 'Palmarés': 'Awards', 'Hermanos': 'Siblings', 'Descendientes': 'Offspring',
     'Machos': 'Males', 'Hembras': 'Females',
     'Añadir perro': 'Add dog', 'Editar perro': 'Edit dog',
@@ -34,7 +34,7 @@ const translations: Record<string, Record<string, string>> = {
     'Fecha de nacimiento': 'Date of birth',
     'Datos basicos': 'Basic info', 'Clasificacion': 'Classification',
     'Identificacion': 'Identification', 'Medidas': 'Measurements',
-    'Genealogia': 'Pedigree', 'Genealogia (de la camada)': 'Pedigree (from litter)',
+    'Genealogia': 'Genealogy', 'Genealogia (de la camada)': 'Genealogy (from litter)',
     'Reproductor': 'Breeding', 'Reproductores': 'Breeders',
     'En venta': 'For sale', 'No en venta': 'Not for sale',
     'Publico': 'Public', 'Privado': 'Private',
@@ -168,7 +168,7 @@ const translations: Record<string, Record<string, string>> = {
     // Dog
     'Macho': 'Mâle', 'Hembra': 'Femelle', 'Nombre': 'Nom', 'Raza': 'Race',
     'Color': 'Couleur', 'Nacimiento': 'Naissance', 'Peso': 'Poids', 'Altura': 'Taille',
-    'Padre': 'Père', 'Madre': 'Mère', 'Criadero': 'Élevage', 'Pedigree': 'Pedigree',
+    'Padre': 'Père', 'Madre': 'Mère', 'Criadero': 'Élevage', 'Genealogía': 'Généalogie',
     'Salud': 'Santé', 'Palmarés': 'Palmarès', 'Hermanos': 'Frères', 'Descendientes': 'Descendants',
     'Machos': 'Mâles', 'Hembras': 'Femelles',
     'Añadir perro': 'Ajouter un chien', 'Editar perro': 'Modifier le chien',
@@ -275,7 +275,7 @@ const translations: Record<string, Record<string, string>> = {
     // Dog
     'Macho': 'Rüde', 'Hembra': 'Hündin', 'Nombre': 'Name', 'Raza': 'Rasse',
     'Color': 'Farbe', 'Nacimiento': 'Geburt', 'Peso': 'Gewicht', 'Altura': 'Größe',
-    'Padre': 'Vater', 'Madre': 'Mutter', 'Criadero': 'Zucht', 'Pedigree': 'Stammbaum',
+    'Padre': 'Vater', 'Madre': 'Mutter', 'Criadero': 'Zucht', 'Genealogía': 'Stammbaum',
     'Salud': 'Gesundheit', 'Palmarés': 'Auszeichnungen', 'Hermanos': 'Geschwister', 'Descendientes': 'Nachkommen',
     'Machos': 'Rüden', 'Hembras': 'Hündinnen',
     'Añadir perro': 'Hund hinzufügen', 'Editar perro': 'Hund bearbeiten',
@@ -379,7 +379,7 @@ const translations: Record<string, Record<string, string>> = {
     // Dog
     'Macho': 'Macho', 'Hembra': 'Fêmea', 'Nombre': 'Nome', 'Raza': 'Raça',
     'Color': 'Cor', 'Nacimiento': 'Nascimento', 'Peso': 'Peso', 'Altura': 'Altura',
-    'Padre': 'Pai', 'Madre': 'Mãe', 'Criadero': 'Canil', 'Pedigree': 'Pedigree',
+    'Padre': 'Pai', 'Madre': 'Mãe', 'Criadero': 'Canil', 'Genealogía': 'Genealogia',
     'Salud': 'Saúde', 'Palmarés': 'Prémios', 'Hermanos': 'Irmãos', 'Descendientes': 'Descendentes',
     'Machos': 'Machos', 'Hembras': 'Fêmeas',
     'Añadir perro': 'Adicionar cão', 'Editar perro': 'Editar cão',
@@ -463,7 +463,7 @@ const translations: Record<string, Record<string, string>> = {
     // Dog
     'Macho': 'Maschio', 'Hembra': 'Femmina', 'Nombre': 'Nome', 'Raza': 'Razza',
     'Color': 'Colore', 'Nacimiento': 'Nascita', 'Peso': 'Peso', 'Altura': 'Altezza',
-    'Padre': 'Padre', 'Madre': 'Madre', 'Criadero': 'Allevamento', 'Pedigree': 'Pedigree',
+    'Padre': 'Padre', 'Madre': 'Madre', 'Criadero': 'Allevamento', 'Genealogía': 'Genealogia',
     'Salud': 'Salute', 'Palmarés': 'Palmares', 'Hermanos': 'Fratelli', 'Descendientes': 'Discendenti',
     'Machos': 'Maschi', 'Hembras': 'Femmine',
     'Añadir perro': 'Aggiungi cane', 'Editar perro': 'Modifica cane',

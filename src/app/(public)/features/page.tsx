@@ -91,7 +91,7 @@ export default function FeaturesPage() {
             Empieza hoy. Mejora tu criadero mañana.
           </h2>
           <p className="mt-3 text-[15px] text-body leading-snug max-w-prose mx-auto">
-            Sin tarjeta. Cancela cuando quieras. Migra tus perros y pedigrees
+            Sin tarjeta. Cancela cuando quieras. Migra tus perros y genealogías
             en menos de una hora.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">

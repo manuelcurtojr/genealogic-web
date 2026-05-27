@@ -68,14 +68,14 @@ export const CATEGORIES: Category[] = [
   {
     slug: 'plataforma',
     label: 'Plataforma internacional',
-    tagline: 'No estás creando una web de criadero más. Te subes a la red de pedigrees más grande de habla hispana.',
+    tagline: 'No estás creando una web de criadero más. Te subes a la red de genealogías más grande de habla hispana.',
     features: [
       {
         slug: 'directorio',
         icon: Database,
         problem: 'Tu perro existe solo donde tú lo subas',
         title: 'Más de 250.000 perros indexados',
-        description: 'Genealogic agrupa una base internacional de pedigrees pública e indexable en Google. Cuando subes un perro, se conecta automáticamente a su genealogía existente — y aparece en búsquedas globales por raza, criadero, país y línea.',
+        description: 'Genealogic agrupa una base internacional de genealogías pública e indexable en Google. Cuando subes un perro, se conecta automáticamente a su genealogía existente — y aparece en búsquedas globales por raza, criadero, país y línea.',
         bullets: [
           'Catálogo público con +250.000 perros de cientos de razas',
           'Sitemap shardeado: cada perro tiene URL indexable en Google',
@@ -88,12 +88,12 @@ export const CATEGORIES: Category[] = [
       {
         slug: 'importer',
         icon: Upload,
-        problem: 'Migrar tu pedigree de una plataforma a otra es un infierno',
-        title: 'Importador de pedigrees con IA',
-        description: 'Pega una URL de Presadb, Ingrus, Dogsfiles, Breedarchive, Working-dog, OFA… y nuestro importador con Claude Sonnet extrae el perro completo: nombre, raza, padres hasta N generaciones, fotos, palmarés, registros. En 30 segundos.',
+        problem: 'Migrar tu genealogía de una plataforma a otra es un infierno',
+        title: 'Importador de genealogías con IA',
+        description: 'Pega una URL de Presadb, Dogsfiles, Breedarchive, Working-dog, K9data, OFA… y nuestro importador con Claude Sonnet extrae el perro completo: nombre, raza, padres hasta N generaciones, fotos, palmarés, registros. En 30 segundos.',
         bullets: [
           'Soporta 10+ sitios fuente con scrapers dedicados',
-          'PDFs de pedigree FCI/AKC parseados con OCR + LLM',
+          'PDFs de genealogía FCI/AKC parseados con OCR + LLM',
           'Self-verify: el bot comprueba su propia extracción contra la fuente',
           'De-duplicación inteligente — no se importan dos veces los mismos abuelos',
           'Trazabilidad: cada dato importado guarda su `imported_from`',
@@ -105,9 +105,9 @@ export const CATEGORIES: Category[] = [
         icon: ShieldCheck,
         problem: 'No quieres depender de Facebook ni de un PDF que se pierde',
         title: 'Datos tuyos, exportables, RGPD',
-        description: 'Tus perros, pedigrees, contratos y clientes son tuyos — los exportas en CSV/PDF cuando quieras. Hosting en EU, cumplimiento RGPD completo, sistema notice-and-action para reportar contenido sin tener que enviar emails.',
+        description: 'Tus perros, genealogías, contratos y clientes son tuyos — los exportas en CSV/PDF cuando quieras. Hosting en EU, cumplimiento RGPD completo, sistema notice-and-action para reportar contenido sin tener que enviar emails.',
         bullets: [
-          'Exporta cualquier perro con su pedigree a PDF con tu marca',
+          'Exporta cualquier perro con su genealogía a PDF con tu marca',
           'CSV de clientes, reservas y pagos en un click',
           'Servidores en EU (Supabase eu-west) — RGPD by default',
           'Notice-and-action UI para reportar contenido en 30s',
@@ -135,7 +135,7 @@ export const CATEGORIES: Category[] = [
       {
         slug: 'pedigree',
         icon: GitBranch,
-        problem: 'Tu pedigree está en PDF, en papel o se ha perdido',
+        problem: 'Tu genealogía está en PDF, en papel o se ha perdido',
         title: 'Árbol genealógico interactivo',
         description: 'Hasta 10 generaciones visualizadas en horizontal o vertical. Cada ancestro es navegable, con su foto, palmarés y descendientes. Coeficiente de consanguinidad (COI) calculado en cliente con código de colores.',
         bullets: [
@@ -150,8 +150,8 @@ export const CATEGORIES: Category[] = [
       {
         slug: 'pdf-pedigree',
         icon: FileText,
-        problem: 'Generar un pedigree imprimible requiere Photoshop o pagar a un diseñador',
-        title: 'PDF de pedigree con tu marca',
+        problem: 'Generar una genealogía imprimible requiere Photoshop o pagar a un diseñador',
+        title: 'PDF de genealogía con tu marca',
         description: 'Genera el PDF oficial del perro con el árbol completo, fotos de cada ancestro, marca de tu criadero, sello digital y QR de verificación. Listo para entregar al cliente con cada cachorro.',
         bullets: [
           'Plantillas: clásica · moderna · minimalista',
@@ -164,7 +164,7 @@ export const CATEGORIES: Category[] = [
       },
     ],
     featurettes: [
-      { icon: Upload, title: 'Importar genealogía', description: 'URL de Presadb, Ingrus, Dogsfiles, Working-dog → árbol completo en 30s.' },
+      { icon: Upload, title: 'Importar genealogía', description: 'URL de Presadb, Dogsfiles, Working-dog, K9data → árbol completo en 30s.' },
       { icon: Sparkles, title: 'Cálculo automático COI', description: 'Cada perro lo muestra al abrirlo, con la lista de ancestros duplicados.' },
       { icon: Network, title: 'Hermanos y descendientes', description: 'Auto-detectados al subir padres. No tienes que enlazarlos manualmente.' },
       { icon: Tag, title: 'Trazabilidad LOE / FCI', description: 'Registro oficial vinculado al perro como campo dedicado.' },

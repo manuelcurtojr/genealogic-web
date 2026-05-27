@@ -167,7 +167,7 @@ function describeAction(e: AuditEntry): { Icon: typeof DogIcon; color: string; s
     case 'pedigree_imported':
       return { Icon: DogIcon, color: '#10b981', summary: `Importó genealogía${p.source ? ` desde ${str(p.source)}` : ''}` }
     case 'pdf_generated':
-      return { Icon: Tag, color: '#8b5cf6', summary: 'Generó el PDF del pedigree' }
+      return { Icon: Tag, color: '#8b5cf6', summary: 'Generó el PDF de la genealogía' }
     default:
       return { Icon: Edit3, color: '#94a3b8', summary: e.action.replace(/_/g, ' ') }
   }

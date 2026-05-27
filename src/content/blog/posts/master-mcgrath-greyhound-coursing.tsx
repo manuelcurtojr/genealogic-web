@@ -6,7 +6,7 @@ export const metadata: BlogPostMeta = {
   slug: 'master-mcgrath-greyhound-coursing',
   title: 'Master McGrath (1866): el greyhound irlandés que conoció a la reina Victoria',
   excerpt:
-    'Un perro escuálido y sin pedigree de origen humilde llegó a ganar tres Waterloo Cups, el campeonato de coursing más prestigioso del siglo XIX. La reina Victoria lo recibió en Windsor. Su nombre sigue apareciendo en los pubs y canciones populares de Irlanda.',
+    'Un perro escuálido y sin genealogía de origen humilde llegó a ganar tres Waterloo Cups, el campeonato de coursing más prestigioso del siglo XIX. La reina Victoria lo recibió en Windsor. Su nombre sigue apareciendo en los pubs y canciones populares de Irlanda.',
   date: '2026-05-26',
   category: 'Para criadores',
   heroImage:

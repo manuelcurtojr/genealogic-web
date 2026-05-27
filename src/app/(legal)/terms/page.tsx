@@ -29,8 +29,8 @@ export default function TermsPage() {
         criadores de perros de raza:
       </p>
       <ul>
-        <li>Registrar, consultar y compartir genealogías caninas (pedigrees).</li>
-        <li>Importar pedigrees desde fuentes públicas con asistencia de inteligencia artificial.</li>
+        <li>Registrar, consultar y compartir genealogías caninas.</li>
+        <li>Importar genealogías desde fuentes públicas con asistencia de inteligencia artificial.</li>
         <li>Gestionar criaderos, camadas, reservas, contactos y registros veterinarios.</li>
         <li>Acceder a herramientas profesionales (CRM, web pública de criadero, contratos, mensajería).</li>
       </ul>
@@ -164,12 +164,12 @@ export default function TermsPage() {
         Las genealogías caninas se componen de hechos (nombres, fechas, parentescos,
         criadores) que históricamente han sido aportados por múltiples colaboradores
         (clubes, criadores, propietarios). Estos hechos no son obras protegidas por
-        derechos de autor en sí mismos. Cuando un Usuario importa el pedigree de su
+        derechos de autor en sí mismos. Cuando un Usuario importa la genealogía de su
         propio perro, declara tener derecho a hacerlo en virtud de su titularidad sobre
         el animal y sus documentos.
       </p>
 
-      <h2>7. Importador de Pedigrees</h2>
+      <h2>7. Importador de Genealogías</h2>
       <ul>
         <li>El importador permite extraer datos de páginas públicas que el Usuario pega como URL, de PDFs oficiales o de capturas de pantalla.</li>
         <li>La acción de importar la inicia siempre el Usuario, no la Plataforma. El Usuario es responsable de tener derecho a importar los datos.</li>

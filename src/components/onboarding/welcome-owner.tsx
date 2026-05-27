@@ -83,7 +83,7 @@ export default function WelcomeOwner({
         </div>
         <p className="text-sm text-body mb-5">
           Sube fotos, datos básicos y enlaza con padres registrados en Genealogic. La
-          genealogía se completa sola para perros con pedigree conocido.
+          genealogía se completa sola para perros con genealogía conocida.
         </p>
 
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
@@ -91,7 +91,7 @@ export default function WelcomeOwner({
             Foto, raza, color, fecha de nacimiento, microchip, registro.
           </BenefitItem>
           <BenefitItem icon={FileText} title="Papeles del perro">
-            Cartilla sanitaria, vacunas, contrato, pedigree — todo guardado.
+            Cartilla sanitaria, vacunas, contrato, genealogía — todo guardado.
           </BenefitItem>
           <BenefitItem icon={Calendar} title="Calendario">
             Vacunas, desparasitaciones, citas vet. Recordatorios automáticos.

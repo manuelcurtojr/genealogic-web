@@ -455,7 +455,7 @@ function BotConversation() {
         <div className="flex gap-2">
           <div className="h-6 w-6 rounded-full bg-ink flex items-center justify-center text-[8px] text-on-primary font-bold">🤖</div>
           <div className="flex-1 rounded-lg rounded-tl-none border border-hairline bg-canvas p-2">
-            <p className="text-[9.5px] text-ink">¡Hola Lucía! Sí, tenemos la camada de Mayo que estará lista para entrega a principios de junio. Son hijos de Xían × Yula, con pedigree completo y revisión veterinaria. Puedes ver disponibilidad aquí: iremacurto.com/perros</p>
+            <p className="text-[9.5px] text-ink">¡Hola Lucía! Sí, tenemos la camada de Mayo que estará lista para entrega a principios de junio. Son hijos de Xían × Yula, con genealogía completa y revisión veterinaria. Puedes ver disponibilidad aquí: iremacurto.com/perros</p>
             <div className="flex items-center justify-between mt-1.5">
               <p className="text-[8px] text-muted">10:23 AM · Emailbot</p>
               <span className="text-[7.5px] inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold">
@@ -711,7 +711,7 @@ function PedigreePdfMockup() {
         <div className="flex items-center justify-between mb-2 pb-2 border-b-2 border-ink">
           <div>
             <p className="text-[10px] font-bold text-ink tracking-wide">CRIADERO IREMA CURTÓ</p>
-            <p className="text-[8px] text-muted">Pedigree oficial · La Esperanza, Tenerife</p>
+            <p className="text-[8px] text-muted">Genealogía · La Esperanza, Tenerife</p>
           </div>
           <Trophy className="h-5 w-5 text-amber-600" />
         </div>

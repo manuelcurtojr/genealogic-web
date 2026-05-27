@@ -128,7 +128,7 @@ export default function Post() {
         sobre al menos 5 generaciones; idealmente 10.
       </Callout>
 
-      <H2>Por qué muchos pedigrees «buenos» tienen COI alto</H2>
+      <H2>Por qué muchas genealogías «buenas» tienen COI alto</H2>
       <P>
         Las razas modernas se construyeron sobre un puñado de fundadores. Cuando una raza tiene
         100 años, todos los ejemplares actuales comparten un porcentaje importante de ADN. Esto se

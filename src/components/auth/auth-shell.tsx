@@ -146,7 +146,7 @@ function BrandPanel() {
             className="max-w-[16ch] font-semibold text-white"
             style={{ fontSize: 'clamp(34px, 3.4vw, 48px)', lineHeight: 1.05, letterSpacing: '-0.035em' }}
           >
-            El pedigree de tu perro, donde tiene que estar.
+            La genealogía de tu perro, donde tiene que estar.
           </h2>
           <p className="mt-5 max-w-[420px] text-[15.5px] leading-[1.6] text-on-dark-soft">
             El registro público de genealogías caninas. Para criadores que documentan su
@@ -161,7 +161,7 @@ function BrandPanel() {
             />
             <FeatureRow
               icon={<Sparkles className="h-4 w-4" />}
-              title="Importa pedigrees con IA"
+              title="Importa genealogías con IA"
               desc="De una foto al árbol completo en 12 segundos."
             />
             <FeatureRow
@@ -175,7 +175,7 @@ function BrandPanel() {
         {/* Bottom: stats */}
         <blockquote className="border-l-2 border-[color:var(--brand)] pl-4">
           <p className="text-[14.5px] leading-[1.55] text-on-dark">
-            Pedigree verificable. Para siempre.
+            Genealogía verificable. Para siempre.
           </p>
           <LiveStatsLine className="mt-2 text-[12px] uppercase tracking-[0.1em] text-on-dark-soft tabular-nums" />
         </blockquote>

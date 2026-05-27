@@ -76,7 +76,7 @@ export function generatePedigreePdf(dogData: DogData, tree: TreeNode | null) {
   doc.setFontSize(7)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(...C.muted)
-  doc.text('Certificado de Pedigree Digital', 12, 15.5)
+  doc.text('Certificado de Genealogía Digital', 12, 15.5)
 
   // Doc ID + date right
   doc.setFontSize(6.5)
@@ -238,7 +238,7 @@ export function generatePedigreePdf(dogData: DogData, tree: TreeNode | null) {
   doc.setTextColor(...C.dim)
   doc.text('Documento informativo — No sustituye un pedigree oficial', pw - 12, y, { align: 'right' })
 
-  doc.save(`Pedigree-${dogData.name.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`)
+  doc.save(`Genealogia-${dogData.name.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`)
 }
 
 function drawCell(doc: jsPDF, x: number, y: number, w: number, h: number, node: TreeNode | null, gen: number) {

@@ -187,8 +187,8 @@ export function PostCta({ variant = 'register' }: { variant?: 'register' | 'pro'
       href: '/#precios',
     },
     import: {
-      title: 'Importa tu pedigree con IA',
-      body: 'Sube una foto de un pedigree existente y obtén el árbol completo en segundos. Funciona con cualquier formato: FCI, RSCE, AKC, manuscrito.',
+      title: 'Importa tu genealogía con IA',
+      body: 'Sube una foto de una genealogía existente y obtén el árbol completo en segundos. Funciona con cualquier formato: FCI, RSCE, AKC, manuscrito.',
       cta: 'Probar la importación',
       href: '/register',
     },

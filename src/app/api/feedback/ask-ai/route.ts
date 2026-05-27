@@ -42,7 +42,7 @@ const SCOPE_HINTS: Partial<Record<FeedbackScope, string>> = {
 
   dog_form: `El user está en el FORMULARIO DE PERRO (crear/editar). Causas frecuentes:
 - Microchip ya existe → otro perro lo tiene; sugiere comprobar si es duplicado o reclamarlo.
-- Padre/madre no encontrados → debe crearlos primero o importar el pedigree desde URL.
+- Padre/madre no encontrados → debe crearlos primero o importar la genealogía desde URL.
 - Foto no sube → probablemente >10MB o formato raro. Sugiere JPG/PNG <10MB.
 - Color no aparece → la lista de colores depende de la raza seleccionada; si la raza es nueva, escalamos.
 - Slug duplicado → otro perro del mismo criadero tiene el mismo nombre.`,

@@ -27,7 +27,7 @@ export default function WelcomeBreederEmail({ displayName }: WelcomeBreederProps
         </li>
         <li style={{ marginBottom: '8px', color: '#374151', fontSize: '15px', lineHeight: 1.6 }}>
           <strong style={{ color: '#111111' }}>Añade tus reproductores</strong> con foto y
-          pedigree. Cuanto más completo, más confianza generas.
+          genealogía. Cuanto más completo, más confianza generas.
         </li>
         <li style={{ marginBottom: '8px', color: '#374151', fontSize: '15px', lineHeight: 1.6 }}>
           <strong style={{ color: '#111111' }}>Publica tu web</strong> con el builder o

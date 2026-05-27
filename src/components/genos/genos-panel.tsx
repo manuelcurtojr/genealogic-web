@@ -322,7 +322,7 @@ export default function GenosPanel({
                   </div>
                   <h3 className="text-lg font-bold text-ink">Hola, soy Genos</h3>
                   <p className="text-sm text-body max-w-xs mt-1.5">
-                    Te ayudo con todo lo de Genealogic: criadero, perros, pedigree, web, emailbot…
+                    Te ayudo con todo lo de Genealogic: criadero, perros, genealogía, web, emailbot…
                   </p>
                   <div className="mt-5 space-y-1.5 w-full max-w-xs">
                     <SuggestionChip

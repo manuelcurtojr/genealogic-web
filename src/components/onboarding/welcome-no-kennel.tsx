@@ -34,7 +34,7 @@ export default function WelcomeNoKennel({
         </h1>
         <p className="mt-3 text-body text-base max-w-xl mx-auto">
           Genealogic es la plataforma para criadores serios de perros de raza.
-          Pedigree, web pública, gestión de clientes, emailbot — todo en un sitio.
+          Genealogía, web pública, gestión de clientes, emailbot — todo en un sitio.
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export default function WelcomeNoKennel({
         </p>
 
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-          <BenefitItem icon={Dog} title="Pedigree completo">
+          <BenefitItem icon={Dog} title="Genealogía completa">
             Registra perros con padres, abuelos y descendencia. Búsqueda y exportación incluidos.
           </BenefitItem>
           <BenefitItem icon={Globe} title="Web pública">

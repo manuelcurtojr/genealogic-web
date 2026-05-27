@@ -7,7 +7,7 @@ export const DOCUMENT_TYPES = [
   { id: 'contract', label: 'Contrato' },
   { id: 'vaccine_card', label: 'Cartilla de vacunas' },
   { id: 'health_card', label: 'Cartilla sanitaria' },
-  { id: 'pedigree', label: 'Pedigree' },
+  { id: 'pedigree', label: 'Genealogía' },
   { id: 'registration', label: 'Registro / LOE' },
   { id: 'genetic_test', label: 'Test genético' },
   { id: 'other', label: 'Otro' },

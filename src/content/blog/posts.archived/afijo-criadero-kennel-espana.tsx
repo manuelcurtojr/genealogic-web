@@ -178,7 +178,7 @@ export default function Post() {
           automáticamente al nombre de todos los cachorros que registres.
         </LI>
         <LI>
-          <Strong>Pedigree verificable</Strong>: cada perro con árbol de hasta 5 generaciones,
+          <Strong>Genealogía verificable</Strong>: cada perro con árbol de hasta 5 generaciones,
           datos sanitarios y pruebas oficiales.
         </LI>
         <LI>

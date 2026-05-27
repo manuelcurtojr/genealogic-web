@@ -2,7 +2,7 @@
  * Panel del Propietario: ficha de un perro propio (recibido del criador).
  *
  * Fase B — lectura. Muestra todos los datos disponibles + link al perfil
- * público (genealogía completa, pedigree, etc.) y a la reserva origen.
+ * público (genealogía completa, etc.) y a la reserva origen.
  */
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
@@ -68,7 +68,7 @@ export default async function MyDogDetailPage({
             target="_blank"
             className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-hairline px-4 py-2 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink"
           >
-            Ver pedigree público →
+            Ver genealogía pública →
           </Link>
 
           <dl className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-5">
@@ -147,7 +147,7 @@ export default async function MyDogDetailPage({
           <div>
             <h2 className="text-base font-bold text-ink">Papeles</h2>
             <p className="text-xs text-muted mt-0.5">
-              Contrato, cartilla sanitaria, vacunas, pedigree y otros documentos
+              Contrato, cartilla sanitaria, vacunas, genealogía y otros documentos
               que el criador ha subido. También puedes añadir los tuyos.
             </p>
           </div>

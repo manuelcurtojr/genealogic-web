@@ -35,7 +35,7 @@ export default function ClaimForm({
   const tempId = useMemo(() => `temp-${Date.now()}`, [])
   const Icon = targetType === 'dog' ? Dog : Store
 
-  const requiredEvidence = targetType === 'kennel' ? 'Certificado del afijo a tu nombre, pedigree de tus perros, contrato con la federación…' : 'Pedigree a tu nombre, contrato de venta, cartilla sanitaria con tu titularidad, foto del perro contigo…'
+  const requiredEvidence = targetType === 'kennel' ? 'Certificado del afijo a tu nombre, genealogía de tus perros, contrato con la federación…' : 'Genealogía a tu nombre, contrato de venta, cartilla sanitaria con tu titularidad, foto del perro contigo…'
 
   function submit() {
     setError('')
@@ -110,7 +110,7 @@ export default function ClaimForm({
           placeholder={
             targetType === 'kennel'
               ? 'Soy el titular del afijo X registrado en la RSCE desde 1998…'
-              : 'Compré este perro al criador X en 2022. Tengo el pedigree y los papeles a mi nombre…'
+              : 'Compré este perro al criador X en 2022. Tengo la genealogía y los papeles a mi nombre…'
           }
           // text-base (16px) en mobile evita el zoom auto de iOS Safari
           // al hacer focus en inputs <16px. Reduce a sm en desktop.

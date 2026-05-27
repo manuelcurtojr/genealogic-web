@@ -101,7 +101,7 @@ export default function Post() {
           siberian husky de trabajo desciende íntegramente de él
         </LI>
         <LI>
-          El husky de trineo moderno (línea de carrera Iditarod) tiene a Togo en el pedigree
+          El husky de trineo moderno (línea de carrera Iditarod) tiene a Togo en la genealogía
           fundacional
         </LI>
         <LI>

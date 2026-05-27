@@ -106,7 +106,7 @@ export default function DiscoveryHome({
                   letterSpacing: '-0.045em',
                 }}
               >
-                Cada perro con su pedigree.{' '}
+                Cada perro con su genealogía.{' '}
                 <span style={{ color: '#FE6620' }} className="font-medium">Cada criador con su escaparate.</span>
               </h1>
 
@@ -263,7 +263,7 @@ export default function DiscoveryHome({
                   <MiniFeature icon={Globe}>Web pública</MiniFeature>
                   <MiniFeature icon={KanbanSquare}>Pipeline</MiniFeature>
                   <MiniFeature icon={Mail}>Emailbot</MiniFeature>
-                  <MiniFeature icon={GitBranch}>Pedigrees</MiniFeature>
+                  <MiniFeature icon={GitBranch}>Genealogías</MiniFeature>
                 </ul>
                 <span className="mt-6 sm:mt-7 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
                   Ver herramientas
@@ -293,11 +293,11 @@ export default function DiscoveryHome({
                   Tu perro merece su historia.
                 </h3>
                 <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-md">
-                  Registra a tu perro, guarda su pedigree y sus papeles, recibe recordatorios de vacunas.
+                  Registra a tu perro, guarda su genealogía y sus papeles, recibe recordatorios de vacunas.
                 </p>
                 <ul className="mt-5 sm:mt-6 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px] sm:text-[13px] text-body">
                   <MiniFeature icon={Camera}>Ficha completa</MiniFeature>
-                  <MiniFeature icon={GitBranch}>Pedigree</MiniFeature>
+                  <MiniFeature icon={GitBranch}>Genealogía</MiniFeature>
                   <MiniFeature icon={Calendar}>Vacunas</MiniFeature>
                   <MiniFeature icon={ShieldCheck}>Reclama tu perro</MiniFeature>
                 </ul>
@@ -329,7 +329,7 @@ export default function DiscoveryHome({
             <BentoCard
               className="col-span-2 sm:row-span-2"
               icon={GitBranch}
-              title="Pedigree verificable"
+              title="Genealogía verificable"
               desc="Árbol genealógico completo sin límite de generaciones, COI calculado, ancestros enlazados al criadero original. Más fiable que un Excel."
               color="#FE6620"
               size="large"
@@ -361,7 +361,7 @@ export default function DiscoveryHome({
             <BentoCard
               icon={FileText}
               title="Papeles digitalizados"
-              desc="Cartilla, contratos, pedigree."
+              desc="Cartilla, contratos, genealogía."
               color="#f59e0b"
             />
             <BentoCard
@@ -379,7 +379,7 @@ export default function DiscoveryHome({
             <BentoCard
               icon={Zap}
               title="Importer IA"
-              desc="Pedigrees en segundos."
+              desc="Genealogías en segundos."
               color="#a855f7"
             />
           </div>

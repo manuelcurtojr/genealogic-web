@@ -341,7 +341,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                               <LockedParentCard label="Padre" dog={selFather} sexColor={BRAND.male} />
                               <LockedParentCard label="Madre" dog={selMother} sexColor={BRAND.female} />
                               <p className="text-[11px] text-muted leading-snug px-1">
-                                Los padres están bloqueados aquí para proteger la integridad del pedigree.
+                                Los padres están bloqueados aquí para proteger la integridad de la genealogía.
                                 Para modificarlos usa el <strong>editor de genealogía</strong> desde la ficha pública del perro.
                               </p>
                             </>

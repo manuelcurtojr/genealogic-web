@@ -138,7 +138,7 @@ export default function Post() {
         del Deutscher Boxer-Klub, vigente sin interrupción durante 130 años.
       </P>
       <P>
-        Todos los bóxers con pedigree del mundo, incluyendo a Rex (el bóxer de las películas de
+        Todos los bóxers con genealogía del mundo, incluyendo a Rex (el bóxer de las películas de
         Disney) y al famoso Tyson (el de Sylvester Stallone en <Em>Rocky</Em>), llevan su sangre.
       </P>
     </>

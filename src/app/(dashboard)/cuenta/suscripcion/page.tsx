@@ -57,7 +57,7 @@ export default async function SuscripcionPage({
     'Contratos digitales con firma electrónica',
     'Pagos a plazos para clientes',
     'Calendario veterinario + recordatorios automáticos',
-    'Importador IA de pedigrees (sin límite)',
+    'Importador IA de genealogías (sin límite)',
     'Hub de Contactos (suscriptores + leads + clientes)',
     'Estadísticas del perfil público',
     'Soporte por email',

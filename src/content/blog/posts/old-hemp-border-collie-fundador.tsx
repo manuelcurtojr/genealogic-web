@@ -6,7 +6,7 @@ export const metadata: BlogPostMeta = {
   slug: 'old-hemp-border-collie-fundador',
   title: 'Old Hemp (1893): el border collie que fundó la raza',
   excerpt:
-    'Nació en Northumberland en septiembre de 1893 y cambió para siempre el manejo de ovejas. Cada border collie con pedigree del mundo desciende de él. Esta es su historia y su árbol genealógico.',
+    'Nació en Northumberland en septiembre de 1893 y cambió para siempre el manejo de ovejas. Cada border collie con genealogía del mundo desciende de él. Esta es su historia y su árbol genealógico.',
   date: '2026-05-26',
   category: 'Para criadores',
   heroImage:
@@ -23,7 +23,7 @@ export default function Post() {
         En septiembre de 1893, en una pequeña granja de Northumberland (Inglaterra), nació un
         cachorro tricolor que iba a redefinir el oficio de pastorear. Se llamaba <Strong>Hemp</Strong>,
         y con el tiempo se le conocería como <Em>Old Hemp</Em>. Hoy, cualquier border collie con
-        pedigree del planeta tiene su sangre.
+        genealogía del planeta tiene su sangre.
       </Lead>
 
       <H2>Adam Telfer y el cachorro tranquilo</H2>
@@ -76,7 +76,7 @@ export default function Post() {
 
       <H2>Por qué importa hoy</H2>
       <P>
-        Si tienes un border collie y revisas su pedigree con paciencia hasta la décima o duodécima
+        Si tienes un border collie y revisas su genealogía con paciencia hasta la décima o duodécima
         generación, encontrarás a Old Hemp. Repetido por múltiples ramas, además — la base
         genética de la raza es tan estrecha que algunos estudios calculan que más del 95% de la
         diversidad actual viene de menos de 50 perros del entorno de Hemp.

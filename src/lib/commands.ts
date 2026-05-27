@@ -34,7 +34,7 @@ export const COMMANDS: Command[] = [
   // ── GENEALOGÍA ─────────────────────────────────────────────────────────
   { id: 'dogs', label: 'Mis perros', href: '/dogs', icon: 'Dog', section: 'Genealogía', keywords: ['perros', 'ejemplares', 'reproductores', 'cachorros', 'nuevo perro', 'añadir perro', 'crear perro'] },
   { id: 'litters', label: 'Camadas', href: '/litters', icon: 'Baby', section: 'Genealogía', requiresKennel: true, keywords: ['camada', 'litter', 'partos', 'nueva camada', 'crear camada'] },
-  { id: 'cruces', label: 'Simulador de cruces', href: '/cruces', icon: 'GitCompareArrows', section: 'Genealogía', requiresKennel: true, keywords: ['cruce', 'planner', 'planificador', 'pedigrí', 'coi', 'consanguinidad', 'apareamiento', 'simulador', 'cruzar'] },
+  { id: 'cruces', label: 'Simulador de cruces', href: '/cruces', icon: 'GitCompareArrows', section: 'Genealogía', requiresKennel: true, keywords: ['cruce', 'planner', 'planificador', 'genealogía', 'coi', 'consanguinidad', 'apareamiento', 'simulador', 'cruzar'] },
   { id: 'reproduccion', label: 'Calendario reproductivo (Gantt)', href: '/reproduccion', icon: 'Heart', section: 'Genealogía', requiresKennel: true, keywords: ['celos', 'gestación', 'reproducción', 'hembras', 'planificador', 'gantt', 'ciclos', 'cría'] },
   { id: 'genetica', label: 'Genotipos', href: '/genetica', icon: 'Dna', section: 'Genealogía', requiresKennel: true, keywords: ['adn', 'dna', 'loci', 'merle', 'color', 'genotipo', 'embark', 'wisdom', 'punnett', 'fenotipo', 'genetica'] },
   { id: 'calendar', label: 'Calendario', href: '/calendar', icon: 'Calendar', section: 'Genealogía', keywords: ['agenda', 'eventos', 'celos', 'fechas'] },

@@ -828,7 +828,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
           )}
           <input type="file" accept="image/*,application/pdf,.pdf" onChange={handleImageUpload} className="hidden" />
         </label>
-        <p className="text-[10px] text-muted mt-1">Para pedigrees oficiales RSCE/FCI sube el PDF directamente. Para webs que bloquean el scrapeo, sube un screenshot.</p>
+        <p className="text-[10px] text-muted mt-1">Para pedigrees oficiales RSCE/FCI (los documentos del club) sube el PDF directamente. Para webs que bloquean el scrapeo, sube un screenshot.</p>
       </div>
 
       {(scanning || uploadingImage) && (

@@ -92,7 +92,7 @@ export const TYPE_LABELS: Record<AdminRequestType, string> = {
 
 /** Labels humanos de cada zona donde puede vivir el FeedbackButton. */
 export const FEEDBACK_SCOPE_LABELS: Record<FeedbackScope, string> = {
-  importer:         'Importador de pedigrees',
+  importer:         'Importador de genealogías',
   dog_form:         'Formulario de perro',
   litter_form:      'Formulario de camadas',
   transfer:         'Transferencia de propiedad',
