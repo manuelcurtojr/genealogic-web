@@ -1,3 +1,5 @@
+import { withSentryConfig } from '@sentry/nextjs'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -22,4 +24,19 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+// Sentry wraps el config. Sin DSN configurado el plugin queda inerte
+// (cero overhead). Cuando se añade SENTRY_DSN como env var en Vercel
+// el plugin sube source maps y captura errores automáticamente.
+const sentryWebpackPluginOptions = {
+  silent: true,
+  // org/project se leen de env vars SENTRY_ORG y SENTRY_PROJECT cuando
+  // se quiera subir source maps al deploy. Sin ellas, los uploads se
+  // saltan pero el SDK runtime sigue funcionando.
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Subir source maps solo en deploys con SENTRY_AUTH_TOKEN configurado.
+  disableServerWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+  disableClientWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+}
+
+export default withSentryConfig(nextConfig, sentryWebpackPluginOptions)

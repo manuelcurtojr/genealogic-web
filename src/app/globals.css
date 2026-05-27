@@ -162,6 +162,23 @@
 
   /* Tracking */
   --tracking-mono-label: 1px;
+
+  /* ─── Z-index tokens ──────────────────────────────────────────────────
+   * Stack normalizado. Antes había valores ad-hoc (z-30, z-40, z-50,
+   * z-60, z-[9999]) sin orden. Estos tokens son el "lenguaje" oficial.
+   * Tailwind v4 expone `--z-*` como `z-foo` automáticamente. */
+  --z-base: 0;
+  --z-sticky-content: 20;
+  --z-sticky-cta: 30;
+  --z-header: 40;
+  --z-sidebar: 50;
+  --z-dropdown: 80;
+  --z-backdrop: 9000;
+  --z-drawer: 9100;
+  --z-modal: 9200;
+  --z-tooltip: 9300;
+  --z-toast: 9400;
+  --z-debug: 9999;
 }
 
 /* ─── Base ──────────────────────────────────────────────────────────────── */
