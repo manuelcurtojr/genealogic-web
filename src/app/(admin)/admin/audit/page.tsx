@@ -70,10 +70,13 @@ export default async function AdminAuditPage({
     .single()
   if (profile?.role !== 'admin') redirect('/dashboard')
 
+  // No usamos auto-join con profiles porque la FK admin_id va a auth.users,
+  // no a public.profiles → PostgREST no encadena el join y devuelve null.
+  // Hacemos lookup separado de los admin profiles en batch.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let query: any = supabase
     .from('admin_audit_log')
-    .select('id, admin_id, action, target_table, target_id, payload, ip, created_at, admin:profiles!admin_audit_log_admin_id_fkey(email, display_name)')
+    .select('id, admin_id, action, target_table, target_id, payload, ip, created_at')
     .order('created_at', { ascending: false })
     .limit(PAGE_SIZE)
 
@@ -81,6 +84,29 @@ export default async function AdminAuditPage({
   if (filterAdmin) query = query.eq('admin_id', filterAdmin)
 
   const { data: rows } = await query
+
+  // Cargar profiles de los admin_ids en batch (1 query)
+  const adminIds = Array.from(new Set(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ((rows || []) as any[]).map(r => r.admin_id).filter(Boolean)
+  ))
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const profileMap = new Map<string, any>()
+  if (adminIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, email, display_name')
+      .in('id', adminIds)
+    for (const p of (profiles || []) as Array<{ id: string; email: string; display_name: string }>) {
+      profileMap.set(p.id, p)
+    }
+  }
+  // Enriquecemos cada row con su admin profile
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const enriched = ((rows || []) as any[]).map(r => ({
+    ...r,
+    admin: r.admin_id ? profileMap.get(r.admin_id) || null : null,
+  }))
 
   return (
     <div className="space-y-6">
@@ -119,7 +145,7 @@ export default async function AdminAuditPage({
       </div>
 
       {/* Listado */}
-      {(rows || []).length === 0 ? (
+      {enriched.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft p-12 text-center">
           <ShieldAlert className="mx-auto h-8 w-8 text-muted" />
           <p className="mt-3 text-[14px] text-body">
@@ -129,12 +155,11 @@ export default async function AdminAuditPage({
       ) : (
         <div className="overflow-hidden rounded-xl border border-hairline bg-canvas">
           <ul className="divide-y divide-hairline">
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {(rows as any[]).map(row => {
+            {enriched.map(row => {
               const meta = ACTION_META[row.action] || { label: row.action, color: 'text-gray-700 bg-gray-100', icon: ShieldAlert }
               const Icon = meta.icon
-              const adminEmail = Array.isArray(row.admin) ? row.admin[0]?.email : row.admin?.email
-              const adminName = Array.isArray(row.admin) ? row.admin[0]?.display_name : row.admin?.display_name
+              const adminEmail = row.admin?.email || null
+              const adminName = row.admin?.display_name || null
               return (
                 <li key={row.id} className="flex items-start gap-3 px-5 py-3.5 hover:bg-surface-soft transition-colors">
                   <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${meta.color}`}>

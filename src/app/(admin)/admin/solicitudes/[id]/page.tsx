@@ -30,20 +30,35 @@ export default async function AdminRequestDetailPage({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createKennelAdminClient() as any
 
+  // Cargamos request + targets sin intentar join con profiles vía PostgREST:
+  // la FK requester_user_id apunta a auth.users, no a public.profiles, así
+  // que PostgREST devolvía null y la page caía a notFound() → 404. Hacemos
+  // el lookup del profile en una query separada.
   const { data: req } = await admin
     .from('admin_requests')
     .select(`
       *,
       target_dog:dogs!admin_requests_target_dog_id_fkey(id, name, slug, owner_id),
-      target_kennel:kennels!admin_requests_target_kennel_id_fkey(id, name, slug, owner_id),
-      requester_profile:profiles!admin_requests_requester_user_id_fkey(display_name, email, avatar_url)
+      target_kennel:kennels!admin_requests_target_kennel_id_fkey(id, name, slug, owner_id)
     `)
     .eq('id', id)
     .single()
 
   if (!req) notFound()
 
-  const r = req as AdminRequest & {
+  // Lookup paralelo del profile del solicitante (FK va a auth.users — PostgREST
+  // no encadena auto el join con profiles).
+  let requester_profile: { display_name: string | null; email: string | null; avatar_url: string | null } | null = null
+  if (req.requester_user_id) {
+    const { data: prof } = await admin
+      .from('profiles')
+      .select('display_name, email, avatar_url')
+      .eq('id', req.requester_user_id)
+      .maybeSingle()
+    requester_profile = prof || null
+  }
+
+  const r = { ...req, requester_profile } as AdminRequest & {
     target_dog?: { id: string; name: string; slug: string | null; owner_id: string | null } | null
     target_kennel?: { id: string; name: string; slug: string | null; owner_id: string | null } | null
     requester_profile?: { display_name: string | null; email: string | null; avatar_url: string | null } | null

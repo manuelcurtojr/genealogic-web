@@ -2,14 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Store, Palette, GitBranch, Stethoscope, ArrowLeft, Shield, Menu, X, Key, BarChart3, Dog, Activity, Globe, ShieldCheck, Inbox } from 'lucide-react'
+import { LayoutDashboard, Users, Store, Palette, GitBranch, Stethoscope, LogOut, Shield, Menu, X, Key, BarChart3, Dog, Activity, Globe, ShieldCheck, ShieldAlert, Inbox, Flag } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ADMIN_NAV: { section?: string; label: string; href: string; icon: any }[] = [
   // General
   { section: 'General', label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { label: 'Actividad', href: '/admin/activity', icon: Activity },
   { label: 'Estadísticas', href: '/admin/stats', icon: BarChart3 },
   { label: 'Solicitudes', href: '/admin/solicitudes', icon: Inbox },
+  { label: 'Reportes', href: '/admin/reports', icon: Flag },
+  { label: 'Audit log', href: '/admin/audit', icon: ShieldAlert },
   // Gestión
   { section: 'Gestion', label: 'Usuarios', href: '/admin/users', icon: Users },
   { label: 'Perros', href: '/admin/dogs', icon: Dog },
@@ -97,16 +101,23 @@ export default function AdminShell({ user, children }: Props) {
           })}
         </nav>
 
-        {/* Back to app */}
+        {/* Cerrar sesión — antes había "Volver a la app" pero el super admin
+            vive en este panel. Para ver la app como un user normal se usa
+            la funcionalidad Impersonate desde /admin/users. */}
         <div className="border-t border-hairline p-2">
-          <a href="/dashboard"
-            title={collapsed && !mobileOpen ? 'Volver a la app' : undefined}
-            className={`flex items-center gap-3 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition ${
+          <button
+            onClick={async () => {
+              const supabase = createClient()
+              await supabase.auth.signOut()
+              window.location.href = '/login'
+            }}
+            title={collapsed && !mobileOpen ? 'Cerrar sesión' : undefined}
+            className={`flex w-full items-center gap-3 rounded-lg text-sm text-body hover:text-[color:var(--error)] hover:bg-surface-card transition ${
               collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
             }`}>
-            <ArrowLeft className="w-[18px] h-[18px] flex-shrink-0" />
-            {(!collapsed || mobileOpen) && <span>Volver a la app</span>}
-          </a>
+            <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+            {(!collapsed || mobileOpen) && <span>Cerrar sesión</span>}
+          </button>
         </div>
 
         {/* User */}
