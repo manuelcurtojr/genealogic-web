@@ -8,6 +8,7 @@
  */
 import { createClient } from '@/lib/supabase/server'
 import AdminStatsClient from '@/components/admin/admin-stats-client'
+import AdminStatsSprintC from '@/components/admin/admin-stats-sprint-c'
 
 export const dynamic = 'force-dynamic'
 
@@ -68,19 +69,35 @@ type Snapshot = {
 
 export default async function AdminStatsPage() {
   const supabase = await createClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc('admin_stats_snapshot')
+  // Sprint C: cargamos las 4 RPC en paralelo (la original + las nuevas).
+  // Si las nuevas fallan, no rompemos la page — degradamos a null.
+  const [snapshotRes, funnelRes, cohortRes, revenueRes] = await Promise.all([
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).rpc('admin_stats_snapshot'),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).rpc('admin_funnel_detailed'),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).rpc('admin_cohort_retention'),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).rpc('admin_revenue_snapshot'),
+  ])
 
-  if (error || !data) {
+  if (snapshotRes.error || !snapshotRes.data) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50/50 p-6">
         <p className="text-sm font-semibold text-red-900">No se pudieron cargar las estadísticas</p>
-        <p className="text-xs text-red-700 mt-1">{error?.message || 'Sin datos'}</p>
+        <p className="text-xs text-red-700 mt-1">{snapshotRes.error?.message || 'Sin datos'}</p>
       </div>
     )
   }
 
-  const s = data as Snapshot
+  const s = snapshotRes.data as Snapshot
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const funnelDetailed = (funnelRes.data || null) as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cohortRetention = (cohortRes.data || []) as any[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const revenueSnap = (revenueRes.data || null) as any
 
   // MRR estimado a partir de plan_counts (incluye nuevos + legacy)
   const mrrEur =
@@ -101,7 +118,7 @@ export default async function AdminStatsPage() {
     pct: s.funnel.signup > 0 ? Math.round((row.value / s.funnel.signup) * 100) : 0,
   }))
 
-  return (
+  const snapshotClient = (
     <AdminStatsClient
       hero={{
         usersTotal: s.hero.users_total,
@@ -202,5 +219,20 @@ export default async function AdminStatsPage() {
         topKennels: s.top_kennels || [],
       }}
     />
+  )
+
+  // Cuando exista contenido del Sprint C, lo renderizamos debajo de la
+  // vista existente (no reemplaza nada — extiende). Funnel detallado +
+  // cohort retention + revenue snapshot. Si las RPC nuevas fallan, los
+  // sub-bloques se ocultan individualmente sin romper la página.
+  return (
+    <>
+      {snapshotClient}
+      <AdminStatsSprintC
+        funnel={funnelDetailed}
+        cohort={cohortRetention}
+        revenue={revenueSnap}
+      />
+    </>
   )
 }

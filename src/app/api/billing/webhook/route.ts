@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { priceIdToPlan } from '@/lib/stripe'
 import { sendTransactionalEmail } from '@/lib/email/send'
+import { notifySuperAdmin } from '@/lib/admin/notify'
 import crypto from 'crypto'
 
 export const runtime = 'nodejs'
@@ -138,9 +139,34 @@ export async function POST(request: NextRequest) {
           stripe_subscription_status: status,
           plan,
           plan_started_at: new Date().toISOString(),
+          // first_paid_at: solo se rellena la primera vez (first-touch wins),
+          // se usa para el funnel detallado en Sprint C.
+          first_paid_at: new Date().toISOString(),
           trial_started_at: trialStart,
           trial_ends_at: trialEnd,
-        }).eq('id', userId)
+        }).eq('id', userId).is('first_paid_at', null)
+
+        // En caso de second-charge o repeat: actualizamos sin first_paid_at
+        await admin.from('profiles').update({
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscriptionId,
+          stripe_subscription_status: status,
+          plan,
+          plan_started_at: new Date().toISOString(),
+          trial_started_at: trialStart,
+          trial_ends_at: trialEnd,
+        }).eq('id', userId).not('first_paid_at', 'is', null)
+
+        // Notif al super admin: usuario activó plan de pago.
+        // Crítico para enterarse de upgrades en tiempo real.
+        notifySuperAdmin({
+          kind: 'plan_upgrade',
+          subject: `Nuevo plan activo: ${plan}`,
+          body: `User ID: ${userId}\nPlan: ${plan}\nStatus: ${status}\nTrial: ${trialStart ? `desde ${trialStart} hasta ${trialEnd}` : 'sin trial'}\nSubscription: ${subscriptionId}`,
+          dedupeKey: `billing:upgrade:${subscriptionId}`,
+          ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'}/admin/users/${userId}`,
+          ctaLabel: 'Ver usuario',
+        }).catch(() => {})
 
         // Email de bienvenida al plan (best-effort, dedupeado por sub_id)
         try {
@@ -246,6 +272,23 @@ export async function POST(request: NextRequest) {
           trial_started_at: null,
           trial_ends_at: null,
         }).eq('stripe_customer_id', customerId)
+
+        // Notif al super admin: churn. Crítico para análisis de retención.
+        const { data: churnedProfile } = await admin
+          .from('profiles')
+          .select('id, email, display_name, plan')
+          .eq('stripe_customer_id', customerId)
+          .maybeSingle()
+        if (churnedProfile?.id) {
+          notifySuperAdmin({
+            kind: 'plan_downgrade',
+            subject: `Churn: ${churnedProfile.email}`,
+            body: `User canceló su plan.\nEmail: ${churnedProfile.email}\nNombre: ${churnedProfile.display_name || '—'}\nPlan anterior: ${churnedProfile.plan || '?'}\nSubscription: ${sub.id}\n\nConsidera escribirle un email personal para entender el motivo.`,
+            dedupeKey: `billing:churn:${sub.id}`,
+            ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'}/admin/users/${churnedProfile.id}`,
+            ctaLabel: 'Ver usuario',
+          }).catch(() => {})
+        }
 
         // Email de cancelación al user (best-effort)
         try {

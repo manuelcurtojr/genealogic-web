@@ -15,6 +15,7 @@ import { NextResponse } from 'next/server'
 import type Stripe from 'stripe'
 import { constructWebhookEvent, isStripeConfigured } from '@/lib/stripe/server'
 import { createKennelAdminClient } from '@/lib/supabase/server'
+import { notifySuperAdmin } from '@/lib/admin/notify'
 
 export const runtime = 'nodejs'  // necesita firma raw, no edge
 export const dynamic = 'force-dynamic'
@@ -89,6 +90,14 @@ export async function POST(req: Request) {
               stripe_payment_intent_id: session.payment_intent as string | null,
             })
             .eq('id', paymentRowId)
+
+          // Notif admin: pago de reserva recibido.
+          notifySuperAdmin({
+            kind: 'payment_received',
+            subject: `Pago de reserva recibido`,
+            body: `Sesión Stripe ${session.id}\nMonto: ${(session.amount_total || 0) / 100} ${(session.currency || 'eur').toUpperCase()}\nPayment row: ${paymentRowId}`,
+            dedupeKey: `stripe:checkout:${session.id}`,
+          }).catch(() => {})
         }
         break
       }
