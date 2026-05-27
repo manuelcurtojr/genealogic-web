@@ -43,7 +43,7 @@ export default function StickyContactMobile({ kennelId, kennelName, contactFormC
       className={`sm:hidden fixed bottom-0 left-0 right-0 z-30 pointer-events-none transition-all duration-300 ${
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
-      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 10px)' }}
+      style={{ paddingBottom: '10px' }}
     >
       {/* Botón pill flotante full-width — variante sticky-mobile */}
       <div className="px-2.5 pointer-events-auto">

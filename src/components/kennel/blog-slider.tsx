@@ -87,12 +87,14 @@ export default function BlogSlider({ posts, kennelSlug }: Props) {
         <ChevronRight className="h-5 w-5" />
       </button>
 
-      {/* Scroller */}
+      {/* Scroller — sin negative margin para evitar overflow horizontal
+          en mobile cuando el contenedor padre no tiene padding. El padding
+          interno garantiza que la primera card no quede pegada al borde. */}
       <div
         ref={scrollerRef}
-        className="-mx-4 sm:mx-0 overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth"
+        className="overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth"
       >
-        <div className="flex gap-4 sm:gap-5 px-4 sm:px-0">
+        <div className="flex gap-4 sm:gap-5 px-4 sm:px-0 pr-4 sm:pr-0">
           {posts.map(post => {
             const date = post.published_at ? new Date(post.published_at) : null
             return (

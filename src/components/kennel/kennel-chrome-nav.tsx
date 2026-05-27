@@ -118,26 +118,28 @@ export default function KennelChromeNav({
         }`}
         onClick={() => setOpen(false)}
       />
-      {/* Panel */}
+      {/* Panel — full screen en mobile, fondo blanco sólido (sin transparencia
+          para que el hero no se vea por detrás) */}
       <aside
-        className={`fixed top-0 right-0 h-screen w-[82%] max-w-[320px] z-[60] bg-canvas border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] flex flex-col transition-transform duration-300 ${
+        className={`fixed inset-0 z-[60] flex flex-col transition-transform duration-300 ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{
+          backgroundColor: '#ffffff',
           paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
         aria-hidden={!open}
       >
-        <div className="flex items-center justify-between h-14 px-4 border-b border-hairline">
+        <div className="flex items-center justify-between h-14 px-4 border-b border-hairline" style={{ backgroundColor: '#ffffff' }}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">Menú</p>
           <button
             type="button"
             onClick={() => setOpen(false)}
             aria-label="Cerrar menú"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-ink hover:bg-surface-soft transition"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-ink hover:bg-surface-soft transition"
           >
-            <X className="h-5 w-5" />
+            <X className="h-6 w-6" />
           </button>
         </div>
         <nav className="flex-1 overflow-y-auto py-2">

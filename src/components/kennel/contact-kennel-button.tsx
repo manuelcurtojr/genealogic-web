@@ -88,19 +88,22 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
 
       {open && (
         <div
-          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
+          className="fixed inset-0 z-[60] flex items-stretch sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
           onClick={close}
         >
           <div
-            className="w-full sm:max-w-lg bg-canvas rounded-t-3xl sm:rounded-3xl shadow-[0_24px_64px_rgba(0,0,0,0.18)] border border-hairline max-h-[92vh] overflow-hidden flex flex-col"
+            className="w-full h-full sm:h-auto sm:max-w-lg bg-canvas sm:rounded-3xl shadow-[0_24px_64px_rgba(0,0,0,0.18)] sm:border sm:border-hairline sm:max-h-[92vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
+            style={{
+              // Respeta el notch y la home bar en iOS cuando ocupa toda la pantalla
+              paddingTop: 'env(safe-area-inset-top)',
+            }}
           >
-            {/* Drag handle mobile — sticky junto al header */}
-            <div className="flex-shrink-0 sm:hidden flex justify-center pt-2.5 pb-1 bg-canvas">
-              <div className="h-1 w-10 rounded-full bg-hairline" />
-            </div>
-            <div className="flex-shrink-0 flex items-start justify-between gap-3 px-5 sm:px-6 pt-4 sm:pt-6 pb-4 bg-canvas border-b border-hairline sm:border-b-0">
-              <div className="min-w-0 flex-1">
+            {/* Header — X grande centrada verticalmente en el header.
+                En mobile no hay drag handle porque ocupa toda la pantalla
+                (no es bottom-sheet, es full-screen). */}
+            <div className="flex-shrink-0 relative flex items-center px-5 sm:px-6 py-4 sm:py-5 bg-canvas border-b border-hairline">
+              <div className="min-w-0 flex-1 pr-12">
                 <p className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[#FE6620]">
                   Pedir información
                 </p>
@@ -113,10 +116,10 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
               </div>
               <button
                 onClick={close}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-surface-soft hover:text-ink flex-shrink-0"
+                className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-surface-soft transition flex-shrink-0"
                 aria-label="Cerrar"
               >
-                <X className="h-4 w-4" />
+                <X className="h-6 w-6" />
               </button>
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto">
