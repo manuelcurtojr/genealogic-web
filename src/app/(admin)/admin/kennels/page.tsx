@@ -6,7 +6,7 @@ export default async function AdminKennelsPage() {
 
   const { data: kennels } = await supabase
     .from('kennels')
-    .select('id, name, logo_url, description, website, owner_id, created_at, affix_format')
+    .select('id, name, logo_url, description, website, owner_id, created_at, affix_format, hidden_at, hidden_reason')
     .order('created_at', { ascending: false })
 
   // Get owner info and dog counts

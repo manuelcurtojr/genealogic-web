@@ -17,7 +17,12 @@ import {
   type HiddenReason,
 } from '@/lib/moderation/types'
 import {
+  REPORT_REASON_LABELS,
+  type ReportReason,
+} from '@/lib/content-reports/types'
+import {
   EyeOff, ArrowRight, Dog, Store, Clock, Filter, FileText,
+  ExternalLink, User as UserIcon, Copyright, ShieldAlert,
 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -37,6 +42,16 @@ interface HiddenRow {
   hidden_reason: HiddenReason
   hidden_notes: string | null
   hidden_report_id: string | null
+  /** Datos del reporte que motivó la ocultación (si los hay) */
+  report: {
+    id: string
+    reason: ReportReason
+    reporter_name: string | null
+    reporter_email: string | null
+    is_rights_holder: boolean
+    description: string
+    created_at: string
+  } | null
 }
 
 export default async function AdminHiddenPage({
@@ -70,6 +85,38 @@ export default async function AdminHiddenPage({
     sp.type === 'dog' ? { data: [] } : kennelsQuery,
   ])
 
+  // Recolectamos los report_ids para hacer un solo lookup batched
+  const allRawRows = [...(dogsRes.data || []), ...(kennelsRes.data || [])]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const reportIds = Array.from(new Set(allRawRows.map((r: any) => r.hidden_report_id).filter(Boolean)))
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const reportsById = new Map<string, any>()
+  if (reportIds.length > 0) {
+    const { data: reports } = await admin
+      .from('content_reports')
+      .select('id, reason, reporter_name, reporter_email, is_rights_holder, description, created_at')
+      .in('id', reportIds)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(reports || []).forEach((r: any) => reportsById.set(r.id, r))
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapReport = (id: string | null) => {
+    if (!id) return null
+    const r = reportsById.get(id)
+    if (!r) return null
+    return {
+      id: r.id,
+      reason: r.reason as ReportReason,
+      reporter_name: r.reporter_name,
+      reporter_email: r.reporter_email,
+      is_rights_holder: r.is_rights_holder,
+      description: r.description,
+      created_at: r.created_at,
+    }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dogRows: HiddenRow[] = (dogsRes.data || []).map((d: any) => ({
     kind: 'dog',
@@ -81,6 +128,7 @@ export default async function AdminHiddenPage({
     hidden_reason: d.hidden_reason,
     hidden_notes: d.hidden_notes,
     hidden_report_id: d.hidden_report_id,
+    report: mapReport(d.hidden_report_id),
   }))
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const kennelRows: HiddenRow[] = (kennelsRes.data || []).map((k: any) => ({
@@ -93,6 +141,7 @@ export default async function AdminHiddenPage({
     hidden_reason: k.hidden_reason,
     hidden_notes: k.hidden_notes,
     hidden_report_id: k.hidden_report_id,
+    report: mapReport(k.hidden_report_id),
   }))
 
   const all = [...dogRows, ...kennelRows].sort(
@@ -166,8 +215,8 @@ export default async function AdminHiddenPage({
               <tr>
                 <th className="text-left py-2.5 px-4 font-semibold">Tipo</th>
                 <th className="text-left py-2.5 px-4 font-semibold">Contenido</th>
-                <th className="text-left py-2.5 px-4 font-semibold">Motivo</th>
-                <th className="text-left py-2.5 px-4 font-semibold">Notas</th>
+                <th className="text-left py-2.5 px-4 font-semibold">Motivo / Reclamación</th>
+                <th className="text-left py-2.5 px-4 font-semibold">Reportante</th>
                 <th className="text-right py-2.5 px-4 font-semibold">Oculto desde</th>
                 <th className="text-right py-2.5 px-4 font-semibold"></th>
               </tr>
@@ -180,7 +229,7 @@ export default async function AdminHiddenPage({
                   : `/kennels/${row.slug || row.id}`
                 return (
                   <tr key={`${row.kind}-${row.id}`} className="hover:bg-surface-soft">
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 align-top">
                       <div className="flex items-center gap-2">
                         <TypeIcon className="w-4 h-4 text-ink" />
                         <span className="text-xs font-medium text-body">
@@ -188,47 +237,83 @@ export default async function AdminHiddenPage({
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 align-top">
                       <Link href={url} className="flex items-center gap-2.5 group">
                         {row.thumbnail ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={row.thumbnail}
                             alt=""
-                            className="w-8 h-8 rounded-md object-cover border border-hairline grayscale opacity-60"
+                            className="w-9 h-9 rounded-md object-cover border border-hairline grayscale opacity-60"
                           />
                         ) : (
-                          <div className="w-8 h-8 rounded-md bg-surface-card flex items-center justify-center border border-hairline">
+                          <div className="w-9 h-9 rounded-md bg-surface-card flex items-center justify-center border border-hairline">
                             <TypeIcon className="w-4 h-4 text-muted/50" />
                           </div>
                         )}
-                        <span className="text-sm font-medium text-ink truncate max-w-[220px] group-hover:underline">
+                        <span className="text-sm font-medium text-ink truncate max-w-[200px] group-hover:underline">
                           {row.name}
                         </span>
                       </Link>
                     </td>
-                    <td className="py-3 px-4">
-                      <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded border ${HIDDEN_REASON_BADGE_COLORS[row.hidden_reason]}`}>
-                        {HIDDEN_REASON_LABELS[row.hidden_reason]}
-                      </span>
+                    <td className="py-3 px-4 align-top">
+                      <div className="space-y-1.5">
+                        <span className={`inline-block text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded border ${HIDDEN_REASON_BADGE_COLORS[row.hidden_reason]}`}>
+                          {HIDDEN_REASON_LABELS[row.hidden_reason]}
+                        </span>
+                        {row.report ? (
+                          <div className="text-[11px] text-muted leading-snug">
+                            <p className="line-clamp-2 max-w-[280px] text-body">
+                              "{row.report.description.slice(0, 120)}{row.report.description.length > 120 ? '…' : ''}"
+                            </p>
+                            <Link
+                              href={`/admin/reports/${row.report.id}`}
+                              className="mt-1 inline-flex items-center gap-1 text-[11px] font-medium text-ink hover:underline"
+                            >
+                              <FileText className="w-3 h-3" />
+                              Ver reclamación completa
+                              <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                            </Link>
+                          </div>
+                        ) : row.hidden_notes ? (
+                          <p className="text-[11px] text-muted line-clamp-2 max-w-[280px]">
+                            {row.hidden_notes}
+                          </p>
+                        ) : (
+                          <p className="text-[11px] text-muted italic">
+                            Sin reclamación asociada (acción admin directa)
+                          </p>
+                        )}
+                      </div>
                     </td>
-                    <td className="py-3 px-4">
-                      <p className="text-[11px] text-muted truncate max-w-[260px]">
-                        {row.hidden_notes
-                          ? row.hidden_notes.slice(0, 80) + (row.hidden_notes.length > 80 ? '…' : '')
-                          : '—'}
-                      </p>
-                      {row.hidden_report_id && (
-                        <Link
-                          href={`/admin/reports/${row.hidden_report_id}`}
-                          className="mt-0.5 inline-flex items-center gap-1 text-[10px] text-muted hover:text-ink"
-                        >
-                          <FileText className="w-2.5 h-2.5" />
-                          Ver reporte
-                        </Link>
+                    <td className="py-3 px-4 align-top">
+                      {row.report ? (
+                        <div className="space-y-0.5 max-w-[200px]">
+                          <div className="flex items-center gap-1.5">
+                            <UserIcon className="w-3 h-3 text-muted flex-shrink-0" />
+                            <p className="text-xs font-medium text-ink truncate">
+                              {row.report.reporter_name || (row.report.reporter_email ? 'Externo' : 'Anónimo')}
+                            </p>
+                            {row.report.is_rights_holder && (
+                              <Copyright className="w-3 h-3 text-amber-700 flex-shrink-0" aria-label="Titular de derechos" />
+                            )}
+                          </div>
+                          {row.report.reporter_email && (
+                            <p className="text-[11px] text-muted truncate">
+                              {row.report.reporter_email}
+                            </p>
+                          )}
+                          <p className="text-[10px] text-muted">
+                            Reclamó el {new Date(row.report.created_at).toLocaleDateString('es-ES', {
+                              day: '2-digit', month: 'short', year: '2-digit',
+                            })}
+                          </p>
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-muted italic">—</span>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 align-top text-right">
                       <span className="inline-flex items-center gap-1 text-[11px] text-muted">
                         <Clock className="w-3 h-3" />
                         {new Date(row.hidden_at).toLocaleDateString('es-ES', {
@@ -236,10 +321,10 @@ export default async function AdminHiddenPage({
                         })}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 align-top text-right">
                       <Link
                         href={url}
-                        className="inline-flex items-center gap-1 text-xs text-ink hover:underline"
+                        className="inline-flex items-center gap-1 text-xs text-ink hover:underline whitespace-nowrap"
                       >
                         Gestionar <ArrowRight className="w-3 h-3" />
                       </Link>

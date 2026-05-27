@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Search, Loader2, Edit, Eye, GitBranch, Dog, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Loader2, Edit, Eye, EyeOff, GitBranch, Dog, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import DogFormPanel from '@/components/dogs/dog-form-panel'
 import PedigreeEditor from '@/components/pedigree/pedigree-editor'
@@ -18,6 +18,8 @@ interface DogRow {
   id: string; name: string; slug: string | null; sex: string | null; birth_date: string | null
   thumbnail_url: string | null; registration: string | null; owner_id: string | null
   kennel_id: string | null
+  hidden_at: string | null
+  hidden_reason: string | null
   breed: any; kennel: any; owner_name?: string
 }
 
@@ -30,6 +32,8 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
   const [breedFilter, setBreedFilter] = useState('')
   const [kennelFilter, setKennelFilter] = useState('')
   const [sexFilter, setSexFilter] = useState('')
+  /** Visibilidad: 'all' (todos), 'visible' (no ocultos), 'hidden' (solo ocultos) */
+  const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'visible' | 'hidden'>('visible')
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(0)
 
@@ -40,7 +44,7 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
 
   const searchTimer = useRef<any>(null)
 
-  useEffect(() => { fetchDogs() }, [page, breedFilter, kennelFilter, sexFilter])
+  useEffect(() => { fetchDogs() }, [page, breedFilter, kennelFilter, sexFilter, visibilityFilter])
 
   useEffect(() => {
     clearTimeout(searchTimer.current)
@@ -70,7 +74,7 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
       // seq scan completo. estimated usa estadísticas del planner: ±5% de
       // precisión, suficiente para la UI de paginación.
       .select(
-        'id, name, slug, sex, birth_date, thumbnail_url, registration, owner_id, kennel_id, breed:breeds(name), kennel:kennels(name)',
+        'id, name, slug, sex, birth_date, thumbnail_url, registration, owner_id, kennel_id, hidden_at, hidden_reason, breed:breeds(name), kennel:kennels(name)',
         { count: 'estimated' },
       )
 
@@ -83,6 +87,8 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
     if (breedFilter) query = query.eq('breed_id', breedFilter)
     if (kennelFilter) query = query.eq('kennel_id', kennelFilter)
     if (sexFilter) query = query.eq('sex', sexFilter)
+    if (visibilityFilter === 'visible') query = query.is('hidden_at', null)
+    if (visibilityFilter === 'hidden') query = query.not('hidden_at', 'is', null)
 
     const { data, count } = await query.order('name').range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
 
@@ -131,6 +137,16 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
           <option value="">Todos criaderos</option>
           {kennels.map(k => <option key={k.id} value={k.id}>{k.name}</option>)}
         </select>
+        <select
+          value={visibilityFilter}
+          onChange={e => { setVisibilityFilter(e.target.value as 'all' | 'visible' | 'hidden'); setPage(0) }}
+          className="bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none appearance-none cursor-pointer min-w-[140px]"
+          title="Filtrar por visibilidad"
+        >
+          <option value="visible">Solo visibles</option>
+          <option value="hidden">Solo ocultos</option>
+          <option value="all">Todos</option>
+        </select>
       </div>
 
       {/* Table */}
@@ -157,14 +173,25 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
               const kennelName = Array.isArray(dog.kennel) ? dog.kennel[0]?.name : (dog.kennel as any)?.name
               const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#666'
               return (
-                <tr key={dog.id} className="hover:bg-surface-card transition">
+                <tr key={dog.id} className={`hover:bg-surface-card transition ${dog.hidden_at ? 'bg-red-50/30' : ''}`}>
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor }}>
+                      <div className={`w-9 h-9 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card ${dog.hidden_at ? 'grayscale opacity-50' : ''}`} style={{ borderColor: sexColor }}>
                         {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted text-xs">{dog.sex === 'male' ? '♂' : '♀'}</div>}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium truncate max-w-[250px]">{dog.name}</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="text-sm font-medium truncate max-w-[200px]">{dog.name}</p>
+                          {dog.hidden_at && (
+                            <span
+                              className="inline-flex items-center gap-1 rounded-full bg-red-100 text-red-900 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
+                              title={`Oculto desde ${new Date(dog.hidden_at).toLocaleDateString('es-ES')} · Motivo: ${dog.hidden_reason || '—'}`}
+                            >
+                              <EyeOff className="w-2.5 h-2.5" />
+                              Oculto
+                            </span>
+                          )}
+                        </div>
                         {dog.registration && <p className="text-[10px] text-muted">{dog.registration}</p>}
                       </div>
                     </div>

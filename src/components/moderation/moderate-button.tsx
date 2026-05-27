@@ -12,8 +12,9 @@
  */
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Loader2, AlertCircle, ShieldCheck } from 'lucide-react'
+import { Eye, EyeOff, Loader2, AlertCircle, ShieldCheck, FileText, ExternalLink } from 'lucide-react'
 import Modal from '@/components/ui/modal'
 import {
   type ModerateTargetType,
@@ -128,6 +129,16 @@ export default function ModerateButton({
                 <p className="text-[12px] text-red-800 mt-2 italic whitespace-pre-wrap">
                   "{hidden.notes}"
                 </p>
+              )}
+              {reportId && (
+                <Link
+                  href={`/admin/reports/${reportId}`}
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-red-100 px-2 py-1 text-[12px] font-medium text-red-900 hover:bg-red-200 transition"
+                >
+                  <FileText className="h-3 w-3" />
+                  Ver reclamación que motivó esta ocultación
+                  <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+                </Link>
               )}
             </div>
             <button
