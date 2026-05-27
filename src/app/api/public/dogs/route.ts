@@ -44,22 +44,35 @@ export async function GET(request: NextRequest) {
   // En vez de hacer un OR compuesto, hacemos 2 queries con offsets separados.
   // Más simple, más predecible, y permite mostrar "X de Y" correcto.
 
-  // Construir filtro base
+  // Construir filtro base. Para `q` usamos search_text (lower+unaccent+
+  // sin caracteres no-alfanuméricos) con el índice GIN trigram, en lugar
+  // del ILIKE sobre `name` original que no aprovecha el índice y hace
+  // seq scan sobre 230k filas.
+  function normalizeForSearch(input: string): string {
+    return input.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim()
+  }
+  const normalizedQ = q ? normalizeForSearch(q) : ''
+
   function applyFilters(query: any) {
-    if (q) query = query.ilike('name', `%${q}%`)
+    if (normalizedQ.length >= 2) {
+      query = query.ilike('search_text', `%${normalizedQ}%`)
+    }
     if (breedId) query = query.eq('breed_id', breedId)
     if (sex) query = query.eq('sex', sex)
     if (forSale) query = query.eq('is_for_sale', true)
     return query.eq('is_public', true)
   }
 
-  // Total con foto
+  // Total con foto — usamos count: 'estimated' (rápido, ±5%) en vez de
+  // 'exact' (seq scan). El total se usa solo para mostrar "X de Y" y
+  // paginación; precisión absoluta no es crítica.
   const { count: withPhotoCount } = await applyFilters(
-    admin.from('dogs').select('id', { count: 'exact', head: true }).not('thumbnail_url', 'is', null),
+    admin.from('dogs').select('id', { count: 'estimated', head: true }).not('thumbnail_url', 'is', null),
   )
-  // Total sin foto
   const { count: withoutPhotoCount } = await applyFilters(
-    admin.from('dogs').select('id', { count: 'exact', head: true }).is('thumbnail_url', null),
+    admin.from('dogs').select('id', { count: 'estimated', head: true }).is('thumbnail_url', null),
   )
 
   const totalWithPhoto = withPhotoCount || 0

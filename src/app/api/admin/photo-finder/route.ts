@@ -4,6 +4,45 @@ import { createClient } from '@supabase/supabase-js'
 
 export const maxDuration = 60
 
+// ─── Hardening (Sprint 1, C5) ─────────────────────────────────────────────
+// Aunque este endpoint solo es accesible por admin, lo blindamos para
+// limitar el blast radius si una sesión admin se compromete.
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const ALLOWED_EXT = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp'])
+// Allowlist estricta de hostnames de los que ACEPTAMOS importar imágenes.
+// Estos son sitios de pedigree públicos usados por el importador.
+// Cualquier otro host se rechaza para evitar SSRF / poisoning.
+const ALLOWED_PHOTO_HOSTS = new Set([
+  'presadb.com',
+  'www.presadb.com',
+  'breedarchive.com',
+  'www.breedarchive.com',
+  'dogsfiles.com',
+  'www.dogsfiles.com',
+  'pedigreedatabase.com',
+  'www.pedigreedatabase.com',
+])
+
+function isValidDogId(s: unknown): s is string {
+  return typeof s === 'string' && UUID_RE.test(s)
+}
+
+function isValidExt(s: unknown): s is string {
+  return typeof s === 'string' && ALLOWED_EXT.has(s.toLowerCase())
+}
+
+function isAllowedPhotoUrl(u: unknown): u is string {
+  if (typeof u !== 'string' || u.length > 2000) return false
+  try {
+    const parsed = new URL(u)
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false
+    return ALLOWED_PHOTO_HOSTS.has(parsed.hostname.toLowerCase())
+  } catch {
+    return false
+  }
+}
+
 async function getAdminSupabase() {
   const supabase = await createServerClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -102,12 +141,15 @@ export async function POST(request: NextRequest) {
     if (body.action === 'import-photos') {
       // Download and import photos for a dog
       const { dogId, photoUrls } = body
-      if (!dogId || !photoUrls?.length) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
+      if (!isValidDogId(dogId)) return NextResponse.json({ error: 'Invalid dogId' }, { status: 400 })
+      if (!Array.isArray(photoUrls) || !photoUrls.length) return NextResponse.json({ error: 'Missing photoUrls' }, { status: 400 })
 
       let imported = 0
       for (let i = 0; i < photoUrls.length; i++) {
-        // Convert to highest quality available (1000x1000) — presadb doesn't serve originals
         let photoUrl = photoUrls[i]
+        // Validar hostname antes de ningún fetch (SSRF guard).
+        if (!isAllowedPhotoUrl(photoUrl)) continue
+        // Convert to highest quality available (1000x1000) — presadb doesn't serve originals
         if (photoUrl.includes('presadb.com') && !photoUrl.includes('/tn/')) {
           photoUrl = photoUrl.replace('/dogs/', '/tn/1000x1000/dogs/')
         }
@@ -120,12 +162,16 @@ export async function POST(request: NextRequest) {
           if (!imgRes.ok) continue
 
           const buffer = await imgRes.arrayBuffer()
-          const ext = photoUrl.match(/\.(jpg|jpeg|png|gif|webp)/i)?.[1] || 'jpg'
+          // Validate content-length para evitar OOM (max 15 MB por imagen)
+          if (buffer.byteLength > 15 * 1024 * 1024) continue
+          const extMatch = photoUrl.match(/\.(jpg|jpeg|png|gif|webp)(?:\?|$)/i)
+          const ext = extMatch && isValidExt(extMatch[1]) ? extMatch[1].toLowerCase() : 'jpg'
           const fileName = `${dogId}/${Date.now()}-${i}.${ext}`
 
-          // Upload to Supabase Storage
+          // Upload to Supabase Storage — upsert:false para no pisar fotos
+          // existentes (el timestamp en el path ya garantiza unicidad).
           const { error: uploadErr } = await sb.storage.from('dog-photos').upload(fileName, Buffer.from(buffer), {
-            contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}`, upsert: true,
+            contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}`, upsert: false,
           })
           if (uploadErr) continue
 
@@ -155,17 +201,24 @@ export async function POST(request: NextRequest) {
     if (body.action === 'save-photo-urls') {
       // Save external URLs directly (no download — presadb URLs are stable)
       const { dogId, urls } = body
-      if (!dogId || !urls?.length) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
+      if (!isValidDogId(dogId)) return NextResponse.json({ error: 'Invalid dogId' }, { status: 400 })
+      if (!Array.isArray(urls) || !urls.length) return NextResponse.json({ error: 'Missing urls' }, { status: 400 })
+
+      // Filtrar URLs por allowlist de hostnames antes de guardar
+      const validUrls = urls.filter(isAllowedPhotoUrl)
+      if (validUrls.length === 0) {
+        return NextResponse.json({ error: 'No valid URLs (host not in allowlist)' }, { status: 400 })
+      }
 
       let imported = 0
-      for (let i = 0; i < urls.length; i++) {
+      for (let i = 0; i < validUrls.length; i++) {
         try {
           if (i === 0) {
-            await sb.from('dogs').update({ thumbnail_url: urls[0] }).eq('id', dogId)
+            await sb.from('dogs').update({ thumbnail_url: validUrls[0] }).eq('id', dogId)
           }
           const { data: maxPos } = await sb.from('dog_photos').select('position').eq('dog_id', dogId).order('position', { ascending: false }).limit(1)
           await sb.from('dog_photos').insert({
-            dog_id: dogId, url: urls[i], storage_path: null, position: (maxPos?.[0]?.position || 0) + 1,
+            dog_id: dogId, url: validUrls[i], storage_path: null, position: (maxPos?.[0]?.position || 0) + 1,
           })
           imported++
         } catch {}
@@ -176,17 +229,22 @@ export async function POST(request: NextRequest) {
     if (body.action === 'import-photos-base64') {
       // Photos already downloaded by client browser, received as base64
       const { dogId, photos } = body
-      if (!dogId || !photos?.length) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
+      if (!isValidDogId(dogId)) return NextResponse.json({ error: 'Invalid dogId' }, { status: 400 })
+      if (!Array.isArray(photos) || !photos.length) return NextResponse.json({ error: 'Missing photos' }, { status: 400 })
 
       let imported = 0
       for (let i = 0; i < photos.length; i++) {
-        const { base64, ext } = photos[i]
+        const { base64, ext } = photos[i] || {}
+        if (typeof base64 !== 'string' || !isValidExt(ext)) continue
         try {
           const buffer = Buffer.from(base64, 'base64')
-          const fileName = `${dogId}/${Date.now()}-${i}.${ext}`
+          // Limit individual image to 15 MB
+          if (buffer.byteLength > 15 * 1024 * 1024) continue
+          const cleanExt = String(ext).toLowerCase()
+          const fileName = `${dogId}/${Date.now()}-${i}.${cleanExt}`
 
           const { error: uploadErr } = await sb.storage.from('dog-photos').upload(fileName, buffer, {
-            contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}`, upsert: true,
+            contentType: `image/${cleanExt === 'jpg' ? 'jpeg' : cleanExt}`, upsert: false,
           })
           if (uploadErr) continue
 

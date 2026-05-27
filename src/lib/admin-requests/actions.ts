@@ -626,8 +626,36 @@ export async function adminRejectRequestAction(input: {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function getEvidenceSignedUrlAction(path: string): Promise<string> {
-  // Ambos: admin o el propio user pueden ver sus evidencias
-  await requireUser()
+  // Acceso a evidencias: solo admin O el propio dueño del path (que vive
+  // bajo su user_id en el bucket: `<user_id>/<requestId>/<file>`).
+  // Antes esta función solo verificaba auth y firmaba CUALQUIER path,
+  // permitiendo a un usuario logueado leer DNI/contratos/pedigrees de
+  // otros usuarios si adivinaba el path. Fix: validar ownership.
+  const { supabase, user } = await requireUser()
+  if (typeof path !== 'string' || !path) throw new Error('invalid_path')
+
+  // Anti path traversal y normalización mínima (no toleramos '..' ni
+  // protocolos URL embebidos).
+  if (path.includes('..') || /^[a-z]+:/i.test(path)) {
+    throw new Error('forbidden')
+  }
+
+  // El owner del path es el primer segmento (user_id UUID).
+  const firstSegment = path.split('/')[0] || ''
+  const isOwner = firstSegment === user.id
+
+  let isUserAdmin = false
+  if (!isOwner) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    isUserAdmin = profile?.role === 'admin'
+  }
+
+  if (!isOwner && !isUserAdmin) throw new Error('forbidden')
+
   const admin = createKennelAdminClient()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (admin as any).storage

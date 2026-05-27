@@ -38,6 +38,30 @@ export async function POST(req: Request) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createKennelAdminClient() as any
 
+  // ─── Idempotencia ────────────────────────────────────────────────
+  // Stripe re-entrega eventos en algunos casos (timeouts, deploys). Sin
+  // este guard, una re-entrega de `checkout.session.completed` duplica
+  // el marcado `paid` (con paid_at distinto) y los side-effects. La
+  // tabla stripe_events existe desde 20260616 — la usamos como dedupe.
+  // INSERT con PRIMARY KEY: si choca, el evento ya fue procesado.
+  try {
+    const { error: dupeErr } = await admin
+      .from('stripe_events')
+      .insert({ event_id: event.id, type: event.type, payload: event.data.object })
+    if (dupeErr) {
+      // 23505 = unique_violation → evento ya procesado. Devolvemos 200
+      // para que Stripe deje de reintentar.
+      if ((dupeErr as { code?: string }).code === '23505') {
+        return NextResponse.json({ received: true, deduped: true })
+      }
+      // Cualquier otro error: lo logueamos pero seguimos procesando
+      // (mejor procesar 2x un evento crítico que ignorarlo entero).
+      console.error('[stripe webhook] dedupe insert error', dupeErr)
+    }
+  } catch (e) {
+    console.error('[stripe webhook] dedupe error', e)
+  }
+
   try {
     switch (event.type) {
       case 'account.updated': {

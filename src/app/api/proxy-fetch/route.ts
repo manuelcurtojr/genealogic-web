@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createClient as createServerClient } from '@/lib/supabase/server'
+import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rate-limit'
+import { promises as dnsPromises } from 'node:dns'
 
 // nodejs runtime: necesitamos crypto y mejor control de fetch que en edge.
 export const runtime = 'nodejs'
@@ -29,6 +32,27 @@ export const maxDuration = 60
  * (>3000 chars, sin cf-challenge, sin 403).
  */
 export async function GET(request: NextRequest) {
+  // ─── Auth (mínimo: estar logueado) ──────────────────────────────
+  // Este endpoint consume cuota propia (ScrapingBee) y IPs de Vercel,
+  // así que no puede ser anónimo. Solo usuarios logueados pueden
+  // usarlo. El cron de importación masiva usa el endpoint distinto
+  // /api/cron/* con su propio secret.
+  const supabaseServer = await createServerClient()
+  const { data: { user } } = await supabaseServer.auth.getUser()
+  if (!user) return new NextResponse('Unauthorized', { status: 401 })
+
+  // ─── Rate limit por usuario (10 req/min) ────────────────────────
+  // El importador legítimo hace 1-3 fetches por pedigree manual; 10/min
+  // es holgado. Bots o uso abusivo se cortan aquí.
+  const ip = getClientIp(request.headers)
+  const rl = checkRateLimit(`proxy-fetch:${user.id}:${ip}`, { tokens: 10, windowMs: 60_000 })
+  if (!rl.ok) {
+    return new NextResponse('Too Many Requests', {
+      status: 429,
+      headers: rateLimitHeaders(rl, 10),
+    })
+  }
+
   const url = request.nextUrl.searchParams.get('url')
   if (!url) return new NextResponse('URL required', { status: 400 })
 
@@ -59,6 +83,26 @@ export async function GET(request: NextRequest) {
   // Bloquear puertos no estándar (evita escaneo interno)
   if (parsedUrl.port && parsedUrl.port !== '80' && parsedUrl.port !== '443') {
     return new NextResponse('Port not allowed', { status: 403 })
+  }
+
+  // ─── DNS resolution defense (DNS rebind / public hostname → private IP) ──
+  // El guard de hostname literal arriba no detecta dominios con A records
+  // apuntando a 169.254.169.254 (AWS metadata) o 10.x.x.x interno. Resolvemos
+  // el hostname y rechazamos si CUALQUIER IP resuelta cae en rangos privados.
+  try {
+    const addresses = await dnsPromises.lookup(host, { all: true })
+    for (const addr of addresses) {
+      if (addr.family === 4 && isPrivateOrLoopbackHost(addr.address)) {
+        return new NextResponse('Host resolves to private IP', { status: 403 })
+      }
+      if (addr.family === 6) {
+        // Rechazamos IPv6 por simplicidad — la mayoría de sitios target
+        // usan IPv4 y permitir IPv6 amplía la superficie de SSRF.
+        return new NextResponse('IPv6 not allowed', { status: 403 })
+      }
+    }
+  } catch {
+    return new NextResponse('Host not resolvable', { status: 403 })
   }
 
   // ─── Step 1: direct fetch ───────────────────────────────────────

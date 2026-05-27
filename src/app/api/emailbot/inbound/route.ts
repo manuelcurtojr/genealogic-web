@@ -154,7 +154,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No se pudo crear hilo' }, { status: 500 })
   }
 
-  // ─── Guardar mensaje inbound ─────────────────────────────────────────────
+  // ─── Guardar mensaje inbound (con dedupe por external_message_id) ───────
+  // Sin dedupe, una re-entrega del provider (Postmark retry, etc.) creaba
+  // N copias del email y el bot generaba N respuestas → spamea al cliente
+  // y consume cuota AI. Verificamos antes de insertar.
+  if (externalMessageId) {
+    const { data: existing } = await admin
+      .from('emailbot_messages')
+      .select('id')
+      .eq('thread_id', thread.id)
+      .eq('external_message_id', externalMessageId)
+      .maybeSingle()
+    if (existing) {
+      // Ya procesado — devolvemos 200 para que el provider deje de reintentar.
+      return NextResponse.json({ ok: true, deduped: true })
+    }
+  }
   await admin.from('emailbot_messages').insert({
     thread_id: thread.id,
     direction: 'inbound',
@@ -341,6 +356,17 @@ async function storeInboundOnly(
   subject: string | null, bodyText: string | null, bodyHtml: string | null,
   externalMessageId: string | null,
 ) {
+  // Dedupe global por (kennel_id, external_message_id) — si el provider
+  // re-entrega el mismo email, evitamos crear un thread duplicado.
+  if (externalMessageId) {
+    const { data: existing } = await admin
+      .from('emailbot_messages')
+      .select('id, thread:emailbot_threads(kennel_id)')
+      .eq('external_message_id', externalMessageId)
+      .limit(5)
+    const dup = (existing || []).find((m: any) => m.thread?.kennel_id === kennelId)
+    if (dup) return // ya procesado
+  }
   const { data: thread } = await admin
     .from('emailbot_threads')
     .insert({

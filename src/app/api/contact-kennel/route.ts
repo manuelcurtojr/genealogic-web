@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import { getEffectiveConfig, validateForm, splitFormValues } from '@/lib/kennel/contact-form'
 import { sendTransactionalEmail } from '@/lib/email/send'
+import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rate-limit'
 
 /**
  * POST /api/contact-kennel
@@ -13,6 +14,20 @@ import { sendTransactionalEmail } from '@/lib/email/send'
  * Compatible con el formato anterior (campos planos) por retrocompat.
  */
 export async function POST(request: NextRequest) {
+  // ─── Rate limit por IP (5 envíos / 10 min) ────────────────────────────
+  // Endpoint público sin captcha — primera defensa contra spam masivo del
+  // CRM del criador. Un humano legítimo no envía 5 solicitudes a un kennel
+  // en 10 min; 5 desde la misma IP en esa ventana ya es sospechoso.
+  const ip = getClientIp(request.headers)
+  const rl = checkRateLimit(`contact-kennel:${ip}`, { tokens: 5, windowMs: 10 * 60_000 })
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Demasiadas solicitudes. Espera unos minutos antes de volver a intentarlo.' },
+      { status: 429, headers: rateLimitHeaders(rl, 5) },
+    )
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let body: any
   try {
     body = await request.json()
@@ -24,6 +39,17 @@ export async function POST(request: NextRequest) {
 
   if (!kennel_id || typeof kennel_id !== 'string') {
     return NextResponse.json({ error: 'kennel_id requerido' }, { status: 400 })
+  }
+
+  // Rate limit secundario por (IP, kennel) — máximo 3 envíos al MISMO kennel
+  // en 10 min. Bloquea spam dirigido aunque el limit global IP no se haya
+  // alcanzado todavía.
+  const rlKennel = checkRateLimit(`contact-kennel:${ip}:${kennel_id}`, { tokens: 3, windowMs: 10 * 60_000 })
+  if (!rlKennel.ok) {
+    return NextResponse.json(
+      { error: 'Ya enviaste varias solicitudes a este criadero hace poco. Inténtalo de nuevo más tarde.' },
+      { status: 429, headers: rateLimitHeaders(rlKennel, 3) },
+    )
   }
 
   const admin = createKennelAdminClient()
