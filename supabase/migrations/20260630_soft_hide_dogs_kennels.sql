@@ -134,6 +134,12 @@ CREATE INDEX IF NOT EXISTS kennels_hidden_at_idx
 --
 -- Si el perro raíz está oculto, también devuelve placeholder (decidirá el
 -- frontend si muestra 404 o vista admin).
+--
+-- DROP previo: la función ya existe en producción con un return type sin
+-- la columna is_hidden / slug. Postgres no permite cambiar el return type
+-- con CREATE OR REPLACE, así que hacemos DROP IF EXISTS antes.
+DROP FUNCTION IF EXISTS public.get_pedigree(uuid, int);
+
 CREATE OR REPLACE FUNCTION public.get_pedigree(dog_uuid uuid, max_gen int DEFAULT 5)
 RETURNS TABLE (
   id           uuid,
@@ -200,6 +206,9 @@ GRANT EXECUTE ON FUNCTION public.get_pedigree(uuid, int) TO anon, authenticated;
 -- ───────────────────────────────────────────────────────────────────────────
 -- Reemplaza la función para garantizar que los perros ocultos no aparezcan
 -- en la búsqueda pública. Si la función no existe (entornos nuevos), se crea.
+-- DROP previo por si cambia el return type.
+DROP FUNCTION IF EXISTS public.search_dogs_balanced(boolean, int, int);
+
 CREATE OR REPLACE FUNCTION public.search_dogs_balanced(
   p_with_photo boolean DEFAULT true,
   p_offset int DEFAULT 0,
