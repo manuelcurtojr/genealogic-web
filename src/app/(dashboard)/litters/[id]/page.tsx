@@ -214,10 +214,11 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
         </section>
       )}
 
-      {/* Pedigree */}
+      {/* Genealogía — full bleed en pantallas anchas (rompe max-w-7xl
+          del dashboard layout). Ver dogs/[id]/page.tsx para el motivo. */}
       {pedigreeData.length > 1 && pedigreeRootId && (
-        <section className="-mx-4 lg:mx-0">
-          <h2 className="mb-4 px-4 text-[22px] font-semibold tracking-[-0.04em] text-ink lg:px-0">
+        <section className="-mx-4 sm:-mx-[30px] lg:mx-[calc(50%-50vw)] lg:px-6">
+          <h2 className="mb-4 px-4 sm:px-[30px] lg:px-2 text-[22px] font-semibold tracking-[-0.04em] text-ink">
             Genealogía
           </h2>
           <PedigreeTree data={pedigreeData} rootId={pedigreeRootId} />

@@ -350,10 +350,14 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         <DogTabs dogId={dog.id} ownerId={dog.owner_id} isOwner={isOwner} fatherId={dog.father_id} motherId={dog.mother_id} dogSex={dog.sex} />
       </div>
 
-      {/* Pedigree — full bleed on mobile, padding inside scroll */}
+      {/* Genealogía — full bleed: rompe el max-w-7xl del dashboard layout
+          en pantallas anchas para mostrar más generaciones sin scroll
+          horizontal. `calc(50% - 50vw)` se vuelve 0 cuando no hay espacio
+          extra (≤1280px), así que en lg no rompe nada. En 2xl (1536px+)
+          aprovecha los ~256px sobrantes para ensanchar el árbol. */}
       {pedigree && pedigree.length > 1 && (
-        <div className="-mx-4 lg:mx-0 mt-4 sm:mt-8">
-          <h2 className="mb-5 px-4 text-[22px] font-semibold tracking-[-0.04em] text-ink lg:px-0 sm:mb-6">
+        <div className="mt-4 sm:mt-8 -mx-4 sm:-mx-[30px] lg:mx-[calc(50%-50vw)] lg:px-6">
+          <h2 className="mb-5 px-4 sm:px-[30px] lg:px-2 text-[22px] font-semibold tracking-[-0.04em] text-ink sm:mb-6">
             Genealogía
           </h2>
           <PedigreeTree data={pedigree} rootId={dog.id} />
