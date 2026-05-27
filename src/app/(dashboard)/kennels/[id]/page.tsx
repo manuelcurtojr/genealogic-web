@@ -203,11 +203,56 @@ export default async function KennelDetailPage({
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const foundationYear = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null
 
-  const stats = [
-    { value: dogs.length, label: dogs.length === 1 ? 'Perro' : 'Perros' },
-    { value: litters.filter((l: { status: string }) => l.status === 'born' || l.status === 'delivered').length, label: 'Camadas' },
-    { value: breedNames.length, label: breedNames.length === 1 ? 'Raza' : 'Razas' },
-  ].filter(s => s.value > 0)
+  // Stats enriquecidos: cada uno con icono, label y sublabel opcional.
+  // El primero (yearsActive) es el highlight — sale grande arriba en la
+  // card. Los demás van en el grid debajo. Cada stat se filtra si no
+  // tiene contenido significativo.
+  const yearsActive = foundationYear ? new Date().getFullYear() - foundationYear : 0
+  const completedLittersCount = litters.filter((l: { status: string }) => l.status === 'born' || l.status === 'delivered').length
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const puppiesCount = litters.reduce((sum: number, l: any) => sum + (l.puppy_count || 0), 0)
+
+  type StatItem = {
+    icon: 'calendar' | 'dog' | 'baby' | 'sparkles' | 'medal'
+    value: string
+    label: string
+    sublabel?: string
+    highlight?: boolean
+  }
+  const stats: StatItem[] = []
+  if (yearsActive >= 1) {
+    stats.push({
+      icon: 'calendar',
+      value: yearsActive >= 50 ? `${yearsActive}+` : String(yearsActive),
+      label: yearsActive === 1 ? 'año' : 'años',
+      sublabel: `Desde ${foundationYear}`,
+      highlight: true,
+    })
+  }
+  if (dogs.length > 0) {
+    stats.push({
+      icon: 'dog',
+      value: dogs.length.toLocaleString('es-ES'),
+      label: dogs.length === 1 ? 'Perro' : 'Perros',
+      sublabel: 'En la familia',
+    })
+  }
+  if (completedLittersCount > 0) {
+    stats.push({
+      icon: 'baby',
+      value: completedLittersCount.toLocaleString('es-ES'),
+      label: completedLittersCount === 1 ? 'Camada' : 'Camadas',
+      sublabel: puppiesCount > 0 ? `${puppiesCount.toLocaleString('es-ES')} cachorros` : undefined,
+    })
+  }
+  if (breedNames.length > 0) {
+    stats.push({
+      icon: 'medal',
+      value: breedNames.length === 1 ? breedNames[0] : String(breedNames.length),
+      label: breedNames.length === 1 ? 'Raza' : 'Razas',
+      sublabel: breedNames.length === 1 ? 'Especialidad' : undefined,
+    })
+  }
 
   // Tagline del hero del perfil básico — corta en límite de palabra
   // (sin '…') hasta ~280 chars, o devuelve completo si es corto.
@@ -514,19 +559,25 @@ export default async function KennelDetailPage({
 
           {stats.length > 0 && (
             <aside className="rounded-2xl bg-canvas/80 backdrop-blur-md border border-hairline p-5 sm:p-6 self-start w-full">
-              <div className="flex items-center gap-1.5 mb-4">
-                <Sparkles className="h-3.5 w-3.5 text-[#FE6620]" />
-                <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-ink">El criadero en números</p>
-              </div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#FE6620] mb-3">
+                Trayectoria
+              </p>
               <div className="grid grid-cols-3 gap-3 sm:gap-4">
-                {stats.map(s => (
-                  <div key={s.label} className="min-w-0">
-                    <p className="text-[24px] sm:text-[28px] font-semibold tabular-nums tracking-[-0.03em] text-ink leading-none">
-                      {s.value.toLocaleString('es-ES')}
-                    </p>
-                    <p className="mt-1.5 text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted">{s.label}</p>
-                  </div>
-                ))}
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {stats.slice(0, 3).map((s: any) => {
+                  const isLong = String(s.value).length > 6
+                  return (
+                    <div key={s.label} className="min-w-0">
+                      <p className={`${isLong ? 'text-[15px]' : 'text-[24px] sm:text-[28px] tabular-nums'} font-semibold tracking-[-0.03em] text-ink leading-tight truncate`}>
+                        {s.value}
+                      </p>
+                      <p className="mt-1.5 text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted truncate">{s.label}</p>
+                      {s.sublabel && (
+                        <p className="mt-0.5 text-[10.5px] text-muted/80 truncate">{s.sublabel}</p>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </aside>
           )}

@@ -16,7 +16,7 @@
 import Link from 'next/link'
 import {
   Sparkles, ArrowRight, MapPin, Calendar, HelpCircle, BadgeCheck,
-  ExternalLink, Globe, Dog as DogIcon, Star, Quote,
+  ExternalLink, Globe, Dog as DogIcon, Star, Quote, Baby, Medal,
 } from 'lucide-react'
 import ReviewAvatar from './review-avatar'
 import LeaveReviewButton from './leave-review-button'
@@ -89,7 +89,16 @@ interface Props {
     reading_time_minutes: number | null
   }>
   breedNames: string[]
-  stats: { value: number; label: string }[]
+  /** Métricas de la card "El criadero en números". El que tiene
+   *  `highlight: true` se renderiza grande arriba; los demás van en
+   *  un grid debajo con iconos + sublabel opcional. */
+  stats: Array<{
+    icon: 'calendar' | 'dog' | 'baby' | 'sparkles' | 'medal'
+    value: string
+    label: string
+    sublabel?: string
+    highlight?: boolean
+  }>
   /** 3 bloques alternados (Sobre nosotros · Nuestros perros · Galería)
    *  con foto + texto + CTA. Sustituye al antiguo bloque "Trayectoria".
    *  Solo se renderizan los que tienen contenido real disponible. */
@@ -299,63 +308,89 @@ export default function KennelProHome({
             </div>
           </div>
 
-          {/* Stats card */}
-          {stats.length > 0 && (
-            <aside className="rounded-2xl bg-canvas/85 backdrop-blur-md border border-hairline p-5 sm:p-6 self-start w-full">
-              <div className="flex items-center gap-1.5 mb-4">
-                <Sparkles className="h-3.5 w-3.5 text-[#FE6620]" />
-                <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-ink">El criadero en números</p>
-              </div>
-              <div className="grid grid-cols-3 gap-3 sm:gap-4">
-                {stats.map(s => (
-                  <div key={s.label} className="min-w-0">
-                    <p className="text-[24px] sm:text-[28px] font-semibold tabular-nums tracking-[-0.03em] text-ink leading-none">
-                      {s.value.toLocaleString('es-ES')}
-                    </p>
-                    <p className="mt-1.5 text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted">
-                      {s.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
+          {/* Stats card — "El criadero en números" rediseñado.
+              Estructura:
+                · eyebrow "Trayectoria"
+                · highlight: el stat con `highlight: true` arriba grande
+                  (típicamente "X años · Desde 1975" — el dato más
+                  vendedor de un criadero histórico)
+                · grid de secundarios con icono + número + sublabel
+              Sin redes sociales — ya viven en el footer fusionado. */}
+          {stats.length > 0 && (() => {
+            const highlight = stats.find(s => s.highlight)
+            const rest = stats.filter(s => !s.highlight)
+            const iconFor = (id: typeof stats[number]['icon']) => {
+              switch (id) {
+                case 'calendar':  return Calendar
+                case 'dog':       return DogIcon
+                case 'baby':      return Baby
+                case 'sparkles':  return Sparkles
+                case 'medal':     return Medal
+              }
+            }
+            return (
+              <aside className="rounded-2xl bg-canvas/90 backdrop-blur-md border border-hairline shadow-[0_4px_24px_rgba(0,0,0,0.04)] self-start w-full overflow-hidden">
+                <div className="p-5 sm:p-6">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#FE6620]">
+                    Trayectoria
+                  </p>
 
-              {/* Redes en la stats card */}
-              {(kennel.social_instagram || kennel.social_facebook || kennel.website) && (
-                <div className="mt-5 pt-4 border-t border-hairline flex flex-wrap gap-1.5">
-                  {kennel.website && (
-                    <a
-                      href={kennel.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-lg border border-hairline bg-canvas px-2.5 py-1 text-[11px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
-                    >
-                      <Globe className="h-3 w-3" /> Web
-                    </a>
-                  )}
-                  {kennel.social_instagram && (
-                    <a
-                      href={kennel.social_instagram}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-lg border border-hairline bg-canvas px-2.5 py-1 text-[11px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
-                    >
-                      <ExternalLink className="h-3 w-3" /> Instagram
-                    </a>
-                  )}
-                  {kennel.social_facebook && (
-                    <a
-                      href={kennel.social_facebook}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-lg border border-hairline bg-canvas px-2.5 py-1 text-[11px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
-                    >
-                      <ExternalLink className="h-3 w-3" /> Facebook
-                    </a>
+                  {highlight && (() => {
+                    const HIcon = iconFor(highlight.icon)
+                    return (
+                      <div className="mt-3 pb-5 border-b border-hairline">
+                        <div className="flex items-baseline gap-2">
+                          <p className="text-[44px] sm:text-[56px] font-semibold tabular-nums tracking-[-0.04em] text-ink leading-[0.95]">
+                            {highlight.value}
+                          </p>
+                          <p className="text-[16px] sm:text-[18px] font-medium text-body tracking-[-0.01em]">
+                            {highlight.label}
+                          </p>
+                        </div>
+                        {highlight.sublabel && (
+                          <p className="mt-1.5 inline-flex items-center gap-1.5 text-[12px] text-muted">
+                            <HIcon className="h-3 w-3" />
+                            {highlight.sublabel}
+                          </p>
+                        )}
+                      </div>
+                    )
+                  })()}
+
+                  {rest.length > 0 && (
+                    // Tailwind no soporta clases dinámicas (JIT scan), por eso
+                    // mapeamos explícitamente.
+                    <div className={`${highlight ? 'mt-4' : 'mt-3'} grid gap-3 sm:gap-4 ${
+                      rest.length === 1 ? 'grid-cols-1'
+                      : rest.length === 2 ? 'grid-cols-2'
+                      : 'grid-cols-3'
+                    }`}>
+                      {rest.map(s => {
+                        const Icon = iconFor(s.icon)
+                        const isLong = s.value.length > 6
+                        return (
+                          <div key={s.label} className="min-w-0">
+                            <Icon className="h-3.5 w-3.5 text-muted mb-1.5" strokeWidth={2} />
+                            <p className={`${isLong ? 'text-[15px]' : 'text-[22px] sm:text-[26px] tabular-nums'} font-semibold tracking-[-0.025em] text-ink leading-tight truncate`}>
+                              {s.value}
+                            </p>
+                            <p className="mt-1 text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted truncate">
+                              {s.label}
+                            </p>
+                            {s.sublabel && (
+                              <p className="mt-0.5 text-[10.5px] text-muted/80 truncate">
+                                {s.sublabel}
+                              </p>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
                   )}
                 </div>
-              )}
-            </aside>
-          )}
+              </aside>
+            )
+          })()}
         </div>
       </section>
 
