@@ -7,6 +7,7 @@ import {
   matchesIosHiddenPath,
   shouldBypassPlatformLogic,
 } from '@/lib/platform'
+import { hasProAccess, isEnterpriseUser } from '@/lib/permissions'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -105,9 +106,9 @@ export async function updateSession(request: NextRequest) {
   const isSearchPage = pathname === '/search'
   const isKennelDirectoryPage = pathname === '/kennels'
 
-  // Rutas Pro (requieren plan = 'pro' o 'premium')
+  // Rutas Pro (requieren plan kennel_pro o estar en ENTERPRISE_USERS)
   const proRoutePrefixes = [
-    '/reservas', '/clientes', '/contactos', '/emailbot', '/conocimiento',
+    '/reservas', '/clientes', '/contactos', '/contratos', '/emailbot', '/conocimiento',
     '/web', '/estadisticas', '/visitas', '/newsletter', '/cuenta',
   ]
   // EXCEPCIONES dentro de las rutas Pro:
@@ -151,18 +152,24 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Pro route gating — usuarios sin plan pro/premium van a /pricing
+  // Pro route gating — usuarios sin plan Pro van a /pricing.
+  // Usamos hasProAccess() (cubre 'kennel_pro' + legacy 'pro'/'premium')
+  // y el override ENTERPRISE_USERS (cuentas founder / partners con todo
+  // desbloqueado independientemente del plan en DB).
   if (isProRoute && user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('plan')
-      .eq('id', user.id)
-      .single()
-    const plan = (profile as any)?.plan
-    if (plan !== 'pro' && plan !== 'premium') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/pricing'
-      return NextResponse.redirect(url)
+    if (!isEnterpriseUser(user.id)) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', user.id)
+        .single()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const plan = (profile as any)?.plan
+      if (!hasProAccess(plan)) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/pricing'
+        return NextResponse.redirect(url)
+      }
     }
   }
 
