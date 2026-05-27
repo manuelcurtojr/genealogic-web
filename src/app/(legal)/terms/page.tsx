@@ -1,120 +1,318 @@
-export const metadata = { title: 'Términos y Condiciones — Genealogic' }
+export const metadata = {
+  title: 'Términos y Condiciones — Genealogic',
+  description: 'Condiciones de uso de Genealogic, plataforma de Manuel Curtó SL.',
+  alternates: { canonical: 'https://genealogic.io/terms' },
+}
 
 export default function TermsPage() {
   return (
     <>
       <h1>Términos y Condiciones de Uso</h1>
-      <p><strong>Última actualización:</strong> 9 de abril de 2026</p>
+      <p><strong>Última actualización:</strong> 27 de mayo de 2026</p>
+      <p>
+        Estos Términos regulan el acceso y uso de Genealogic (en adelante, el "Servicio"
+        o la "Plataforma"). Al registrarte o utilizar la Plataforma, aceptas estos Términos.
+        Si no estás de acuerdo, no uses el Servicio.
+      </p>
 
-      <h2>1. Identificación</h2>
-      <p>Genealogic es una plataforma de gestión de crianza canina operada por <strong>Manuel Curtó SL</strong> (CIF: B56932098), con domicilio en Camino Guillén s/n, 38290 La Esperanza, Tenerife, España.</p>
+      <h2>1. Titularidad y Datos Identificativos</h2>
+      <p>
+        Genealogic es operado por <strong>Manuel Curtó SL</strong>, sociedad española
+        con CIF B56932098, domicilio social en Camino Guillén s/n, 38290 La Esperanza,
+        Tenerife (España), inscrita en el Registro Mercantil de Santa Cruz de Tenerife.
+        Email de contacto: <strong>hola@genealogic.io</strong>.
+      </p>
 
-      <h2>2. Objeto</h2>
-      <p>Genealogic proporciona herramientas para la gestión de perros, genealogías, criaderos, camadas, registros veterinarios, CRM, mensajería y analíticas. El acceso y uso de la plataforma implica la aceptación de estos términos.</p>
-
-      <h2>3. Registro y Cuenta</h2>
+      <h2>2. Descripción del Servicio</h2>
+      <p>
+        Genealogic es una plataforma digital colaborativa que permite a propietarios y
+        criadores de perros de raza:
+      </p>
       <ul>
-        <li>Debes ser mayor de 16 años para registrarte</li>
-        <li>Eres responsable de mantener la confidencialidad de tu contraseña</li>
-        <li>La información proporcionada debe ser veraz y actualizada</li>
-        <li>Cada persona puede tener una sola cuenta</li>
-        <li>Nos reservamos el derecho de suspender cuentas que incumplan estos términos</li>
+        <li>Registrar, consultar y compartir genealogías caninas (pedigrees).</li>
+        <li>Importar pedigrees desde fuentes públicas con asistencia de inteligencia artificial.</li>
+        <li>Gestionar criaderos, camadas, reservas, contactos y registros veterinarios.</li>
+        <li>Acceder a herramientas profesionales (CRM, web pública de criadero, contratos, mensajería).</li>
+      </ul>
+      <p>
+        Genealogic <strong>no es un marketplace</strong> de venta de animales ni interviene
+        en transacciones comerciales entre usuarios.
+      </p>
+
+      <h2>3. Naturaleza Jurídica del Servicio</h2>
+      <p>
+        Manuel Curtó SL actúa como <strong>prestador de servicios de la sociedad de la
+        información y alojamiento de datos</strong> conforme al art. 13 y 16 de la Ley
+        34/2002 LSSI-CE. No editamos ni controlamos previamente el contenido aportado
+        por los Usuarios. Actuaremos para retirar contenidos ilícitos cuando tengamos
+        conocimiento efectivo de su ilicitud, conforme al procedimiento descrito en la{' '}
+        <a href="/ip-policy">Política de Propiedad Intelectual y Notice-and-Action</a>.
+      </p>
+
+      <h2>4. Registro, Cuenta y Edad Mínima</h2>
+      <ul>
+        <li>Debes ser mayor de <strong>14 años</strong> para registrarte (art. 7 LOPDGDD).</li>
+        <li>La información facilitada en el registro debe ser veraz, exacta y actualizada.</li>
+        <li>Eres responsable de mantener la confidencialidad de tu contraseña y de toda actividad realizada bajo tu cuenta.</li>
+        <li>Cada persona o entidad puede tener una sola cuenta personal. Una persona puede gestionar varias cuentas de criadero si tiene legitimación para ello.</li>
+        <li>Nos reservamos el derecho a suspender o cancelar cuentas que incumplan estos Términos, con notificación previa razonable salvo en casos de incumplimiento grave.</li>
       </ul>
 
-      <h2>4. Planes y Pagos</h2>
-      <h3>4.1 Planes disponibles</h3>
+      <h2>5. Planes, Pagos y Facturación</h2>
+
+      <h3>5.1 Planes disponibles</h3>
       <ul>
-        <li><strong>Free (gratuito):</strong> hasta 10 perros con ficha completa, genealogía sin límite de generaciones, importador IA, búsqueda pública, simulador de cruces, calendario veterinario. Para propietarios y criadores que empiezan. Sin tarjeta.</li>
-        <li><strong>Kennel (29 €/mes o 290 €/año):</strong> perros y camadas ilimitadas, pipeline de reservas, contratos digitales, calendario veterinario con recordatorios, importador IA sin límite, hub de contactos, estadísticas del perfil público y soporte por email. Requiere tarjeta para el periodo de prueba.</li>
-        <li><strong>Kennel Pro (49 €/mes — precio Founder):</strong> todo lo de Kennel más web pública con dominio propio, emailbot multi-modelo (Claude/GPT/Gemini), newsletter a la lista de suscriptores y pagos online integrados. Disponibilidad limitada: en apertura privada para los primeros 50 criaderos. Mantiene el precio Founder de por vida para quien entra en esa primera tanda.</li>
+        <li><strong>Free (gratuito):</strong> hasta 10 perros con ficha completa, genealogía sin límite de generaciones, importador IA, búsqueda pública, simulador de cruces, calendario veterinario. Sin tarjeta.</li>
+        <li><strong>Kennel (29 €/mes o 290 €/año):</strong> perros y camadas ilimitadas, pipeline de reservas, contratos digitales, importador IA sin límite, hub de contactos, estadísticas del perfil público y soporte por email.</li>
+        <li><strong>Kennel Pro (49 €/mes — precio Founder de por vida para los primeros 50 suscriptores):</strong> todo lo de Kennel + web pública con dominio propio, emailbot multi-modelo, newsletter, pagos online integrados.</li>
+        <li><strong>Verificaciones oficiales pay-per-use</strong> (próximamente): 25-50 €/unidad cuando esté disponible la integración con clubes oficiales.</li>
+      </ul>
+      <p>
+        Los precios se muestran con IVA cuando aplicable. La disponibilidad y características
+        concretas de cada plan pueden actualizarse; los cambios sustanciales se notifican
+        con 30 días de antelación a los suscriptores existentes.
+      </p>
+
+      <h3>5.2 Procesamiento de pagos</h3>
+      <p>
+        Los pagos se procesan a través de <strong>Stripe Payments Europe Ltd</strong>.
+        Genealogic no almacena ni accede a datos completos de tarjeta. Al introducir un
+        método de pago, aceptas también los <a href="https://stripe.com/es/legal/end-users" target="_blank" rel="noopener">Términos de Stripe</a>.
+      </p>
+
+      <h3>5.3 Periodo de prueba (15 días)</h3>
+      <p>
+        Los planes Kennel y Kennel Pro ofrecen un periodo de prueba gratuito de{' '}
+        <strong>15 días naturales</strong> para nuevos suscriptores. Se requiere registrar
+        una tarjeta válida al iniciar la prueba; <strong>no se efectúa ningún cargo
+        durante esos 15 días</strong>. Si no cancelas antes de que finalice, el día 15
+        se realizará el primer cargo automáticamente y la suscripción continuará en
+        facturación periódica.
+      </p>
+
+      <h3>5.4 Renovación automática</h3>
+      <p>
+        Las suscripciones se renuevan automáticamente al final de cada periodo (mensual
+        o anual) salvo cancelación previa. Recibirás un recordatorio por email antes de
+        la renovación anual conforme al art. 62 TRLGDCU.
+      </p>
+
+      <h3>5.5 Derecho de desistimiento (consumidores)</h3>
+      <p>
+        Si actúas como consumidor (persona física, fuera de actividad profesional), tienes
+        derecho a desistir del contrato en un plazo de <strong>14 días naturales</strong>{' '}
+        desde la contratación, sin necesidad de justificación, conforme al art. 102 TRLGDCU.
+      </p>
+      <p>
+        Para ejercerlo, envía un email a <strong>hola@genealogic.io</strong> con el asunto
+        "Desistimiento" indicando tu nombre y email de cuenta. Te reembolsaremos el importe
+        en un plazo máximo de 14 días naturales, descontando proporcionalmente el uso del
+        servicio si lo has activado expresamente antes del fin del plazo.
+      </p>
+
+      <h3>5.6 Cancelación y reembolsos</h3>
+      <ul>
+        <li>Puedes cancelar tu suscripción en cualquier momento desde Ajustes → Facturación.</li>
+        <li>Tras el periodo de desistimiento, no se realizan reembolsos por periodos parciales (mensual o anual ya iniciado). Mantendrás el acceso hasta el final del periodo facturado.</li>
+        <li>Excepciones razonables (fallo grave del servicio, cobro indebido) se atienden caso por caso.</li>
       </ul>
 
-      <h3>4.2 Facturación</h3>
+      <h3>5.7 Cobros fallidos</h3>
+      <p>
+        Si tras el periodo de prueba o en cualquier renovación posterior el cobro no puede
+        realizarse, Stripe reintentará automáticamente. Si tras la cadena de reintentos
+        el cobro sigue fallando, la suscripción se cancelará y tu cuenta volverá al plan
+        Free, conservando íntegramente tus datos. Recibirás avisos por email.
+      </p>
+
+      <h2>6. Contenido del Usuario</h2>
+
+      <h3>6.1 Propiedad del contenido</h3>
+      <p>
+        Mantienes la titularidad de todo el contenido que aportas a la Plataforma (fotos,
+        textos, datos de perros, mensajes, archivos).
+      </p>
+
+      <h3>6.2 Licencia que nos concedes</h3>
+      <p>
+        Al aportar contenido, nos concedes una licencia no exclusiva, mundial, gratuita
+        y revocable para almacenarlo, mostrarlo, distribuirlo en la Plataforma, hacer
+        copias técnicas necesarias para su prestación, traducirlo automáticamente y
+        utilizarlo de forma agregada y anonimizada con fines estadísticos y de mejora
+        del servicio. Esta licencia se limita a lo estrictamente necesario para operar
+        el Servicio y termina con la supresión del contenido.
+      </p>
+
+      <h3>6.3 Tus declaraciones y garantías al aportar contenido</h3>
+      <p>Al subir o importar contenido, declaras y garantizas:</p>
       <ul>
-        <li>Los pagos se procesan de forma segura a través de <strong>Stripe</strong></li>
-        <li>Las suscripciones se renuevan automáticamente al final de cada periodo</li>
-        <li>Los precios incluyen IVA cuando sea aplicable</li>
-        <li>Puedes cancelar tu suscripción en cualquier momento desde Ajustes &gt; Facturación, accediendo al portal de Stripe</li>
+        <li>Que eres titular del contenido o cuentas con licencia o autorización suficiente para subirlo.</li>
+        <li>Que el contenido no infringe derechos de propiedad intelectual, marca, imagen, privacidad u otros derechos de terceros.</li>
+        <li>Que en el caso de fotografías que no sean de tu autoría, dispones de la licencia o cesión del fotógrafo.</li>
+        <li>Que los datos genealógicos que introduces son veraces hasta donde conoces.</li>
+        <li>Que el contenido no es ilegal, difamatorio, discriminatorio, fraudulento ni promueve actividades ilegales.</li>
+        <li>Que si introduces datos personales de terceros (criadores históricos, propietarios anteriores), tienes derecho a hacerlo y atenderás cualquier solicitud razonable de retirada.</li>
+      </ul>
+      <p>
+        <strong>Eres responsable</strong> del contenido que aportas. Genealogic actúa como
+        prestador de alojamiento y se reserva el derecho a retirar contenido que infrinja
+        estos Términos cuando reciba notificación fundada.
+      </p>
+
+      <h3>6.4 Datos genealógicos y naturaleza colaborativa</h3>
+      <p>
+        Las genealogías caninas se componen de hechos (nombres, fechas, parentescos,
+        criadores) que históricamente han sido aportados por múltiples colaboradores
+        (clubes, criadores, propietarios). Estos hechos no son obras protegidas por
+        derechos de autor en sí mismos. Cuando un Usuario importa el pedigree de su
+        propio perro, declara tener derecho a hacerlo en virtud de su titularidad sobre
+        el animal y sus documentos.
+      </p>
+
+      <h2>7. Importador de Pedigrees</h2>
+      <ul>
+        <li>El importador permite extraer datos de páginas públicas que el Usuario pega como URL, de PDFs oficiales o de capturas de pantalla.</li>
+        <li>La acción de importar la inicia siempre el Usuario, no la Plataforma. El Usuario es responsable de tener derecho a importar los datos.</li>
+        <li>Genealogic respeta las políticas declaradas de los sitios web fuente, incluyendo los Content Signals publicados vía robots.txt. Las fuentes que prohíben expresamente el acceso automatizado por IA (p. ej., ingrus.net) no están soportadas; el Usuario puede subir manualmente captura o PDF si tiene derecho a los datos.</li>
+        <li>El Usuario confirma siempre los datos extraídos antes de guardarlos.</li>
       </ul>
 
-      <h3>4.3 Derecho de desistimiento</h3>
-      <p>Conforme a la normativa europea, dispones de <strong>14 días naturales</strong> desde la contratación para desistir sin necesidad de justificación. Para ejercer este derecho, contacta con <strong>gestion@manuelcurto.com</strong>. Si has utilizado el servicio durante el periodo de desistimiento, se te cobrará proporcionalmente por el tiempo usado.</p>
-
-      <h3>4.4 Reembolsos</h3>
-      <p>Tras el periodo de desistimiento, no se realizan reembolsos por periodos parciales. Al cancelar, mantendrás el acceso hasta el final del periodo facturado.</p>
-
-      <h3>4.5 Periodo de prueba</h3>
-      <p>Para los planes Kennel y Kennel Pro ofrecemos un periodo de prueba gratuito de <strong>15 días naturales</strong> para nuevos suscriptores. Se requiere registrar una tarjeta válida al iniciar la prueba; no se efectúa ningún cargo durante esos 15 días. Si no cancelas antes de que finalice, el día 15 se realizará el primer cargo automáticamente en la tarjeta registrada y la suscripción continuará en facturación periódica.</p>
-
-      <h3>4.6 Cobros fallidos</h3>
-      <p>Si tras finalizar el periodo de prueba (o en cualquier renovación posterior) el cobro no puede realizarse — por ejemplo, por tarjeta caducada, fondos insuficientes, o autenticación 3-D Secure no completada — Stripe reintentará automáticamente el cargo durante varios días. Si tras la cadena de reintentos el cobro sigue fallando, la suscripción se cancelará y tu cuenta volverá al plan Free, conservando íntegramente tus datos. Recibirás avisos por email en cada reintento fallido para que puedas actualizar tu método de pago.</p>
-
-      <h2>5. Contenido del Usuario</h2>
+      <h2>8. Visibilidad Pública del Contenido</h2>
       <ul>
-        <li>Mantienes la propiedad de todo el contenido que subes (fotos, datos de perros, genealogías)</li>
-        <li>Nos concedes una licencia limitada para almacenar, mostrar y procesar tu contenido con el fin de proporcionar el servicio</li>
-        <li>Eres responsable de que el contenido no infrinja derechos de terceros</li>
-        <li>No subas contenido ilegal, ofensivo o que viole derechos de propiedad intelectual</li>
+        <li>Los perros marcados como "públicos" son visibles para cualquier visitante de la Plataforma. Las genealogías derivadas (ancestros, descendientes) pueden ser visibles incluso cuando el perro propio no lo sea.</li>
+        <li>Los perfiles de criadero son por defecto públicos para favorecer la trazabilidad y la reputación. Puedes solicitar la limitación de visibilidad escribiendo a hola@genealogic.io.</li>
+        <li>Las contribuciones a perros sin propietario asignado (perros históricos contribuidos por la comunidad) son visibles para todos.</li>
+        <li>El Usuario puede cambiar la visibilidad de los perros que controla en cualquier momento.</li>
       </ul>
 
-      <h2>6. Genealogías y Datos Públicos</h2>
+      <h2>9. Mensajería y Comunicaciones</h2>
       <ul>
-        <li>Los perros marcados como "públicos" serán visibles para otros usuarios</li>
-        <li>Las contribuciones a genealogías (ancestros sin propietario) son visibles para todos</li>
-        <li>Los perfiles de criadero públicos son accesibles sin necesidad de cuenta</li>
-        <li>Puedes cambiar la visibilidad de tus perros en cualquier momento</li>
+        <li>La mensajería entre usuarios es para comunicación relacionada con la crianza, reservas o consultas sobre perros. No se permite spam, acoso, contenido sexual no consentido ni ilegal.</li>
+        <li>Los mensajes se almacenan cifrados en tránsito y solo son accesibles por los participantes; el equipo de Genealogic accede únicamente cuando es estrictamente necesario para resolver un reporte fundado o cumplir una obligación legal.</li>
+        <li>Nos reservamos el derecho a moderar mensajes reportados conforme al procedimiento de notice-and-action.</li>
       </ul>
 
-      <h2>7. Mensajería</h2>
+      <h2>10. Asistente de IA (Genos) y Otras Funciones IA</h2>
       <ul>
-        <li>La mensajería es para comunicación relacionada con la crianza canina</li>
-        <li>No se permite spam, acoso ni contenido inapropiado</li>
-        <li>Nos reservamos el derecho de moderar mensajes reportados</li>
-        <li>Los mensajes se almacenan de forma segura y son accesibles solo por los participantes</li>
+        <li>Genos es un asistente basado en inteligencia artificial (Anthropic Claude) que proporciona información sobre la Plataforma, la cría canina y los datos del Usuario.</li>
+        <li>Las respuestas de Genos son orientativas. <strong>No constituyen asesoramiento veterinario, jurídico, fiscal ni profesional</strong>. Para decisiones importantes consulta a un profesional cualificado.</li>
+        <li>Los mensajes enviados a Genos se procesan por Anthropic PBC bajo las condiciones de su API (sin uso para entrenamiento).</li>
+        <li>El emailbot (plan Pro) sugiere respuestas a emails entrantes. El Usuario aprueba cada respuesta antes de enviarla.</li>
       </ul>
 
-      <h2>8. Asistente de IA (Genos)</h2>
+      <h2>11. Uso Aceptable y Conductas Prohibidas</h2>
+      <p>Queda expresamente prohibido:</p>
       <ul>
-        <li>Genos es un asistente basado en inteligencia artificial que proporciona información sobre la plataforma</li>
-        <li>Las respuestas de Genos son orientativas y no constituyen asesoramiento profesional veterinario ni legal</li>
-        <li>Los mensajes enviados a Genos son procesados por Anthropic PBC para generar respuestas</li>
+        <li>Usar la Plataforma para actividades ilegales o que infrinjan derechos de terceros.</li>
+        <li>Intentar acceder a cuentas o datos de otros usuarios sin autorización.</li>
+        <li>Realizar ingeniería inversa, scraping masivo, copia sistemática de la base de datos o intentos de extracción automatizada de partes sustanciales del contenido, salvo autorización expresa por escrito.</li>
+        <li>Publicar información falsa sobre perros, genealogías, títulos o pruebas de salud.</li>
+        <li>Usar la Plataforma para la venta de animales que no cumpla con la normativa aplicable (en particular, Ley 7/2023 de protección de los derechos y el bienestar de los animales y normativa autonómica equivalente).</li>
+        <li>Crear múltiples cuentas para eludir límites del plan gratuito, bans o suspensiones.</li>
+        <li>Cargar fotografías de las que no se tienen derechos, especialmente fotografías profesionales de exposiciones cuya licencia no autoriza publicación.</li>
+        <li>Suplantar la identidad de otro criador, club, fotógrafo o persona.</li>
+        <li>Distribuir malware, contenido pornográfico, terrorista o que apologice del maltrato animal.</li>
       </ul>
 
-      <h2>9. Uso Aceptable</h2>
-      <p>Queda prohibido:</p>
+      <h2>12. Notice-and-Action (Procedimiento de Notificación y Retirada)</h2>
+      <p>
+        Cualquier persona puede notificarnos contenido infractor desde el botón "Reportar"
+        presente en cada perro, foto y perfil de criadero, o escribiendo a{' '}
+        <strong>hola@genealogic.io</strong>. Atenderemos las notificaciones en un plazo
+        máximo de <strong>72 horas</strong> y retiraremos el contenido si la notificación
+        es fundada conforme al art. 17 LSSI. Detalles completos en la{' '}
+        <a href="/ip-policy">Política de Propiedad Intelectual y Notice-and-Action</a>.
+      </p>
+
+      <h2>13. Propiedad Intelectual de la Plataforma</h2>
+      <p>
+        La Plataforma Genealogic (código fuente, diseño, marca, logotipos, textos
+        editoriales, base de datos como compilación) es titularidad de Manuel Curtó SL
+        y/o sus respectivos titulares de derechos. La base de datos goza del derecho
+        sui generis sobre bases de datos (arts. 133-137 LPI; Directiva 96/9/CE).
+      </p>
+      <p>
+        Queda expresamente prohibido extraer o reutilizar partes sustanciales, evaluadas
+        cualitativa o cuantitativamente, del contenido de la base de datos sin autorización
+        expresa por escrito de Manuel Curtó SL. La extracción reiterada o sistemática
+        de partes no sustanciales, contraria a una explotación normal de la base de datos,
+        también está prohibida.
+      </p>
+      <p>
+        El acceso individual a fichas concretas a través de la interfaz web, así como
+        el enlazado a fichas concretas, está permitido y fomentado.
+      </p>
+
+      <h2>14. Limitación de Responsabilidad</h2>
       <ul>
-        <li>Usar la plataforma para actividades ilegales</li>
-        <li>Intentar acceder a datos de otros usuarios sin autorización</li>
-        <li>Realizar ingeniería inversa o scraping de la plataforma</li>
-        <li>Publicar información falsa sobre perros o genealogías</li>
-        <li>Usar la plataforma para venta de animales que no cumpla la normativa vigente</li>
-        <li>Crear múltiples cuentas para evadir límites del plan</li>
+        <li>El Servicio se proporciona "tal cual", sin garantías de disponibilidad ininterrumpida ni de ausencia de errores. Nos esforzamos por mantener una disponibilidad razonable y un servicio funcional.</li>
+        <li>No somos responsables de la veracidad ni exactitud de los datos genealógicos, de salud o de cualquier otra naturaleza aportados por los Usuarios.</li>
+        <li>No somos parte en las transacciones comerciales que los Usuarios realicen entre sí (venta de perros, prestación de servicios de stud, etc.); estas transacciones son acuerdos directos entre los Usuarios bajo su exclusiva responsabilidad.</li>
+        <li>No somos responsables del uso indebido que terceros hagan del contenido público que los Usuarios decidan visibilizar.</li>
+        <li>Salvo en supuestos de dolo, negligencia grave o cuando la ley imperativa lo impida, nuestra responsabilidad total agregada queda limitada al importe efectivamente pagado por el Usuario a Genealogic en los <strong>12 meses</strong> anteriores al hecho que origine la reclamación. Esta limitación no afecta a derechos imperativos de los consumidores.</li>
+        <li>En ningún caso responderemos por daños indirectos, lucro cesante, pérdida de oportunidades comerciales o daños reputacionales derivados del uso del Servicio.</li>
       </ul>
 
-      <h2>10. Limitación de Responsabilidad</h2>
+      <h2>15. Suspensión y Cancelación de Cuenta</h2>
       <ul>
-        <li>Genealogic se proporciona "tal cual" sin garantías de disponibilidad ininterrumpida</li>
-        <li>No somos responsables de la veracidad de los datos de genealogía introducidos por los usuarios</li>
-        <li>No somos responsables de las transacciones comerciales realizadas entre usuarios fuera de la plataforma</li>
-        <li>Nuestra responsabilidad máxima se limita al importe pagado por el usuario en los últimos 12 meses</li>
+        <li>Podemos suspender o cancelar una cuenta que incumpla estos Términos, con notificación previa salvo casos urgentes.</li>
+        <li>Puedes eliminar tu cuenta en cualquier momento desde Ajustes → Datos → Eliminar cuenta.</li>
+        <li>Al eliminarse la cuenta, se borran o anonimizan tus datos personales, mensajes y configuraciones. Los datos genealógicos esenciales (parentescos, fechas) se anonimizan pero se conservan por interés legítimo de preservación del grafo.</li>
+        <li>Los datos fiscales y contables se conservan según obligaciones legales (6 años Código de Comercio + 4 años LGT).</li>
       </ul>
 
-      <h2>11. Cancelación de Cuenta</h2>
-      <ul>
-        <li>Puedes eliminar tu cuenta en cualquier momento desde Ajustes → Datos → Eliminar cuenta</li>
-        <li>Al eliminar tu cuenta, se borran tus datos personales, mensajes y configuraciones</li>
-        <li>Los perros con descendencia se anonimizan (se mantiene la genealogía sin datos personales)</li>
-        <li>Los datos de facturación se conservan según obligaciones fiscales (5 años)</li>
-      </ul>
+      <h2>16. Cambios en los Términos</h2>
+      <p>
+        Podemos modificar estos Términos. Los cambios sustanciales se notificarán a los
+        Usuarios registrados por email con al menos <strong>30 días</strong> de antelación.
+        El uso continuado de la Plataforma tras la entrada en vigor implica aceptación.
+        Si no estás de acuerdo, puedes cancelar tu cuenta sin penalización.
+      </p>
 
-      <h2>12. Propiedad Intelectual</h2>
-      <p>La plataforma Genealogic, su diseño, código, marca y logotipos son propiedad de Manuel Curtó SL. Queda prohibida su reproducción sin autorización.</p>
+      <h2>17. Cesión</h2>
+      <p>
+        Manuel Curtó SL podrá ceder el contrato y estos Términos a un tercero en el
+        marco de una operación corporativa (fusión, escisión, venta de unidad de negocio,
+        venta de activos), notificándolo a los Usuarios con al menos 30 días de antelación
+        y respetando todos los derechos preexistentes. El Usuario consiente esta posible
+        cesión. El Usuario no podrá ceder su cuenta a terceros sin autorización expresa.
+      </p>
 
-      <h2>13. Ley Aplicable y Jurisdicción</h2>
-      <p>Estos términos se rigen por la legislación española. Para la resolución de controversias, las partes se someten a los Juzgados y Tribunales de Santa Cruz de Tenerife, sin perjuicio de los derechos que asisten al consumidor conforme al TRLGDCU.</p>
+      <h2>18. Fuerza Mayor</h2>
+      <p>
+        Ninguna parte será responsable de los incumplimientos derivados de causas de
+        fuerza mayor (catástrofes naturales, guerras, ciberataques masivos, fallos
+        prolongados de proveedores esenciales, decisiones de autoridades públicas) que
+        impidan razonablemente la prestación del Servicio.
+      </p>
 
-      <h2>14. Contacto</h2>
-      <p>Para cualquier consulta sobre estos términos: <strong>gestion@manuelcurto.com</strong></p>
+      <h2>19. Ley Aplicable y Jurisdicción</h2>
+      <p>
+        Estos Términos se rigen por la legislación española y, en su caso, la normativa
+        de la Unión Europea. Para la resolución de controversias, las partes se someten
+        a los <strong>Juzgados y Tribunales de Santa Cruz de Tenerife</strong>, sin
+        perjuicio de los derechos que asisten al consumidor conforme al TRLGDCU
+        (especialmente el derecho a litigar en su domicilio).
+      </p>
+      <p>
+        Si actúas como consumidor, puedes acceder a la plataforma europea de resolución
+        de litigios en línea:{' '}
+        <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener">https://ec.europa.eu/consumers/odr/</a>.
+      </p>
+
+      <h2>20. Nulidad Parcial</h2>
+      <p>
+        Si alguna cláusula de estos Términos fuera declarada nula o inaplicable por una
+        autoridad competente, el resto seguirá plenamente vigente. Las partes se
+        comprometen a sustituir la cláusula nula por otra equivalente conforme a derecho.
+      </p>
+
+      <h2>21. Contacto</h2>
+      <p>
+        Para cualquier consulta sobre estos Términos:{' '}
+        <strong>hola@genealogic.io</strong>. Por correo postal: Manuel Curtó SL, Camino
+        Guillén s/n, 38290 La Esperanza, Tenerife (España).
+      </p>
     </>
   )
 }

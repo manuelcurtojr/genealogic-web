@@ -85,6 +85,18 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Port not allowed', { status: 403 })
   }
 
+  // ─── Denylist por política expresa del sitio ────────────────────
+  // ingrus.net publica un Content-Signal explícito (robots.txt) prohibiendo
+  // acceso automatizado por bots de IA (ClaudeBot, GPTBot, etc.). Respetamos
+  // esa voluntad declarada. Usuarios que tengan derecho a importar datos de
+  // su perro pueden hacerlo vía screenshot/PDF en la UI del importador.
+  if (host === 'ingrus.net' || host.endsWith('.ingrus.net')) {
+    return new NextResponse(
+      'This source is not supported. ingrus.net does not authorize automated access by AI bots. Please use a screenshot or PDF upload instead.',
+      { status: 451 }, // 451 Unavailable For Legal Reasons
+    )
+  }
+
   // ─── DNS resolution defense (DNS rebind / public hostname → private IP) ──
   // El guard de hostname literal arriba no detecta dominios con A records
   // apuntando a 169.254.169.254 (AWS metadata) o 10.x.x.x interno. Resolvemos

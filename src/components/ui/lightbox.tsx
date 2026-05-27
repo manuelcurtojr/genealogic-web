@@ -2,17 +2,27 @@
 
 import { useState, useEffect } from 'react'
 import { X, ChevronLeft, ChevronRight, FileText, Download } from 'lucide-react'
+import ReportButton, { type ReportTargetType } from '@/components/legal/report-dialog'
 
 interface LightboxProps {
   files: string[]
   startIndex: number
   onClose: () => void
+  /** Si se pasa, muestra un botón "Reportar" en la barra superior por cada archivo */
+  reportTarget?: {
+    type: ReportTargetType
+    /** ID del recurso padre (perro, criadero...) — el archivo actual se añade en la descripción */
+    parentId: string
+    parentLabel?: string | null
+    parentUrl?: string | null
+    currentUserEmail?: string | null
+  }
 }
 
 function isImage(url: string) { return /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url) }
 function isPdf(url: string) { return /\.pdf(\?|$)/i.test(url) }
 
-export default function Lightbox({ files, startIndex, onClose }: LightboxProps) {
+export default function Lightbox({ files, startIndex, onClose, reportTarget }: LightboxProps) {
   const [current, setCurrent] = useState(startIndex)
   const hasMultiple = files.length > 1
 
@@ -37,6 +47,21 @@ export default function Lightbox({ files, startIndex, onClose }: LightboxProps) 
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
         <span className="text-sm text-body">{current + 1} / {files.length}</span>
         <div className="flex items-center gap-2">
+          {reportTarget && (
+            <ReportButton
+              targetType="photo"
+              targetId={`${reportTarget.parentId}#photo-${current}`}
+              targetUrl={url}
+              targetLabel={
+                reportTarget.parentLabel
+                  ? `Foto ${current + 1} de ${reportTarget.parentLabel}`
+                  : `Foto ${current + 1}`
+              }
+              currentUserEmail={reportTarget.currentUserEmail}
+              trigger="icon"
+              className="w-9 h-9 rounded-full bg-surface-card flex items-center justify-center text-body hover:text-ink transition"
+            />
+          )}
           <a href={url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-surface-card flex items-center justify-center text-body hover:text-ink transition" title="Descargar">
             <Download className="w-4 h-4" />
           </a>

@@ -9,6 +9,7 @@ import KennelProHome from '@/components/kennel/pro-home'
 import PageTracker from '@/components/track/page-tracker'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 import ClaimBanner from '@/components/admin-requests/claim-banner'
+import ReportButton from '@/components/legal/report-dialog'
 import { sortDogsByPhotoQuality } from '@/lib/dogs/sort-quality'
 import { KennelJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
@@ -537,6 +538,20 @@ export default async function KennelDetailPage({
             </div>
           </div>
         </section>
+      )}
+
+      {/* Reportar perfil — discreto, al final, fuera del path principal */}
+      {user?.id !== kennel.owner_id && (
+        <div className="flex justify-center pt-2">
+          <ReportButton
+            targetType="kennel"
+            targetId={kennel.id}
+            targetUrl={`/kennels/${kennel.slug || kennel.id}`}
+            targetLabel={kennel.name}
+            currentUserEmail={user?.email || null}
+            trigger="text"
+          />
+        </div>
       )}
     </div>
   )

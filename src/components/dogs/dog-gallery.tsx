@@ -16,9 +16,13 @@ interface DogGalleryProps {
   upscaledOriginalUrl?: string | null
   /** Timestamp del upscale — si null no se muestra badge */
   upscaledAt?: string | null
+  /** Para habilitar el botón "Reportar foto" en el lightbox (notice-and-takedown). */
+  dogId?: string
+  dogUrl?: string | null
+  currentUserEmail?: string | null
 }
 
-export default function DogGallery({ photos, name, sex, upscaledPhotoUrl, upscaledOriginalUrl, upscaledAt }: DogGalleryProps) {
+export default function DogGallery({ photos, name, sex, upscaledPhotoUrl, upscaledOriginalUrl, upscaledAt, dogId, dogUrl, currentUserEmail }: DogGalleryProps) {
   const [mobileIdx, setMobileIdx] = useState(0)
   const [desktopOffset, setDesktopOffset] = useState(0)
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
@@ -148,7 +152,18 @@ export default function DogGallery({ photos, name, sex, upscaledPhotoUrl, upscal
       </div>
 
       {lightboxIdx !== null && hasPhotos && (
-        <Lightbox files={photos} startIndex={lightboxIdx} onClose={() => setLightboxIdx(null)} />
+        <Lightbox
+          files={photos}
+          startIndex={lightboxIdx}
+          onClose={() => setLightboxIdx(null)}
+          reportTarget={dogId ? {
+            type: 'photo',
+            parentId: dogId,
+            parentLabel: name,
+            parentUrl: dogUrl || null,
+            currentUserEmail: currentUserEmail || null,
+          } : undefined}
+        />
       )}
     </>
   )

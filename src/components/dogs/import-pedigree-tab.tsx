@@ -426,6 +426,17 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
 
   async function handleScan() {
     if (!url.trim()) return
+    // ── Bloqueo legal: ingrus.net publica un Content-Signal (robots.txt)
+    // que prohíbe explícitamente acceso automatizado por ClaudeBot/IA.
+    // Respetamos su voluntad. El usuario puede importar manualmente vía
+    // screenshot o PDF si tiene los datos de su propio perro.
+    try {
+      const hostCheck = new URL(url.trim()).hostname.toLowerCase()
+      if (hostCheck === 'ingrus.net' || hostCheck.endsWith('.ingrus.net')) {
+        setError('ingrus.net no autoriza acceso automatizado por inteligencia artificial. Si tienes derecho a los datos del perro, súbelos como screenshot o PDF en la sección de abajo.')
+        return
+      }
+    } catch { /* URL inválida — handleScan seguirá y mostrará el error genérico */ }
     setScanning(true); setError(''); setData(null); setSwaps({}); setScanPhase('Accediendo a la web...')
     try {
       // Fetch HTML via proxy
@@ -786,7 +797,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       </div>
       <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 flex items-start gap-2">
         <AlertTriangle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-orange-400">Compatible con cualquier web pública: presadb, pedigreedatabase, k9data, ingrus, working-dog, breedarchive, hunddata, clubes FCI, criaderos privados, etc. También acepta PDFs oficiales (RSCE/FCI) y screenshots.</p>
+        <p className="text-xs text-orange-400">Compatible con cualquier web pública: presadb, pedigreedatabase, k9data, working-dog, breedarchive, hunddata, dogsfiles, clubes FCI, criaderos privados, etc. También acepta PDFs oficiales (RSCE/FCI) y screenshots. <span className="text-orange-300/80">Por respeto a su política, ingrus.net no está soportado — usa el PDF o screenshot si necesitas importar desde ahí.</span></p>
       </div>
       {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
       <div>

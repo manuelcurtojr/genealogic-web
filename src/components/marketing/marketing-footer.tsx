@@ -30,6 +30,7 @@ export default function MarketingFooter() {
               { label: 'Precios', href: '/pricing' },
               { label: 'Buscar perros', href: '/search' },
               { label: 'Directorio criaderos', href: '/kennels' },
+              { label: 'Blog', href: '/blog' },
               { label: 'API pública', href: '/api-docs' },
             ]}
           />
@@ -46,19 +47,20 @@ export default function MarketingFooter() {
           />
 
           <FooterCol
-            title="Recursos"
+            title="Legal"
             links={[
-              { label: 'Blog', href: '/blog' },
-              { label: 'Términos', href: '/terms' },
+              { label: 'Aviso legal', href: '/legal' },
+              { label: 'Términos y condiciones', href: '/terms' },
               { label: 'Privacidad', href: '/privacy' },
-              { label: 'Cookies', href: '/legal' },
-              { label: 'Contacto', href: 'mailto:hola@genealogic.io' },
+              { label: 'Cookies', href: '/cookies' },
+              { label: 'Propiedad intelectual', href: '/ip-policy' },
+              { label: 'Reportar contenido', href: 'mailto:hola@genealogic.io?subject=Reporte%20de%20contenido' },
             ]}
           />
         </div>
 
         <div className="mt-12 pt-6 flex flex-col gap-2 text-[12px] text-on-dark-soft sm:flex-row sm:items-center sm:justify-between">
-          <span>© {new Date().getFullYear()} Genealogic · Hecho en España</span>
+          <span>© {new Date().getFullYear()} <strong className="font-medium text-white/90">Manuel Curtó SL</strong> · B56932098 · Tenerife, España</span>
           <span>El pedigree de tu perro, donde tiene que estar.</span>
         </div>
       </div>

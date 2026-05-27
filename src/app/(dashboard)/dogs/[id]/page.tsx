@@ -10,6 +10,7 @@ import DogGallery from '@/components/dogs/dog-gallery'
 import DogTabs from '@/components/dogs/dog-tabs'
 import DogEditButton from '@/components/dogs/dog-edit-button'
 import ShareButton from '@/components/dogs/share-button'
+import ReportButton from '@/components/legal/report-dialog'
 import ClaimBanner from '@/components/admin-requests/claim-banner'
 import PageTracker from '@/components/track/page-tracker'
 import { DogJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
@@ -213,12 +214,24 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
           upscaledPhotoUrl={dog.thumbnail_url}
           upscaledOriginalUrl={dog.original_thumbnail_url}
           upscaledAt={dog.thumbnail_upscaled_at}
+          dogId={dog.id}
+          dogUrl={`/dogs/${dog.slug || dog.id}`}
+          currentUserEmail={user?.email || null}
         />
 
         {/* Action buttons top-right */}
         <div className="absolute top-4 right-4 flex items-center gap-2">
           {isOwner && user && <DogEditButton dogId={dog.id} userId={user.id} />}
           <ShareButton dog={{ name: dog.name, sex: dog.sex, breed_name: breedName, kennel_name: kennel?.name, thumbnail_url: dog.thumbnail_url, birth_date: dog.birth_date }} dogUrl={`/dogs/${dog.slug || dog.id}`} />
+          {!isOwner && (
+            <ReportButton
+              targetType="dog"
+              targetId={dog.id}
+              targetUrl={`/dogs/${dog.slug || dog.id}`}
+              targetLabel={dog.name}
+              currentUserEmail={user?.email || null}
+            />
+          )}
         </div>
 
         {/* Back button top-left */}

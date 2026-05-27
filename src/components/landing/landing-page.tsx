@@ -1438,16 +1438,18 @@ function Footer() {
           <FooterCol
             title="Legal"
             links={[
-              { label: 'Términos', href: '/terms' },
+              { label: 'Aviso legal', href: '/legal' },
+              { label: 'Términos y condiciones', href: '/terms' },
               { label: 'Privacidad', href: '/privacy' },
-              { label: 'Cookies', href: '/legal' },
-              { label: 'Contacto', href: 'mailto:hola@genealogic.io' },
+              { label: 'Cookies', href: '/cookies' },
+              { label: 'Propiedad intelectual', href: '/ip-policy' },
+              { label: 'Reportar contenido', href: 'mailto:hola@genealogic.io?subject=Reporte%20de%20contenido' },
             ]}
           />
         </div>
         <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6 text-[12px] text-on-dark-soft sm:flex-row sm:items-center sm:justify-between">
-          <span>© {new Date().getFullYear()} Genealogic · Hecho en España</span>
-          <span>Diseñado con cariño para criadores serios</span>
+          <span>© {new Date().getFullYear()} <strong className="font-medium text-white/90">Manuel Curtó SL</strong> · B56932098 · Tenerife, España</span>
+          <span>El pedigree de tu perro, donde tiene que estar.</span>
         </div>
       </div>
     </footer>
