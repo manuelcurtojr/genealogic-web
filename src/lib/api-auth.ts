@@ -1,10 +1,16 @@
 /**
  * API Key authentication for Genealogic public API (v1).
- * Used by Pawdoq Breeders and other external clients.
+ *
+ * ACCESO: SOLO Kennel Enterprise (149€/mes). Cualquier otro plan
+ * (free / kennel = Kennel Pro 29€) recibe 403 con mensaje claro.
+ *
+ * El rol técnico en BBDD `kennel_pro` representa al plan comercial
+ * Kennel Enterprise (ver memory/genealogic_pricing_model.md).
  */
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { isKennelPro } from '@/lib/permissions'
 
 const KEY_PREFIX = 'gnl_'
 
@@ -25,6 +31,16 @@ export interface AuthenticatedRequest {
   kennelId: string
   ownerId: string
   keyId: string
+}
+
+/**
+ * Standard CORS headers for the public API. Definidos arriba para que
+ * estén disponibles dentro de authenticateRequest() también.
+ */
+export const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Authorization, Content-Type',
 }
 
 /**
@@ -81,10 +97,39 @@ export async function authenticateRequest(
     }
   }
 
+  // Comprobación de plan Enterprise: el rol `kennel_pro` en BBDD =
+  // Kennel Enterprise (149€) en el modelo comercial. Cualquier otro
+  // plan no tiene acceso a la API.
+  const ownerId = (keyRow.kennel as { owner_id?: string } | null)?.owner_id || ''
+  if (!ownerId) {
+    return {
+      ok: false,
+      response: NextResponse.json({ error: 'Kennel owner not found' }, { status: 401 }),
+    }
+  }
+
+  const { data: ownerProfile } = await admin
+    .from('profiles')
+    .select('plan')
+    .eq('id', ownerId)
+    .maybeSingle()
+
+  if (!isKennelPro(ownerProfile?.plan)) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        {
+          error: 'API access requires Kennel Enterprise plan',
+          plan_required: 'kennel_enterprise',
+          upgrade_url: 'https://www.genealogic.io/pricing',
+        },
+        { status: 403, headers: corsHeaders },
+      ),
+    }
+  }
+
   // Update last_used_at (fire and forget)
   admin.from('kennel_api_keys').update({ last_used_at: new Date().toISOString() }).eq('id', keyRow.id).then(() => {})
-
-  const ownerId = (keyRow.kennel as any)?.owner_id || ''
 
   return {
     ok: true,
@@ -104,15 +149,6 @@ export function getApiClient() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 }
 
-/**
- * Standard CORS headers for the public API.
- */
-export const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-}
-
-export function jsonResponse(data: any, status = 200) {
+export function jsonResponse(data: unknown, status = 200) {
   return NextResponse.json(data, { status, headers: corsHeaders })
 }

@@ -1,10 +1,25 @@
+/**
+ * /api-docs — documentación pública de la API Genealogic v1.
+ *
+ * Acceso a la API restringido a Kennel Enterprise (149€/mes).
+ * Cualquier otro plan recibe 403 en cada request.
+ *
+ * Cubre 17 endpoints públicos organizados en 7 secciones:
+ *   01 Quick start
+ *   02 Autenticación + gate Enterprise
+ *   03 Mi criadero (kennel + dogs + litters + reservations)
+ *   04 Recursos por perro (pedigree, fotos, vet, palmarés, genotipos, audit)
+ *   05 Catálogo global (search, breeds/all, kennels/{slug})
+ *   06 Mutaciones (PATCH dogs, PATCH litters)
+ *   07 Errores + rate limits + idempotencia
+ */
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Crown, Lock } from 'lucide-react'
 
 export const metadata = {
-  title: 'API Docs',
+  title: 'API Docs — Genealogic',
   description:
-    'Documentación de la API pública de Genealogic — perros, camadas y criaderos en tiempo real',
+    'API pública v1 de Genealogic: perros, genealogías, camadas, reservas, palmarés, genotipos, vet, audit log, búsqueda global, razas. Disponible para Kennel Enterprise.',
 }
 
 export default function ApiDocsPage() {
@@ -25,23 +40,45 @@ export default function ApiDocsPage() {
           <h1 className="mt-3 font-sans text-5xl font-normal leading-[1] tracking-[-0.025em] sm:text-6xl">
             La <span className="italic font-light">API</span> de Genealogic.
           </h1>
-          <p className="mt-6 max-w-[560px] text-[17px] leading-[1.55] text-body">
-            Accede a tus perros, camadas y datos del criadero en tiempo real desde
-            aplicaciones externas como Pawdoq Breeders u otros chatbots / CRMs.
+          <p className="mt-6 max-w-[620px] text-[17px] leading-[1.55] text-body">
+            REST sobre HTTPS. JSON entra, JSON sale. Cubre 17 endpoints:
+            tu criadero, tus perros con genealogía y COI, camadas, reservas,
+            palmarés, cartilla veterinaria, genotipos, histórico de cambios,
+            y búsqueda global en el catálogo público (+250.000 perros).
           </p>
+
+          {/* Badge Enterprise gate — lo más importante de toda la página */}
+          <div className="mt-7 inline-flex items-center gap-2.5 rounded-full border-2 border-[#8b5cf6] bg-[#8b5cf6]/5 px-4 py-2">
+            <Crown className="h-4 w-4 text-[#8b5cf6]" />
+            <p className="text-[13px] font-semibold text-ink">
+              Solo disponible en <span className="text-[#8b5cf6]">Kennel Enterprise</span>
+            </p>
+            <Link
+              href="/pricing"
+              className="text-[12px] font-bold text-[#8b5cf6] underline decoration-[#8b5cf6]/30 underline-offset-4 hover:decoration-[#8b5cf6]"
+            >
+              Ver planes →
+            </Link>
+          </div>
         </div>
 
-        {/* Quick start */}
+        {/* ── 01 Quick start ──────────────────────────────────────────── */}
         <Section num="01" label="Quick start" title="Empieza en 3 pasos">
           <ol className="space-y-3 text-[15px] leading-[1.6] text-body">
             <Step n={1}>
+              Suscríbete a{' '}
+              <Link href="/pricing" className="text-ink underline decoration-hairline underline-offset-4 hover:decoration-ink">
+                Kennel Enterprise
+              </Link>{' '}
+              y completa la activación con soporte (hola@genealogic.io).
+            </Step>
+            <Step n={2}>
               Genera una API key en{' '}
               <Link href="/kennel/api" className="text-ink underline decoration-hairline underline-offset-4 hover:decoration-ink">
-                Mi Criadero → API
+                Mi criadero → API
               </Link>
-              .
+              . Solo se muestra una vez — guárdala en tu gestor de secretos.
             </Step>
-            <Step n={2}>Cópiala y guárdala (solo se muestra una vez).</Step>
             <Step n={3}>
               Llama a la API con header{' '}
               <code className="rounded bg-surface-card px-1.5 py-0.5 font-mono text-[13px]">
@@ -52,43 +89,50 @@ export default function ApiDocsPage() {
           </ol>
         </Section>
 
-        {/* Auth */}
-        <Section num="02" label="Autenticación" title="Bearer token por kennel">
+        {/* ── 02 Auth ─────────────────────────────────────────────────── */}
+        <Section num="02" label="Autenticación" title="Bearer token + plan Enterprise">
           <p className="text-[15px] leading-[1.6] text-body">
-            Todos los endpoints requieren una API key válida en el header HTTP:
+            Todos los endpoints requieren una API key válida en el header HTTP
+            y que el criadero propietario de la key esté en plan Kennel
+            Enterprise. Si el plan baja por cualquier motivo, todas las keys
+            del kennel siguen presentes pero devuelven 403 hasta que el plan
+            vuelva a estar activo.
           </p>
+
           <pre className="mt-5 overflow-x-auto rounded-card border border-hairline bg-surface-card p-5 font-mono text-[13px] leading-[1.6] text-ink">
 {`curl https://www.genealogic.io/api/v1/kennel \\
   -H "Authorization: Bearer gnl_tu_api_key"`}
           </pre>
-          <p className="mt-4 text-sm leading-[1.55] text-muted">
-            La API key está vinculada a un único criadero. Las respuestas se filtran
-            automáticamente al criadero propietario de la key.
-          </p>
+
+          <div className="mt-5 rounded-card border border-amber-200 bg-amber-50/40 p-4">
+            <p className="text-[13px] font-semibold text-amber-900 flex items-center gap-1.5">
+              <Lock className="h-3.5 w-3.5" /> Lo que la API key NO te da
+            </p>
+            <ul className="mt-2 space-y-1.5 text-[13px] text-amber-900/80 list-disc pl-5">
+              <li>No expone datos sensibles del solicitante de una reserva (email, teléfono, dirección) — esos campos solo viven en el dashboard.</li>
+              <li>No puede generar PDFs de contratos ni firmas — esos son flujos del dashboard porque requieren consentimiento explícito.</li>
+              <li>No puede crear ni borrar API keys propias por seguridad.</li>
+            </ul>
+          </div>
         </Section>
 
-        {/* Endpoints */}
-        <Section num="03" label="Endpoints" title="Recursos disponibles">
+        {/* ── 03 Mi criadero ──────────────────────────────────────────── */}
+        <Section num="03" label="Mi criadero" title="Recursos del kennel autenticado">
+          <p className="mb-5 text-[14px] leading-[1.6] text-body">
+            Estos endpoints devuelven datos del criadero al que pertenece tu
+            API key. El filtrado por <code className="font-mono text-[12.5px]">kennel_id</code> es automático.
+          </p>
           <div className="space-y-6">
             <Endpoint
               method="GET"
               path="/api/v1/kennel"
-              desc="Información completa del criadero (nombre, web, RRSS, WhatsApp, fecha de fundación)."
-              example={`{
-  "id": "uuid",
-  "name": "Irema Curtó",
-  "slug": "irema-curto",
-  "website": "https://iremacurto.com",
-  "social_instagram": "...",
-  "whatsapp_phone": "+34685343971",
-  "foundation_date": "1975-01-01"
-}`}
+              desc="Información completa de tu criadero: nombre, redes sociales, WhatsApp, custom domain, fecha de fundación, etc."
             />
 
             <Endpoint
               method="GET"
               path="/api/v1/dogs"
-              desc="Lista de perros del criadero (públicos)."
+              desc="Listado paginado de los perros de tu criadero."
               params={[
                 ['sex', `'male' | 'female'`],
                 ['for_sale', `'true' | 'false'`],
@@ -100,33 +144,33 @@ export default function ApiDocsPage() {
   "data": [
     {
       "id": "uuid",
-      "name": "Sirio de L'Argentería",
-      "slug": "sirio-de-largenteria",
+      "name": "Néstor de Irema Curtó",
+      "slug": "nestor-de-irema-curto",
       "sex": "male",
-      "birth_date": "2017-04-15",
+      "birth_date": "1998-02-25",
       "thumbnail_url": "https://…",
       "is_for_sale": false,
       "is_reproductive": true,
-      "breed": { "id": "...", "name": "Galgo Italiano" },
-      "color": { "id": "...", "name": "Leonado" }
+      "breed": { "id": "...", "name": "Presa Canario" },
+      "color": { "id": "...", "name": "Bardino gris" }
     }
   ],
-  "pagination": { "total": 42, "limit": 50, "offset": 0 }
+  "pagination": { "total": 451, "limit": 50, "offset": 0 }
 }`}
             />
 
             <Endpoint
               method="GET"
               path="/api/v1/dogs/:slug"
-              desc="Un perro concreto con genealogía completa (sin límite de generaciones) y galería de fotos."
+              desc="Ficha completa de un perro: padres, identidad, medidas, registro oficial, kennel."
             />
 
             <Endpoint
               method="GET"
               path="/api/v1/litters"
-              desc="Camadas del criadero (públicas)."
+              desc="Camadas del criadero."
               params={[
-                ['status', `'planned' | 'mated' | 'born'`],
+                ['status', `'planned' | 'mated' | 'born' | 'confirmed'`],
                 ['limit', '1–100 (default 50)'],
                 ['offset', '0+ (default 0)'],
               ]}
@@ -135,29 +179,219 @@ export default function ApiDocsPage() {
             <Endpoint
               method="GET"
               path="/api/v1/litters/upcoming"
-              desc='Camadas planificadas o en gestación. Optimizado para chatbots respondiendo "¿hay camadas próximamente?"'
+              desc='Camadas planificadas o en gestación. Optimizado para chatbots: "¿hay camadas próximamente?"'
             />
 
             <Endpoint
               method="GET"
               path="/api/v1/litters/available-puppies"
-              desc='Cachorros y perros listos para vender. Para chatbots respondiendo "¿hay cachorros disponibles?"'
+              desc='Cachorros y perros listos para vender. Para chatbots: "¿hay cachorros disponibles?"'
+            />
+
+            <Endpoint
+              method="GET"
+              path="/api/v1/litters/:id"
+              desc="Detalle de una camada concreta."
             />
 
             <Endpoint
               method="GET"
               path="/api/v1/breeds"
-              desc="Razas que cría este kennel (basado en los perros que tiene registrados)."
+              desc="Razas que cría este kennel (deducido de los perros registrados)."
             />
 
             <Endpoint
+              method="GET"
+              path="/api/v1/reservations"
+              desc="Pipeline de reservas del criadero. NO incluye email/teléfono/dirección del solicitante por compliance."
+              params={[
+                ['status', `'new' | 'evaluating' | 'deposit' | 'contract' | 'delivery' | 'lost'`],
+                ['active', `'true' (default) | 'false' (incluye cerradas y perdidas)`],
+                ['limit', '1–100 (default 50)'],
+                ['offset', '0+ (default 0)'],
+              ]}
+              example={`{
+  "data": [
+    {
+      "id": "uuid",
+      "status": "deposit",
+      "litter_id": "uuid",
+      "puppy_dog_id": null,
+      "position_in_queue": 3,
+      "preference_sex": "female",
+      "preference_color": "leonado",
+      "deposit_amount_cents": 30000,
+      "total_price_cents": 120000,
+      "currency": "EUR",
+      "deposit_paid_at": "2026-04-12T10:00:00Z",
+      "created_at": "2026-04-01T09:30:00Z",
+      "source": "web_form"
+    }
+  ],
+  "pagination": { "total": 17, "limit": 50, "offset": 0 }
+}`}
+            />
+          </div>
+        </Section>
+
+        {/* ── 04 Por perro ───────────────────────────────────────────── */}
+        <Section num="04" label="Por perro" title="Recursos vinculados a un perro">
+          <p className="mb-5 text-[14px] leading-[1.6] text-body">
+            Todos requieren que el perro pertenezca a tu criadero. Usan el
+            slug del perro (igual que en la URL pública /dogs/[slug]).
+          </p>
+          <div className="space-y-6">
+            <Endpoint
+              method="GET"
+              path="/api/v1/dogs/:slug/pedigree"
+              desc="Grafo plano de la genealogía hasta N generaciones. Cada nodo lleva father_id/mother_id para reconstruir el árbol cliente-side y calcular COI Wright."
+              params={[['generations', '1–10 (default 5)']]}
+              example={`{
+  "root_dog_id": "uuid",
+  "root_dog_name": "Néstor de Irema Curtó",
+  "generations": 5,
+  "nodes": [
+    { "id": "uuid", "name": "Néstor", "sex": "male", "father_id": "uuid", "mother_id": "uuid", "gen": 0 },
+    { "id": "uuid", "name": "Leon (Irema Curtó)", "sex": "male", "father_id": "uuid", "mother_id": "uuid", "gen": 1 },
+    { "id": "uuid", "name": "Quina de Irema Curtó", "sex": "female", "father_id": "uuid", "mother_id": "uuid", "gen": 1 }
+  ]
+}`}
+            />
+
+            <Endpoint
+              method="GET"
+              path="/api/v1/dogs/:slug/photos"
+              desc="Galería completa del perro, ordenada por posición."
+            />
+
+            <Endpoint
+              method="GET"
+              path="/api/v1/dogs/:slug/vet-records"
+              desc="Cartilla veterinaria pública del perro: vacunas, desparasitaciones, tratamientos, cirugías. Solo registros con is_public=true."
+              example={`{
+  "data": [
+    {
+      "id": "uuid",
+      "type": "vaccine",
+      "title": "Polivalente anual",
+      "date": "2026-03-12",
+      "next_date": "2027-03-12",
+      "notes": "...",
+      "file_url": "https://…/certificado.pdf"
+    }
+  ]
+}`}
+            />
+
+            <Endpoint
+              method="GET"
+              path="/api/v1/dogs/:slug/awards"
+              desc="Palmarés público: CAC, CACIB, BIS, BOB, etc. con juez y certificado adjunto."
+            />
+
+            <Endpoint
+              method="GET"
+              path="/api/v1/dogs/:slug/genotypes"
+              desc="Genotipos del perro: loci de color (E, B, K, D, A, S) y pruebas raciales (DM, PLL, displasia)."
+              example={`{
+  "data": [
+    { "locus": "E (Extension)", "allele_1": "E", "allele_2": "E", "source": "Embark", "confidence": "high" },
+    { "locus": "B (Brown)", "allele_1": "B", "allele_2": "b", "source": "Embark", "confidence": "high" }
+  ]
+}`}
+            />
+
+            <Endpoint
+              method="GET"
+              path="/api/v1/dogs/:slug/history"
+              desc="Audit log del perro: foto subida, peso editado, transferencia, palmarés añadido, etc. Útil para feeds de actividad."
+              params={[['limit', '1–200 (default 50)']]}
+              example={`{
+  "data": [
+    {
+      "action": "photo_added",
+      "payload": { "url": "https://…" },
+      "actor_name": "Irema Curtó",
+      "created_at": "2026-05-12T14:23:00Z"
+    },
+    {
+      "action": "updated",
+      "payload": { "weight": { "from": 32.1, "to": 33.4 } },
+      "actor_name": "Irema Curtó",
+      "created_at": "2026-05-12T14:18:00Z"
+    }
+  ]
+}`}
+            />
+          </div>
+        </Section>
+
+        {/* ── 05 Catálogo global ──────────────────────────────────────── */}
+        <Section num="05" label="Catálogo global" title="Búsqueda y referencias en toda la red">
+          <p className="mb-5 text-[14px] leading-[1.6] text-body">
+            Estos endpoints leen del catálogo público (+250.000 perros, miles
+            de criaderos, cientos de razas). NO filtran por tu kennel.
+          </p>
+          <div className="space-y-6">
+            <Endpoint
+              method="GET"
+              path="/api/v1/search"
+              desc="Búsqueda global por perros, criaderos y razas. Usa índices GIN trigram — devuelve respuesta en <50ms sobre 250k filas."
+              params={[
+                ['q', 'cadena (mínimo 2 caracteres)'],
+                ['type', `'dogs' | 'kennels' | 'breeds' | 'all' (default 'all')`],
+                ['limit', '1–50 por tipo (default 10)'],
+              ]}
+              example={`{
+  "q": "nestor",
+  "dogs": [{ "id": "...", "name": "Néstor de Irema Curtó", "slug": "...", "thumbnail_url": "..." }],
+  "kennels": [],
+  "breeds": []
+}`}
+            />
+
+            <Endpoint
+              method="GET"
+              path="/api/v1/breeds/all"
+              desc="Catálogo global de razas para construir selectors o enlazar al estándar."
+              params={[
+                ['q', 'búsqueda por nombre (mínimo 2 caracteres)'],
+                ['limit', '1–200 (default 100)'],
+              ]}
+            />
+
+            <Endpoint
+              method="GET"
+              path="/api/v1/kennels/:slug"
+              desc="Info pública de cualquier criadero del catálogo. Útil para mostrar el origen de un perro importado o el criadero de un perro de otra línea."
+              example={`{
+  "id": "uuid",
+  "name": "Irema Curtó",
+  "slug": "irema-curto",
+  "description": "...",
+  "city": "Santa Cruz de Tenerife",
+  "country": "ES",
+  "website": "https://iremacurto.com",
+  "logo_url": "https://...",
+  "hero_image_url": "https://...",
+  "dogs_public_count": 451,
+  "foundation_date": "1975-01-01"
+}`}
+            />
+          </div>
+        </Section>
+
+        {/* ── 06 Mutaciones ───────────────────────────────────────────── */}
+        <Section num="06" label="Mutaciones" title="Escribir desde la API (PATCH)">
+          <div className="space-y-6">
+            <Endpoint
               method="PATCH"
               path="/api/v1/dogs/:slug"
-              desc='Actualiza datos de venta o reproducción de un perro. Pensado para que apps externas (Pawdoq) marquen un perro como vendido al cobrar la seña.'
+              desc="Actualiza estado comercial o reproductivo de un perro. Pensado para que apps externas marquen un perro como vendido al cobrar la seña, o para sincronizar precios desde tu ERP."
               body={[
                 ['is_for_sale', 'boolean'],
-                ['sale_price', 'number | null'],
-                ['sale_currency', 'string | null'],
+                ['sale_price', 'number | null (en céntimos)'],
+                ['sale_currency', 'string | null (ISO 4217)'],
                 ['sale_description', 'string | null'],
                 ['sale_location', 'string | null'],
                 ['sale_zipcode', 'string | null'],
@@ -165,12 +399,6 @@ export default function ApiDocsPage() {
                 ['is_reproductive', 'boolean'],
                 ['breeding_rights', 'boolean'],
               ]}
-            />
-
-            <Endpoint
-              method="GET"
-              path="/api/v1/litters/:id"
-              desc="Una camada concreta del criadero."
             />
 
             <Endpoint
@@ -188,8 +416,8 @@ export default function ApiDocsPage() {
           </div>
         </Section>
 
-        {/* Errors */}
-        <Section num="04" label="Errores" title="Códigos HTTP">
+        {/* ── 07 Errores + rate limits ───────────────────────────────── */}
+        <Section num="07" label="Errores" title="Códigos HTTP y rate limits">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-hairline text-left">
@@ -199,12 +427,16 @@ export default function ApiDocsPage() {
             </thead>
             <tbody className="text-body">
               <tr className="border-b border-hairline">
+                <td className="py-3 font-mono text-[13px] text-ink">400</td>
+                <td className="py-3">Parámetros inválidos (ej. <code className="font-mono text-[12px]">q</code> con menos de 2 caracteres)</td>
+              </tr>
+              <tr className="border-b border-hairline">
                 <td className="py-3 font-mono text-[13px] text-ink">401</td>
                 <td className="py-3">API key faltante, inválida o revocada</td>
               </tr>
               <tr className="border-b border-hairline">
                 <td className="py-3 font-mono text-[13px] text-ink">403</td>
-                <td className="py-3">El recurso no es público o no pertenece al kennel</td>
+                <td className="py-3">El plan no es Kennel Enterprise, o el recurso no pertenece a tu kennel</td>
               </tr>
               <tr className="border-b border-hairline">
                 <td className="py-3 font-mono text-[13px] text-ink">404</td>
@@ -212,33 +444,44 @@ export default function ApiDocsPage() {
               </tr>
               <tr>
                 <td className="py-3 font-mono text-[13px] text-ink">500</td>
-                <td className="py-3">Error del servidor</td>
+                <td className="py-3">Error del servidor (avísanos en hola@genealogic.io)</td>
               </tr>
             </tbody>
           </table>
-        </Section>
 
-        {/* Rate limits */}
-        <Section num="05" label="Rate limits" title="Sin límites estrictos por ahora">
-          <p className="text-[15px] leading-[1.6] text-body">
-            Si abusas, te capamos. Recomendado: cachear respuestas en Pawdoq (TTL 60s) y
-            usar webhooks para tiempo real.
+          <h3 className="mt-10 mb-3 text-[15px] font-semibold text-ink">Ejemplo de error 403 (plan no Enterprise)</h3>
+          <pre className="overflow-x-auto rounded-lg border border-hairline bg-canvas p-4 font-mono text-[12.5px] leading-[1.55] text-ink">
+{`{
+  "error": "API access requires Kennel Enterprise plan",
+  "plan_required": "kennel_enterprise",
+  "upgrade_url": "https://www.genealogic.io/pricing"
+}`}
+          </pre>
+
+          <h3 className="mt-10 mb-3 text-[15px] font-semibold text-ink">Rate limits</h3>
+          <p className="text-[14px] leading-[1.6] text-body">
+            Sin límites duros mientras el uso sea razonable. Si detectamos
+            abuso, capamos por IP+API key. Recomendado: cachear respuestas
+            con TTL 60s para endpoints de lectura. Si necesitas más
+            throughput o webhooks en tiempo real, escríbenos a
+            {' '}<a href="mailto:hola@genealogic.io" className="text-ink underline decoration-hairline underline-offset-4 hover:decoration-ink">hola@genealogic.io</a>.
           </p>
         </Section>
 
         <p className="mt-16 border-t border-hairline pt-6 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
-          Genealogic API v1 · 2026
+          Genealogic API v1 · 2026 · Solo Kennel Enterprise
         </p>
       </div>
     </main>
   )
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   Sub-components
+   ═══════════════════════════════════════════════════════════════════════ */
+
 function Section({
-  num,
-  label,
-  title,
-  children,
+  num, label, title, children,
 }: {
   num: string
   label: string
@@ -270,12 +513,7 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
 }
 
 function Endpoint({
-  method,
-  path,
-  desc,
-  params,
-  body,
-  example,
+  method, path, desc, params, body, example,
 }: {
   method: string
   path: string
@@ -286,22 +524,22 @@ function Endpoint({
 }) {
   const methodColor =
     method === 'GET'
-      ? 'bg-emerald-500/15 text-emerald-400'
+      ? 'bg-emerald-500/15 text-emerald-700'
       : method === 'PATCH'
-        ? 'bg-amber-500/15 text-amber-400'
+        ? 'bg-amber-500/15 text-amber-700'
         : method === 'POST'
-          ? 'bg-blue-500/15 text-blue-400'
+          ? 'bg-blue-500/15 text-blue-700'
           : method === 'DELETE'
-            ? 'bg-red-500/15 text-red-400'
-            : 'bg-emerald-500/15 text-emerald-400'
+            ? 'bg-red-500/15 text-red-700'
+            : 'bg-emerald-500/15 text-emerald-700'
 
   return (
     <div className="rounded-card border border-hairline bg-surface-card p-5 sm:p-6">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <span className={`rounded px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.06em] ${methodColor}`}>
           {method}
         </span>
-        <code className="font-mono text-sm text-ink">{path}</code>
+        <code className="font-mono text-sm text-ink break-all">{path}</code>
       </div>
       <p className="mt-3 text-sm leading-[1.55] text-body">{desc}</p>
 
