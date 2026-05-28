@@ -64,30 +64,43 @@ export default async function Home() {
     // dedicado para no tener que correr una subquery por kennel en el
     // cliente.
     admin.rpc('get_home_top_kennels', { p_limit: 6 }),
-    // Showcase dog: ficha completa para el mockup central.
+    // Showcase dog base — datos directos, sin joins a self-FK porque
+    // PostgREST y maybeSingle() los devuelven inconsistentemente cuando
+    // el alias es ambiguo. Padres y fotos se resuelven en queries aparte.
     admin
       .from('dogs')
-      .select(`
-        id, name, slug, thumbnail_url, sex, birth_date,
-        breed:breeds(name),
-        color:colors(name),
-        father:dogs!dogs_father_id_fkey(name),
-        mother:dogs!dogs_mother_id_fkey(name)
-      `)
+      .select('id, name, slug, thumbnail_url, sex, birth_date, breed_id, color_id, father_id, mother_id')
       .eq('slug', SHOWCASE_DOG_SLUG)
       .maybeSingle(),
   ])
 
-  // Fotos del showcase dog en query aparte (no funciona como join directo)
-  let showcasePhotos: string[] = []
+  // Resolver detalles del showcase dog en queries paralelas (padres, color,
+  // raza, fotos). Sin esto, Nestor caía al fallback porque el join PostgREST
+  // anidado con self-FK fallaba silencioso.
+  let showcaseEnriched: {
+    breed_name?: string | null
+    color_name?: string | null
+    father_name?: string | null
+    mother_name?: string | null
+    photos: string[]
+  } = { photos: [] }
+
   if (showcaseDogRes.data?.id) {
-    const { data: photos } = await admin
-      .from('dog_photos')
-      .select('url')
-      .eq('dog_id', showcaseDogRes.data.id)
-      .order('position')
-      .limit(6)
-    showcasePhotos = (photos || []).map((p: { url: string }) => p.url)
+    const sd = showcaseDogRes.data
+    const [breedR, colorR, fatherR, motherR, photosR] = await Promise.all([
+      sd.breed_id ? admin.from('breeds').select('name').eq('id', sd.breed_id).maybeSingle() : Promise.resolve({ data: null }),
+      sd.color_id ? admin.from('colors').select('name').eq('id', sd.color_id).maybeSingle() : Promise.resolve({ data: null }),
+      sd.father_id ? admin.from('dogs').select('name').eq('id', sd.father_id).maybeSingle() : Promise.resolve({ data: null }),
+      sd.mother_id ? admin.from('dogs').select('name').eq('id', sd.mother_id).maybeSingle() : Promise.resolve({ data: null }),
+      admin.from('dog_photos').select('url').eq('dog_id', sd.id).order('position').limit(6),
+    ])
+    showcaseEnriched = {
+      breed_name: breedR.data?.name ?? null,
+      color_name: colorR.data?.name ?? null,
+      father_name: fatherR.data?.name ?? null,
+      mother_name: motherR.data?.name ?? null,
+      photos: (photosR.data || []).map((p: { url: string }) => p.url),
+    }
   }
 
   type MosaicRow = { id: string; thumbnail_url: string | null; breed_name: string | null }
@@ -127,19 +140,11 @@ export default async function Home() {
             slug: showcaseDogRes.data.slug,
             sex: showcaseDogRes.data.sex,
             birth_date: showcaseDogRes.data.birth_date,
-            breed_name: Array.isArray(showcaseDogRes.data.breed)
-              ? showcaseDogRes.data.breed[0]?.name
-              : (showcaseDogRes.data.breed as { name?: string } | null)?.name,
-            color_name: Array.isArray(showcaseDogRes.data.color)
-              ? showcaseDogRes.data.color[0]?.name
-              : (showcaseDogRes.data.color as { name?: string } | null)?.name,
-            father_name: Array.isArray(showcaseDogRes.data.father)
-              ? showcaseDogRes.data.father[0]?.name
-              : (showcaseDogRes.data.father as { name?: string } | null)?.name,
-            mother_name: Array.isArray(showcaseDogRes.data.mother)
-              ? showcaseDogRes.data.mother[0]?.name
-              : (showcaseDogRes.data.mother as { name?: string } | null)?.name,
-            photos: showcasePhotos,
+            breed_name: showcaseEnriched.breed_name,
+            color_name: showcaseEnriched.color_name,
+            father_name: showcaseEnriched.father_name,
+            mother_name: showcaseEnriched.mother_name,
+            photos: showcaseEnriched.photos,
           } : null}
           blogPosts={blogPosts}
           mosaicPhotos={mosaicPhotos}

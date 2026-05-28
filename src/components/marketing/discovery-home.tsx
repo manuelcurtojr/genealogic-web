@@ -29,7 +29,7 @@ import {
   Sparkles, Camera, Calendar, Globe, Mail, KanbanSquare,
   Stethoscope, Heart, Zap, Database, Activity, Upload,
   UserPlus, Rocket, CheckCircle2, X, ChevronDown,
-  Quote, Star, Baby, Mars, Venus, Clock,
+  Quote, Star, Baby, Mars, Venus, Clock, Plus,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import LiveCounter from './live-counter'
@@ -903,20 +903,23 @@ function ProductShowcase({ featuredDogs, showcaseDog }: { featuredDogs: Dog[]; s
  * cambia. Si solo hay 1 foto se queda estática.
  */
 function DogProfileMockup({ showcaseDog, fallbackDog }: { showcaseDog: ShowcaseDog | null; fallbackDog: Dog | null }) {
-  // Datos reales del perro insignia (Nestor) o fallback genérico
-  const dogName = showcaseDog?.name || fallbackDog?.name || 'Xían'
-  const slug = showcaseDog?.slug || fallbackDog?.slug || 'xian'
-  const breedName = showcaseDog?.breed_name || fallbackDog?.breed?.name || 'Presa Canario'
-  const colorName = showcaseDog?.color_name || 'Bardino'
+  // Datos reales del perro insignia (Nestor) o fallback al primer
+  // featuredDog. Si NI showcaseDog NI fallbackDog tienen el dato, usamos
+  // un default neutro — pero NO mezclamos: si showcaseDog está vivo,
+  // mandan SIEMPRE sus datos aunque algún campo sea null.
+  const dogName = showcaseDog?.name || fallbackDog?.name || 'Sin nombre'
+  const slug = showcaseDog?.slug || fallbackDog?.slug || ''
+  const breedName = showcaseDog?.breed_name || fallbackDog?.breed?.name || ''
+  const colorName = showcaseDog?.color_name || ''
   const sex = showcaseDog?.sex || 'male'
   const isMale = sex === 'male'
-  const fatherName = showcaseDog?.mother_name && showcaseDog?.father_name ? showcaseDog.father_name : 'Toby II'
-  const motherName = showcaseDog?.mother_name && showcaseDog?.father_name ? showcaseDog.mother_name : 'Anita'
+  const fatherName = showcaseDog?.father_name || null
+  const motherName = showcaseDog?.mother_name || null
 
   // Año a partir de birth_date
   const birthYear = showcaseDog?.birth_date
     ? new Date(showcaseDog.birth_date).getFullYear()
-    : 2019
+    : null
 
   // Galería: si showcaseDog tiene varias fotos, las usamos todas; si no,
   // caemos a la única foto del fallback. Si tampoco hay, vacío y mostramos
@@ -968,18 +971,34 @@ function DogProfileMockup({ showcaseDog, fallbackDog }: { showcaseDog: ShowcaseD
           {isMale ? <Mars className="w-2.5 h-2.5" /> : <Venus className="w-2.5 h-2.5" />}
           {isMale ? 'Macho' : 'Hembra'}
         </span>
-        {/* Indicador de paginación de la galería (puntitos) */}
-        {photos.length > 1 && (
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 z-10">
-            {photos.map((_, i) => (
-              <span
-                key={i}
-                className={`h-1.5 rounded-full transition-all ${i === photoIdx ? 'w-3 bg-white' : 'w-1.5 bg-white/50'}`}
-              />
-            ))}
-          </div>
-        )}
       </div>
+
+      {/* Galería real — grid de 4 columnas con las thumbnails. Misma
+          estructura que el componente DogGallery del producto. La activa
+          (la que se ve arriba en el cross-fade) lleva ring naranja. Si
+          hay menos de 4 fotos, las celdas vacías quedan como placeholders
+          punteados para que la rejilla mantenga su forma. */}
+      {photos.length > 0 && (
+        <div className="px-3 pt-3 pb-1 grid grid-cols-4 gap-1.5">
+          {Array.from({ length: Math.max(4, photos.length) }).slice(0, 4).map((_, i) => {
+            const url = photos[i]
+            return url ? (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setPhotoIdx(i)}
+                className={`relative aspect-square rounded-md overflow-hidden bg-surface-card transition-all ${i === photoIdx ? 'ring-2 ring-[#FE6620] ring-offset-1 ring-offset-canvas' : 'opacity-80 hover:opacity-100'}`}
+              >
+                <img src={url} alt={`${dogName} ${i + 1}`} className="w-full h-full object-cover" />
+              </button>
+            ) : (
+              <div key={i} className="aspect-square rounded-md border border-dashed border-hairline bg-surface-soft/50 flex items-center justify-center">
+                <Plus className="w-3 h-3 text-muted/40" />
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Hero: nombre + breed */}
       <div className="px-3 pt-3 pb-2">
@@ -989,35 +1008,37 @@ function DogProfileMockup({ showcaseDog, fallbackDog }: { showcaseDog: ShowcaseD
 
       {/* Chips de info */}
       <div className="px-3 pb-2 flex flex-wrap gap-1">
-        <ProfileChip icon={Clock} label={`${birthYear}`} />
-        <ProfileChip label={colorName} />
-        <ProfileChip icon={Camera} label={`${photos.length || 1} fotos`} />
+        {birthYear && <ProfileChip icon={Clock} label={`${birthYear}`} />}
+        {colorName && <ProfileChip label={colorName} />}
+        {photos.length > 0 && <ProfileChip icon={Camera} label={`${photos.length} fotos`} />}
       </div>
 
-      {/* Padres mini */}
-      <div className="px-3 pb-3">
-        <p className="text-[8.5px] font-semibold uppercase tracking-wider text-muted mb-1">Padres</p>
-        <div className="grid grid-cols-2 gap-1.5">
-          <div className="flex items-center gap-1.5 rounded border border-hairline bg-canvas px-1.5 py-1">
-            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <Mars className="w-2.5 h-2.5 text-blue-600" />
+      {/* Padres mini — solo si hay datos reales, no placeholder */}
+      {(fatherName || motherName) && (
+        <div className="px-3 pb-3">
+          <p className="text-[8.5px] font-semibold uppercase tracking-wider text-muted mb-1">Padres</p>
+          <div className="grid grid-cols-2 gap-1.5">
+            <div className="flex items-center gap-1.5 rounded border border-hairline bg-canvas px-1.5 py-1">
+              <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <Mars className="w-2.5 h-2.5 text-blue-600" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[7px] text-muted uppercase font-semibold">Padre</p>
+                <p className="text-[9px] font-bold text-ink truncate">{fatherName || '—'}</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-[7px] text-muted uppercase font-semibold">Padre</p>
-              <p className="text-[9px] font-bold text-ink truncate">{fatherName}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 rounded border border-hairline bg-canvas px-1.5 py-1">
-            <div className="w-5 h-5 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
-              <Venus className="w-2.5 h-2.5 text-pink-600" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[7px] text-muted uppercase font-semibold">Madre</p>
-              <p className="text-[9px] font-bold text-ink truncate">{motherName}</p>
+            <div className="flex items-center gap-1.5 rounded border border-hairline bg-canvas px-1.5 py-1">
+              <div className="w-5 h-5 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
+                <Venus className="w-2.5 h-2.5 text-pink-600" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[7px] text-muted uppercase font-semibold">Madre</p>
+                <p className="text-[9px] font-bold text-ink truncate">{motherName || '—'}</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="mt-auto px-3 pb-3 pt-1 border-t border-hairline bg-surface-soft/40">
         <p className="text-[11px] font-semibold text-ink">Ficha pública del perro</p>
