@@ -185,12 +185,16 @@ export default function SettingsPage() {
   const userRole = profile?.role || 'owner'
   const userPlan: string = (profile as any)?.plan || 'free'
   const userIsFounder: boolean = Boolean((profile as any)?.plan_is_founder)
-  // Mapeo canónico al label nuevo (Free/Kennel/Kennel Pro) aceptando legacy
+  // Mapeo canónico al label comercial nuevo, aceptando legacy:
+  //   rol técnico 'kennel_pro' (BBDD) → Kennel Enterprise (149€/mes, manual)
+  //   rol técnico 'kennel'     (BBDD) → Kennel Pro       (29€/mes)
+  //   free → Kennel Free (5 perros) por defecto
   const userPlanLabel =
-    userPlan === 'kennel_pro' || userPlan === 'premium' ? 'Kennel Pro' :
-    userPlan === 'kennel' || userPlan === 'pro' || userPlan === 'starter' ? 'Kennel' :
-    'Free'
-  const userIsKennelPro = userPlan === 'kennel_pro' || userPlan === 'premium'
+    userPlan === 'kennel_pro' || userPlan === 'premium' || userPlan === 'enterprise' ? 'Kennel Enterprise' :
+    userPlan === 'kennel' || userPlan === 'pro' || userPlan === 'starter' ? 'Kennel Pro' :
+    userPlan === 'owner' ? 'Owner' :
+    'Kennel Free'
+  const userIsEnterprise = userPlan === 'kennel_pro' || userPlan === 'premium' || userPlan === 'enterprise'
   const sections: { key: Section; label: string; icon: React.ElementType }[] = [
     { key: 'perfil',         label: 'Perfil',           icon: User },
     { key: 'suscripcion',    label: 'Suscripción',      icon: Crown },
@@ -337,7 +341,7 @@ export default function SettingsPage() {
                   <h2 className="text-2xl font-bold text-ink">Genealogic {userPlanLabel}</h2>
                   {userIsFounder && (
                     <span className="inline-flex items-center rounded-full bg-surface-card border border-hairline px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-ink">
-                      Founder · 49€/mes
+                      Cuenta vitalicia interna
                     </span>
                   )}
                 </div>
@@ -349,12 +353,12 @@ export default function SettingsPage() {
                     Ver detalle del plan
                     <ChevronRight className="w-4 h-4" />
                   </Link>
-                  {!userIsKennelPro && (
+                  {!userIsEnterprise && (
                     <a
-                      href="mailto:hola@genealogic.io?subject=Lista%20de%20espera%20Kennel%20Pro%20Founder"
+                      href="mailto:hola@genealogic.io?subject=Activar%20Kennel%20Enterprise"
                       className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink"
                     >
-                      Lista de espera Kennel Pro
+                      Hablar con soporte (Kennel Enterprise)
                     </a>
                   )}
                 </div>

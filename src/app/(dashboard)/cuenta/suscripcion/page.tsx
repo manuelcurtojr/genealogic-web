@@ -3,7 +3,16 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { Sparkles, Check, ArrowUpRight, Clock, MailIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { getPlanLabel } from '@/lib/permissions'
+// Nota: no usamos getPlanLabel() de lib/permissions porque devuelve los
+// nombres internos antiguos ("Kennel"/"Kennel Pro"). En esta página, copy
+// de cara al user, mapeamos al nombre comercial actual:
+//   rol técnico 'kennel'     → "Kennel Pro" (29€/mes)
+//   rol técnico 'kennel_pro' → "Kennel Enterprise" (149€/mes, manual)
+function publicPlanLabel(plan: string): string {
+  if (plan === 'kennel_pro' || plan === 'premium' || plan === 'enterprise') return 'Kennel Enterprise'
+  if (plan === 'kennel' || plan === 'pro') return 'Kennel Pro'
+  return 'Kennel Free'
+}
 import { isSubscriptionCheckoutAvailable } from '@/lib/stripe/server'
 import { isIosUserAgent } from '@/lib/platform'
 
@@ -41,36 +50,40 @@ export default async function SuscripcionPage({
   // Si llega ?activate=kennel|kennel_pro tras crear kennel, mostrar pantalla
   // dedicada "activa tu plan" antes que el detalle normal. Aceptamos los
   // nombres legacy pro/premium y los mapeamos.
+  // Nota: en BBDD el rol técnico 'kennel' = Kennel Pro (29€), y
+  // 'kennel_pro' = Kennel Enterprise (149€).
   const rawActivate = sp.activate
   const activatePlan: 'kennel' | 'kennel_pro' | null =
-    rawActivate === 'kennel_pro' || rawActivate === 'premium' ? 'kennel_pro' :
+    rawActivate === 'kennel_pro' || rawActivate === 'premium' || rawActivate === 'enterprise' ? 'kennel_pro' :
     rawActivate === 'kennel' || rawActivate === 'pro' ? 'kennel' :
     null
   // Solo mostrar pantalla "activate" si todavía está en plan free
-  // (si ya está en Kennel/Kennel Pro, no tiene sentido)
+  // (si ya está en Kennel Pro/Enterprise, no tiene sentido)
   const showActivate = activatePlan && plan === 'free'
 
-  // Features del plan Kennel (29€)
+  // Features del plan Kennel Pro (29€/mes · rol técnico 'kennel')
   const kennelIncluded = [
-    'Perros y camadas ilimitadas',
-    'Pipeline de reservas (vistas Ventas/Clientes + filtros)',
-    'Contratos digitales con firma electrónica',
-    'Pagos a plazos para clientes',
+    'Perros ilimitados',
+    'COI de Wright + ancestros duplicados',
+    'Simulador de cruces y predicción de color por genotipos',
+    'Pipeline de reservas, contratos digitales con firma electrónica',
+    'Pagos online integrados (Stripe Connect)',
     'Calendario veterinario + recordatorios automáticos',
     'Importador IA de genealogías (sin límite)',
     'Hub de Contactos (suscriptores + leads + clientes)',
     'Estadísticas del perfil público',
-    'Soporte por email',
+    'Soporte prioritario <24h',
   ]
 
-  // Features adicionales del plan Kennel Pro (49€ Founder · Próximamente)
+  // Features adicionales del plan Kennel Enterprise (149€/mes ·
+  // rol técnico 'kennel_pro' · activación manual)
   const kennelProExtras = [
-    'Todo lo del plan Kennel',
-    'Web pública del criadero con dominio propio',
+    'Todo lo del plan Kennel Pro',
+    'Web pública del criadero con dominio propio y multi-idioma',
+    'Blog SEO, reseñas, formulario de contacto, mapa de ubicación',
     'Emailbot multi-modelo (Claude / GPT / Gemini)',
-    'Newsletter a tu lista de suscriptores',
-    'Pagos online integrados con tarjeta',
-    'Precio Founder de 49€/mes congelado de por vida',
+    'Newsletter y biblioteca de conocimiento',
+    'API REST pública, multi-usuario, white-label e integraciones',
   ]
 
   // Pantalla "Activa tu plan" — usuario recién registrado con plan elegido
@@ -100,10 +113,10 @@ export default async function SuscripcionPage({
         <div className="mb-4 pr-20 sm:pr-24">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted mb-1">Plan actual</p>
           <div className="flex items-baseline gap-3 flex-wrap">
-            <h2 className="text-2xl sm:text-3xl font-bold text-ink break-words">Genealogic {getPlanLabel(plan)}</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink break-words">Genealogic {publicPlanLabel(plan)}</h2>
             {isFounder && (
               <span className="inline-flex items-center rounded-full bg-surface-card border border-hairline px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-ink">
-                Founder · 49€/mes para siempre
+                Cuenta vitalicia interna
               </span>
             )}
           </div>
@@ -137,7 +150,7 @@ export default async function SuscripcionPage({
         {startedDate && !isInTrial && (
           <p className="text-sm text-body mb-4">
             Activo desde el <strong>{startedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>.
-            {isFounder && ' Como Founder mantienes el precio original mientras la cuenta esté activa.'}
+            {isFounder && ' Tu cuenta vitalicia interna se mantiene activa sin coste.'}
           </p>
         )}
 
@@ -169,20 +182,21 @@ export default async function SuscripcionPage({
         </div>
       </div>
 
-      {/* Kennel Pro upsell — todavía no disponible públicamente */}
+      {/* Kennel Enterprise upsell — activación manual */}
       {plan !== 'premium' && plan !== 'kennel_pro' && (
         <div className="rounded-2xl border border-hairline bg-canvas p-6 lg:p-8">
           <div className="flex items-baseline gap-3 mb-1 flex-wrap">
-            <h3 className="text-lg font-bold text-ink">Genealogic Kennel Pro</h3>
-            <span className="text-xl font-bold text-ink">49€<span className="text-sm text-muted font-normal">/mes</span></span>
+            <h3 className="text-lg font-bold text-ink">Genealogic Kennel Enterprise</h3>
+            <span className="text-xl font-bold text-ink">149€<span className="text-sm text-muted font-normal">/mes</span></span>
             <span className="inline-flex items-center rounded-full bg-blue-100 text-blue-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
-              Próximamente
+              Activación manual
             </span>
           </div>
           <p className="text-sm text-body mb-5">
-            Web pública con dominio propio, emailbot 24/7, newsletter y pagos online.
-            Lo estamos abriendo en privado a los primeros 50 criaderos. El precio Founder
-            de 49€/mes se queda congelado de por vida.
+            Web pública del criadero con dominio propio y multi-idioma, blog SEO, emailbot
+            IA, newsletter, API REST, multi-usuario, white-label e integraciones.
+            El alta de Kennel Enterprise se hace de forma manual tras hablar con soporte —
+            escríbenos y te coordinamos el onboarding.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mb-6">
             {kennelProExtras.map(f => (
@@ -194,10 +208,10 @@ export default async function SuscripcionPage({
           </div>
           <Button
             variant="secondary" size="md"
-            href="mailto:hola@genealogic.io?subject=Lista%20de%20espera%20Kennel%20Pro%20Founder"
+            href="mailto:hola@genealogic.io?subject=Activar%20Kennel%20Enterprise"
           >
             <MailIcon className="w-4 h-4" />
-            Apuntarme a la lista de espera
+            Hablar con soporte
           </Button>
         </div>
       )}
@@ -222,10 +236,11 @@ export default async function SuscripcionPage({
 
 function ActivatePlanScreen({ plan }: { plan: 'kennel' | 'kennel_pro' }) {
   const checkoutReady = isSubscriptionCheckoutAvailable()
-  const planLabel = plan === 'kennel' ? 'Kennel' : 'Kennel Pro'
-  const planPrice = plan === 'kennel' ? '29€/mes' : '49€/mes Founder'
-  // Kennel Pro está en privado hasta los primeros 50; aunque checkout esté
-  // disponible, lo mostramos como lista de espera.
+  // En BBDD el rol 'kennel' = Kennel Pro (29€), 'kennel_pro' = Kennel Enterprise (149€).
+  const planLabel = plan === 'kennel' ? 'Kennel Pro' : 'Kennel Enterprise'
+  const planPrice = plan === 'kennel' ? '29€/mes' : '149€/mes'
+  // Kennel Enterprise se activa de forma manual; aunque checkout esté
+  // disponible, lo mostramos como contacto con soporte.
   const isPublicAvailable = plan === 'kennel'
 
   return (
@@ -279,8 +294,9 @@ function CheckoutCard({
         <p className="text-2xl font-bold text-ink">{planPrice}</p>
       </div>
       <p className="text-sm text-body mb-5">
-        15 días de prueba gratis con tarjeta. El primer cargo se hará automáticamente
-        al día 15. Cancelas cuando quieras desde el portal de Stripe sin coste.
+        14 días de prueba gratis, sin tarjeta. Antes de que termine la prueba te
+        pediremos método de pago para continuar; si no lo facilitas, tu cuenta
+        vuelve a Kennel Free sin coste y conservando tus datos.
       </p>
       <Button
         href={`/api/checkout/start?plan=${plan}`}
@@ -288,7 +304,7 @@ function CheckoutCard({
         size="md"
         className="w-full"
       >
-        Probar {planLabel} 15 días gratis
+        Probar {planLabel} 14 días gratis
         <ArrowUpRight className="w-4 h-4" />
       </Button>
     </div>
@@ -305,32 +321,31 @@ function WaitlistCard({
           <Clock className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-sm font-bold text-amber-900 mb-1">
-              {planLabel} a {planPrice} — abriendo gradualmente
+              {planLabel} a {planPrice} — activación manual
             </p>
             <p className="text-sm text-amber-900 leading-relaxed">
-              Estamos abriendo Genealogic {planLabel} por tandas para asegurar buen
-              soporte a cada nuevo criador. Te avisamos en cuanto tu cuenta esté lista
-              (suele ser cuestión de días).
+              Kennel Enterprise se contrata hablando con soporte. Hacemos un
+              onboarding personalizado (dominio, multi-idioma, configuración de
+              emailbot y newsletter) antes de activar la cuenta.
             </p>
           </div>
         </div>
       </div>
 
       <div className="rounded-2xl border border-hairline bg-canvas p-5 mb-4">
-        <p className="text-sm font-semibold text-ink mb-3">Apúntate a la lista de espera</p>
+        <p className="text-sm font-semibold text-ink mb-3">Habla con soporte para activarlo</p>
         <p className="text-sm text-body mb-4">
-          Escríbenos a hola@genealogic.io y te avisamos en cuanto abramos tu acceso
-          a {planLabel} (precio Founder de 49€/mes congelado de por vida para los
-          primeros 50 criaderos).
+          Escríbenos a hola@genealogic.io y te coordinamos el alta de {planLabel}
+          ({planPrice}). No hay alta automática desde la web ni periodo de prueba.
         </p>
         <Button
-          href={`mailto:hola@genealogic.io?subject=Lista%20de%20espera%20${planLabel}%20Founder&body=Hola,%20acabo%20de%20crear%20mi%20criadero%20en%20Genealogic%20y%20quiero%20apuntarme%20a%20la%20lista%20de%20espera%20para%20activar%20${planLabel}.%20Mi%20email%20es:%20`}
+          href={`mailto:hola@genealogic.io?subject=Activar%20${planLabel}&body=Hola,%20acabo%20de%20crear%20mi%20criadero%20en%20Genealogic%20y%20quiero%20activar%20${planLabel}.%20Mi%20email%20es:%20`}
           variant="primary"
           size="md"
           className="w-full"
         >
           <MailIcon className="w-4 h-4" />
-          Apuntarme a {planLabel}
+          Hablar con soporte
         </Button>
       </div>
 
@@ -338,7 +353,7 @@ function WaitlistCard({
         href="/dashboard"
         className="block text-center rounded-xl border border-hairline bg-canvas px-5 py-3 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink"
       >
-        Empezar en Free mientras tanto →
+        Empezar en Kennel Free mientras tanto →
       </a>
     </>
   )

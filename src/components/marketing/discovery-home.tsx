@@ -648,6 +648,8 @@ export default function DiscoveryHome({
               period="3 perros"
               desc="Para documentar tu mascota."
               features={['Genealogía 10 generaciones', 'Cartilla veterinaria', 'Galería ilimitada', 'Importador IA']}
+              accent="#3b82f6"
+              accentBg="from-blue-50 via-canvas to-sky-50"
             />
             <PricingCard
               tier="Kennel Free"
@@ -655,21 +657,27 @@ export default function DiscoveryHome({
               period="5 perros"
               desc="Para el criador casero."
               features={['Camadas + calendario', 'Pipeline reservas', 'Contratos + firma', 'CRM clientes']}
+              accent="#10b981"
+              accentBg="from-emerald-50 via-canvas to-green-50"
             />
             <PricingCard
               tier="Kennel Pro"
-              price="19€"
+              price="29€"
               period="/mes · ilimitado"
               desc="Para el criadero profesional."
               features={['Perros ilimitados', 'COI + simulador cruces', 'Genotipos completos', 'Pagos Stripe Connect']}
+              accent="#FE6620"
+              accentBg="from-orange-50 via-canvas to-amber-50"
               highlight
             />
             <PricingCard
               tier="Kennel Enterprise"
-              price="99€"
+              price="149€"
               period="/mes · ilimitado"
               desc="Para el criadero con escaparate público."
               features={['Web con tu dominio', 'Multi-idioma', 'Emailbot IA + newsletter', 'API + integraciones']}
+              accent="#8b5cf6"
+              accentBg="from-violet-50 via-canvas to-purple-50"
             />
           </div>
 
@@ -698,10 +706,10 @@ export default function DiscoveryHome({
             </div>
             <div className="space-y-2">
               <FaqItem q="¿Es realmente gratis?">
-                Sí. El plan gratuito no caduca: hasta 10 perros, genealogía
-                completa, cartilla veterinaria y fotos ilimitadas. Sin tarjeta.
-                Si necesitas subir más perros o quieres web propia, pipeline y
-                emailbot, pasas a Kennel o Kennel Pro.
+                Sí. Owner (3 perros) y Kennel Free (5 perros) no caducan, sin
+                tarjeta. Sube a Kennel Pro (29€/mes) cuando necesites perros
+                ilimitados, COI completo y Stripe; o a Kennel Enterprise
+                (149€/mes) para web del criadero con dominio propio.
               </FaqItem>
               <FaqItem q="¿Mis datos son míos? ¿Puedo exportarlos?">
                 Sí. Cualquier perro, contrato o cliente lo exportas a PDF/CSV en
@@ -716,13 +724,13 @@ export default function DiscoveryHome({
               <FaqItem q="¿Tengo que migrar todos mis perros yo mismo?">
                 No. Si están en Dogsfiles, Presadb, K9data, Working-dog o
                 Breedarchive, pegas la URL y nuestro importador con IA extrae
-                el pedigree completo en 30 segundos. También aceptamos PDFs y
+                la genealogía completa en 30 segundos. También aceptamos PDFs y
                 screenshots.
               </FaqItem>
               <FaqItem q="¿Qué pasa si dejo de pagar Kennel Pro?">
-                Bajas automáticamente a Kennel (o a Gratis si te ibas a
-                cancelar). Tus perros, fotos y datos siguen ahí — solo pierdes
-                las features Pro hasta que vuelvas a suscribirte.
+                Bajas automáticamente a Kennel Free. Tus perros, fotos y datos
+                siguen ahí — solo pierdes las features Pro (COI completo,
+                simulador, genotipos, Stripe) hasta que vuelvas a suscribirte.
               </FaqItem>
               <FaqItem q="¿Cuántas generaciones soporta el árbol?">
                 Hasta 10 generaciones por perro. El COI (coeficiente de
@@ -1118,29 +1126,37 @@ function CompareCell({ value }: { value: boolean | 'partial' }) {
 }
 
 /**
- * PricingCard — teaser compacto para la home. Más detalle vive en /pricing.
- *
- * Layout pensado para grid de 4 columnas (4 planes). Padding reducido y
- * tipografía ajustada para que las cards quepan sin truncar en md+.
+ * PricingCard — teaser compacto para la home, alineado visualmente con
+ * /pricing. Cada plan lleva su color de marca (azul Owner, verde Free,
+ * naranja Pro, violeta Enterprise) en el badge, fondo degradado, borde
+ * destacado (si highlight) y check de features.
  */
 function PricingCard({
-  tier, price, period, desc, features, highlight,
+  tier, price, period, desc, features, highlight, accent, accentBg,
 }: {
   tier: string; price: string; period: string; desc: string; features: string[]
   highlight?: boolean
+  /** Color hex del plan (Owner blue, Free emerald, Pro orange, Ent violet) */
+  accent: string
+  /** Tailwind gradient classes para el fondo de la card */
+  accentBg: string
 }) {
-  const borderClass = highlight
-    ? 'border-[#FE6620] shadow-[0_12px_48px_rgba(254,102,32,0.15)] border-2'
-    : 'border-hairline'
-
   return (
-    <div className={`relative rounded-2xl border ${borderClass} bg-canvas p-5 sm:p-6 flex flex-col`}>
+    <div
+      className={`relative rounded-2xl border-2 bg-gradient-to-br ${accentBg} p-5 sm:p-6 flex flex-col ${
+        highlight ? 'shadow-[0_12px_48px_rgba(254,102,32,0.18)]' : 'border-hairline'
+      }`}
+      style={highlight ? { borderColor: accent } : {}}
+    >
       {highlight && (
-        <span className="absolute -top-3 left-5 inline-flex items-center rounded-full bg-[#FE6620] text-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider">
+        <span
+          className="absolute -top-3 left-5 inline-flex items-center rounded-full text-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+          style={{ background: accent }}
+        >
           Más popular
         </span>
       )}
-      <p className="text-[11.5px] font-bold uppercase tracking-wider text-muted">{tier}</p>
+      <p className="text-[11.5px] font-bold uppercase tracking-wider" style={{ color: accent }}>{tier}</p>
       <div className="mt-2.5 flex items-baseline gap-1">
         <span className="text-[28px] sm:text-[32px] font-bold tabular-nums leading-none text-ink">{price}</span>
         <span className="text-[12px] text-muted">{period}</span>
@@ -1149,7 +1165,7 @@ function PricingCard({
       <ul className="mt-4 space-y-1.5 flex-1">
         {features.map((f, i) => (
           <li key={i} className="flex items-start gap-2 text-[12.5px] text-body leading-snug">
-            <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-emerald-600" />
+            <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: accent }} />
             <span>{f}</span>
           </li>
         ))}

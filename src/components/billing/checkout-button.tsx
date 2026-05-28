@@ -1,11 +1,14 @@
 /**
- * Botón "Probar 15 días gratis" que dispara el Checkout de Stripe.
+ * Botón "Probar 14 días gratis" que dispara el Checkout de Stripe
+ * para Kennel Pro (29€/mes). Kennel Enterprise NO usa este botón:
+ * su alta es manual tras hablar con soporte.
  *
  * Usado en /pricing. Si el user NO está logueado, redirige a
  * /register?intent=breeder&plan=X que tras signup vuelve aquí.
  * Si SÍ está logueado, llama a POST /api/billing/checkout y redirige
- * a la URL de Stripe Checkout (que arranca el trial de 15 días con
- * tarjeta upfront).
+ * a la URL de Stripe Checkout (que arranca el trial de 14 días sin
+ * tarjeta inicial; el método de pago se solicita antes del primer
+ * cargo).
  *
  * Nota: la prop `plan` sigue aceptando los nombres legacy 'pro'/'premium'
  * porque el endpoint los normaliza a kennel/kennel_pro internamente.

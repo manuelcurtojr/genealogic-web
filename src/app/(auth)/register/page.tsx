@@ -241,36 +241,56 @@ function intentBranding(data: SignupIntentData | null) {
     }
   }
   // breeder
-  // Plan canónico nuevo: free / kennel / kennel_pro. Aceptamos legacy pro/premium
-  // por si llega por URL antigua, mapeando al label nuevo.
-  const isKennelPro = data.plan === 'kennel_pro' || data.plan === 'premium'
-  const isKennel = data.plan === 'kennel' || data.plan === 'pro'
-  const planLabel = isKennelPro ? 'Kennel Pro' : isKennel ? 'Kennel' : 'Free'
-  const isFree = data.plan === 'free'
+  // Plan comercial nuevo, mapeado desde los valores que aún acepta el type
+  // SignupPlan ('free' | 'kennel' | 'kennel_pro' | 'pro' | 'premium').
+  // Tras el rename:
+  //   kennel_pro / premium → Kennel Enterprise (149€/mes · activación manual)
+  //   pro / kennel        → Kennel Pro (29€/mes · 14 días gratis sin tarjeta)
+  //   free                → Kennel Free (5 perros · gratis)
+  // El plan Owner (3 perros) llega por intent === 'owner', no por data.plan.
+  const planStr = data.plan as string
+  const isEnterprise = planStr === 'enterprise' || planStr === 'kennel_pro' || planStr === 'premium'
+  const isPro = planStr === 'pro' || planStr === 'kennel'
+  const isOwner = planStr === 'owner'
+  const isFree = planStr === 'free' && !isOwner
+  const planLabel = isEnterprise
+    ? 'Kennel Enterprise'
+    : isPro
+      ? 'Kennel Pro'
+      : isOwner
+        ? 'Owner'
+        : 'Kennel Free'
   return {
-    title: isFree ? 'Empieza' : 'Activa',
-    titleTail: isFree ? 'gratis.' : `Genealogic ${planLabel}.`,
-    subtitle: isFree
-      ? 'Crea tu cuenta para registrar tu criadero y empezar a publicar tus perros.'
-      : isKennelPro
-        ? `Kennel Pro está abriéndose en privado a los primeros 50 criaderos. Crea tu cuenta y te avisamos en cuanto esté disponible — mientras tanto puedes usar Kennel con 15 días gratis.`
-        : `Tu cuenta empieza en Free; al elegir ${planLabel} arranca una prueba de 15 días con tarjeta. Cobro automático al día 15. Cancelas cuando quieras.`,
-    submitLabel: isFree ? 'Crear cuenta gratis' : `Crear cuenta y continuar`,
+    title: isFree || isOwner ? 'Empieza' : 'Activa',
+    titleTail: isFree || isOwner ? 'gratis.' : `Genealogic ${planLabel}.`,
+    subtitle: isOwner
+      ? 'Tu plan Owner es gratis para siempre, hasta 3 perros. Crea tu cuenta y empieza a documentar tu mascota.'
+      : isFree
+        ? 'Tu plan Kennel Free es gratis para siempre, hasta 5 perros. Crea tu cuenta para registrar tu criadero y empezar a publicar tus perros.'
+        : isEnterprise
+          ? 'Kennel Enterprise se activa de forma manual tras hablar con soporte (hola@genealogic.io). Crea tu cuenta y nos coordinamos contigo para el alta.'
+          : 'Kennel Pro empieza con 14 días gratis sin tarjeta. Antes de terminar la prueba te pedimos método de pago para continuar.',
+    submitLabel: isFree || isOwner ? 'Crear cuenta gratis' : `Crear cuenta y continuar`,
   }
 }
 
 function IntentBadge({ data }: { data: SignupIntentData }) {
   const Icon = data.intent === 'buyer' ? Search : Store
-  const isKennelPro = data.plan === 'kennel_pro' || data.plan === 'premium'
-  const isKennel = data.plan === 'kennel' || data.plan === 'pro'
-  const planLabel = isKennelPro ? 'Kennel Pro' : isKennel ? 'Kennel' : null
+  const planStr = data.plan as string
+  const isEnterprise = planStr === 'enterprise' || planStr === 'kennel_pro' || planStr === 'premium'
+  const isPro = planStr === 'pro' || planStr === 'kennel'
+  const isOwner = planStr === 'owner'
   const label = data.intent === 'buyer'
     ? 'Cuenta de comprador'
-    : data.plan === 'free'
-      ? 'Plan Free · sin tarjeta'
-      : isKennelPro
-        ? 'Plan Kennel Pro · próximamente · lista de espera'
-        : `Plan ${planLabel} · 15 días gratis con tarjeta`
+    : isOwner
+      ? 'Plan Owner · Gratis para siempre · 3 perros'
+      : planStr === 'free'
+        ? 'Plan Kennel Free · Gratis para siempre · 5 perros'
+        : isEnterprise
+          ? 'Plan Kennel Enterprise · Activación manual tras hablar con soporte'
+          : isPro
+            ? 'Plan Kennel Pro · 14 días gratis sin tarjeta'
+            : 'Plan Kennel Free · Gratis para siempre · 5 perros'
   return (
     <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-card px-3 py-1.5">
       <Icon className="h-3.5 w-3.5 text-ink" />

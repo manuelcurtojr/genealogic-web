@@ -62,10 +62,10 @@ export default function TermsPage() {
 
       <h3>5.1 Planes disponibles</h3>
       <ul>
-        <li><strong>Free (gratuito):</strong> hasta 10 perros con ficha completa, genealogía sin límite de generaciones, importador IA, búsqueda pública, simulador de cruces, calendario veterinario. Sin tarjeta.</li>
-        <li><strong>Kennel (29 €/mes o 290 €/año):</strong> perros y camadas ilimitadas, pipeline de reservas, contratos digitales, importador IA sin límite, hub de contactos, estadísticas del perfil público y soporte por email.</li>
-        <li><strong>Kennel Pro (49 €/mes — precio Founder de por vida para los primeros 50 suscriptores):</strong> todo lo de Kennel + web pública con dominio propio, emailbot multi-modelo, newsletter, pagos online integrados.</li>
-        <li><strong>Verificaciones oficiales pay-per-use</strong> (próximamente): 25-50 €/unidad cuando esté disponible la integración con clubes oficiales.</li>
+        <li><strong>Owner (gratuito, para siempre):</strong> hasta 3 perros con ficha completa, genealogía sin límite de generaciones, importador IA, cartilla veterinaria, galería ilimitada y búsqueda pública. Sin tarjeta. Pensado para propietarios que documentan su mascota.</li>
+        <li><strong>Kennel Free (gratuito, para siempre):</strong> hasta 5 perros (límite legal anterior a núcleo zoológico de tenencia en España). Todo lo de Owner + calendario reproductivo, camadas, stud-book, pipeline de reservas, plantillas de contrato, firma electrónica básica, CRM y estadísticas. Sin tarjeta. Pensado para el criador casero.</li>
+        <li><strong>Kennel Pro (29 €/mes):</strong> perros ilimitados. Todo lo de Kennel Free + COI de Wright, ancestros duplicados, simulador de cruces, predicción de color por genotipos, pagos online integrados con Stripe Connect y soporte prioritario. <strong>14 días de prueba sin tarjeta</strong>; al finalizar la prueba se solicita método de pago para continuar.</li>
+        <li><strong>Kennel Enterprise (149 €/mes):</strong> perros ilimitados. Todo lo de Kennel Pro + web pública del criadero con dominio propio, multi-idioma, blog SEO, emailbot multi-modelo, newsletter, API REST, multi-usuario, white-label e integraciones. <strong>Activación manual</strong>: se contrata escribiendo a soporte (hola@genealogic.io). No tiene periodo de prueba ni alta automática desde la web.</li>
       </ul>
       <p>
         Los precios se muestran con IVA cuando aplicable. La disponibilidad y características
@@ -80,14 +80,20 @@ export default function TermsPage() {
         método de pago, aceptas también los <a href="https://stripe.com/es/legal/end-users" target="_blank" rel="noopener">Términos de Stripe</a>.
       </p>
 
-      <h3>5.3 Periodo de prueba (15 días)</h3>
+      <h3>5.3 Periodo de prueba (14 días, sólo Kennel Pro)</h3>
       <p>
-        Los planes Kennel y Kennel Pro ofrecen un periodo de prueba gratuito de{' '}
-        <strong>15 días naturales</strong> para nuevos suscriptores. Se requiere registrar
-        una tarjeta válida al iniciar la prueba; <strong>no se efectúa ningún cargo
-        durante esos 15 días</strong>. Si no cancelas antes de que finalice, el día 15
-        se realizará el primer cargo automáticamente y la suscripción continuará en
-        facturación periódica.
+        El plan <strong>Kennel Pro</strong> ofrece un periodo de prueba gratuito de{' '}
+        <strong>14 días naturales</strong> para nuevos suscriptores, <strong>sin
+        necesidad de registrar tarjeta</strong> al iniciar la prueba. Antes de que
+        finalice el periodo te solicitaremos un método de pago para continuar; si no
+        se facilita, la cuenta vuelve automáticamente a Kennel Free al término de la
+        prueba, conservando íntegramente tus datos.
+      </p>
+      <p>
+        Los planes <strong>Owner</strong> y <strong>Kennel Free</strong> son gratuitos
+        de forma indefinida y no requieren periodo de prueba. El plan{' '}
+        <strong>Kennel Enterprise</strong> se activa de forma manual tras contacto
+        con soporte y, por tanto, no dispone de prueba gratuita automática.
       </p>
 
       <h3>5.4 Renovación automática</h3>

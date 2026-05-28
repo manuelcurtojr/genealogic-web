@@ -232,7 +232,7 @@ const PLANS: PlanDef[] = [
   {
     id: 'pro',
     name: 'Kennel Pro',
-    price: '19€',
+    price: '29€',
     period: '/mes · 14 días gratis',
     maxDogs: 'Ilimitado',
     forWho: 'Para el criadero profesional',
@@ -254,8 +254,11 @@ const PLANS: PlanDef[] = [
   {
     id: 'enterprise',
     name: 'Kennel Enterprise',
-    price: '99€',
-    period: '/mes · 14 días gratis',
+    price: '149€',
+    // No "14 días gratis": Enterprise hoy requiere aprobación manual
+    // (chatbot + web del criadero aún en testing). El criador habla con
+    // soporte y nosotros activamos a mano.
+    period: '/mes · alta manual',
     maxDogs: 'Ilimitado',
     forWho: 'Para el criadero con escaparate público',
     description: 'Todo Pro + web profesional con dominio propio + emailbot IA + multi-idioma.',
@@ -270,7 +273,7 @@ const PLANS: PlanDef[] = [
       'Multi-usuario (team) + white-label + integraciones',
       'Onboarding personalizado + API pública REST',
     ],
-    ctaLabel: 'Probar 14 días gratis',
+    ctaLabel: 'Hablar con soporte',
   },
 ]
 
@@ -286,19 +289,20 @@ export default function PricingClient({
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Vista: simple (default) o avanzada. Derivamos directamente del query
-  // string en cada render (sin sincronización via useEffect) para no
-  // disparar la regla react-hooks/set-state-in-effect.
-  const urlView = searchParams.get('view')
-  const view: 'simple' | 'avanzada' = urlView === 'avanzada' ? 'avanzada' : 'simple'
-  function setView(next: 'simple' | 'avanzada') { switchView(next) }
-  void setView
+  // Vista: simple (default) o avanzada. Estado local como source of truth +
+  // sync con URL via history.replaceState (sin disparar navegación de Next,
+  // que era la causa de que el toggle no funcionara: router.replace sobre
+  // el mismo path no fuerza re-render del Client Component).
+  const initialView: 'simple' | 'avanzada' =
+    searchParams.get('view') === 'avanzada' ? 'avanzada' : 'simple'
+  const [view, setView] = useState<'simple' | 'avanzada'>(initialView)
+  void router // mantenemos router import por si se reintroduce navegación
 
   function switchView(next: 'simple' | 'avanzada') {
     setView(next)
     const url = new URL(window.location.href)
     url.searchParams.set('view', next)
-    router.replace(url.pathname + url.search, { scroll: false })
+    window.history.replaceState({}, '', url.toString())
   }
 
   return (
@@ -490,9 +494,14 @@ function PlanCard({ plan, isLoggedIn }: { plan: PlanDef; isLoggedIn: boolean }) 
             style={{ background: plan.accent }}
           />
         )}
-        {(plan.id === 'pro' || plan.id === 'enterprise') && (
+        {plan.id === 'pro' && (
           <p className="mt-2 text-[10.5px] text-muted text-center">
             Sin tarjeta para empezar el trial · Cancela cuando quieras
+          </p>
+        )}
+        {plan.id === 'enterprise' && (
+          <p className="mt-2 text-[10.5px] text-muted text-center">
+            Activación manual tras hablar con soporte · Cancela cuando quieras
           </p>
         )}
       </div>
@@ -648,11 +657,18 @@ function FAQ() {
           más de 20 años se marcan automáticamente como fallecidos (puedes
           contradecirlo en los 30 días siguientes).
         </FaqItem>
-        <FaqItem q="¿Cómo funciona la prueba de 14 días de Pro y Enterprise?">
+        <FaqItem q="¿Cómo funciona la prueba de 14 días de Pro?">
           Te das de alta sin tarjeta. Durante 14 días tienes acceso completo
           al plan. El día 13 te avisamos por email. El día 14 te pedimos
           tarjeta para seguir. Si no pagas, vuelves automáticamente a Free
           (tus datos se mantienen intactos).
+        </FaqItem>
+        <FaqItem q="¿Y Enterprise? ¿También 14 días gratis?">
+          Enterprise se activa manualmente tras hablar con soporte
+          (hola@genealogic.io). De momento estamos validando el chatbot y la
+          web del criadero con un grupo cerrado de Founders. Si lo quieres
+          probar, escríbenos y te activamos la cuenta en menos de 24h. Pasaremos
+          a auto-servicio cuando esté pulido.
         </FaqItem>
         <FaqItem q="¿Puedo cambiar de plan en cualquier momento?">
           Sí, sube o baja cuando quieras. Si subes, el cobro es prorrateado.

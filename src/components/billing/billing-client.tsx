@@ -54,22 +54,31 @@ function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+// Labels comerciales actuales (rol técnico → nombre público):
+//   'kennel'     → "Kennel Pro" (29€/mes)
+//   'kennel_pro' → "Kennel Enterprise" (149€/mes, activación manual)
+//   'free'       → "Kennel Free" (5 perros, gratis para siempre)
+//   'owner'      → "Owner" (3 perros, gratis para siempre)
 const PLAN_LABEL: Record<string, string> = {
-  free: 'Free',
-  kennel: 'Kennel',
-  kennel_pro: 'Kennel Pro',
+  free: 'Kennel Free',
+  owner: 'Owner',
+  kennel: 'Kennel Pro',
+  kennel_pro: 'Kennel Enterprise',
+  enterprise: 'Kennel Enterprise',
   // Legacy aliases (suscripciones antiguas)
-  pro: 'Kennel',
-  premium: 'Kennel Pro',
-  starter: 'Kennel',
+  pro: 'Kennel Pro',
+  premium: 'Kennel Enterprise',
+  starter: 'Kennel Pro',
 }
 
 const PLAN_PRICE: Record<string, string> = {
   free: 'Gratis',
+  owner: 'Gratis',
   kennel: '29 €/mes',
-  kennel_pro: '49 €/mes',
+  kennel_pro: '149 €/mes',
+  enterprise: '149 €/mes',
   pro: '29 €/mes',
-  premium: '49 €/mes',
+  premium: '149 €/mes',
   starter: '29 €/mes',
 }
 
@@ -166,7 +175,7 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
                   Primer cargo el {trialEndsDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}.
                 </span>
               ) : !hasStripe ? (
-                <>Aún sin método de pago. {hasKennel ? 'Suscríbete para desbloquear Kennel o Kennel Pro.' : 'Crea tu criadero para acceder a planes de pago.'}</>
+                <>Aún sin método de pago. {hasKennel ? 'Suscríbete para desbloquear Kennel Pro o Kennel Enterprise.' : 'Crea tu criadero para acceder a planes de pago.'}</>
               ) : subStatus === 'active' ? (
                 <>Suscripción activa en Stripe.</>
               ) : subStatus === 'past_due' ? (
@@ -213,19 +222,19 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <PlanCard
-                name="Kennel"
+                name="Kennel Pro"
                 price="29 €"
                 period="/mes"
-                description="Pipeline de reservas, contratos digitales, vet calendar, importer IA. 15 días gratis."
+                description="Perros ilimitados, COI completo, simulador de cruces, genotipos, Stripe Connect y soporte prioritario. 14 días gratis sin tarjeta."
                 highlight
                 onSelect={() => startCheckoutFn('pro')}
                 disabled={checkoutPending}
               />
               <PlanCard
-                name="Kennel Pro"
-                price="49 €"
-                period="/mes · Founder"
-                description="Web pública, emailbot, newsletter, pagos online. Lo estamos abriendo en privado a los primeros 50 criaderos. Te avisamos cuando esté disponible."
+                name="Kennel Enterprise"
+                price="149 €"
+                period="/mes"
+                description="Web propia con dominio y multi-idioma, emailbot IA, newsletter, API REST, multi-usuario, white-label e integraciones. Activación manual tras hablar con soporte — no se contrata desde la web."
                 onSelect={() => startCheckoutFn('premium')}
                 disabled={checkoutPending}
                 comingSoon
@@ -241,8 +250,9 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
           )}
 
           <p className="text-xs text-muted mt-3">
-            15 días de prueba gratis · Tarjeta requerida · Cobro automático al terminar la prueba ·
-            Cancela cuando quieras desde el portal.{' '}
+            Kennel Pro: 14 días de prueba gratis · Sin tarjeta · Antes de terminar la
+            prueba te pedimos método de pago para continuar · Cancela cuando quieras
+            desde el portal.{' '}
             <Link href="/pricing" className="text-ink underline">Ver todas las diferencias</Link>.
           </p>
         </div>
@@ -362,7 +372,7 @@ function PlanCard({
               : 'border border-hairline bg-canvas text-ink hover:border-ink/40'
           }`}
         >
-          Probar {name} 15 días gratis
+          Probar {name} 14 días gratis
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       )}
