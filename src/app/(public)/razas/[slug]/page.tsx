@@ -49,7 +49,7 @@ async function getBreed(slug: string) {
   const supabase = await createClient()
   const { data: breed } = await supabase
     .from('breeds')
-    .select('id, name, slug, description, synonyms, standard_data, genealogic_standard, club_differences')
+    .select('id, name, slug, description, synonyms, standard_data, genealogic_standard, club_differences, image_url, image_attribution')
     .eq('slug', slug)
     .maybeSingle()
   return breed
@@ -61,20 +61,31 @@ export async function generateMetadata(
   const { slug } = await params
   const breed = await getBreed(slug)
   if (!breed) return { title: 'Raza no encontrada — Genealogic' }
-  const std: StandardData = breed.standard_data || {}
   const desc = breed.description
     ? breed.description.slice(0, 200) + (breed.description.length > 200 ? '…' : '')
     : `Estándar oficial, características y ejemplares de la raza ${breed.name}.`
+  const url = `https://genealogic.io/razas/${slug}`
+  const ogImage = breed.image_url
+    ? [{ url: breed.image_url, alt: breed.name, width: 1200, height: 630 }]
+    : undefined
   return {
     title: `${breed.name} — Estándar oficial y características · Genealogic`,
     description: desc,
-    alternates: { canonical: `https://genealogic.io/razas/${slug}` },
+    alternates: { canonical: url },
     openGraph: {
       title: `${breed.name} — Genealogic`,
       description: desc,
-      url: `https://genealogic.io/razas/${slug}`,
+      url,
       siteName: 'Genealogic',
       type: 'article',
+      locale: 'es_ES',
+      images: ogImage,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${breed.name} — Genealogic`,
+      description: desc,
+      images: breed.image_url ? [breed.image_url] : undefined,
     },
   }
 }
@@ -146,8 +157,51 @@ export default async function BreedPage(
 
   const hasStandard = (gStandard.sections || []).length > 0
 
+  // JSON-LD Schema.org — Article + Thing/breed + Breadcrumb
+  const pageUrl = `https://genealogic.io/razas/${slug}`
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Article',
+        '@id': `${pageUrl}#article`,
+        url: pageUrl,
+        headline: `${breed.name} — Estándar Genealogic`,
+        description: breed.description || `Estándar canónico de la raza ${breed.name}.`,
+        image: breed.image_url || undefined,
+        inLanguage: 'es',
+        isPartOf: { '@id': 'https://genealogic.io/#website' },
+        about: { '@id': `${pageUrl}#breed` },
+      },
+      {
+        '@type': 'Thing',
+        '@id': `${pageUrl}#breed`,
+        name: breed.name,
+        alternateName: synonyms.length ? synonyms : undefined,
+        url: pageUrl,
+        image: breed.image_url || undefined,
+        description: breed.description || undefined,
+        additionalType: 'https://schema.org/AnimalBreed',
+        ...(std.fci_number && {
+          identifier: { '@type': 'PropertyValue', propertyID: 'FCI', value: std.fci_number },
+        }),
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Razas', item: 'https://genealogic.io/razas' },
+          { '@type': 'ListItem', position: 2, name: breed.name, item: pageUrl },
+        ],
+      },
+    ],
+  }
+
   return (
     <div className="min-h-screen bg-canvas">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Breadcrumb */}
       <nav className="border-b border-hairline">
         <div className="mx-auto max-w-[1200px] px-4 py-3 sm:px-6">

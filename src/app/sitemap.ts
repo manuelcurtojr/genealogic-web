@@ -80,9 +80,24 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
       })
     }
 
-    // NOTA: no incluimos /breeds/* porque esa ruta no existe en el frontend
-    // (las razas se navegan vía /search?breed=X). Si en el futuro se añade
-    // /breeds/[slug], descomentar la sección.
+    // Razas con estándar Genealogic publicado: /razas/[slug]
+    // Sólo incluimos las que tienen genealogic_standard rellenado para no
+    // indexar fichas vacías.
+    const { data: breeds } = await supabase
+      .from('breeds')
+      .select('slug, updated_at')
+      .not('slug', 'is', null)
+      .not('genealogic_standard', 'is', null)
+      .order('updated_at', { ascending: false })
+      .limit(10000)
+    for (const b of (breeds || [])) {
+      entries.push({
+        url: `https://genealogic.io/razas/${b.slug}`,
+        lastModified: b.updated_at ? new Date(b.updated_at) : new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      })
+    }
 
     // All kennels with slugs (~3500 hoy, cabe en un solo shard)
     const { data: kennels } = await supabase
@@ -128,6 +143,7 @@ function staticEntries(): MetadataRoute.Sitemap {
     { url: 'https://genealogic.io', lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
     { url: 'https://genealogic.io/search', lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
     { url: 'https://genealogic.io/kennels', lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
+    { url: 'https://genealogic.io/razas', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
     { url: 'https://genealogic.io/blog', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
     { url: 'https://genealogic.io/privacy', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
     { url: 'https://genealogic.io/terms', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
