@@ -1,18 +1,25 @@
-import { createClient } from '@/lib/supabase/server'
+/**
+ * Layout del grupo (dashboard). Si el usuario está logueado, renderea
+ * el chrome completo (sidebar + header). Si NO está logueado, renderea
+ * el marketing header — porque dentro del grupo (dashboard) viven páginas
+ * que también son visibles para visitantes (perfil público de perro,
+ * search, kennels, etc).
+ *
+ * Toda la lógica de carga del contexto (user + kennel + plan + roles)
+ * vive en `lib/auth/load-shell-context.ts` para que (public)/layout.tsx
+ * y (legal)/layout.tsx puedan reusarla y mostrar el MISMO shell logueado
+ * en todas las páginas — UX más fluida sin saltos entre marketing y
+ * dashboard.
+ */
 import DashboardShell from '@/components/layout/dashboard-shell'
 import MarketingHeader from '@/components/marketing/marketing-header'
 import MarketingFooter from '@/components/marketing/marketing-footer'
-import { getEffectiveRoles } from '@/lib/auth/roles'
-import { isEnterpriseUser } from '@/lib/permissions'
+import { loadShellContext } from '@/lib/auth/load-shell-context'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const ctx = await loadShellContext()
 
-  // Visitantes no logueados (perfil público de perro/criadero, /search, /kennels)
-  // ven el mismo marketing header + footer que la home, para que la navegación
-  // entre páginas públicas sea consistente y puedan llegar a registrarse.
-  if (!user) {
+  if (!ctx) {
     return (
       <div className="min-h-screen bg-canvas text-[var(--foreground)] flex flex-col">
         <MarketingHeader />
@@ -24,38 +31,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
     )
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('display_name, email, role, avatar_url, plan, plan_is_founder')
-    .eq('id', user.id)
-    .single()
-
-  const { data: kennelArr } = await supabase
-    .from('kennels')
-    .select('name, logo_url')
-    .eq('owner_id', user.id)
-    .limit(1)
-  const kennel = kennelArr?.[0] || null
-
-  // Enterprise/founder override: usuarios con cuenta "comp" siempre ven
-  // kennel_pro independientemente del plan que tengan en DB. Esto cubre
-  // bugs de propagación de plan, migrations en vuelo, y al fundador.
-  const rawPlan = (profile as any)?.plan || 'free'
-  const plan = isEnterpriseUser(user.id) ? 'kennel_pro' : rawPlan
-  const planIsFounder = isEnterpriseUser(user.id) || Boolean((profile as any)?.plan_is_founder)
-
-  // Detecta roles efectivos del user (isClient = tiene reservas o perros transferidos).
-  // Si es client, el sidebar muestra el bloque "Propietario" con Mis reservas/perros.
-  const roles = await getEffectiveRoles(user.id)
-
   return (
     <DashboardShell
-      user={profile}
-      kennel={kennel}
-      plan={plan}
-      planIsFounder={planIsFounder}
-      userId={user.id}
-      isClient={roles.isClient}
+      user={ctx.user}
+      kennel={ctx.kennel}
+      plan={ctx.plan}
+      planIsFounder={ctx.planIsFounder}
+      userId={ctx.userId}
+      isClient={ctx.isClient}
     >
       {children}
     </DashboardShell>

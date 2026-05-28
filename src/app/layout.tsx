@@ -56,13 +56,15 @@ export const metadata: Metadata = {
     title: "Genealogic — Genealogías caninas verificables",
     description:
       "El registro público de genealogías caninas. Cada criador serio tiene su escaparate.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Genealogic" }],
+    // og:image se genera automáticamente desde src/app/opengraph-image.tsx.
+    // Next.js inyecta el meta tag <og:image> apuntando a /opengraph-image
+    // sin que tengamos que listarlo aquí.
   },
   twitter: {
     card: "summary_large_image",
     title: "Genealogic",
     description: "El registro público de genealogías caninas.",
-    images: ["/og-image.png"],
+    // Igual que con openGraph: la twitter:image se hereda del opengraph-image.tsx
   },
   robots: { index: true, follow: true },
 };
