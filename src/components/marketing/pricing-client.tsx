@@ -4,7 +4,7 @@
  * Modelo cerrado 2026-05-28:
  *   · Owner — 3 perros · Gratis
  *   · Kennel Free — 5 perros · Gratis
- *   · Kennel Pro — Ilimitado · 19€/mes (14 días de prueba)
+ *   · Kennel Pro — Ilimitado · 49€/mes (14 días de prueba)
  *   · Kennel Enterprise — Ilimitado · 99€/mes (14 días de prueba)
  *
  * Vistas:

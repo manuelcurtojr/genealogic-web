@@ -25,11 +25,13 @@ export const metadata: Metadata = {
     url: 'https://genealogic.io/soporte',
     type: 'website',
     siteName: 'Genealogic',
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Genealogic' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Soporte — Genealogic',
     description: 'Abre un ticket de soporte humano.',
+    images: ['/opengraph-image'],
   },
 }
 
