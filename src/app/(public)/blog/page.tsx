@@ -13,7 +13,12 @@ export const metadata: Metadata = {
       'Guías, tutoriales y artículos sobre cría canina, genética, salud, gestión de criadero y herramientas Genealogic.',
     url: 'https://genealogic.io/blog',
     siteName: 'Genealogic',
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Genealogic' }],
     type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: ['/opengraph-image'],
   },
 }
 
