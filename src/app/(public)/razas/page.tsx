@@ -60,18 +60,21 @@ export default async function BreedsIndexPage() {
     }
   }
 
-  const list: DirectoryBreed[] = ((breeds as BreedRow[]) || []).map((b) => ({
-    id: b.id,
-    name: b.name,
-    slug: b.slug!,
-    fci_number: b.standard_data?.fci_number || null,
-    origin: b.standard_data?.origin || null,
-    synonyms: b.synonyms || [],
-    dog_count: countByBreed.get(b.id) || 0,
-    has_genealogic_standard: !!(b.genealogic_standard?.sections && b.genealogic_standard.sections.length > 0),
-    has_sources: !!(b.standard_data?.standards && b.standard_data.standards.length > 0),
-    image_url: b.image_url,
-  }))
+  const list: DirectoryBreed[] = ((breeds as BreedRow[]) || [])
+    .map((b) => ({
+      id: b.id,
+      name: b.name,
+      slug: b.slug!,
+      fci_number: b.standard_data?.fci_number || null,
+      origin: b.standard_data?.origin || null,
+      synonyms: b.synonyms || [],
+      dog_count: countByBreed.get(b.id) || 0,
+      has_genealogic_standard: !!(b.genealogic_standard?.sections && b.genealogic_standard.sections.length > 0),
+      has_sources: !!(b.standard_data?.standards && b.standard_data.standards.length > 0),
+      image_url: b.image_url,
+    }))
+    // Orden default: más ejemplares primero. Empate → alfabético.
+    .sort((a, b) => b.dog_count - a.dog_count || a.name.localeCompare(b.name, 'es'))
 
   const totalDogs = list.reduce((acc, b) => acc + b.dog_count, 0)
   const withGenealogicStandard = list.filter((b) => b.has_genealogic_standard).length
