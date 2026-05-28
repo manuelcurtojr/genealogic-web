@@ -62,11 +62,15 @@ export default function BlogSlider({ posts }: { posts: BlogCard[] }) {
 
   return (
     <section className="border-b border-hairline bg-canvas">
-      <div className="mx-auto max-w-[1200px] px-6 lg:px-12 py-14 sm:py-20">
-        <div className="mb-6 flex items-end justify-between gap-4">
+      {/* Padding/max-width alineados con el resto del home (DiscoveryHome):
+          max-w-[1280px] + px-5 sm:px-6 lg:px-12. Antes era max-w-[1200px]
+          + px-6 lg:px-12 — las cards arrancaban más a la izquierda que el
+          resto de secciones, parecía pegado al borde. */}
+      <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
+        <div className="mb-6 sm:mb-8 flex items-end justify-between gap-4">
           <div>
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">Aprende</p>
-            <h2 className="mt-2 text-[24px] sm:text-[30px] font-semibold tracking-[-0.04em] text-ink">
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">Aprende</p>
+            <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
               Guías y artículos del blog
             </h2>
           </div>
@@ -93,10 +97,14 @@ export default function BlogSlider({ posts }: { posts: BlogCard[] }) {
           </div>
         </div>
 
-        <div className="relative -mx-6 lg:-mx-12">
+        {/* Track full-bleed: cancela el padding del container con -mx-X,
+            luego el track interior restablece padding con px-X para que la
+            PRIMERA card no quede pegada al borde de la viewport. Los
+            valores deben coincidir con los del container padre. */}
+        <div className="relative -mx-5 sm:-mx-6 lg:-mx-12">
           <div
             ref={trackRef}
-            className="flex gap-4 overflow-x-auto px-6 lg:px-12 pb-2 snap-x snap-mandatory scroll-smooth scrollbar-hide"
+            className="flex gap-4 overflow-x-auto px-5 sm:px-6 lg:px-12 pb-2 snap-x snap-mandatory scroll-smooth scrollbar-hide"
             style={{ scrollbarWidth: 'none' }}
           >
             {posts.map((p) => (
