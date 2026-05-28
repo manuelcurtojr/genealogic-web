@@ -61,9 +61,14 @@ export async function generateMetadata(
   const { slug } = await params
   const breed = await getBreed(slug)
   if (!breed) return { title: 'Raza no encontrada — Genealogic' }
-  const desc = breed.description
-    ? breed.description.slice(0, 200) + (breed.description.length > 200 ? '…' : '')
-    : `Estándar oficial, características y ejemplares de la raza ${breed.name}.`
+  // Filtramos descriptions de importación legacy ("Imported from dogsfiles.com…")
+  // que no aportan nada en SEO.
+  const isLegacyDesc =
+    breed.description && /^Imported from /i.test(breed.description.trim())
+  const cleanDesc = !isLegacyDesc && breed.description ? breed.description : null
+  const desc = cleanDesc
+    ? cleanDesc.slice(0, 200) + (cleanDesc.length > 200 ? '…' : '')
+    : `Estándar oficial, características y ejemplares de la raza ${breed.name}. Origen, temperamento, apariencia y diferencias entre clubes.`
   const url = `https://genealogic.io/razas/${slug}`
   const ogImage = breed.image_url
     ? [{ url: breed.image_url, alt: breed.name, width: 1200, height: 630 }]

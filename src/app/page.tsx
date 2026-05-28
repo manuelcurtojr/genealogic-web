@@ -31,7 +31,11 @@ export default async function Home() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createKennelAdminClient() as any
 
-  const [dogsCount, kennelsCount, breedsCount, featuredDogsRes, mosaicRpcRes, featuredKennelsRes] = await Promise.all([
+  const [
+    dogsCount, kennelsCount, breedsCount,
+    featuredDogsRes, mosaicRpcRes,
+    topBreedsRes, topKennelsRes,
+  ] = await Promise.all([
     admin.from('dogs').select('id', { count: 'exact', head: true }),
     admin.from('kennels').select('id', { count: 'exact', head: true }),
     admin.from('breeds').select('id', { count: 'exact', head: true }),
@@ -43,17 +47,12 @@ export default async function Home() {
       .eq('is_public', true)
       .order('created_at', { ascending: false })
       .limit(6),
-    // Mosaico del hero: RPC que garantiza 1 perro aleatorio POR RAZA y
-    // mezcla las razas. Sin esto, ORDER BY created_at DESC traía 300
-    // perros de la misma raza (último import masivo) y el filtrado en
-    // memoria solo dejaba 1 raza distinta.
+    // Mosaico del hero: RPC que garantiza 1 perro aleatorio POR RAZA.
     admin.rpc('get_hero_mosaic_dogs', { p_limit: 12 }),
-    admin
-      .from('kennels')
-      .select('id, name, slug, logo_url, country, city')
-      .not('logo_url', 'is', null)
-      .order('created_at', { ascending: false })
-      .limit(6),
+    // Razas representadas: top 12 por dog_count con sample thumbnail
+    admin.rpc('get_home_top_breeds', { p_limit: 12 }),
+    // Criaderos destacados: top 6 con su perro estrella
+    admin.rpc('get_home_top_kennels', { p_limit: 6 }),
   ])
 
   type MosaicRow = { id: string; thumbnail_url: string | null; breed_name: string | null }
@@ -86,7 +85,8 @@ export default async function Home() {
             breeds: breedsCount.count || 0,
           }}
           featuredDogs={featuredDogsRes.data || []}
-          featuredKennels={featuredKennelsRes.data || []}
+          featuredKennels={topKennelsRes.data || []}
+          topBreeds={topBreedsRes.data || []}
           blogPosts={blogPosts}
           mosaicPhotos={mosaicPhotos}
         />
