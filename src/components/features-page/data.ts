@@ -68,7 +68,7 @@ export const CATEGORIES: Category[] = [
   {
     slug: 'plataforma',
     label: 'Plataforma internacional',
-    tagline: 'No estás creando una web de criadero más. Te subes a la red de genealogías más grande de habla hispana.',
+    tagline: 'No estás creando una web de criadero más. Te subes a una red internacional de genealogías con cientos de razas y miles de criaderos.',
     features: [
       {
         slug: 'directorio',
