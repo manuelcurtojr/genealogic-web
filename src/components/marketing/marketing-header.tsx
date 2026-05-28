@@ -1,26 +1,22 @@
 /**
- * MarketingHeader — header único compartido por TODAS las páginas públicas:
- *   /, /criadores, /propietarios, /blog, /pricing, /api-docs
- *   + páginas públicas de perro/criadero cuando el visitante no está logueado.
+ * MarketingHeader — header único compartido por TODAS las páginas públicas.
  *
- * Reemplaza a:
- *   - PublicHeader (legacy)
- *   - StickyHeader (que vivía dentro de landing-page.tsx)
+ * Filosofía (2026-05-28): prioridad ABSOLUTA a EXPLORAR.
+ * - Genealogic es primero un directorio internacional de pedigrees (+250k
+ *   perros indexados). Si alguien llega al sitio sin contexto, lo más útil
+ *   es que pueda buscar Perros, Criaderos o Razas (estándares raciales).
+ * - "Producto / Criadores / Propietarios / Precios" se reducen al mínimo en
+ *   el drawer porque convierten mucho menos que el discovery directo.
  *
  * Layout:
  *   - Mobile: hamburguesa + wordmark + búsqueda + login icon
- *   - Desktop: hamburguesa + wordmark + nav inline + búsqueda + login + CTA
- *
- * Hamburguesa visible en ambos breakpoints (en desktop como atajo al drawer).
- * El nav inline destaca la doble propuesta de valor con dos entradas
- * "Para criadores" / "Para propietarios" — clave para que cada persona se
- * sienta en casa.
+ *   - Desktop: hamburguesa + wordmark + nav de exploración + búsqueda + CTA
  */
 'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, Search, Store, Dog, BookOpen, Tag, Zap, LogIn, Sparkles } from 'lucide-react'
+import { Menu, X, Search, Store, Dog, BookOpen, Tag, Zap, LogIn, Compass, LifeBuoy, ArrowRight } from 'lucide-react'
 import SearchBar from '@/components/layout/search-bar'
 import { Wordmark } from '@/components/ui/wordmark'
 import { Button } from '@/components/ui/button'
@@ -64,9 +60,11 @@ export default function MarketingHeader() {
           </div>
         </div>
 
-        {/* Desktop — nav minimal: 3 items clave (las dos audiencias + precios).
-            Perros/Criaderos/Blog viven en el drawer (la búsqueda ya cubre
-            navegación directa al catálogo). */}
+        {/* Desktop — nav de EXPLORACIÓN como protagonista. Los 3 items van
+            con icono pequeño para que se lean como "ventana al catálogo"
+            (Perros · Criaderos · Razas), no como navegación marketing. Lo
+            del producto/precios queda dentro del drawer porque convierte
+            menos que el discovery directo. */}
         <div className="hidden lg:flex items-center gap-5 px-6 py-3 max-w-[1280px] mx-auto">
           <button
             onClick={() => setDrawerOpen(true)}
@@ -76,11 +74,31 @@ export default function MarketingHeader() {
             <Menu className="w-5 h-5" />
           </button>
           <Wordmark size="text-xl" />
-          <nav className="flex items-center gap-6 ml-4 text-[14px] font-medium text-body">
-            <Link href="/features" className="hover:text-ink transition">Producto</Link>
-            <Link href="/criadores" className="hover:text-ink transition">Criadores</Link>
-            <Link href="/propietarios" className="hover:text-ink transition">Propietarios</Link>
-            <Link href="/pricing" className="hover:text-ink transition">Precios</Link>
+          <nav className="flex items-center gap-1.5 ml-4 text-[13.5px] font-semibold">
+            <Link
+              href="/search"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body hover:text-ink hover:bg-surface-card transition"
+            >
+              <Dog className="w-4 h-4" /> Perros
+            </Link>
+            <Link
+              href="/kennels"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body hover:text-ink hover:bg-surface-card transition"
+            >
+              <Store className="w-4 h-4" /> Criaderos
+            </Link>
+            <Link
+              href="/razas"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body hover:text-ink hover:bg-surface-card transition"
+            >
+              <Tag className="w-4 h-4" /> Razas
+            </Link>
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-muted hover:text-ink hover:bg-surface-card transition"
+            >
+              <BookOpen className="w-4 h-4" /> Blog
+            </Link>
           </nav>
           <div className="flex-1 max-w-md ml-auto">
             <SearchBar />
@@ -114,39 +132,48 @@ export default function MarketingHeader() {
             </div>
 
             <nav className="flex-1 overflow-y-auto py-3 px-2">
-              <DrawerSection label="Explorar">
-                <DrawerLink href="/search" icon={Search} onClick={() => setDrawerOpen(false)}>
-                  Buscar perros
+              {/* EXPLORAR — protagonista del drawer. Cards más grandes con
+                  fondo sutil y descripción. Es la entrada que más convierte
+                  para visitantes nuevos: van directo al catálogo. */}
+              <div className="mb-4 px-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[#FE6620] px-2 mt-1 mb-2">
+                  <Compass className="w-3 h-3 inline mr-1 -mt-0.5" />
+                  Explorar el catálogo
+                </p>
+                <div className="space-y-1.5">
+                  <BigDrawerLink href="/search" icon={Dog} desc="+250.000 perros con genealogía" onClick={() => setDrawerOpen(false)}>
+                    Buscar perros
+                  </BigDrawerLink>
+                  <BigDrawerLink href="/kennels" icon={Store} desc="Criaderos verificados" onClick={() => setDrawerOpen(false)}>
+                    Buscar criaderos
+                  </BigDrawerLink>
+                  <BigDrawerLink href="/razas" icon={Tag} desc="Estándares raciales" onClick={() => setDrawerOpen(false)}>
+                    Razas
+                  </BigDrawerLink>
+                </div>
+              </div>
+
+              <DrawerSection label="Recursos">
+                <DrawerLink href="/blog" icon={BookOpen} onClick={() => setDrawerOpen(false)}>
+                  Blog
                 </DrawerLink>
-                <DrawerLink href="/kennels" icon={Store} onClick={() => setDrawerOpen(false)}>
-                  Criaderos
+                <DrawerLink href="/soporte" icon={LifeBuoy} onClick={() => setDrawerOpen(false)}>
+                  Soporte
                 </DrawerLink>
               </DrawerSection>
 
-              <DrawerSection label="Producto">
-                <DrawerLink href="/features" icon={Sparkles} onClick={() => setDrawerOpen(false)}>
-                  Todas las features
-                </DrawerLink>
-                <DrawerLink href="/criadores" icon={Store} onClick={() => setDrawerOpen(false)}>
-                  Para criadores
-                </DrawerLink>
-                <DrawerLink href="/propietarios" icon={Dog} onClick={() => setDrawerOpen(false)}>
-                  Para propietarios
+              {/* Genealogic (producto) — al final del drawer. Los visitantes
+                  que vienen por discovery convierten mejor explorando que
+                  leyendo marketing. */}
+              <DrawerSection label="Genealogic">
+                <DrawerLink href="/features" icon={Search} onClick={() => setDrawerOpen(false)}>
+                  Producto
                 </DrawerLink>
                 <DrawerLink href="/pricing" icon={Tag} onClick={() => setDrawerOpen(false)}>
                   Precios
                 </DrawerLink>
                 <DrawerLink href="/api-docs" icon={Zap} onClick={() => setDrawerOpen(false)}>
                   API pública
-                </DrawerLink>
-              </DrawerSection>
-
-              <DrawerSection label="Recursos">
-                <DrawerLink href="/blog" icon={BookOpen} onClick={() => setDrawerOpen(false)}>
-                  Blog
-                </DrawerLink>
-                <DrawerLink href="/soporte" icon={Sparkles} onClick={() => setDrawerOpen(false)}>
-                  Soporte
                 </DrawerLink>
               </DrawerSection>
             </nav>
@@ -205,6 +232,37 @@ function DrawerLink({ href, icon: Icon, onClick, children }: {
     >
       <Icon className="w-[18px] h-[18px]" />
       {children}
+    </Link>
+  )
+}
+
+/**
+ * BigDrawerLink — variante destacada de DrawerLink para la sección
+ * Explorar. Card más alta con icono coloreado en pastilla + descripción
+ * pequeña + chevron a la derecha. Comunica "esta es la entrada
+ * principal", no un menú secundario más.
+ */
+function BigDrawerLink({ href, icon: Icon, desc, onClick, children }: {
+  href: string
+  icon: React.ElementType
+  desc: string
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="group flex items-center gap-3 px-3 py-3 rounded-xl border border-hairline bg-surface-soft/50 hover:bg-surface-card hover:border-[#FE6620]/30 transition"
+    >
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#FE6620]/10 text-[#FE6620] flex-shrink-0">
+        <Icon className="w-5 h-5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[14px] font-bold text-ink leading-tight">{children}</p>
+        <p className="text-[11.5px] text-muted leading-tight mt-0.5">{desc}</p>
+      </div>
+      <ArrowRight className="w-4 h-4 text-muted group-hover:text-ink group-hover:translate-x-0.5 transition-all" />
     </Link>
   )
 }

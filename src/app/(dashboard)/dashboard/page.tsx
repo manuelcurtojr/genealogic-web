@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { isIosUserAgent } from '@/lib/platform'
-import { Dog, Baby, PawPrint, Tag, Plus, Stethoscope, ArrowRight, Search, Crown } from 'lucide-react'
+import { Dog, Baby, PawPrint, Tag, Plus, Stethoscope, ArrowRight, Search, Crown, BookOpen, Store, Compass } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import StatCard from '@/components/dashboard/stat-card'
 import DailyCheckIn from '@/components/dashboard/daily-checkin'
@@ -15,6 +15,7 @@ import { getOnboardingStatus } from '@/lib/onboarding/checklist'
 import { getOwnerOnboardingStatus } from '@/lib/onboarding/checklist-owner'
 import { hasProAccess } from '@/lib/permissions'
 import { getEffectiveRoles } from '@/lib/auth/roles'
+import { allPosts } from '@/content/blog'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -95,10 +96,18 @@ export default async function DashboardPage() {
     isIos,
   })
 
+  // Fecha máxima para vet reminders: 14 días desde hoy. Como esto es un
+  // async Server Component con `force-dynamic`, Date.now() se evalúa una
+  // sola vez por request; la regla react-hooks/purity está pensada para
+  // client components y aquí es un falso positivo.
+  // eslint-disable-next-line react-hooks/purity
+  const reminderMaxDate = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]
+
   // Fetch dashboard data in parallel
   const [
     dogsRes, littersRes, vetRes, recentDogsRes,
     activeLittersRes, forSaleRes, vetRemindersRes,
+    breedsCountRes,
   ] = await Promise.all([
     supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
     supabase.from('litters').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
@@ -110,8 +119,13 @@ export default async function DashboardPage() {
     // Dogs for sale
     supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('owner_id', user.id).eq('is_for_sale', true),
     // Upcoming vet reminders (next 14 days)
-    supabase.from('vet_reminders').select('id, title, type, due_date, dog:dogs(name, sex)').eq('owner_id', user.id).is('completed_date', null).lte('due_date', new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]).order('due_date').limit(5),
+    supabase.from('vet_reminders').select('id, title, type, due_date, dog:dogs(name, sex)').eq('owner_id', user.id).is('completed_date', null).lte('due_date', reminderMaxDate).order('due_date').limit(5),
+    // Conteo de razas para el panel "Explorar Genealogic"
+    supabase.from('breeds').select('id', { count: 'exact', head: true }),
   ])
+
+  const breedsCount = breedsCountRes.count || 0
+  const blogPostsCount = allPosts.length
 
   const dogCount = dogsRes.count || 0
   const forSaleCount = forSaleRes.count || 0
@@ -284,6 +298,53 @@ export default async function DashboardPage() {
         </section>
       )}
 
+      {/* Explorar Genealogic — siempre visible. La idea es que el dashboard
+          NO sea solo "tu data" sino también la puerta a todo el contenido
+          público del catálogo: razas con estándar, criaderos, perros
+          indexados y artículos del blog. Cuatro cards con icono coloreado y
+          chip con conteo dinámico. */}
+      <section>
+        <div className="mb-5 flex items-end justify-between">
+          <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink flex items-center gap-2">
+            <Compass className="h-5 w-5 text-[#FE6620]" /> Explorar Genealogic
+          </h2>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <ExploreCard
+            href="/razas"
+            icon={Tag}
+            color="#FE6620"
+            title="Razas"
+            desc="Estándares raciales con historia, foto y catálogo."
+            count={breedsCount > 0 ? `${breedsCount.toLocaleString('es-ES')} razas` : 'Ver todas'}
+          />
+          <ExploreCard
+            href="/search"
+            icon={Search}
+            color="#3b82f6"
+            title="Buscar perros"
+            desc="Directorio con genealogías indexables en Google."
+            count="+250.000 perros"
+          />
+          <ExploreCard
+            href="/kennels"
+            icon={Store}
+            color="#8b5cf6"
+            title="Criaderos"
+            desc="Conoce criaderos verificados de toda la red."
+            count="Comunidad"
+          />
+          <ExploreCard
+            href="/blog"
+            icon={BookOpen}
+            color="#10b981"
+            title="Blog"
+            desc="Guías sobre genética, cría y razas legendarias."
+            count={`${blogPostsCount} artículos`}
+          />
+        </div>
+      </section>
+
       {/* Recent dogs */}
       <section>
         <div className="mb-5 flex items-end justify-between">
@@ -328,5 +389,48 @@ export default async function DashboardPage() {
         )}
       </section>
     </div>
+  )
+}
+
+/**
+ * ExploreCard — card del módulo "Explorar Genealogic" del dashboard.
+ * Icono coloreado en pastilla, título, descripción de 1 línea, chip con
+ * conteo dinámico abajo. Flecha que se desliza al hover. Pensada para que
+ * cualquier usuario logueado (criador u owner) tenga atajos a contenido
+ * público útil (razas, blog, criaderos, búsqueda).
+ */
+function ExploreCard({
+  href, icon: Icon, color, title, desc, count,
+}: {
+  href: string
+  icon: React.ElementType
+  color: string
+  title: string
+  desc: string
+  count: string
+}) {
+  return (
+    <Link
+      href={href}
+      className="group block rounded-xl border border-hairline bg-canvas p-5 transition-all hover:border-ink/30 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
+    >
+      <div className="flex items-center justify-between">
+        <div
+          className="flex h-10 w-10 items-center justify-center rounded-xl"
+          style={{ background: `${color}15`, color }}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+        <ArrowRight className="h-4 w-4 text-muted group-hover:text-ink group-hover:translate-x-0.5 transition-all" />
+      </div>
+      <h3 className="mt-4 text-[16px] font-semibold tracking-[-0.02em] text-ink">{title}</h3>
+      <p className="mt-1 text-[13px] leading-[1.5] text-body line-clamp-2">{desc}</p>
+      <p
+        className="mt-3 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider"
+        style={{ background: `${color}15`, color }}
+      >
+        {count}
+      </p>
+    </Link>
   )
 }

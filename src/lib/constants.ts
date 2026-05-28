@@ -75,7 +75,9 @@ export const NAV_SECTIONS: NavSection[] = [
     label: '',
     items: [
       { label: 'Escritorio', href: '/dashboard', icon: 'LayoutDashboard' },
-      { label: 'Buscar', href: '/search', icon: 'Search' },
+      { label: 'Buscar perros', href: '/search', icon: 'Search' },
+      { label: 'Razas', href: '/razas', icon: 'Tag' },
+      { label: 'Blog', href: '/blog', icon: 'BookOpen' },
       { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
     ],
   },
