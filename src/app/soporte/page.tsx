@@ -7,11 +7,31 @@
  */
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import SupportForm from '@/components/admin-requests/support-form'
 import { ArrowLeft, MessageSquare } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata: Metadata = {
+  title: 'Soporte',
+  description:
+    'Abre un ticket de soporte humano: dudas, problemas técnicos, sugerencias. Respondemos en menos de 24h en horario laboral.',
+  alternates: { canonical: 'https://genealogic.io/soporte' },
+  openGraph: {
+    title: 'Soporte — Genealogic',
+    description: 'Abre un ticket de soporte humano. Respondemos en menos de 24h.',
+    url: 'https://genealogic.io/soporte',
+    type: 'website',
+    siteName: 'Genealogic',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Soporte — Genealogic',
+    description: 'Abre un ticket de soporte humano.',
+  },
+}
 
 export default async function SoportePage() {
   const supabase = await createClient()

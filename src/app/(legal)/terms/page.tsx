@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Términos y Condiciones — Genealogic',
+  title: 'Términos y Condiciones',
   description: 'Condiciones de uso de Genealogic, plataforma de Manuel Curtó SL.',
   alternates: { canonical: 'https://genealogic.io/terms' },
 }

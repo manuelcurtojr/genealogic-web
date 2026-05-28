@@ -7,7 +7,7 @@ import OwnersLanding from '@/components/marketing/owners-landing'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Para propietarios — Genealogic',
+  title: 'Para propietarios',
   description:
     'Registra a tu perro: genealogía, papeles, vacunas, historial vet. Gratis para siempre. Privado por defecto.',
   alternates: { canonical: 'https://genealogic.io/propietarios' },

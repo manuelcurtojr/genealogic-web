@@ -18,7 +18,7 @@ import FeaturesSidebar from '@/components/features-page/sidebar'
 import FeaturesContent from '@/components/features-page/content'
 
 export const metadata: Metadata = {
-  title: 'Producto — Genealogic',
+  title: 'Producto',
   description:
     'Todo lo que tu criadero necesita: pipeline de reservas, web pública, genealogía interactiva, emailbot, newsletter y analítica. Explora cada herramienta con mockups del producto real.',
   alternates: { canonical: 'https://genealogic.io/features' },

@@ -17,7 +17,7 @@ import Link from 'next/link'
 import { ArrowLeft, Crown, Lock } from 'lucide-react'
 
 export const metadata = {
-  title: 'API Docs — Genealogic',
+  title: 'API Docs',
   description:
     'API pública v1 de Genealogic: perros, genealogías, camadas, reservas, palmarés, genotipos, vet, audit log, búsqueda global, razas. Disponible para Kennel Enterprise.',
 }

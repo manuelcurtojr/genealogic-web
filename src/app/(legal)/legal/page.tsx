@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Aviso Legal — Genealogic',
+  title: 'Aviso Legal',
   description: 'Información legal del titular de Genealogic conforme a la LSSI-CE.',
   alternates: { canonical: 'https://genealogic.io/legal' },
 }

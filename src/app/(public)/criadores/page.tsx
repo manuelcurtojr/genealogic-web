@@ -13,7 +13,7 @@ import LandingPage from '@/components/landing/landing-page'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Para criadores — Genealogic',
+  title: 'Para criadores',
   description:
     'Software para criaderos: gestión de afijo, perros, camadas, pipeline de reservas, web pública y emailbot. Empieza gratis.',
   alternates: { canonical: 'https://genealogic.io/criadores' },

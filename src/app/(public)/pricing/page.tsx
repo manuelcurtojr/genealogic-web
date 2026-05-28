@@ -17,7 +17,7 @@ import { isIosUserAgent } from '@/lib/platform'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Precios — Genealogic',
+  title: 'Precios',
   description:
     'Owner (3 perros, gratis) y Kennel Free (5 perros, gratis) para siempre. Kennel Pro (19€/mes, perros ilimitados) y Kennel Enterprise (99€/mes, web del criadero) con 14 días de prueba sin tarjeta.',
   alternates: { canonical: 'https://genealogic.io/pricing' },

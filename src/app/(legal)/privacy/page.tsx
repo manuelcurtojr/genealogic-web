@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Política de Privacidad — Genealogic',
+  title: 'Política de Privacidad',
   description: 'Cómo Genealogic (Manuel Curtó SL) trata tus datos personales conforme al RGPD y la LOPDGDD.',
   alternates: { canonical: 'https://genealogic.io/privacy' },
 }

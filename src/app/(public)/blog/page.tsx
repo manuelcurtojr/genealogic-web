@@ -3,12 +3,12 @@ import { allPosts } from '@/content/blog'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Blog — Genealogic',
+  title: 'Blog',
   description:
     'Guías, tutoriales y artículos sobre cría canina, genética, salud, gestión de criadero y herramientas Genealogic.',
   alternates: { canonical: 'https://genealogic.io/blog' },
   openGraph: {
-    title: 'Blog — Genealogic',
+    title: 'Blog',
     description:
       'Guías, tutoriales y artículos sobre cría canina, genética, salud, gestión de criadero y herramientas Genealogic.',
     url: 'https://genealogic.io/blog',
