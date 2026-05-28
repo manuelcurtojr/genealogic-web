@@ -31,7 +31,7 @@ import {
   UserPlus, Rocket, CheckCircle2, X, ChevronDown,
   Quote, Star, Baby, Mars, Venus, Clock,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import LiveCounter from './live-counter'
 import BlogSlider from './blog-slider'
 import HeroMosaic from './hero-mosaic'
@@ -74,13 +74,28 @@ type BlogCard = {
   date: string
 }
 
+/** Perro destacado para el mockup "Producto en acción".
+ *  Viene resuelto desde page.tsx con sus padres y galería. */
+type ShowcaseDog = {
+  name: string
+  slug: string | null
+  sex: string | null
+  birth_date: string | null
+  breed_name?: string | null
+  color_name?: string | null
+  father_name?: string | null
+  mother_name?: string | null
+  photos: string[]
+}
+
 export default function DiscoveryHome({
-  counts, featuredDogs, featuredKennels, topBreeds, blogPosts, mosaicPhotos,
+  counts, featuredDogs, featuredKennels, topBreeds, showcaseDog, blogPosts, mosaicPhotos,
 }: {
   counts: { dogs: number; kennels: number; breeds: number }
   featuredDogs: Dog[]
   featuredKennels: KennelWithHero[]
   topBreeds: BreedWithCount[]
+  showcaseDog: ShowcaseDog | null
   blogPosts: BlogCard[]
   mosaicPhotos: string[]
 }) {
@@ -313,7 +328,7 @@ export default function DiscoveryHome({
               tu árbol genealógico — todo operativo desde el momento que entras.
             </p>
           </div>
-          <ProductShowcase featuredDogs={featuredDogs} />
+          <ProductShowcase featuredDogs={featuredDogs} showcaseDog={showcaseDog} />
         </div>
       </section>
 
@@ -810,7 +825,7 @@ function BentoCard({
  * ProductShowcase — 3 mini-mockups que ilustran el producto en acción.
  * Ven la lista de perros, el árbol y el pipeline en composición.
  */
-function ProductShowcase({ featuredDogs }: { featuredDogs: Dog[] }) {
+function ProductShowcase({ featuredDogs, showcaseDog }: { featuredDogs: Dog[]; showcaseDog: ShowcaseDog | null }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* Mockup 1: Catálogo */}
@@ -839,7 +854,10 @@ function ProductShowcase({ featuredDogs }: { featuredDogs: Dog[] }) {
           breed + sex en hero, chips de info (microchip, color, edad,
           peso), padres con avatares. Foto: usamos el primer perro
           destacado con foto del catálogo. */}
-      <DogProfileMockup featuredDog={featuredDogs.find(d => d.thumbnail_url) || null} />
+      <DogProfileMockup
+        showcaseDog={showcaseDog}
+        fallbackDog={featuredDogs.find(d => d.thumbnail_url) || null}
+      />
 
       {/* Mockup 3: Pipeline reservas */}
       <div className="rounded-2xl border border-hairline bg-canvas overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
@@ -875,14 +893,47 @@ function ProductShowcase({ featuredDogs }: { featuredDogs: Dog[] }) {
 /**
  * DogProfileMockup — réplica fiel del perfil real /dogs/[id].
  *
- * Estructura igual al producto: foto cuadrada arriba, hero con nombre +
- * breed + sex, chips de info, padres con avatares circulares. Si hay un
- * perro destacado con foto, lo usa; si no, fallback genérico.
+ * Usa Nestor de Irema Curtó (showcaseDog) como perro insignia: galería
+ * rotatoria con cross-fade entre sus fotos reales, chips de identidad,
+ * padres reales (Leon × Quina), badge COI y badge sexo en overlay.
+ * Si showcaseDog viene null, fallback al primer perro con foto.
+ *
+ * El cross-fade es un detalle pequeño pero importante: comunica que el
+ * perfil tiene MUCHAS fotos, no solo una. Como Nestor tiene 3, cada 3.5s
+ * cambia. Si solo hay 1 foto se queda estática.
  */
-function DogProfileMockup({ featuredDog }: { featuredDog: Dog | null }) {
-  const dogName = featuredDog?.name || 'Xían'
-  const breedName = featuredDog?.breed?.name || 'Presa Canario'
-  const photo = featuredDog?.thumbnail_url || null
+function DogProfileMockup({ showcaseDog, fallbackDog }: { showcaseDog: ShowcaseDog | null; fallbackDog: Dog | null }) {
+  // Datos reales del perro insignia (Nestor) o fallback genérico
+  const dogName = showcaseDog?.name || fallbackDog?.name || 'Xían'
+  const slug = showcaseDog?.slug || fallbackDog?.slug || 'xian'
+  const breedName = showcaseDog?.breed_name || fallbackDog?.breed?.name || 'Presa Canario'
+  const colorName = showcaseDog?.color_name || 'Bardino'
+  const sex = showcaseDog?.sex || 'male'
+  const isMale = sex === 'male'
+  const fatherName = showcaseDog?.mother_name && showcaseDog?.father_name ? showcaseDog.father_name : 'Toby II'
+  const motherName = showcaseDog?.mother_name && showcaseDog?.father_name ? showcaseDog.mother_name : 'Anita'
+
+  // Año a partir de birth_date
+  const birthYear = showcaseDog?.birth_date
+    ? new Date(showcaseDog.birth_date).getFullYear()
+    : 2019
+
+  // Galería: si showcaseDog tiene varias fotos, las usamos todas; si no,
+  // caemos a la única foto del fallback. Si tampoco hay, vacío y mostramos
+  // el placeholder.
+  const photos = (showcaseDog?.photos && showcaseDog.photos.length > 0)
+    ? showcaseDog.photos
+    : (fallbackDog?.thumbnail_url ? [fallbackDog.thumbnail_url] : [])
+
+  // Cross-fade entre fotos cada 3.5s
+  const [photoIdx, setPhotoIdx] = useState(0)
+  useEffect(() => {
+    if (photos.length < 2) return
+    const id = setInterval(() => {
+      setPhotoIdx(i => (i + 1) % photos.length)
+    }, 3500)
+    return () => clearInterval(id)
+  }, [photos.length])
 
   return (
     <div className="rounded-2xl border border-hairline bg-canvas overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.06)] flex flex-col">
@@ -891,41 +942,60 @@ function DogProfileMockup({ featuredDog }: { featuredDog: Dog | null }) {
         <span className="h-2 w-2 rounded-full bg-rose-300" />
         <span className="h-2 w-2 rounded-full bg-amber-300" />
         <span className="h-2 w-2 rounded-full bg-emerald-300" />
-        <span className="ml-2 text-[10px] text-muted truncate">/dogs/{(featuredDog?.slug || dogName.toLowerCase())}</span>
+        <span className="ml-2 text-[10px] text-muted truncate">genealogic.io/dogs/{slug}</span>
       </div>
 
-      {/* Foto hero */}
-      <div className="relative aspect-[4/3] bg-gradient-to-br from-orange-50 to-blue-50">
-        {photo ? (
-          <img src={photo} alt={dogName} className="w-full h-full object-cover" />
+      {/* Foto hero con cross-fade entre fotos de la galería */}
+      <div className="relative aspect-[4/3] bg-gradient-to-br from-orange-50 to-blue-50 overflow-hidden">
+        {photos.length > 0 ? (
+          photos.map((url, i) => (
+            <img
+              key={url}
+              src={url}
+              alt={dogName}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${i === photoIdx ? 'opacity-100' : 'opacity-0'}`}
+            />
+          ))
         ) : (
           <div className="w-full h-full flex items-center justify-center"><Dog className="w-14 h-14 text-muted/30" /></div>
         )}
         {/* Badge COI en overlay */}
-        <span className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full bg-canvas/95 backdrop-blur-md px-2 py-0.5 text-[9px] font-bold text-emerald-700 shadow-sm">
+        <span className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full bg-canvas/95 backdrop-blur-md px-2 py-0.5 text-[9px] font-bold text-emerald-700 shadow-sm z-10">
           <Activity className="w-2.5 h-2.5" /> COI 4.2%
         </span>
         {/* Badge sexo en overlay bottom-left */}
-        <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-blue-500 text-white px-2 py-0.5 text-[9px] font-bold">
-          <Mars className="w-2.5 h-2.5" /> Macho
+        <span className={`absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full ${isMale ? 'bg-blue-500' : 'bg-pink-500'} text-white px-2 py-0.5 text-[9px] font-bold z-10`}>
+          {isMale ? <Mars className="w-2.5 h-2.5" /> : <Venus className="w-2.5 h-2.5" />}
+          {isMale ? 'Macho' : 'Hembra'}
         </span>
+        {/* Indicador de paginación de la galería (puntitos) */}
+        {photos.length > 1 && (
+          <div className="absolute bottom-2 right-2 flex items-center gap-1 z-10">
+            {photos.map((_, i) => (
+              <span
+                key={i}
+                className={`h-1.5 rounded-full transition-all ${i === photoIdx ? 'w-3 bg-white' : 'w-1.5 bg-white/50'}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Hero: nombre + breed */}
       <div className="px-3 pt-3 pb-2">
-        <p className="text-[11px] font-bold text-ink truncate leading-tight">{dogName}</p>
+        <p className="text-[11.5px] font-bold text-ink truncate leading-tight">{dogName}</p>
         <p className="text-[10px] text-muted truncate">{breedName}</p>
       </div>
 
       {/* Chips de info */}
       <div className="px-3 pb-2 flex flex-wrap gap-1">
-        <ProfileChip icon={Clock} label="2019" />
-        <ProfileChip icon={Activity} label="33 kg" />
-        <ProfileChip label="Bardino" />
+        <ProfileChip icon={Clock} label={`${birthYear}`} />
+        <ProfileChip label={colorName} />
+        <ProfileChip icon={Camera} label={`${photos.length || 1} fotos`} />
       </div>
 
       {/* Padres mini */}
-      <div className="px-3 pb-2">
+      <div className="px-3 pb-3">
         <p className="text-[8.5px] font-semibold uppercase tracking-wider text-muted mb-1">Padres</p>
         <div className="grid grid-cols-2 gap-1.5">
           <div className="flex items-center gap-1.5 rounded border border-hairline bg-canvas px-1.5 py-1">
@@ -934,7 +1004,7 @@ function DogProfileMockup({ featuredDog }: { featuredDog: Dog | null }) {
             </div>
             <div className="min-w-0">
               <p className="text-[7px] text-muted uppercase font-semibold">Padre</p>
-              <p className="text-[9px] font-bold text-ink truncate">Toby II</p>
+              <p className="text-[9px] font-bold text-ink truncate">{fatherName}</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 rounded border border-hairline bg-canvas px-1.5 py-1">
@@ -943,7 +1013,7 @@ function DogProfileMockup({ featuredDog }: { featuredDog: Dog | null }) {
             </div>
             <div className="min-w-0">
               <p className="text-[7px] text-muted uppercase font-semibold">Madre</p>
-              <p className="text-[9px] font-bold text-ink truncate">Anita</p>
+              <p className="text-[9px] font-bold text-ink truncate">{motherName}</p>
             </div>
           </div>
         </div>

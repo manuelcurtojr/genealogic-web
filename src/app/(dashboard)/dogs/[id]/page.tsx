@@ -137,7 +137,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   const field = isUUID(id) ? 'id' : 'slug'
   const { data: dog } = await supabase
     .from('dogs')
-    .select(`*, breed:breeds(id, name), color:colors(id, name), kennel:kennels(id, name, logo_url)`)
+    .select(`*, breed:breeds(id, name, slug), color:colors(id, name), kennel:kennels(id, name, logo_url)`)
     .eq(field, id)
     .single()
 
@@ -181,6 +181,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   const isOwner = user?.id === dog.owner_id
   const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
   const breedName = (dog.breed as any)?.name
+  const breedSlug = (dog.breed as any)?.slug as string | null | undefined
   const colorName = (dog.color as any)?.name
   const kennel = dog.kennel as any
 
@@ -313,9 +314,19 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
           </h1>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {breedName && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-3 py-1 text-[13px] font-medium text-body">
-                {breedName}
-              </span>
+              breedSlug ? (
+                <Link
+                  href={`/razas/${breedSlug}`}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-3 py-1 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
+                  title={`Ver estándar de la raza ${breedName}`}
+                >
+                  {breedName}
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-3 py-1 text-[13px] font-medium text-body">
+                  {breedName}
+                </span>
+              )
             )}
             {kennel?.name && (
               <Link
