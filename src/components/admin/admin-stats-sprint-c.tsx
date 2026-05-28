@@ -272,7 +272,7 @@ export default function AdminStatsSprintC({ funnel, cohort, revenue }: Props) {
             />
           </div>
           <p className="mt-3 text-[10.5px] text-muted">
-            MRR calculado a precios fijos (29€ Kennel Pro · 149€ Kennel Enterprise). Para precisión total usar Stripe API real — pendiente de iteración.
+            MRR calculado a precios fijos (49€ Kennel Pro · 149€ Kennel Enterprise). Para precisión total usar Stripe API real — pendiente de iteración.
           </p>
         </section>
       )}

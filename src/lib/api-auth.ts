@@ -2,7 +2,7 @@
  * API Key authentication for Genealogic public API (v1).
  *
  * ACCESO: SOLO Kennel Enterprise (149€/mes). Cualquier otro plan
- * (free / kennel = Kennel Pro 29€) recibe 403 con mensaje claro.
+ * (free / kennel = Kennel Pro 49€) recibe 403 con mensaje claro.
  *
  * El rol técnico en BBDD `kennel_pro` representa al plan comercial
  * Kennel Enterprise (ver memory/genealogic_pricing_model.md).

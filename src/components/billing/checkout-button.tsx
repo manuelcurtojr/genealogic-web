@@ -1,6 +1,6 @@
 /**
  * Botón "Probar 14 días gratis" que dispara el Checkout de Stripe
- * para Kennel Pro (29€/mes). Kennel Enterprise NO usa este botón:
+ * para Kennel Pro (49€/mes). Kennel Enterprise NO usa este botón:
  * su alta es manual tras hablar con soporte.
  *
  * Usado en /pricing. Si el user NO está logueado, redirige a

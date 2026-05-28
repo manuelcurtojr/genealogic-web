@@ -662,7 +662,7 @@ export default function DiscoveryHome({
             />
             <PricingCard
               tier="Kennel Pro"
-              price="29€"
+              price="49€"
               period="/mes · ilimitado"
               desc="Para el criadero profesional."
               features={['Perros ilimitados', 'COI + simulador cruces', 'Genotipos completos', 'Pagos Stripe Connect']}
@@ -707,9 +707,10 @@ export default function DiscoveryHome({
             <div className="space-y-2">
               <FaqItem q="¿Es realmente gratis?">
                 Sí. Owner (3 perros) y Kennel Free (5 perros) no caducan, sin
-                tarjeta. Sube a Kennel Pro (29€/mes) cuando necesites perros
+                tarjeta. Sube a Kennel Pro (49€/mes) cuando necesites perros
                 ilimitados, COI completo y Stripe; o a Kennel Enterprise
                 (149€/mes) para web del criadero con dominio propio.
+                Si pagas anual, te ahorras un 15%.
               </FaqItem>
               <FaqItem q="¿Mis datos son míos? ¿Puedo exportarlos?">
                 Sí. Cualquier perro, contrato o cliente lo exportas a PDF/CSV en

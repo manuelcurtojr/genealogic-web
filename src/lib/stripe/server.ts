@@ -47,7 +47,7 @@ export function isStripeConfigured(): boolean {
  * True si está todo lo necesario para lanzar un Checkout Session de
  * suscripción Kennel Pro (14 días de trial sin tarjeta). Requiere el
  * price ID en env:
- *   STRIPE_PRICE_KENNEL_MONTHLY (price_xxx — Kennel Pro 29€/mes recurring)
+ *   STRIPE_PRICE_KENNEL_MONTHLY (price_xxx — Kennel Pro 49€/mes recurring)
  *   Legacy: STRIPE_PRICE_PRO_MONTHLY como fallback.
  *
  * Kennel Enterprise (149€) NO necesita config aquí — se activa

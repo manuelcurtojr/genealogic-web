@@ -1,11 +1,12 @@
 /**
- * PricingClient — /pricing con 4 planes y vista simple/avanzada.
+ * PricingClient — /pricing con 4 planes, vista simple/avanzada
+ * y toggle Mensual / Anual con descuento 15%.
  *
- * Modelo cerrado 2026-05-28:
+ * Modelo (cerrado 2026-05-28):
  *   · Owner — 3 perros · Gratis
  *   · Kennel Free — 5 perros · Gratis
- *   · Kennel Pro — Ilimitado · 49€/mes (14 días de prueba)
- *   · Kennel Enterprise — Ilimitado · 99€/mes (14 días de prueba)
+ *   · Kennel Pro — Ilimitado · 49€/mes (o 499€/año, ahorro 15%) · 14 días gratis
+ *   · Kennel Enterprise — Ilimitado · 149€/mes (o 1.520€/año, ahorro 15%) · alta manual
  *
  * Vistas:
  *   1) Simple ("en cristiano") — 4 cards grandes con 5-6 highlights por plan
@@ -170,28 +171,62 @@ const CATEGORIES: CategoryDef[] = [
 // ──────────────────────────────────────────────────────────────────────
 // Definición de los planes (metadata + highlights para vista simple)
 // ──────────────────────────────────────────────────────────────────────
+type BillingCycle = 'monthly' | 'annual'
+
 interface PlanDef {
   id: PlanId
   name: string
-  price: string
-  period: string
+  /** Precio en céntimos. 0 para gratis. */
+  monthlyCents: number
+  /** Precio anual en céntimos. Si null, plan no tiene opción anual (gratuitos). */
+  annualCents: number | null
+  period: string  // ej. "Gratis siempre"  o ""  (cuando el precio se calcula)
   maxDogs: string
   forWho: string
   description: string
   icon: typeof Dog
-  accent: string  // color hex de marca
-  accentBg: string  // tailwind classes para el fondo
+  accent: string
+  accentBg: string
   highlights: string[]
-  highlight?: boolean   // recomendado
+  highlight?: boolean
   ctaLabel: string
-  ctaHref?: string  // si no, usa CheckoutButton
+  ctaHref?: string
+}
+
+/**
+ * Formatea precio según ciclo. Para anual mostramos el equivalente
+ * mensual (mejor UX: el usuario compara peras con peras), con un chip
+ * "facturado anual" debajo.
+ */
+function fmtPrice(plan: PlanDef, cycle: BillingCycle): { amount: string; per: string; sub: string | null } {
+  if (plan.monthlyCents === 0) {
+    return { amount: '0€', per: plan.period, sub: null }
+  }
+  if (cycle === 'monthly') {
+    return {
+      amount: `${plan.monthlyCents / 100}€`,
+      per: '/mes',
+      sub: plan.id === 'pro' ? '14 días gratis · sin tarjeta'
+        : plan.id === 'enterprise' ? 'Alta manual con soporte'
+        : null,
+    }
+  }
+  // Anual: enseñamos /mes con descuento aplicado + total
+  const annual = plan.annualCents ?? plan.monthlyCents * 12
+  const perMonth = Math.round(annual / 12 / 100)
+  return {
+    amount: `${perMonth}€`,
+    per: '/mes',
+    sub: `${annual / 100}€/año · ahorras 15%`,
+  }
 }
 
 const PLANS: PlanDef[] = [
   {
     id: 'owner',
     name: 'Owner',
-    price: '0€',
+    monthlyCents: 0,
+    annualCents: null,
     period: 'Gratis siempre',
     maxDogs: '3 perros',
     forWho: 'Para documentar tu mascota',
@@ -213,7 +248,8 @@ const PLANS: PlanDef[] = [
   {
     id: 'free',
     name: 'Kennel Free',
-    price: '0€',
+    monthlyCents: 0,
+    annualCents: null,
     period: 'Gratis siempre',
     maxDogs: '5 perros',
     forWho: 'Para el criador casero',
@@ -235,8 +271,9 @@ const PLANS: PlanDef[] = [
   {
     id: 'pro',
     name: 'Kennel Pro',
-    price: '29€',
-    period: '/mes · 14 días gratis',
+    monthlyCents: 4900,  // 49€/mes
+    annualCents: 49900,  // 499€/año = 41.6€/mes (-15%)
+    period: '',
     maxDogs: 'Ilimitado',
     forWho: 'Para el criadero profesional',
     description: 'Todo Free + perros ilimitados + COI explicado + simulador + Stripe.',
@@ -258,11 +295,9 @@ const PLANS: PlanDef[] = [
   {
     id: 'enterprise',
     name: 'Kennel Enterprise',
-    price: '149€',
-    // No "14 días gratis": Enterprise hoy requiere aprobación manual
-    // (chatbot + web del criadero aún en testing). El criador habla con
-    // soporte y nosotros activamos a mano.
-    period: '/mes · alta manual',
+    monthlyCents: 14900,    // 149€/mes
+    annualCents: 152000,    // 1520€/año = 126.6€/mes (-15%)
+    period: '',
     maxDogs: 'Ilimitado',
     forWho: 'Para el criadero con escaparate público',
     description: 'Todo Pro + web profesional con dominio propio + emailbot IA + multi-idioma.',
@@ -300,12 +335,23 @@ export default function PricingClient({
   const initialView: 'simple' | 'avanzada' =
     searchParams.get('view') === 'avanzada' ? 'avanzada' : 'simple'
   const [view, setView] = useState<'simple' | 'avanzada'>(initialView)
+
+  // Ciclo de facturación: mensual (default) o anual (-15%). Estado local.
+  const initialCycle: BillingCycle = searchParams.get('cycle') === 'annual' ? 'annual' : 'monthly'
+  const [cycle, setCycle] = useState<BillingCycle>(initialCycle)
   void router // mantenemos router import por si se reintroduce navegación
 
   function switchView(next: 'simple' | 'avanzada') {
     setView(next)
     const url = new URL(window.location.href)
     url.searchParams.set('view', next)
+    window.history.replaceState({}, '', url.toString())
+  }
+
+  function switchCycle(next: BillingCycle) {
+    setCycle(next)
+    const url = new URL(window.location.href)
+    url.searchParams.set('cycle', next)
     window.history.replaceState({}, '', url.toString())
   }
 
@@ -326,6 +372,40 @@ export default function PricingClient({
             Owner y Kennel Free son gratis para siempre, sin tarjeta. Pro y
             Enterprise vienen con 14 días de prueba.
           </p>
+        </div>
+
+        {/* Toggle Mensual / Anual — palanca principal de pricing.
+            Pongo este toggle PRIMERO (antes del vista simple/avanzada)
+            porque condiciona la decisión de compra. El badge -15% sobre
+            "Anual" comunica el ahorro sin necesidad de leer copy.
+            Solo se muestra cuando la vista lo necesita (planes de pago
+            visibles — ambas vistas los muestran, así que siempre). */}
+        <div className="flex justify-center mb-5 sm:mb-6">
+          <div className="inline-flex rounded-xl border border-hairline bg-surface-soft p-1">
+            <button
+              onClick={() => switchCycle('monthly')}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                cycle === 'monthly'
+                  ? 'bg-canvas text-ink shadow-[0_1px_3px_rgba(0,0,0,0.06)]'
+                  : 'text-muted hover:text-body'
+              }`}
+            >
+              Mensual
+            </button>
+            <button
+              onClick={() => switchCycle('annual')}
+              className={`relative px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                cycle === 'annual'
+                  ? 'bg-canvas text-ink shadow-[0_1px_3px_rgba(0,0,0,0.06)]'
+                  : 'text-muted hover:text-body'
+              }`}
+            >
+              Anual
+              <span className="ml-1.5 inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-1.5 py-0.5 text-[10px] font-bold tabular-nums">
+                –15%
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Toggle Simple / Avanzada */}
@@ -357,9 +437,9 @@ export default function PricingClient({
         </div>
 
         {view === 'simple' ? (
-          <SimpleView isLoggedIn={isLoggedIn} />
+          <SimpleView isLoggedIn={isLoggedIn} cycle={cycle} />
         ) : (
-          <AdvancedView isLoggedIn={isLoggedIn} />
+          <AdvancedView isLoggedIn={isLoggedIn} cycle={cycle} />
         )}
 
         {/* Regla del límite — explicación en cristiano (visible en ambas vistas) */}
@@ -402,18 +482,19 @@ export default function PricingClient({
 // ──────────────────────────────────────────────────────────────────────
 // Vista 1 — Simple ("en cristiano")
 // ──────────────────────────────────────────────────────────────────────
-function SimpleView({ isLoggedIn }: { isLoggedIn: boolean }) {
+function SimpleView({ isLoggedIn, cycle }: { isLoggedIn: boolean; cycle: BillingCycle }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
       {PLANS.map((plan) => (
-        <PlanCard key={plan.id} plan={plan} isLoggedIn={isLoggedIn} />
+        <PlanCard key={plan.id} plan={plan} isLoggedIn={isLoggedIn} cycle={cycle} />
       ))}
     </div>
   )
 }
 
-function PlanCard({ plan, isLoggedIn }: { plan: PlanDef; isLoggedIn: boolean }) {
+function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: boolean; cycle: BillingCycle }) {
   const Icon = plan.icon
+  const priceInfo = fmtPrice(plan, cycle)
   return (
     <div
       className={`relative rounded-2xl border-2 bg-gradient-to-br ${plan.accentBg} p-5 sm:p-6 flex flex-col ${
@@ -443,10 +524,13 @@ function PlanCard({ plan, isLoggedIn }: { plan: PlanDef; isLoggedIn: boolean }) 
       {/* Precio */}
       <div className="mt-3 flex items-baseline gap-1">
         <span className="text-[32px] sm:text-[36px] font-bold tabular-nums text-ink leading-none">
-          {plan.price}
+          {priceInfo.amount}
         </span>
-        <span className="text-[12px] text-muted">{plan.period}</span>
+        <span className="text-[12px] text-muted">{priceInfo.per}</span>
       </div>
+      {priceInfo.sub && (
+        <p className="mt-1 text-[11px] text-muted leading-tight">{priceInfo.sub}</p>
+      )}
 
       {/* Max perros badge */}
       <div className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-canvas/80 border border-hairline px-2.5 py-0.5 text-[11px] font-semibold text-ink">
@@ -492,6 +576,7 @@ function PlanCard({ plan, isLoggedIn }: { plan: PlanDef; isLoggedIn: boolean }) 
         ) : (
           <CheckoutButton
             plan="pro"
+            cadence={cycle}
             label={plan.ctaLabel}
             isLoggedIn={isLoggedIn}
             className={`inline-flex w-full items-center justify-center gap-1.5 rounded-xl text-on-primary px-5 py-3 text-sm font-bold hover:opacity-90 disabled:opacity-50 transition`}
@@ -517,7 +602,7 @@ function PlanCard({ plan, isLoggedIn }: { plan: PlanDef; isLoggedIn: boolean }) 
 // ──────────────────────────────────────────────────────────────────────
 // Vista 2 — Avanzada (tabla completa)
 // ──────────────────────────────────────────────────────────────────────
-function AdvancedView({ isLoggedIn }: { isLoggedIn: boolean }) {
+function AdvancedView({ isLoggedIn, cycle }: { isLoggedIn: boolean; cycle: BillingCycle }) {
   return (
     <div className="space-y-6">
       {/* Header de la tabla con precios resumidos */}
@@ -530,6 +615,7 @@ function AdvancedView({ isLoggedIn }: { isLoggedIn: boolean }) {
               </th>
               {PLANS.map((plan) => {
                 const Icon = plan.icon
+                const priceInfo = fmtPrice(plan, cycle)
                 return (
                   <th key={plan.id} className="px-3 py-4 text-center" style={{ background: plan.highlight ? `${plan.accent}08` : undefined }}>
                     <div className="flex flex-col items-center gap-1.5">
@@ -537,8 +623,8 @@ function AdvancedView({ isLoggedIn }: { isLoggedIn: boolean }) {
                         <Icon className="w-3.5 h-3.5" />
                       </div>
                       <p className="text-[12.5px] font-bold text-ink leading-tight">{plan.name}</p>
-                      <p className="text-[16px] font-bold tabular-nums text-ink leading-none">{plan.price}</p>
-                      <p className="text-[10px] text-muted leading-none">{plan.period}</p>
+                      <p className="text-[16px] font-bold tabular-nums text-ink leading-none">{priceInfo.amount}</p>
+                      <p className="text-[10px] text-muted leading-none">{priceInfo.per}</p>
                       <p className="text-[10px] font-semibold mt-0.5" style={{ color: plan.accent }}>{plan.maxDogs}</p>
                     </div>
                   </th>
@@ -575,6 +661,7 @@ function AdvancedView({ isLoggedIn }: { isLoggedIn: boolean }) {
                   ) : (
                     <CheckoutButton
                       plan="pro"
+                      cadence={cycle}
                       label={plan.ctaLabel}
                       isLoggedIn={isLoggedIn}
                       className="inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-[12px] font-bold transition text-on-primary hover:opacity-90"

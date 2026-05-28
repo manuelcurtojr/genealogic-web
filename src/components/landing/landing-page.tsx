@@ -1227,7 +1227,7 @@ function Pricing() {
             </span>
             <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-[#FE6620]">Kennel Pro</p>
             <p className="mt-3 text-[32px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
-              29 € <span className="text-[13px] font-normal text-muted">/ mes</span>
+              49 € <span className="text-[13px] font-normal text-muted">/ mes</span>
             </p>
             <p className="mt-1 text-[13px] text-body">Ilimitado · Criadero profesional</p>
             <ul className="mt-5 space-y-2 text-[13.5px] flex-1">
@@ -1304,7 +1304,7 @@ function FAQ() {
       a: 'Owner es para propietarios particulares con hasta 3 perros (tu mascota o las que has tenido a lo largo de la vida — los fallecidos no cuentan en el límite). Kennel Free es para el criador casero o aficionado con hasta 5 perros, que ya maneja camadas, reservas, contratos y CRM de clientes. Ambos son gratis para siempre.',
     },
     {
-      q: '¿Qué incluye Kennel Pro a 29€/mes?',
+      q: '¿Qué incluye Kennel Pro a 49€/mes?',
       a: 'Todo Kennel Free + perros ilimitados, COI Wright explicado (lista de ancestros duplicados, comparativa con la raza), simulador de cruces con COI proyectado y predicción de color por genotipos, pagos integrados con Stripe Connect (cobras señas y entregas), registro de visitas al criadero y soporte prioritario en menos de 24 horas.',
     },
     {

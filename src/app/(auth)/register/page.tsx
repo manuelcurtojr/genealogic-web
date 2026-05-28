@@ -245,7 +245,7 @@ function intentBranding(data: SignupIntentData | null) {
   // SignupPlan ('free' | 'kennel' | 'kennel_pro' | 'pro' | 'premium').
   // Tras el rename:
   //   kennel_pro / premium → Kennel Enterprise (149€/mes · activación manual)
-  //   pro / kennel        → Kennel Pro (29€/mes · 14 días gratis sin tarjeta)
+  //   pro / kennel        → Kennel Pro (49€/mes · 14 días gratis sin tarjeta)
   //   free                → Kennel Free (5 perros · gratis)
   // El plan Owner (3 perros) llega por intent === 'owner', no por data.plan.
   const planStr = data.plan as string

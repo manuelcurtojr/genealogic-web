@@ -55,7 +55,7 @@ function fmtDate(iso: string) {
 }
 
 // Labels comerciales actuales (rol técnico → nombre público):
-//   'kennel'     → "Kennel Pro" (29€/mes)
+//   'kennel'     → "Kennel Pro" (49€/mes)
 //   'kennel_pro' → "Kennel Enterprise" (149€/mes, activación manual)
 //   'free'       → "Kennel Free" (5 perros, gratis para siempre)
 //   'owner'      → "Owner" (3 perros, gratis para siempre)
@@ -74,12 +74,12 @@ const PLAN_LABEL: Record<string, string> = {
 const PLAN_PRICE: Record<string, string> = {
   free: 'Gratis',
   owner: 'Gratis',
-  kennel: '29 €/mes',
+  kennel: '49 €/mes',
   kennel_pro: '149 €/mes',
   enterprise: '149 €/mes',
-  pro: '29 €/mes',
+  pro: '49 €/mes',
   premium: '149 €/mes',
-  starter: '29 €/mes',
+  starter: '49 €/mes',
 }
 
 export default function BillingClient({ profile, invoices, stripeReady, hasKennel }: Props) {
@@ -223,7 +223,7 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <PlanCard
                 name="Kennel Pro"
-                price="29 €"
+                price="49 €"
                 period="/mes"
                 description="Perros ilimitados, COI completo, simulador de cruces, genotipos, Stripe Connect y soporte prioritario. 14 días gratis sin tarjeta."
                 highlight

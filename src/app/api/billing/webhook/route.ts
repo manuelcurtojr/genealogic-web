@@ -10,7 +10,7 @@ export const runtime = 'nodejs'
 /**
  * POST /api/billing/webhook
  *
- * Webhook de Stripe para SUSCRIPCIONES SaaS (Kennel Pro 29€). Kennel
+ * Webhook de Stripe para SUSCRIPCIONES SaaS (Kennel Pro 49€). Kennel
  * Enterprise (149€) NO pasa por aquí — su alta es manual.
  *
  * Modelo: trial de 14 días SIN tarjeta inicial. El usuario obtiene acceso
@@ -28,7 +28,7 @@ export const runtime = 'nodejs'
  *   unpaid    → bajamos a free
  *   canceled  → bajamos a free
  *
- * NOTA: el rol técnico `kennel` representa al Kennel Pro nuevo (29€).
+ * NOTA: el rol técnico `kennel` representa al Kennel Pro nuevo (49€).
  * El rol `kennel_pro` representa al Kennel Enterprise (149€, manual).
  *
  * Eventos manejados:

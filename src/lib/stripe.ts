@@ -10,7 +10,7 @@
  * Setup necesario (env vars):
  *   STRIPE_SECRET_KEY               — sk_live_… o sk_test_…
  *   STRIPE_WEBHOOK_SECRET           — para verificar webhooks
- *   STRIPE_PRICE_KENNEL_MONTHLY     — price_xxx (Kennel 29€/mes)
+ *   STRIPE_PRICE_KENNEL_MONTHLY     — price_xxx (Kennel 49€/mes)
  *   STRIPE_PRICE_KENNEL_ANNUAL      — price_xxx (Kennel 290€/año)
  *   STRIPE_PRICE_KENNEL_PRO_MONTHLY — price_xxx (Kennel Pro 49€/mes Founder · Próximamente)
  *   STRIPE_PRICE_KENNEL_PRO_ANNUAL  — price_xxx

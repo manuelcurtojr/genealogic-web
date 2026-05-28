@@ -7,7 +7,7 @@
 //
 // Plans (en profiles.plan) — desde 25 may 2026:
 //   - 'free'       = gratis para siempre (default, owners y criadores en modo gratis)
-//   - 'kennel'     = criador profesional (29€/mes o 290€/año)
+//   - 'kennel'     = criador profesional (49€/mes o 290€/año)
 //   - 'kennel_pro' = criador pro con web, emailbot, newsletter (49€/mes Founder)
 //
 // Legacy compat (NUNCA mostrar en UI, solo para datos antiguos):

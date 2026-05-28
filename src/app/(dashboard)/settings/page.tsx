@@ -187,7 +187,7 @@ export default function SettingsPage() {
   const userIsFounder: boolean = Boolean((profile as any)?.plan_is_founder)
   // Mapeo canónico al label comercial nuevo, aceptando legacy:
   //   rol técnico 'kennel_pro' (BBDD) → Kennel Enterprise (149€/mes, manual)
-  //   rol técnico 'kennel'     (BBDD) → Kennel Pro       (29€/mes)
+  //   rol técnico 'kennel'     (BBDD) → Kennel Pro       (49€/mes)
   //   free → Kennel Free (5 perros) por defecto
   const userPlanLabel =
     userPlan === 'kennel_pro' || userPlan === 'premium' || userPlan === 'enterprise' ? 'Kennel Enterprise' :

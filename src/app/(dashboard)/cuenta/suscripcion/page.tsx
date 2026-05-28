@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 // Nota: no usamos getPlanLabel() de lib/permissions porque devuelve los
 // nombres internos antiguos ("Kennel"/"Kennel Pro"). En esta página, copy
 // de cara al user, mapeamos al nombre comercial actual:
-//   rol técnico 'kennel'     → "Kennel Pro" (29€/mes)
+//   rol técnico 'kennel'     → "Kennel Pro" (49€/mes)
 //   rol técnico 'kennel_pro' → "Kennel Enterprise" (149€/mes, manual)
 function publicPlanLabel(plan: string): string {
   if (plan === 'kennel_pro' || plan === 'premium' || plan === 'enterprise') return 'Kennel Enterprise'
@@ -50,7 +50,7 @@ export default async function SuscripcionPage({
   // Si llega ?activate=kennel|kennel_pro tras crear kennel, mostrar pantalla
   // dedicada "activa tu plan" antes que el detalle normal. Aceptamos los
   // nombres legacy pro/premium y los mapeamos.
-  // Nota: en BBDD el rol técnico 'kennel' = Kennel Pro (29€), y
+  // Nota: en BBDD el rol técnico 'kennel' = Kennel Pro (49€), y
   // 'kennel_pro' = Kennel Enterprise (149€).
   const rawActivate = sp.activate
   const activatePlan: 'kennel' | 'kennel_pro' | null =
@@ -61,7 +61,7 @@ export default async function SuscripcionPage({
   // (si ya está en Kennel Pro/Enterprise, no tiene sentido)
   const showActivate = activatePlan && plan === 'free'
 
-  // Features del plan Kennel Pro (29€/mes · rol técnico 'kennel')
+  // Features del plan Kennel Pro (49€/mes · rol técnico 'kennel')
   const kennelIncluded = [
     'Perros ilimitados',
     'COI de Wright + ancestros duplicados',
@@ -236,9 +236,9 @@ export default async function SuscripcionPage({
 
 function ActivatePlanScreen({ plan }: { plan: 'kennel' | 'kennel_pro' }) {
   const checkoutReady = isSubscriptionCheckoutAvailable()
-  // En BBDD el rol 'kennel' = Kennel Pro (29€), 'kennel_pro' = Kennel Enterprise (149€).
+  // En BBDD el rol 'kennel' = Kennel Pro (49€), 'kennel_pro' = Kennel Enterprise (149€).
   const planLabel = plan === 'kennel' ? 'Kennel Pro' : 'Kennel Enterprise'
-  const planPrice = plan === 'kennel' ? '29€/mes' : '149€/mes'
+  const planPrice = plan === 'kennel' ? '49€/mes' : '149€/mes'
   // Kennel Enterprise se activa de forma manual; aunque checkout esté
   // disponible, lo mostramos como contacto con soporte.
   const isPublicAvailable = plan === 'kennel'
