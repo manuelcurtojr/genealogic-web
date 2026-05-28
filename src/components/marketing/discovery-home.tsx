@@ -641,29 +641,35 @@ export default function DiscoveryHome({
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <PricingCard
-              tier="Gratis"
+              tier="Owner"
               price="0€"
-              period="para siempre"
-              desc="Para propietarios y criadores que arrancan."
-              features={['1 criadero', 'Hasta 10 perros', 'Genealogía 10 generaciones', 'Cartilla veterinaria', 'Fotos ilimitadas']}
+              period="3 perros"
+              desc="Para documentar tu mascota."
+              features={['Genealogía 10 generaciones', 'Cartilla veterinaria', 'Galería ilimitada', 'Importador IA']}
             />
             <PricingCard
-              tier="Kennel"
-              price="14€"
-              period="/mes"
-              desc="Para criadores que ya venden camadas."
-              features={['Perros ilimitados', 'Web pública con tu dominio', 'Pipeline de reservas', 'Blog y newsletter', 'Reseñas verificadas']}
-              highlight
+              tier="Kennel Free"
+              price="0€"
+              period="5 perros"
+              desc="Para el criador casero."
+              features={['Camadas + calendario', 'Pipeline reservas', 'Contratos + firma', 'CRM clientes']}
             />
             <PricingCard
               tier="Kennel Pro"
-              price="29€"
-              period="/mes"
-              desc="Para criaderos que profesionalizan."
-              features={['Todo lo de Kennel +', 'Emailbot con IA', 'Stripe Connect (pagos)', 'Simulador de cruces COI', 'Estadísticas avanzadas']}
-              comingSoon
+              price="19€"
+              period="/mes · ilimitado"
+              desc="Para el criadero profesional."
+              features={['Perros ilimitados', 'COI + simulador cruces', 'Genotipos completos', 'Pagos Stripe Connect']}
+              highlight
+            />
+            <PricingCard
+              tier="Kennel Enterprise"
+              price="99€"
+              period="/mes · ilimitado"
+              desc="Para el criadero con escaparate público."
+              features={['Web con tu dominio', 'Multi-idioma', 'Emailbot IA + newsletter', 'API + integraciones']}
             />
           </div>
 
@@ -1111,41 +1117,39 @@ function CompareCell({ value }: { value: boolean | 'partial' }) {
   return <X className="w-4 h-4 text-rose-400 inline" />
 }
 
+/**
+ * PricingCard — teaser compacto para la home. Más detalle vive en /pricing.
+ *
+ * Layout pensado para grid de 4 columnas (4 planes). Padding reducido y
+ * tipografía ajustada para que las cards quepan sin truncar en md+.
+ */
 function PricingCard({
-  tier, price, period, desc, features, highlight, comingSoon,
+  tier, price, period, desc, features, highlight,
 }: {
   tier: string; price: string; period: string; desc: string; features: string[]
-  highlight?: boolean; comingSoon?: boolean
+  highlight?: boolean
 }) {
-  // Si está "próximamente", visualmente atenuado y con badge ámbar.
-  const borderClass = comingSoon
-    ? 'border-amber-300 bg-amber-50/30'
-    : highlight
-    ? 'border-[#FE6620] shadow-[0_12px_48px_rgba(254,102,32,0.15)]'
+  const borderClass = highlight
+    ? 'border-[#FE6620] shadow-[0_12px_48px_rgba(254,102,32,0.15)] border-2'
     : 'border-hairline'
 
   return (
-    <div className={`relative rounded-2xl border ${borderClass} bg-canvas p-6 sm:p-7 ${comingSoon ? 'opacity-90' : ''}`}>
-      {comingSoon && (
-        <span className="absolute -top-3 left-6 inline-flex items-center gap-1 rounded-full bg-amber-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
-          <Clock className="w-3 h-3" /> Próximamente
-        </span>
-      )}
-      {highlight && !comingSoon && (
-        <span className="absolute -top-3 left-6 inline-flex items-center rounded-full bg-[#FE6620] text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
+    <div className={`relative rounded-2xl border ${borderClass} bg-canvas p-5 sm:p-6 flex flex-col`}>
+      {highlight && (
+        <span className="absolute -top-3 left-5 inline-flex items-center rounded-full bg-[#FE6620] text-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider">
           Más popular
         </span>
       )}
-      <p className="text-[12px] font-bold uppercase tracking-wider text-muted">{tier}</p>
-      <div className="mt-3 flex items-baseline gap-1">
-        <span className={`text-[36px] font-bold tabular-nums leading-none ${comingSoon ? 'text-muted' : 'text-ink'}`}>{price}</span>
-        <span className="text-[13px] text-muted">{period}</span>
+      <p className="text-[11.5px] font-bold uppercase tracking-wider text-muted">{tier}</p>
+      <div className="mt-2.5 flex items-baseline gap-1">
+        <span className="text-[28px] sm:text-[32px] font-bold tabular-nums leading-none text-ink">{price}</span>
+        <span className="text-[12px] text-muted">{period}</span>
       </div>
-      <p className="mt-2 text-[13px] text-body">{desc}</p>
-      <ul className="mt-5 space-y-2">
+      <p className="mt-2 text-[12.5px] text-body leading-snug">{desc}</p>
+      <ul className="mt-4 space-y-1.5 flex-1">
         {features.map((f, i) => (
-          <li key={i} className="flex items-start gap-2 text-[13px] text-body">
-            <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${comingSoon ? 'text-muted' : 'text-emerald-600'}`} />
+          <li key={i} className="flex items-start gap-2 text-[12.5px] text-body leading-snug">
+            <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-emerald-600" />
             <span>{f}</span>
           </li>
         ))}

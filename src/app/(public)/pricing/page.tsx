@@ -1,14 +1,13 @@
 /**
- * /pricing — precios con toggle Criador / Propietario.
+ * /pricing — 4 planes (Owner / Kennel Free / Kennel Pro / Kennel Enterprise).
  *
- * Propietario: gratis para siempre (sin tiers).
- * Criador: 3 tiers (Free, Kennel 29€, Kennel Pro 49€ Founder · Próximamente).
+ * Vistas:
+ *   · Simple (default) — 4 cards con highlights, "en cristiano"
+ *   · Avanzada — tabla completa con todas las features × planes
  *
- * El toggle vive en query string (?for=breeder|owner) para permitir
- * deep-linking desde landing y ads.
- *
- * Detecta si el visitante está logueado para que el CTA "Probar 15 días gratis"
- * vaya directo a Stripe Checkout en vez de pedir registro primero.
+ * El toggle vive en query string (?view=simple|avanzada) para permitir
+ * deep-linking. Los planes y reglas detalladas están en el cliente,
+ * sincronizado con memory/genealogic_pricing_model.md.
  */
 import { createClient } from '@/lib/supabase/server'
 import PricingClient from '@/components/marketing/pricing-client'
@@ -20,17 +19,13 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Precios — Genealogic',
   description:
-    'Gratis para propietarios. Para criadores: Free (10 perros), Kennel (29€/mes con 15 días de prueba gratis) y Kennel Pro (próximamente).',
+    'Owner (3 perros, gratis) y Kennel Free (5 perros, gratis) para siempre. Kennel Pro (19€/mes, perros ilimitados) y Kennel Enterprise (99€/mes, web del criadero) con 14 días de prueba sin tarjeta.',
   alternates: { canonical: 'https://genealogic.io/pricing' },
 }
 
 export const dynamic = 'force-dynamic'
 
-export default async function PricingPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ for?: string }>
-}) {
+export default async function PricingPage() {
   // Defensa en profundidad: si la sesión es iOS (App Store 3.1.1) no se debe
   // ver pricing dentro de la app. El middleware ya redirige antes, esto cubre
   // cualquier bypass (cache, race, llamada server-side directa).
@@ -38,11 +33,9 @@ export default async function PricingPage({
   if (isIosUserAgent(h.get('user-agent'))) {
     redirect('/dashboard')
   }
-  const sp = await searchParams
-  const initialTab: 'breeder' | 'owner' = sp.for === 'owner' ? 'owner' : 'breeder'
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  return <PricingClient initialTab={initialTab} isLoggedIn={!!user} />
+  return <PricingClient isLoggedIn={!!user} />
 }

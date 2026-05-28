@@ -27,12 +27,15 @@ export default function CheckoutButton({
   cadence = 'monthly',
   label,
   className,
+  style,
   isLoggedIn,
 }: {
   plan: Plan
   cadence?: 'monthly' | 'annual'
   label: string
   className?: string
+  /** Inline styles para color de marca del plan (vista pricing 4 planes) */
+  style?: React.CSSProperties
   isLoggedIn: boolean
 }) {
   const router = useRouter()
@@ -80,6 +83,7 @@ export default function CheckoutButton({
       <button
         onClick={start}
         disabled={pending}
+        style={style}
         className={className || 'inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-sm font-bold hover:opacity-90 disabled:opacity-50 transition'}
       >
         {pending
