@@ -1,63 +1,122 @@
 'use client'
 
+/**
+ * ContactFormInner — formulario de contacto embebido en la sección
+ * /c/[slug]/contacto del kennel custom site.
+ *
+ * HISTORIA del bug que esto arregla (2026-05-28):
+ * Esta sección tenía hardcoded los campos name/email/phone/topic/message y
+ * enviaba a /api/owners (endpoint privado que requiere auth → 401 para
+ * visitantes anónimos). Resultado: ningún lead llegaba a los criaderos
+ * cuyos clientes contactaban desde /contacto en lugar del modal popup.
+ * Para Irema Curtó (que tiene `purpose` required en su contact_form_config),
+ * los visitantes del custom domain iremacurto.com tampoco recibían los
+ * leads desde la página /contacto. Llevaba 4 días sin recibir formularios.
+ *
+ * Ahora:
+ *   1. Carga la config del kennel (kennels.contact_form_config) vía
+ *      /api/kennel-by-slug — los mismos campos que el criador construyó.
+ *   2. Renderea dinámicamente cada campo según la config (text/email/tel/
+ *      textarea/select/radio/checkbox).
+ *   3. Submit a /api/contact-kennel (endpoint público con rate-limit)
+ *      con el mismo formato { kennel_id, values } que el modal popup.
+ *
+ * Comparte el helper de validación con el modal (lib/kennel/contact-form),
+ * así una sola fuente de verdad para front+back. El props `topics` y
+ * `success_message` se ignoran ahora — la config del kennel manda. Se
+ * mantiene la firma del componente para no romper imports.
+ */
 import { useEffect, useState } from 'react'
+import {
+  getEffectiveConfig,
+  validateForm,
+  type ContactFormConfig,
+  type FormField,
+} from '@/lib/kennel/contact-form'
 
 export default function ContactFormInner({
-  topics, success_message,
+  success_message: legacySuccessMessage,
 }: {
-  topics?: string[]
-  success_message?: string
+  topics?: string[]              // legacy, ignorado (la config del kennel manda)
+  success_message?: string        // legacy fallback si la config no tiene success_message
 }) {
   const [kennelId, setKennelId] = useState<string | null>(null)
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [topic, setTopic] = useState(topics?.[0] || '')
-  const [message, setMessage] = useState('')
+  const [config, setConfig] = useState<ContactFormConfig | null>(null)
+  const [values, setValues] = useState<Record<string, unknown>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
-  const [err, setErr] = useState<string | null>(null)
+  const [serverError, setServerError] = useState<string | null>(null)
 
+  // Resolver kennel y su config al montar.
+  //   · Si la URL es /c/<slug>/... (genealogic.io) → pasamos slug query
+  //   · Si la URL es iremacurto.com/... (custom domain) → no pasamos slug,
+  //     el endpoint resolverá por host
   useEffect(() => {
     if (typeof window === 'undefined') return
     const seg = window.location.pathname.split('/')
-    const slug = seg[2]
-    if (!slug) return
-    fetch(`/api/kennel-by-slug?slug=${encodeURIComponent(slug)}`)
+    let slugParam = ''
+    if (seg[1] === 'c' && seg[2]) {
+      slugParam = `?slug=${encodeURIComponent(seg[2])}`
+    }
+    fetch(`/api/kennel-by-slug${slugParam}`)
       .then(r => r.json())
-      .then(d => { if (d.kennel?.id) setKennelId(d.kennel.id) })
+      .then(d => {
+        if (d.kennel?.id) {
+          setKennelId(d.kennel.id)
+          setConfig(getEffectiveConfig(d.kennel.contact_form_config))
+        }
+      })
       .catch(() => {})
   }, [])
 
+  const setValue = (id: string, v: unknown) => {
+    setValues((prev) => ({ ...prev, [id]: v }))
+    if (errors[id]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+    }
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!kennelId) { setErr('Cargando criadero…'); return }
-    setLoading(true); setErr(null)
+    if (!kennelId || !config) {
+      setServerError('Cargando criadero…')
+      return
+    }
+    // Validación local — misma función que el backend para evitar
+    // discrepancias.
+    const { errors: errs, ok } = validateForm(config, values)
+    if (!ok) {
+      setErrors(errs)
+      return
+    }
+    setLoading(true)
+    setServerError(null)
     try {
-      const notes = `[Tema: ${topic || 'Sin especificar'}]\n${message}`.trim()
-      const res = await fetch('/api/owners', {
+      const res = await fetch('/api/contact-kennel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          kennel_id: kennelId,
-          full_name: name.trim(),
-          email: email.trim() || null,
-          phone: phone.trim() || null,
-          notes,
-        }),
+        body: JSON.stringify({ kennel_id: kennelId, values }),
       })
+      const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        const d = await res.json()
-        throw new Error(d.error || 'Error')
+        setServerError(data?.error || 'No se pudo enviar')
+        if (data?.fields) setErrors(data.fields)
+        return
       }
       setSent(true)
-    } catch (e: any) {
-      setErr(e.message)
+    } catch (e: unknown) {
+      setServerError(e instanceof Error ? e.message : 'Error de red')
     } finally {
       setLoading(false)
     }
   }
 
+  // Pantalla de éxito
   if (sent) {
     return (
       <div className="text-center py-6">
@@ -74,39 +133,143 @@ export default function ContactFormInner({
           ¡Recibido!
         </h2>
         <p className="text-body leading-relaxed">
-          {success_message || 'Tu mensaje ha llegado al criador. Te responderá personalmente lo antes posible.'}
+          {config?.success_message
+            || legacySuccessMessage
+            || 'Tu mensaje ha llegado al criador. Te responderá personalmente lo antes posible.'}
         </p>
       </div>
     )
   }
 
-  // Estilos compartidos para todos los inputs — usan tokens del tema
-  const inputClass =
-    'w-full px-4 py-3 text-sm border border-hairline bg-canvas text-ink placeholder-muted/70 focus:outline-none focus:border-theme-accent transition-colors'
-  const inputStyle = { borderRadius: 'var(--button-radius, 8px)' as const }
+  // Loading inicial — mientras carga la config
+  if (!config) {
+    return (
+      <div className="text-center py-10 text-muted text-sm">Cargando formulario…</div>
+    )
+  }
 
   return (
     <form onSubmit={submit} className="space-y-3">
-      <input type="text" required placeholder="Nombre *" value={name} onChange={e => setName(e.target.value)}
-        className={inputClass} style={inputStyle} />
-      <input type="email" required placeholder="Email *" value={email} onChange={e => setEmail(e.target.value)}
-        className={inputClass} style={inputStyle} />
-      <input type="tel" placeholder="Teléfono (opcional)" value={phone} onChange={e => setPhone(e.target.value)}
-        className={inputClass} style={inputStyle} />
-      {topics && topics.length > 0 && (
-        <select value={topic} onChange={e => setTopic(e.target.value)}
-          className={inputClass} style={inputStyle}>
-          {topics.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
+      {config.fields.map((field) => (
+        <FieldRenderer
+          key={field.id}
+          field={field}
+          value={values[field.id]}
+          error={errors[field.id]}
+          onChange={(v) => setValue(field.id, v)}
+        />
+      ))}
+
+      {serverError && (
+        <p className="text-sm text-[color:var(--error)]">{serverError}</p>
       )}
-      <textarea required placeholder="Mensaje *" value={message} onChange={e => setMessage(e.target.value)}
-        className={`${inputClass} min-h-[140px]`} style={inputStyle} />
-      {err && <p className="text-sm text-red-600">{err}</p>}
-      <button type="submit" disabled={loading}
-        className="btn-brand w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 text-[13px] font-semibold uppercase tracking-[0.1em] disabled:opacity-50">
-        {loading ? 'Enviando…' : 'Enviar mensaje'}
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="btn-brand w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 text-[13px] font-semibold uppercase tracking-[0.1em] disabled:opacity-50"
+      >
+        {loading ? 'Enviando…' : (config.submit_label || 'Enviar mensaje')}
         {!loading && <span aria-hidden="true">→</span>}
       </button>
     </form>
+  )
+}
+
+/**
+ * FieldRenderer — mismo patrón que ContactDialog (modal popup). Mantenidos
+ * en archivos separados porque el modal lleva animaciones + estilo dark
+ * theme y este form vive embebido en la sección /contacto donde la página
+ * aporta el contexto visual (hero, intro, etc).
+ */
+function FieldRenderer({
+  field, value, error, onChange,
+}: {
+  field: FormField
+  value: unknown
+  error?: string
+  onChange: (v: unknown) => void
+}) {
+  const inputClass = `w-full px-4 py-3 text-sm border bg-canvas text-ink placeholder-muted/70 focus:outline-none transition-colors ${
+    error ? 'border-[color:var(--error)]' : 'border-hairline focus:border-theme-accent'
+  }`
+  const inputStyle = { borderRadius: 'var(--button-radius, 8px)' as const }
+
+  return (
+    <div>
+      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+        {field.label}
+        {field.required && <span className="text-[color:var(--error)]"> *</span>}
+      </label>
+
+      {field.type === 'textarea' ? (
+        <textarea
+          value={(value as string) || ''}
+          onChange={(e) => onChange(e.target.value)}
+          rows={field.rows || 4}
+          placeholder={field.placeholder}
+          className={`${inputClass} resize-none`}
+          style={inputStyle}
+        />
+      ) : field.type === 'select' ? (
+        <select
+          value={(value as string) || ''}
+          onChange={(e) => onChange(e.target.value)}
+          className={inputClass}
+          style={inputStyle}
+        >
+          <option value="">— Seleccionar —</option>
+          {(field.options || []).map((o) => <option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : field.type === 'radio' ? (
+        <div className="mt-1 space-y-1.5">
+          {(field.options || []).map((o) => (
+            <label key={o} className="flex items-center gap-2 text-[13.5px] text-ink cursor-pointer">
+              <input
+                type="radio"
+                name={field.id}
+                value={o}
+                checked={value === o}
+                onChange={() => onChange(o)}
+                className="h-4 w-4 accent-[color:var(--theme-accent)]"
+              />
+              {o}
+            </label>
+          ))}
+        </div>
+      ) : field.type === 'checkbox' ? (
+        <div className="mt-1 space-y-1.5">
+          {(field.options || []).map((o) => {
+            const arr = Array.isArray(value) ? (value as string[]) : []
+            const checked = arr.includes(o)
+            return (
+              <label key={o} className="flex items-center gap-2 text-[13.5px] text-ink cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => onChange(checked ? arr.filter((x) => x !== o) : [...arr, o])}
+                  className="h-4 w-4 accent-[color:var(--theme-accent)]"
+                />
+                {o}
+              </label>
+            )
+          })}
+        </div>
+      ) : (
+        <input
+          type={field.type}
+          value={(value as string) || ''}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={field.placeholder}
+          className={inputClass}
+          style={inputStyle}
+        />
+      )}
+
+      {field.helper && !error && (
+        <p className="mt-1 text-[11px] text-muted">{field.helper}</p>
+      )}
+      {error && <p className="mt-1 text-[11px] text-[color:var(--error)]">{error}</p>}
+    </div>
   )
 }
