@@ -11,30 +11,7 @@
  */
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import {
-  Info, Eye, Ruler, Heart, Smile, ArrowDownToDot,
-  Anchor, Footprints, Activity, Palette, Scale, AlertTriangle,
-  Sparkles, GitCompare,
-} from 'lucide-react'
-
-export const BREED_SECTIONS = [
-  { id: 'info-general',        label: 'Información general', icon: Info },
-  { id: 'apariencia',          label: 'Apariencia general', icon: Eye },
-  { id: 'proporciones',        label: 'Proporciones',        icon: Ruler },
-  { id: 'temperamento',        label: 'Temperamento',        icon: Heart },
-  { id: 'cabeza',              label: 'Cabeza',              icon: Smile },
-  { id: 'cuello-cuerpo',       label: 'Cuello y cuerpo',     icon: ArrowDownToDot },
-  { id: 'cola',                label: 'Cola',                icon: Anchor },
-  { id: 'extremidades',        label: 'Extremidades',        icon: Footprints },
-  { id: 'movimiento',          label: 'Movimiento',          icon: Activity },
-  { id: 'manto',               label: 'Manto y color',       icon: Palette },
-  { id: 'tamano-peso',         label: 'Tamaño y peso',       icon: Scale },
-  { id: 'faltas',              label: 'Faltas',              icon: AlertTriangle },
-  { id: 'reinterpretacion',    label: 'Sobre este estándar', icon: Sparkles },
-  { id: 'diferencias-clubes',  label: 'Diferencias entre clubes', icon: GitCompare },
-] as const
-
-export type BreedSectionId = typeof BREED_SECTIONS[number]['id']
+import { BREED_SECTIONS } from './sections'
 
 interface Props {
   breedName: string

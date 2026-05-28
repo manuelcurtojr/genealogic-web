@@ -13,7 +13,8 @@ import { notFound } from 'next/navigation'
 import { ExternalLink, AlertCircle } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { DogImage } from '@/components/ui/dog-image'
-import BreedStandardSidebar, { BREED_SECTIONS } from '@/components/breeds/breed-standard-sidebar'
+import BreedStandardSidebar from '@/components/breeds/breed-standard-sidebar'
+import { BREED_SECTIONS } from '@/components/breeds/sections'
 import type { Metadata } from 'next'
 
 export const revalidate = 3600
