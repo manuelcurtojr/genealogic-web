@@ -28,8 +28,8 @@ import {
   ArrowRight, Search, Store, Dog, GitBranch, ShieldCheck,
   Sparkles, Camera, Calendar, Globe, Mail, KanbanSquare,
   Stethoscope, Heart, Zap, Database, Activity, Upload,
-  Plus, UserPlus, Rocket, CheckCircle2, X, ChevronDown,
-  Quote, Star,
+  UserPlus, Rocket, CheckCircle2, X, ChevronDown,
+  Quote, Star, Baby, Mars, Venus, Clock,
 } from 'lucide-react'
 import { useState } from 'react'
 import LiveCounter from './live-counter'
@@ -188,26 +188,33 @@ export default function DiscoveryHome({
                   <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">7 días Pro gratis</span>
                 </div>
                 <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 32px)' }}>
-                  Deja Excel y WhatsApp.
+                  Tu criadero, gestionado de cabo a rabo.
                 </h3>
                 <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-md">
-                  Web profesional con dominio propio, pipeline de reservas que no
-                  se pierde un lead, y un bot que responde a las preguntas que
-                  contestas cada día por décima vez.
+                  Genealogías hasta 10 generaciones con COI calculado, calendario
+                  de celos y partos, camadas con un click, pipeline de reservas
+                  que no se pierde un lead, contratos y pagos integrados. Todo
+                  desde un único panel.
                 </p>
                 <ul className="mt-5 sm:mt-6 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px] sm:text-[13px] text-body">
-                  <MiniFeature icon={Globe}>Web con tu dominio</MiniFeature>
+                  <MiniFeature icon={GitBranch}>Genealogías COI</MiniFeature>
+                  <MiniFeature icon={Heart}>Calendario celos</MiniFeature>
+                  <MiniFeature icon={Baby}>Camadas y cachorros</MiniFeature>
                   <MiniFeature icon={KanbanSquare}>Pipeline reservas</MiniFeature>
+                  <MiniFeature icon={Globe}>Web con tu dominio</MiniFeature>
                   <MiniFeature icon={Mail}>Emailbot 24/7</MiniFeature>
-                  <MiniFeature icon={Activity}>COI por camada</MiniFeature>
                 </ul>
-                <div className="mt-5 inline-flex items-center gap-2 text-[12px] text-muted">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  <span><strong className="text-ink">{counts.kennels.toLocaleString('es-ES')}</strong> criaderos ya dentro</span>
+                {/* Social proof + CTA en filas separadas para que no se
+                    solapen en viewports estrechos. */}
+                <div className="mt-6 flex items-center gap-2 text-[12px] text-muted">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
+                  <span><strong className="text-ink tabular-nums">{counts.kennels.toLocaleString('es-ES')}</strong> criaderos ya dentro</span>
                 </div>
-                <span className="mt-5 sm:mt-6 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
-                  Empezar gratis <ArrowRight className="w-4 h-4" />
-                </span>
+                <div className="mt-4">
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
+                    Empezar gratis <ArrowRight className="w-4 h-4" />
+                  </span>
+                </div>
               </div>
             </Link>
 
@@ -236,13 +243,15 @@ export default function DiscoveryHome({
                   <MiniFeature icon={Calendar}>Vacunas y vet</MiniFeature>
                   <MiniFeature icon={ShieldCheck}>Reclama tu perro</MiniFeature>
                 </ul>
-                <div className="mt-5 inline-flex items-center gap-2 text-[12px] text-muted">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  <span><strong className="text-ink">{counts.dogs.toLocaleString('es-ES')}</strong> perros documentados</span>
+                <div className="mt-6 flex items-center gap-2 text-[12px] text-muted">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
+                  <span><strong className="text-ink tabular-nums">{counts.dogs.toLocaleString('es-ES')}</strong> perros documentados</span>
                 </div>
-                <span className="mt-5 sm:mt-6 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
-                  Crear cuenta gratis <ArrowRight className="w-4 h-4" />
-                </span>
+                <div className="mt-4">
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
+                    Crear cuenta gratis <ArrowRight className="w-4 h-4" />
+                  </span>
+                </div>
               </div>
             </Link>
           </div>
@@ -331,7 +340,7 @@ export default function DiscoveryHome({
               href="/features#directorio"
               className="col-span-2 sm:row-span-2"
               icon={Database}
-              title={`${(counts.dogs / 1000).toFixed(0)}k+ perros indexados`}
+              title={`${counts.dogs.toLocaleString('es-ES')} perros indexados`}
               desc="La mayor red internacional de genealogías caninas. Cuando subes un perro, se conecta automáticamente a su línea existente y aparece en Google."
               color="#FE6620"
               size="large"
@@ -412,15 +421,22 @@ export default function DiscoveryHome({
               <div className="max-w-2xl">
                 <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">Tu raza está aquí</p>
                 <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-                  {counts.breeds} razas representadas y subiendo.
+                  {counts.breeds.toLocaleString('es-ES')} razas representadas y subiendo.
                 </h2>
                 <p className="mt-3 text-[14px] sm:text-[15px] text-body">
-                  Desde el Galgo Italiano con más de 70.000 perros hasta razas
-                  raras con apenas 50 ejemplares. Pulsa una raza para ver su
-                  catálogo completo.
+                  {topBreeds[0] ? (
+                    <>
+                      Desde el <strong className="text-ink">{topBreeds[0].name}</strong> con{' '}
+                      <strong className="text-ink tabular-nums">{topBreeds[0].dog_count.toLocaleString('es-ES')}</strong>{' '}
+                      perros hasta razas raras con apenas un puñado de ejemplares.
+                    </>
+                  ) : (
+                    <>Cientos de razas con perros documentados.</>
+                  )}{' '}
+                  Pulsa una raza para ver su catálogo completo.
                 </p>
               </div>
-              <Link href="/search" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-ink hover:opacity-80 whitespace-nowrap">
+              <Link href="/razas" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-ink hover:opacity-80 whitespace-nowrap">
                 Todas las razas <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -624,6 +640,7 @@ export default function DiscoveryHome({
               period="/mes"
               desc="Para criadores que ya venden camadas."
               features={['Perros ilimitados', 'Web pública con tu dominio', 'Pipeline de reservas', 'Blog y newsletter', 'Reseñas verificadas']}
+              highlight
             />
             <PricingCard
               tier="Kennel Pro"
@@ -631,7 +648,7 @@ export default function DiscoveryHome({
               period="/mes"
               desc="Para criaderos que profesionalizan."
               features={['Todo lo de Kennel +', 'Emailbot con IA', 'Stripe Connect (pagos)', 'Simulador de cruces COI', 'Estadísticas avanzadas']}
-              highlight
+              comingSoon
             />
           </div>
 
@@ -639,7 +656,7 @@ export default function DiscoveryHome({
             <Link href="/pricing" className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-2.5 text-sm font-bold hover:opacity-90 transition">
               Ver pricing completo <ArrowRight className="w-4 h-4" />
             </Link>
-            <span className="text-[12.5px] text-muted">7 días Pro gratis · Sin tarjeta · Cancela cuando quieras</span>
+            <span className="text-[12.5px] text-muted">Empieza gratis · Sin tarjeta · Cancela cuando quieras</span>
           </div>
         </div>
       </section>
@@ -817,40 +834,12 @@ function ProductShowcase({ featuredDogs }: { featuredDogs: Dog[] }) {
         </div>
       </div>
 
-      {/* Mockup 2: Árbol genealógico */}
-      <div className="rounded-2xl border border-hairline bg-canvas overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
-        <div className="flex items-center gap-1.5 border-b border-hairline bg-surface-soft px-3 py-2">
-          <span className="h-2 w-2 rounded-full bg-rose-300" />
-          <span className="h-2 w-2 rounded-full bg-amber-300" />
-          <span className="h-2 w-2 rounded-full bg-emerald-300" />
-          <span className="ml-2 text-[10px] text-muted">Genealogía</span>
-        </div>
-        <div className="p-3">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] font-semibold text-ink">Xían</p>
-            <span className="text-[8.5px] px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold">COI 4.2%</span>
-          </div>
-          <div className="grid grid-cols-3 gap-1.5">
-            <div className="rounded border-2 border-blue-300 bg-canvas px-1.5 py-1 col-span-1 flex items-center justify-center">
-              <p className="text-[9px] font-bold text-ink">Xían</p>
-            </div>
-            <div className="space-y-1.5">
-              <div className="rounded border border-blue-300 bg-canvas px-1.5 py-0.5"><p className="text-[8px] font-semibold text-blue-700">Toby II</p></div>
-              <div className="rounded border border-pink-300 bg-canvas px-1.5 py-0.5"><p className="text-[8px] font-semibold text-pink-700">Anita</p></div>
-            </div>
-            <div className="space-y-1">
-              <div className="rounded border border-blue-200 bg-canvas px-1 py-0.5"><p className="text-[7px] text-blue-600">Boby</p></div>
-              <div className="rounded border border-pink-200 bg-canvas px-1 py-0.5"><p className="text-[7px] text-pink-600">Piba</p></div>
-              <div className="rounded border border-blue-200 bg-canvas px-1 py-0.5"><p className="text-[7px] text-blue-600">Toby I</p></div>
-              <div className="rounded border border-pink-200 bg-canvas px-1 py-0.5"><p className="text-[7px] text-pink-600">Gey</p></div>
-            </div>
-          </div>
-        </div>
-        <div className="px-3 pb-3">
-          <p className="text-[11px] font-semibold text-ink">Árbol genealógico</p>
-          <p className="text-[10px] text-muted">10 generaciones · COI Wright</p>
-        </div>
-      </div>
+      {/* Mockup 2: Ficha de perro real
+          Imita el perfil real de /dogs/[id]: foto grande, nombre +
+          breed + sex en hero, chips de info (microchip, color, edad,
+          peso), padres con avatares. Foto: usamos el primer perro
+          destacado con foto del catálogo. */}
+      <DogProfileMockup featuredDog={featuredDogs.find(d => d.thumbnail_url) || null} />
 
       {/* Mockup 3: Pipeline reservas */}
       <div className="rounded-2xl border border-hairline bg-canvas overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
@@ -880,6 +869,100 @@ function ProductShowcase({ featuredDogs }: { featuredDogs: Dog[] }) {
         </div>
       </div>
     </div>
+  )
+}
+
+/**
+ * DogProfileMockup — réplica fiel del perfil real /dogs/[id].
+ *
+ * Estructura igual al producto: foto cuadrada arriba, hero con nombre +
+ * breed + sex, chips de info, padres con avatares circulares. Si hay un
+ * perro destacado con foto, lo usa; si no, fallback genérico.
+ */
+function DogProfileMockup({ featuredDog }: { featuredDog: Dog | null }) {
+  const dogName = featuredDog?.name || 'Xían'
+  const breedName = featuredDog?.breed?.name || 'Presa Canario'
+  const photo = featuredDog?.thumbnail_url || null
+
+  return (
+    <div className="rounded-2xl border border-hairline bg-canvas overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.06)] flex flex-col">
+      {/* Top bar tipo browser */}
+      <div className="flex items-center gap-1.5 border-b border-hairline bg-surface-soft px-3 py-2">
+        <span className="h-2 w-2 rounded-full bg-rose-300" />
+        <span className="h-2 w-2 rounded-full bg-amber-300" />
+        <span className="h-2 w-2 rounded-full bg-emerald-300" />
+        <span className="ml-2 text-[10px] text-muted truncate">/dogs/{(featuredDog?.slug || dogName.toLowerCase())}</span>
+      </div>
+
+      {/* Foto hero */}
+      <div className="relative aspect-[4/3] bg-gradient-to-br from-orange-50 to-blue-50">
+        {photo ? (
+          <img src={photo} alt={dogName} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center"><Dog className="w-14 h-14 text-muted/30" /></div>
+        )}
+        {/* Badge COI en overlay */}
+        <span className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full bg-canvas/95 backdrop-blur-md px-2 py-0.5 text-[9px] font-bold text-emerald-700 shadow-sm">
+          <Activity className="w-2.5 h-2.5" /> COI 4.2%
+        </span>
+        {/* Badge sexo en overlay bottom-left */}
+        <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-blue-500 text-white px-2 py-0.5 text-[9px] font-bold">
+          <Mars className="w-2.5 h-2.5" /> Macho
+        </span>
+      </div>
+
+      {/* Hero: nombre + breed */}
+      <div className="px-3 pt-3 pb-2">
+        <p className="text-[11px] font-bold text-ink truncate leading-tight">{dogName}</p>
+        <p className="text-[10px] text-muted truncate">{breedName}</p>
+      </div>
+
+      {/* Chips de info */}
+      <div className="px-3 pb-2 flex flex-wrap gap-1">
+        <ProfileChip icon={Clock} label="2019" />
+        <ProfileChip icon={Activity} label="33 kg" />
+        <ProfileChip label="Bardino" />
+      </div>
+
+      {/* Padres mini */}
+      <div className="px-3 pb-2">
+        <p className="text-[8.5px] font-semibold uppercase tracking-wider text-muted mb-1">Padres</p>
+        <div className="grid grid-cols-2 gap-1.5">
+          <div className="flex items-center gap-1.5 rounded border border-hairline bg-canvas px-1.5 py-1">
+            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <Mars className="w-2.5 h-2.5 text-blue-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[7px] text-muted uppercase font-semibold">Padre</p>
+              <p className="text-[9px] font-bold text-ink truncate">Toby II</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 rounded border border-hairline bg-canvas px-1.5 py-1">
+            <div className="w-5 h-5 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
+              <Venus className="w-2.5 h-2.5 text-pink-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[7px] text-muted uppercase font-semibold">Madre</p>
+              <p className="text-[9px] font-bold text-ink truncate">Anita</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-auto px-3 pb-3 pt-1 border-t border-hairline bg-surface-soft/40">
+        <p className="text-[11px] font-semibold text-ink">Ficha pública del perro</p>
+        <p className="text-[10px] text-muted">URL compartible · indexable en Google</p>
+      </div>
+    </div>
+  )
+}
+
+function ProfileChip({ icon: Icon, label }: { icon?: React.ElementType; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md border border-hairline bg-canvas px-1.5 py-0.5 text-[8.5px] font-medium text-body">
+      {Icon && <Icon className="w-2.5 h-2.5 text-muted" />}
+      {label}
+    </span>
   )
 }
 
@@ -938,27 +1021,40 @@ function CompareCell({ value }: { value: boolean | 'partial' }) {
 }
 
 function PricingCard({
-  tier, price, period, desc, features, highlight,
+  tier, price, period, desc, features, highlight, comingSoon,
 }: {
-  tier: string; price: string; period: string; desc: string; features: string[]; highlight?: boolean
+  tier: string; price: string; period: string; desc: string; features: string[]
+  highlight?: boolean; comingSoon?: boolean
 }) {
+  // Si está "próximamente", visualmente atenuado y con badge ámbar.
+  const borderClass = comingSoon
+    ? 'border-amber-300 bg-amber-50/30'
+    : highlight
+    ? 'border-[#FE6620] shadow-[0_12px_48px_rgba(254,102,32,0.15)]'
+    : 'border-hairline'
+
   return (
-    <div className={`relative rounded-2xl border ${highlight ? 'border-[#FE6620] shadow-[0_12px_48px_rgba(254,102,32,0.15)]' : 'border-hairline'} bg-canvas p-6 sm:p-7`}>
-      {highlight && (
+    <div className={`relative rounded-2xl border ${borderClass} bg-canvas p-6 sm:p-7 ${comingSoon ? 'opacity-90' : ''}`}>
+      {comingSoon && (
+        <span className="absolute -top-3 left-6 inline-flex items-center gap-1 rounded-full bg-amber-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
+          <Clock className="w-3 h-3" /> Próximamente
+        </span>
+      )}
+      {highlight && !comingSoon && (
         <span className="absolute -top-3 left-6 inline-flex items-center rounded-full bg-[#FE6620] text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
           Más popular
         </span>
       )}
       <p className="text-[12px] font-bold uppercase tracking-wider text-muted">{tier}</p>
       <div className="mt-3 flex items-baseline gap-1">
-        <span className="text-[36px] font-bold text-ink tabular-nums leading-none">{price}</span>
+        <span className={`text-[36px] font-bold tabular-nums leading-none ${comingSoon ? 'text-muted' : 'text-ink'}`}>{price}</span>
         <span className="text-[13px] text-muted">{period}</span>
       </div>
       <p className="mt-2 text-[13px] text-body">{desc}</p>
       <ul className="mt-5 space-y-2">
         {features.map((f, i) => (
           <li key={i} className="flex items-start gap-2 text-[13px] text-body">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+            <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${comingSoon ? 'text-muted' : 'text-emerald-600'}`} />
             <span>{f}</span>
           </li>
         ))}
@@ -980,7 +1076,3 @@ function FaqItem({ q, children }: { q: string; children: React.ReactNode }) {
   )
 }
 
-// Suprimir warning de Plus no usado si el linter es estricto: lo
-// reservamos por si añadimos cards de "más features" en el futuro
-void Plus
-void Heart
