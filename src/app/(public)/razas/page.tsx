@@ -12,7 +12,7 @@
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 import BreedsDirectory, { type DirectoryBreed } from '@/components/breeds/breeds-directory'
-import { Dog, Trophy, Award, BookOpen } from 'lucide-react'
+import { Dog, Award } from 'lucide-react'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
@@ -79,12 +79,9 @@ export default async function BreedsIndexPage() {
   list.sort((a, b) => b.dog_count - a.dog_count || a.name.localeCompare(b.name, 'es'))
 
   const totalDogs = list.reduce((acc, b) => acc + b.dog_count, 0)
-  const withGenealogicStandard = list.filter((b) => b.has_genealogic_standard).length
   const totalBreeds = list.length
 
-  // Mosaico de imágenes para el fondo del hero — usamos los top 12 perros
-  // con thumbnail real disponible. Si la raza tiene foto Wikipedia esa
-  // funciona, si no usamos el sample_thumbnail.
+  // Mosaico de fondo del hero — top razas con foto.
   const heroImages = list
     .filter((b) => b.image_url)
     .slice(0, 12)
@@ -92,9 +89,9 @@ export default async function BreedsIndexPage() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      {/* ═════ HERO CINEMATOGRÁFICO — estética home ═════ */}
+      {/* ═════ HERO — estilo home (Cal.com inspired) ═════ */}
       <section className="relative overflow-hidden border-b border-hairline">
-        {/* Mosaico de fondo difuminado */}
+        {/* Mosaico de fondo muy difuminado */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="grid h-full grid-cols-6 gap-px opacity-[0.08]">
             {heroImages.slice(0, 12).map((src, i) => (
@@ -110,102 +107,60 @@ export default async function BreedsIndexPage() {
               </div>
             ))}
           </div>
-          {/* Gradient blanco sobre el mosaico para legibilidad */}
           <div className="absolute inset-0 bg-gradient-to-b from-canvas via-canvas/85 to-canvas" />
         </div>
 
-        {/* Contenido del hero */}
-        <div className="relative mx-auto max-w-[1200px] px-6 pt-20 pb-16 lg:px-12 lg:pt-32 lg:pb-24">
-          <p className="text-[12px] font-medium uppercase tracking-[0.18em] text-muted">
-            Directorio · {totalBreeds} razas
-          </p>
+        {/* Contenido — mismo patrón que el home */}
+        <div className="relative z-10 mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-14 sm:py-20 lg:py-24">
+          {/* Badge superior tipo home — punto naranja + texto pequeño */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-hairline bg-canvas/80 backdrop-blur-md px-3 py-1.5 text-[10.5px] sm:text-[11.5px] font-semibold uppercase tracking-[0.08em] sm:tracking-[0.1em] text-ink shadow-sm">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FE6620] animate-pulse" />
+            <span className="line-clamp-1">Directorio · {totalBreeds} razas</span>
+          </div>
 
+          {/* H1 — sans-serif limpio igual que home, naranja en énfasis */}
           <h1
-            className="mt-4 max-w-[20ch] font-semibold text-ink"
-            style={{
-              fontFamily: 'var(--font-fraunces, serif)',
-              fontSize: 'clamp(40px, 7vw, 84px)',
-              lineHeight: 0.98,
-              letterSpacing: '-0.04em',
-            }}
+            className="mt-5 sm:mt-7 max-w-[20ch] font-semibold text-ink"
+            style={{ fontSize: 'clamp(34px, 5.4vw, 64px)', lineHeight: 1.05, letterSpacing: '-0.045em' }}
           >
-            Razas caninas con{' '}
-            <em
-              className="italic font-normal"
-              style={{ color: 'var(--brand-primary, #D74709)' }}
-            >
-              genealogía
-            </em>{' '}
-            verificable.
+            Razas caninas con su{' '}
+            <span style={{ color: '#FE6620' }} className="font-medium">
+              genealogía verificable.
+            </span>
           </h1>
 
-          <p className="mt-6 max-w-[640px] text-[18px] leading-[1.55] text-body sm:text-[20px]">
-            Catálogo de las {totalBreeds} razas registradas en Genealogic con
-            sus estándares oficiales (FCI, RSCE, AKC, KC, ENCI…), colores
-            admitidos y ejemplares con su árbol genealógico completo.
+          <p
+            className="mt-5 sm:mt-7 max-w-[640px] text-body"
+            style={{ fontSize: 'clamp(15px, 1.4vw, 19px)', lineHeight: 1.5 }}
+          >
+            Las {totalBreeds} razas registradas en Genealogic con sus estándares
+            oficiales (FCI, RSCE, AKC, KC, ENCI…), colores admitidos y ejemplares
+            con su árbol genealógico completo.
           </p>
 
-          {/* ─── Counters editoriales ─── */}
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-10 max-w-[820px]">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-1 rounded-full bg-ink/5 p-2.5">
-                <Dog className="h-5 w-5 text-ink" />
+          {/* Stats — pills con icon + número grande, mismo lenguaje visual del home */}
+          <div className="mt-8 sm:mt-10 flex flex-wrap gap-3 sm:gap-4">
+            <div className="inline-flex items-center gap-3 rounded-2xl border border-hairline bg-canvas/80 backdrop-blur-md px-5 py-3.5 shadow-sm">
+              <div className="flex-shrink-0 rounded-full bg-ink/5 p-2">
+                <Dog className="h-4 w-4 text-ink" />
               </div>
-              <div>
-                <div
-                  className="text-ink font-semibold"
-                  style={{
-                    fontFamily: 'var(--font-fraunces, serif)',
-                    fontSize: 'clamp(28px, 3.2vw, 38px)',
-                    lineHeight: 1,
-                    letterSpacing: '-0.02em',
-                  }}
-                >
+              <div className="flex items-baseline gap-2">
+                <span className="font-bold text-ink tabular-nums" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)' }}>
                   {totalDogs.toLocaleString('es-ES')}
-                </div>
-                <p className="mt-1 text-[13px] text-muted">perros registrados</p>
+                </span>
+                <span className="text-[13px] text-muted">perros registrados</span>
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-1 rounded-full bg-ink/5 p-2.5">
-                <BookOpen className="h-5 w-5 text-ink" />
+            <div className="inline-flex items-center gap-3 rounded-2xl border border-hairline bg-canvas/80 backdrop-blur-md px-5 py-3.5 shadow-sm">
+              <div className="flex-shrink-0 rounded-full bg-ink/5 p-2">
+                <Award className="h-4 w-4 text-ink" />
               </div>
-              <div>
-                <div
-                  className="text-ink font-semibold"
-                  style={{
-                    fontFamily: 'var(--font-fraunces, serif)',
-                    fontSize: 'clamp(28px, 3.2vw, 38px)',
-                    lineHeight: 1,
-                    letterSpacing: '-0.02em',
-                  }}
-                >
-                  {withGenealogicStandard}
-                </div>
-                <p className="mt-1 text-[13px] text-muted">
-                  con estándar Genealogic
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-1 rounded-full bg-ink/5 p-2.5">
-                <Award className="h-5 w-5 text-ink" />
-              </div>
-              <div>
-                <div
-                  className="text-ink font-semibold"
-                  style={{
-                    fontFamily: 'var(--font-fraunces, serif)',
-                    fontSize: 'clamp(28px, 3.2vw, 38px)',
-                    lineHeight: 1,
-                    letterSpacing: '-0.02em',
-                  }}
-                >
+              <div className="flex items-baseline gap-2">
+                <span className="font-bold text-ink tabular-nums" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)' }}>
                   {totalBreeds}
-                </div>
-                <p className="mt-1 text-[13px] text-muted">razas en catálogo</p>
+                </span>
+                <span className="text-[13px] text-muted">razas en el catálogo</span>
               </div>
             </div>
           </div>

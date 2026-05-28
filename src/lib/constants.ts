@@ -105,26 +105,27 @@ export const NAV_SECTIONS: NavSection[] = [
     // Contactos (CRM) y Contratos. Antes el sidebar ocultaba "Reservas" en
     // Free, así que los Free no veían las solicitudes que les llegaban por
     // su web pública. Fix de auditoría UX (A5).
+    // Visible en iOS: son herramientas operativas, no pricing (Guideline
+    // 3.1.3(b) Multiplatform Services — el user ya pagó por web).
     requiresKennel: true,
-    hideOnIos: true,
     items: [
-      { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare', requiresKennel: true, hideOnIos: true },
-      { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresPro: true, requiresKennel: true, hideOnIos: true },
-      { label: 'Contratos', href: '/contratos', icon: 'FileText', requiresPro: true, requiresKennel: true, hideOnIos: true },
+      { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare', requiresKennel: true },
+      { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresPro: true, requiresKennel: true },
+      { label: 'Contratos', href: '/contratos', icon: 'FileText', requiresPro: true, requiresKennel: true },
     ],
   },
 
   // ── Comunicación (Pro) — solo entradas principales ──────────────────
   // Hilos del bot, Test del bot y Conocimiento viven como tabs dentro
   // de /emailbot; no se duplican aquí.
+  // Visible en iOS: herramientas operativas (ver justificación en Pipeline).
   {
     id: 'comms',
     label: 'Comunicación',
     requiresPro: true,
-    hideOnIos: true,
     items: [
-      { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresPro: true, hideOnIos: true },
-      { label: 'Newsletter', href: '/newsletter', icon: 'Send', requiresPro: true, hideOnIos: true },
+      { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresPro: true },
+      { label: 'Newsletter', href: '/newsletter', icon: 'Send', requiresPro: true },
     ],
   },
 
@@ -133,14 +134,15 @@ export const NAV_SECTIONS: NavSection[] = [
   // kennel; viven dentro de /kennel (no se duplican en sidebar).
   // Visitas también va dentro porque es parte del análisis del criadero;
   // dejamos Estadísticas como vista más general operativa.
+  // Visible en iOS: herramientas operativas (ver justificación en Pipeline).
   {
     id: 'kennel',
     label: 'Criadero',
     requiresKennel: true,
     items: [
       { label: 'Mi criadero', href: '/kennel', icon: 'Store', requiresKennel: true },
-      { label: 'Páginas web', href: '/web', icon: 'Globe', requiresPro: true, requiresKennel: true, hideOnIos: true },
-      { label: 'Estadísticas', href: '/estadisticas', icon: 'BarChart3', requiresPro: true, requiresKennel: true, hideOnIos: true },
+      { label: 'Páginas web', href: '/web', icon: 'Globe', requiresPro: true, requiresKennel: true },
+      { label: 'Estadísticas', href: '/estadisticas', icon: 'BarChart3', requiresPro: true, requiresKennel: true },
     ],
   },
 
