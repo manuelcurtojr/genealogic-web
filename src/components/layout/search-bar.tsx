@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Search, Dog, Home, Palette } from 'lucide-react'
+import { Search, Dog, Store, Tag } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
@@ -14,6 +14,8 @@ interface SearchResult {
   subtitle?: string
   image?: string | null
   sex?: string | null
+  /** Para criaderos: "Ciudad, País". Para razas: "N perros". */
+  meta?: string | null
 }
 
 export default function SearchBar() {
@@ -47,17 +49,28 @@ export default function SearchBar() {
     return () => document.removeEventListener('keydown', handler)
   }, [])
 
-  // Search debounce — usa RPCs `search_*_smart` que combinan ILIKE rápido
-  // (vía índice GIN trgm sobre search_text normalizado) + fallback word_
-  // similarity para queries con apóstrofes, acentos o typos. El ranking
-  // viene por score word_similarity DESC.
+  // Search debounce — usa RPCs `search_*_smart` que SÍ usan el índice
+  // GIN trgm (operador `<%`). Reduce de ~730ms a ~11ms sobre 250k dogs.
+  // Las 3 queries (dogs/kennels/breeds) corren en paralelo.
+  //
+  // Cancelación: si el usuario tipea otra vez antes de que vuelva la
+  // respuesta anterior, ignoramos esa respuesta vieja (race condition
+  // que pintaba resultados desactualizados al teclear rápido).
   useEffect(() => {
-    if (query.trim().length < 2) { setResults([]); return }
+    const q = query.trim()
+    let cancelled = false
 
+    // Para queries cortas o vacías limpiamos via timeout (no en effect
+    // body directamente) para no romper la regla react-hooks/set-state-
+    // in-effect.
     const timer = setTimeout(async () => {
+      if (q.length < 2) {
+        if (!cancelled) { setResults([]); setLoading(false) }
+        return
+      }
+
       setLoading(true)
       const supabase = createClient()
-      const q = query.trim()
 
       const [dogsRes, kennelsRes, breedsRes] = await Promise.all([
         supabase.rpc('search_dogs_smart', { q, lim: 8 }),
@@ -65,39 +78,42 @@ export default function SearchBar() {
         supabase.rpc('search_breeds_smart', { q, lim: 5 }),
       ])
 
+      if (cancelled) return
+
       const items: SearchResult[] = [
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(dogsRes.data || []).map((d: any) => ({
           id: d.id, slug: d.slug, name: d.name, type: 'dog' as const,
           subtitle: d.breed_name, image: d.thumbnail_url, sex: d.sex,
         })),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(kennelsRes.data || []).map((k: any) => ({
           id: k.id, slug: k.slug, name: k.name, type: 'kennel' as const, image: k.logo_url,
+          meta: [k.city, k.country].filter(Boolean).join(', ') || null,
         })),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(breedsRes.data || []).map((b: any) => ({
-          id: b.id, name: b.name, type: 'breed' as const,
+          id: b.id, slug: b.slug, name: b.name, type: 'breed' as const,
+          image: b.sample_thumbnail,
+          meta: b.dog_count > 0 ? `${Number(b.dog_count).toLocaleString('es-ES')} perros` : null,
         })),
       ]
 
       setResults(items)
       setLoading(false)
-    }, 300)
+    }, 200)
 
-    return () => clearTimeout(timer)
+    return () => { cancelled = true; clearTimeout(timer) }
   }, [query])
 
   function getLink(r: SearchResult) {
     if (r.type === 'dog') return `/dogs/${r.slug || r.id}`
     if (r.type === 'kennel') return `/kennels/${r.slug || r.id}`
+    if (r.type === 'breed') return r.slug ? `/razas/${r.slug}` : `/search?breed_id=${r.id}`
     return `/dogs`
   }
 
   function getIcon(type: string) {
     if (type === 'dog') return Dog
-    if (type === 'kennel') return Home
-    return Palette
+    if (type === 'kennel') return Store
+    return Tag
   }
 
   function getTypeLabel(type: string) {
@@ -159,9 +175,13 @@ export default function SearchBar() {
                               <Icon className="w-4 h-4 text-muted" />
                             </div>
                           )}
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
                             <p className="truncate text-[14px] font-medium text-ink">{r.name}</p>
-                            {r.subtitle && <p className="text-xs text-muted truncate">{r.subtitle}</p>}
+                            {(r.subtitle || r.meta) && (
+                              <p className="text-xs text-muted truncate">
+                                {r.subtitle || r.meta}
+                              </p>
+                            )}
                           </div>
                         </Link>
                       )
