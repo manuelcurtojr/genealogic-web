@@ -65,10 +65,12 @@ export async function POST(request: NextRequest) {
     }
 
     const origin = request.nextUrl.origin
-    // 15 días de trial gratis con tarjeta requerida. Stripe maneja todo el
-    // ciclo trialing → active → past_due → unpaid → canceled y nuestro
-    // webhook actualiza profiles.plan en consecuencia.
-    const TRIAL_DAYS = 15
+    // 14 días de trial gratis SIN tarjeta. Stripe maneja todo el ciclo
+    // trialing → active → past_due → unpaid → canceled y nuestro webhook
+    // actualiza profiles.plan en consecuencia. El método de pago se pide
+    // antes del primer cargo (no upfront), via Stripe Billing Portal o
+    // un email transaccional con link al portal.
+    const TRIAL_DAYS = 14
     const session = await createCheckoutSession({
       customerId,
       priceId,

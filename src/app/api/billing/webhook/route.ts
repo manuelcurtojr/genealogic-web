@@ -10,19 +10,26 @@ export const runtime = 'nodejs'
 /**
  * POST /api/billing/webhook
  *
- * Webhook de Stripe para SUSCRIPCIONES SaaS (Kennel / Kennel Pro).
+ * Webhook de Stripe para SUSCRIPCIONES SaaS (Kennel Pro 29€). Kennel
+ * Enterprise (149€) NO pasa por aquí — su alta es manual.
  *
- * Modelo: trial de 15 días con tarjeta requerida upfront. El usuario
- * obtiene acceso completo desde el momento del checkout (status='trialing')
- * y a los 15 días Stripe intenta cobrar. Si falla, Smart Retries reintentan
- * durante ~3 semanas; tras eso la sub se cancela y volvemos a free.
+ * Modelo: trial de 14 días SIN tarjeta inicial. El usuario obtiene acceso
+ * completo desde el momento del checkout (status='trialing'). Antes del
+ * día 14 le mandamos emails pidiendo método de pago. Si al día 14 NO hay
+ * método configurado: `trial_settings.missing_payment_method='cancel'`
+ * → sub cancelada → webhook baja plan a free. Si SÍ hay método pero el
+ * cobro falla: Smart Retries reintentan ~3 semanas (past_due → unpaid →
+ * canceled).
  *
  * Estados de Stripe → plan en nuestra DB:
- *   trialing  → plan = kennel / kennel_pro (acceso completo)
- *   active    → plan = kennel / kennel_pro (acceso completo)
+ *   trialing  → plan = kennel (Kennel Pro, acceso completo)
+ *   active    → plan = kennel (Kennel Pro, acceso completo)
  *   past_due  → mantenemos el plan + bandera de "pago pendiente"
  *   unpaid    → bajamos a free
  *   canceled  → bajamos a free
+ *
+ * NOTA: el rol técnico `kennel` representa al Kennel Pro nuevo (29€).
+ * El rol `kennel_pro` representa al Kennel Enterprise (149€, manual).
  *
  * Eventos manejados:
  *   - checkout.session.completed       → set customer/sub ids, trial_*_at

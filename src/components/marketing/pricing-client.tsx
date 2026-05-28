@@ -126,8 +126,11 @@ const CATEGORIES: CategoryDef[] = [
       { name: 'Web profesional del criadero', marks: 'E' },
       { name: 'Dominio personalizado propio', marks: 'E' },
       { name: 'Blog integrado con SEO', marks: 'E' },
-      { name: 'Reseñas verificadas de clientes', marks: 'E' },
-      { name: 'Formulario de contacto configurable', marks: 'E' },
+      // Reseñas y formulario de contacto se incluyen también en Pro:
+      // el criador profesional necesita captar leads y mostrar prueba
+      // social aunque su web la lleve en Enterprise.
+      { name: 'Reseñas verificadas de clientes', marks: 'PE' },
+      { name: 'Formulario de contacto configurable', marks: 'PE' },
       { name: 'Ubicación en mapa embebida', marks: 'E' },
       { name: 'Tema personalizable (colores, fuentes, hero)', marks: 'E' },
       { name: 'Web del criadero multi-idioma', marks: 'E' },
@@ -247,6 +250,7 @@ const PLANS: PlanDef[] = [
       'Simulador de cruces (COI proyectado, color, riesgos)',
       'Genotipos y pruebas DNA',
       'Pagos con Stripe Connect (cobra señas y entregas)',
+      'Reseñas verificadas + formulario de contacto',
       'Soporte prioritario <24h',
     ],
     ctaLabel: 'Probar 14 días gratis',

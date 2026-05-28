@@ -45,15 +45,16 @@ export function isStripeConfigured(): boolean {
 
 /**
  * True si está todo lo necesario para lanzar un Checkout Session de
- * suscripción Kennel (con 15 días de trial). Requiere al menos el price
- * de Kennel mensual configurado:
- *   STRIPE_PRICE_KENNEL_MONTHLY     (price_xxx — Kennel 29€/mes recurring)
- *   STRIPE_PRICE_KENNEL_PRO_MONTHLY (price_xxx — Kennel Pro 49€/mes Founder, hoy en privado)
- *   Legacy: STRIPE_PRICE_PRO_MONTHLY / STRIPE_PRICE_PREMIUM_MONTHLY
- *           todavía aceptados como fallback.
+ * suscripción Kennel Pro (14 días de trial sin tarjeta). Requiere el
+ * price ID en env:
+ *   STRIPE_PRICE_KENNEL_MONTHLY (price_xxx — Kennel Pro 29€/mes recurring)
+ *   Legacy: STRIPE_PRICE_PRO_MONTHLY como fallback.
  *
- * Si falta cualquiera, la UI debe mostrar lista de espera en vez de
- * "pagar y activar" — evita botones rotos.
+ * Kennel Enterprise (149€) NO necesita config aquí — se activa
+ * manualmente desde el panel de admin (sin Checkout).
+ *
+ * Si falta el price ID, la UI muestra error gracefully en vez de botones
+ * rotos.
  */
 export function isSubscriptionCheckoutAvailable(): boolean {
   return (

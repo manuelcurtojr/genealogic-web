@@ -90,22 +90,30 @@ export async function createCheckoutSession(args: {
   cancelUrl: string
   metadata?: Record<string, string>
   /**
-   * Días de trial gratis antes del primer cargo. Stripe requiere tarjeta al
-   * iniciar checkout (`payment_method_collection=always`), pero no cobra
-   * nada hasta que el trial termina. Si la primera tarjeta falla:
-   * past_due → unpaid → canceled (vía Smart Retries de Stripe) y el webhook
-   * baja el plan a 'free'.
+   * Días de trial gratis antes del primer cargo. Modelo Genealogic:
+   * 14 días SIN tarjeta inicial (`payment_method_collection='if_required'`).
    *
-   * Si no se pasa, no hay trial (cobro inmediato).
+   * El usuario entra a Pro sin meter tarjeta. Antes del fin del trial, le
+   * llegan emails transaccionales pidiendo método de pago (link al Billing
+   * Portal). Si al día 14 no hay método:
+   *   `trial_settings.end_behavior.missing_payment_method: 'cancel'`
+   *   → la sub se cancela y el webhook baja `profiles.plan` a 'free'.
+   *
+   * Si hay método pero el cobro falla: Stripe Smart Retries reintenta
+   * durante ~3 semanas (past_due → unpaid → canceled).
+   *
+   * Si `trialDays` no se pasa, no hay trial y se cobra inmediatamente
+   * (en ese caso forzamos card upfront porque sin trial no tiene sentido
+   * dejarlo opcional).
    */
   trialDays?: number
 }): Promise<{ url: string; id: string }> {
   const subscriptionData: Record<string, unknown> = {}
-  if (args.trialDays && args.trialDays > 0) {
+  const hasTrial = !!(args.trialDays && args.trialDays > 0)
+  if (hasTrial) {
     subscriptionData.trial_period_days = args.trialDays
-    // Si por algún motivo Stripe no consigue un método de pago al final del
-    // trial (no debería pasar con payment_method_collection=always pero por
-    // si acaso), que cancele la sub en vez de dejarla en limbo.
+    // Si al final del trial no hay método de pago configurado, cancelar
+    // la sub en vez de dejarla en limbo. El webhook bajará el plan a free.
     subscriptionData.trial_settings = {
       end_behavior: { missing_payment_method: 'cancel' },
     }
@@ -119,9 +127,10 @@ export async function createCheckoutSession(args: {
     line_items: [{ price: args.priceId, quantity: 1 }],
     allow_promotion_codes: true,
     billing_address_collection: 'auto',
-    // Card upfront: el usuario DEBE introducir tarjeta para empezar el trial.
-    // Evita signups anónimos que nunca convierten.
-    payment_method_collection: 'always',
+    // Con trial: 'if_required' → no se pide tarjeta upfront (Stripe la
+    // pedirá vía el Billing Portal cuando se acerque el cobro). Sin trial:
+    // 'always' → cobro inmediato, tarjeta obligatoria.
+    payment_method_collection: hasTrial ? 'if_required' : 'always',
     ...(Object.keys(subscriptionData).length > 0 ? { subscription_data: subscriptionData } : {}),
     ...(args.metadata ? { metadata: args.metadata } : {}),
   })
