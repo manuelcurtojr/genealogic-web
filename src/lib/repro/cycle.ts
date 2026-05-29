@@ -30,6 +30,7 @@ export interface HeatCycleLike {
   was_mated: boolean
   mating_date?: string | null
   mating_end_date?: string | null
+  mating_dates?: string[] | null
   pregnancy_status?: string | null
   resulted_in_litter_id?: string | null
   notes?: string | null

@@ -49,6 +49,7 @@ export default function ReproductionGantt({ females, cycles, litters, userId }: 
   const [filter, setFilter] = useState<FilterMode>('all')
   const [showForm, setShowForm] = useState(false)
   const [formFemaleId, setFormFemaleId] = useState<string>('')
+  const [editCycle, setEditCycle] = useState<HeatCycleLike | null>(null)
   const [managing, setManaging] = useState<Female | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -169,7 +170,7 @@ export default function ReproductionGantt({ females, cycles, litters, userId }: 
             ))}
           </div>
           <button
-            onClick={() => { setFormFemaleId(''); setShowForm(true) }}
+            onClick={() => { setEditCycle(null); setFormFemaleId(''); setShowForm(true) }}
             className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-on-primary transition-colors hover:opacity-90"
           >
             <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Registrar celo</span><span className="sm:hidden">Celo</span>
@@ -259,16 +260,22 @@ export default function ReproductionGantt({ females, cycles, litters, userId }: 
                     <div className="relative flex-shrink-0" style={{ width: timelineW, height: 64 }}>
                       <div className="absolute top-0 h-full w-px bg-ink/25" style={{ left: dateToX(today) }} />
 
-                      {/* Celos reales */}
+                      {/* Celos reales — clicables para editar (marcar monta, etc.) */}
                       {myCycles.map((c) => {
                         const start = parseDate(c.start_date)
                         const end = c.end_date ? parseDate(c.end_date) : addDays(start, HEAT_DURATION_DAYS)
                         if (end < rangeStart || start > rangeEnd) return null
                         const x = dateToX(start)
-                        const w = Math.max(dateToX(end) - x, 5)
+                        const w = Math.max(dateToX(end) - x, 8)
                         return (
-                          <div key={c.id} className="absolute top-2 h-3 rounded bg-blue-500" style={{ left: x, width: w }}
-                            title={`Celo: ${fmtShort(start)} → ${fmtShort(end)}${c.was_mated ? ' (con monta)' : ''}`} />
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => { setEditCycle(c); setShowForm(true) }}
+                            className="absolute top-2 h-3 rounded bg-blue-500 ring-blue-300 transition hover:h-3.5 hover:ring-2 cursor-pointer"
+                            style={{ left: x, width: w }}
+                            title={`Celo: ${fmtShort(start)} → ${fmtShort(end)}${c.was_mated ? ' · con monta' : ''} · pulsa para editar`}
+                          />
                         )
                       })}
 
@@ -341,8 +348,9 @@ export default function ReproductionGantt({ females, cycles, litters, userId }: 
         open={showForm}
         females={females}
         defaultFemaleId={formFemaleId}
-        onClose={() => setShowForm(false)}
-        onSaved={() => { setShowForm(false); window.location.reload() }}
+        editCycle={editCycle}
+        onClose={() => { setShowForm(false); setEditCycle(null) }}
+        onSaved={() => { setShowForm(false); setEditCycle(null); window.location.reload() }}
       />
 
       {/* Panel de gestión de una hembra — reutiliza la pestaña Reproducción

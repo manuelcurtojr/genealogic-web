@@ -83,7 +83,7 @@ export default async function ReproduccionPage({
   const [cyclesRes, littersRes] = await Promise.all([
     supabase
       .from('heat_cycles')
-      .select('id, dog_id, start_date, end_date, was_mated, mating_date, mating_end_date, pregnancy_status, resulted_in_litter_id, notes')
+      .select('id, dog_id, start_date, end_date, was_mated, mating_date, mating_end_date, mating_dates, pregnancy_status, resulted_in_litter_id, notes')
       .eq('owner_id', user.id)
       .in('dog_id', femaleIdsForQuery)
       .order('start_date', { ascending: true }),
