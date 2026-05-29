@@ -136,6 +136,7 @@ export default async function ReproduccionPage({
             females={femalesForGantt}
             cycles={cyclesRes.data || []}
             litters={littersRes.data || []}
+            userId={user.id}
           />
         </div>
       </div>

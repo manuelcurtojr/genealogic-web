@@ -142,7 +142,10 @@ export default async function BreedPage(
       .eq('breed_id', breed.id)
       .eq('is_public', true)
       .is('deceased_at', null)  // ocultar perros fallecidos del directorio
-      .not('thumbnail_url', 'is', null)
+      // Prioridad: perros con foto primero (thumbnail_url NOT NULL),
+      // luego los sin foto. Dentro de cada grupo, los más recientes arriba.
+      // En PostgREST: order desc + nullsFirst:false → NOT NULL > NULL.
+      .order('thumbnail_url', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
       .limit(12),
     supabase
@@ -435,7 +438,7 @@ export default async function BreedPage(
                   Ejemplares en Genealogic
                 </h2>
                 <p className="mt-2 text-[14px] text-muted">
-                  Algunos perros de la raza con su pedigree completo.
+                  Algunos perros de la raza con su genealogía registrada.
                 </p>
               </div>
               {totalDogs > sampleDogs.length && (

@@ -1,9 +1,11 @@
 'use client'
 
 import { useMemo, useState, useRef, useEffect } from 'react'
-import { Plus, Filter, Heart, Baby, Sparkles } from 'lucide-react'
+import { Plus, Filter, Heart, Baby, Sparkles, X, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import HeatCycleForm from './heat-cycle-form'
+import ReproduccionTab from '@/components/dogs/edit-tabs/reproduccion-tab'
+import { Portal } from '@/components/ui/portal'
 import {
   HEAT_DURATION_DAYS, GESTATION_DAYS, DEFAULT_CYCLE_INTERVAL_DAYS,
   parseDate, addDays, daysBetween, avgHeatInterval, computeReproInfo,
@@ -22,6 +24,7 @@ interface Props {
   females: Female[]
   cycles: HeatCycleLike[]
   litters: LitterLike[]
+  userId: string
 }
 
 type ZoomLevel = 3 | 6 | 12
@@ -41,11 +44,12 @@ function fmtMonth(d: Date): string {
   return d.toLocaleDateString('es-ES', { month: 'short', year: '2-digit' })
 }
 
-export default function ReproductionGantt({ females, cycles, litters }: Props) {
+export default function ReproductionGantt({ females, cycles, litters, userId }: Props) {
   const [zoom, setZoom] = useState<ZoomLevel>(6)
   const [filter, setFilter] = useState<FilterMode>('all')
   const [showForm, setShowForm] = useState(false)
   const [formFemaleId, setFormFemaleId] = useState<string>('')
+  const [managing, setManaging] = useState<Female | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const today = useMemo(() => {
@@ -237,12 +241,18 @@ export default function ReproductionGantt({ females, cycles, litters }: Props) {
                           <Heart className="h-3.5 w-3.5 text-pink-500" />
                         </div>
                       )}
-                      <div className="min-w-0 flex-1">
-                        <Link href={`/dogs/${female.slug || female.id}`} className="block truncate text-[13px] font-medium text-ink hover:underline">
-                          {female.name}
-                        </Link>
-                        <p className={`truncate text-[10.5px] ${statusColor}`}>{info.stateLabel}</p>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setManaging(female)}
+                        className="group/name min-w-0 flex-1 text-left"
+                        title="Gestionar celo, monta y preñez"
+                      >
+                        <span className="flex items-center gap-0.5 truncate text-[13px] font-medium text-ink">
+                          <span className="truncate group-hover/name:underline">{female.name}</span>
+                          <ChevronRight className="h-3 w-3 flex-shrink-0 text-muted" />
+                        </span>
+                        <span className={`block truncate text-[10.5px] ${statusColor}`}>{info.stateLabel}</span>
+                      </button>
                     </div>
 
                     {/* Timeline */}
@@ -333,6 +343,40 @@ export default function ReproductionGantt({ females, cycles, litters }: Props) {
         onClose={() => setShowForm(false)}
         onSaved={() => { setShowForm(false); window.location.reload() }}
       />
+
+      {/* Panel de gestión de una hembra — reutiliza la pestaña Reproducción
+          (estado, confirmar/descartar preñez, registrar celo+monta, historial).
+          Aquí es donde la criadora confirma el embarazo, sin tener que ir a la
+          ficha del perro. Slide-from-right, mismo patrón que el resto. */}
+      <Portal>
+        <>
+          <div
+            className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${managing ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            onClick={() => { setManaging(null); window.location.reload() }}
+          />
+          <div
+            className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${managing ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+            style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
+          >
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">Reproducción</p>
+                <h2 className="truncate text-base sm:text-lg font-semibold">{managing?.name}</h2>
+              </div>
+              <button
+                onClick={() => { setManaging(null); window.location.reload() }}
+                className="text-muted hover:text-ink transition p-1 flex-shrink-0"
+                aria-label="Cerrar"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5">
+              {managing && <ReproduccionTab dogId={managing.id} userId={userId} />}
+            </div>
+          </div>
+        </>
+      </Portal>
     </>
   )
 }
