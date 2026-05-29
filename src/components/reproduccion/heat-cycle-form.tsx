@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { X, Loader2, Heart, CalendarDays, Baby } from 'lucide-react'
+import { X, Loader2, Heart, CalendarDays, Baby, Trash2 } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import MatingDatesInput, { cleanMatingDates } from './mating-dates-input'
 import { parseDate, addDays, fmtDate, GESTATION_DAYS, type HeatCycleLike } from '@/lib/repro/cycle'
@@ -38,6 +38,8 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
   const [matingDates, setMatingDates] = useState<string[]>([''])
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Prefill al abrir (edición) o reset (creación)
@@ -61,6 +63,7 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
       setNotes('')
     }
     setError(null)
+    setConfirmingDelete(false)
   }, [open, editCycle, defaultFemaleId, females])
 
   // ESC para cerrar
@@ -110,6 +113,18 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
 
     setSaving(false)
     if (dbErr) { setError(dbErr.message); return }
+    onSaved()
+  }
+
+  // Eliminar el celo (solo en edición). Lo dispara el usuario, con confirmación.
+  const handleDelete = async () => {
+    if (!editCycle) return
+    setDeleting(true)
+    setError(null)
+    const supabase = createClient()
+    const { error: delErr } = await supabase.from('heat_cycles').delete().eq('id', editCycle.id)
+    setDeleting(false)
+    if (delErr) { setError(delErr.message); return }
     onSaved()
   }
 
@@ -220,6 +235,24 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
 
             {/* Footer */}
             <div className="flex items-center justify-end gap-2 border-t border-hairline px-4 sm:px-6 py-3.5 flex-shrink-0">
+              {/* Eliminar (solo edición) — con confirmación de 2 pasos */}
+              {isEdit && (
+                confirmingDelete ? (
+                  <div className="mr-auto flex items-center gap-2">
+                    <span className="text-[12px] text-red-600">¿Eliminar?</span>
+                    <button type="button" onClick={handleDelete} disabled={deleting}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-[12.5px] font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
+                      {deleting && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Sí, eliminar
+                    </button>
+                    <button type="button" onClick={() => setConfirmingDelete(false)} className="rounded-lg px-2 py-2 text-[12.5px] text-body hover:text-ink">No</button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => setConfirmingDelete(true)}
+                    className="mr-auto inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-[13px] text-red-500 transition hover:bg-red-50 hover:text-red-600">
+                    <Trash2 className="h-4 w-4" /> Eliminar
+                  </button>
+                )
+              )}
               <button type="button" onClick={onClose} className="rounded-xl px-4 py-2.5 text-[13.5px] text-body transition hover:bg-surface-card hover:text-ink">Cancelar</button>
               <button type="submit" disabled={saving}
                 className="inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-2.5 text-[13.5px] font-semibold text-on-primary transition hover:opacity-90 disabled:opacity-50">

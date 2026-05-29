@@ -95,28 +95,30 @@ export async function generateMetadata(
   }
 }
 
+// Parsea **bold** inline en una sola línea. Reutilizable en cualquier <p>.
+function renderInline(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g)
+  return parts.map((part, j) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return (
+        <strong key={j} className="font-semibold text-ink">
+          {part.slice(2, -2)}
+        </strong>
+      )
+    }
+    return <span key={j}>{part}</span>
+  })
+}
+
 // Renderiza el contenido de una sección. Soporta **bold** y newlines.
 function renderContent(text: string) {
   // Split por dobles saltos en párrafos
   const paragraphs = text.split(/\n\n+/).map((p) => p.trim()).filter(Boolean)
-  return paragraphs.map((p, i) => {
-    // Bold inline: **texto**
-    const parts = p.split(/(\*\*[^*]+\*\*)/g)
-    return (
-      <p key={i} className="text-[14.5px] leading-[1.75] text-body">
-        {parts.map((part, j) => {
-          if (part.startsWith('**') && part.endsWith('**')) {
-            return (
-              <strong key={j} className="font-semibold text-ink">
-                {part.slice(2, -2)}
-              </strong>
-            )
-          }
-          return part
-        })}
-      </p>
-    )
-  })
+  return paragraphs.map((p, i) => (
+    <p key={i} className="text-[14.5px] leading-[1.75] text-body">
+      {renderInline(p)}
+    </p>
+  ))
 }
 
 export default async function BreedPage(
@@ -412,7 +414,7 @@ export default async function BreedPage(
                             {d.items.map((it, j) => (
                               <li key={j} className="px-4 py-3 grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-2">
                                 <p className="text-[12.5px] font-semibold text-ink">{it.entity}</p>
-                                <p className="text-[13px] leading-[1.65] text-body">{it.position}</p>
+                                <p className="text-[13px] leading-[1.65] text-body">{renderInline(it.position)}</p>
                               </li>
                             ))}
                           </ul>
