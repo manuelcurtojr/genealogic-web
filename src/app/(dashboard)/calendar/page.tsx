@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Plus, Check, Clock, X } from 'lucide-react'
 import EventForm from '@/components/calendar/event-form'
 import VetReminderForm from '@/components/vet/vet-reminder-form'
 import CalendarSubnav from '@/components/calendar/calendar-subnav'
+import { Portal } from '@/components/ui/portal'
 import { parseDate as parseReproDate, addDays as addReproDays, toISODate, GESTATION_DAYS } from '@/lib/repro/cycle'
 
 interface CalendarEvent {
@@ -356,11 +357,18 @@ export default function CalendarPage() {
         </div>
 
         {/* ─── Mobile Day Panel (slide from right) ─── */}
+        {/* Portal + safe-area: igual que dog-form-panel / event-form. Sin
+            Portal, el panel quedaba dentro del stacking context del dashboard
+            y su header se comía la safe-area-top (notch). */}
+        <Portal>
         <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${dayPanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setDayPanelOpen(false)} />
-        <div className={`fixed top-0 right-0 h-full w-full max-w-sm z-[70] bg-canvas border-l border-hairline shadow-2xl transition-transform duration-300 flex flex-col ${dayPanelOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}>
+        <div
+          className={`fixed top-0 right-0 h-full w-full sm:max-w-sm z-[70] bg-canvas border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${dayPanelOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+          style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
+        >
           {/* Panel header */}
-          <div className="flex items-center justify-between px-4 py-4 border-b border-hairline">
-            <h3 className="text-base font-semibold">{dayPanelLabel}</h3>
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
+            <h3 className="text-base sm:text-lg font-semibold">{dayPanelLabel}</h3>
             <div className="flex items-center gap-2">
               <button onClick={() => handleNewEvent(dayPanelDate)} className="bg-ink text-on-primary hover:opacity-90 p-1.5 rounded-full transition">
                 <Plus className="w-4 h-4" />
@@ -410,6 +418,7 @@ export default function CalendarPage() {
             )}
           </div>
         </div>
+        </Portal>
       </div>
 
       {/* ═══════════════════════════════════════════ */}
