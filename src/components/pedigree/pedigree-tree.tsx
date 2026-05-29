@@ -8,7 +8,7 @@ const PedigreeCtx = createContext<{ onClickDog?: (id: string) => void; onClickEm
 import { calculateCOI, getCOILevel, getCOIInterpretation } from './coi-calculator'
 
 interface PN { id:string;name:string;sex:string;registration:string|null;father_id:string|null;mother_id:string|null;generation:number;photo_url:string|null;breed_name:string|null;color_name:string|null;is_hidden?:boolean;slug?:string|null }
-interface Props { data:PN[];rootId:string;onClickDog?:(dogId:string)=>void;onClickEmpty?:(parentDogId:string,role:'father'|'mother')=>void }
+interface Props { data:PN[];rootId:string;breedId?:string|null;onClickDog?:(dogId:string)=>void;onClickEmpty?:(parentDogId:string,role:'father'|'mother')=>void }
 
 function countOcc(nId:string|null,nm:Map<string,PN>,mx:number,g:number,c:Map<string,number>){if(!nId||g>mx)return;const n=nm.get(nId);if(!n)return;c.set(nId,(c.get(nId)||0)+1);countOcc(n.father_id,nm,mx,g+1,c);countOcc(n.mother_id,nm,mx,g+1,c)}
 // Repetition badge colors — pastels Cal
@@ -17,10 +17,13 @@ const CW=200,CH=64,PH=56
 // Línea conectora — usa token + fallback Cal (oscuro suave sobre canvas)
 const L='var(--pedigree-line, rgba(17, 17, 17, 0.14))'
 
-export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props){
+export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpty}:Props){
   const[isNative,setIsNative]=useState(false)
   useEffect(()=>{if((window as any).Capacitor?.isNativePlatform?.())setIsNative(true)},[])
   const[maxGen,setMaxGen]=useState(4)
+  // Comparativa COI vs media de la raza (se carga al abrir el panel COI).
+  const[breedAvg,setBreedAvg]=useState<{avgCoi:number|null;sampleSize:number}|null>(null)
+  const[breedAvgLoading,setBreedAvgLoading]=useState(false)
   const[zoom,setZoom]=useState(100)
   const[showIB,setShowIB]=useState(false)
   const[coiPanel,setCoiPanel]=useState(false)
@@ -31,6 +34,16 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
   const root=nm.get(rootId);if(!root)return null
   const coi=useMemo(()=>calculateCOI(rootId,data,10),[rootId,data])
   const coiLvl=getCOILevel(coi),coiTxt=getCOIInterpretation(coi)
+  // Al abrir el panel COI, cargamos la media de la raza (cacheada en server).
+  useEffect(()=>{
+    if(!coiPanel||!breedId||breedAvg||breedAvgLoading)return
+    setBreedAvgLoading(true)
+    fetch(`/api/breeds/${breedId}/coi-average`)
+      .then(r=>r.json())
+      .then(d=>setBreedAvg({avgCoi:typeof d.avgCoi==='number'?d.avgCoi:null,sampleSize:d.sampleSize||0}))
+      .catch(()=>setBreedAvg({avgCoi:null,sampleSize:0}))
+      .finally(()=>setBreedAvgLoading(false))
+  },[coiPanel,breedId,breedAvg,breedAvgLoading])
   const rc=useMemo(()=>{const c=new Map<string,number>();countOcc(root.father_id,nm,maxGen,1,c);countOcc(root.mother_id,nm,maxGen,1,c);return c},[root,nm,maxGen])
   // Niveles COI con pastels Cal sobre tints suaves
   const cc:Record<string,{bg:string;text:string}>={
@@ -123,6 +136,37 @@ export default function PedigreeTree({data,rootId,onClickDog,onClickEmpty}:Props
             <CheckCircle className={`mt-0.5 h-4 w-4 flex-shrink-0 ${cc[coiLvl].text}`}/>
             <p className={`text-[12.5px] leading-[1.5] ${cc[coiLvl].text}`}>{coiTxt}</p>
           </div>
+
+          {/* Comparativa vs media de la raza */}
+          {breedId && (
+            <div className="rounded-lg border border-hairline p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Comparativa con la raza</p>
+              {breedAvgLoading ? (
+                <p className="mt-2 text-[12px] text-muted">Calculando media de la raza…</p>
+              ) : breedAvg?.avgCoi != null ? (
+                <>
+                  <div className="mt-2 flex items-baseline justify-between">
+                    <span className="text-[12.5px] text-body">Este perro</span>
+                    <span className={`text-[14px] font-semibold tabular-nums ${cc[coiLvl].text}`}>{coi}%</span>
+                  </div>
+                  <div className="mt-1 flex items-baseline justify-between">
+                    <span className="text-[12.5px] text-body">Media de la raza</span>
+                    <span className="text-[14px] font-semibold tabular-nums text-ink">{breedAvg.avgCoi}%</span>
+                  </div>
+                  <p className="mt-2 text-[11.5px] leading-[1.5] text-muted">
+                    {coi < breedAvg.avgCoi
+                      ? `Por debajo de la media de la raza (más diversidad genética que el promedio). Muestra de ${breedAvg.sampleSize} perros.`
+                      : coi > breedAvg.avgCoi
+                        ? `Por encima de la media de la raza. Considera abrir la línea en futuros cruces. Muestra de ${breedAvg.sampleSize} perros.`
+                        : `En la media de la raza. Muestra de ${breedAvg.sampleSize} perros.`}
+                  </p>
+                </>
+              ) : (
+                <p className="mt-2 text-[12px] text-muted">Aún no hay datos suficientes de la raza para comparar.</p>
+              )}
+            </div>
+          )}
+
           <p className="text-center text-[10.5px] text-muted">Calculado con 10 generaciones.</p>
         </div>
       </div>

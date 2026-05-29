@@ -11,7 +11,7 @@ import {
 import { RangeChips } from '@/components/analytics/range-chips'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Visitas web · Genealogic Pro' }
+export const metadata = { title: 'Estadísticas web · Genealogic Pro' }
 
 /**
  * Analytics de la web pública del criador — port del módulo de Pawdoq
@@ -41,7 +41,7 @@ export default async function VisitasPage({
   if (!kennel) {
     return (
       <div className="max-w-2xl mx-auto py-10">
-        <h1 className="text-3xl font-bold text-ink mb-3">Visitas web</h1>
+        <h1 className="text-3xl font-bold text-ink mb-3">Estadísticas web</h1>
         <p className="text-body">Necesitas un criadero registrado.</p>
       </div>
     )
@@ -63,7 +63,7 @@ export default async function VisitasPage({
           Analytics
         </p>
         <h1 className="mt-2 text-4xl font-bold tracking-tight text-ink">
-          Visitas de tu web pública
+          Estadísticas web
         </h1>
         <p className="mt-3 text-body max-w-2xl">
           Visitas, fuentes de tráfico, países y dispositivos de quienes entran en tu web del criadero.

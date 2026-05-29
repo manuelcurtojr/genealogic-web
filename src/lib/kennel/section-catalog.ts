@@ -129,8 +129,8 @@ export const SECTION_CATALOG: SectionCatalogEntry[] = [
   },
   {
     type: 'chat-promo',
-    label: 'Promo Pawdoq Chat',
-    description: 'Banda invitando a abrir el chatbot.',
+    label: 'Promo del chat',
+    description: 'Banda invitando a abrir el chatbot del criadero.',
     pages: ['*'],
     defaultProps: {
       eyebrow: '',

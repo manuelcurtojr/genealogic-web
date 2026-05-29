@@ -57,6 +57,9 @@ export default async function CampaignPage({
         userEmail={user.email || ''}
         initial={campaign}
         audiences={audiences}
+        // /newsletter está gateado a Enterprise en el layout → quien llega
+        // aquí puede enviar de verdad.
+        canSend
       />
     </div>
   )

@@ -161,7 +161,7 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
               {isFounder && (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
                   <Crown className="w-2.5 h-2.5" />
-                  Founder
+                  Vitalicia
                 </span>
               )}
             </div>

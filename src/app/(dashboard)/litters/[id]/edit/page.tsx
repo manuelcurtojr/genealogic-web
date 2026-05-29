@@ -1,40 +1,15 @@
-import { createClient } from '@/lib/supabase/server'
-import { notFound, redirect } from 'next/navigation'
-import LitterForm from '@/components/litters/litter-form'
-import FeedbackButton from '@/components/feedback/feedback-button'
+/**
+ * /litters/[id]/edit — FUSIONADO con el panel lateral.
+ *
+ * La edición de camadas se hace ahora desde el panel lateral (botón "Editar"
+ * en /litters y en la ficha de la camada). Redirigimos a la ficha con
+ * ?edit=1 para abrir el panel y no romper enlaces antiguos.
+ */
+import { redirect } from 'next/navigation'
+
+export const dynamic = 'force-dynamic'
 
 export default async function EditLitterPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) redirect('/login')
-
-  const { data: litter } = await supabase
-    .from('litters')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (!litter) notFound()
-  if (litter.owner_id !== user.id) redirect('/litters')
-
-  const [breedsRes, maleDogsRes, femaleDogsRes] = await Promise.all([
-    supabase.from('breeds').select('id, name').order('name'),
-    supabase.from('dogs').select('id, name').eq('owner_id', user.id).eq('sex', 'male').order('name'),
-    supabase.from('dogs').select('id, name').eq('owner_id', user.id).eq('sex', 'female').order('name'),
-  ])
-
-  return (
-    <>
-      <LitterForm
-        initialData={litter}
-        breeds={breedsRes.data || []}
-        maleDogs={maleDogsRes.data || []}
-        femaleDogs={femaleDogsRes.data || []}
-        userId={user.id}
-      />
-      <FeedbackButton scope="litter_form" pageLabel="Editar camada" />
-    </>
-  )
+  redirect(`/litters/${id}?edit=1`)
 }

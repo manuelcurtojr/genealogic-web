@@ -13,15 +13,15 @@ import AdminStatsSprintC from '@/components/admin/admin-stats-sprint-c'
 export const dynamic = 'force-dynamic'
 
 // Precios mensuales asumidos (EUR). Configurables aquí si cambian.
-// Nuevos planes (2026-05): kennel 29, kennel_pro 49 (Founder).
+// BBDD plan 'kennel' = Kennel Pro (49€); plan 'kennel_pro' = Kennel Enterprise (149€).
 // Legacy aliases (starter/pro/premium) mapean al precio del plan equivalente.
 const PLAN_PRICES_EUR: Record<string, number> = {
   free: 0,
-  kennel: 29,
-  kennel_pro: 49,
-  starter: 29,   // legacy → kennel
-  pro: 29,       // legacy → kennel
-  premium: 49,   // legacy → kennel_pro (Founder)
+  kennel: 49,        // Kennel Pro
+  kennel_pro: 149,   // Kennel Enterprise
+  starter: 49,       // legacy → kennel (Pro)
+  pro: 49,           // legacy → kennel (Pro)
+  premium: 149,      // legacy → kennel_pro (Enterprise)
 }
 
 type Snapshot = {

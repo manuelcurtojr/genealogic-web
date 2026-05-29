@@ -742,17 +742,15 @@ function PedigreePdfMockup() {
             <div className="rounded border border-pink-200 bg-canvas px-1 py-0.5"><p className="text-pink-600 truncate">Gey</p></div>
           </div>
         </div>
-        {/* Sello y QR */}
+        {/* Pie: marca del criadero + nota de documento digital */}
         <div className="mt-3 flex items-center justify-between">
           <div>
-            <p className="text-[7.5px] text-muted">Firmado digitalmente</p>
-            <p className="text-[8px] font-bold text-ink italic">Manuel Curtó</p>
+            <p className="text-[7.5px] text-muted">Genealogía · 4 generaciones</p>
+            <p className="text-[8px] font-bold text-ink italic">Criadero Manuel Curtó</p>
           </div>
-          <div className="h-10 w-10 rounded bg-ink/90 grid grid-cols-4 gap-0.5 p-1">
-            {Array.from({ length: 16 }).map((_, i) => (
-              <div key={i} className={`${i % 3 === 0 ? 'bg-on-primary' : 'bg-transparent'} rounded-sm`} />
-            ))}
-          </div>
+          <p className="text-[7px] text-muted max-w-[40%] text-right leading-tight">
+            Documento digital · no sustituye al pedigree oficial del club
+          </p>
         </div>
       </div>
     </MockupFrame>

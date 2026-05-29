@@ -52,6 +52,7 @@ export default async function Home() {
       .select('id, name, slug, thumbnail_url, breed:breeds(name)')
       .not('thumbnail_url', 'is', null)
       .eq('is_public', true)
+      .is('deceased_at', null)  // ocultar fallecidos del home
       .order('created_at', { ascending: false })
       .limit(6),
     // Mosaico del hero: RPC que garantiza 1 perro aleatorio POR RAZA.

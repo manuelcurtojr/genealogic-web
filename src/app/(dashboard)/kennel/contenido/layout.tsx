@@ -1,16 +1,16 @@
 /**
- * Layout del editor de contenido de la web Pro.
+ * Layout del editor de contenido del criadero (reseñas + formulario de
+ * contacto + perfil público).
  *
- * Gate: solo dueños de kennels Pro (o enterprise) pueden entrar a /kennel/contenido/*.
- * Si no tienen kennel, redirect a /kennel/new. Si no son Pro, /kennel.
- *
- * Visualmente: header pequeño "Editar tu web" + sub-nav horizontal con las
- * 4 secciones editables. El children es cada página.
+ * Gate: Kennel Pro en adelante. Reseñas y formulario de contacto son
+ * features PE en /pricing — el criador profesional necesita captar leads y
+ * mostrar prueba social aunque la web completa (builder, dominio, blog) sea
+ * de Enterprise. Si no tienen kennel → /kennel/new. Si no son de pago → /kennel.
  */
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { isKennelPro, isEnterpriseUser, normalizePlan } from '@/lib/permissions'
+import { hasProFeatures, isEnterpriseUser, normalizePlan } from '@/lib/permissions'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
 import ContenidoSubNav from '@/components/kennel/contenido-subnav'
 
@@ -35,7 +35,7 @@ export default async function KennelContenidoLayout({ children }: { children: Re
     .select('plan')
     .eq('id', user.id)
     .single()
-  const canEdit = isEnterpriseUser(user.id) || isKennelPro(normalizePlan(profile?.plan))
+  const canEdit = isEnterpriseUser(user.id) || hasProFeatures(normalizePlan(profile?.plan))
   if (!canEdit) redirect('/kennel')
 
   return (

@@ -14,8 +14,6 @@ import {
 } from '@/lib/payments/payments'
 import { startCheckoutAction } from './actions'
 import { CreditCard, CheckCircle2, AlertCircle } from 'lucide-react'
-import { isEarlyAccessKennel } from '@/lib/early-access'
-import ComingSoon from '@/components/early-access/coming-soon'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Pagos · Mi reserva · Genealogic' }
@@ -36,18 +34,9 @@ export default async function MyPaymentsPage({
   const reservation = await getMyReservation(user.id, id)
   if (!reservation) notFound()
 
-  // Gate Early Access: cliente solo ve pagos online si el kennel del que
-  // depende su reserva es early access. Mensaje diferenciado: "el criador
-  // todavía no tiene activado el cobro online — contacta directo".
-  if (!isEarlyAccessKennel(reservation.kennel?.id)) {
-    return <ComingSoon
-      featureId="stripe_payments"
-      description="Este criadero todavía no tiene activado el cobro online. Para gestionar el pago, contacta directamente con el criador."
-      backHref={`/mis-reservas/${reservation.id}`}
-      backLabel="← Volver a la reserva"
-    />
-  }
-
+  // El cliente siempre ve el calendario de pagos de su reserva (FPE). El
+  // botón «Pagar ahora» (Stripe) solo aparece si el kennel tiene Stripe
+  // Connect activo; si no, ve los importes para pagar por transferencia.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createKennelAdminClient() as any
   const { data: kennelInfo } = await admin

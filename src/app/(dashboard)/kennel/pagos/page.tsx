@@ -20,7 +20,7 @@ import Link from 'next/link'
 import { isStripeConfigured } from '@/lib/stripe/server'
 import { startStripeOnboardingAction, syncStripeStatusAction } from './actions'
 import { CheckCircle2, AlertTriangle, ExternalLink } from 'lucide-react'
-import { isEarlyAccessKennel } from '@/lib/early-access'
+import { hasEnterpriseFeatures } from '@/lib/permissions'
 import ComingSoon from '@/components/early-access/coming-soon'
 
 export const dynamic = 'force-dynamic'
@@ -41,16 +41,17 @@ export default async function KennelPagosPage({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createKennelAdminClient() as any
-  const { data: kennel } = await admin
-    .from('kennels')
-    .select('id, name, slug, stripe_account_id, stripe_account_status')
-    .eq('owner_id', user.id)
-    .maybeSingle()
+  const [{ data: kennel }, { data: profile }] = await Promise.all([
+    admin.from('kennels')
+      .select('id, name, slug, stripe_account_id, stripe_account_status')
+      .eq('owner_id', user.id).maybeSingle(),
+    supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
+  ])
 
-  // Gate Early Access: solo el kennel del fundador (Irema) ve la página real.
-  // El resto ve placeholder "Próximamente" hasta que activemos Stripe Connect
-  // globalmente con metered billing y onboarding pulido.
-  if (!isEarlyAccessKennel(kennel?.id)) {
+  // Pagos online (Stripe Connect) están «Próximamente» y ocultos en producto
+  // hasta terminar la configuración. De momento solo accesible a Enterprise
+  // (alta manual) para pruebas internas.
+  if (!hasEnterpriseFeatures(profile?.plan, user.id)) {
     return <ComingSoon featureId="stripe_payments" backHref="/kennel" backLabel="← Volver a Mi criadero" />
   }
 

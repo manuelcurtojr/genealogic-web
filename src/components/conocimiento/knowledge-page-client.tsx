@@ -5,8 +5,6 @@ import { Plus, Search, BookOpen, Eye, EyeOff, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import KnowledgeFormPanel from './knowledge-form-panel'
 import KnowledgeImporter from './knowledge-importer'
-import { isEarlyAccessKennel } from '@/lib/early-access'
-import { ComingSoonChip } from '@/components/early-access/coming-soon'
 
 interface Entry {
   id: string
@@ -106,34 +104,21 @@ export default function KnowledgePageClient({ kennelId, kennelName, initialEntri
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {isEarlyAccessKennel(kennelId) ? (
-            <Button onClick={() => setImporterOpen(true)} size="md" variant="secondary">
-              <Sparkles className="w-4 h-4" />
-              Importar con IA
-            </Button>
-          ) : (
-            <span
-              className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium text-muted cursor-not-allowed"
-              title="Importar URL/PDF/DOC con IA — disponible para todos pronto"
-            >
-              <Sparkles className="w-4 h-4 opacity-50" />
-              Importar con IA
-              <ComingSoonChip featureId="ai_importer" />
-            </span>
-          )}
+          <Button onClick={() => setImporterOpen(true)} size="md" variant="secondary">
+            <Sparkles className="w-4 h-4" />
+            Importar con IA
+          </Button>
           <Button onClick={() => { setEditing(null); setPanelOpen(true) }} size="md" variant="primary">
             <Plus className="w-4 h-4" />
             Nueva entrada
           </Button>
         </div>
       </div>
-      {isEarlyAccessKennel(kennelId) && (
-        <KnowledgeImporter
-          open={importerOpen}
-          onClose={() => setImporterOpen(false)}
-          kennelId={kennelId}
-        />
-      )}
+      <KnowledgeImporter
+        open={importerOpen}
+        onClose={() => setImporterOpen(false)}
+        kennelId={kennelId}
+      />
 
       {/* Hint */}
       <div className="rounded-xl border border-hairline bg-surface-card p-4 mb-6 flex items-start gap-3">

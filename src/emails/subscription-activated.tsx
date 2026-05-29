@@ -27,13 +27,14 @@ export default function SubscriptionActivatedEmail({
   recipientName, plan, trialEndsAt = null,
 }: SubscriptionActivatedProps) {
   const name = recipientName?.split(' ')[0] || null
-  const isKennelPro = plan === 'kennel_pro' || plan === 'premium'
-  const planLabel = isKennelPro ? 'Kennel Pro' : 'Kennel'
+  // BBDD: plan 'kennel_pro' = Kennel Enterprise (149€); plan 'kennel' = Kennel Pro (49€).
+  const isEnterprise = plan === 'kennel_pro' || plan === 'premium'
+  const planLabel = isEnterprise ? 'Kennel Enterprise' : 'Kennel Pro'
   const trialEnd = formatTrialDate(trialEndsAt)
   const isTrial = !!trialEnd
 
   const preview = isTrial
-    ? `Tu prueba de 15 días de Genealogic ${planLabel} está activa. Termina el ${trialEnd}.`
+    ? `Tu prueba de 14 días de Genealogic ${planLabel} está activa. Termina el ${trialEnd}.`
     : `Genealogic ${planLabel} activado. Bienvenido al siguiente nivel.`
 
   return (
@@ -48,7 +49,7 @@ export default function SubscriptionActivatedEmail({
       <P>
         {isTrial ? (
           <>
-            Tienes <strong style={{ color: COLORS.ink }}>15 días para probar todas las herramientas</strong> de
+            Tienes <strong style={{ color: COLORS.ink }}>14 días para probar todas las herramientas</strong> de
             Genealogic {planLabel} sin coste. El primer cargo se hará el <strong style={{ color: COLORS.ink }}>{trialEnd}</strong>;
             puedes cancelar antes desde tu cuenta sin pagar nada.
           </>

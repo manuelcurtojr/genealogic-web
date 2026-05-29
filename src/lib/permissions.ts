@@ -109,6 +109,31 @@ export function hasProAccess(plan: string | null | undefined): boolean {
   return hasPaidPlan(plan)
 }
 
+/**
+ * Features de Kennel PRO (49€): COI completo, simulador, genotipos,
+ * estadísticas, reseñas, formulario de contacto, soporte prioritario.
+ * Cualquier plan de pago (kennel o kennel_pro) las tiene.
+ */
+export function hasProFeatures(plan: string | null | undefined): boolean {
+  return hasPaidPlan(plan)
+}
+
+/**
+ * Features de Kennel ENTERPRISE (149€, alta MANUAL): web pública con
+ * dominio, blog, emailbot, newsletter, API REST, multi-usuario, etc.
+ *
+ * Enterprise = plan `kennel_pro` en BBDD O estar en ENTERPRISE_USERS.
+ * Como el plan se pasa ya "efectivo" (loadShellContext resuelve a
+ * kennel_pro a los ENTERPRISE_USERS), basta con isKennelPro(plan); el
+ * userId es opcional para llamadas que aún no resuelven el plan efectivo.
+ */
+export function hasEnterpriseFeatures(
+  plan: string | null | undefined,
+  userId?: string | null,
+): boolean {
+  return isKennelPro(plan) || isEnterpriseUser(userId)
+}
+
 /** Backward-compat: algunas pages siguen llamando isPro()/isPremium(). */
 export function isPro(plan: string | null | undefined): boolean {
   return isKennel(plan)
@@ -118,11 +143,24 @@ export function isPremium(plan: string | null | undefined): boolean {
   return isKennelPro(plan)
 }
 
-export function getPlanLabel(plan: string | null | undefined): string {
+/**
+ * Nombre COMERCIAL del plan (el que ve el usuario). OJO con el desfase
+ * histórico entre el valor en BBDD y el nombre de marketing:
+ *
+ *   BBDD plan        →  Nombre comercial
+ *   ──────────────────────────────────────
+ *   'kennel_pro'     →  Kennel Enterprise   (149€/mes, alta manual)
+ *   'kennel'         →  Kennel Pro          (49€/mes)
+ *   'free' + kennel  →  Kennel Free         (gratis, criador casero)
+ *   'free' sin kennel→  Owner               (gratis, propietario)
+ *
+ * Por eso necesitamos `hasKennel` para distinguir Owner de Kennel Free.
+ */
+export function getPlanLabel(plan: string | null | undefined, hasKennel = false): string {
   const n = normalizePlan(plan)
-  if (n === 'kennel_pro') return 'Kennel Pro'
-  if (n === 'kennel') return 'Kennel'
-  return 'Free'
+  if (n === 'kennel_pro') return 'Kennel Enterprise'
+  if (n === 'kennel') return 'Kennel Pro'
+  return hasKennel ? 'Kennel Free' : 'Owner'
 }
 
 // ─── Legacy helpers (always return true) ────────────────────────────────────

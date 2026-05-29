@@ -36,6 +36,7 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
       .select('id, slug, name, sex, thumbnail_url, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, breed:breeds(name)')
       .eq('kennel_id', kennel.id)
       .or('show_in_kennel.is.null,show_in_kennel.eq.true')
+      .is('deceased_at', null)  // ocultar fallecidos del escaparate público
       .order('name'),
     supabase
       .from('litters')

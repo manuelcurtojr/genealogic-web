@@ -58,8 +58,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 /**
  * PATCH /api/v1/dogs/:slug
- * Updates sale-related fields on a dog. Used by external apps like
- * Pawdoq Breeders to mark a dog as sold, change price, or update sale info.
+ * Updates sale-related fields on a dog. Used by the user's own automations
+ * (Make, Zapier, scripts) to mark a dog as sold, change price, or update sale info.
  *
  * Whitelist of mutable fields (everything else is ignored):
  *   - is_for_sale       (boolean)

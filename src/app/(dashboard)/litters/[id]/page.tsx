@@ -32,11 +32,24 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
   const kennel = kennelArr?.[0]
 
   let puppies: any[] = []
-  if (father?.id && mother?.id) {
+  // Preferimos los cachorros enlazados a ESTA camada (litter_id). Así dos
+  // camadas con los mismos padres no se mezclan. Para camadas antiguas (sin
+  // enlace) caemos al heurístico por padres, pero excluyendo los cachorros
+  // que YA están asignados a alguna camada (para no robarlos de la suya).
+  const { data: linked } = await supabase
+    .from('dogs')
+    .select('id, name, sex, thumbnail_url, slug')
+    .eq('litter_id', litter.id)
+    .order('name')
+  if (linked && linked.length > 0) {
+    puppies = linked
+  } else if (father?.id && mother?.id) {
     const { data } = await supabase
       .from('dogs')
       .select('id, name, sex, thumbnail_url, slug')
-      .eq('father_id', father.id).eq('mother_id', mother.id).order('name')
+      .eq('father_id', father.id).eq('mother_id', mother.id)
+      .is('litter_id', null)
+      .order('name')
     puppies = data || []
   }
 

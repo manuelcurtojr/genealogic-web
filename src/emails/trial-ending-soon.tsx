@@ -2,7 +2,7 @@
  * Email de aviso "tu prueba acaba en X días".
  *
  * Disparado por el webhook customer.subscription.trial_will_end de Stripe
- * (~3 días antes de que termine el trial de 15 días). El cobro automático
+ * (~3 días antes de que termine el trial de 14 días). El cobro automático
  * se hará cuando termine el trial — si la tarjeta sigue siendo válida no
  * hay que hacer nada, pero le damos al user la oportunidad de:
  *   - Cambiar la tarjeta si la actual va a fallar
@@ -44,8 +44,9 @@ export default function TrialEndingSoonEmail({
   recipientName, plan, trialEndsAt,
 }: TrialEndingSoonProps) {
   const name = recipientName?.split(' ')[0] || null
-  const isKennelPro = plan === 'kennel_pro' || plan === 'premium'
-  const planLabel = isKennelPro ? 'Kennel Pro' : 'Kennel'
+  // BBDD: plan 'kennel_pro' = Kennel Enterprise (149€); plan 'kennel' = Kennel Pro (49€).
+  const isEnterprise = plan === 'kennel_pro' || plan === 'premium'
+  const planLabel = isEnterprise ? 'Kennel Enterprise' : 'Kennel Pro'
   const endDate = formatSpanishDate(trialEndsAt)
   const days = daysUntil(trialEndsAt)
   const daysLabel = days === 1 ? '1 día' : `${days ?? 3} días`
@@ -92,7 +93,7 @@ export default function TrialEndingSoonEmail({
           <strong style={{ color: COLORS.ink }}>Cancelar la suscripción</strong> si decides no continuar (sin coste).
         </li>
         <li style={{ marginBottom: '6px', color: COLORS.body, fontSize: '14.5px', lineHeight: 1.6 }}>
-          <strong style={{ color: COLORS.ink }}>Cambiar de plan</strong> a Kennel / Kennel Pro según necesites.
+          <strong style={{ color: COLORS.ink }}>Cambiar de plan</strong> a Kennel Pro / Kennel Enterprise según necesites.
         </li>
       </ul>
 

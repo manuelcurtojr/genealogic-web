@@ -1,28 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
-import LitterForm from '@/components/litters/litter-form'
-import FeedbackButton from '@/components/feedback/feedback-button'
+/**
+ * /litters/new — FUSIONADO con el panel lateral de /litters.
+ *
+ * La creación de camadas se hace ahora desde el panel lateral que se abre
+ * en /litters (botón "Nueva camada"). Esta ruta redirige y auto-abre el
+ * panel con ?new=1 para no romper enlaces antiguos.
+ */
+import { redirect } from 'next/navigation'
+
+export const dynamic = 'force-dynamic'
 
 export default async function NewLitterPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) return null
-
-  const [breedsRes, maleDogsRes, femaleDogsRes] = await Promise.all([
-    supabase.from('breeds').select('id, name').order('name'),
-    supabase.from('dogs').select('id, name').eq('owner_id', user.id).eq('sex', 'male').order('name'),
-    supabase.from('dogs').select('id, name').eq('owner_id', user.id).eq('sex', 'female').order('name'),
-  ])
-
-  return (
-    <>
-      <LitterForm
-        breeds={breedsRes.data || []}
-        maleDogs={maleDogsRes.data || []}
-        femaleDogs={femaleDogsRes.data || []}
-        userId={user.id}
-      />
-      <FeedbackButton scope="litter_form" pageLabel="Crear camada (/litters/new)" />
-    </>
-  )
+  redirect('/litters?new=1')
 }

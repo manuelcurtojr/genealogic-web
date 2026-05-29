@@ -248,7 +248,7 @@ export default async function DashboardPage() {
           <div className="mt-5 rounded-xl border border-hairline bg-surface-soft px-5 py-4">
             <p className="text-[14px] font-semibold text-ink">¿Eres criador?</p>
             <p className="mt-1 text-[13px] text-body">
-              Mejora tu plan para gestionar tu criadero, camadas y conectar con Pawdoq Breeders.
+              Mejora tu plan para gestionar tu criadero, camadas y reservas con todas las herramientas pro.
             </p>
             <Link
               href="/pricing"

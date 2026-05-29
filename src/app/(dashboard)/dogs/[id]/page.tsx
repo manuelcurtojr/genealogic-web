@@ -14,7 +14,7 @@ import ReportButton from '@/components/legal/report-dialog'
 import ClaimBanner from '@/components/admin-requests/claim-banner'
 import ModerateButton from '@/components/moderation/moderate-button'
 import { HIDDEN_REASON_LABELS, type HiddenReason } from '@/lib/moderation/types'
-import { EyeOff } from 'lucide-react'
+import { EyeOff, Heart } from 'lucide-react'
 import PageTracker from '@/components/track/page-tracker'
 import { DogJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
@@ -307,6 +307,19 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
           <ClaimBanner type="dog" targetId={dog.slug || dog.id} targetName={dog.name} />
         )}
 
+        {/* In Memoriam — franja conmemorativa si el perro ha fallecido */}
+        {dog.deceased_at && (
+          <div className="flex items-center gap-2.5 rounded-xl border border-rose-200 bg-rose-50/60 px-4 py-2.5">
+            <Heart className="w-4 h-4 text-rose-500 flex-shrink-0" />
+            <p className="text-[13px] text-rose-900">
+              <strong>En memoria</strong>
+              {' · '}
+              {new Date(dog.deceased_at).toLocaleDateString('es-ES', { year: 'numeric' })}
+              {dog.birth_date && ` · ${new Date(dog.birth_date).getFullYear()}–${new Date(dog.deceased_at).getFullYear()}`}
+            </p>
+          </div>
+        )}
+
         {/* Name + badges */}
         <div>
           <h1 className="text-[28px] sm:text-[44px] font-semibold leading-[1.05] tracking-[-0.04em] text-ink break-words hyphens-auto">
@@ -371,7 +384,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
           <h2 className="mb-5 px-4 sm:px-[30px] lg:px-2 text-[22px] font-semibold tracking-[-0.04em] text-ink sm:mb-6">
             Genealogía
           </h2>
-          <PedigreeTree data={pedigree} rootId={dog.id} />
+          <PedigreeTree data={pedigree} rootId={dog.id} breedId={dog.breed_id} />
         </div>
       )}
     </div>

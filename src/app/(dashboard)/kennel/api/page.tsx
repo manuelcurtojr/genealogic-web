@@ -74,7 +74,7 @@ export default function KennelApiKeysPage() {
   }
 
   async function handleRevoke(id: string) {
-    if (!confirm('¿Revocar esta API key? Pawdoq dejará de tener acceso si la usaba.')) return
+    if (!confirm('¿Revocar esta API key? Cualquier automatización que la use dejará de tener acceso.')) return
     const res = await fetch(`/api/keys?id=${id}`, { method: 'DELETE' })
     if (res.ok) await fetchKeys(kennelId)
   }
@@ -118,7 +118,7 @@ export default function KennelApiKeysPage() {
       <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 mb-6">
         <p className="text-sm font-semibold text-blue-300 mb-1">¿Para qué sirven?</p>
         <p className="text-xs text-body mb-2">
-          Permiten a aplicaciones externas (como <strong>Pawdoq Breeders</strong>) consultar tus perros, camadas y datos del criadero en tiempo real, vía API.
+          Permiten a tus <strong>automatizaciones y herramientas externas</strong> (Make, Zapier, scripts propios…) consultar tus perros, camadas y datos del criadero en tiempo real, vía API.
         </p>
         <Link href="/api-docs" className="text-xs text-blue-300 hover:text-blue-200 flex items-center gap-1">
           Ver documentación de la API <ExternalLink className="w-3 h-3" />
@@ -131,7 +131,7 @@ export default function KennelApiKeysPage() {
           <div className="flex items-start gap-2 mb-3">
             <AlertTriangle className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
             <p className="text-xs text-emerald-300">
-              <strong>Esta es la única vez que verás esta clave.</strong> Cópiala y guárdala en un sitio seguro (gestor de contraseñas, variable de entorno de Pawdoq, etc.).
+              <strong>Esta es la única vez que verás esta clave.</strong> Cópiala y guárdala en un sitio seguro (gestor de contraseñas, variable de entorno de tu automatización, etc.).
             </p>
           </div>
           <div className="flex items-center gap-2 bg-canvas border border-emerald-500/20 rounded-lg p-3">
@@ -155,7 +155,7 @@ export default function KennelApiKeysPage() {
             type="text"
             value={newKeyName}
             onChange={e => setNewKeyName(e.target.value)}
-            placeholder="Ej: Pawdoq producción"
+            placeholder="Ej: Make producción"
             required autoFocus
             className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none transition mb-3"
           />

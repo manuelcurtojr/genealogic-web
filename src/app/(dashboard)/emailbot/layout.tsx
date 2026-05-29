@@ -1,10 +1,11 @@
 /**
- * Gate Early Access para todo el Emailbot (/emailbot/*).
- * Solo Irema Curtó lo ve hasta que abramos al resto.
+ * Gate del Emailbot (/emailbot/*) — feature de Kennel Enterprise (149€).
+ * Enterprise es de alta MANUAL hoy (plan kennel_pro en BBDD o estar en
+ * ENTERPRISE_USERS). El resto ve "Próximamente".
  */
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { isEarlyAccessKennel } from '@/lib/early-access'
+import { hasEnterpriseFeatures } from '@/lib/permissions'
 import ComingSoon from '@/components/early-access/coming-soon'
 
 export default async function EmailbotLayout({ children }: { children: React.ReactNode }) {
@@ -12,13 +13,13 @@ export default async function EmailbotLayout({ children }: { children: React.Rea
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: kennel } = await supabase
-    .from('kennels')
-    .select('id')
-    .eq('owner_id', user.id)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('plan')
+    .eq('id', user.id)
     .maybeSingle()
 
-  if (!isEarlyAccessKennel(kennel?.id)) {
+  if (!hasEnterpriseFeatures(profile?.plan, user.id)) {
     return (
       <ComingSoon
         featureId="emailbot"

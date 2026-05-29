@@ -32,7 +32,7 @@ export default function AnalyticsSubnav() {
     },
     {
       href: '/visitas',
-      label: 'Visitas web',
+      label: 'Estadísticas web',
       hint: 'Tráfico de tu web pública — visitantes, fuentes, países, dispositivos',
       icon: Globe,
       active: pathname === '/visitas' || pathname.startsWith('/visitas/'),

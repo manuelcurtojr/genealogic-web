@@ -2,10 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
 import { Mail, MessageSquare, Beaker, BookOpen, FlaskConical } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-import { isEarlyAccessKennel } from '@/lib/early-access'
 
 /**
  * Subnav compartido entre /emailbot, /emailbot/hilos, /emailbot/test
@@ -15,22 +12,13 @@ import { isEarlyAccessKennel } from '@/lib/early-access'
  * usando la Biblioteca, gestiona hilos, y se prueba en el playground.
  * Tener 4 entradas separadas en el sidebar/CommandBar es ruido —
  * este subnav las une visualmente.
+ *
+ * Todo /emailbot/* y /conocimiento están gateados a Enterprise en el
+ * servidor, así que aquí ya solo llegan usuarios Enterprise: mostramos
+ * todas las tabs (incluida la Suite de tests).
  */
 export default function EmailbotSubnav() {
   const pathname = usePathname()
-  // Detectar si el kennel del user actual es early access (para mostrar tab
-  // "Suite tests"). Fetch ligero a kennels — se cachea por navegación cliente.
-  const [earlyAccess, setEarlyAccess] = useState(false)
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return
-      supabase.from('kennels').select('id').eq('owner_id', user.id).maybeSingle()
-        .then(({ data }) => {
-          if (data?.id && isEarlyAccessKennel(data.id)) setEarlyAccess(true)
-        })
-    })
-  }, [])
 
   const tabs = [
     {
@@ -54,14 +42,13 @@ export default function EmailbotSubnav() {
       icon: Beaker,
       active: pathname === '/emailbot/test' || pathname.startsWith('/emailbot/test/'),
     },
-    // Suite tests: solo visible si el kennel es early access (alpha por coste)
-    ...(earlyAccess ? [{
+    {
       href: '/emailbot/test-suite',
       label: 'Suite tests',
       hint: 'Bate 16 perfiles ficticios contra tu bot y evalúa calidad (con coste)',
       icon: FlaskConical,
       active: pathname.startsWith('/emailbot/test-suite'),
-    }] : []),
+    },
     {
       href: '/conocimiento',
       label: 'Biblioteca',

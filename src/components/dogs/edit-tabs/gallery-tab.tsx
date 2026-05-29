@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, X, Loader2, GripVertical, Star } from 'lucide-react'
+import { Plus, X, Loader2, GripVertical, Star, Sparkles } from 'lucide-react'
 
 interface GalleryTabProps { dogId: string; userId: string }
 
@@ -10,6 +10,8 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
   const [photos, setPhotos] = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
   const [dragIdx, setDragIdx] = useState<number | null>(null)
+  const [upscalingId, setUpscalingId] = useState<string | null>(null)
+  const [upscaleMsg, setUpscaleMsg] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
@@ -113,6 +115,33 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     await supabase.from('dogs').update({ thumbnail_url: reordered[0]?.url || null }).eq('id', dogId)
   }
 
+  async function handleUpscale(photo: any) {
+    setUpscaleMsg(null)
+    setUpscalingId(photo.id)
+    try {
+      const res = await fetch(`/api/dogs/${dogId}/upscale`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photoId: photo.id }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setUpscaleMsg(data?.error || 'No se pudo mejorar la imagen.')
+      } else {
+        if (typeof data.remaining === 'number') {
+          setUpscaleMsg(`Imagen mejorada. Te quedan ${data.remaining} mejoras gratis.`)
+        } else {
+          setUpscaleMsg('Imagen mejorada con IA.')
+        }
+        await loadPhotos()
+      }
+    } catch {
+      setUpscaleMsg('No se pudo mejorar la imagen. Inténtalo de nuevo.')
+    } finally {
+      setUpscalingId(null)
+    }
+  }
+
   function handleDragStart(idx: number) { setDragIdx(idx) }
   function handleDragOver(e: React.DragEvent, idx: number) { e.preventDefault() }
   function handleDrop(idx: number) { if (dragIdx !== null) movePhoto(dragIdx, idx); setDragIdx(null) }
@@ -148,12 +177,34 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
               </div>
             )}
 
+            {/* "Mejorada con IA" chip */}
+            {photo.upscaled_at && (
+              <div className="absolute bottom-1 left-1 bg-violet-600 rounded px-1 py-0.5 flex items-center gap-0.5">
+                <Sparkles className="w-2.5 h-2.5 text-white" />
+                <span className="text-[8px] text-white font-bold">IA</span>
+              </div>
+            )}
+
+            {/* Overlay while upscaling */}
+            {upscalingId === photo.id && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                <Loader2 className="w-5 h-5 animate-spin text-white" />
+              </div>
+            )}
+
             {/* Drag handle + delete */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
               <div className="opacity-0 group-hover:opacity-100 transition flex items-center gap-1">
                 <GripVertical className="w-4 h-4 text-ink" />
               </div>
             </div>
+            {/* Mejorar con IA (oculto si ya está mejorada o en proceso) */}
+            {!photo.upscaled_at && upscalingId !== photo.id && (
+              <button onClick={() => handleUpscale(photo)} title="Mejorar con IA"
+                className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-violet-600">
+                <Sparkles className="w-3 h-3" />
+              </button>
+            )}
             <button onClick={() => deletePhoto(photo)}
               className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-red-500">
               <X className="w-3 h-3" />
@@ -162,9 +213,16 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
         ))}
       </div>
 
+      {upscaleMsg && (
+        <p className="text-xs text-body bg-surface-card border border-hairline rounded-lg px-3 py-2">{upscaleMsg}</p>
+      )}
+
       {photos.length === 0 && !uploading && (
         <p className="text-xs text-muted text-center py-2">Haz clic en + para subir fotos</p>
       )}
+      <p className="text-[11px] text-muted">
+        Pasa el ratón por una foto y pulsa <Sparkles className="w-3 h-3 inline -mt-0.5" /> para mejorarla con IA.
+      </p>
     </div>
   )
 }

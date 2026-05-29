@@ -10,10 +10,11 @@
  * Setup necesario (env vars):
  *   STRIPE_SECRET_KEY               — sk_live_… o sk_test_…
  *   STRIPE_WEBHOOK_SECRET           — para verificar webhooks
- *   STRIPE_PRICE_KENNEL_MONTHLY     — price_xxx (Kennel 49€/mes)
- *   STRIPE_PRICE_KENNEL_ANNUAL      — price_xxx (Kennel 290€/año)
- *   STRIPE_PRICE_KENNEL_PRO_MONTHLY — price_xxx (Kennel Pro 49€/mes Founder · Próximamente)
- *   STRIPE_PRICE_KENNEL_PRO_ANNUAL  — price_xxx
+ *   (BBDD plan 'kennel' = Kennel Pro 49€; plan 'kennel_pro' = Kennel Enterprise 149€)
+ *   STRIPE_PRICE_KENNEL_MONTHLY     — price_xxx (Kennel Pro 49€/mes)
+ *   STRIPE_PRICE_KENNEL_ANNUAL      — price_xxx (Kennel Pro 499€/año)
+ *   STRIPE_PRICE_KENNEL_PRO_MONTHLY — price_xxx (Kennel Enterprise 149€/mes · alta manual)
+ *   STRIPE_PRICE_KENNEL_PRO_ANNUAL  — price_xxx (Kennel Enterprise 1.520€/año)
  *   Legacy: STRIPE_PRICE_PRO_*, STRIPE_PRICE_PREMIUM_* todavía se aceptan
  *           como fallback en priceIdToPlan para subs antiguas.
  */

@@ -155,7 +155,7 @@ export default function EditKennelPage() {
           className="flex items-center justify-between bg-surface-card hover:bg-surface-card border border-hairline rounded-xl px-4 py-3 transition group">
           <div>
             <p className="text-sm font-semibold">API keys</p>
-            <p className="text-xs text-muted">Conecta Pawdoq Breeders u otras apps externas a tu criadero.</p>
+            <p className="text-xs text-muted">Conecta tus automatizaciones (Make, Zapier, scripts) u otras apps externas a tu criadero.</p>
           </div>
           <ExternalLink className="w-4 h-4 text-muted group-hover:text-body" />
         </Link>

@@ -40,8 +40,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 /**
  * PATCH /api/v1/litters/:id
- * Updates lifecycle/quantitative fields on a litter. Used by external apps
- * like Pawdoq Breeders to advance the breeding pipeline.
+ * Updates lifecycle/quantitative fields on a litter. Used by the user's own
+ * automations (Make, Zapier, scripts) to advance the breeding pipeline.
  *
  * Whitelist:
  *   - status        ('planned' | 'mated' | 'born' | 'confirmed')

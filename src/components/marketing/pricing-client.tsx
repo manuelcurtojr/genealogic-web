@@ -100,7 +100,7 @@ const CATEGORIES: CategoryDef[] = [
     label: 'Catálogo de perros',
     features: [
       { name: 'Galería ilimitada de fotos', marks: 'OFPE' },
-      { name: 'Upscale IA de fotos', marks: 'OFPE' },
+      { name: 'Upscale IA de fotos (5 gratis · ilimitado en Pro)', marks: 'OFPE' },
       { name: 'Palmarés y títulos (CAC, CACIB, BIS)', marks: 'OFPE' },
       { name: 'Transferir propietario en 1 click', marks: 'OFPE' },
       { name: 'Estados (reproductor, en venta, criado)', marks: 'FPE' },
@@ -114,10 +114,10 @@ const CATEGORIES: CategoryDef[] = [
       { name: 'Pipeline de reservas (tabla + tabs por estado)', marks: 'FPE' },
       { name: 'Plantillas de contrato reutilizables', marks: 'FPE' },
       { name: 'Firma electrónica básica', marks: 'FPE' },
-      { name: 'Pagos integrados con Stripe Connect', marks: 'PE' },
+      { name: 'Pagos integrados con Stripe Connect (próximamente)', marks: 'PE' },
       { name: 'Calendario de pagos (seña + parcial + final, manual)', marks: 'FPE' },
       { name: 'CRM unificado de clientes', marks: 'FPE' },
-      { name: 'Registro de visitas al criadero', marks: 'PE' },
+      { name: 'Estadísticas web del criadero (visitas, fuentes)', marks: 'PE' },
       { name: 'Notificaciones email + push iOS', marks: 'OFPE' },
     ],
   },
@@ -149,9 +149,9 @@ const CATEGORIES: CategoryDef[] = [
   {
     label: 'Analítica y datos',
     features: [
-      { name: 'Estadísticas en tiempo real', marks: 'FPE' },
-      { name: 'Funnel de conversión', marks: 'FPE' },
-      { name: 'Exportable a CSV', marks: 'FPE' },
+      { name: 'Estadísticas web en tiempo real', marks: 'PE' },
+      { name: 'Funnel de conversión', marks: 'PE' },
+      { name: 'Exportable a CSV', marks: 'PE' },
     ],
   },
   {
@@ -262,7 +262,7 @@ const PLANS: PlanDef[] = [
       'Camadas con un click + calendario reproductivo',
       'Pipeline de reservas con contratos y firma electrónica',
       'CRM unificado de clientes',
-      'Estadísticas, funnel y export CSV',
+      'Stud-book privado + estados de cachorros',
       'Cachorros disponibles NO cuentan en el límite',
     ],
     ctaLabel: 'Empezar gratis',
@@ -276,7 +276,7 @@ const PLANS: PlanDef[] = [
     period: '',
     maxDogs: 'Ilimitado',
     forWho: 'Para el criadero profesional',
-    description: 'Todo Free + perros ilimitados + COI explicado + simulador + Stripe.',
+    description: 'Todo Free + perros ilimitados + COI explicado + simulador + estadísticas.',
     icon: Sparkles,
     accent: '#FE6620',
     accentBg: 'from-orange-50 via-canvas to-amber-50',
@@ -286,7 +286,7 @@ const PLANS: PlanDef[] = [
       'COI Wright + ancestros duplicados + comparativa con la raza',
       'Simulador de cruces (COI proyectado, color, riesgos)',
       'Genotipos y pruebas DNA',
-      'Pagos con Stripe Connect (cobra señas y entregas)',
+      'Pagos con Stripe Connect (próximamente)',
       'Reseñas verificadas + formulario de contacto',
       'Soporte prioritario <24h',
     ],
@@ -757,7 +757,7 @@ function FAQ() {
         <FaqItem q="¿Y Enterprise? ¿También 14 días gratis?">
           Enterprise se activa manualmente tras hablar con soporte
           (hola@genealogic.io). De momento estamos validando el chatbot y la
-          web del criadero con un grupo cerrado de Founders. Si lo quieres
+          web del criadero con un grupo cerrado de criaderos. Si lo quieres
           probar, escríbenos y te activamos la cuenta en menos de 24h. Pasaremos
           a auto-servicio cuando esté pulido.
         </FaqItem>

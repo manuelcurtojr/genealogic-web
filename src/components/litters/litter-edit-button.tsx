@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Edit } from 'lucide-react'
 import LitterFormPanel from './litter-form-panel'
 import DogFormPanel from '@/components/dogs/dog-form-panel'
@@ -19,6 +19,19 @@ export default function LitterEditButton({ litterId, userId, userKennelId, userK
   const [showPanel, setShowPanel] = useState(false)
   const [dogPanelOpen, setDogPanelOpen] = useState(false)
   const [puppyData, setPuppyData] = useState<any>({})
+
+  // Auto-abrir el panel de edición cuando se llega con ?edit=1 (legacy
+  // /litters/[id]/edit redirige aquí). Limpia el query param después.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('edit') === '1') {
+      setShowPanel(true)
+      const url = new URL(window.location.href)
+      url.searchParams.delete('edit')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [])
 
   return (
     <>

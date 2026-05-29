@@ -39,7 +39,7 @@ Genealogic es la plataforma para criadores serios de perros de raza y propietari
 - Emailbot que responde a leads usando una biblioteca personalizada — Kennel Pro
 - Calendario veterinario con recordatorios (vacunas, desparasitaciones, citas)
 - Historial clínico por perro
-- Importador de genealogías desde sitios externos (Pawdoq, working-dog, breedarchive y otros, con verificación + IA)
+- Importador de genealogías desde sitios externos (working-dog, breedarchive y otros, con verificación + IA)
 - Catálogo público de criaderos y perros para descubrir
 
 # DOS TIPOS DE USUARIO
@@ -75,9 +75,7 @@ Cuatro planes. Dos gratis para siempre + dos de pago.
 - Cría: calendario reproductivo, camadas, stud-book, pruebas raciales
 - Estados de catálogo (en venta / criado / reproductor)
 - Pipeline: reservas, plantillas de contrato, firma e-básica, calendario de pagos manual, CRM
-- Web: reseñas, formulario de contacto
 - Comunicación: hilos de email por cliente
-- Analítica: estadísticas, funnel, exportable CSV
 
 **Kennel Pro — 49€/mes. DISPONIBLE YA.** Prueba **14 días gratis SIN tarjeta**.
 - Perros **ilimitados**
@@ -85,7 +83,9 @@ Cuatro planes. Dos gratis para siempre + dos de pago.
 - Todo lo de Kennel Free +
 - COI de Wright + ancestros duplicados, comparativa con la raza, PDF con marca, histórico de COI medio del criadero
 - Simulador de cruces, predicción de color por genotipos (loci E/B/K/D/A/S)
-- Pagos online vía **Stripe Connect**, registro de visitas
+- Web: reseñas verificadas, formulario de contacto
+- Analítica: estadísticas web, funnel, exportable CSV
+- Pagos online vía **Stripe Connect** (próximamente)
 - Soporte prioritario <24h
 
 **Kennel Enterprise — 149€/mes. ACTIVACIÓN MANUAL.** No tiene prueba automática.
@@ -128,10 +128,10 @@ Kennel Enterprise NO tiene prueba: se activa de forma manual tras hablar con sop
 - /litters — camadas (solo criador)
 - /kennel — gestión de mi criadero
 - /kennel/new — crear primer criadero
-- /web — web pública / builder (Kennel Enterprise, hoy en Early Access para Irema)
-- /emailbot — bot de respuesta automática (Kennel Enterprise, hoy en Early Access)
-- /conocimiento — biblioteca del bot
-- /newsletter — newsletter (Kennel Enterprise, hoy en Early Access)
+- /web — web pública / builder (Kennel Enterprise, alta manual)
+- /emailbot — bot de respuesta automática (Kennel Enterprise, alta manual)
+- /conocimiento — biblioteca del bot (Kennel Enterprise)
+- /newsletter — newsletter (Kennel Enterprise, alta manual)
 - /reservas — pipeline de leads/reservas (criador, desde Kennel Free)
 - /contactos — hub de contactos (desde Kennel Free)
 - /mis-reservas — mis reservas como propietario
@@ -155,7 +155,7 @@ Si un user encuentra su perro o criadero en Genealogic porque fueron importados 
 
 # IMPORTAR GENEALOGÍAS
 - Desde /dogs/[id]/edit hay tab "Importar genealogía" que extrae automáticamente la genealogía desde sitios externos.
-- Pawdoq, working-dog, breedarchive y otros 7+ sites soportados (algunos detrás de proxy anti-bot vía ScrapingBee).
+- working-dog, breedarchive y otros 7+ sites soportados (algunos detrás de proxy anti-bot vía ScrapingBee).
 - Si falla, el user puede subir un PDF y se extrae igual con IA.
 - En Owner/Kennel Free hay límite de imports al mes; en Kennel Pro y Kennel Enterprise es ilimitado.
 

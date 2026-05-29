@@ -18,7 +18,7 @@ import EmailbotSubnav from '@/components/emailbot/emailbot-subnav'
 import TestSuiteClient from '@/components/emailbot/test-suite-client'
 import { getModel, getDefaultModel } from '@/lib/ai/models'
 import { estimateRunCostCents } from '@/lib/ai/emailbot-tester'
-import { isEarlyAccessKennel } from '@/lib/early-access'
+import { hasEnterpriseFeatures } from '@/lib/permissions'
 import ComingSoon from '@/components/early-access/coming-soon'
 
 export const dynamic = 'force-dynamic'
@@ -29,11 +29,10 @@ export default async function TestSuitePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: kennel } = await supabase
-    .from('kennels')
-    .select('id, name, bot_model')
-    .eq('owner_id', user.id)
-    .maybeSingle()
+  const [{ data: kennel }, { data: profile }] = await Promise.all([
+    supabase.from('kennels').select('id, name, bot_model').eq('owner_id', user.id).maybeSingle(),
+    supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
+  ])
 
   if (!kennel) {
     return (
@@ -47,9 +46,9 @@ export default async function TestSuitePage() {
     )
   }
 
-  // Gate Early Access: el test suite cuesta dinero real (~1-2€/run); hasta
-  // que tengamos quota/metered billing solo lo activamos para el fundador.
-  if (!isEarlyAccessKennel(kennel.id)) {
+  // Gate Enterprise: el test suite cuesta dinero real (~1-2€/run); de
+  // momento solo para Enterprise (alta manual) hasta tener quota/billing.
+  if (!hasEnterpriseFeatures(profile?.plan, user.id)) {
     return (
       <div className="space-y-5">
         <EmailbotSubnav />

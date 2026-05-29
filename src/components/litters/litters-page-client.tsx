@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Plus, Grid3X3, List, Trash2, Edit, Eye, Lock, Globe } from 'lucide-react'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
@@ -57,6 +57,20 @@ export default function LittersPageClient({
   const openAdd = () => { setEditLitterId(null); setPanelOpen(true) }
   const openEdit = (id: string) => { setEditLitterId(id); setPanelOpen(true) }
   const closePanel = () => { setPanelOpen(false); setEditLitterId(null) }
+
+  // Auto-abrir el panel de creación cuando se llega con ?new=1 (legacy
+  // /litters/new redirige aquí). Limpia el query param para no reabrirlo.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('new') === '1') {
+      setEditLitterId(null)
+      setPanelOpen(true)
+      const url = new URL(window.location.href)
+      url.searchParams.delete('new')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [])
 
   const filtered = litters.filter(l => {
     if (!search) return true

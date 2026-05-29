@@ -261,8 +261,8 @@ function ActivatePlanScreen({ plan }: { plan: 'kennel' | 'kennel_pro' }) {
         </p>
       </div>
 
-      {/* Kennel arranca trial 15 días si Stripe está listo;
-          Kennel Pro siempre va a lista de espera hasta apertura pública. */}
+      {/* Kennel Pro arranca trial 14 días si Stripe está listo;
+          Kennel Enterprise siempre va a lista de espera (alta manual). */}
       {checkoutReady && isPublicAvailable ? (
         <CheckoutCard plan={plan} planLabel={planLabel} planPrice={planPrice} />
       ) : (

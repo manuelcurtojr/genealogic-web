@@ -25,7 +25,10 @@ export interface NavItem {
   href: string
   icon: string
   requiresKennel?: boolean
+  /** Plan Kennel Pro+ (kennel o kennel_pro) */
   requiresPro?: boolean
+  /** Plan Kennel Enterprise (kennel_pro / ENTERPRISE_USERS) — alta manual */
+  requiresEnterprise?: boolean
   requiresAdmin?: boolean
   /** Si el usuario ES pro, este item se oculta (porque hay uno mejor) */
   hideIfPro?: boolean
@@ -40,6 +43,8 @@ export interface NavSection {
   label: string
   requiresKennel?: boolean
   requiresPro?: boolean
+  /** Plan Kennel Enterprise (kennel_pro / ENTERPRISE_USERS) — alta manual */
+  requiresEnterprise?: boolean
   requiresAdmin?: boolean
   /** Solo visible si el user es cliente (tiene reservas/perros recibidos) */
   requiresClient?: boolean
@@ -91,8 +96,9 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Perros', href: '/dogs', icon: 'Dog' },
       { label: 'Camadas', href: '/litters', icon: 'Baby', requiresKennel: true },
-      { label: 'Simulador de cruces', href: '/cruces', icon: 'GitCompareArrows', requiresKennel: true },
-      { label: 'Genotipos', href: '/genetica', icon: 'Dna', requiresKennel: true },
+      // Simulador y Genotipos son features de Kennel Pro (49€) según /pricing.
+      { label: 'Simulador de cruces', href: '/cruces', icon: 'GitCompareArrows', requiresKennel: true, requiresPro: true },
+      { label: 'Genotipos', href: '/genetica', icon: 'Dna', requiresKennel: true, requiresPro: true },
     ],
   },
 
@@ -110,22 +116,24 @@ export const NAV_SECTIONS: NavSection[] = [
     requiresKennel: true,
     items: [
       { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare', requiresKennel: true },
-      { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresPro: true, requiresKennel: true },
-      { label: 'Contratos', href: '/contratos', icon: 'FileText', requiresPro: true, requiresKennel: true },
+      // Contactos (CRM) y Contratos están incluidos desde Kennel Free según
+      // /pricing (marks FPE). Antes pedían Pro — incongruencia corregida.
+      { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresKennel: true },
+      { label: 'Contratos', href: '/contratos', icon: 'FileText', requiresKennel: true },
     ],
   },
 
-  // ── Comunicación (Pro) — solo entradas principales ──────────────────
+  // ── Comunicación (Enterprise) — emailbot + newsletter ───────────────
+  // Son features de Kennel Enterprise (149€, alta manual) según /pricing.
   // Hilos del bot, Test del bot y Conocimiento viven como tabs dentro
   // de /emailbot; no se duplican aquí.
-  // Visible en iOS: herramientas operativas (ver justificación en Pipeline).
   {
     id: 'comms',
     label: 'Comunicación',
-    requiresPro: true,
+    requiresEnterprise: true,
     items: [
-      { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresPro: true },
-      { label: 'Newsletter', href: '/newsletter', icon: 'Send', requiresPro: true },
+      { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresEnterprise: true },
+      { label: 'Newsletter', href: '/newsletter', icon: 'Send', requiresEnterprise: true },
     ],
   },
 
@@ -141,7 +149,9 @@ export const NAV_SECTIONS: NavSection[] = [
     requiresKennel: true,
     items: [
       { label: 'Mi criadero', href: '/kennel', icon: 'Store', requiresKennel: true },
-      { label: 'Páginas web', href: '/web', icon: 'Globe', requiresPro: true, requiresKennel: true },
+      // Web pública con dominio = Kennel Enterprise (alta manual).
+      { label: 'Páginas web', href: '/web', icon: 'Globe', requiresEnterprise: true },
+      // Estadísticas web = Kennel Pro en adelante (decisión de pricing).
       { label: 'Estadísticas', href: '/estadisticas', icon: 'BarChart3', requiresPro: true, requiresKennel: true },
     ],
   },
@@ -155,8 +165,10 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Propietario',
     requiresClient: true,
     items: [
+      // "Mis perros" se fusionó con "Perros" (/dogs ya muestra los perros que
+      // posees como propietario, no solo los que crías). Aquí solo dejamos
+      // las reservas, que son específicas del rol cliente.
       { label: 'Mis reservas', href: '/mis-reservas', icon: 'KanbanSquare', requiresClient: true },
-      { label: 'Mis perros', href: '/mis-perros', icon: 'Dog', requiresClient: true },
     ],
   },
 

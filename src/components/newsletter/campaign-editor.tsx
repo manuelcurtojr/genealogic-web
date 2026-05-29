@@ -22,7 +22,6 @@ import {
 } from 'lucide-react'
 import { AUDIENCE_LABELS, AUDIENCE_HINTS, type AudienceType } from '@/lib/newsletter/audiences-shared'
 import { renderContractMarkdown } from '@/lib/contracts/markdown'
-import { isEarlyAccessKennel } from '@/lib/early-access'
 import { ComingSoonChip } from '@/components/early-access/coming-soon'
 
 export type CampaignRow = {
@@ -56,17 +55,18 @@ export type AudienceCounts = Record<AudienceType, number>
 type Tab = 'edit' | 'audience' | 'send'
 
 export default function CampaignEditor({
-  kennelId, kennelName, userEmail, initial, audiences,
+  kennelName, userEmail, initial, audiences, canSend = false,
 }: {
   kennelId: string
   kennelName: string
   userEmail: string
   initial: CampaignRow
   audiences: AudienceCounts
+  /** Si el envío real está habilitado. Lo decide el server (gate Enterprise). */
+  canSend?: boolean
 }) {
   const router = useRouter()
   const isLocked = ['sending', 'sent'].includes(initial.status)
-  const canSend = isEarlyAccessKennel(kennelId)
   const [tab, setTab] = useState<Tab>(isLocked ? 'send' : 'edit')
 
   // Form state (controlado, autosave)

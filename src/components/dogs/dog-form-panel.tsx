@@ -79,6 +79,14 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     father_id: '', mother_id: '', is_public: true,
   })
 
+  // ── In Memoriam ──────────────────────────────────────────────────────
+  // deceased_at: fecha de fallecimiento (null = vivo). Marcar es IRREVERSIBLE
+  // desde la UI (lo revierte solo soporte). El perro fallecido deja de contar
+  // para el límite del plan, pero su ficha y genealogía se conservan.
+  const [deceasedAt, setDeceasedAt] = useState<string | null>(null)
+  const [confirmDeceased, setConfirmDeceased] = useState(false)
+  const [deceasedLoading, setDeceasedLoading] = useState(false)
+
   useEffect(() => {
     if (!open) return
     setActiveTab('datos'); setCreateMode('manual'); setDataLoading(true); setError('')
@@ -115,6 +123,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         if (dog) {
           const f = { name: dog.name || '', sex: dog.sex || 'male', birth_date: dog.birth_date || '', registration: dog.registration || '', microchip: dog.microchip || '', weight: dog.weight?.toString() || '', height: dog.height?.toString() || '', breed_id: dog.breed_id || '', color_id: dog.color_id || '', kennel_id: dog.kennel_id || '', father_id: dog.father_id || '', mother_id: dog.mother_id || '', is_public: dog.is_public ?? true }
           setForm(f)
+          setDeceasedAt(dog.deceased_at || null)
           if (dog.breed_id) filterByBreed(dog.breed_id, cRes.data || [], mRes.data || [], fRes.data || [])
 
           // Cargar info de quien posee el perro AHORA (puede ser distinto al
@@ -139,6 +148,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         }
       } else {
         setForm({ name: '', sex: 'male', birth_date: '', registration: '', microchip: '', weight: '', height: '', breed_id: defaultBreedId || '', color_id: '', kennel_id: defaultKennelId || '', father_id: defaultFatherId || '', mother_id: defaultMotherId || '', is_public: true })
+        setDeceasedAt(null)
         if (defaultBreedId) filterByBreed(defaultBreedId, cRes.data || [], mRes.data || [], fRes.data || [])
       }
       setDataLoading(false)
@@ -194,6 +204,9 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       breed_id: form.breed_id || null, color_id: form.color_id || null, kennel_id: form.kennel_id || null,
       father_id: form.father_id || null, mother_id: form.mother_id || null,
       is_public: form.is_public, breeder_id: isFromLitter ? userId : undefined,
+      // Enlazar el cachorro a su camada para diferenciarlo de otras camadas
+      // con los mismos padres. Solo al crear desde una camada.
+      litter_id: isFromLitter ? defaultLitterId : undefined,
     }
 
     if (isEdit) {
@@ -221,6 +234,25 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       return
     }
     onClose(); if (onSaved) onSaved(); router.refresh()
+  }
+
+  // Marcar el perro como fallecido (In Memoriam). Acción irreversible desde
+  // la UI: fija deceased_at = hoy y deceased_locked = true. No borra nada.
+  const handleMarkDeceased = async () => {
+    if (!editDogId) return
+    setDeceasedLoading(true); setError('')
+    const supabase = createClient()
+    const today = new Date().toISOString().slice(0, 10)
+    const { error: err } = await supabase
+      .from('dogs')
+      .update({ deceased_at: today, deceased_locked: true })
+      .eq('id', editDogId)
+    setDeceasedLoading(false)
+    if (err) { setError(err.message); return }
+    setDeceasedAt(today)
+    setConfirmDeceased(false)
+    if (onSaved) onSaved()
+    router.refresh()
   }
 
   const selBreed = breeds.find(b => b.id === form.breed_id)
@@ -457,6 +489,36 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                   </div>
                   <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
                 </div>
+
+                {/* In Memoriam — solo en edición */}
+                {editDogId && (
+                  deceasedAt ? (
+                    <div className="flex items-center gap-3 bg-surface-card border border-hairline rounded-xl p-4">
+                      <Heart className="w-5 h-5 text-rose-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium">En memoria</p>
+                        <p className="text-xs text-muted">
+                          Fallecido el {new Date(deceasedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}.
+                          Su ficha y genealogía se conservan. Para revertirlo, escribe a soporte.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-xl p-4">
+                      <div className="flex items-center gap-3">
+                        <Heart className="w-5 h-5 text-muted flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium">Marcar como fallecido</p>
+                          <p className="text-xs text-muted">Deja de contar en tu límite. La ficha se conserva.</p>
+                        </div>
+                      </div>
+                      <button type="button" onClick={() => setConfirmDeceased(true)}
+                        className="px-3 py-2 rounded-lg text-sm font-medium text-rose-500 border border-rose-500/30 hover:bg-rose-500/10 transition flex-shrink-0">
+                        Marcar
+                      </button>
+                    </div>
+                  )
+                )}
               </div>
             )}
 
@@ -481,6 +543,41 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           </div>
         )}
       </div>
+
+      {/* Modal de confirmación "Marcar como fallecido" */}
+      {confirmDeceased && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50"
+          onClick={() => !deceasedLoading && setConfirmDeceased(false)}>
+          <div className="bg-canvas border border-hairline rounded-2xl p-6 max-w-sm w-full shadow-xl"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center flex-shrink-0">
+                <Heart className="w-5 h-5 text-rose-500" />
+              </div>
+              <h3 className="text-base font-semibold">Marcar como fallecido</h3>
+            </div>
+            <p className="text-sm text-body leading-relaxed">
+              {form.name ? <strong>{form.name}</strong> : 'Este perro'} aparecerá como
+              «En memoria». Su ficha, genealogía, fotos y palmarés se conservan, pero
+              deja de contar en el límite de tu plan y se oculta del directorio público.
+            </p>
+            <p className="mt-2 text-xs text-muted">
+              Esta acción es irreversible desde la app. Si te equivocas, escribe a soporte.
+            </p>
+            <div className="flex items-center justify-end gap-3 mt-5">
+              <button onClick={() => setConfirmDeceased(false)} disabled={deceasedLoading}
+                className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition disabled:opacity-50">
+                Cancelar
+              </button>
+              <button onClick={handleMarkDeceased} disabled={deceasedLoading}
+                className="bg-rose-500 text-white hover:opacity-90 font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+                {deceasedLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {deceasedLoading ? 'Marcando...' : 'Sí, marcar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       </>
     </Portal>

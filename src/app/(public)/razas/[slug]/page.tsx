@@ -141,6 +141,7 @@ export default async function BreedPage(
       .select('id, slug, name, sex, thumbnail_url, birth_date')
       .eq('breed_id', breed.id)
       .eq('is_public', true)
+      .is('deceased_at', null)  // ocultar perros fallecidos del directorio
       .not('thumbnail_url', 'is', null)
       .order('created_at', { ascending: false })
       .limit(12),
