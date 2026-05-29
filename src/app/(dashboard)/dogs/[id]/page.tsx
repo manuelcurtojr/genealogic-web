@@ -374,14 +374,17 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         <DogTabs dogId={dog.id} ownerId={dog.owner_id} isOwner={isOwner} fatherId={dog.father_id} motherId={dog.mother_id} dogSex={dog.sex} />
       </div>
 
-      {/* Genealogía — full bleed: rompe el max-w-7xl del dashboard layout
-          en pantallas anchas para mostrar más generaciones sin scroll
-          horizontal. `calc(50% - 50vw)` se vuelve 0 cuando no hay espacio
-          extra (≤1280px), así que en lg no rompe nada. En 2xl (1536px+)
-          aprovecha los ~256px sobrantes para ensanchar el árbol. */}
+      {/* Genealogía.
+          · Anónimo (sin sidebar): full-bleed a 100vw para aprovechar todo el
+            ancho — `calc(50% - 50vw)` ancla al borde del viewport.
+          · Registrado: NO se puede usar 50vw porque el viewport incluye el
+            sidebar fijo de la izquierda → el árbol se metía DETRÁS del panel.
+            Lo dejamos en el flujo normal del contenido (hereda el px-[30px] de
+            la sección), así arranca con el mismo margen que el resto. El árbol
+            scrollea en horizontal si necesita más ancho. */}
       {pedigree && pedigree.length > 1 && (
-        <div className="mt-4 sm:mt-8 -mx-4 sm:-mx-[30px] lg:mx-[calc(50%-50vw)] lg:px-6">
-          <h2 className="mb-5 px-4 sm:px-[30px] lg:px-2 text-[22px] font-semibold tracking-[-0.04em] text-ink sm:mb-6">
+        <div className={`mt-4 sm:mt-8 ${user ? '' : '-mx-4 sm:-mx-[30px] lg:mx-[calc(50%-50vw)] lg:px-6'}`}>
+          <h2 className={`mb-5 sm:mb-6 text-[22px] font-semibold tracking-[-0.04em] text-ink ${user ? '' : 'px-4 sm:px-[30px] lg:px-2'}`}>
             Genealogía
           </h2>
           <PedigreeTree data={pedigree} rootId={dog.id} breedId={dog.breed_id} />
