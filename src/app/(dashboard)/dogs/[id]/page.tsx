@@ -6,7 +6,7 @@ import BackButton from '@/components/ui/back-button'
 import { BRAND } from '@/lib/constants'
 import { isUUID } from '@/lib/slug'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
-import DogGallery from '@/components/dogs/dog-gallery'
+import DogGallery, { type MediaItem } from '@/components/dogs/dog-gallery'
 import DogTabs from '@/components/dogs/dog-tabs'
 import DogEditButton from '@/components/dogs/dog-edit-button'
 import ShareButton from '@/components/dogs/share-button'
@@ -185,20 +185,25 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   const colorName = (dog.color as any)?.name
   const kennel = dog.kennel as any
 
-  // Fetch gallery photos + pedigree (may fail for unauthenticated users due to RLS)
-  let galleryPhotos: string[] = []
+  // Fetch gallery media (fotos + vídeos) + pedigree (may fail for unauthenticated users due to RLS)
+  let galleryMedia: MediaItem[] = []
   let pedigree: any[] | null = null
   try {
     const [photosRes, pedigreeRes] = await Promise.all([
-      supabase.from('dog_photos').select('id, url, position').eq('dog_id', dog.id).order('position'),
+      supabase.from('dog_photos').select('id, url, position, media_type, video_provider, video_url').eq('dog_id', dog.id).order('position'),
       supabase.rpc('get_pedigree', { dog_uuid: dog.id, max_gen: 5 }),
     ])
-    galleryPhotos = (photosRes.data || []).map((p: any) => p.url)
+    galleryMedia = (photosRes.data || []).map((p: any) => ({
+      url: p.url,
+      type: p.media_type === 'video' ? 'video' : 'photo',
+      videoProvider: p.video_provider ?? null,
+      videoUrl: p.video_url ?? null,
+    }))
     pedigree = pedigreeRes.data
   } catch {}
   // Include thumbnail_url as first photo if not already in gallery
-  if (dog.thumbnail_url && !galleryPhotos.includes(dog.thumbnail_url)) {
-    galleryPhotos.unshift(dog.thumbnail_url)
+  if (dog.thumbnail_url && !galleryMedia.some((m) => m.url === dog.thumbnail_url)) {
+    galleryMedia.unshift({ url: dog.thumbnail_url, type: 'photo' })
   }
 
   const canonicalUrl = `https://genealogic.io/dogs/${dog.slug || dog.id}`
@@ -233,7 +238,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
       <div className={`relative overflow-hidden ${user ? '-mx-4 -mt-4 sm:-mx-[30px] sm:-mt-[30px]' : ''}`}
         style={!user ? { marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)', marginTop: '-24px', width: '100vw' } : undefined}>
         <DogGallery
-          photos={galleryPhotos}
+          media={galleryMedia}
           name={dog.name}
           sex={dog.sex}
           upscaledPhotoUrl={dog.thumbnail_url}
