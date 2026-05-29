@@ -556,7 +556,8 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                 const active = activeTab === t.key
                 return (
                   <button key={t.key} onClick={() => setActiveTab(t.key)}
-                    className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] transition ${active ? 'bg-surface-card text-ink font-medium shadow-[0_1px_2px_rgba(17,17,17,0.04)]' : 'text-muted hover:text-ink hover:bg-surface-soft'}`}>
+                    className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] transition ${active ? 'bg-surface-card text-ink font-medium shadow-[0_1px_2px_rgba(17,17,17,0.04)]' : 'text-muted hover:text-ink hover:bg-surface-soft'}`}>
+                    {active && <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-ink" />}
                     <Icon className={`h-4 w-4 flex-shrink-0 ${active ? 'text-ink' : 'text-muted'}`} /> <span className="truncate">{t.label}</span>
                   </button>
                 )
@@ -647,9 +648,15 @@ const ACCENTS: Record<string, string> = {
   rose: 'text-rose-500 bg-rose-50',
 }
 
+const TOGGLE_COLOR: Record<string, string> = {
+  emerald: 'bg-emerald-500',
+  blue: 'bg-blue-500',
+  pink: 'bg-pink-500',
+}
+
 function ToggleCard({ icon: Icon, accent, title, desc, value, onChange, saving, fill }: { icon: React.ElementType; accent: string; title: string; desc: string; value: boolean; onChange: (v: boolean) => void; saving?: boolean; fill?: boolean }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-hairline bg-canvas p-3.5">
+    <div className={`flex items-center gap-3 rounded-2xl border bg-canvas p-3.5 transition-colors ${value ? 'border-ink/15' : 'border-hairline'}`}>
       <div className={`flex h-9 w-9 items-center justify-center rounded-full flex-shrink-0 ${ACCENTS[accent]}`}>
         <Icon className={`h-4 w-4 ${fill && value ? 'fill-current' : ''}`} />
       </div>
@@ -657,7 +664,7 @@ function ToggleCard({ icon: Icon, accent, title, desc, value, onChange, saving, 
         <p className="text-[13.5px] font-medium text-ink">{title}</p>
         <p className="text-[11.5px] text-muted leading-snug">{desc}</p>
       </div>
-      {saving ? <Loader2 className="h-4 w-4 animate-spin text-muted flex-shrink-0" /> : <ToggleSwitch value={value} onChange={onChange} />}
+      {saving ? <Loader2 className="h-4 w-4 animate-spin text-muted flex-shrink-0" /> : <ToggleSwitch value={value} onChange={onChange} color={TOGGLE_COLOR[accent] || 'bg-ink'} />}
     </div>
   )
 }

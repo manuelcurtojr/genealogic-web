@@ -14,7 +14,7 @@ export default function Toggle({ value, onChange, color = 'bg-ink', className = 
       role="switch"
       aria-checked={value}
       onClick={() => onChange(!value)}
-      className={`w-[44px] h-[24px] rounded-full transition-colors relative flex-shrink-0 ${value ? color : 'bg-white/20'} ${className}`}
+      className={`w-[44px] h-[24px] rounded-full transition-colors relative flex-shrink-0 ${value ? color : 'bg-black/15'} ${className}`}
       style={{ minWidth: 44 }}
     >
       <div
