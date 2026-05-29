@@ -3,15 +3,15 @@
 import { useState, useEffect } from 'react'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
-import { Stethoscope, Syringe, Bug, Pill, FlaskConical, Scissors, Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff, FileText, Image } from 'lucide-react'
+import { Stethoscope, Syringe, Bug, Pill, FlaskConical, Scissors, Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff, FileText } from 'lucide-react'
 import FileGallery from './file-gallery'
 
 const VET_TYPES = [
   { key: 'vaccine', label: 'Vacuna', icon: Syringe, color: '#3498db' },
-  { key: 'deworming', label: 'Desparasitacion', icon: Bug, color: '#27ae60' },
+  { key: 'deworming', label: 'Desparasitación', icon: Bug, color: '#27ae60' },
   { key: 'treatment', label: 'Tratamiento', icon: Pill, color: '#f39c12' },
-  { key: 'test', label: 'Prueba medica', icon: FlaskConical, color: '#9b59b6' },
-  { key: 'surgery', label: 'Cirugia', icon: Scissors, color: '#e74c3c' },
+  { key: 'test', label: 'Prueba médica', icon: FlaskConical, color: '#9b59b6' },
+  { key: 'surgery', label: 'Cirugía', icon: Scissors, color: '#e74c3c' },
 ]
 
 export default function SaludTab({ dogId, userId }: { dogId: string; userId: string }) {
@@ -48,95 +48,146 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
   async function handleDelete(id: string) { await supabase.from('vet_records').delete().eq('id', id); load() }
   async function togglePublic(r: any) { await supabase.from('vet_records').update({ is_public: !r.is_public }).eq('id', r.id); load() }
 
+  const selType = VET_TYPES.find(t => t.key === form.type) || VET_TYPES[0]
+
   return (
     <div className="space-y-4">
-      {/* Summary cards */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      {/* Resumen por tipo */}
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-0.5 px-0.5">
         {counts.map(t => { const Icon = t.icon; return (
-          <div key={t.key} className="flex-shrink-0 bg-surface-card border border-hairline rounded-lg px-3 py-2 min-w-[110px]">
-            <div className="flex items-center gap-2"><Icon className="w-3.5 h-3.5" style={{ color: t.color }} /><span className="text-xs font-semibold">{t.label}</span></div>
-            <p className="text-[11px] text-muted mt-0.5">{t.count} registros</p>
+          <div key={t.key} className="flex-shrink-0 rounded-xl border border-hairline bg-canvas px-3 py-2 min-w-[94px]">
+            <div className="flex items-center gap-1.5">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full" style={{ backgroundColor: t.color + '1a' }}><Icon className="h-3.5 w-3.5" style={{ color: t.color }} /></span>
+              <span className="text-[18px] font-semibold tabular-nums leading-none text-ink">{t.count}</span>
+            </div>
+            <p className="mt-1 text-[11px] text-muted truncate">{t.label}</p>
           </div>
         )})}
       </div>
 
-      {/* Filters */}
+      {/* Filtros */}
       <div className="flex gap-1.5 flex-wrap">
-        <button onClick={() => setFilter('all')} className={`px-3 py-1 rounded-full text-xs font-medium transition ${filter === 'all' ? 'bg-ink text-on-primary' : 'bg-surface-card text-body hover:bg-surface-card'}`}>Todos</button>
-        {VET_TYPES.map(t => <button key={t.key} onClick={() => setFilter(t.key)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${filter === t.key ? 'text-white' : 'bg-surface-card text-body hover:bg-surface-card'}`} style={filter === t.key ? { backgroundColor: t.color } : undefined}>{t.label}</button>)}
+        <button onClick={() => setFilter('all')} className={`rounded-full px-3 py-1 text-xs font-medium transition ${filter === 'all' ? 'bg-ink text-on-primary' : 'bg-surface-card text-body hover:text-ink'}`}>Todos</button>
+        {VET_TYPES.map(t => <button key={t.key} onClick={() => setFilter(t.key)} className={`rounded-full px-3 py-1 text-xs font-medium transition ${filter === t.key ? 'text-white' : 'bg-surface-card text-body hover:text-ink'}`} style={filter === t.key ? { backgroundColor: t.color } : undefined}>{t.label}</button>)}
       </div>
 
-      {/* Add button */}
-      <button onClick={openAdd} className="flex items-center gap-1.5 text-sm text-ink hover:opacity-80 transition font-medium"><Plus className="w-4 h-4" /> Añadir registro</button>
+      {/* Botón añadir */}
+      {!showForm && (
+        <button onClick={openAdd} className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-2 text-[13px] font-medium text-on-primary transition hover:opacity-90">
+          <Plus className="h-4 w-4" /> Añadir registro
+        </button>
+      )}
 
-      {/* Inline form */}
+      {/* Formulario */}
       {showForm && (
-        <div className="bg-surface-card border border-hairline rounded-lg p-4 space-y-3">
+        <div className="rounded-2xl border border-hairline bg-surface-soft p-4 space-y-3.5">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold">{editRecord ? 'Editar registro' : 'Nuevo registro'}</p>
-            <button onClick={() => setShowForm(false)} className="text-muted hover:text-ink"><X className="w-4 h-4" /></button>
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full" style={{ backgroundColor: selType.color + '1a' }}><selType.icon className="h-3.5 w-3.5" style={{ color: selType.color }} /></span>
+              <p className="text-[13.5px] font-semibold text-ink">{editRecord ? 'Editar registro' : 'Nuevo registro'}</p>
+            </div>
+            <button onClick={() => setShowForm(false)} className="text-muted hover:text-ink transition p-1"><X className="h-4 w-4" /></button>
           </div>
-          <div className="flex gap-1.5 flex-wrap">
-            {VET_TYPES.map(t => <button key={t.key} onClick={() => setForm(p => ({ ...p, type: t.key }))} className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition ${form.type === t.key ? 'text-white' : 'border-hairline text-muted'}`} style={form.type === t.key ? { backgroundColor: t.color, borderColor: t.color } : undefined}>{t.label}</button>)}
-          </div>
-          <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Nombre (ej: Rabia, Milbemax...)" className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
-          <div className="grid grid-cols-2 gap-2">
-            <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none" />
-            <div />
-          </div>
-          <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Notas" rows={2} className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none resize-none" />
-          {/* Files */}
+
           <div>
-            <p className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1">Archivos / Fotos</p>
+            <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">Tipo</label>
+            <div className="flex flex-wrap gap-1.5">
+              {VET_TYPES.map(t => { const Icon = t.icon; const on = form.type === t.key; return (
+                <button key={t.key} onClick={() => setForm(p => ({ ...p, type: t.key }))}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11.5px] font-medium transition ${on ? 'text-white' : 'border-hairline text-body hover:text-ink'}`}
+                  style={on ? { backgroundColor: t.color, borderColor: t.color } : undefined}>
+                  <Icon className="h-3 w-3" style={on ? undefined : { color: t.color }} /> {t.label}
+                </button>
+              )})}
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">Nombre</label>
+            <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Ej: Rabia, Milbemax..." className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">Fecha</label>
+              <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none" />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">Notas</label>
+            <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Opcional" rows={2} className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none resize-none" />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">Archivos / Fotos</label>
             <FileGallery files={form.files} onChange={f => setForm(p => ({ ...p, files: f }))} folder={`vet/${dogId}`} />
           </div>
 
-          {/* Public toggle */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-body">Visible en perfil</span>
-            <ToggleSwitch value={form.is_public} onChange={(v) => setForm(p => ({ ...p, is_public: v }))} />
+          <div className="flex items-center justify-between rounded-xl border border-hairline bg-canvas px-3 py-2.5">
+            <div className="flex items-center gap-2.5">
+              {form.is_public ? <Eye className="h-4 w-4 text-emerald-600" /> : <EyeOff className="h-4 w-4 text-muted" />}
+              <div>
+                <p className="text-[13px] font-medium text-ink">Visible en el perfil</p>
+                <p className="text-[11px] text-muted">Se muestra en la ficha pública del perro.</p>
+              </div>
+            </div>
+            <ToggleSwitch value={form.is_public} onChange={(v) => setForm(p => ({ ...p, is_public: v }))} color="bg-emerald-500" />
           </div>
-          <div className="flex justify-end gap-2">
-            <button onClick={() => setShowForm(false)} className="px-3 py-1.5 text-xs text-body hover:text-ink transition">Cancelar</button>
-            <button onClick={handleSave} disabled={saving || !form.title.trim()} className="bg-ink text-on-primary hover:opacity-90 px-4 py-1.5 rounded-lg text-xs font-semibold transition disabled:opacity-50 flex items-center gap-1">
-              {saving && <Loader2 className="w-3 h-3 animate-spin" />}{editRecord ? 'Guardar' : 'Añadir'}
+
+          <div className="flex justify-end gap-2 pt-0.5">
+            <button onClick={() => setShowForm(false)} className="rounded-lg px-3.5 py-2 text-[13px] text-body hover:text-ink hover:bg-surface-card transition">Cancelar</button>
+            <button onClick={handleSave} disabled={saving || !form.title.trim()} className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-semibold text-on-primary transition hover:opacity-90 disabled:opacity-50">
+              {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}{editRecord ? 'Guardar' : 'Añadir'}
             </button>
           </div>
         </div>
       )}
 
-      {/* Records list */}
+      {/* Lista */}
       {filtered.length === 0 ? (
-        <div className="text-center py-8 text-muted"><Stethoscope className="w-8 h-8 mx-auto mb-2 opacity-30" /><p className="text-sm">Sin registros</p></div>
-      ) : filtered.map(r => {
-        const type = VET_TYPES.find(t => t.key === r.type) || VET_TYPES[0]; const Icon = type.icon
-        return (
-          <div key={r.id} className="bg-surface-card border border-hairline rounded-lg p-3 flex items-start gap-3 group">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: type.color + '20' }}><Icon className="w-4 h-4" style={{ color: type.color }} /></div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-medium text-ink">{r.title}</p>
-              <p className="text-xs text-muted">{new Date(r.date).toLocaleDateString('es-ES')}</p>
-              {r.notes && <p className="text-xs text-muted mt-0.5">{r.notes}</p>}
-              {r.file_url && (() => { const ff = parseFiles(r.file_url); return ff.length > 0 ? (
-                <div className="flex gap-1.5 mt-1.5">
-                  {ff.map((u: string, i: number) => /\.(jpg|jpeg|png|gif|webp)/i.test(u) ? (
-                    <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded overflow-hidden"><img src={u} alt="" className="w-full h-full object-cover" /></a>
-                  ) : (
-                    <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded bg-surface-card flex items-center justify-center hover:bg-surface-card"><FileText className="w-3.5 h-3.5 text-ink" /></a>
-                  ))}
+        <div className="rounded-2xl border border-dashed border-hairline py-10 text-center text-muted">
+          <Stethoscope className="mx-auto mb-2 h-8 w-8 opacity-30" />
+          <p className="text-sm">Sin registros todavía</p>
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {filtered.map(r => {
+            const type = VET_TYPES.find(t => t.key === r.type) || VET_TYPES[0]; const Icon = type.icon
+            const ff = parseFiles(r.file_url)
+            return (
+              <div key={r.id} className="rounded-2xl border border-hairline bg-canvas p-3.5 flex items-start gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full flex-shrink-0" style={{ backgroundColor: type.color + '1a' }}><Icon className="h-5 w-5" style={{ color: type.color }} /></div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-[14px] font-medium text-ink leading-tight">{r.title}</p>
+                    <span className="rounded-full px-1.5 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: type.color + '1a', color: type.color }}>{type.label}</span>
+                    {r.is_public && <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600"><Eye className="h-2.5 w-2.5" /> Público</span>}
+                  </div>
+                  <p className="mt-0.5 text-[12px] text-muted">{new Date(r.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                  {r.notes && <p className="mt-1 text-[12.5px] text-body leading-snug">{r.notes}</p>}
+                  {ff.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {ff.map((u: string, i: number) => /\.(jpg|jpeg|png|gif|webp)/i.test(u) ? (
+                        <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="h-10 w-10 overflow-hidden rounded-lg border border-hairline"><img src={u} alt="" className="h-full w-full object-cover" /></a>
+                      ) : (
+                        <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-lg border border-hairline bg-surface-card hover:bg-surface-soft transition"><FileText className="h-4 w-4 text-muted" /></a>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ) : null })()}
-            </div>
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition items-center">
-              <button onClick={() => togglePublic(r)} className="p-1 text-muted hover:text-ink" title={r.is_public ? 'Ocultar del perfil' : 'Mostrar en perfil'}>
-                {r.is_public ? <Eye className="w-3.5 h-3.5 text-green-400" /> : <EyeOff className="w-3.5 h-3.5" />}
-              </button>
-              <button onClick={() => openEdit(r)} className="p-1 text-muted hover:text-ink"><Pencil className="w-3.5 h-3.5" /></button>
-              <button onClick={() => handleDelete(r.id)} className="p-1 text-muted hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
-            </div>
-          </div>
-        )
-      })}
+                <div className="flex items-center gap-0.5 flex-shrink-0">
+                  <button onClick={() => togglePublic(r)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-surface-card hover:text-ink transition" title={r.is_public ? 'Ocultar del perfil' : 'Mostrar en perfil'}>
+                    {r.is_public ? <Eye className="h-3.5 w-3.5 text-emerald-600" /> : <EyeOff className="h-3.5 w-3.5" />}
+                  </button>
+                  <button onClick={() => openEdit(r)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-surface-card hover:text-ink transition" title="Editar"><Pencil className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => handleDelete(r.id)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-red-50 hover:text-red-500 transition" title="Eliminar"><Trash2 className="h-3.5 w-3.5" /></button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
