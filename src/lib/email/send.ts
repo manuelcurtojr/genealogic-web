@@ -38,6 +38,9 @@ import WeeklyDigestBreederEmail, { type WeeklyDigestBreederProps } from '@/email
 import WeeklyDigestOwnerEmail, { type WeeklyDigestOwnerProps } from '@/emails/weekly-digest-owner'
 import ReEngagementEmail, { type ReEngagementProps } from '@/emails/re-engagement'
 import TrialEndingSoonEmail, { type TrialEndingSoonProps } from '@/emails/trial-ending-soon'
+import ReproNextHeatEmail, { type ReproNextHeatProps } from '@/emails/repro-next-heat'
+import ReproConfirmPregnancyEmail, { type ReproConfirmPregnancyProps } from '@/emails/repro-confirm-pregnancy'
+import ReproBirthSoonEmail, { type ReproBirthSoonProps } from '@/emails/repro-birth-soon'
 
 const FROM_TRANSACTIONAL = 'Genealogic <hola@genealogic.io>'
 const REPLY_TO = 'hola@genealogic.io'
@@ -62,6 +65,9 @@ export type EmailTemplate =
   | { template: 'weekly_digest_owner';    props: WeeklyDigestOwnerProps }
   | { template: 're_engagement';          props: ReEngagementProps }
   | { template: 'trial_ending_soon';      props: TrialEndingSoonProps }
+  | { template: 'repro_next_heat';        props: ReproNextHeatProps }
+  | { template: 'repro_confirm_pregnancy'; props: ReproConfirmPregnancyProps }
+  | { template: 'repro_birth_soon';       props: ReproBirthSoonProps }
 
 /** Categoría → si el user puede hacer opt-out. */
 type Category = 'auth' | 'reservations' | 'messages' | 'vet_reminders' | 'weekly_digest' | 'marketing' | 'critical'
@@ -167,6 +173,20 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
         ? '¿Seguimos contando contigo?'
         : 'Te echamos de menos en Genealogic',
   },
+  // Avisos reproductivos — comparten el opt-out de recordatorios vet.
+  repro_next_heat: {
+    category: 'vet_reminders',
+    subject: (p: ReproNextHeatProps) => `Próximo celo de ${p.dogName} (~${p.heatDate})`,
+  },
+  repro_confirm_pregnancy: {
+    category: 'vet_reminders',
+    subject: (p: ReproConfirmPregnancyProps) => `¿${p.dogName} está preñada? Confírmalo`,
+  },
+  repro_birth_soon: {
+    category: 'vet_reminders',
+    subject: (p: ReproBirthSoonProps) =>
+      p.daysUntil <= 0 ? `${p.dogName} sale de cuentas hoy` : `Parto de ${p.dogName} en ${p.daysUntil} días`,
+  },
 }
 
 let _resend: Resend | null = null
@@ -198,6 +218,9 @@ function renderTemplate(t: EmailTemplate): Promise<string> {
     case 'weekly_digest_owner':    return render(WeeklyDigestOwnerEmail(t.props))
     case 're_engagement':          return render(ReEngagementEmail(t.props))
     case 'trial_ending_soon':      return render(TrialEndingSoonEmail(t.props))
+    case 'repro_next_heat':        return render(ReproNextHeatEmail(t.props))
+    case 'repro_confirm_pregnancy': return render(ReproConfirmPregnancyEmail(t.props))
+    case 'repro_birth_soon':       return render(ReproBirthSoonEmail(t.props))
   }
 }
 

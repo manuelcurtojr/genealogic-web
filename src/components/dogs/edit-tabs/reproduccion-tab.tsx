@@ -2,70 +2,38 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, Plus, Heart, Calendar, Baby, AlertCircle } from 'lucide-react'
+import { Loader2, Plus, Heart, Calendar, Baby, CheckCircle2, XCircle } from 'lucide-react'
 import Link from 'next/link'
+import {
+  computeReproInfo, parseDate, addDays, fmtDate, daysBetween, todayLocal,
+  HEAT_DURATION_DAYS, GESTATION_DAYS, CONFIRM_PREGNANCY_DAYS,
+  type HeatCycleLike, type LitterLike,
+} from '@/lib/repro/cycle'
 
 interface Props {
   dogId: string
   userId: string
 }
 
-interface HeatCycle {
-  id: string
-  start_date: string
-  end_date: string | null
-  was_mated: boolean
-  resulted_in_litter_id: string | null
-  notes: string | null
-}
-
-interface Litter {
-  id: string
-  status: string
-  mating_date: string | null
-  birth_date: string | null
-  puppy_count: number | null
-}
-
-const HEAT_DURATION_DAYS = 21
-const DEFAULT_CYCLE_INTERVAL_DAYS = 180
-const GESTATION_DAYS = 63
-
-function parseDate(iso: string): Date {
-  const [y, m, d] = iso.split('-').map(Number)
-  return new Date(y, m - 1, d, 12, 0, 0)
-}
-
-function daysBetween(a: Date, b: Date): number {
-  return Math.round((b.getTime() - a.getTime()) / 86400000)
-}
-
-function addDays(d: Date, days: number): Date {
-  const r = new Date(d)
-  r.setDate(r.getDate() + days)
-  return r
-}
-
-function fmtDate(d: Date): string {
-  return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
-}
-
 /**
  * Tab "Reproducción" del edit panel de perro — solo aplica a hembras.
- * Muestra ciclos de celo, predicciones futuras, y camadas resultantes.
- * Permite añadir un nuevo celo desde aquí sin ir a /reproduccion.
+ * Estado reproductivo (celo / montada / gestante / reposo), predicción del
+ * próximo celo, confirmación de preñez y camadas resultantes.
+ * La lógica vive en @/lib/repro/cycle (compartida con el gantt y el cron).
  */
 export default function ReproduccionTab({ dogId, userId }: Props) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [cycles, setCycles] = useState<HeatCycle[]>([])
-  const [litters, setLitters] = useState<Litter[]>([])
+  const [cycles, setCycles] = useState<HeatCycleLike[]>([])
+  const [litters, setLitters] = useState<LitterLike[]>([])
   const [showForm, setShowForm] = useState(false)
+  const [busy, setBusy] = useState(false)
 
   // Estado del form
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0])
   const [endDate, setEndDate] = useState('')
   const [wasMated, setWasMated] = useState(false)
+  const [matingDate, setMatingDate] = useState('')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -77,17 +45,17 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
       const [cyclesRes, littersRes] = await Promise.all([
         supabase
           .from('heat_cycles')
-          .select('id, start_date, end_date, was_mated, resulted_in_litter_id, notes')
+          .select('id, dog_id, start_date, end_date, was_mated, mating_date, pregnancy_status, resulted_in_litter_id, notes')
           .eq('dog_id', dogId)
           .order('start_date', { ascending: false }),
         supabase
           .from('litters')
-          .select('id, status, mating_date, birth_date, puppy_count')
+          .select('id, status, mating_date, birth_date, mother_id, puppy_count')
           .eq('mother_id', dogId)
           .order('mating_date', { ascending: false }),
       ])
-      setCycles(cyclesRes.data || [])
-      setLitters(littersRes.data || [])
+      setCycles((cyclesRes.data as HeatCycleLike[]) || [])
+      setLitters((littersRes.data as LitterLike[]) || [])
     } catch (err: any) {
       setError(err.message || 'Error cargando datos')
     } finally {
@@ -111,6 +79,10 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
       start_date: startDate,
       end_date: endDate || null,
       was_mated: wasMated,
+      // Si hubo monta guardamos su fecha (default = inicio del celo) y marcamos
+      // "pendiente de confirmar". Si no, queda 'none'.
+      mating_date: wasMated ? (matingDate || startDate) : null,
+      pregnancy_status: wasMated ? 'suspected' : 'none',
       notes: notes.trim() || null,
     })
     setSaving(false)
@@ -118,48 +90,38 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
       setError(insertErr.message)
       return
     }
-    // Reset + reload
     setShowForm(false)
     setStartDate(new Date().toISOString().split('T')[0])
     setEndDate('')
     setWasMated(false)
+    setMatingDate('')
     setNotes('')
     load()
   }
 
-  // Cálculo de próximo celo previsto
-  const today = new Date()
-  today.setHours(12, 0, 0, 0)
-  const cyclesAsc = [...cycles].sort(
-    (a, b) => parseDate(a.start_date).getTime() - parseDate(b.start_date).getTime()
-  )
-  let avgInterval = DEFAULT_CYCLE_INTERVAL_DAYS
-  if (cyclesAsc.length >= 2) {
-    const intervals: number[] = []
-    for (let i = 1; i < cyclesAsc.length; i++) {
-      intervals.push(daysBetween(parseDate(cyclesAsc[i - 1].start_date), parseDate(cyclesAsc[i].start_date)))
-    }
-    avgInterval = Math.round(intervals.reduce((a, b) => a + b, 0) / intervals.length)
-  }
-  const lastCycle = cyclesAsc[cyclesAsc.length - 1]
-  let nextHeatDate: Date | null = null
-  if (lastCycle) {
-    const projected = addDays(parseDate(lastCycle.start_date), avgInterval)
-    if (projected > today) nextHeatDate = projected
+  // Confirmar/descartar preñez sobre el celo montado
+  const setPregnancyStatus = async (cycleId: string, status: 'confirmed' | 'failed') => {
+    setBusy(true)
+    setError(null)
+    const supabase = createClient()
+    const { error: err } = await supabase
+      .from('heat_cycles')
+      .update({ pregnancy_status: status })
+      .eq('id', cycleId)
+    setBusy(false)
+    if (err) { setError(err.message); return }
+    load()
   }
 
-  // Detectar estado actual
-  const activeHeat = cyclesAsc.find((c) => {
-    const start = parseDate(c.start_date)
-    const end = c.end_date ? parseDate(c.end_date) : addDays(start, HEAT_DURATION_DAYS)
-    return today >= start && today <= end
-  })
-  const activePregnancy = litters.find((l) => {
-    if (l.status !== 'mated' || !l.mating_date) return false
-    const mating = parseDate(l.mating_date)
-    const expected = addDays(mating, GESTATION_DAYS)
-    return today >= mating && today <= expected
-  })
+  const today = todayLocal()
+  const info = computeReproInfo(dogId, cycles, litters, today)
+
+  const stateColor =
+    info.state === 'in_heat' ? 'text-blue-600'
+      : info.state === 'mated_pending' ? 'text-amber-600'
+        : info.state === 'pregnant' ? 'text-pink-600'
+          : 'text-muted'
+  const StateIcon = info.state === 'pregnant' ? Baby : Heart
 
   if (loading) {
     return (
@@ -171,28 +133,32 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
 
   return (
     <div className="space-y-4">
+      {error && (
+        <div className="rounded-lg bg-[color:var(--error)]/10 px-3 py-2 text-[12.5px] text-[color:var(--error)]">
+          {error}
+        </div>
+      )}
+
       {/* Estado actual + próximo celo */}
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="rounded-xl border border-hairline bg-canvas p-4">
           <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">Estado actual</p>
-          {activeHeat ? (
-            <p className="mt-2 flex items-center gap-2 text-[14px] font-semibold text-blue-600">
-              <Heart className="h-4 w-4" /> En celo
+          <p className={`mt-2 flex items-center gap-2 text-[14px] font-semibold ${stateColor}`}>
+            {info.state !== 'idle' && <StateIcon className="h-4 w-4" />} {info.stateLabel}
+          </p>
+          {info.expectedBirth && (
+            <p className="mt-1 text-[12px] text-muted">
+              Parto previsto: <strong className="text-ink">{fmtDate(info.expectedBirth)}</strong>
+              {(() => { const d = daysBetween(today, info.expectedBirth!); return d >= 0 ? ` · en ${d} día${d === 1 ? '' : 's'}` : ` · hace ${-d} día${d === -1 ? '' : 's'}` })()}
             </p>
-          ) : activePregnancy ? (
-            <p className="mt-2 flex items-center gap-2 text-[14px] font-semibold text-pink-600">
-              <Baby className="h-4 w-4" /> Gestante
-            </p>
-          ) : (
-            <p className="mt-2 text-[14px] font-semibold text-muted">En reposo</p>
           )}
         </div>
         <div className="rounded-xl border border-hairline bg-canvas p-4">
           <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">Próximo celo previsto</p>
-          {nextHeatDate ? (
+          {info.nextHeatForecast ? (
             <p className="mt-2 flex items-center gap-2 text-[14px] font-semibold text-ink">
-              <Calendar className="h-4 w-4 text-muted" /> {fmtDate(nextHeatDate)}
-              <span className="text-[11.5px] font-normal text-muted">({avgInterval}d)</span>
+              <Calendar className="h-4 w-4 text-muted" /> {fmtDate(info.nextHeatForecast)}
+              <span className="text-[11.5px] font-normal text-muted">({info.avgIntervalDays}d)</span>
             </p>
           ) : (
             <p className="mt-2 text-[13px] text-muted">
@@ -202,12 +168,48 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
         </div>
       </div>
 
+      {/* Confirmar preñez — solo si está "montada pendiente" */}
+      {info.state === 'mated_pending' && info.drivingCycle && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50/60 p-4">
+          <div className="flex items-start gap-2">
+            <Heart className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[13.5px] font-semibold text-amber-900">
+                Montada el {info.matingDate ? fmtDate(info.matingDate) : '—'} · pendiente de confirmar preñez
+              </p>
+              <p className="mt-0.5 text-[12px] text-amber-800">
+                {info.confirmDueDate && daysBetween(today, info.confirmDueDate) > 0
+                  ? `Podrás confirmar por ecografía hacia el ${fmtDate(info.confirmDueDate)} (día ${CONFIRM_PREGNANCY_DAYS}).`
+                  : `Ya puedes confirmar (ecografía a partir del día ${CONFIRM_PREGNANCY_DAYS}). ¿Quedó preñada?`}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  onClick={() => setPregnancyStatus(info.drivingCycle!.id, 'confirmed')}
+                  disabled={busy}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-pink-600 px-3 py-1.5 text-[12.5px] font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+                >
+                  {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                  Sí, está preñada
+                </button>
+                <button
+                  onClick={() => setPregnancyStatus(info.drivingCycle!.id, 'failed')}
+                  disabled={busy}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12.5px] font-medium text-body transition hover:text-ink disabled:opacity-50"
+                >
+                  <XCircle className="h-3.5 w-3.5" /> No quedó preñada
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header + Add */}
       <div className="flex items-center justify-between">
         <h3 className="text-[14px] font-semibold text-ink">Historial de celos</h3>
         {!showForm && (
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => { setMatingDate(startDate); setShowForm(true) }}
             className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-on-primary transition-colors hover:opacity-90"
           >
             <Plus className="h-3.5 w-3.5" /> Registrar celo
@@ -226,7 +228,7 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
               <input
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={(e) => { setStartDate(e.target.value); if (!matingDate) setMatingDate(e.target.value) }}
                 className="w-full rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[13.5px] text-ink focus:border-ink focus:outline-none"
                 required
               />
@@ -250,8 +252,25 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
               onChange={(e) => setWasMated(e.target.checked)}
               className="h-4 w-4 rounded border-hairline"
             />
-            Hubo cruce durante este celo
+            Hubo cruce/monta durante este celo
           </label>
+          {wasMated && (
+            <div>
+              <label className="mb-1 block text-[11.5px] font-medium uppercase tracking-[0.06em] text-muted">
+                Fecha de la monta *
+              </label>
+              <input
+                type="date"
+                value={matingDate}
+                onChange={(e) => setMatingDate(e.target.value)}
+                className="w-full rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[13.5px] text-ink focus:border-ink focus:outline-none"
+                required={wasMated}
+              />
+              <p className="mt-1 text-[11px] text-muted">
+                Con esto calculamos la confirmación de preñez (~{CONFIRM_PREGNANCY_DAYS} días) y el parto previsto (~{GESTATION_DAYS} días).
+              </p>
+            </div>
+          )}
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -259,11 +278,6 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
             placeholder="Notas: semental, progesterona, observaciones..."
             className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13.5px] text-ink focus:border-ink focus:outline-none"
           />
-          {error && (
-            <div className="rounded-lg bg-[color:var(--error)]/10 px-3 py-2 text-[12.5px] text-[color:var(--error)]">
-              {error}
-            </div>
-          )}
           <div className="flex justify-end gap-2">
             <button
               type="button"
@@ -298,6 +312,7 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
           {cycles.map((c) => {
             const start = parseDate(c.start_date)
             const end = c.end_date ? parseDate(c.end_date) : addDays(start, HEAT_DURATION_DAYS)
+            const preg = c.pregnancy_status ?? 'none'
             return (
               <li key={c.id} className="flex items-center gap-3 px-4 py-3">
                 <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100">
@@ -308,13 +323,17 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
                     {fmtDate(start)} → {fmtDate(end)}
                     {!c.end_date && <span className="ml-1 text-[11px] text-muted">(estimado)</span>}
                   </p>
-                  {(c.was_mated || c.notes) && (
-                    <p className="text-[12px] text-muted truncate">
-                      {c.was_mated && <span className="font-medium text-pink-600">Cruzada</span>}
-                      {c.was_mated && c.notes && ' · '}
-                      {c.notes}
-                    </p>
-                  )}
+                  <div className="flex flex-wrap items-center gap-x-2 text-[12px] text-muted">
+                    {c.was_mated && (
+                      <span className="font-medium text-pink-600">
+                        Monta{c.mating_date ? ` ${fmtDate(parseDate(c.mating_date))}` : ''}
+                      </span>
+                    )}
+                    {preg === 'suspected' && <span className="text-amber-600">· pendiente confirmar</span>}
+                    {preg === 'confirmed' && <span className="text-pink-600">· preñez confirmada</span>}
+                    {preg === 'failed' && <span>· no preñada</span>}
+                    {c.notes && <span className="truncate">· {c.notes}</span>}
+                  </div>
                 </div>
                 {c.resulted_in_litter_id && (
                   <Link

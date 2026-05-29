@@ -21,6 +21,7 @@ export default function HeatCycleForm({ females, defaultFemaleId, onClose, onSav
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0])
   const [endDate, setEndDate] = useState('')
   const [wasMated, setWasMated] = useState(false)
+  const [matingDate, setMatingDate] = useState(new Date().toISOString().split('T')[0])
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -50,6 +51,8 @@ export default function HeatCycleForm({ females, defaultFemaleId, onClose, onSav
       start_date: startDate,
       end_date: endDate || null,
       was_mated: wasMated,
+      mating_date: wasMated ? (matingDate || startDate) : null,
+      pregnancy_status: wasMated ? 'suspected' : 'none',
       notes: notes.trim() || null,
     })
 
@@ -134,8 +137,26 @@ export default function HeatCycleForm({ females, defaultFemaleId, onClose, onSav
               onChange={(e) => setWasMated(e.target.checked)}
               className="h-4 w-4 rounded border-hairline"
             />
-            Hubo cruce durante este celo
+            Hubo cruce/monta durante este celo
           </label>
+
+          {wasMated && (
+            <div>
+              <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
+                Fecha de la monta *
+              </label>
+              <input
+                type="date"
+                value={matingDate}
+                onChange={(e) => setMatingDate(e.target.value)}
+                className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
+                required={wasMated}
+              />
+              <p className="mt-1 text-[11.5px] text-muted">
+                A partir de aquí calculamos la confirmación de preñez (~28 días) y el parto previsto (~63 días).
+              </p>
+            </div>
+          )}
 
           <div>
             <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">

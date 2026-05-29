@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Plus, Check, Clock, X } from 'lucide-react'
 import EventForm from '@/components/calendar/event-form'
 import VetReminderForm from '@/components/vet/vet-reminder-form'
 import CalendarSubnav from '@/components/calendar/calendar-subnav'
+import { parseDate as parseReproDate, addDays as addReproDays, toISODate, GESTATION_DAYS } from '@/lib/repro/cycle'
 
 interface CalendarEvent {
   id: string
@@ -67,7 +68,7 @@ export default function CalendarPage() {
     const start = new Date(year, month - 1, 1).toISOString()
     const end = new Date(year, month + 2, 0, 23, 59, 59).toISOString()
 
-    const [eventsRes, vetRes] = await Promise.all([
+    const [eventsRes, vetRes, heatRes] = await Promise.all([
       supabase
         .from('events')
         .select('id, title, event_type, start_date, end_date, all_day, is_completed, color, notes')
@@ -82,6 +83,12 @@ export default function CalendarPage() {
         .gte('due_date', start.split('T')[0])
         .lte('due_date', end.split('T')[0])
         .order('due_date'),
+      // Celos + gestaciones — overlay del módulo reproductivo (sin duplicar datos)
+      supabase
+        .from('heat_cycles')
+        .select('id, start_date, end_date, was_mated, mating_date, pregnancy_status, dog:dogs(name)')
+        .eq('owner_id', user!.id)
+        .order('start_date'),
     ])
 
     const vetAsEvents: CalendarEvent[] = (vetRes.data || []).map((r: any) => ({
@@ -96,14 +103,41 @@ export default function CalendarPage() {
       notes: null,
     }))
 
-    setEvents([...(eventsRes.data || []), ...vetAsEvents])
+    // Pseudo-eventos reproductivos: celo (inicio) + parto previsto (monta+63).
+    // Read-only — al pulsarlos se va a /reproduccion. Se filtran al rango visible.
+    const inRange = (iso: string) => iso >= start.split('T')[0] && iso <= end.split('T')[0]
+    const heatAsEvents: CalendarEvent[] = []
+    for (const r of (heatRes.data || []) as any[]) {
+      const dogName = r.dog?.name ? ` — ${r.dog.name}` : ''
+      if (inRange(r.start_date)) {
+        heatAsEvents.push({
+          id: `heat-celo-${r.id}`, title: `🔵 Celo${dogName}`, event_type: 'breeding',
+          start_date: `${r.start_date}T08:00:00`, end_date: null, all_day: true,
+          is_completed: false, color: '#3b82f6', notes: null,
+        })
+      }
+      if (r.was_mated && r.mating_date && (r.pregnancy_status ?? 'none') !== 'failed') {
+        const birth = toISODate(addReproDays(parseReproDate(r.mating_date), GESTATION_DAYS))
+        if (inRange(birth)) {
+          const confirmed = r.pregnancy_status === 'confirmed'
+          heatAsEvents.push({
+            id: `heat-parto-${r.id}`,
+            title: `🍼 Parto previsto${dogName}${confirmed ? '' : ' (sin confirmar)'}`,
+            event_type: 'birth', start_date: `${birth}T08:00:00`, end_date: null, all_day: true,
+            is_completed: false, color: confirmed ? '#e84393' : '#f59e0b', notes: null,
+          })
+        }
+      }
+    }
+
+    setEvents([...(eventsRes.data || []), ...vetAsEvents, ...heatAsEvents])
     setLoading(false)
   }, [year, month])
 
   useEffect(() => { fetchEvents() }, [fetchEvents])
 
   const toggleCompleted = async (event: CalendarEvent) => {
-    if (event.id.startsWith('vet-')) return
+    if (event.id.startsWith('vet-') || event.id.startsWith('heat-')) return
     const supabase = createClient()
     const newValue = !event.is_completed
     await supabase.from('events').update({ is_completed: newValue }).eq('id', event.id)
@@ -186,6 +220,10 @@ export default function CalendarPage() {
 
   const handleEventClick = (event: CalendarEvent, e?: React.MouseEvent) => {
     e?.stopPropagation()
+    if (event.id.startsWith('heat-')) {
+      window.location.href = '/reproduccion'
+      return
+    }
     if (event.id.startsWith('vet-')) {
       setVetReminderId(event.id.replace('vet-', ''))
       setVetFormOpen(true)
