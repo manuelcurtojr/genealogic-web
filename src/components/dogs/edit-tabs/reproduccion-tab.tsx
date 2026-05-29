@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Loader2, Plus, Heart, Calendar, Baby, CheckCircle2, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import {
-  computeReproInfo, parseDate, addDays, fmtDate, daysBetween, todayLocal,
+  computeReproInfo, parseDate, addDays, fmtDate, daysBetween, todayLocal, birthWindowText,
   HEAT_DURATION_DAYS, GESTATION_DAYS, CONFIRM_PREGNANCY_DAYS,
   type HeatCycleLike, type LitterLike,
 } from '@/lib/repro/cycle'
@@ -29,13 +29,19 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
   const [showForm, setShowForm] = useState(false)
   const [busy, setBusy] = useState(false)
 
-  // Estado del form
+  // Estado del form (registrar celo)
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0])
   const [endDate, setEndDate] = useState('')
   const [wasMated, setWasMated] = useState(false)
   const [matingDate, setMatingDate] = useState('')
+  const [matingEndDate, setMatingEndDate] = useState('')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
+
+  // Edición de fechas de monta del celo montado actual (tarjeta de confirmación)
+  const [editMatingStart, setEditMatingStart] = useState('')
+  const [editMatingEnd, setEditMatingEnd] = useState('')
+  const [matingEdited, setMatingEdited] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -45,7 +51,7 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
       const [cyclesRes, littersRes] = await Promise.all([
         supabase
           .from('heat_cycles')
-          .select('id, dog_id, start_date, end_date, was_mated, mating_date, pregnancy_status, resulted_in_litter_id, notes')
+          .select('id, dog_id, start_date, end_date, was_mated, mating_date, mating_end_date, pregnancy_status, resulted_in_litter_id, notes')
           .eq('dog_id', dogId)
           .order('start_date', { ascending: false }),
         supabase
@@ -79,9 +85,10 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
       start_date: startDate,
       end_date: endDate || null,
       was_mated: wasMated,
-      // Si hubo monta guardamos su fecha (default = inicio del celo) y marcamos
-      // "pendiente de confirmar". Si no, queda 'none'.
+      // Si hubo monta guardamos la(s) fecha(s) de monta y marcamos "pendiente
+      // de confirmar". La monta NO es el inicio del celo (fechas distintas).
       mating_date: wasMated ? (matingDate || startDate) : null,
+      mating_end_date: wasMated && matingEndDate ? matingEndDate : null,
       pregnancy_status: wasMated ? 'suspected' : 'none',
       notes: notes.trim() || null,
     })
@@ -95,6 +102,7 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
     setEndDate('')
     setWasMated(false)
     setMatingDate('')
+    setMatingEndDate('')
     setNotes('')
     load()
   }
@@ -113,8 +121,41 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
     load()
   }
 
+  // Guardar/corregir las fechas de monta del celo montado (recalcula el parto).
+  const saveMatingDates = async (cycleId: string) => {
+    if (!editMatingStart) { setError('Indica la fecha de la primera monta.'); return }
+    setBusy(true)
+    setError(null)
+    const supabase = createClient()
+    const { error: err } = await supabase
+      .from('heat_cycles')
+      .update({
+        was_mated: true,
+        mating_date: editMatingStart,
+        mating_end_date: editMatingEnd || null,
+      })
+      .eq('id', cycleId)
+    setBusy(false)
+    if (err) { setError(err.message); return }
+    setMatingEdited(true)
+    load()
+  }
+
   const today = todayLocal()
   const info = computeReproInfo(dogId, cycles, litters, today)
+
+  // Sincroniza los inputs de edición de monta con el celo montado actual.
+  const dcId = info.drivingCycle?.id
+  const dcMating = info.drivingCycle?.mating_date || ''
+  const dcMatingEnd = info.drivingCycle?.mating_end_date || ''
+  useEffect(() => {
+    if (info.state === 'mated_pending') {
+      setEditMatingStart(dcMating)
+      setEditMatingEnd(dcMatingEnd)
+      setMatingEdited(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dcId, dcMating, dcMatingEnd, info.state])
 
   const stateColor =
     info.state === 'in_heat' ? 'text-blue-600'
@@ -148,7 +189,7 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
           </p>
           {info.expectedBirth && (
             <p className="mt-1 text-[12px] text-muted">
-              Parto previsto: <strong className="text-ink">{fmtDate(info.expectedBirth)}</strong>
+              Parto previsto: <strong className="text-ink">{birthWindowText(info)}</strong>
               {(() => { const d = daysBetween(today, info.expectedBirth!); return d >= 0 ? ` · en ${d} día${d === 1 ? '' : 's'}` : ` · hace ${-d} día${d === -1 ? '' : 's'}` })()}
             </p>
           )}
@@ -168,38 +209,77 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
         </div>
       </div>
 
-      {/* Confirmar preñez — solo si está "montada pendiente" */}
+      {/* Montada · pendiente de confirmar — fechas de monta EDITABLES + confirmar */}
       {info.state === 'mated_pending' && info.drivingCycle && (
-        <div className="rounded-xl border border-amber-300 bg-amber-50/60 p-4">
-          <div className="flex items-start gap-2">
-            <Heart className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[13.5px] font-semibold text-amber-900">
-                Montada el {info.matingDate ? fmtDate(info.matingDate) : '—'} · pendiente de confirmar preñez
-              </p>
-              <p className="mt-0.5 text-[12px] text-amber-800">
-                {info.confirmDueDate && daysBetween(today, info.confirmDueDate) > 0
-                  ? `Podrás confirmar por ecografía hacia el ${fmtDate(info.confirmDueDate)} (día ${CONFIRM_PREGNANCY_DAYS}).`
-                  : `Ya puedes confirmar (ecografía a partir del día ${CONFIRM_PREGNANCY_DAYS}). ¿Quedó preñada?`}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  onClick={() => setPregnancyStatus(info.drivingCycle!.id, 'confirmed')}
-                  disabled={busy}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-pink-600 px-3 py-1.5 text-[12.5px] font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-                >
-                  {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                  Sí, está preñada
-                </button>
-                <button
-                  onClick={() => setPregnancyStatus(info.drivingCycle!.id, 'failed')}
-                  disabled={busy}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12.5px] font-medium text-body transition hover:text-ink disabled:opacity-50"
-                >
-                  <XCircle className="h-3.5 w-3.5" /> No quedó preñada
-                </button>
+        <div className="rounded-xl border border-amber-300 bg-amber-50/60 p-4 space-y-3">
+          <p className="flex items-center gap-2 text-[13.5px] font-semibold text-amber-900">
+            <Heart className="h-4 w-4 flex-shrink-0 text-amber-600" /> Montada · pendiente de confirmar preñez
+          </p>
+
+          {/* Fechas de monta (la monta NO es el inicio del celo) */}
+          <div className="rounded-lg border border-amber-200 bg-white/60 p-3">
+            <p className="mb-2 text-[11.5px] text-amber-900">
+              Pon los días en que el macho (o la inseminación) cubrió a la perra. El parto se calcula desde aquí, no desde el celo.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="mb-1 block text-[10.5px] font-medium uppercase tracking-[0.06em] text-amber-800">Primera monta *</label>
+                <input
+                  type="date"
+                  value={editMatingStart}
+                  onChange={(e) => setEditMatingStart(e.target.value)}
+                  className="w-full rounded-lg border border-amber-300 bg-white px-2.5 py-1.5 text-[13px] text-ink focus:border-amber-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-[10.5px] font-medium uppercase tracking-[0.06em] text-amber-800">Última monta (opcional)</label>
+                <input
+                  type="date"
+                  value={editMatingEnd}
+                  min={editMatingStart || undefined}
+                  onChange={(e) => setEditMatingEnd(e.target.value)}
+                  className="w-full rounded-lg border border-amber-300 bg-white px-2.5 py-1.5 text-[13px] text-ink focus:border-amber-500 focus:outline-none"
+                />
               </div>
             </div>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <p className="text-[12px] text-amber-900">
+                {info.expectedBirth ? <>Parto previsto: <strong>{birthWindowText(info)}</strong></> : 'Indica la fecha de monta'}
+              </p>
+              {(editMatingStart !== (info.drivingCycle.mating_date || '') || editMatingEnd !== (info.drivingCycle.mating_end_date || '')) && (
+                <button
+                  onClick={() => saveMatingDates(info.drivingCycle!.id)}
+                  disabled={busy}
+                  className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-[12px] font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+                >
+                  {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Guardar fechas
+                </button>
+              )}
+            </div>
+            {matingEdited && <p className="mt-1 text-[11px] text-emerald-700">Fechas de monta actualizadas ✓</p>}
+          </div>
+
+          <p className="text-[12px] text-amber-800">
+            {info.confirmDueDate && daysBetween(today, info.confirmDueDate) > 0
+              ? `Podrás confirmar por ecografía hacia el ${fmtDate(info.confirmDueDate)} (día ${CONFIRM_PREGNANCY_DAYS} desde la monta).`
+              : `Ya puedes confirmar (ecografía a partir del día ${CONFIRM_PREGNANCY_DAYS}). ¿Quedó preñada?`}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setPregnancyStatus(info.drivingCycle!.id, 'confirmed')}
+              disabled={busy}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-pink-600 px-3 py-1.5 text-[12.5px] font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+            >
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+              Sí, está preñada
+            </button>
+            <button
+              onClick={() => setPregnancyStatus(info.drivingCycle!.id, 'failed')}
+              disabled={busy}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12.5px] font-medium text-body transition hover:text-ink disabled:opacity-50"
+            >
+              <XCircle className="h-3.5 w-3.5" /> No quedó preñada
+            </button>
           </div>
         </div>
       )}
@@ -255,19 +335,33 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
             Hubo cruce/monta durante este celo
           </label>
           {wasMated && (
-            <div>
-              <label className="mb-1 block text-[11.5px] font-medium uppercase tracking-[0.06em] text-muted">
-                Fecha de la monta *
-              </label>
-              <input
-                type="date"
-                value={matingDate}
-                onChange={(e) => setMatingDate(e.target.value)}
-                className="w-full rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[13.5px] text-ink focus:border-ink focus:outline-none"
-                required={wasMated}
-              />
-              <p className="mt-1 text-[11px] text-muted">
-                Con esto calculamos la confirmación de preñez (~{CONFIRM_PREGNANCY_DAYS} días) y el parto previsto (~{GESTATION_DAYS} días).
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1 block text-[11.5px] font-medium uppercase tracking-[0.06em] text-muted">
+                  Primera monta *
+                </label>
+                <input
+                  type="date"
+                  value={matingDate}
+                  onChange={(e) => setMatingDate(e.target.value)}
+                  className="w-full rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[13.5px] text-ink focus:border-ink focus:outline-none"
+                  required={wasMated}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-[11.5px] font-medium uppercase tracking-[0.06em] text-muted">
+                  Última monta (opcional)
+                </label>
+                <input
+                  type="date"
+                  value={matingEndDate}
+                  min={matingDate || undefined}
+                  onChange={(e) => setMatingEndDate(e.target.value)}
+                  className="w-full rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[13.5px] text-ink focus:border-ink focus:outline-none"
+                />
+              </div>
+              <p className="col-span-2 -mt-1 text-[11px] text-muted">
+                La monta NO es el inicio del celo. Con estas fechas calculamos la confirmación de preñez (~{CONFIRM_PREGNANCY_DAYS} días) y el parto previsto (~{GESTATION_DAYS} días).
               </p>
             </div>
           )}

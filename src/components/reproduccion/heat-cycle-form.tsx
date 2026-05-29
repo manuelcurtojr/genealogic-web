@@ -29,6 +29,7 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, onClose,
   const [endDate, setEndDate] = useState('')
   const [wasMated, setWasMated] = useState(false)
   const [matingDate, setMatingDate] = useState(new Date().toISOString().split('T')[0])
+  const [matingEndDate, setMatingEndDate] = useState('')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,6 +42,7 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, onClose,
     setEndDate('')
     setWasMated(false)
     setMatingDate(new Date().toISOString().split('T')[0])
+    setMatingEndDate('')
     setNotes('')
     setError(null)
   }, [open, defaultFemaleId, females])
@@ -79,6 +81,7 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, onClose,
       end_date: endDate || null,
       was_mated: wasMated,
       mating_date: wasMated ? (matingDate || startDate) : null,
+      mating_end_date: wasMated && matingEndDate ? matingEndDate : null,
       pregnancy_status: wasMated ? 'suspected' : 'none',
       notes: notes.trim() || null,
     })
@@ -189,19 +192,33 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, onClose,
             </label>
 
             {wasMated && (
-              <div>
-                <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">
-                  Fecha de la monta *
-                </label>
-                <input
-                  type="date"
-                  value={matingDate}
-                  onChange={(e) => setMatingDate(e.target.value)}
-                  className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition"
-                  required={wasMated}
-                />
-                <p className="mt-1 text-[11.5px] text-muted">
-                  A partir de aquí calculamos la confirmación de preñez (~28 días) y el parto previsto (~63 días).
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">
+                    Primera monta *
+                  </label>
+                  <input
+                    type="date"
+                    value={matingDate}
+                    onChange={(e) => setMatingDate(e.target.value)}
+                    className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition"
+                    required={wasMated}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">
+                    Última monta (opcional)
+                  </label>
+                  <input
+                    type="date"
+                    value={matingEndDate}
+                    min={matingDate || undefined}
+                    onChange={(e) => setMatingEndDate(e.target.value)}
+                    className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition"
+                  />
+                </div>
+                <p className="col-span-2 -mt-1 text-[11.5px] text-muted">
+                  La monta no es el inicio del celo. Desde aquí calculamos la confirmación de preñez (~28 días) y el parto previsto (~63 días).
                 </p>
               </div>
             )}

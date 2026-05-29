@@ -284,10 +284,11 @@ export default function ReproductionGantt({ females, cycles, litters, userId }: 
                         )
                       })}
 
-                      {/* Gestaciones (desde la monta) */}
+                      {/* Gestaciones (desde la monta → ventana de parto) */}
                       {matedCycles.map((c) => {
                         const start = parseDate(c.mating_date!)
-                        const end = addDays(start, GESTATION_DAYS)
+                        // Fin = última monta + 63 si hay rango; si no, primera + 63.
+                        const end = addDays(parseDate(c.mating_end_date || c.mating_date!), GESTATION_DAYS)
                         if (end < rangeStart || start > rangeEnd) return null
                         const x = dateToX(start)
                         const w = Math.max(dateToX(end) - x, 5)

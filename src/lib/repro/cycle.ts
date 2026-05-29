@@ -29,6 +29,7 @@ export interface HeatCycleLike {
   end_date: string | null
   was_mated: boolean
   mating_date?: string | null
+  mating_end_date?: string | null
   pregnancy_status?: string | null
   resulted_in_litter_id?: string | null
   notes?: string | null
@@ -79,9 +80,14 @@ export interface ReproInfo {
   stateLabel: string
   /** El celo que conduce el estado actual (celo activo o el de la monta). */
   drivingCycle?: HeatCycleLike
+  /** Primer día de monta. */
   matingDate?: Date
-  /** Parto previsto = monta + 63 días (si montada o gestante). */
+  /** Último día de monta (si hubo rango de cubrición). */
+  matingEndDate?: Date
+  /** Parto previsto (desde la primera monta) = mating_date + 63 días. */
   expectedBirth?: Date
+  /** Fin de la ventana de parto (desde la última monta) = mating_end + 63. */
+  expectedBirthEnd?: Date
   /** Cuándo confirmar la preñez = monta + 28 días (si montada). */
   confirmDueDate?: Date
   /** Próximo celo estimado a partir del historial. */
@@ -138,7 +144,12 @@ export function computeReproInfo(
     (c) => c.was_mated && c.mating_date && (c.pregnancy_status ?? 'none') !== 'failed',
   )
   const matingDate = matedCycle?.mating_date ? parseDate(matedCycle.mating_date) : undefined
+  const matingEndDate = matedCycle?.mating_end_date ? parseDate(matedCycle.mating_end_date) : undefined
   const expectedBirth = matingDate ? addDays(matingDate, GESTATION_DAYS) : undefined
+  // Fin de ventana: desde la última monta (o la única si no hay rango).
+  const expectedBirthEnd = (matingEndDate ?? matingDate)
+    ? addDays((matingEndDate ?? matingDate)!, GESTATION_DAYS)
+    : undefined
   const confirmDueDate = matingDate ? addDays(matingDate, CONFIRM_PREGNANCY_DAYS) : undefined
 
   // Gestación por camada antigua (compat)
@@ -167,14 +178,26 @@ export function computeReproInfo(
     state = 'idle'
   }
 
+  const showBirth = state === 'mated_pending' || state === 'pregnant'
   return {
     state,
     stateLabel: STATE_LABEL[state],
     drivingCycle,
     matingDate,
-    expectedBirth: state === 'mated_pending' || state === 'pregnant' ? expectedBirth : undefined,
+    matingEndDate,
+    expectedBirth: showBirth ? expectedBirth : undefined,
+    expectedBirthEnd: showBirth ? expectedBirthEnd : undefined,
     confirmDueDate: state === 'mated_pending' ? confirmDueDate : undefined,
     nextHeatForecast,
     avgIntervalDays,
   }
+}
+
+/** Texto de parto previsto: fecha única o ventana si hubo rango de monta. */
+export function birthWindowText(info: ReproInfo): string | null {
+  if (!info.expectedBirth) return null
+  if (info.expectedBirthEnd && info.expectedBirthEnd.getTime() !== info.expectedBirth.getTime()) {
+    return `entre el ${fmtDate(info.expectedBirth)} y el ${fmtDate(info.expectedBirthEnd)}`
+  }
+  return fmtDate(info.expectedBirth)
 }
