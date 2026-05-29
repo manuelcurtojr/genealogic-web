@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Loader2, Plus, Heart, Calendar, Baby, CheckCircle2, XCircle, Pencil } from 'lucide-react'
 import Link from 'next/link'
 import HeatCycleForm from '@/components/reproduccion/heat-cycle-form'
+import HeatCycleCalendar from '@/components/reproduccion/heat-cycle-calendar'
 import {
   computeReproInfo, parseDate, addDays, fmtDate, daysBetween, todayLocal, birthWindowText,
   HEAT_DURATION_DAYS, CONFIRM_PREGNANCY_DAYS,
@@ -125,6 +126,18 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
           )}
         </div>
       </div>
+
+      {/* Calendario detallado del celo más reciente (fases proestro/estro/diestro) */}
+      {cycles.length > 0 && (
+        <HeatCycleCalendar
+          startDate={cycles[0].start_date}
+          endDate={cycles[0].end_date}
+          matingDates={(cycles[0].mating_dates && cycles[0].mating_dates.length)
+            ? cycles[0].mating_dates
+            : ([cycles[0].mating_date, cycles[0].mating_end_date].filter(Boolean) as string[])}
+          dogName={dogName}
+        />
+      )}
 
       {/* Montada · pendiente de confirmar */}
       {info.state === 'mated_pending' && info.drivingCycle && (

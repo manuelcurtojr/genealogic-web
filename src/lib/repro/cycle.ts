@@ -14,7 +14,31 @@
  */
 
 export const HEAT_DURATION_DAYS = 21        // duración media de un celo
+// Fases del celo canino (días aproximados desde el inicio del celo):
+//   Proestro (0–8): sangrado, vulva inflamada, NO receptiva aún.
+//   Estro (9–17): receptiva y FÉRTIL — ventana de monta. Ovulación ~día 11.
+//   Diestro (18+): tras el estro; si hay gestación dura ~63 días.
+export const PROESTRO_DAYS = 9
+export const ESTRO_DAYS = 9
+export const OVULATION_DAY = 11             // día del celo en que suele ovular
 export const GESTATION_DAYS = 63            // gestación canina estándar
+
+export type HeatPhase = 'proestro' | 'estro' | 'diestro'
+
+/** Fase del celo para un día concreto (offset en días desde el inicio). */
+export function heatPhaseForDay(offsetDays: number): HeatPhase | null {
+  if (offsetDays < 0) return null
+  if (offsetDays < PROESTRO_DAYS) return 'proestro'
+  if (offsetDays < PROESTRO_DAYS + ESTRO_DAYS) return 'estro'
+  if (offsetDays < HEAT_DURATION_DAYS) return 'diestro'
+  return null
+}
+
+export const HEAT_PHASE_META: Record<HeatPhase, { label: string; hint: string }> = {
+  proestro: { label: 'Proestro', hint: 'Sangrado, aún no receptiva' },
+  estro: { label: 'Estro · fértil', hint: 'Receptiva y fértil — ventana de monta' },
+  diestro: { label: 'Diestro', hint: 'Tras el estro' },
+}
 export const DEFAULT_CYCLE_INTERVAL_DAYS = 180 // intervalo típico entre celos (~6 meses)
 export const CONFIRM_PREGNANCY_DAYS = 28    // ecografía/confirmación de preñez
 export const BIRTH_WARN_DAYS = 7            // antelación del aviso de parto
