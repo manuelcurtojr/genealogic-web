@@ -205,7 +205,17 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       const insertData = { ...payload, slug, owner_id: userId }
       const { data: newDog, error: err } = await supabase.from('dogs').insert(insertData).select('id, slug').single()
       setLoading(false)
-      if (err) { setError(err.message); return }
+      if (err) {
+        // El trigger BBDD enforce_dog_limit lanza DOG_LIMIT_REACHED cuando
+        // se supera el tope del plan. Mostramos un mensaje claro con CTA en
+        // vez del error crudo de Postgres.
+        if (err.message?.includes('DOG_LIMIT_REACHED')) {
+          setError('Has alcanzado el límite de perros de tu plan. Marca un perro como "en venta" o fallecido para liberar espacio, o pásate a Kennel Pro para perros ilimitados (genealogic.io/pricing).')
+        } else {
+          setError(err.message)
+        }
+        return
+      }
       if (onSaved) onSaved(newDog?.id)
       onClose(); router.refresh()
       return

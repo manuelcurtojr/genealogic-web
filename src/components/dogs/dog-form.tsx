@@ -72,7 +72,12 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
       router.refresh()
     } else {
       const { data, error: err } = await supabase.from('dogs').insert({ ...payload, owner_id: userId }).select('id').single()
-      if (err) { setError(err.message); setLoading(false); return }
+      if (err) {
+        setError(err.message?.includes('DOG_LIMIT_REACHED')
+          ? 'Has alcanzado el límite de perros de tu plan. Marca uno como "en venta" o fallecido, o pásate a Kennel Pro para perros ilimitados.'
+          : err.message)
+        setLoading(false); return
+      }
       router.push(`/dogs/${data.id}`)
     }
   }
