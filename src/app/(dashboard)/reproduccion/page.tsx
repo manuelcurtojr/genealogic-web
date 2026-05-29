@@ -20,11 +20,16 @@ export default async function ReproduccionPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Solo las hembras marcadas como REPRODUCTORAS aparecen en el calendario de
+  // celos (el ❤ en Mis Perros). El resto de hembras del criadero no se
+  // gestionan aquí. Las que ya tenían celos/camadas quedaron marcadas por el
+  // backfill de la migración 20260711.
   const { data: females } = await supabase
     .from('dogs')
     .select('id, name, slug, thumbnail_url, birth_date')
     .eq('owner_id', user.id)
     .eq('sex', 'female')
+    .eq('is_reproductive', true)
     .order('name')
 
   const Header = () => (
@@ -34,22 +39,46 @@ export default async function ReproduccionPage() {
         Calendario reproductivo
       </h1>
       <p className="mt-2 text-[13.5px] sm:text-[14px] text-body leading-snug">
-        Elige una hembra para ver su ciclo de celo, su estado y su año reproductivo. Los celos futuros se estiman a partir del historial.
+        Elige una de tus reproductoras para ver su ciclo de celo, su estado y su año reproductivo. Los celos futuros se estiman a partir del historial.
       </p>
     </div>
   )
 
   if (!females || females.length === 0) {
+    // ¿No tiene hembras en absoluto, o las tiene pero ninguna marcada como
+    // reproductora? El mensaje cambia para guiar a la acción correcta.
+    const { count: totalFemales } = await supabase
+      .from('dogs')
+      .select('id', { count: 'exact', head: true })
+      .eq('owner_id', user.id)
+      .eq('sex', 'female')
+    const hasFemales = (totalFemales || 0) > 0
     return (
       <div className="space-y-6">
         <CalendarSubnav />
         <Header />
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-20 text-center">
           <Heart className="mx-auto h-10 w-10 text-muted" />
-          <p className="mt-3 text-[14px] text-body">No tienes hembras registradas. Añade hembras a tu criadero para empezar a planificar.</p>
-          <Link href="/dogs/new" className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90">
-            Añadir hembra
-          </Link>
+          {hasFemales ? (
+            <>
+              <p className="mt-3 text-[14px] text-body">
+                Aún no has marcado ninguna hembra como <strong className="text-ink">reproductora</strong>. En el calendario reproductivo solo aparecen tus reproductoras.
+              </p>
+              <p className="mt-1.5 text-[13px] text-muted">
+                Ve a <strong className="text-body">Mis Perros</strong> y pulsa el <Heart className="inline h-3.5 w-3.5 -mt-0.5 text-pink-500" /> en las hembras que vayas a criar.
+              </p>
+              <Link href="/dogs" className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90">
+                Ir a Mis Perros
+              </Link>
+            </>
+          ) : (
+            <>
+              <p className="mt-3 text-[14px] text-body">No tienes hembras registradas. Añade hembras a tu criadero para empezar a planificar.</p>
+              <Link href="/dogs/new" className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90">
+                Añadir hembra
+              </Link>
+            </>
+          )}
         </div>
       </div>
     )

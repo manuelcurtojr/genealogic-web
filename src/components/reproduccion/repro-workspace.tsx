@@ -93,7 +93,7 @@ export default function ReproWorkspace({ females, cycles, litters, userId }: Pro
       {/* ── Columna izquierda: roster con estado + buscador ── */}
       <aside className={`${selected ? 'hidden lg:block' : ''} rounded-2xl border border-hairline bg-canvas`}>
         <div className="flex items-center justify-between gap-2 border-b border-hairline px-4 py-3">
-          <p className="text-[13px] font-semibold text-ink">Mis hembras <span className="text-muted">({females.length})</span></p>
+          <p className="text-[13px] font-semibold text-ink">Reproductoras <span className="text-muted">({females.length})</span></p>
           <button onClick={() => setFormOpen(true)}
             className="inline-flex items-center gap-1 rounded-lg bg-ink px-2.5 py-1.5 text-[12px] font-medium text-on-primary transition hover:opacity-90">
             <Plus className="h-3.5 w-3.5" /> Celo
@@ -160,7 +160,7 @@ export default function ReproWorkspace({ females, cycles, litters, userId }: Pro
                 </div>
               ))}
             </div>
-            <p className="mt-5 text-[13px] text-muted">Selecciona una hembra en la izquierda para ver su ciclo y su año reproductivo.</p>
+            <p className="mt-5 text-[13px] text-muted">Selecciona una reproductora en la izquierda para ver su ciclo y su año reproductivo.</p>
           </div>
         ) : (
           <div className="space-y-4">
