@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, Lock, Globe, Shield, Dna, Heart, History } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, ChevronRight, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, Lock, Globe, Shield, Dna, Heart, History, ArrowRightLeft, Settings2 } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import { BRAND } from '@/lib/constants'
 import { formatDogName, type AffixFormat } from '@/lib/affix'
@@ -17,6 +17,8 @@ import GeneticaTab from './edit-tabs/genetica-tab'
 import ReproduccionTab from './edit-tabs/reproduccion-tab'
 import ImportPedigreeTab from './import-pedigree-tab'
 import HistoricoTab from './edit-tabs/historico-tab'
+import PedigreeEditor from '@/components/pedigree/pedigree-editor'
+import TransferPanel from '@/components/kennel/transfer-panel'
 
 interface DogFormPanelProps {
   open: boolean
@@ -41,6 +43,7 @@ const TABS = [
   { key: 'palmares', label: 'Palmarés', icon: Trophy },
   { key: 'pedigree-pdf', label: 'Genealogía PDF', icon: FileText },
   { key: 'historico', label: 'Histórico', icon: History },
+  { key: 'gestion', label: 'Gestión', icon: Settings2 },
 ] as const
 
 type TabKey = typeof TABS[number]['key']
@@ -79,6 +82,17 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     father_id: '', mother_id: '', is_public: true,
   })
 
+  // Estado/visibilidad gestionados como toggles INSTANTÁNEOS (persisten al
+  // cambiar, sin pasar por "Actualizar"). Viven en la pestaña Gestión.
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
+  const [showInKennel, setShowInKennel] = useState(true)
+  const [isReproductive, setIsReproductive] = useState(false)
+  const [savingField, setSavingField] = useState<string | null>(null)
+
+  // Paneles secundarios lanzados desde Gestión.
+  const [pedigreeOpen, setPedigreeOpen] = useState(false)
+  const [transferOpen, setTransferOpen] = useState(false)
+
   // ── In Memoriam ──────────────────────────────────────────────────────
   // deceased_at: fecha de fallecimiento (null = vivo). Marcar es IRREVERSIBLE
   // desde la UI (lo revierte solo soporte). El perro fallecido deja de contar
@@ -94,9 +108,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     async function load() {
       // NOTA: la tabla `colors` NO tiene columna breed_id — la relación
       // raza↔color vive en la pivote `breed_colors` (breed_id, color_id).
-      // Antes el código pedía colors.select('id, name, breed_id') → el
-      // select fallaba con error 42703 → cRes.data = null → el selector de
-      // color salía vacío en TODOS los perros. Bug de creación/edición.
       const [bRes, cRes, bcRes, kRes, mRes, fRes] = await Promise.all([
         supabase.from('breeds').select('id, name').order('name'),
         supabase.from('colors').select('id, name').order('name'),
@@ -106,7 +117,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         supabase.from('dogs').select('id, name, sex, thumbnail_url, breed_id').eq('sex', 'female').order('name').limit(500),
       ])
 
-      // Construir mapa breed_id → Set(color_id) para filtrar colores por raza.
       const bcMap = new Map<string, Set<string>>()
       for (const row of (bcRes.data || []) as { breed_id: string; color_id: string }[]) {
         if (!bcMap.has(row.breed_id)) bcMap.set(row.breed_id, new Set())
@@ -124,12 +134,11 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           const f = { name: dog.name || '', sex: dog.sex || 'male', birth_date: dog.birth_date || '', registration: dog.registration || '', microchip: dog.microchip || '', weight: dog.weight?.toString() || '', height: dog.height?.toString() || '', breed_id: dog.breed_id || '', color_id: dog.color_id || '', kennel_id: dog.kennel_id || '', father_id: dog.father_id || '', mother_id: dog.mother_id || '', is_public: dog.is_public ?? true }
           setForm(f)
           setDeceasedAt(dog.deceased_at || null)
+          setThumbnailUrl(dog.thumbnail_url || null)
+          setShowInKennel(dog.show_in_kennel ?? true)
+          setIsReproductive(dog.is_reproductive ?? false)
           if (dog.breed_id) filterByBreed(dog.breed_id, cRes.data || [], mRes.data || [], fRes.data || [])
 
-          // Cargar info de quien posee el perro AHORA (puede ser distinto al
-          // criador si el perro ya fue transferido al cliente). Util para
-          // que el criador vea "Este perro ya tiene otro propietario" sin
-          // confusión al editar.
           if (dog.owner_id && dog.owner_id !== userId) {
             const { data: ownerProfile } = await supabase
               .from('profiles')
@@ -148,7 +157,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         }
       } else {
         setForm({ name: '', sex: 'male', birth_date: '', registration: '', microchip: '', weight: '', height: '', breed_id: defaultBreedId || '', color_id: '', kennel_id: defaultKennelId || '', father_id: defaultFatherId || '', mother_id: defaultMotherId || '', is_public: true })
-        setDeceasedAt(null)
+        setDeceasedAt(null); setThumbnailUrl(null); setShowInKennel(true); setIsReproductive(false); setExternalOwner(null)
         if (defaultBreedId) filterByBreed(defaultBreedId, cRes.data || [], mRes.data || [], fRes.data || [])
       }
       setDataLoading(false)
@@ -167,9 +176,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     const c = cd || allColors, m = md || allMaleDogs, f = fd || allFemaleDogs
     if (!breedId) { setColors(c); setMaleDogs(m); setFemaleDogs(f) }
     else {
-      // Filtrar colores por la pivote breed_colors. Si la raza NO tiene
-      // colores configurados (solo 117 de ~244 razas los tienen), mostramos
-      // TODOS — mejor un selector con todo que un selector vacío.
       const allowedColors = breedColorsRef.current.get(breedId)
       setColors(
         allowedColors && allowedColors.size > 0
@@ -189,6 +195,30 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     })
   }
 
+  // Toggle instantáneo de un campo de estado/visibilidad (Gestión). Optimista
+  // + persiste; si falla, revierte y muestra el error.
+  const persistField = async (field: 'is_public' | 'show_in_kennel' | 'is_reproductive', value: boolean) => {
+    if (!editDogId) return
+    setError(''); setSavingField(field)
+    const prev = field === 'is_public' ? form.is_public : field === 'show_in_kennel' ? showInKennel : isReproductive
+    if (field === 'is_public') set('is_public', value)
+    else if (field === 'show_in_kennel') setShowInKennel(value)
+    else setIsReproductive(value)
+    const supabase = createClient()
+    const { error: err } = await supabase.from('dogs').update({ [field]: value }).eq('id', editDogId)
+    setSavingField(null)
+    if (err) {
+      // revertir
+      if (field === 'is_public') set('is_public', prev)
+      else if (field === 'show_in_kennel') setShowInKennel(prev)
+      else setIsReproductive(prev)
+      setError(err.message)
+      return
+    }
+    onSaved?.()
+    router.refresh()
+  }
+
   const isFromLitter = !isEdit && !!defaultLitterId
   const kennelAffix = defaultKennelName && defaultAffixFormat
 
@@ -204,8 +234,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       breed_id: form.breed_id || null, color_id: form.color_id || null, kennel_id: form.kennel_id || null,
       father_id: form.father_id || null, mother_id: form.mother_id || null,
       is_public: form.is_public, breeder_id: isFromLitter ? userId : undefined,
-      // Enlazar el cachorro a su camada para diferenciarlo de otras camadas
-      // con los mismos padres. Solo al crear desde una camada.
       litter_id: isFromLitter ? defaultLitterId : undefined,
     }
 
@@ -219,9 +247,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       const { data: newDog, error: err } = await supabase.from('dogs').insert(insertData).select('id, slug').single()
       setLoading(false)
       if (err) {
-        // El trigger BBDD enforce_dog_limit lanza DOG_LIMIT_REACHED cuando
-        // se supera el tope del plan. Mostramos un mensaje claro con CTA en
-        // vez del error crudo de Postgres.
         if (err.message?.includes('DOG_LIMIT_REACHED')) {
           setError('Has alcanzado el límite de perros de tu plan. Marca un perro como "en venta" o fallecido para liberar espacio, o pásate a Kennel Pro para perros ilimitados (genealogic.io/pricing).')
         } else {
@@ -236,8 +261,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     onClose(); if (onSaved) onSaved(); router.refresh()
   }
 
-  // Marcar el perro como fallecido (In Memoriam). Acción irreversible desde
-  // la UI: fija deceased_at = hoy y deceased_locked = true. No borra nada.
   const handleMarkDeceased = async () => {
     if (!editDogId) return
     setDeceasedLoading(true); setError('')
@@ -259,27 +282,239 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   const selFather = allMaleDogs.find(d => d.id === form.father_id)
   const selMother = allFemaleDogs.find(d => d.id === form.mother_id)
   const selKennel = kennels.find(k => k.id === form.kennel_id)
+  const sexLabel = form.sex === 'male' ? 'Macho' : form.sex === 'female' ? 'Hembra' : null
+  const visibleTabs = TABS.filter((t) => !('femaleOnly' in t && t.femaleOnly) || form.sex === 'female')
+
+  // ── Contenido de la pestaña "Datos" (compartido creación/edición) ──────
+  const datosContent = (
+    <div className="space-y-5">
+      {/* Identity */}
+      <Section icon={CreditCard} title="Identidad">
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <Field label={isFromLitter && kennelAffix ? 'Nombre del cachorro *' : 'Nombre *'} value={form.name} onChange={v => set('name', v)} placeholder={isFromLitter && kennelAffix ? 'Solo el nombre (sin afijo)' : ''} />
+              {isFromLitter && kennelAffix && form.name.trim() && (
+                <p className="text-[10px] text-ink mt-1 font-medium">{formatDogName(form.name.trim(), defaultKennelName!, defaultAffixFormat as AffixFormat)}</p>
+              )}
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">Sexo *</label>
+              <div className="flex gap-2">
+                {(['male', 'female'] as const).map(s => (
+                  <button key={s} type="button" onClick={() => set('sex', s)}
+                    className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border transition ${form.sex === s
+                      ? (s === 'male' ? 'border-blue-400 bg-blue-400/10 text-blue-400' : 'border-pink-400 bg-pink-400/10 text-pink-400')
+                      : 'border-hairline bg-surface-card text-body hover:bg-surface-card'}`}>
+                    {s === 'male' ? '♂ Macho' : '♀ Hembra'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Field label="Nacimiento" value={form.birth_date} onChange={v => set('birth_date', v)} type="date" />
+            <Field label="Microchip" value={form.microchip} onChange={v => set('microchip', v)} placeholder="Número" />
+          </div>
+          <Field label="Registro" value={form.registration} onChange={v => set('registration', v)} placeholder="UKC, FCI, etc." />
+        </div>
+      </Section>
+
+      {/* Genealogy */}
+      <Section icon={GitBranch} title={isFromLitter ? 'Genealogía (de la camada)' : 'Genealogía'}>
+        {isFromLitter ? (
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LockedCard label="Raza" name={selBreed?.name} />
+              <LockedCard label="Criadero" name={selKennel?.name} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LockedCard label="Padre" name={selFather?.name} sexColor={BRAND.male} />
+              <LockedCard label="Madre" name={selMother?.name} sexColor={BRAND.female} />
+            </div>
+            {form.breed_id && <DropdownSearch label="Color" items={colors.map(c => ({ id: c.id, name: c.name, image: null }))} value={form.color_id} onChange={v => set('color_id', v)} placeholder="Buscar color..." />}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <SelectCard label="Raza" name={selBreed?.name} onClear={() => set('breed_id', '')}
+              selector={<SearchList items={breeds.map(b => ({ id: b.id, name: b.name, image: null }))} value={form.breed_id} onChange={v => set('breed_id', v)} placeholder="Buscar raza..." />} />
+            {form.breed_id && (
+              <>
+                <DropdownSearch label="Color" items={colors.map(c => ({ id: c.id, name: c.name, image: null }))} value={form.color_id} onChange={v => set('color_id', v)} placeholder="Buscar color..." />
+                {isEdit ? (
+                  <>
+                    <LockedParentCard label="Padre" dog={selFather} sexColor={BRAND.male} />
+                    <LockedParentCard label="Madre" dog={selMother} sexColor={BRAND.female} />
+                    <p className="text-[11px] text-muted leading-snug px-1">
+                      Los padres están bloqueados aquí para proteger la integridad de la genealogía.
+                      Para modificarlos usa <strong>Gestión → Editar genealogía</strong>.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <SelectCard label="Padre" name={selFather?.name} image={selFather?.thumbnail_url} sexColor={BRAND.male} onClear={() => set('father_id', '')}
+                      selector={<SearchList items={maleDogs.filter(d => d.id !== editDogId).map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))} value={form.father_id} onChange={v => set('father_id', v)} placeholder="Buscar padre..." sexColor={BRAND.male} />} />
+                    <SelectCard label="Madre" name={selMother?.name} image={selMother?.thumbnail_url} sexColor={BRAND.female} onClear={() => set('mother_id', '')}
+                      selector={<SearchList items={femaleDogs.filter(d => d.id !== editDogId).map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))} value={form.mother_id} onChange={v => set('mother_id', v)} placeholder="Buscar madre..." sexColor={BRAND.female} />} />
+                  </>
+                )}
+              </>
+            )}
+            <SelectCard label="Criadero" name={selKennel?.name} image={selKennel?.logo_url} onClear={() => set('kennel_id', '')}
+              selector={<SearchList items={kennels.map(k => ({ id: k.id, name: k.name, image: k.logo_url }))} value={form.kennel_id} onChange={v => set('kennel_id', v)} placeholder="Buscar criadero..." />} />
+          </div>
+        )}
+      </Section>
+
+      {/* Measurements */}
+      {!isFromLitter && (
+        <Section icon={Weight} title="Medidas">
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Peso (kg)" value={form.weight} onChange={v => set('weight', v)} type="number" />
+            <Field label="Altura (cm)" value={form.height} onChange={v => set('height', v)} type="number" />
+          </div>
+        </Section>
+      )}
+
+      {/* Gallery */}
+      <Section icon={ImageIcon} title="Galería">
+        {editDogId ? (
+          <GalleryTab dogId={editDogId} userId={userId} />
+        ) : (
+          <p className="text-xs text-muted text-center py-4">
+            {isFromLitter ? 'Guarda el cachorro para subir fotos' : 'Guarda el perro primero para subir fotos'}
+          </p>
+        )}
+      </Section>
+
+      {/* Visibilidad — solo en creación (en edición se gestiona en "Gestión") */}
+      {!isEdit && (
+        <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            {form.is_public ? <Eye className="w-5 h-5 text-green-400" /> : <EyeOff className="w-5 h-5 text-muted" />}
+            <div>
+              <p className="text-sm font-medium">{form.is_public ? 'Público' : 'Privado'}</p>
+              <p className="text-xs text-muted">{form.is_public ? 'Visible para otros' : 'Solo tú'}</p>
+            </div>
+          </div>
+          <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
+        </div>
+      )}
+    </div>
+  )
+
+  // ── Contenido de la pestaña "Gestión" (solo edición) ───────────────────
+  const gestionContent = (
+    <div className="space-y-6">
+      {externalOwner && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex items-center gap-3">
+          {externalOwner.avatar_url ? (
+            <img src={externalOwner.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <Shield className="w-4 h-4 text-amber-700" />
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-ink truncate">{externalOwner.display_name || externalOwner.email || 'Propietario sin nombre'}</p>
+            <p className="text-[11px] text-amber-700 mt-0.5 leading-snug">Este perro ya fue transferido. La propiedad ahora es de otro usuario.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Visibilidad y estado */}
+      <div>
+        <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">Visibilidad y estado</p>
+        <div className="mt-3 space-y-2.5">
+          <ToggleCard icon={Globe} accent="emerald" title="Visible en tu criadero"
+            desc="Aparece en la web pública de tu criadero." value={showInKennel}
+            saving={savingField === 'show_in_kennel'} onChange={(v) => persistField('show_in_kennel', v)} />
+          <ToggleCard icon={Eye} accent="blue" title="Perfil público"
+            desc="Visible en el directorio y el buscador de Genealogic." value={form.is_public}
+            saving={savingField === 'is_public'} onChange={(v) => persistField('is_public', v)} />
+          <ToggleCard icon={Heart} accent="pink" title="Reproductor" fill
+            desc="Aparece en tu calendario reproductivo y en el catálogo de reproductores." value={isReproductive}
+            saving={savingField === 'is_reproductive'} onChange={(v) => persistField('is_reproductive', v)} />
+        </div>
+      </div>
+
+      {/* Acciones */}
+      <div>
+        <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">Acciones</p>
+        <div className="mt-3 space-y-2.5">
+          <ActionCard icon={GitBranch} accent="violet" title="Editar genealogía"
+            desc="Añade o cambia padres y construye el árbol genealógico." cta="Abrir"
+            onClick={() => setPedigreeOpen(true)} />
+          {!externalOwner && (
+            <ActionCard icon={ArrowRightLeft} accent="amber" title="Transferir a otro dueño"
+              desc="Pasa la propiedad de este perro a otro usuario de Genealogic." cta="Abrir"
+              onClick={() => setTransferOpen(true)} />
+          )}
+          {deceasedAt ? (
+            <div className="flex items-center gap-3 rounded-2xl border border-hairline bg-canvas p-3.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 flex-shrink-0">
+                <Heart className="h-4 w-4 fill-current" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[13.5px] font-medium text-ink">En memoria</p>
+                <p className="text-[11.5px] text-muted leading-snug">
+                  Fallecido el {new Date(deceasedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}. Para revertirlo, escribe a soporte.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <ActionCard icon={Heart} accent="rose" title="Marcar In Memoriam"
+              desc="Deja de contar en tu límite. La ficha y la genealogía se conservan." cta="Marcar" danger
+              onClick={() => setConfirmDeceased(true)} />
+          )}
+        </div>
+      </div>
+    </div>
+  )
+
+  const tabBody = (
+    <>
+      {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-500 mb-4">{error}</div>}
+      {activeTab === 'datos' && datosContent}
+      {activeTab === 'salud' && editDogId && <SaludTab dogId={editDogId} userId={userId} />}
+      {activeTab === 'reproduccion' && editDogId && form.sex === 'female' && <ReproduccionTab dogId={editDogId} userId={userId} />}
+      {activeTab === 'genetica' && editDogId && <GeneticaTab dogId={editDogId} userId={userId} />}
+      {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
+      {activeTab === 'pedigree-pdf' && editDogId && <PedigreePdfTab dogId={editDogId} dogName={form.name} userId={userId} />}
+      {activeTab === 'historico' && editDogId && <HistoricoTab dogId={editDogId} />}
+      {activeTab === 'gestion' && editDogId && gestionContent}
+    </>
+  )
 
   return (
     <Portal>
       <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
       <div
-        // overflow-x-hidden corta cualquier desbordamiento horizontal de
-        // hijos (autocompletes, inputs con contenido largo, breadcrumb URLs
-        // de pedigrees) — el panel mobile tenía scroll horizontal cuando
-        // algún field interior excedía el viewport.
-        className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+        className={`fixed top-0 right-0 h-full w-full z-[70] bg-canvas border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${isEdit ? 'sm:max-w-3xl' : 'sm:max-w-xl'} ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
         style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
       >
-
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
-          <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar perro' : defaultLitterId ? 'Añadir cachorro' : 'Añadir perro'}</h2>
-          <button onClick={onClose} className="text-muted hover:text-ink transition p-1"><X className="w-5 h-5" /></button>
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
+          {isEdit ? (
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="h-10 w-10 rounded-full overflow-hidden border border-hairline bg-surface-card flex-shrink-0 flex items-center justify-center">
+                {thumbnailUrl ? <img src={thumbnailUrl} alt="" className="h-full w-full object-cover" /> : <Dog className="h-5 w-5 text-muted" />}
+              </div>
+              <div className="min-w-0">
+                <h2 className="truncate text-[15px] sm:text-base font-semibold tracking-[-0.01em] text-ink">{form.name || 'Editar perro'}</h2>
+                {(selBreed?.name || sexLabel) && (
+                  <p className="truncate text-[12px] text-muted">{[selBreed?.name, sexLabel].filter(Boolean).join(' · ')}</p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <h2 className="text-base sm:text-lg font-semibold tracking-[-0.01em]">{defaultLitterId ? 'Añadir cachorro' : 'Añadir perro'}</h2>
+          )}
+          <button onClick={onClose} className="text-muted hover:text-ink transition p-1 flex-shrink-0"><X className="w-5 h-5" /></button>
         </div>
 
-        {/* Create mode toggle */}
+        {/* Create mode toggle (solo creación) */}
         {!isEdit && !isFromLitter && (
           <div className="flex border-b border-hairline px-4 flex-shrink-0">
             <button onClick={() => setCreateMode('manual')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'manual' ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}>
@@ -291,247 +526,56 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           </div>
         )}
 
-        {/* Edit tabs — en mobile usamos un <select> nativo (mejor UX que
-            tabs con solo iconos). En sm+ vuelven los tabs horizontales. */}
-        {isEdit && (
-          <>
-            {/* Mobile: select */}
-            <div className="sm:hidden px-4 py-2.5 border-b border-hairline flex-shrink-0">
-              <label className="text-[10.5px] font-semibold text-muted uppercase tracking-wider block mb-1">
-                Sección
-              </label>
-              <select
-                value={activeTab}
-                onChange={(e) => setActiveTab(e.target.value as TabKey)}
-                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-[16px] text-ink focus:border-ink focus:outline-none"
-              >
-                {TABS
-                  .filter((t) => !('femaleOnly' in t && t.femaleOnly) || form.sex === 'female')
-                  .map(t => (
-                    <option key={t.key} value={t.key}>{t.label}</option>
-                  ))}
-              </select>
-            </div>
-            {/* Desktop: tabs */}
-            <div className="hidden sm:flex border-b border-hairline px-4 overflow-x-auto flex-shrink-0">
-              {TABS
-                .filter((t) => !('femaleOnly' in t && t.femaleOnly) || form.sex === 'female')
-                .map(t => {
-                const Icon = t.icon
-                return (
-                  <button key={t.key} onClick={() => setActiveTab(t.key)}
-                    className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${activeTab === t.key ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}>
-                    <Icon className="w-3.5 h-3.5" /><span>{t.label}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </>
-        )}
-
-        {/* Content. min-w-0 imprescindible en mobile: sin él, un hijo con
-            min-w intrínseco (ej autocomplete dropdown w-full sobre contenido
-            largo) forzaba al flex-1 a expandirse y rompía el scroll horizontal. */}
+        {/* CUERPO */}
         {!isEdit && !isFromLitter && createMode === 'import' ? (
           <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
             <ImportPedigreeTab userId={userId} kennelId={defaultKennelId || undefined} onImported={() => { onClose(); onSaved?.(); router.refresh() }} />
           </div>
         ) : dataLoading ? (
           <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-muted" /></div>
+        ) : isEdit ? (
+          // EDICIÓN: navegación lateral (desktop) / pills (móvil) + contenido
+          <div className="flex-1 min-h-0 flex flex-col sm:flex-row overflow-hidden">
+            {/* Móvil: pills scrollables */}
+            <nav className="sm:hidden flex gap-1.5 overflow-x-auto px-4 py-2.5 border-b border-hairline flex-shrink-0">
+              {visibleTabs.map((t) => {
+                const Icon = t.icon
+                const active = activeTab === t.key
+                return (
+                  <button key={t.key} onClick={() => setActiveTab(t.key)}
+                    className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium whitespace-nowrap transition ${active ? 'bg-ink text-on-primary' : 'bg-surface-card text-body hover:text-ink'}`}>
+                    <Icon className="w-3.5 h-3.5" /> {t.label}
+                  </button>
+                )
+              })}
+            </nav>
+            {/* Desktop: sidebar */}
+            <nav className="hidden sm:flex sm:flex-col gap-0.5 w-52 flex-shrink-0 border-r border-hairline p-3 overflow-y-auto">
+              {visibleTabs.map((t) => {
+                const Icon = t.icon
+                const active = activeTab === t.key
+                return (
+                  <button key={t.key} onClick={() => setActiveTab(t.key)}
+                    className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] transition ${active ? 'bg-surface-card text-ink font-medium shadow-[0_1px_2px_rgba(17,17,17,0.04)]' : 'text-muted hover:text-ink hover:bg-surface-soft'}`}>
+                    <Icon className={`h-4 w-4 flex-shrink-0 ${active ? 'text-ink' : 'text-muted'}`} /> <span className="truncate">{t.label}</span>
+                  </button>
+                )
+              })}
+            </nav>
+            {/* Contenido */}
+            <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
+              {tabBody}
+            </div>
+          </div>
         ) : (
+          // CREACIÓN: una sola columna
           <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
-            {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400 mb-4">{error}</div>}
-
-            {activeTab === 'datos' && (
-              <div className="space-y-5">
-                {/* Identity */}
-                <Section icon={CreditCard} title="Identidad">
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <Field label={isFromLitter && kennelAffix ? 'Nombre del cachorro *' : 'Nombre *'} value={form.name} onChange={v => set('name', v)} placeholder={isFromLitter && kennelAffix ? 'Solo el nombre (sin afijo)' : ''} />
-                        {isFromLitter && kennelAffix && form.name.trim() && (
-                          <p className="text-[10px] text-ink mt-1 font-medium">{formatDogName(form.name.trim(), defaultKennelName!, defaultAffixFormat as AffixFormat)}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">Sexo *</label>
-                        <div className="flex gap-2">
-                          {(['male', 'female'] as const).map(s => (
-                            <button key={s} type="button" onClick={() => set('sex', s)}
-                              className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border transition ${form.sex === s
-                                ? (s === 'male' ? 'border-blue-400 bg-blue-400/10 text-blue-400' : 'border-pink-400 bg-pink-400/10 text-pink-400')
-                                : 'border-hairline bg-surface-card text-body hover:bg-surface-card'}`}>
-                              {s === 'male' ? '♂ Macho' : '♀ Hembra'}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <Field label="Nacimiento" value={form.birth_date} onChange={v => set('birth_date', v)} type="date" />
-                      <Field label="Microchip" value={form.microchip} onChange={v => set('microchip', v)} placeholder="Número" />
-                    </div>
-                    <Field label="Registro" value={form.registration} onChange={v => set('registration', v)} placeholder="UKC, FCI, etc." />
-                  </div>
-                </Section>
-
-                {/* Genealogy */}
-                <Section icon={GitBranch} title={isFromLitter ? 'Genealogía (de la camada)' : 'Genealogía'}>
-                  {isFromLitter ? (
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <LockedCard label="Raza" name={selBreed?.name} />
-                        <LockedCard label="Criadero" name={selKennel?.name} />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <LockedCard label="Padre" name={selFather?.name} sexColor={BRAND.male} />
-                        <LockedCard label="Madre" name={selMother?.name} sexColor={BRAND.female} />
-                      </div>
-                      {form.breed_id && <DropdownSearch label="Color" items={colors.map(c => ({ id: c.id, name: c.name, image: null }))} value={form.color_id} onChange={v => set('color_id', v)} placeholder="Buscar color..." />}
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <SelectCard label="Raza" name={selBreed?.name} onClear={() => set('breed_id', '')}
-                        selector={<SearchList items={breeds.map(b => ({ id: b.id, name: b.name, image: null }))} value={form.breed_id} onChange={v => set('breed_id', v)} placeholder="Buscar raza..." />} />
-                      {form.breed_id && (
-                        <>
-                          <DropdownSearch label="Color" items={colors.map(c => ({ id: c.id, name: c.name, image: null }))} value={form.color_id} onChange={v => set('color_id', v)} placeholder="Buscar color..." />
-
-                          {/* Padre y Madre — BLOQUEADOS en modo edición.
-                              Editar pedigree desde aquí rompería el árbol
-                              genealógico (descendientes, COI, hermanos).
-                              Para cambiarlos hay que usar el editor de
-                              pedigree dedicado (PedigreeEditor o el
-                              importador). */}
-                          {isEdit ? (
-                            <>
-                              <LockedParentCard label="Padre" dog={selFather} sexColor={BRAND.male} />
-                              <LockedParentCard label="Madre" dog={selMother} sexColor={BRAND.female} />
-                              <p className="text-[11px] text-muted leading-snug px-1">
-                                Los padres están bloqueados aquí para proteger la integridad de la genealogía.
-                                Para modificarlos usa el <strong>editor de genealogía</strong> desde la ficha pública del perro.
-                              </p>
-                            </>
-                          ) : (
-                            <>
-                              <SelectCard label="Padre" name={selFather?.name} image={selFather?.thumbnail_url} sexColor={BRAND.male} onClear={() => set('father_id', '')}
-                                selector={<SearchList items={maleDogs.filter(d => d.id !== editDogId).map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))} value={form.father_id} onChange={v => set('father_id', v)} placeholder="Buscar padre..." sexColor={BRAND.male} />} />
-                              <SelectCard label="Madre" name={selMother?.name} image={selMother?.thumbnail_url} sexColor={BRAND.female} onClear={() => set('mother_id', '')}
-                                selector={<SearchList items={femaleDogs.filter(d => d.id !== editDogId).map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))} value={form.mother_id} onChange={v => set('mother_id', v)} placeholder="Buscar madre..." sexColor={BRAND.female} />} />
-                            </>
-                          )}
-                        </>
-                      )}
-                      <SelectCard label="Criadero" name={selKennel?.name} image={selKennel?.logo_url} onClear={() => set('kennel_id', '')}
-                        selector={<SearchList items={kennels.map(k => ({ id: k.id, name: k.name, image: k.logo_url }))} value={form.kennel_id} onChange={v => set('kennel_id', v)} placeholder="Buscar criadero..." />} />
-                    </div>
-                  )}
-                </Section>
-
-                {/* Owner externo — solo si el perro está en manos de otro
-                    usuario (transferido al cliente final). El criador necesita
-                    saber con quién está tratando sin tener que ir a /reservas. */}
-                {isEdit && externalOwner && (
-                  <Section icon={Shield} title="Propietario actual">
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-3">
-                      {externalOwner.avatar_url ? (
-                        <img src={externalOwner.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                          <Shield className="w-4 h-4 text-amber-700" />
-                        </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-ink truncate">
-                          {externalOwner.display_name || externalOwner.email || 'Propietario sin nombre'}
-                        </p>
-                        {externalOwner.display_name && externalOwner.email && (
-                          <p className="text-xs text-muted truncate">{externalOwner.email}</p>
-                        )}
-                        <p className="text-[11px] text-amber-700 mt-0.5 leading-snug">
-                          Este perro ya fue transferido. Para cambiar el propietario usa <strong>Reservas → Transferencia</strong>.
-                        </p>
-                      </div>
-                    </div>
-                  </Section>
-                )}
-
-                {/* Measurements */}
-                {!isFromLitter && (
-                  <Section icon={Weight} title="Medidas">
-                    <div className="grid grid-cols-2 gap-3">
-                      <Field label="Peso (kg)" value={form.weight} onChange={v => set('weight', v)} type="number" />
-                      <Field label="Altura (cm)" value={form.height} onChange={v => set('height', v)} type="number" />
-                    </div>
-                  </Section>
-                )}
-
-                {/* Gallery */}
-                <Section icon={ImageIcon} title="Galería">
-                  {editDogId ? (
-                    <GalleryTab dogId={editDogId} userId={userId} />
-                  ) : (
-                    <p className="text-xs text-muted text-center py-4">
-                      {isFromLitter ? 'Guarda el cachorro para subir fotos' : 'Guarda el perro primero para subir fotos'}
-                    </p>
-                  )}
-                </Section>
-
-                {/* Visibility */}
-                <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-xl p-4">
-                  <div className="flex items-center gap-3">
-                    {form.is_public ? <Eye className="w-5 h-5 text-green-400" /> : <EyeOff className="w-5 h-5 text-muted" />}
-                    <div>
-                      <p className="text-sm font-medium">{form.is_public ? 'Público' : 'Privado'}</p>
-                      <p className="text-xs text-muted">{form.is_public ? 'Visible para otros' : 'Solo tú'}</p>
-                    </div>
-                  </div>
-                  <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
-                </div>
-
-                {/* In Memoriam — solo en edición */}
-                {editDogId && (
-                  deceasedAt ? (
-                    <div className="flex items-center gap-3 bg-surface-card border border-hairline rounded-xl p-4">
-                      <Heart className="w-5 h-5 text-rose-400 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium">En memoria</p>
-                        <p className="text-xs text-muted">
-                          Fallecido el {new Date(deceasedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}.
-                          Su ficha y genealogía se conservan. Para revertirlo, escribe a soporte.
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-xl p-4">
-                      <div className="flex items-center gap-3">
-                        <Heart className="w-5 h-5 text-muted flex-shrink-0" />
-                        <div>
-                          <p className="text-sm font-medium">Marcar como fallecido</p>
-                          <p className="text-xs text-muted">Deja de contar en tu límite. La ficha se conserva.</p>
-                        </div>
-                      </div>
-                      <button type="button" onClick={() => setConfirmDeceased(true)}
-                        className="px-3 py-2 rounded-lg text-sm font-medium text-rose-500 border border-rose-500/30 hover:bg-rose-500/10 transition flex-shrink-0">
-                        Marcar
-                      </button>
-                    </div>
-                  )
-                )}
-              </div>
-            )}
-
-            {activeTab === 'salud' && editDogId && <SaludTab dogId={editDogId} userId={userId} />}
-            {activeTab === 'reproduccion' && editDogId && form.sex === 'female' && <ReproduccionTab dogId={editDogId} userId={userId} />}
-            {activeTab === 'genetica' && editDogId && <GeneticaTab dogId={editDogId} userId={userId} />}
-            {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
-            {activeTab === 'pedigree-pdf' && editDogId && <PedigreePdfTab dogId={editDogId} dogName={form.name} userId={userId} />}
-            {activeTab === 'historico' && editDogId && <HistoricoTab dogId={editDogId} />}
+            {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-500 mb-4">{error}</div>}
+            {datosContent}
           </div>
         )}
 
-        {/* Footer */}
+        {/* Footer — guardar (solo pestaña Datos, modo manual) */}
         {activeTab === 'datos' && createMode === 'manual' && (
           <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hairline flex-shrink-0">
             <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">Cancelar</button>
@@ -544,9 +588,18 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         )}
       </div>
 
+      {/* Paneles secundarios lanzados desde Gestión (encima del editor) */}
+      {isEdit && editDogId && (
+        <>
+          <PedigreeEditor open={pedigreeOpen} onClose={() => { setPedigreeOpen(false); router.refresh() }} dogId={editDogId} userId={userId} />
+          <TransferPanel open={transferOpen} onClose={() => { setTransferOpen(false); router.refresh() }}
+            dog={transferOpen ? { id: editDogId, name: form.name, thumbnail_url: thumbnailUrl, breed_name: selBreed?.name } : null} />
+        </>
+      )}
+
       {/* Modal de confirmación "Marcar como fallecido" */}
       {confirmDeceased && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50"
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/50"
           onClick={() => !deceasedLoading && setConfirmDeceased(false)}>
           <div className="bg-canvas border border-hairline rounded-2xl p-6 max-w-sm w-full shadow-xl"
             onClick={e => e.stopPropagation()}>
@@ -578,13 +631,54 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           </div>
         </div>
       )}
-
       </>
     </Portal>
   )
 }
 
 /* ── Helper Components ── */
+
+const ACCENTS: Record<string, string> = {
+  emerald: 'text-emerald-600 bg-emerald-50',
+  blue: 'text-blue-600 bg-blue-50',
+  pink: 'text-pink-600 bg-pink-50',
+  violet: 'text-violet-600 bg-violet-50',
+  amber: 'text-amber-600 bg-amber-50',
+  rose: 'text-rose-500 bg-rose-50',
+}
+
+function ToggleCard({ icon: Icon, accent, title, desc, value, onChange, saving, fill }: { icon: React.ElementType; accent: string; title: string; desc: string; value: boolean; onChange: (v: boolean) => void; saving?: boolean; fill?: boolean }) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-hairline bg-canvas p-3.5">
+      <div className={`flex h-9 w-9 items-center justify-center rounded-full flex-shrink-0 ${ACCENTS[accent]}`}>
+        <Icon className={`h-4 w-4 ${fill && value ? 'fill-current' : ''}`} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[13.5px] font-medium text-ink">{title}</p>
+        <p className="text-[11.5px] text-muted leading-snug">{desc}</p>
+      </div>
+      {saving ? <Loader2 className="h-4 w-4 animate-spin text-muted flex-shrink-0" /> : <ToggleSwitch value={value} onChange={onChange} />}
+    </div>
+  )
+}
+
+function ActionCard({ icon: Icon, accent, title, desc, cta, onClick, danger }: { icon: React.ElementType; accent: string; title: string; desc: string; cta: string; onClick: () => void; danger?: boolean }) {
+  return (
+    <button type="button" onClick={onClick}
+      className="flex w-full items-center gap-3 rounded-2xl border border-hairline bg-canvas p-3.5 text-left transition hover:bg-surface-soft hover:border-ink/20">
+      <div className={`flex h-9 w-9 items-center justify-center rounded-full flex-shrink-0 ${ACCENTS[accent]}`}>
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[13.5px] font-medium text-ink">{title}</p>
+        <p className="text-[11.5px] text-muted leading-snug">{desc}</p>
+      </div>
+      <span className={`inline-flex items-center gap-0.5 text-[12.5px] font-medium flex-shrink-0 ${danger ? 'text-rose-500' : 'text-ink'}`}>
+        {cta} <ChevronRight className="h-3.5 w-3.5" />
+      </span>
+    </button>
+  )
+}
 
 function Section({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) {
   return (
@@ -602,9 +696,6 @@ function Field({ label, value, onChange, type = 'text', placeholder }: { label: 
   return (
     <div>
       <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">{label}</label>
-      {/* text-base (16px) en mobile para evitar el zoom automático de iOS
-          Safari al hacer focus en inputs <16px. Reduce a sm en desktop
-          (14px) para mantener la densidad visual. */}
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
         className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
     </div>
@@ -635,7 +726,7 @@ function SelectCard({ label, name, image, sexColor, onClear, selector, disabled 
         <ChevronDown className={`w-4 h-4 text-muted transition ${open ? 'rotate-180' : ''}`} />
       </div>
       {open && !disabled && (
-        <div className="absolute z-[80] top-full mt-1 left-0 right-0 bg-white border border-hairline rounded-lg shadow-lg max-h-56 overflow-hidden">
+        <div className="absolute z-[80] top-full mt-1 left-0 right-0 bg-canvas border border-hairline rounded-lg shadow-lg max-h-56 overflow-hidden">
           {selector}
           {name && <button onClick={() => { onClear(); setOpen(false) }} className="w-full text-left px-3 py-2.5 text-xs text-red-400 hover:bg-red-500/10 border-t border-hairline">Quitar selección</button>}
         </div>
@@ -700,7 +791,7 @@ function DropdownSearch({ label, items, value, onChange, placeholder }: { label:
         </div>
       </div>
       {open && (
-        <div className="absolute z-[80] mt-1 w-full bg-white border border-hairline rounded-lg shadow-lg max-h-48 flex flex-col">
+        <div className="absolute z-[80] mt-1 w-full bg-canvas border border-hairline rounded-lg shadow-lg max-h-48 flex flex-col">
           <SearchList items={items} value={value} onChange={v => { onChange(v); setOpen(false) }} placeholder={placeholder} />
         </div>
       )}
@@ -721,14 +812,6 @@ function LockedCard({ label, name, sexColor }: { label: string; name?: string; s
   )
 }
 
-/**
- * LockedParentCard — versión read-only para padres en modo edición.
- *
- * Padre/Madre NUNCA deben editarse desde el form del perro (rompe el árbol:
- * descendientes, COI, hermanos quedan inconsistentes). Aquí solo mostramos
- * lo que hay, con el thumbnail, y un atajo a la ficha para que el usuario
- * pueda navegar al editor de pedigree si quiere cambiar la relación.
- */
 function LockedParentCard({ label, dog, sexColor }: {
   label: string
   dog?: { id: string; name: string; thumbnail_url?: string | null } | null
