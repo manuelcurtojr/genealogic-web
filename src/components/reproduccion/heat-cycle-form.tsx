@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { X, Loader2 } from 'lucide-react'
+import { Portal } from '@/components/ui/portal'
 
 interface Female {
   id: string
@@ -10,13 +11,19 @@ interface Female {
 }
 
 interface Props {
+  open: boolean
   females: Female[]
   defaultFemaleId?: string
   onClose: () => void
   onSaved: () => void
 }
 
-export default function HeatCycleForm({ females, defaultFemaleId, onClose, onSaved }: Props) {
+/**
+ * Panel lateral para registrar un celo. Mismo patrón visual que
+ * dog-form-panel / event-form / vet-reminder-form: slide-from-right con
+ * safe-area, Portal y diseño responsive (desktop y móvil).
+ */
+export default function HeatCycleForm({ open, females, defaultFemaleId, onClose, onSaved }: Props) {
   const [dogId, setDogId] = useState(defaultFemaleId || females[0]?.id || '')
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0])
   const [endDate, setEndDate] = useState('')
@@ -25,6 +32,26 @@ export default function HeatCycleForm({ females, defaultFemaleId, onClose, onSav
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Reset al abrir
+  useEffect(() => {
+    if (!open) return
+    setDogId(defaultFemaleId || females[0]?.id || '')
+    setStartDate(new Date().toISOString().split('T')[0])
+    setEndDate('')
+    setWasMated(false)
+    setMatingDate(new Date().toISOString().split('T')[0])
+    setNotes('')
+    setError(null)
+  }, [open, defaultFemaleId, females])
+
+  // ESC para cerrar
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [open, onClose])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,135 +94,154 @@ export default function HeatCycleForm({ females, defaultFemaleId, onClose, onSav
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-canvas shadow-xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-hairline px-5 py-4">
-          <h2 className="text-[16px] font-semibold tracking-[-0.02em] text-ink">Registrar celo</h2>
+    <Portal>
+      <>
+      {/* Backdrop */}
+      <div
+        className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={onClose}
+      />
+
+      {/* Slide panel — mismo patrón que dog-form-panel / genos-panel */}
+      <div
+        className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+        style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
+      >
+        {/* Fixed header */}
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
+          <h2 className="text-base sm:text-lg font-semibold">Registrar celo</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-muted transition-colors hover:bg-surface-soft hover:text-ink"
+            className="text-muted hover:text-ink transition p-1"
             aria-label="Cerrar"
           >
-            <X className="h-4 w-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4 px-5 py-4">
-          <div>
-            <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
-              Hembra
-            </label>
-            <select
-              value={dogId}
-              onChange={(e) => setDogId(e.target.value)}
-              className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
-              required
-            >
-              {females.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Scrollable form */}
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5">
+            {error && (
+              <div className="rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-[12.5px] text-red-400">
+                {error}
+              </div>
+            )}
 
-          <div className="grid grid-cols-2 gap-3">
+            {/* Hembra */}
             <div>
-              <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
-                Inicio del celo *
+              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">
+                Hembra *
               </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
+              <select
+                value={dogId}
+                onChange={(e) => setDogId(e.target.value)}
+                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition appearance-none"
                 required
-              />
+              >
+                {females.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div>
-              <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
-                Fin (opcional)
-              </label>
+
+            {/* Fechas */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">
+                  Inicio del celo *
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">
+                  Fin (opcional)
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition"
+                />
+              </div>
+            </div>
+            <p className="-mt-2 text-[11.5px] text-muted">
+              Si dejas el fin en blanco, se estimará 21 días después del inicio.
+            </p>
+
+            {/* Monta */}
+            <label className="flex items-center gap-2 text-sm text-ink">
               <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
+                type="checkbox"
+                checked={wasMated}
+                onChange={(e) => setWasMated(e.target.checked)}
+                className="h-4 w-4 rounded border-hairline"
               />
-            </div>
-          </div>
-          <p className="-mt-2 text-[11.5px] text-muted">
-            Si dejas el fin en blanco, se estimará 21 días después del inicio.
-          </p>
-
-          <label className="flex items-center gap-2 text-[13.5px] text-ink">
-            <input
-              type="checkbox"
-              checked={wasMated}
-              onChange={(e) => setWasMated(e.target.checked)}
-              className="h-4 w-4 rounded border-hairline"
-            />
-            Hubo cruce/monta durante este celo
-          </label>
-
-          {wasMated && (
-            <div>
-              <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
-                Fecha de la monta *
-              </label>
-              <input
-                type="date"
-                value={matingDate}
-                onChange={(e) => setMatingDate(e.target.value)}
-                className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
-                required={wasMated}
-              />
-              <p className="mt-1 text-[11.5px] text-muted">
-                A partir de aquí calculamos la confirmación de preñez (~28 días) y el parto previsto (~63 días).
-              </p>
-            </div>
-          )}
-
-          <div>
-            <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
-              Notas
+              Hubo cruce/monta durante este celo
             </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
-              placeholder="Observaciones, semental, niveles de progesterona..."
-            />
+
+            {wasMated && (
+              <div>
+                <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">
+                  Fecha de la monta *
+                </label>
+                <input
+                  type="date"
+                  value={matingDate}
+                  onChange={(e) => setMatingDate(e.target.value)}
+                  className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition"
+                  required={wasMated}
+                />
+                <p className="mt-1 text-[11.5px] text-muted">
+                  A partir de aquí calculamos la confirmación de preñez (~28 días) y el parto previsto (~63 días).
+                </p>
+              </div>
+            )}
+
+            {/* Notas */}
+            <div>
+              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">
+                Notas
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                placeholder="Observaciones, semental, niveles de progesterona..."
+                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition resize-none"
+              />
+            </div>
           </div>
 
-          {error && (
-            <div className="rounded-lg bg-[color:var(--error)]/10 px-3 py-2 text-[12.5px] text-[color:var(--error)]">
-              {error}
-            </div>
-          )}
-
-          <div className="flex justify-end gap-2 pt-1">
+          {/* Fixed footer */}
+          <div className="flex items-center justify-end gap-2 px-4 sm:px-6 py-3 sm:py-4 border-t border-hairline flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-hairline bg-canvas px-4 py-2 text-[13px] font-medium text-body hover:bg-surface-soft"
+              className="px-3 sm:px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90 disabled:opacity-50"
+              className="bg-ink text-on-primary hover:opacity-90 font-semibold px-4 sm:px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm"
             >
-              {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               Guardar
             </button>
           </div>
         </form>
       </div>
-    </div>
+      </>
+    </Portal>
   )
 }

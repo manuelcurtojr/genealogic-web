@@ -326,14 +326,13 @@ export default function ReproductionGantt({ females, cycles, litters }: Props) {
         </div>
       )}
 
-      {showForm && (
-        <HeatCycleForm
-          females={females}
-          defaultFemaleId={formFemaleId}
-          onClose={() => setShowForm(false)}
-          onSaved={() => { setShowForm(false); window.location.reload() }}
-        />
-      )}
+      <HeatCycleForm
+        open={showForm}
+        females={females}
+        defaultFemaleId={formFemaleId}
+        onClose={() => setShowForm(false)}
+        onSaved={() => { setShowForm(false); window.location.reload() }}
+      />
     </>
   )
 }
