@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { TYPE_LABELS, STATUS_LABELS, STATUS_COLORS } from '@/lib/admin-requests/types'
-import { ArrowLeft, Inbox, ArrowRight, Plus, MessageSquare } from 'lucide-react'
+import { Inbox, ArrowRight, Plus, MessageSquare } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,11 +25,8 @@ export default async function MisSolicitudesPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-      <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-ink mb-4">
-        <ArrowLeft className="w-3.5 h-3.5" /> Volver al dashboard
-      </Link>
-
+    // Dentro del grupo (dashboard) → ya hay sidebar + header. Sin "volver".
+    <div className="max-w-3xl mx-auto">
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
         <div className="flex items-center gap-3">
           <Inbox className="w-6 h-6 text-ink" />

@@ -23,7 +23,9 @@ export default async function AdminGenealogyPage() {
   const dogsWithOwner = (dogs || []).map(d => ({ ...d, owner: ownerMap.get(d.owner_id) || null }))
 
   const { data: breeds } = await supabase.from('breeds').select('id, name').order('name')
-  const { data: colors } = await supabase.from('colors').select('id, name, breed_id').order('name')
+  // colors NO tiene columna breed_id (la relación vive en breed_colors).
+  // Pedir breed_id rompía el select → colors=null. Quitado.
+  const { data: colors } = await supabase.from('colors').select('id, name').order('name')
 
   // Calculate completeness: how many ancestors out of expected
   const dogMap = new Map(dogsWithOwner.map(d => [d.id, d]))

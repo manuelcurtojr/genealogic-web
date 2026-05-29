@@ -10,7 +10,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import SupportForm from '@/components/admin-requests/support-form'
-import { ArrowLeft, MessageSquare } from 'lucide-react'
+import { MessageSquare } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,14 +49,10 @@ export default async function SoportePage() {
     .limit(3)
 
   return (
-    <div className="min-h-screen bg-canvas">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
-        <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-ink">
-          <ArrowLeft className="w-3.5 h-3.5" /> Volver al dashboard
-        </Link>
-      </div>
-
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 pb-12">
+    // Vive dentro del grupo (dashboard): el shell ya aporta sidebar +
+    // header + padding. No hace falta wrapper min-h-screen ni link "volver".
+    <div className="max-w-2xl mx-auto">
+      <div>
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-ink mb-4">
             <MessageSquare className="w-7 h-7 text-on-primary" />

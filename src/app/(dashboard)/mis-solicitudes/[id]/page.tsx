@@ -63,7 +63,9 @@ export default async function MiSolicitudDetailPage({
   const isClosed = ['approved', 'rejected', 'cancelled'].includes(r.status)
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+    // El grupo (dashboard) ya aporta el padding del shell. El link "volver
+    // a mis solicitudes" SÍ se mantiene: es navegación contextual detalle→lista.
+    <div className="max-w-3xl mx-auto">
       <Link href="/mis-solicitudes" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-ink mb-4">
         <ArrowLeft className="w-3.5 h-3.5" /> Volver a mis solicitudes
       </Link>

@@ -57,6 +57,9 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   const [breeds, setBreeds] = useState<any[]>([])
   const [colors, setColors] = useState<any[]>([])
   const [allColors, setAllColors] = useState<any[]>([])
+  // Mapa breed_id → Set(color_id) desde la pivote breed_colors. Ref (no
+  // state) porque filterByBreed lo lee sincrónicamente al cambiar de raza.
+  const breedColorsRef = useRef<Map<string, Set<string>>>(new Map())
   const [kennels, setKennels] = useState<any[]>([])
   const [maleDogs, setMaleDogs] = useState<any[]>([])
   const [femaleDogs, setFemaleDogs] = useState<any[]>([])
@@ -81,13 +84,28 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     setActiveTab('datos'); setCreateMode('manual'); setDataLoading(true); setError('')
     const supabase = createClient()
     async function load() {
-      const [bRes, cRes, kRes, mRes, fRes] = await Promise.all([
+      // NOTA: la tabla `colors` NO tiene columna breed_id — la relación
+      // raza↔color vive en la pivote `breed_colors` (breed_id, color_id).
+      // Antes el código pedía colors.select('id, name, breed_id') → el
+      // select fallaba con error 42703 → cRes.data = null → el selector de
+      // color salía vacío en TODOS los perros. Bug de creación/edición.
+      const [bRes, cRes, bcRes, kRes, mRes, fRes] = await Promise.all([
         supabase.from('breeds').select('id, name').order('name'),
-        supabase.from('colors').select('id, name, breed_id').order('name'),
+        supabase.from('colors').select('id, name').order('name'),
+        supabase.from('breed_colors').select('breed_id, color_id'),
         supabase.from('kennels').select('id, name, logo_url').eq('owner_id', userId).order('name'),
         supabase.from('dogs').select('id, name, sex, thumbnail_url, breed_id').eq('sex', 'male').order('name').limit(500),
         supabase.from('dogs').select('id, name, sex, thumbnail_url, breed_id').eq('sex', 'female').order('name').limit(500),
       ])
+
+      // Construir mapa breed_id → Set(color_id) para filtrar colores por raza.
+      const bcMap = new Map<string, Set<string>>()
+      for (const row of (bcRes.data || []) as { breed_id: string; color_id: string }[]) {
+        if (!bcMap.has(row.breed_id)) bcMap.set(row.breed_id, new Set())
+        bcMap.get(row.breed_id)!.add(row.color_id)
+      }
+      breedColorsRef.current = bcMap
+
       setBreeds(bRes.data || []); setAllColors(cRes.data || []); setColors(cRes.data || [])
       setKennels(kRes.data || []); setAllMaleDogs(mRes.data || []); setAllFemaleDogs(fRes.data || [])
       setMaleDogs(mRes.data || []); setFemaleDogs(fRes.data || [])
@@ -139,7 +157,15 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     const c = cd || allColors, m = md || allMaleDogs, f = fd || allFemaleDogs
     if (!breedId) { setColors(c); setMaleDogs(m); setFemaleDogs(f) }
     else {
-      setColors(c.filter((cl: any) => !cl.breed_id || cl.breed_id === breedId))
+      // Filtrar colores por la pivote breed_colors. Si la raza NO tiene
+      // colores configurados (solo 117 de ~244 razas los tienen), mostramos
+      // TODOS — mejor un selector con todo que un selector vacío.
+      const allowedColors = breedColorsRef.current.get(breedId)
+      setColors(
+        allowedColors && allowedColors.size > 0
+          ? c.filter((cl: any) => allowedColors.has(cl.id))
+          : c,
+      )
       setMaleDogs(m.filter((d: any) => d.breed_id === breedId))
       setFemaleDogs(f.filter((d: any) => d.breed_id === breedId))
     }
