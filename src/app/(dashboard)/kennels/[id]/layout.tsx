@@ -65,8 +65,15 @@ export default async function KennelLayout({
   // Sin esto, dentro del DashboardShell (logueado) el contenido se estiraba a
   // TODO el ancho disponible y la web del criadero quedaba descuadrada
   // respecto a su barra de navegación. Aplica a TODAS las páginas del perfil.
+  //
+  // overflow-x-clip: las secciones full-bleed (hero, chrome, razas) usan
+  // `width:100vw` + `margin-left:calc(50% - 50vw)`. Ese truco asume que el
+  // contenedor está CENTRADO en el viewport — pero dentro del shell logueado
+  // está desplazado por el sidebar (~256px), así que 100vw se desbordaba y
+  // generaba scroll lateral. clip recorta ese desbordamiento sin romper los
+  // `position: sticky` interiores (a diferencia de overflow-x-hidden).
   const Centered = ({ children }: { children: React.ReactNode }) => (
-    <div className="mx-auto w-full max-w-7xl">{children}</div>
+    <div className="mx-auto w-full max-w-7xl overflow-x-clip">{children}</div>
   )
 
   // Si NO es Pro: sin chrome del kennel — sólo el contenido (acotado)
