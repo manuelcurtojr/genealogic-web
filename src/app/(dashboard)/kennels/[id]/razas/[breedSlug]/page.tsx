@@ -302,13 +302,25 @@ export default async function KennelBreedPromoPage(
               {promo.closing}
             </p>
           )}
-          <Link
-            href={`/kennels/${kennel.slug || kennel.id}/perros`}
-            className="inline-flex items-center gap-2 rounded-full bg-canvas text-ink px-6 py-3 text-[14px] font-semibold tracking-[-0.005em] hover:bg-canvas/90 transition-colors"
-          >
-            Ver nuestros {breed.name}
-            <span aria-hidden>→</span>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-center">
+            <Link
+              href={`/kennels/${kennel.slug || kennel.id}/perros`}
+              className="inline-flex items-center gap-2 rounded-full bg-canvas text-ink px-6 py-3 text-[14px] font-semibold tracking-[-0.005em] hover:bg-canvas/90 transition-colors w-full sm:w-auto justify-center"
+            >
+              Ver nuestros {breed.name}
+              <span aria-hidden>→</span>
+            </Link>
+            <Link
+              href={`/razas/${breed.slug}`}
+              className="inline-flex items-center gap-2 rounded-full border border-canvas/40 text-canvas px-6 py-3 text-[14px] font-semibold tracking-[-0.005em] hover:bg-canvas/10 hover:border-canvas/60 transition-colors w-full sm:w-auto justify-center"
+            >
+              Ver estándar
+              <span aria-hidden className="text-canvas/70">↗</span>
+            </Link>
+          </div>
+          <p className="mt-5 text-[12px] text-canvas/60">
+            El estándar técnico completo de la raza en Genealogic
+          </p>
         </div>
       </section>
     </>
