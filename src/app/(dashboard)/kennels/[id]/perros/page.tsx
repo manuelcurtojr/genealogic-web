@@ -4,8 +4,33 @@ import { isUUID } from '@/lib/slug'
 import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
 import { sortDogsByPhotoQuality } from '@/lib/dogs/sort-quality'
 import PerrosCatalog from '@/components/kennel/perros-catalog'
+import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> },
+): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const field = isUUID(id) ? 'id' : 'slug'
+  const { data: kennel } = await supabase
+    .from('kennels')
+    .select('name, slug, city, country')
+    .eq(field, id)
+    .maybeSingle()
+  if (!kennel) return { title: 'No encontrado' }
+  const loc = [kennel.city, kennel.country].filter(Boolean).join(', ')
+  const title = `Nuestros perros · ${kennel.name}`
+  const description = `Reproductores, cachorros disponibles y ejemplares criados por ${kennel.name}${loc ? ` en ${loc}` : ''}. Cada perro con su genealogía completa y verificable.`
+  const canonical = `https://genealogic.io/kennels/${kennel.slug}/perros`
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, url: canonical, type: 'website', locale: 'es_ES' },
+  }
+}
 
 export default async function KennelPerrosPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

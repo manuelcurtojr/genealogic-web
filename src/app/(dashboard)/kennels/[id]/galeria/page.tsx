@@ -5,8 +5,33 @@ import { isKennelOnProPlan, isExtraPageEnabled } from '@/lib/kennel/pro-web'
 import { pageNotYetPublicMessage } from '@/lib/kennel/pro-page-loader'
 import { ProPageShell, OwnerDraftBanner, EmptyContentState } from '@/components/kennel/pro-page-shell'
 import KennelPhotosGallery from '@/components/kennel/photos-gallery'
+import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> },
+): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const field = isUUID(id) ? 'id' : 'slug'
+  const { data: kennel } = await supabase
+    .from('kennels')
+    .select('name, slug, city, country')
+    .eq(field, id)
+    .maybeSingle()
+  if (!kennel) return { title: 'No encontrado' }
+  const loc = [kennel.city, kennel.country].filter(Boolean).join(', ')
+  const title = `Galería · ${kennel.name}`
+  const description = `Imágenes del día a día de ${kennel.name}${loc ? ` en ${loc}` : ''}: nuestros perros, familias y momentos del criadero.`
+  const canonical = `https://genealogic.io/kennels/${kennel.slug}/galeria`
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, url: canonical, type: 'website', locale: 'es_ES' },
+  }
+}
 
 export default async function KennelGaleriaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

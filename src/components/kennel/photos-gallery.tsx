@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { transformImageUrl } from '@/lib/storage/image-url'
 
 type Photo = { id: string; url: string; caption: string | null }
 
@@ -57,6 +58,14 @@ export default function KennelPhotosGallery({ photos, layout = 'gallery' }: Prop
 
   const aspectClass = layout === 'facilities' ? 'aspect-[4/3]' : 'aspect-square'
 
+  // Sirve las miniaturas del grid optimizadas (redimensionadas + comprimidas)
+  // vía el CDN de render de Supabase, en vez del JPG original a tamaño completo
+  // — antes una galería de Drive cargaba MBs por foto y dejaba el grid en gris.
+  // facilities = cards más grandes (4:3, 3 cols); gallery = cuadradas (hasta 5 cols).
+  const thumbOpts = layout === 'facilities'
+    ? { width: 700, height: 525, quality: 80, resize: 'cover' as const }
+    : { width: 500, height: 500, quality: 78, resize: 'cover' as const }
+
   return (
     <>
       <div className={gridClass}>
@@ -70,7 +79,7 @@ export default function KennelPhotosGallery({ photos, layout = 'gallery' }: Prop
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={p.url}
+                src={transformImageUrl(p.url, thumbOpts) || p.url}
                 alt={p.caption || ''}
                 loading="lazy"
                 className="h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
@@ -123,7 +132,7 @@ function Lightbox({
       <div className="relative max-h-[92vh] max-w-[95vw] sm:max-w-[88vw]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={photo.url}
+          src={transformImageUrl(photo.url, { width: 1600, quality: 85 }) || photo.url}
           alt={photo.caption || ''}
           className="max-h-[92vh] max-w-full object-contain rounded-lg shadow-2xl"
         />
