@@ -49,6 +49,12 @@ type RpcRow = {
 }
 
 export default async function BreedsIndexPage() {
+  // ¿Usuario logueado? Cuando lo está, la página vive dentro del shell del
+  // dashboard y queremos que ocupe TODO el ancho (como /perros). Para
+  // visitantes anónimos mantenemos el ancho centrado a 1200px (look público).
+  const auth = await createClient()
+  const { data: { user } } = await auth.auth.getUser()
+
   // admin client → bypass RLS + sin truncamiento de filas.
   const admin = createKennelAdminClient() as any
 
