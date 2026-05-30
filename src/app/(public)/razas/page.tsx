@@ -14,6 +14,7 @@ import type { Metadata } from 'next'
 import BreedsDirectory, { type DirectoryBreed } from '@/components/breeds/breeds-directory'
 import { Dog, Award } from 'lucide-react'
 import Image from 'next/image'
+import DirectoryTabs from '@/components/search/directory-tabs'
 
 export const metadata: Metadata = {
   title: 'Directorio de razas caninas — Genealogic',
@@ -112,6 +113,8 @@ export default async function BreedsIndexPage() {
 
         {/* Contenido — padding fluido: px-4 móvil, px-6 sm, px-12 lg */}
         <div className="relative z-10 mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
+          {/* Navegación de directorios: Perros · Criaderos · Razas */}
+          <div className="mb-6 sm:mb-8"><DirectoryTabs active="breeds" /></div>
           {/* Badge superior */}
           <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-hairline bg-canvas/80 backdrop-blur-md px-3 py-1.5 text-[10.5px] sm:text-[11.5px] font-semibold uppercase tracking-[0.08em] sm:tracking-[0.1em] text-ink shadow-sm">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FE6620] animate-pulse flex-shrink-0" />

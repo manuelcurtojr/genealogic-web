@@ -11,13 +11,14 @@ import { DogImage } from '@/components/ui/dog-image'
 import { pastelByName } from '@/lib/avatars'
 import InfiniteScrollSentinel from '@/components/ui/infinite-scroll-sentinel'
 import { SkeletonGrid } from '@/components/ui/skeletons'
+import DirectoryTabs from '@/components/search/directory-tabs'
 
 type Tab = 'dogs' | 'kennels'
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
-  // Soporta ?tab=kennels para arrancar en la tab de criaderos
-  const initialTab: Tab = searchParams.get('tab') === 'kennels' ? 'kennels' : 'dogs'
+  // La tab activa se deriva de ?tab (reactiva a los <Link> de DirectoryTabs)
+  const tab: Tab = searchParams.get('tab') === 'kennels' ? 'kennels' : 'dogs'
   // Query inicial pasada desde URL (?q=…) — viene del search box de la home
   const initialQuery = searchParams.get('q') || ''
   // Filtro de raza inicial (?breed_id=…) — usado por los chips del hero
@@ -25,7 +26,6 @@ export default function SearchPage() {
   // de búsqueda. Si llega un breed_id, el filtro se aplica automáticamente
   // y abrimos el panel de filtros para que el user vea qué está aplicado.
   const initialBreedId = searchParams.get('breed_id') || ''
-  const [tab, setTab] = useState<Tab>(initialTab)
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -37,25 +37,8 @@ export default function SearchPage() {
         <p className="mt-2 text-[14px] text-body">Encuentra perros y criaderos registrados en Genealogic.</p>
       </div>
 
-      {/* Tabs Cal pill group */}
-      <div className="inline-flex gap-1 rounded-lg bg-surface-card p-1">
-        <button
-          onClick={() => setTab('dogs')}
-          className={`inline-flex items-center gap-1.5 rounded-md px-4 py-1.5 text-[13px] font-medium transition-colors ${
-            tab === 'dogs' ? 'bg-canvas text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)]' : 'text-muted hover:text-ink'
-          }`}
-        >
-          <Dog className="h-4 w-4" /> Perros
-        </button>
-        <button
-          onClick={() => setTab('kennels')}
-          className={`inline-flex items-center gap-1.5 rounded-md px-4 py-1.5 text-[13px] font-medium transition-colors ${
-            tab === 'kennels' ? 'bg-canvas text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)]' : 'text-muted hover:text-ink'
-          }`}
-        >
-          <Home className="h-4 w-4" /> Criaderos
-        </button>
-      </div>
+      {/* Directorios: Perros · Criaderos · Razas */}
+      <DirectoryTabs active={tab} />
 
       {tab === 'dogs'
         ? <DogsSearch initialQuery={initialQuery} initialBreedId={initialBreedId} />
