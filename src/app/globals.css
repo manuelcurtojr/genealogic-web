@@ -323,3 +323,35 @@ select option {
 .contract-preview em { font-style: italic; }
 .contract-preview hr { margin: 1.5rem 0; border: 0; border-top: 1px solid var(--hairline); }
 .contract-preview a { color: var(--ink); text-decoration: underline; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   .kennel-bleed — fondo full-bleed para las webs de criadero Pro.
+   El reto: una sección cuyo fondo (hero, divisores, footer, chrome) llena
+   TODO el ancho disponible, pero ese "ancho disponible" cambia de contexto:
+     · Página pública (sin sidebar)         → todo el viewport.
+     · Logueado (dentro del DashboardShell) → la COLUMNA: del borde derecho
+       del sidebar al borde derecho de la pantalla.
+   El truco clásico margin-inline:calc(50% - 50vw)+width:100vw asume contenedor
+   centrado en el VIEWPORT; con el sidebar desplazando la columna eso daba
+   scroll lateral y el fondo no llenaba. Solución: restar el ancho real del
+   sidebar, que el shell ya expone como --sidebar-width (DashboardShell L213).
+   Al ser var CSS se re-adapta solo al colapsar el menú (256↔68). En público
+   la var no existe → cae a 0px → idéntico a antes (100vw del viewport). En
+   móvil (<1024px) el sidebar es drawer y el contenido ocupa todo el ancho,
+   así que la corrección solo aplica en lg+.
+   NOTA: el contenedor padre debe llevar w-full (width:100%) además de
+   max-w-7xl; si no, estos hijos (más anchos que el padre) lo estiran. */
+.kennel-bleed {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+@media (min-width: 1024px) {
+  .kennel-bleed {
+    width: calc(100vw - var(--sidebar-width, 0px));
+    max-width: calc(100vw - var(--sidebar-width, 0px));
+    margin-left: calc(50% - 50vw + var(--sidebar-width, 0px) / 2);
+    margin-right: calc(50% - 50vw + var(--sidebar-width, 0px) / 2);
+  }
+}

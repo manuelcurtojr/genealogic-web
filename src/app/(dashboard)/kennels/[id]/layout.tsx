@@ -87,7 +87,7 @@ export default async function KennelLayout({
     loggedIn
       ? (
         <div className="-mx-4 lg:-mx-[46px] overflow-x-clip">
-          <div className="mx-auto max-w-7xl px-4 sm:px-[30px]">{children}</div>
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-[30px]">{children}</div>
         </div>
       )
       : <>{children}</>
