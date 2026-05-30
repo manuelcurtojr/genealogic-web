@@ -15,6 +15,7 @@ import Link from 'next/link'
 import { pastelByName } from '@/lib/avatars'
 import InfiniteScrollSentinel from '@/components/ui/infinite-scroll-sentinel'
 import { SkeletonGrid } from '@/components/ui/skeletons'
+import DirectoryTabs from '@/components/search/directory-tabs'
 
 interface Kennel {
   id: string

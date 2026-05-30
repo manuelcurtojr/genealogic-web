@@ -135,7 +135,7 @@ export default function SearchBar() {
   function getLink(r: SearchResult) {
     if (r.type === 'dog') return `/dogs/${r.slug || r.id}`
     if (r.type === 'kennel') return `/kennels/${r.slug || r.id}`
-    if (r.type === 'breed') return r.slug ? `/razas/${r.slug}` : `/search?breed_id=${r.id}`
+    if (r.type === 'breed') return r.slug ? `/razas/${r.slug}` : `/perros?breed_id=${r.id}`
     return `/dogs`
   }
 

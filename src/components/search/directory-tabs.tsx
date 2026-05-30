@@ -9,8 +9,8 @@ import { Dog, Home, Tag } from 'lucide-react'
  * /search (?tab=), Razas en /razas. "Buscar" (sidebar) entra por Perros.
  */
 const TABS = [
-  { key: 'dogs', label: 'Perros', icon: Dog, href: '/search' },
-  { key: 'kennels', label: 'Criaderos', icon: Home, href: '/search?tab=kennels' },
+  { key: 'dogs', label: 'Perros', icon: Dog, href: '/perros' },
+  { key: 'kennels', label: 'Criaderos', icon: Home, href: '/kennels' },
   { key: 'breeds', label: 'Razas', icon: Tag, href: '/razas' },
 ] as const
 
