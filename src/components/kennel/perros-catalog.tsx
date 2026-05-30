@@ -14,6 +14,7 @@ import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { Search, Filter, X, Tag, ChevronDown, Dog, Heart, Baby } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
+import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 
 type DogRow = {
   id: string
@@ -50,7 +51,9 @@ const TABS: { key: TabKey; label: string; icon: React.ElementType; iconColor: st
 
 interface Props {
   kennelName: string
-  kennelSlug: string
+  kennelId: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contactConfig: any
   reproductores: DogRow[]
   forSale: DogRow[]
   litters: LitterRow[]
@@ -59,16 +62,12 @@ interface Props {
 }
 
 export default function PerrosCatalog({
-  kennelName, kennelSlug, reproductores, forSale, litters, criados, currencySymbol,
+  kennelName, kennelId, contactConfig, reproductores, forSale, litters, criados, currencySymbol,
 }: Props) {
-  const [tab, setTab] = useState<TabKey>(() => {
-    // Default tab = primera con contenido
-    if (reproductores.length > 0) return 'reproductores'
-    if (forSale.length > 0)       return 'venta'
-    if (litters.length > 0)       return 'camadas'
-    if (criados.length > 0)       return 'criados'
-    return 'reproductores'
-  })
+  // Siempre arrancamos en Reproductores: es el escaparate del criadero (su
+  // línea de cría), el contenido más fuerte y el que mejor vende. Aunque
+  // En venta / Camadas estén vacíos, el visitante entra viendo lo bueno.
+  const [tab, setTab] = useState<TabKey>('reproductores')
   const [query, setQuery] = useState('')
   const [breedFilter, setBreedFilter] = useState('')
   const [sexFilter, setSexFilter] = useState('')
@@ -274,20 +273,22 @@ export default function PerrosCatalog({
         {tab === 'venta' && (
           filteredVenta.length === 0 && !hasActiveFilters
             ? <ContactEmptyState
-                kennelSlug={kennelSlug}
+                kennelId={kennelId}
+                kennelName={kennelName}
+                contactConfig={contactConfig}
                 title="Ahora mismo no hay cachorros disponibles"
-                body="Trabajamos por lista de espera. Apúntate y te avisamos en cuanto haya una camada que encaje contigo."
-                cta="Apuntarme a la lista de espera"
+                body="Trabajamos por lista de espera. Pide información y te avisamos en cuanto haya una camada que encaje contigo."
               />
             : <DogGrid dogs={filteredVenta} forSale currencySymbol={currencySymbol} emptyLabel="No hay perros en venta que coincidan." />
         )}
         {tab === 'camadas' && (
           filteredCamadas.length === 0 && !hasActiveFilters
             ? <ContactEmptyState
-                kennelSlug={kennelSlug}
+                kennelId={kennelId}
+                kennelName={kennelName}
+                contactConfig={contactConfig}
                 title="No hay camadas publicadas ahora mismo"
-                body="Planificamos las camadas con cuidado. Escríbenos y te contamos qué tenemos previsto."
-                cta="Hablar con el criadero"
+                body="Planificamos las camadas con cuidado. Pide información y te contamos qué tenemos previsto."
               />
             : <LitterGrid litters={filteredCamadas} emptyLabel="No hay camadas que coincidan." />
         )}
@@ -303,9 +304,23 @@ export default function PerrosCatalog({
  * a cero, invita a la lista de espera / a contactar → convierte el vacío
  * en lead. Enlaza a la página de contacto del propio criadero.
  */
+/**
+ * ContactEmptyState — empty state "vendedor" para los tabs comerciales sin
+ * contenido (En venta / Camadas vacíos sin filtros). En lugar de un cartel
+ * a cero, invita a contactar → convierte el vacío en lead. El CTA es el
+ * botón "Pedir información" que abre el formulario en un modal (el mismo del
+ * resto de la web), no un link a /contacto.
+ */
 function ContactEmptyState({
-  kennelSlug, title, body, cta,
-}: { kennelSlug: string; title: string; body: string; cta: string }) {
+  kennelId, kennelName, contactConfig, title, body,
+}: {
+  kennelId: string
+  kennelName: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contactConfig: any
+  title: string
+  body: string
+}) {
   return (
     <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft px-6 py-12 sm:py-16 text-center">
       <h3 className="text-[17px] sm:text-[19px] font-semibold tracking-[-0.02em] text-ink">
@@ -314,13 +329,9 @@ function ContactEmptyState({
       <p className="mx-auto mt-2 max-w-md text-[14px] leading-snug text-body">
         {body}
       </p>
-      <Link
-        href={`/kennels/${kennelSlug}/contacto`}
-        className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-ink px-5 py-3 text-[13.5px] font-bold text-on-primary transition hover:opacity-90"
-      >
-        {cta}
-        <span aria-hidden>→</span>
-      </Link>
+      <div className="mt-6 flex justify-center">
+        <ContactKennelButton kennelId={kennelId} kennelName={kennelName} config={contactConfig} />
+      </div>
     </div>
   )
 }

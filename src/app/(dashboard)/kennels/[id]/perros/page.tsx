@@ -39,7 +39,7 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
   const field = isUUID(id) ? 'id' : 'slug'
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, owner_id, name')
+    .select('id, slug, owner_id, name, contact_form_config')
     .eq(field, id)
     .single()
   if (!kennel) notFound()
@@ -133,7 +133,8 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
 
       <PerrosCatalog
         kennelName={kennel.name}
-        kennelSlug={kennel.slug || kennel.id}
+        kennelId={kennel.id}
+        contactConfig={kennel.contact_form_config || null}
         reproductores={reproductores}
         forSale={forSale}
         litters={litters}
