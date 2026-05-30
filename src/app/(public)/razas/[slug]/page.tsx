@@ -14,6 +14,7 @@ import { ExternalLink, AlertCircle } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { DogImage } from '@/components/ui/dog-image'
 import BreedStandardSidebar from '@/components/breeds/breed-standard-sidebar'
+import RecordView from '@/components/track/record-view'
 import { BREED_SECTIONS } from '@/components/breeds/sections'
 import type { Metadata } from 'next'
 
@@ -240,6 +241,7 @@ export default async function BreedPage(
 
   return (
     <div className="min-h-screen bg-canvas">
+      <RecordView type="breed" itemRef={breed.slug} name={breed.name} image={breed.image_url} subtitle={totalDogs > 0 ? `${totalDogs.toLocaleString('es-ES')} perros` : null} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

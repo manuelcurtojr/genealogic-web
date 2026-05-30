@@ -16,6 +16,7 @@ import ModerateButton from '@/components/moderation/moderate-button'
 import { HIDDEN_REASON_LABELS, type HiddenReason } from '@/lib/moderation/types'
 import { EyeOff, Heart } from 'lucide-react'
 import PageTracker from '@/components/track/page-tracker'
+import RecordView from '@/components/track/record-view'
 import { DogJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
 
@@ -275,6 +276,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         ]}
       />
       <PageTracker kennelId={kennel?.id || null} dogId={dog.id} />
+      <RecordView type="dog" itemRef={dog.slug || dog.id} name={dog.name} image={dog.thumbnail_url} subtitle={breedName || null} />
       {/* Gallery — full bleed: public = 100vw, logged-in = cancel padding */}
       <div className={`relative overflow-hidden ${user ? '-mx-4 -mt-4 sm:-mx-[30px] sm:-mt-[30px]' : ''}`}
         style={!user ? { marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)', marginTop: '-24px', width: '100vw' } : undefined}>

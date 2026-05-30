@@ -7,6 +7,7 @@ import { pastelByName } from '@/lib/avatars'
 import KennelPublicTabs from '@/components/kennel/kennel-public-tabs'
 import KennelProHome from '@/components/kennel/pro-home'
 import PageTracker from '@/components/track/page-tracker'
+import RecordView from '@/components/track/record-view'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 import ClaimBanner from '@/components/admin-requests/claim-banner'
 import ReportButton from '@/components/legal/report-dialog'
@@ -233,6 +234,7 @@ export default async function KennelDetailPage({
         ]}
       />
       <PageTracker kennelId={kennel.id} />
+      <RecordView type="kennel" itemRef={kennel.slug || kennel.id} name={kennel.name} image={kennel.logo_url} subtitle={[kennel.city, kennel.country].filter(Boolean).join(', ') || null} />
 
       {/* Banner moderación admin si el criadero está oculto */}
       {isHidden && userIsAdmin && kennel.hidden_reason && (

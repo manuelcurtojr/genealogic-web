@@ -8,6 +8,7 @@ import { Search, Dog, Home, Tag, ChevronRight } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { DogImage } from '@/components/ui/dog-image'
 import DirectoryTabs from '@/components/search/directory-tabs'
+import RecentViewsSlider from '@/components/search/recent-views-slider'
 
 /**
  * /search — buscador universal (resumen). Una sola página con resultados de
@@ -77,6 +78,9 @@ export default function SearchPage() {
           className="w-full rounded-xl border border-hairline bg-canvas py-3 pl-11 pr-4 text-[15px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
         />
       </form>
+
+      {/* Vistos recientemente — entre el campo y el estado inicial */}
+      {!hasQuery && <RecentViewsSlider />}
 
       {/* Estado inicial */}
       {!hasQuery && (
