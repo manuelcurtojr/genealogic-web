@@ -133,6 +133,7 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
 
       <PerrosCatalog
         kennelName={kennel.name}
+        kennelSlug={kennel.slug || kennel.id}
         reproductores={reproductores}
         forSale={forSale}
         litters={litters}

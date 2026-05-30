@@ -50,6 +50,7 @@ const TABS: { key: TabKey; label: string; icon: React.ElementType; iconColor: st
 
 interface Props {
   kennelName: string
+  kennelSlug: string
   reproductores: DogRow[]
   forSale: DogRow[]
   litters: LitterRow[]
@@ -58,7 +59,7 @@ interface Props {
 }
 
 export default function PerrosCatalog({
-  kennelName, reproductores, forSale, litters, criados, currencySymbol,
+  kennelName, kennelSlug, reproductores, forSale, litters, criados, currencySymbol,
 }: Props) {
   const [tab, setTab] = useState<TabKey>(() => {
     // Default tab = primera con contenido
@@ -253,13 +254,63 @@ export default function PerrosCatalog({
         })}
       </div>
 
-      {/* Content */}
+      {/* Content — los tabs comerciales (venta/camadas) muestran un CTA de
+          contacto cuando están vacíos SIN filtros activos, en vez de un
+          "0 resultados" muerto: un comprador que ve el escaparate a cero se
+          va; mejor invitarle a la lista de espera. Con filtros activos sí
+          mostramos el mensaje neutro (es el usuario el que ha filtrado). */}
       <div>
         {tab === 'reproductores' && <DogGrid dogs={filteredReproductores} emptyLabel={hasActiveFilters ? 'No hay reproductores que coincidan con los filtros.' : 'Sin reproductores publicados.'} />}
-        {tab === 'venta'         && <DogGrid dogs={filteredVenta} forSale currencySymbol={currencySymbol} emptyLabel={hasActiveFilters ? 'No hay perros en venta que coincidan.' : 'No hay perros en venta ahora mismo.'} />}
-        {tab === 'camadas'       && <LitterGrid litters={filteredCamadas} emptyLabel={hasActiveFilters ? 'No hay camadas que coincidan.' : 'Sin camadas publicadas.'} />}
+        {tab === 'venta' && (
+          filteredVenta.length === 0 && !hasActiveFilters
+            ? <ContactEmptyState
+                kennelSlug={kennelSlug}
+                title="Ahora mismo no hay cachorros disponibles"
+                body="Trabajamos por lista de espera. Apúntate y te avisamos en cuanto haya una camada que encaje contigo."
+                cta="Apuntarme a la lista de espera"
+              />
+            : <DogGrid dogs={filteredVenta} forSale currencySymbol={currencySymbol} emptyLabel="No hay perros en venta que coincidan." />
+        )}
+        {tab === 'camadas' && (
+          filteredCamadas.length === 0 && !hasActiveFilters
+            ? <ContactEmptyState
+                kennelSlug={kennelSlug}
+                title="No hay camadas publicadas ahora mismo"
+                body="Planificamos las camadas con cuidado. Escríbenos y te contamos qué tenemos previsto."
+                cta="Hablar con el criadero"
+              />
+            : <LitterGrid litters={filteredCamadas} emptyLabel="No hay camadas que coincidan." />
+        )}
         {tab === 'criados'       && <DogGrid dogs={filteredCriados} emptyLabel={hasActiveFilters ? 'No hay perros que coincidan.' : `${kennelName} aún no tiene perros criados publicados.`} />}
       </div>
+    </div>
+  )
+}
+
+/**
+ * ContactEmptyState — empty state "vendedor" para los tabs comerciales sin
+ * contenido (En venta / Camadas vacíos sin filtros). En lugar de un cartel
+ * a cero, invita a la lista de espera / a contactar → convierte el vacío
+ * en lead. Enlaza a la página de contacto del propio criadero.
+ */
+function ContactEmptyState({
+  kennelSlug, title, body, cta,
+}: { kennelSlug: string; title: string; body: string; cta: string }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft px-6 py-12 sm:py-16 text-center">
+      <h3 className="text-[17px] sm:text-[19px] font-semibold tracking-[-0.02em] text-ink">
+        {title}
+      </h3>
+      <p className="mx-auto mt-2 max-w-md text-[14px] leading-snug text-body">
+        {body}
+      </p>
+      <Link
+        href={`/kennels/${kennelSlug}/contacto`}
+        className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-ink px-5 py-3 text-[13.5px] font-bold text-on-primary transition hover:opacity-90"
+      >
+        {cta}
+        <span aria-hidden>→</span>
+      </Link>
     </div>
   )
 }
