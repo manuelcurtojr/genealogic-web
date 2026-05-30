@@ -163,7 +163,7 @@ export default function KennelProHome({
   const hasOwner = !!kennel.owner_id
 
   return (
-    <div className="space-y-16 sm:space-y-24 lg:space-y-28 pb-20 sm:pb-0">
+    <div className="space-y-16 sm:space-y-24 lg:space-y-28 pb-20 sm:pb-24 lg:pb-28">
 
       {/* Sticky mobile CTA (solo aparece tras pasar el hero) */}
       {hasOwner && (

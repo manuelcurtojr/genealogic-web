@@ -88,6 +88,24 @@ export default function BlogSlider({ posts, kennelSlug }: Props) {
         <ChevronRight className="h-5 w-5" />
       </button>
 
+      {/* Degradados en los extremos — aparecen SOLO cuando hay una card
+          oculta a ese lado (canPrev / canNext). Hacen que la card del borde
+          se "desvanezca" en vez de verse cortada de golpe. pointer-events-none
+          para no bloquear el scroll ni el click. from-canvas = fondo del home;
+          z-[5] queda por encima de las cards pero por debajo de los botones. */}
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-y-0 left-0 z-[5] w-10 sm:w-16 bg-gradient-to-r from-canvas to-transparent transition-opacity duration-300 ${
+          canPrev ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-y-0 right-0 z-[5] w-10 sm:w-16 bg-gradient-to-l from-canvas to-transparent transition-opacity duration-300 ${
+          canNext ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+
       {/* Scroller — sin negative margin para evitar overflow horizontal
           en mobile cuando el contenedor padre no tiene padding. El padding
           interno garantiza que la primera card no quede pegada al borde. */}
