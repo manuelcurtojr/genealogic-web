@@ -6,8 +6,33 @@ import { isKennelOnProPlan, isExtraPageEnabled } from '@/lib/kennel/pro-web'
 import { pageNotYetPublicMessage } from '@/lib/kennel/pro-page-loader'
 import { ProPageShell, OwnerDraftBanner, EmptyContentState } from '@/components/kennel/pro-page-shell'
 import { BookOpen } from 'lucide-react'
+import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> },
+): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const field = isUUID(id) ? 'id' : 'slug'
+  const { data: kennel } = await supabase
+    .from('kennels')
+    .select('name, slug, city, country')
+    .eq(field, id)
+    .maybeSingle()
+  if (!kennel) return { title: 'No encontrado' }
+  const loc = [kennel.city, kennel.country].filter(Boolean).join(', ')
+  const title = `Blog · ${kennel.name}`
+  const description = `Notas, novedades y aprendizajes de ${kennel.name}${loc ? ` en ${loc}` : ''}. Camadas anunciadas y todo lo que merece la pena contar.`
+  const canonical = `https://genealogic.io/kennels/${kennel.slug}/blog`
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, url: canonical, type: 'website', locale: 'es_ES' },
+  }
+}
 
 export default async function KennelBlogPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

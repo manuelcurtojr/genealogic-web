@@ -2,8 +2,35 @@ import { loadProPage } from '@/lib/kennel/pro-page-loader'
 import { ProPageShell } from '@/components/kennel/pro-page-shell'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 import { MapPin, Calendar, Globe, ExternalLink, MessageCircle } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
+import { isUUID } from '@/lib/slug'
+import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> },
+): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const field = isUUID(id) ? 'id' : 'slug'
+  const { data: kennel } = await supabase
+    .from('kennels')
+    .select('name, slug, city, country')
+    .eq(field, id)
+    .maybeSingle()
+  if (!kennel) return { title: 'No encontrado' }
+  const loc = [kennel.city, kennel.country].filter(Boolean).join(', ')
+  const title = `Contacto · ${kennel.name}`
+  const description = `Contacta con ${kennel.name}${loc ? ` en ${loc}` : ''} para resolver dudas, planificar una visita o informarte sobre próximas camadas.`
+  const canonical = `https://genealogic.io/kennels/${kennel.slug}/contacto`
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, url: canonical, type: 'website', locale: 'es_ES' },
+  }
+}
 
 export default async function KennelContactoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

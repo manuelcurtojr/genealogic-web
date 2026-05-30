@@ -8,8 +8,34 @@ import AboutContent from '@/components/kennel/about-content'
 import AboutHero from '@/components/kennel/about-hero'
 import AboutGallery from '@/components/kennel/about-gallery'
 import AboutTeam from '@/components/kennel/about-team'
+import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> },
+): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const field = isUUID(id) ? 'id' : 'slug'
+  const { data: kennel } = await supabase
+    .from('kennels')
+    .select('name, slug, city, country, foundation_date')
+    .eq(field, id)
+    .maybeSingle()
+  if (!kennel) return { title: 'No encontrado' }
+  const loc = [kennel.city, kennel.country].filter(Boolean).join(', ')
+  const year = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null
+  const title = `Sobre ${kennel.name}`
+  const description = `La historia de ${kennel.name}${loc ? ` en ${loc}` : ''}${year ? `, desde ${year}` : ''}: quiénes somos, desde cuándo criamos y qué nos diferencia.`
+  const canonical = `https://genealogic.io/kennels/${kennel.slug}/sobre`
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, url: canonical, type: 'website', locale: 'es_ES' },
+  }
+}
 
 /**
  * /kennels/[slug]/sobre — "Sobre nosotros".
@@ -152,8 +178,12 @@ export default async function KennelSobrePage({ params }: { params: Promise<{ id
         <AboutGallery photos={galleryPhotos} kennelName={kennel.name} kennelSlug={kennel.slug || kennel.id} />
       )}
 
-      {/* Equipo — sólo si el owner tiene perfil con display_name */}
-      {ownerProfile?.display_name && (
+      {/* Equipo — sólo si el owner tiene un nombre de PERSONA real, distinto
+          del nombre del criadero. Si display_name coincide con el kennel
+          (caso del que no rellenó su nombre), mostrar "Fundador · X / X" es
+          redundante y da imagen de web sin terminar → no se renderiza. */}
+      {ownerProfile?.display_name &&
+        ownerProfile.display_name.trim().toLowerCase() !== kennel.name.trim().toLowerCase() && (
         <AboutTeam owner={ownerProfile} kennelName={kennel.name} />
       )}
     </ProPageShell>
