@@ -58,9 +58,18 @@ export default async function KennelLayout({
 
   const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
 
-  // Si NO es Pro: sin chrome del kennel — sólo el contenido
+  // Acota el contenido a max-w-7xl centrado, igual que el layout público
+  // (no-logueado, ver (dashboard)/layout.tsx) y que el propio KennelChrome.
+  // Sin esto, dentro del DashboardShell (logueado) el contenido se estiraba a
+  // TODO el ancho disponible y la web del criadero quedaba descuadrada
+  // respecto a su barra de navegación. Aplica a TODAS las páginas del perfil.
+  const Centered = ({ children }: { children: React.ReactNode }) => (
+    <div className="mx-auto w-full max-w-7xl">{children}</div>
+  )
+
+  // Si NO es Pro: sin chrome del kennel — sólo el contenido (acotado)
   if (!isPro) {
-    return <>{children}</>
+    return <Centered>{children}</Centered>
   }
 
   // ─── Es Pro: monta tira "compact" con menú ───────────────────────────
@@ -127,9 +136,9 @@ export default async function KennelLayout({
       />
       {/* El hero se pega directamente al chrome — sin gap intermedio para
           que la web se sienta como un sitio web real (header → hero sin
-          aire blanco). Los demás layouts del dashboard ya tienen su
-          propio padding interno. */}
-      {children}
+          aire blanco). Acotado a max-w-7xl para alinear con la barra del
+          kennel y con la vista pública. */}
+      <Centered>{children}</Centered>
     </>
   )
 }
