@@ -14,6 +14,7 @@ import { redirect } from 'next/navigation'
 import MarketingHeader from '@/components/marketing/marketing-header'
 import MarketingFooter from '@/components/marketing/marketing-footer'
 import DiscoveryHome from '@/components/marketing/discovery-home'
+import { WebSiteJsonLd, SiteNavigationJsonLd } from '@/lib/seo/json-ld'
 import { allPosts } from '@/content/blog'
 
 export const dynamic = 'force-dynamic'
@@ -125,6 +126,11 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-canvas text-[var(--foreground)] flex flex-col">
+      {/* JSON-LD para empujar a Google a mostrar sitelinks + search box en SERP.
+          NO garantiza sitelinks (Google los decide por tráfico/autoridad de
+          marca), pero sin estos schemas la probabilidad es muy baja. */}
+      <WebSiteJsonLd />
+      <SiteNavigationJsonLd />
       <MarketingHeader />
       <main className="flex-1">
         <DiscoveryHome

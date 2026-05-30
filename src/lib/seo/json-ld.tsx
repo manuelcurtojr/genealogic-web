@@ -139,6 +139,81 @@ export function BreadcrumbJsonLd({ items }: { items: BreadcrumbItem[] }) {
   return <JsonLdScript data={data} />
 }
 
+/**
+ * <WebSiteJsonLd /> — schema:WebSite con SearchAction.
+ *
+ * Cuando Google ve este schema, suele renderizar un cuadro de búsqueda
+ * directamente DENTRO del resultado del sitio en SERP (sitelinks
+ * searchbox). Solo aparece para búsquedas del nombre de marca
+ * ("genealogic") y requiere que el sitio tenga autoridad/tráfico.
+ *
+ * El template URL apunta a /search?q={search_term_string} y debe coincidir
+ * con la ruta de búsqueda real del sitio.
+ */
+export function WebSiteJsonLd() {
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': 'https://genealogic.io/#website',
+    url: 'https://genealogic.io',
+    name: 'Genealogic',
+    alternateName: 'Genealogic — Genealogías caninas verificables',
+    inLanguage: 'es',
+    description:
+      'El registro público de genealogías caninas. Cada criador serio tiene su escaparate. Cada perro tiene su árbol genealógico verificable.',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: 'https://genealogic.io/search?q={search_term_string}',
+      },
+      'query-input': 'required name=search_term_string',
+    },
+    publisher: {
+      '@type': 'Organization',
+      '@id': 'https://genealogic.io/#organization',
+      name: 'Genealogic',
+      url: 'https://genealogic.io',
+      logo: 'https://genealogic.io/icon.svg',
+    },
+  }
+  return <JsonLdScript data={data} />
+}
+
+/**
+ * <SiteNavigationJsonLd /> — schema:SiteNavigationElement con los enlaces
+ * principales del sitio.
+ *
+ * Empuja a Google a identificar estos enlaces como la navegación oficial,
+ * que es uno de los inputs que Google usa para decidir qué sitelinks
+ * generar bajo el resultado de marca.
+ *
+ * NO garantiza sitelinks (Google los muestra cuando hay tráfico/autoridad
+ * suficiente), pero sin este schema es aún menos probable.
+ */
+export function SiteNavigationJsonLd() {
+  const items = [
+    { name: 'Inicio', url: 'https://genealogic.io' },
+    { name: 'Buscar perros', url: 'https://genealogic.io/search' },
+    { name: 'Razas caninas', url: 'https://genealogic.io/razas' },
+    { name: 'Criaderos', url: 'https://genealogic.io/kennels' },
+    { name: 'Blog', url: 'https://genealogic.io/blog' },
+    { name: 'Registrarse', url: 'https://genealogic.io/register' },
+  ]
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Navegación principal de Genealogic',
+    itemListElement: items.map((it, i) => ({
+      '@type': 'SiteNavigationElement',
+      position: i + 1,
+      name: it.name,
+      url: it.url,
+    })),
+  }
+  return <JsonLdScript data={data} />
+}
+
 /** Componente base — inserta el JSON-LD como <script type="application/ld+json">. */
 function JsonLdScript({ data }: { data: unknown }) {
   return (
