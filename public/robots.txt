@@ -2,6 +2,10 @@ User-agent: *
 Allow: /
 Allow: /dogs/
 Allow: /kennels/
+Allow: /razas
+Allow: /razas/
+Allow: /blog
+Allow: /blog/
 Allow: /search
 Allow: /privacy
 Allow: /terms

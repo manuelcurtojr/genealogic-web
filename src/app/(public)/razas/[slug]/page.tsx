@@ -70,9 +70,29 @@ export async function generateMetadata(
     ? cleanDesc.slice(0, 200) + (cleanDesc.length > 200 ? '…' : '')
     : `Estándar oficial, características y ejemplares de la raza ${breed.name}. Origen, temperamento, apariencia y diferencias entre clubes.`
   const url = `https://genealogic.io/razas/${slug}`
-  const ogImage = breed.image_url
-    ? [{ url: breed.image_url, alt: breed.name, width: 1200, height: 630 }]
-    : undefined
+
+  // ─── OG image ───────────────────────────────────────────────────────────
+  // Igual que en /dogs/[id]: usamos Supabase Image Transformations para
+  // forzar 1200x630 + cache CDN largo, lo que hace que WhatsApp/Facebook
+  // muestren bien el preview al compartir el enlace.
+  // Las 243 imágenes de razas ya están en Supabase Storage (no externas).
+  // Fallback si la raza no tiene foto: opengraph-image global brandeado.
+  const FALLBACK_OG = 'https://genealogic.io/opengraph-image'
+  let ogImageUrl = FALLBACK_OG
+  let ogIsTransformed = false
+  if (breed.image_url) {
+    if (breed.image_url.includes('/storage/v1/object/public/')) {
+      ogImageUrl =
+        breed.image_url.replace(
+          '/storage/v1/object/public/',
+          '/storage/v1/render/image/public/',
+        ) + '?width=1200&height=630&resize=cover&quality=82'
+      ogIsTransformed = true
+    } else {
+      ogImageUrl = breed.image_url
+    }
+  }
+
   return {
     title: `${breed.name} — Estándar oficial y características · Genealogic`,
     description: desc,
@@ -84,13 +104,24 @@ export async function generateMetadata(
       siteName: 'Genealogic',
       type: 'article',
       locale: 'es_ES',
-      images: ogImage,
+      images: ogIsTransformed
+        ? [
+            {
+              url: ogImageUrl,
+              secureUrl: ogImageUrl,
+              width: 1200,
+              height: 630,
+              alt: breed.name,
+              type: 'image/jpeg',
+            },
+          ]
+        : [{ url: ogImageUrl, alt: breed.name }],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${breed.name} — Genealogic`,
       description: desc,
-      images: breed.image_url ? [breed.image_url] : undefined,
+      images: [ogImageUrl],
     },
   }
 }

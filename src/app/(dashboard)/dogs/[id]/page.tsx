@@ -98,7 +98,36 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (description.length > 320) description = description.slice(0, 317) + '…'
 
   const url = `https://genealogic.io/dogs/${dog.slug || id}`
-  const image = dog.thumbnail_url || 'https://genealogic.io/icon.svg'
+
+  // ─── OG image ───────────────────────────────────────────────────────────
+  // WhatsApp / Facebook / Twitter / LinkedIn esperan:
+  //   · dimensiones declaradas == dimensiones REALES (si no, descartan)
+  //   · ratio 1.91:1 (1200x630) o cuadrada (1200x1200)
+  //   · peso < 300 KB (WhatsApp es estricto)
+  //   · URL absoluta https accesible sin auth
+  //
+  // Solución: usar Supabase Storage Image Transformations
+  //   /object/public/  →  /render/image/public/  + ?width=1200&height=630&resize=cover&quality=82
+  // Esto garantiza 1200x630 exactos, ~30-50 KB JPEG, y cache CDN.
+  //
+  // Fallback si no hay foto: el opengraph-image.tsx de la raíz (1200x630 brandeado).
+  const FALLBACK_OG = 'https://genealogic.io/opengraph-image'
+  let ogImage = FALLBACK_OG
+  let ogIsTransformed = false
+  if (dog.thumbnail_url) {
+    if (dog.thumbnail_url.includes('/storage/v1/object/public/')) {
+      ogImage =
+        dog.thumbnail_url.replace(
+          '/storage/v1/object/public/',
+          '/storage/v1/render/image/public/',
+        ) + '?width=1200&height=630&resize=cover&quality=82'
+      ogIsTransformed = true
+    } else {
+      // URL externa (Wikipedia, etc.) — la usamos tal cual; el ratio puede no ser ideal
+      // pero al menos la imagen aparece.
+      ogImage = dog.thumbnail_url
+    }
+  }
 
   // Title más rico: incluye raza para keyword matching ("Isis Rr — Presa Canario · Genealogic")
   // El layout añade " · Genealogic" via template, así que NO incluimos sufijo "| Genealogic"
@@ -116,14 +145,26 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       description,
       url,
       siteName: 'Genealogic',
-      images: [{ url: image, width: 800, height: 800, alt: dog.name }],
+      locale: 'es_ES',
+      images: ogIsTransformed
+        ? [
+            {
+              url: ogImage,
+              secureUrl: ogImage,
+              width: 1200,
+              height: 630,
+              alt: dog.name,
+              type: 'image/jpeg',
+            },
+          ]
+        : [{ url: ogImage, alt: dog.name }],
       type: 'profile',
     },
     twitter: {
       card: 'summary_large_image',
       title: dog.name,
       description,
-      images: [image],
+      images: [ogImage],
     },
   }
 }
