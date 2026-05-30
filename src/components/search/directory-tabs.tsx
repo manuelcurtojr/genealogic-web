@@ -5,8 +5,8 @@ import { Dog, Home, Tag } from 'lucide-react'
 
 /**
  * Tabs compartidas de los 3 directorios públicos: Perros · Criaderos · Razas.
- * Son <Link> (cada directorio es su propia página): Perros y Criaderos viven en
- * /search (?tab=), Razas en /razas. "Buscar" (sidebar) entra por Perros.
+ * Cada directorio es su propia página (/perros, /kennels, /razas). El buscador
+ * universal /search (resumen) enlaza a estos vía "Ver todos".
  */
 const TABS = [
   { key: 'dogs', label: 'Perros', icon: Dog, href: '/perros' },

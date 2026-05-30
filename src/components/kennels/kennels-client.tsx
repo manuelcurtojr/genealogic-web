@@ -109,6 +109,9 @@ export default function KennelsClient({
 
   return (
     <>
+      {/* Directorios: Perros · Criaderos · Razas */}
+      <div className="mb-6"><DirectoryTabs active="kennels" /></div>
+
       {/* Search */}
       <div className="relative mb-6">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
