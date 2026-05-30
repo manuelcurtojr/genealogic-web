@@ -16,11 +16,10 @@
 import Link from 'next/link'
 import {
   Sparkles, ArrowRight, MapPin, Calendar, HelpCircle, BadgeCheck,
-  ExternalLink, Globe, Dog as DogIcon, Star, Quote, Baby, Medal,
+  Globe, Dog as DogIcon, Star, Quote, Baby, Medal,
 } from 'lucide-react'
 import ReviewAvatar from './review-avatar'
 import LeaveReviewButton from './leave-review-button'
-import NewsletterSubscribe from './newsletter-subscribe'
 import BlogSlider from './blog-slider'
 import SectionTeasers from './section-teasers'
 import StickyContactMobile from './sticky-contact-mobile'
@@ -585,159 +584,10 @@ export default function KennelProHome({
         </section>
       )}
 
-      {/* ════ FOOTER + NEWSLETTER (fusionados) ════
-           Una sola sección full-bleed que cierra la home. Grid 2 columnas
-           en desktop: izquierda info del criadero (logo + ubicación +
-           redes + powered), derecha form de newsletter. En mobile stacked.
-           Sin border ni rounded — extiende hasta los extremos como una
-           tira de cierre de página web real. */}
-      <KennelFooterMerged
-        kennelId={kennel.id}
-        kennelName={kennel.name}
-        kennelSlug={kennel.slug || kennel.id}
-        kennelLogoUrl={kennel.logo_url}
-        location={location}
-        socials={{
-          website: kennel.website,
-          instagram: kennel.social_instagram,
-          facebook: kennel.social_facebook,
-        }}
-      />
+      {/* Footer (newsletter + identidad) — montado desde layout.tsx para
+          que aparezca en TODAS las páginas del kennel Pro, no solo en home. */}
 
     </div>
-  )
-}
-
-/**
- * KennelFooterMerged — footer + newsletter fusionados en una sola sección
- * full-bleed que cierra la home. Grid 2 columnas en desktop:
- *   IZQ: identidad (logo + nombre + ubicación + redes + powered)
- *   DCHA: form de newsletter con CTA principal
- *
- * Mobile: stacked (identidad arriba, newsletter abajo).
- *
- * Extiende a 100vw (sin border, sin rounded) para que parezca el footer
- * de una web de verdad — no una card más del scroll.
- */
-function KennelFooterMerged({
-  kennelId, kennelName, kennelSlug, kennelLogoUrl, location, socials,
-}: {
-  kennelId: string
-  kennelName: string
-  kennelSlug: string
-  kennelLogoUrl: string | null
-  location: string
-  socials: { website: string | null; instagram: string | null; facebook: string | null }
-}) {
-  // No mostramos "Web" en el footer porque ya estamos en la propia web del kennel.
-  const hasAnySocial = !!(socials.instagram || socials.facebook)
-  return (
-    <footer
-      className="relative bg-gradient-to-br from-blue-50/40 via-canvas to-orange-50/40 border-t border-hairline"
-      style={{
-        marginLeft: 'calc(50% - 50vw)',
-        marginRight: 'calc(50% - 50vw)',
-        width: '100vw',
-        maxWidth: '100vw',
-      }}
-    >
-      {/* Glow sutil */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 h-[260px] w-[260px] rounded-full blur-3xl opacity-50"
-        style={{ background: 'radial-gradient(circle at 50% 50%, rgba(59,130,246,0.2) 0%, transparent 70%)' }}
-      />
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 py-10 sm:py-16 lg:py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-10 lg:gap-16 items-start">
-
-          {/* ── IZQ — identidad del kennel ─────────────────────────── */}
-          {/* En mobile, el copyright debe ir DEBAJO del newsletter, así que
-              invertimos el orden con order-* y dejamos el visual layout en
-              desktop intacto. */}
-          <div className="order-2 lg:order-1">
-            <div className="flex items-center gap-3">
-              {kennelLogoUrl ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={kennelLogoUrl}
-                  alt={kennelName}
-                  className="h-12 w-12 rounded-2xl object-cover border border-hairline"
-                />
-              ) : (
-                <div className="h-12 w-12 rounded-2xl bg-surface-card flex items-center justify-center text-xl font-bold text-ink">
-                  {kennelName[0]?.toUpperCase()}
-                </div>
-              )}
-              <div>
-                <p className="text-[20px] sm:text-[22px] font-semibold tracking-[-0.025em] text-ink">
-                  {kennelName}
-                </p>
-                {location && (
-                  <p className="text-[12.5px] text-muted">{location}</p>
-                )}
-              </div>
-            </div>
-
-            {hasAnySocial && (
-              <div className="mt-5 flex flex-wrap gap-1.5">
-                {socials.instagram && (
-                  <a
-                    href={socials.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" /> Instagram
-                  </a>
-                )}
-                {socials.facebook && (
-                  <a
-                    href={socials.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" /> Facebook
-                  </a>
-                )}
-              </div>
-            )}
-
-            <p className="mt-6 text-[11.5px] text-muted">
-              © {new Date().getFullYear()} {kennelName}. Todos los derechos reservados.
-            </p>
-            <p className="mt-1 text-[11px] text-muted inline-flex items-center gap-1">
-              Web creada con{' '}
-              <Link
-                href="/"
-                className="font-semibold text-body hover:text-[#FE6620] transition-colors uppercase tracking-[0.1em]"
-              >
-                Genealogic
-              </Link>
-            </p>
-            {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
-            <span className="hidden" data-slug={kennelSlug} />
-          </div>
-
-          {/* ── DCHA — newsletter inline (sin la card propia de
-                NewsletterSubscribe que duplicaría el bloque) ──────── */}
-          <div className="order-1 lg:order-2">
-            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#3b82f6]">Newsletter</p>
-            <h3 className="mt-1 text-[20px] sm:text-[24px] font-semibold tracking-[-0.025em] text-ink leading-[1.2]">
-              Mantente al día con {kennelName}
-            </h3>
-            <p className="mt-2 text-[13.5px] text-body leading-snug max-w-prose">
-              Próximas camadas, novedades, eventos. Cero spam. Te das de baja
-              con un click.
-            </p>
-            <div className="mt-5">
-              <NewsletterSubscribe kennelId={kennelId} kennelName={kennelName} inline />
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </footer>
   )
 }
 

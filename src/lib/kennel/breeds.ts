@@ -72,6 +72,67 @@ export async function getKennelReproductiveBreeds(
 }
 
 /**
+ * Devuelve la primera foto disponible de un perro del kennel de la raza
+ * indicada (cualquier perro, no necesariamente reproductor — para tener
+ * más material). Si el kennel no tiene fotos propias de esa raza, devuelve
+ * null y la página debe caer a la foto genérica de la raza.
+ *
+ * Priorizamos perros con foto registrada por:
+ *   1. Reproductores primero (más representativos del programa de cría)
+ *   2. Públicos siempre
+ *   3. Más recientes primero (la última foto subida suele ser la mejor)
+ */
+export async function pickKennelHeroPhotoForBreed(
+  kennelId: string,
+  breedId: string,
+): Promise<{ url: string; dogName: string; dogSlug: string | null } | null> {
+  const supabase = admin()
+
+  // Pasada 1: reproductor con foto
+  const { data: repro } = await supabase
+    .from('dogs')
+    .select('name, slug, thumbnail_url, original_thumbnail_url')
+    .eq('kennel_id', kennelId)
+    .eq('breed_id', breedId)
+    .eq('is_reproductive', true)
+    .eq('is_public', true)
+    .not('thumbnail_url', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (repro && repro.thumbnail_url) {
+    return {
+      url: repro.original_thumbnail_url || repro.thumbnail_url,
+      dogName: repro.name,
+      dogSlug: repro.slug,
+    }
+  }
+
+  // Pasada 2: cualquier perro del kennel de esa raza con foto
+  const { data: anyDog } = await supabase
+    .from('dogs')
+    .select('name, slug, thumbnail_url, original_thumbnail_url')
+    .eq('kennel_id', kennelId)
+    .eq('breed_id', breedId)
+    .eq('is_public', true)
+    .not('thumbnail_url', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (anyDog && anyDog.thumbnail_url) {
+    return {
+      url: anyDog.original_thumbnail_url || anyDog.thumbnail_url,
+      dogName: anyDog.name,
+      dogSlug: anyDog.slug,
+    }
+  }
+
+  return null
+}
+
+/**
  * ¿Este breed_id es realmente uno de los reproductores del kennel?
  * Usado para autorizar la ficha individual `/kennels/X/razas/[breed]` —
  * evita que cualquier persona genere URLs de razas que el kennel no cría.

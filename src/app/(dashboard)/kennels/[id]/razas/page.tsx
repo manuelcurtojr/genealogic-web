@@ -82,10 +82,18 @@ export default async function KennelRazasPage(
     : `Las razas que criamos en ${kennel.name}. Lo que las hace especiales — y lo que conviene saber antes.`
 
   return (
-    <main className="min-h-screen bg-canvas">
-      {/* Hero ligero */}
-      <section className="border-b border-hairline">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10 py-12 sm:py-16">
+    <>
+      {/* ═══ HERO LIGERO — FULL-BLEED ═══ */}
+      <section
+        className="border-b border-hairline bg-surface-soft/30"
+        style={{
+          marginLeft: 'calc(50% - 50vw)',
+          marginRight: 'calc(50% - 50vw)',
+          width: '100vw',
+          maxWidth: '100vw',
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-12 sm:py-16">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted mb-3">
             {kennel.name}
           </p>
@@ -145,6 +153,6 @@ export default async function KennelRazasPage(
           </div>
         </div>
       </section>
-    </main>
+    </>
   )
 }

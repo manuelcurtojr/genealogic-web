@@ -18,6 +18,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { isUUID } from '@/lib/slug'
 import KennelChrome from '@/components/kennel/kennel-chrome'
+import KennelProFooter from '@/components/kennel/kennel-pro-footer'
 import {
   isKennelOnProPlan,
   isExtraPageEnabled,
@@ -40,7 +41,7 @@ export default async function KennelLayout({
   // Cargamos el kennel + el plan del dueño para decidir Pro vs no
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, name, logo_url, owner_id, enabled_pages, about_md')
+    .select('id, slug, name, logo_url, owner_id, enabled_pages, about_md, city, country, website, social_instagram, social_facebook')
     .eq(field, id)
     .single()
 
@@ -138,6 +139,8 @@ export default async function KennelLayout({
   // pero para simplicidad lo dejamos en 'home' por defecto — el styling de
   // active no es crítico en compact (es tira pequeña). Para un highlight
   // exacto haríamos un client component que lee usePathname.
+  const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
+
   return (
     <>
       <KennelChrome
@@ -153,6 +156,25 @@ export default async function KennelLayout({
           aire blanco). Acotado a max-w-7xl para alinear con la barra del
           kennel y con la vista pública. */}
       <Centered>{children}</Centered>
+
+      {/* Footer Pro fusionado (identidad + newsletter), full-bleed.
+          Aparece en TODAS las subpáginas del kennel Pro — antes vivía
+          solo dentro de pro-home y se perdía al navegar a /razas, /sobre,
+          /perros, etc. */}
+      <Centered>
+        <KennelProFooter
+          kennelId={kennel.id}
+          kennelName={kennel.name}
+          kennelSlug={kennel.slug || kennel.id}
+          kennelLogoUrl={kennel.logo_url}
+          location={location}
+          socials={{
+            website: kennel.website,
+            instagram: kennel.social_instagram,
+            facebook: kennel.social_facebook,
+          }}
+        />
+      </Centered>
     </>
   )
 }
