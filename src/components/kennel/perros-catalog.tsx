@@ -226,29 +226,39 @@ export default function PerrosCatalog({
           const isActive = tab === key
           const count = filteredCounts[key]
           const totalCount = counts[key]
-          const isEmpty = totalCount === 0
+          // Los tabs comerciales (venta/camadas) son SIEMPRE clicables: su
+          // estado vacío es un CTA de lista de espera / contacto, no un cartel
+          // muerto. Reproductores/criados sí se deshabilitan si no hay nada
+          // que mostrar.
+          const isCommercial = key === 'venta' || key === 'camadas'
+          const disabled = totalCount === 0 && !isCommercial
           return (
             <button
               key={key}
               onClick={() => setTab(key)}
-              disabled={isEmpty}
+              disabled={disabled}
               className={`flex shrink-0 items-center gap-2 border-b-2 px-4 py-2.5 text-[13px] font-medium transition-colors ${
                 isActive
                   ? 'border-ink text-ink'
-                  : isEmpty
+                  : disabled
                     ? 'border-transparent text-muted/50 cursor-not-allowed'
                     : 'border-transparent text-muted hover:text-ink'
               }`}
             >
               <Icon className="h-4 w-4" style={isActive ? { color: iconColor } : undefined} />
               <span>{label}</span>
-              <span
-                className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-medium tabular-nums ${
-                  isActive ? 'bg-ink text-on-primary' : 'bg-surface-card text-muted'
-                }`}
-              >
-                {count}
-              </span>
+              {/* El badge de número se oculta cuando es 0 — un tab que grita
+                  "0" transmite el mismo mensaje negativo que queríamos quitar.
+                  Con contenido (o filtrado >0) sí se muestra el contador. */}
+              {count > 0 && (
+                <span
+                  className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-medium tabular-nums ${
+                    isActive ? 'bg-ink text-on-primary' : 'bg-surface-card text-muted'
+                  }`}
+                >
+                  {count}
+                </span>
+              )}
             </button>
           )
         })}
