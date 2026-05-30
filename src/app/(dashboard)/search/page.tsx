@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Search, Dog, Home, Tag, ChevronRight } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { DogImage } from '@/components/ui/dog-image'
+import DirectoryTabs from '@/components/search/directory-tabs'
 
 /**
  * /search — buscador universal (resumen). Una sola página con resultados de
@@ -61,6 +62,9 @@ export default function SearchPage() {
         <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">Buscar</h1>
         <p className="mt-2 text-[14px] text-body">Perros, criaderos y razas registrados en Genealogic.</p>
       </div>
+
+      {/* Descubrimiento: Buscar · Perros · Criaderos · Razas */}
+      <DirectoryTabs active="search" />
 
       {/* Campo de búsqueda */}
       <form onSubmit={onSubmit} className="relative">
