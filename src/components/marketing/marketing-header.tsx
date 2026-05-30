@@ -76,7 +76,7 @@ export default function MarketingHeader() {
           <Wordmark size="text-xl" />
           <nav className="flex items-center gap-1.5 ml-4 text-[13.5px] font-semibold">
             <Link
-              href="/search"
+              href="/perros"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body hover:text-ink hover:bg-surface-card transition"
             >
               <Dog className="w-4 h-4" /> Perros
@@ -141,8 +141,8 @@ export default function MarketingHeader() {
                   Explorar el catálogo
                 </p>
                 <div className="space-y-1.5">
-                  <BigDrawerLink href="/search" icon={Dog} desc="+250.000 perros con genealogía" onClick={() => setDrawerOpen(false)}>
-                    Buscar perros
+                  <BigDrawerLink href="/perros" icon={Dog} desc="+250.000 perros con genealogía" onClick={() => setDrawerOpen(false)}>
+                    Perros
                   </BigDrawerLink>
                   <BigDrawerLink href="/kennels" icon={Store} desc="Criaderos verificados" onClick={() => setDrawerOpen(false)}>
                     Buscar criaderos

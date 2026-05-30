@@ -80,8 +80,9 @@ export const NAV_SECTIONS: NavSection[] = [
     label: '',
     items: [
       { label: 'Escritorio', href: '/dashboard', icon: 'LayoutDashboard' },
+      // Buscar = descubrimiento unificado: desde /search se accede a Perros,
+      // Criaderos y Razas vía tabs, así que no duplicamos "Razas" aquí.
       { label: 'Buscar', href: '/search', icon: 'Search' },
-      { label: 'Razas', href: '/razas', icon: 'Tag' },
       { label: 'Blog', href: '/blog', icon: 'BookOpen' },
       { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
     ],
