@@ -35,7 +35,7 @@ export default async function KennelBlogPostPage({
 
   const { data: post } = await supabase
     .from('kennel_posts')
-    .select('id, slug, title, excerpt, cover_image_url, cover_image_alt, published_at, reading_time_minutes, category_slug, body_text, author_name')
+    .select('id, slug, title, excerpt, cover_image_url, cover_image_alt, published_at, reading_time_minutes, category_slug, body, body_text, author_name')
     .eq('kennel_id', kennel.id)
     .eq('slug', postSlug)
     .eq('status', 'published')
@@ -70,11 +70,31 @@ export default async function KennelBlogPostPage({
         <p className="text-[16px] sm:text-[18px] text-body leading-[1.55] max-w-prose font-medium">{post.excerpt}</p>
       )}
 
-      {post.body_text && (
-        <article className="prose prose-sm sm:prose max-w-none text-body whitespace-pre-line leading-[1.7] text-[15px] sm:text-[16px]">
-          {post.body_text}
-        </article>
-      )}
+      {/* body es {html: "<...>"} si el post se redactó con HTML estructurado
+          (lo normal hoy). Si no hay HTML, fallback al body_text como texto
+          plano para no romper posts antiguos.
+          Los estilos prose-* dan H2/H3/UL/HR semánticos sin necesidad de
+          tocar el HTML guardado. */}
+      {(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const html = (post.body as any)?.html as string | undefined
+        if (html && html.trim()) {
+          return (
+            <article
+              className="prose prose-sm sm:prose-base max-w-none text-body leading-[1.7] text-[15px] sm:text-[16px] prose-headings:tracking-[-0.02em] prose-headings:text-ink prose-h2:mt-10 prose-h2:mb-3 prose-h3:mt-6 prose-h3:mb-2 prose-p:my-3 prose-li:my-1 prose-strong:text-ink prose-a:text-ink hover:prose-a:text-[#FE6620] prose-hr:my-10"
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+          )
+        }
+        if (post.body_text) {
+          return (
+            <article className="prose prose-sm sm:prose max-w-none text-body whitespace-pre-line leading-[1.7] text-[15px] sm:text-[16px]">
+              {post.body_text}
+            </article>
+          )
+        }
+        return null
+      })()}
     </ProPageShell>
   )
 }
