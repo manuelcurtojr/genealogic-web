@@ -23,7 +23,7 @@ import { pastelByName } from '@/lib/avatars'
 import type { ExtraPageId } from '@/lib/kennel/pro-web'
 import KennelChromeNav from './kennel-chrome-nav'
 
-type NavItem = { id: 'home' | 'perros' | ExtraPageId | 'contacto'; href: string; label: string }
+type NavItem = { id: 'home' | 'perros' | ExtraPageId | 'contacto' | 'razas'; href: string; label: string }
 
 interface Props {
   kennelName: string
@@ -32,7 +32,7 @@ interface Props {
   /** Items del menú PÚBLICO (ya filtrados por enabled + tiene contenido) */
   navItems: NavItem[]
   /** ID de la página activa (para subrayar el item del menú) */
-  activePageId: 'home' | 'perros' | ExtraPageId | 'contacto'
+  activePageId: 'home' | 'perros' | ExtraPageId | 'contacto' | 'razas'
   /** 'compact' = tira slim sobre marketing-header de Genealogic.
    *  'standalone' = chrome completo (custom domain, sin marketing alrededor). */
   variant: 'compact' | 'standalone'
