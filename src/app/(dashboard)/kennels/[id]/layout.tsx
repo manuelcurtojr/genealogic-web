@@ -148,8 +148,12 @@ export default async function KennelLayout({
   // exacto haríamos un client component que lee usePathname.
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
 
+  // TODO el perfil (chrome + contenido + footer) va dentro de UN solo Centered
+  // con overflow-x-clip: así su límite recorta el desbordamiento de las
+  // secciones full-bleed (chrome, hero, footer) que con el sidebar se salían
+  // ~256px y generaban scroll lateral. Header → hero sin gap, todo alineado.
   return (
-    <>
+    <Centered>
       <KennelChrome
         kennelName={kennel.name}
         kennelSlug={kennel.slug || kennel.id}
@@ -158,30 +162,24 @@ export default async function KennelLayout({
         activePageId="home"
         variant="compact"
       />
-      {/* El hero se pega directamente al chrome — sin gap intermedio para
-          que la web se sienta como un sitio web real (header → hero sin
-          aire blanco). Acotado a max-w-7xl para alinear con la barra del
-          kennel y con la vista pública. */}
-      <Centered>{children}</Centered>
+      {children}
 
       {/* Footer Pro fusionado (identidad + newsletter), full-bleed.
           Aparece en TODAS las subpáginas del kennel Pro — antes vivía
           solo dentro de pro-home y se perdía al navegar a /razas, /sobre,
           /perros, etc. */}
-      <Centered>
-        <KennelProFooter
-          kennelId={kennel.id}
-          kennelName={kennel.name}
-          kennelSlug={kennel.slug || kennel.id}
-          kennelLogoUrl={kennel.logo_url}
-          location={location}
-          socials={{
-            website: kennel.website,
-            instagram: kennel.social_instagram,
-            facebook: kennel.social_facebook,
-          }}
-        />
-      </Centered>
-    </>
+      <KennelProFooter
+        kennelId={kennel.id}
+        kennelName={kennel.name}
+        kennelSlug={kennel.slug || kennel.id}
+        kennelLogoUrl={kennel.logo_url}
+        location={location}
+        socials={{
+          website: kennel.website,
+          instagram: kennel.social_instagram,
+          facebook: kennel.social_facebook,
+        }}
+      />
+    </Centered>
   )
 }
