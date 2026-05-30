@@ -60,25 +60,34 @@ export default async function KennelLayout({
 
   const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
 
-  // Acota el contenido a max-w-7xl centrado, igual que el layout público
-  // (no-logueado, ver (dashboard)/layout.tsx) y que el propio KennelChrome.
-  // Sin esto, dentro del DashboardShell (logueado) el contenido se estiraba a
-  // TODO el ancho disponible y la web del criadero quedaba descuadrada
-  // respecto a su barra de navegación. Aplica a TODAS las páginas del perfil.
-  //
-  // overflow-x-clip: las secciones full-bleed (hero, chrome, razas) usan
-  // `width:100vw` + `margin-left:calc(50% - 50vw)`. Ese truco asume que el
-  // contenedor está CENTRADO en el viewport — pero dentro del shell logueado
-  // está desplazado por el sidebar (~256px), así que 100vw se desbordaba y
-  // generaba scroll lateral. clip recorta ese desbordamiento sin romper los
-  // `position: sticky` interiores (a diferencia de overflow-x-hidden).
-  const Centered = ({ children }: { children: React.ReactNode }) => (
-    <div className="mx-auto w-full max-w-7xl overflow-x-clip">{children}</div>
-  )
+  // ¿Hay sidebar? Solo logueado el perfil se monta dentro del DashboardShell
+  // (sidebar a la izquierda). Sin login va en el layout público (centrado).
+  const { data: { user } } = await supabase.auth.getUser()
+  const loggedIn = !!user
 
-  // Si NO es Pro: sin chrome del kennel — sólo el contenido (acotado)
+  // Stage = contenedor del perfil del criadero.
+  //
+  // Logueado: el contenido debe LLENAR la columna (del borde del sidebar al
+  // borde derecho de la pantalla) y los fondos full-bleed (hero, divisores,
+  // footer, chrome; todos width:100vw) llegar a esos bordes. -mx-4 lg:-mx-[46px]
+  // cancela el padding del DashboardShell (main p-4 = 16px + el div interior
+  // lg:px-[30px] = 46px) → el contenedor llega a los bordes de la columna. El
+  // ancho del sidebar vive en `ml` del shell (no en ese padding), así que al
+  // colapsar el menú la columna se reajusta sola. overflow-x-clip recorta los
+  // 100vw a la columna → fondos a ancho completo y CERO scroll lateral (clip,
+  // no hidden, para no romper los position:sticky interiores).
+  //
+  // No logueado: passthrough — el layout público ya centra en max-w-7xl y los
+  // 100vw bleeds funcionan (contenedor centrado en el viewport). Envolverlo
+  // aquí los recortaría a 1280px, por eso NO se toca.
+  const Stage = ({ children }: { children: React.ReactNode }) =>
+    loggedIn
+      ? <div className="-mx-4 lg:-mx-[46px] overflow-x-clip">{children}</div>
+      : <>{children}</>
+
+  // Si NO es Pro: sin chrome del kennel — sólo el contenido
   if (!isPro) {
-    return <Centered>{children}</Centered>
+    return <Stage>{children}</Stage>
   }
 
   // ─── Es Pro: monta tira "compact" con menú ───────────────────────────
@@ -148,12 +157,11 @@ export default async function KennelLayout({
   // exacto haríamos un client component que lee usePathname.
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
 
-  // TODO el perfil (chrome + contenido + footer) va dentro de UN solo Centered
-  // con overflow-x-clip: así su límite recorta el desbordamiento de las
-  // secciones full-bleed (chrome, hero, footer) que con el sidebar se salían
-  // ~256px y generaban scroll lateral. Header → hero sin gap, todo alineado.
+  // TODO el perfil (chrome + contenido + footer) va dentro de UN solo Stage:
+  // logueado, llena la columna y recorta los 100vw a sus bordes (fondos a ancho
+  // completo, sin scroll); no logueado, passthrough (lo centra el layout público).
   return (
-    <Centered>
+    <Stage>
       <KennelChrome
         kennelName={kennel.name}
         kennelSlug={kennel.slug || kennel.id}
@@ -180,6 +188,6 @@ export default async function KennelLayout({
           facebook: kennel.social_facebook,
         }}
       />
-    </Centered>
+    </Stage>
   )
 }
