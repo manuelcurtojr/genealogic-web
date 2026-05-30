@@ -25,6 +25,7 @@ import {
   PAGE_NAV_LABEL,
   type ExtraPageId,
 } from '@/lib/kennel/pro-web'
+import { getKennelReproductiveBreeds } from '@/lib/kennel/breeds'
 
 export default async function KennelLayout({
   children, params,
@@ -74,7 +75,7 @@ export default async function KennelLayout({
 
   // ─── Es Pro: monta tira "compact" con menú ───────────────────────────
   // Contamos contenido para cada página extra para decidir si entra al menú
-  const [photosCountRes, postsCountRes] = await Promise.all([
+  const [photosCountRes, postsCountRes, breedsForNav] = await Promise.all([
     supabase
       .from('kennel_photos')
       .select('kind', { count: 'exact', head: false })
@@ -84,6 +85,9 @@ export default async function KennelLayout({
       .select('id', { count: 'exact', head: true })
       .eq('kennel_id', kennel.id)
       .eq('status', 'published'),
+    // Razas con contenido promocional que el kennel cría — para decidir si
+    // entra "Nuestra(s) raza(s)" al menú. Si la lista está vacía, no aparece.
+    getKennelReproductiveBreeds(kennel.id),
   ])
 
   const photos = (photosCountRes.data || []) as Array<{ kind: string }>
@@ -95,13 +99,23 @@ export default async function KennelLayout({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const enabled = kennel.enabled_pages as Record<string, unknown> | null
   const navItems: Array<{
-    id: 'home' | 'perros' | ExtraPageId | 'contacto'
+    id: 'home' | 'perros' | ExtraPageId | 'contacto' | 'razas'
     href: string
     label: string
   }> = [
     { id: 'home',    href: '',           label: PAGE_NAV_LABEL.home },
     { id: 'perros',  href: 'perros',     label: PAGE_NAV_LABEL.perros },
   ]
+
+  // "Nuestra raza" / "Nuestras razas" — solo si el kennel tiene reproductores
+  // públicos en razas con promotional_content. Sin esfuerzo del criador.
+  if (breedsForNav.length > 0) {
+    navItems.push({
+      id: 'razas',
+      href: 'razas',
+      label: breedsForNav.length === 1 ? 'Nuestra raza' : 'Nuestras razas',
+    })
+  }
 
   const extras: ExtraPageId[] = ['sobre', 'instalaciones', 'galeria', 'blog']
   for (const ex of extras) {
