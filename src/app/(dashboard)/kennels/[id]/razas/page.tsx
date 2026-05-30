@@ -20,7 +20,7 @@ import Image from 'next/image'
 import type { Metadata } from 'next'
 import { isUUID } from '@/lib/slug'
 import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
-import { getKennelReproductiveBreeds } from '@/lib/kennel/breeds'
+import { getKennelReproductiveBreeds, pickKennelHeroPhotoForBreed } from '@/lib/kennel/breeds'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 600
@@ -72,8 +72,23 @@ export default async function KennelRazasPage(
     notFound()
   }
 
-  const breeds = await getKennelReproductiveBreeds(kennel.id)
-  if (breeds.length === 0) notFound()
+  const breedsBase = await getKennelReproductiveBreeds(kennel.id)
+  if (breedsBase.length === 0) notFound()
+
+  // Para cada raza, resolver la foto que se mostrará en la card. Prio:
+  // perro elegido manualmente > reproductor > cualquier perro del kennel
+  // > foto genérica de la raza. Hace que las cards muestren ejemplares
+  // del propio criadero, mucho más auténtico que el stock.
+  const breeds = await Promise.all(
+    breedsBase.map(async (b) => {
+      const kennelPhoto = await pickKennelHeroPhotoForBreed(kennel.id, b.id)
+      return {
+        ...b,
+        card_image_url: kennelPhoto?.url || b.image_url,
+        card_credit_dog: kennelPhoto?.dogName || null,
+      }
+    }),
+  )
 
   const isSingular = breeds.length === 1
   const heading = isSingular ? 'Nuestra raza' : 'Nuestras razas'
@@ -120,10 +135,10 @@ export default async function KennelRazasPage(
                 className="group block overflow-hidden rounded-2xl border border-hairline bg-canvas transition-all hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.15)] hover:border-ink/20"
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-surface-card">
-                  {b.image_url ? (
+                  {b.card_image_url ? (
                     <Image
-                      src={b.image_url}
-                      alt={b.name}
+                      src={b.card_image_url}
+                      alt={b.card_credit_dog ? `${b.card_credit_dog} — ${b.name}` : b.name}
                       fill
                       sizes="(max-width: 640px) 100vw, 50vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
@@ -131,6 +146,13 @@ export default async function KennelRazasPage(
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-[11px] uppercase tracking-wider text-muted/60">
                       Sin imagen
+                    </div>
+                  )}
+                  {b.card_credit_dog && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3">
+                      <p className="text-[11px] text-white/90 font-medium tracking-wide">
+                        {b.card_credit_dog}
+                      </p>
                     </div>
                   )}
                 </div>

@@ -72,15 +72,18 @@ export async function getKennelReproductiveBreeds(
 }
 
 /**
- * Devuelve la primera foto disponible de un perro del kennel de la raza
- * indicada (cualquier perro, no necesariamente reproductor — para tener
- * más material). Si el kennel no tiene fotos propias de esa raza, devuelve
- * null y la página debe caer a la foto genérica de la raza.
+ * Devuelve la foto que debe representar a esta raza para este kennel.
  *
- * Priorizamos perros con foto registrada por:
- *   1. Reproductores primero (más representativos del programa de cría)
- *   2. Públicos siempre
- *   3. Más recientes primero (la última foto subida suele ser la mejor)
+ * Orden de prioridad:
+ *   1. Perro elegido manualmente por el criador en kennel_breed_hero
+ *      (lo que configure en /dashboard/kennel/contenido/razas).
+ *   2. Auto-fallback: un reproductor con foto (más representativo del
+ *      programa de cría).
+ *   3. Auto-fallback: cualquier perro del kennel de esa raza con foto.
+ *   4. null → la página llamadora cae a la foto genérica de la raza.
+ *
+ * Solo devuelve perros con is_public=true (no exponemos perros ocultos
+ * en el hero público del kennel).
  */
 export async function pickKennelHeroPhotoForBreed(
   kennelId: string,
@@ -88,7 +91,24 @@ export async function pickKennelHeroPhotoForBreed(
 ): Promise<{ url: string; dogName: string; dogSlug: string | null } | null> {
   const supabase = admin()
 
-  // Pasada 1: reproductor con foto
+  // ── Prio 1: elección manual del criador ─────────────────────────────
+  const { data: pick } = await supabase
+    .from('kennel_breed_hero')
+    .select('dog:dogs(name, slug, thumbnail_url, original_thumbnail_url, is_public)')
+    .eq('kennel_id', kennelId)
+    .eq('breed_id', breedId)
+    .maybeSingle()
+  type PickRow = { dog: { name: string; slug: string | null; thumbnail_url: string | null; original_thumbnail_url: string | null; is_public: boolean } | null }
+  const pickedDog = (pick as PickRow | null)?.dog
+  if (pickedDog && pickedDog.is_public && pickedDog.thumbnail_url) {
+    return {
+      url: pickedDog.original_thumbnail_url || pickedDog.thumbnail_url,
+      dogName: pickedDog.name,
+      dogSlug: pickedDog.slug,
+    }
+  }
+
+  // ── Prio 2: reproductor con foto ────────────────────────────────────
   const { data: repro } = await supabase
     .from('dogs')
     .select('name, slug, thumbnail_url, original_thumbnail_url')
@@ -109,7 +129,7 @@ export async function pickKennelHeroPhotoForBreed(
     }
   }
 
-  // Pasada 2: cualquier perro del kennel de esa raza con foto
+  // ── Prio 3: cualquier perro del kennel de esa raza con foto ─────────
   const { data: anyDog } = await supabase
     .from('dogs')
     .select('name, slug, thumbnail_url, original_thumbnail_url')
@@ -130,6 +150,95 @@ export async function pickKennelHeroPhotoForBreed(
   }
 
   return null
+}
+
+/**
+ * Lista los perros del kennel de una raza con foto, para el dropdown del
+ * admin (UI donde el criador elige el hero). Devuelve solo públicos para
+ * no ofrecer perros ocultos como hero visible.
+ */
+export async function listKennelDogsByBreedWithPhoto(
+  kennelId: string,
+  breedId: string,
+): Promise<Array<{ id: string; name: string; sex: string | null; thumbnail_url: string; is_reproductive: boolean }>> {
+  const supabase = admin()
+  const { data } = await supabase
+    .from('dogs')
+    .select('id, name, sex, thumbnail_url, is_reproductive')
+    .eq('kennel_id', kennelId)
+    .eq('breed_id', breedId)
+    .eq('is_public', true)
+    .not('thumbnail_url', 'is', null)
+    .order('is_reproductive', { ascending: false })
+    .order('name', { ascending: true })
+  type Row = { id: string; name: string; sex: string | null; thumbnail_url: string | null; is_reproductive: boolean }
+  return ((data || []) as Row[])
+    .filter((d): d is Row & { thumbnail_url: string } => !!d.thumbnail_url)
+    .map((d) => ({
+      id: d.id,
+      name: d.name,
+      sex: d.sex,
+      thumbnail_url: d.thumbnail_url,
+      is_reproductive: d.is_reproductive,
+    }))
+}
+
+/**
+ * Lee qué perro tiene marcado el kennel como hero de cada raza.
+ * Devuelve un mapa breed_id → dog_id (o vacío si no hay registros).
+ */
+export async function getKennelBreedHeroMap(
+  kennelId: string,
+): Promise<Record<string, string>> {
+  const supabase = admin()
+  const { data } = await supabase
+    .from('kennel_breed_hero')
+    .select('breed_id, dog_id')
+    .eq('kennel_id', kennelId)
+  const map: Record<string, string> = {}
+  for (const row of data || []) map[row.breed_id as string] = row.dog_id as string
+  return map
+}
+
+/**
+ * Guarda la elección del criador. Si dogId es null/undefined, borra el
+ * registro y vuelve al fallback automático.
+ */
+export async function setKennelBreedHero(
+  kennelId: string,
+  breedId: string,
+  dogId: string | null,
+): Promise<{ ok: boolean; error?: string }> {
+  const supabase = admin()
+
+  if (!dogId) {
+    const { error } = await supabase
+      .from('kennel_breed_hero')
+      .delete()
+      .eq('kennel_id', kennelId)
+      .eq('breed_id', breedId)
+    if (error) return { ok: false, error: error.message }
+    return { ok: true }
+  }
+
+  // Validar que el perro es realmente del kennel y de esa raza
+  const { data: dog } = await supabase
+    .from('dogs')
+    .select('id')
+    .eq('id', dogId)
+    .eq('kennel_id', kennelId)
+    .eq('breed_id', breedId)
+    .maybeSingle()
+  if (!dog) return { ok: false, error: 'El perro no pertenece a este kennel o no es de esa raza.' }
+
+  const { error } = await supabase
+    .from('kennel_breed_hero')
+    .upsert(
+      { kennel_id: kennelId, breed_id: breedId, dog_id: dogId, updated_at: new Date().toISOString() },
+      { onConflict: 'kennel_id,breed_id' },
+    )
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
 }
 
 /**

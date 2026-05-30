@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { User, Image as ImageIcon, Building2, BookOpen, HelpCircle, MessageSquare, Dog } from 'lucide-react'
+import { User, Image as ImageIcon, Building2, BookOpen, HelpCircle, MessageSquare, Dog, Award } from 'lucide-react'
 
 const ITEMS = [
   { href: '/kennel/contenido/sobre',              label: 'Sobre nosotros', icon: User },
   { href: '/kennel/contenido/perros-destacados',  label: 'Destacados',      icon: Dog },
+  { href: '/kennel/contenido/razas',              label: 'Nuestras razas',  icon: Award },
   { href: '/kennel/contenido/galeria',            label: 'Galería',         icon: ImageIcon },
   { href: '/kennel/contenido/instalaciones',      label: 'Instalaciones',   icon: Building2 },
   { href: '/kennel/contenido/blog',               label: 'Blog',            icon: BookOpen },
