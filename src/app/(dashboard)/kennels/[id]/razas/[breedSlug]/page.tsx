@@ -136,13 +136,7 @@ export default async function KennelBreedPromoPage(
     <>
       {/* ═══ HERO FULL-BLEED ═══ */}
       <section
-        className="relative overflow-hidden bg-[#0a0a0a]"
-        style={{
-          marginLeft: 'calc(50% - 50vw)',
-          marginRight: 'calc(50% - 50vw)',
-          width: '100vw',
-          maxWidth: '100vw',
-        }}
+        className="kennel-bleed relative overflow-hidden bg-[#0a0a0a]"
       >
         {heroUrl && (
           <div className="absolute inset-0">
@@ -235,13 +229,7 @@ export default async function KennelBreedPromoPage(
       {/* ═══ VIRTUDES ═══ */}
       {promo.virtues && promo.virtues.length > 0 && (
         <section
-          className="bg-surface-soft/40 border-b border-hairline"
-          style={{
-            marginLeft: 'calc(50% - 50vw)',
-            marginRight: 'calc(50% - 50vw)',
-            width: '100vw',
-            maxWidth: '100vw',
-          }}
+          className="kennel-bleed bg-surface-soft/40 border-b border-hairline"
         >
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
             <h2 className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.18em] text-muted mb-3">
@@ -288,13 +276,7 @@ export default async function KennelBreedPromoPage(
 
       {/* ═══ CLOSING + CTA ═══ */}
       <section
-        className="bg-ink text-canvas"
-        style={{
-          marginLeft: 'calc(50% - 50vw)',
-          marginRight: 'calc(50% - 50vw)',
-          width: '100vw',
-          maxWidth: '100vw',
-        }}
+        className="kennel-bleed bg-ink text-canvas"
       >
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center">
           {promo.closing && (

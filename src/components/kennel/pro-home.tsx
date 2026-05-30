@@ -174,22 +174,13 @@ export default function KennelProHome({
         />
       )}
 
-      {/* ════ HERO ════
-           Full-bleed: extiende a 100vw para que el fondo llegue a los
-           extremos de la pantalla (sin borders ni rounded). El contenido
-           se mantiene dentro de max-w-7xl centrado, alineado con el
-           resto de secciones del home.
-           El truco margin-left: calc(50% - 50vw) rompe el max-w del
-           dashboard padre. El padre tiene overflow controlado, así que
-           no causa scrollbar horizontal. */}
+      {/* ════ HERO ════ Full-bleed vía .kennel-bleed (globals.css): el fondo
+           llena el ancho disponible — el viewport en la web pública, la
+           COLUMNA (sin solaparse con el sidebar) cuando se ve logueado — y el
+           contenido se mantiene en max-w-7xl centrado, alineado con el resto
+           del home. Sin scroll lateral en ningún caso. */}
       <section
-        className="relative overflow-hidden bg-gradient-to-br from-orange-50/70 via-canvas to-blue-50/70"
-        style={{
-          marginLeft: 'calc(50% - 50vw)',
-          marginRight: 'calc(50% - 50vw)',
-          width: '100vw',
-          maxWidth: '100vw',
-        }}
+        className="kennel-bleed relative overflow-hidden bg-gradient-to-br from-orange-50/70 via-canvas to-blue-50/70"
       >
         {/* Glow marca */}
         <div

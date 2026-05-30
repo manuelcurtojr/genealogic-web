@@ -100,13 +100,7 @@ export default async function KennelRazasPage(
     <>
       {/* ═══ HERO LIGERO — FULL-BLEED ═══ */}
       <section
-        className="border-b border-hairline bg-surface-soft/30"
-        style={{
-          marginLeft: 'calc(50% - 50vw)',
-          marginRight: 'calc(50% - 50vw)',
-          width: '100vw',
-          maxWidth: '100vw',
-        }}
+        className="kennel-bleed border-b border-hairline bg-surface-soft/30"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-12 sm:py-16">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted mb-3">

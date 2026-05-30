@@ -56,18 +56,12 @@ export default function KennelChrome({
   if (variant === 'compact') {
     return (
       <div
-        className="border-b border-hairline bg-canvas/95 backdrop-blur-md"
+        // Full-bleed (fondo + divisor inferior cruzan el ancho disponible);
+        // el contenido (logo + nav) queda en max-w-7xl mx-auto, alineado con
+        // el resto del layout. .kennel-bleed (globals.css) resta el sidebar
+        // cuando se ve logueado, por eso no causa scroll lateral.
+        className="kennel-bleed border-b border-hairline bg-canvas/95 backdrop-blur-md"
         data-kennel-chrome="compact"
-        // Full-bleed SOLO el fondo + divisor inferior — para que la línea
-        // separadora cruce de lado a lado de la pantalla. El contenido
-        // (logo + nav) sigue dentro de max-w-7xl mx-auto para mantener
-        // la alineación con el resto del layout del dashboard.
-        style={{
-          marginLeft: 'calc(50% - 50vw)',
-          marginRight: 'calc(50% - 50vw)',
-          width: '100vw',
-          maxWidth: '100vw',
-        }}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 h-14 flex items-center gap-3">
           {/* Identidad — un poco más grande para emparejar el peso del nav */}

@@ -41,13 +41,7 @@ export default function KennelProFooter({
   const hasAnySocial = !!(socials.instagram || socials.facebook)
   return (
     <footer
-      className="relative bg-gradient-to-br from-blue-50/40 via-canvas to-orange-50/40 border-t border-hairline"
-      style={{
-        marginLeft: 'calc(50% - 50vw)',
-        marginRight: 'calc(50% - 50vw)',
-        width: '100vw',
-        maxWidth: '100vw',
-      }}
+      className="kennel-bleed relative bg-gradient-to-br from-blue-50/40 via-canvas to-orange-50/40 border-t border-hairline"
     >
       {/* Glow sutil */}
       <div

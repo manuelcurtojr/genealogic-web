@@ -65,24 +65,31 @@ export default async function KennelLayout({
   const { data: { user } } = await supabase.auth.getUser()
   const loggedIn = !!user
 
-  // Stage = contenedor del perfil del criadero.
+  // Stage = contenedor del perfil del criadero. Objetivo: que logueado se vea
+  // EXACTO que en público (contenido en max-w-7xl centrado + fondos a ancho
+  // completo), pero anclado a la COLUMNA en vez de al viewport.
   //
-  // Logueado: el contenido debe LLENAR la columna (del borde del sidebar al
-  // borde derecho de la pantalla) y los fondos full-bleed (hero, divisores,
-  // footer, chrome; todos width:100vw) llegar a esos bordes. -mx-4 lg:-mx-[46px]
-  // cancela el padding del DashboardShell (main p-4 = 16px + el div interior
-  // lg:px-[30px] = 46px) → el contenedor llega a los bordes de la columna. El
-  // ancho del sidebar vive en `ml` del shell (no en ese padding), así que al
-  // colapsar el menú la columna se reajusta sola. overflow-x-clip recorta los
-  // 100vw a la columna → fondos a ancho completo y CERO scroll lateral (clip,
-  // no hidden, para no romper los position:sticky interiores).
+  // Logueado (dentro del DashboardShell, con sidebar):
+  //   · -mx-4 lg:-mx-[46px] cancela el padding del shell (main p-4 = 16px + el
+  //     div interior lg:px-[30px]) → el Stage llena la columna, del borde del
+  //     sidebar al borde derecho. El ancho del sidebar vive en `ml` del shell,
+  //     así que al colapsar el menú la columna se reajusta sola.
+  //   · El div interior max-w-7xl mx-auto px-4 sm:px-[30px] centra el contenido
+  //     NO-bleed con el MISMO inset que el <main> público.
+  //   · Las secciones full-bleed usan .kennel-bleed (globals.css): restan
+  //     --sidebar-width y llenan la columna EXACTA → fondos a ancho completo y
+  //     cero scroll. overflow-x-clip queda de red de seguridad anti-redondeo
+  //     (clip, no hidden, para no romper los position:sticky internos).
   //
-  // No logueado: passthrough — el layout público ya centra en max-w-7xl y los
-  // 100vw bleeds funcionan (contenedor centrado en el viewport). Envolverlo
-  // aquí los recortaría a 1280px, por eso NO se toca.
+  // No logueado: passthrough — el <main> público ya da max-w-7xl + centrado y
+  // .kennel-bleed cae a 100vw del viewport (no hay --sidebar-width). NO se toca.
   const Stage = ({ children }: { children: React.ReactNode }) =>
     loggedIn
-      ? <div className="-mx-4 lg:-mx-[46px] overflow-x-clip">{children}</div>
+      ? (
+        <div className="-mx-4 lg:-mx-[46px] overflow-x-clip">
+          <div className="mx-auto max-w-7xl px-4 sm:px-[30px]">{children}</div>
+        </div>
+      )
       : <>{children}</>
 
   // Si NO es Pro: sin chrome del kennel — sólo el contenido
