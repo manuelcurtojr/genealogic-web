@@ -7,7 +7,7 @@
  * Diseño sobrio (header + tabs + grid), consistente con /perros y /kennels
  * (sin el hero cinematográfico anterior).
  */
-import { createKennelAdminClient } from '@/lib/supabase/server'
+import { createKennelAdminClient, createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 import BreedsDirectory, { type DirectoryBreed } from '@/components/breeds/breeds-directory'
 import DirectoryTabs from '@/components/search/directory-tabs'
@@ -75,7 +75,7 @@ export default async function BreedsIndexPage() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-12 py-8 sm:py-10">
+      <div className={user ? 'py-8 sm:py-10' : 'mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-12 py-8 sm:py-10'}>
         <div>
           <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Directorio</p>
           <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
