@@ -212,6 +212,7 @@ export default async function KennelLayout({
             instagram: kennel.social_instagram,
             facebook: kennel.social_facebook,
           }}
+          shortHrefs
         />
       </div>
     )

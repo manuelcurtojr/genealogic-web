@@ -15,6 +15,7 @@
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
 import NewsletterSubscribe from './newsletter-subscribe'
+import { LEGAL_DOCS } from '@/lib/kennel/legal'
 
 export type KennelProFooterProps = {
   kennelId: string
@@ -28,6 +29,9 @@ export type KennelProFooterProps = {
     instagram?: string | null
     facebook?: string | null
   }
+  /** Bajo dominio propio: links legales cortos (/legal/cookies) en vez de
+   *  absolutos (/kennels/<slug>/legal/cookies). El middleware reescribe. */
+  shortHrefs?: boolean
 }
 
 export default function KennelProFooter({
@@ -37,8 +41,11 @@ export default function KennelProFooter({
   kennelLogoUrl,
   location,
   socials,
+  shortHrefs = false,
 }: KennelProFooterProps) {
   const hasAnySocial = !!(socials.instagram || socials.facebook)
+  // Base de las URLs legales: corta bajo dominio propio, absoluta en genealogic.io.
+  const legalBase = shortHrefs ? '/legal' : `/kennels/${kennelSlug}/legal`
   return (
     <footer
       className="kennel-bleed relative bg-gradient-to-br from-blue-50/40 via-canvas to-orange-50/40 border-t border-hairline"
@@ -133,6 +140,22 @@ export default function KennelProFooter({
             </div>
           </div>
 
+        </div>
+
+        {/* ── Franja inferior — enlaces legales ─────────────────────────
+            Aviso legal, privacidad, cookies y términos del criadero. Bajo
+            dominio propio van en formato corto (/legal/...); el middleware
+            reescribe a /kennels/<slug>/legal/... */}
+        <div className="mt-10 sm:mt-14 pt-6 border-t border-hairline flex flex-wrap items-center gap-x-5 gap-y-2">
+          {LEGAL_DOCS.map(d => (
+            <Link
+              key={d.slug}
+              href={`${legalBase}/${d.slug}`}
+              className="text-[12px] text-muted hover:text-ink transition-colors"
+            >
+              {d.label}
+            </Link>
+          ))}
         </div>
       </div>
     </footer>
