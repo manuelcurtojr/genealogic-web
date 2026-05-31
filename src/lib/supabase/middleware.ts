@@ -8,6 +8,7 @@ import {
   shouldBypassPlatformLogic,
 } from '@/lib/platform'
 import { hasProAccess, isEnterpriseUser } from '@/lib/permissions'
+import { isDynamicSiteHost } from '@/lib/kennel/custom-site'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -86,10 +87,32 @@ export async function updateSession(request: NextRequest) {
       .eq('custom_domain_verified', true)
       .single()
     if (kennel?.slug) {
-      const url = request.nextUrl.clone()
-      // Rewrite a /c/[slug]/<page>  (raíz = /c/[slug])
-      url.pathname = pathname === '/' ? `/c/${kennel.slug}` : `/c/${kennel.slug}${pathname}`
-      return NextResponse.rewrite(url)
+      // Dominios migrados a la WEB DINÁMICA (allowlist en custom-site.ts):
+      // se sirven con /kennels/[slug]/* (auto-generada) en vez del
+      // constructor /c/[slug], y los layouts suprimen el chrome de Genealogic.
+      if (isDynamicSiteHost(host)) {
+        // Passthrough para rutas que YA son absolutas de la app (links
+        // internos no migrados a URL corta: fichas de perro /dogs/…, camadas
+        // /litters/…, o el propio /kennels/…). Sin esto, prefijarlas daría
+        // /kennels/slug/kennels/slug/… → 404. Caen al flujo normal (son
+        // rutas públicas, no disparan el gate de auth de abajo).
+        const isAppAbsolute =
+          pathname.startsWith('/kennels/') ||
+          pathname.startsWith('/dogs/') ||
+          pathname.startsWith('/litters/')
+        if (!isAppAbsolute) {
+          const url = request.nextUrl.clone()
+          // URL corta (/perros, /sobre, …) → /kennels/[slug]/perros. Raíz → /kennels/[slug].
+          url.pathname = pathname === '/' ? `/kennels/${kennel.slug}` : `/kennels/${kennel.slug}${pathname}`
+          return NextResponse.rewrite(url)
+        }
+        // isAppAbsolute: no reescribir, servir tal cual (cae abajo).
+      } else {
+        // Resto de custom domains: web del constructor (comportamiento actual).
+        const url = request.nextUrl.clone()
+        url.pathname = pathname === '/' ? `/c/${kennel.slug}` : `/c/${kennel.slug}${pathname}`
+        return NextResponse.rewrite(url)
+      }
     }
   }
 
