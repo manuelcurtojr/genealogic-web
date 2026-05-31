@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { User, Image as ImageIcon, Building2, BookOpen, HelpCircle, MessageSquare, Dog, Award } from 'lucide-react'
+import { User, Image as ImageIcon, Building2, BookOpen, HelpCircle, MessageSquare, Dog, Award, Scale } from 'lucide-react'
 
 const ITEMS = [
   { href: '/kennel/contenido/sobre',              label: 'Sobre nosotros', icon: User },
@@ -13,6 +13,7 @@ const ITEMS = [
   { href: '/kennel/contenido/blog',               label: 'Blog',            icon: BookOpen },
   { href: '/kennel/contenido/faq',                label: 'FAQ',             icon: HelpCircle },
   { href: '/kennel/contenido/resenas',            label: 'Reseñas',         icon: MessageSquare },
+  { href: '/kennel/contenido/legal',              label: 'Legal',           icon: Scale },
 ]
 
 export default function ContenidoSubNav() {
