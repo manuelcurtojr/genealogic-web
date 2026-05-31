@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Store, Palette, GitBranch, Stethoscope, LogOut, Shield, Menu, X, Key, BarChart3, Dog, Activity, Globe, ShieldCheck, ShieldAlert, Inbox, Flag, EyeOff } from 'lucide-react'
+import { LayoutDashboard, Users, Store, Palette, GitBranch, Stethoscope, LogOut, Shield, Menu, X, Key, BarChart3, Dog, Activity, Globe, ShieldCheck, ShieldAlert, Inbox, Flag, EyeOff, Scale } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,6 +24,7 @@ const ADMIN_NAV: { section?: string; label: string; href: string; icon: any }[] 
   { section: 'Herramientas', label: 'Importar genealogía', href: '/admin/import', icon: Globe },
   { label: 'Catálogo', href: '/admin/catalog', icon: Palette },
   { label: 'Plantillas vet.', href: '/admin/vet-templates', icon: Stethoscope },
+  { label: 'Legal', href: '/admin/legal', icon: Scale },
   // Sistema
   { section: 'Sistema', label: 'Configuración', href: '/admin/settings', icon: Key },
 ]
