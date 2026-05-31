@@ -108,7 +108,7 @@ export default function KennelProFooter({
             <p className="mt-1 text-[11px] text-muted inline-flex items-center gap-1">
               Web creada con{' '}
               <Link
-                href="/"
+                href="https://genealogic.io"
                 className="font-semibold text-body hover:text-[#FE6620] transition-colors uppercase tracking-[0.1em]"
               >
                 Genealogic

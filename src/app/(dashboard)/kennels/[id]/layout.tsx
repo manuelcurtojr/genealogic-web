@@ -15,8 +15,10 @@
  * páginas que están enabled Y tienen contenido publicable (regla pedida).
  */
 import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { isUUID } from '@/lib/slug'
+import { isDynamicSiteHost } from '@/lib/kennel/custom-site'
 import KennelChrome from '@/components/kennel/kennel-chrome'
 import KennelProFooter from '@/components/kennel/kennel-pro-footer'
 import {
@@ -65,6 +67,12 @@ export default async function KennelLayout({
   const { data: { user } } = await supabase.auth.getUser()
   const loggedIn = !!user
 
+  // ¿Servido bajo el dominio propio del criadero (web dinámica)? Entonces
+  // este layout es el ÚNICO chrome: header standalone + footer propios, sin
+  // nada de Genealogic alrededor (el (dashboard)/layout.tsx ya devolvió bare
+  // children para este host). Links del nav en formato corto (/perros).
+  const standalone = isDynamicSiteHost((await headers()).get('host'))
+
   // Stage = contenedor del perfil del criadero. Objetivo: que logueado se vea
   // EXACTO que en público (contenido en max-w-7xl centrado + fondos a ancho
   // completo), pero anclado a la COLUMNA en vez de al viewport.
@@ -94,6 +102,16 @@ export default async function KennelLayout({
 
   // Si NO es Pro: sin chrome del kennel — sólo el contenido
   if (!isPro) {
+    // Bajo dominio propio: contenido centrado en max-w-7xl, sin chrome.
+    if (standalone) {
+      return (
+        <div className="min-h-screen bg-canvas text-ink flex flex-col">
+          <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-[30px] py-4 sm:py-6">
+            {children}
+          </main>
+        </div>
+      )
+    }
     return <Stage>{children}</Stage>
   }
 
@@ -163,6 +181,41 @@ export default async function KennelLayout({
   // active no es crítico en compact (es tira pequeña). Para un highlight
   // exacto haríamos un client component que lee usePathname.
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
+
+  // ─── Web propia (dominio del criadero): chrome standalone ─────────────
+  // Header completo (no la tira compact), contenido en max-w-7xl centrado
+  // (los fondos full-bleed rompen a 100vw, igual que en la vista pública),
+  // footer propio, y nav con URLs cortas (/perros). Cero chrome de Genealogic.
+  if (standalone) {
+    return (
+      <div className="min-h-screen bg-canvas text-ink flex flex-col">
+        <KennelChrome
+          kennelName={kennel.name}
+          kennelSlug={kennel.slug || kennel.id}
+          logoUrl={kennel.logo_url}
+          navItems={navItems}
+          activePageId="home"
+          variant="standalone"
+          onCustomDomain
+        />
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-[30px] py-4 sm:py-6">
+          {children}
+        </main>
+        <KennelProFooter
+          kennelId={kennel.id}
+          kennelName={kennel.name}
+          kennelSlug={kennel.slug || kennel.id}
+          kennelLogoUrl={kennel.logo_url}
+          location={location}
+          socials={{
+            website: kennel.website,
+            instagram: kennel.social_instagram,
+            facebook: kennel.social_facebook,
+          }}
+        />
+      </div>
+    )
+  }
 
   // TODO el perfil (chrome + contenido + footer) va dentro de UN solo Stage:
   // logueado, llena la columna y recorta los 100vw a sus bordes (fondos a ancho
