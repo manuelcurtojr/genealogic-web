@@ -27,11 +27,15 @@ export type NavItem = {
 }
 
 export default function KennelChromeNav({
-  items, kennelSlug, variant,
+  items, kennelSlug, variant, shortHrefs = false,
 }: {
   items: NavItem[]
   kennelSlug: string
   variant: 'compact' | 'standalone'
+  /** Bajo dominio propio: links cortos (/perros) en vez de /kennels/<slug>/perros.
+   *  El pathname real sigue siendo /kennels/<slug>/… (el middleware reescribe),
+   *  así que isActive() usa SIEMPRE la ruta absoluta para detectar la activa. */
+  shortHrefs?: boolean
 }) {
   const pathname = usePathname() || ''
   const [open, setOpen] = useState(false)
@@ -42,12 +46,20 @@ export default function KennelChromeNav({
   useEffect(() => { setMounted(true) }, [])
   const homeHref = `/kennels/${kennelSlug}`
 
+  // isActive compara contra el pathname REAL (siempre /kennels/<slug>/…, porque
+  // el middleware reescribe la URL corta a esa ruta interna), independiente de
+  // qué href pintemos en el <Link>.
   function isActive(href: string): boolean {
     if (href === '') return pathname === homeHref
     const fullHref = `/kennels/${kennelSlug}/${href}`
     return pathname === fullHref || pathname.startsWith(fullHref + '/')
   }
-  const hrefFor = (href: string) => href === '' ? homeHref : `${homeHref}/${href}`
+  // hrefFor: lo que se PINTA en el link. Corto bajo dominio propio, absoluto
+  // en genealogic.io.
+  const hrefFor = (href: string) =>
+    shortHrefs
+      ? (href === '' ? '/' : `/${href}`)
+      : (href === '' ? homeHref : `${homeHref}/${href}`)
 
   // Cierra el drawer al navegar a otra página
   useEffect(() => { setOpen(false) }, [pathname])

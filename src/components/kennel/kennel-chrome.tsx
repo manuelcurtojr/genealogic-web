@@ -38,12 +38,19 @@ interface Props {
   variant: 'compact' | 'standalone'
   /** En modo standalone (custom domain) ponemos un link sutil "Powered by Genealogic" */
   showGenealogicLink?: boolean
+  /** Bajo el dominio propio del criadero: los links del nav y del logo van en
+   *  formato corto (/perros) en vez de absoluto (/kennels/<slug>/perros). El
+   *  middleware reescribe la URL corta a la ruta real, así la barra del
+   *  navegador muestra iremacurto.com/perros — web propia. */
+  shortHrefs?: boolean
 }
 
 export default function KennelChrome({
   kennelName, kennelSlug, logoUrl, navItems, activePageId,
-  variant, showGenealogicLink = false,
+  variant, showGenealogicLink = false, shortHrefs = false,
 }: Props) {
+  // Href del logo (home): corto bajo dominio propio, absoluto en genealogic.io.
+  const homeHref = shortHrefs ? '/' : `/kennels/${kennelSlug}`
   // En compact los hrefs son absolutos a /kennels/<slug>/...
   // En standalone (custom domain), el middleware reescribe a /c/[slug]/...
   // pero como aquí estamos sirviendo /kennels/[slug]/* las URLs publicadas
@@ -101,7 +108,7 @@ export default function KennelChrome({
       >
         {/* Full-width también en standalone: logo izq, nav der */}
         <div className="w-full px-4 sm:px-6 lg:px-10 h-16 sm:h-[72px] flex items-center gap-3">
-          <Link href={`/kennels/${kennelSlug}`} className="flex items-center gap-2.5 min-w-0 group">
+          <Link href={homeHref} className="flex items-center gap-2.5 min-w-0 group">
             {logoUrl ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
@@ -126,6 +133,7 @@ export default function KennelChrome({
             items={navItems.map(n => ({ id: n.id, href: n.href, label: n.label }))}
             kennelSlug={kennelSlug}
             variant="standalone"
+            shortHrefs={shortHrefs}
           />
           {/* Mobile: usa el mismo client nav en modo compact para tabs scroll */}
           <div className="ml-auto md:hidden">
@@ -133,6 +141,7 @@ export default function KennelChrome({
               items={navItems.map(n => ({ id: n.id, href: n.href, label: n.label }))}
               kennelSlug={kennelSlug}
               variant="compact"
+              shortHrefs={shortHrefs}
             />
           </div>
         </div>

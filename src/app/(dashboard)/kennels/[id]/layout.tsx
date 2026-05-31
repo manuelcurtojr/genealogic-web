@@ -196,7 +196,7 @@ export default async function KennelLayout({
           navItems={navItems}
           activePageId="home"
           variant="standalone"
-          onCustomDomain
+          shortHrefs
         />
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-[30px] py-4 sm:py-6">
           {children}
