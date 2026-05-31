@@ -59,10 +59,14 @@ interface Props {
   litters: LitterRow[]
   criados: DogRow[]
   currencySymbol: Record<string, string>
+  /** Bajo el dominio propio del criadero: las fichas de perro abren el perfil
+   *  en genealogic.io en una pestaña nueva (allí está toda la herramienta:
+   *  genealogía, salud, palmarés). En genealogic.io se navega normal. */
+  dogsToGenealogic?: boolean
 }
 
 export default function PerrosCatalog({
-  kennelName, kennelId, contactConfig, reproductores, forSale, litters, criados, currencySymbol,
+  kennelName, kennelId, contactConfig, reproductores, forSale, litters, criados, currencySymbol, dogsToGenealogic,
 }: Props) {
   // Siempre arrancamos en Reproductores: es el escaparate del criadero (su
   // línea de cría), el contenido más fuerte y el que mejor vende. Aunque
@@ -272,7 +276,7 @@ export default function PerrosCatalog({
           divisor de las tabs — el space-y del padre no basta porque su
           selector descendiente gana al margin y el border-b queda pegado. */}
       <div className="pt-5 sm:pt-6">
-        {tab === 'reproductores' && <DogGrid dogs={filteredReproductores} emptyLabel={hasActiveFilters ? 'No hay reproductores que coincidan con los filtros.' : 'Sin reproductores publicados.'} />}
+        {tab === 'reproductores' && <DogGrid dogs={filteredReproductores} emptyLabel={hasActiveFilters ? 'No hay reproductores que coincidan con los filtros.' : 'Sin reproductores publicados.'} dogsToGenealogic={dogsToGenealogic} />}
         {tab === 'venta' && (
           filteredVenta.length === 0 && !hasActiveFilters
             ? <ContactEmptyState
@@ -282,7 +286,7 @@ export default function PerrosCatalog({
                 title="Ahora mismo no hay cachorros disponibles"
                 body="Trabajamos por lista de espera. Pide información y te avisamos en cuanto haya una camada que encaje contigo."
               />
-            : <DogGrid dogs={filteredVenta} forSale currencySymbol={currencySymbol} emptyLabel="No hay perros en venta que coincidan." />
+            : <DogGrid dogs={filteredVenta} forSale currencySymbol={currencySymbol} emptyLabel="No hay perros en venta que coincidan." dogsToGenealogic={dogsToGenealogic} />
         )}
         {tab === 'camadas' && (
           filteredCamadas.length === 0 && !hasActiveFilters
@@ -295,7 +299,7 @@ export default function PerrosCatalog({
               />
             : <LitterGrid litters={filteredCamadas} emptyLabel="No hay camadas que coincidan." />
         )}
-        {tab === 'criados'       && <DogGrid dogs={filteredCriados} emptyLabel={hasActiveFilters ? 'No hay perros que coincidan.' : `${kennelName} aún no tiene perros criados publicados.`} />}
+        {tab === 'criados'       && <DogGrid dogs={filteredCriados} emptyLabel={hasActiveFilters ? 'No hay perros que coincidan.' : `${kennelName} aún no tiene perros criados publicados.`} dogsToGenealogic={dogsToGenealogic} />}
       </div>
     </div>
   )
@@ -339,8 +343,8 @@ function ContactEmptyState({
   )
 }
 
-function DogGrid({ dogs, emptyLabel, forSale, currencySymbol }: {
-  dogs: DogRow[]; emptyLabel: string; forSale?: boolean; currencySymbol?: Record<string, string>
+function DogGrid({ dogs, emptyLabel, forSale, currencySymbol, dogsToGenealogic }: {
+  dogs: DogRow[]; emptyLabel: string; forSale?: boolean; currencySymbol?: Record<string, string>; dogsToGenealogic?: boolean
 }) {
   if (dogs.length === 0) {
     return (
@@ -352,8 +356,8 @@ function DogGrid({ dogs, emptyLabel, forSale, currencySymbol }: {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
       {dogs.map(dog => forSale
-        ? <SaleDogCard key={dog.id} dog={dog} currencySymbol={currencySymbol!} />
-        : <PublicDogCard key={dog.id} dog={dog} />
+        ? <SaleDogCard key={dog.id} dog={dog} currencySymbol={currencySymbol!} dogsToGenealogic={dogsToGenealogic} />
+        : <PublicDogCard key={dog.id} dog={dog} dogsToGenealogic={dogsToGenealogic} />
       )}
     </div>
   )
@@ -427,12 +431,14 @@ function LitterGrid({ litters, emptyLabel }: { litters: LitterRow[]; emptyLabel:
   )
 }
 
-function SaleDogCard({ dog, currencySymbol }: { dog: DogRow; currencySymbol: Record<string, string> }) {
+function SaleDogCard({ dog, currencySymbol, dogsToGenealogic }: { dog: DogRow; currencySymbol: Record<string, string>; dogsToGenealogic?: boolean }) {
   const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
   const symbol = currencySymbol[dog.sale_currency || 'EUR'] || '€'
   return (
     <Link
-      href={`/dogs/${dog.slug || dog.id}`}
+      href={dogsToGenealogic ? `https://genealogic.io/dogs/${dog.slug || dog.id}` : `/dogs/${dog.slug || dog.id}`}
+      target={dogsToGenealogic ? '_blank' : undefined}
+      rel={dogsToGenealogic ? 'noopener noreferrer' : undefined}
       className="group relative overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft"
     >
       <span className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-full bg-[#f59e0b] px-2 py-0.5 text-[10.5px] font-medium text-white shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
@@ -468,11 +474,13 @@ function SaleDogCard({ dog, currencySymbol }: { dog: DogRow; currencySymbol: Rec
   )
 }
 
-function PublicDogCard({ dog }: { dog: DogRow }) {
+function PublicDogCard({ dog, dogsToGenealogic }: { dog: DogRow; dogsToGenealogic?: boolean }) {
   const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
   return (
     <Link
-      href={`/dogs/${dog.slug || dog.id}`}
+      href={dogsToGenealogic ? `https://genealogic.io/dogs/${dog.slug || dog.id}` : `/dogs/${dog.slug || dog.id}`}
+      target={dogsToGenealogic ? '_blank' : undefined}
+      rel={dogsToGenealogic ? 'noopener noreferrer' : undefined}
       className="group overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft"
     >
       <div className="relative aspect-square overflow-hidden bg-surface-card">

@@ -4,6 +4,8 @@ import { isUUID } from '@/lib/slug'
 import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
 import { sortDogsByPhotoQuality } from '@/lib/dogs/sort-quality'
 import PerrosCatalog from '@/components/kennel/perros-catalog'
+import { headers } from 'next/headers'
+import { isDynamicSiteHost } from '@/lib/kennel/custom-site'
 import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
@@ -119,6 +121,12 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
   const criados = dogs.filter((d: any) => !d.is_reproductive && !d.is_for_sale)
   const currencySymbol: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', MXN: '$', COP: '$', ARS: '$', CLP: '$' }
 
+  // Bajo el dominio propio del criadero (web dinámica, p.ej. iremacurto.com),
+  // las fichas de perro abren el perfil en genealogic.io en una pestaña nueva:
+  // allí está toda la herramienta (genealogía, salud, palmarés). En
+  // genealogic.io la navegación es interna (/dogs/[slug]).
+  const dogsToGenealogic = isDynamicSiteHost((await headers()).get('host'))
+
   return (
     <div className="space-y-6 sm:space-y-8">
       <header>
@@ -140,6 +148,7 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
         litters={litters}
         criados={criados}
         currencySymbol={currencySymbol}
+        dogsToGenealogic={dogsToGenealogic}
       />
     </div>
   )
