@@ -129,21 +129,16 @@ export default function KennelChrome({
             </span>
           </Link>
 
+          {/* KennelChromeNav ya gestiona AMBOS modos: desktop (nav inline,
+              md:flex) y móvil (botón hamburguesa md:hidden + drawer). No hace
+              falta un segundo nav móvil — antes había uno extra aquí que
+              producía DOS hamburguesas en móvil. */}
           <KennelChromeNav
             items={navItems.map(n => ({ id: n.id, href: n.href, label: n.label }))}
             kennelSlug={kennelSlug}
             variant="standalone"
             shortHrefs={shortHrefs}
           />
-          {/* Mobile: usa el mismo client nav en modo compact para tabs scroll */}
-          <div className="ml-auto md:hidden">
-            <KennelChromeNav
-              items={navItems.map(n => ({ id: n.id, href: n.href, label: n.label }))}
-              kennelSlug={kennelSlug}
-              variant="compact"
-              shortHrefs={shortHrefs}
-            />
-          </div>
         </div>
       </header>
 

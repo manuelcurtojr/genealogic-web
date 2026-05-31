@@ -267,8 +267,11 @@ export default function PerrosCatalog({
           contacto cuando están vacíos SIN filtros activos, en vez de un
           "0 resultados" muerto: un comprador que ve el escaparate a cero se
           va; mejor invitarle a la lista de espera. Con filtros activos sí
-          mostramos el mensaje neutro (es el usuario el que ha filtrado). */}
-      <div>
+          mostramos el mensaje neutro (es el usuario el que ha filtrado).
+          pt explícito (padding, no margin) para separar el contenido del
+          divisor de las tabs — el space-y del padre no basta porque su
+          selector descendiente gana al margin y el border-b queda pegado. */}
+      <div className="pt-5 sm:pt-6">
         {tab === 'reproductores' && <DogGrid dogs={filteredReproductores} emptyLabel={hasActiveFilters ? 'No hay reproductores que coincidan con los filtros.' : 'Sin reproductores publicados.'} />}
         {tab === 'venta' && (
           filteredVenta.length === 0 && !hasActiveFilters
