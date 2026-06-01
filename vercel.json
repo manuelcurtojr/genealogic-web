@@ -24,6 +24,10 @@
     {
       "path": "/api/cron/repro-reminders",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/owner-checkin",
+      "schedule": "0 9 * * *"
     }
   ]
 }

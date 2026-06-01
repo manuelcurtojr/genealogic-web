@@ -41,9 +41,12 @@ import TrialEndingSoonEmail, { type TrialEndingSoonProps } from '@/emails/trial-
 import ReproNextHeatEmail, { type ReproNextHeatProps } from '@/emails/repro-next-heat'
 import ReproConfirmPregnancyEmail, { type ReproConfirmPregnancyProps } from '@/emails/repro-confirm-pregnancy'
 import ReproBirthSoonEmail, { type ReproBirthSoonProps } from '@/emails/repro-birth-soon'
+import OwnerCheckinEmail, { type OwnerCheckinProps } from '@/emails/owner-checkin'
 
 const FROM_TRANSACTIONAL = 'Genealogic <hola@genealogic.io>'
 const REPLY_TO = 'hola@genealogic.io'
+// Reply-to para emails "founder" — las respuestas van directas a Manuel.
+const REPLY_TO_FOUNDER = 'manuel@genealogic.io'
 
 // Mapa template → { props, subject, category, render fn }
 export type EmailTemplate =
@@ -68,6 +71,7 @@ export type EmailTemplate =
   | { template: 'repro_next_heat';        props: ReproNextHeatProps }
   | { template: 'repro_confirm_pregnancy'; props: ReproConfirmPregnancyProps }
   | { template: 'repro_birth_soon';       props: ReproBirthSoonProps }
+  | { template: 'owner_checkin';          props: OwnerCheckinProps }
 
 /** Categoría → si el user puede hacer opt-out. */
 type Category = 'auth' | 'reservations' | 'messages' | 'vet_reminders' | 'weekly_digest' | 'marketing' | 'critical'
@@ -75,6 +79,8 @@ type Category = 'auth' | 'reservations' | 'messages' | 'vet_reminders' | 'weekly
 const TEMPLATE_META: Record<EmailTemplate['template'], {
   category: Category
   subject: (props: any) => string // eslint-disable-line @typescript-eslint/no-explicit-any
+  /** Override del reply-to por defecto (REPLY_TO). Para emails founder. */
+  replyTo?: string
 }> = {
   welcome_breeder: {
     category: 'critical', // welcome no se puede desactivar (es una sola vez)
@@ -187,6 +193,12 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
     subject: (p: ReproBirthSoonProps) =>
       p.daysUntil <= 0 ? `${p.dogName} sale de cuentas hoy` : `Parto de ${p.dogName} en ${p.daysUntil} días`,
   },
+  owner_checkin: {
+    // 'marketing' → respeta opt-out (no insistimos a quien no quiere emails).
+    category: 'marketing',
+    subject: () => '¿Qué tal tus primeros días en Genealogic?',
+    replyTo: REPLY_TO_FOUNDER, // las respuestas van directas a Manuel
+  },
 }
 
 let _resend: Resend | null = null
@@ -221,6 +233,7 @@ function renderTemplate(t: EmailTemplate): Promise<string> {
     case 'repro_next_heat':        return render(ReproNextHeatEmail(t.props))
     case 'repro_confirm_pregnancy': return render(ReproConfirmPregnancyEmail(t.props))
     case 'repro_birth_soon':       return render(ReproBirthSoonEmail(t.props))
+    case 'owner_checkin':          return render(OwnerCheckinEmail(t.props))
   }
 }
 
@@ -303,7 +316,7 @@ export async function sendTransactionalEmail(
       to,
       subject,
       html,
-      replyTo: REPLY_TO,
+      replyTo: meta.replyTo || REPLY_TO,
     })
 
     if (res?.error) {

@@ -102,7 +102,7 @@ export default function WelcomeOwner({
         </ul>
 
         <Link
-          href="/dogs"
+          href="/dogs/new"
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink text-on-primary px-6 py-3 text-sm font-bold hover:opacity-90"
         >
           Añadir mi primer perro
