@@ -4,8 +4,10 @@ import { headers } from "next/headers";
 import "./globals.css";
 import CookieBanner from "@/components/ui/cookie-banner";
 import { PlatformProvider } from "@/components/platform/platform-provider";
+import { LocaleProvider } from "@/components/i18n/locale-provider";
 import { isIosUserAgent } from "@/lib/platform";
 import { getLocale } from "@/lib/locale";
+import { getTranslator } from "@/lib/i18n";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -38,37 +40,48 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
 
-export const metadata: Metadata = {
-  title: {
-    default: "Genealogic — Genealogías caninas verificables",
-    template: "%s · Genealogic",
-  },
-  description:
-    "El registro público de genealogías caninas. Cada criador serio tiene su escaparate. Cada perro tiene su árbol genealógico verificable.",
-  keywords: ["genealogía canina", "criadero", "perros", "camadas", "cachorros"],
-  authors: [{ name: "Manuel Curtó SL" }],
-  creator: "Genealogic",
-  metadataBase: new URL("https://genealogic.io"),
-  openGraph: {
-    type: "website",
-    locale: "es_ES",
-    url: "https://genealogic.io",
-    siteName: "Genealogic",
-    title: "Genealogic — Genealogías caninas verificables",
-    description:
-      "El registro público de genealogías caninas. Cada criador serio tiene su escaparate.",
-    // og:image se genera automáticamente desde src/app/opengraph-image.tsx.
-    // Next.js inyecta el meta tag <og:image> apuntando a /opengraph-image
-    // sin que tengamos que listarlo aquí.
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Genealogic",
-    description: "El registro público de genealogías caninas.",
-    // Igual que con openGraph: la twitter:image se hereda del opengraph-image.tsx
-  },
-  robots: { index: true, follow: true },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = getTranslator(await getLocale());
+  return {
+    title: {
+      default: t("Genealogic — Genealogías caninas verificables"),
+      template: "%s · Genealogic",
+    },
+    description: t(
+      "El registro público de genealogías caninas. Cada criador serio tiene su escaparate. Cada perro tiene su árbol genealógico verificable."
+    ),
+    keywords: [
+      t("genealogía canina"),
+      t("criadero"),
+      t("perros"),
+      t("camadas"),
+      t("cachorros"),
+    ],
+    authors: [{ name: "Manuel Curtó SL" }],
+    creator: "Genealogic",
+    metadataBase: new URL("https://genealogic.io"),
+    openGraph: {
+      type: "website",
+      locale: "es_ES",
+      url: "https://genealogic.io",
+      siteName: "Genealogic",
+      title: t("Genealogic — Genealogías caninas verificables"),
+      description: t(
+        "El registro público de genealogías caninas. Cada criador serio tiene su escaparate."
+      ),
+      // og:image se genera automáticamente desde src/app/opengraph-image.tsx.
+      // Next.js inyecta el meta tag <og:image> apuntando a /opengraph-image
+      // sin que tengamos que listarlo aquí.
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Genealogic",
+      description: t("El registro público de genealogías caninas."),
+      // Igual que con openGraph: la twitter:image se hereda del opengraph-image.tsx
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -89,10 +102,12 @@ export default async function RootLayout({
       className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="font-sans min-h-full flex flex-col bg-white text-ink">
-        <PlatformProvider isIos={isIos}>
-          {children}
-          {!isIos && <CookieBanner />}
-        </PlatformProvider>
+        <LocaleProvider locale={locale}>
+          <PlatformProvider isIos={isIos}>
+            {children}
+            {!isIos && <CookieBanner />}
+          </PlatformProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

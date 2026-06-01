@@ -31,6 +31,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import CheckoutButton from '@/components/billing/checkout-button'
+import { useT } from '@/components/i18n/locale-provider'
 
 type PlanId = 'owner' | 'free' | 'pro' | 'enterprise'
 
@@ -327,6 +328,7 @@ export default function PricingClient({
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const t = useT()
 
   // Vista: simple (default) o avanzada. Estado local como source of truth +
   // sync con URL via history.replaceState (sin disparar navegación de Next,
@@ -363,14 +365,13 @@ export default function PricingClient({
         <div className="text-center mb-8 sm:mb-12">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-surface-card px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted mb-4">
             <Sparkles className="w-3 h-3" />
-            Precios
+            {t('Precios')}
           </div>
           <h1 className="font-semibold text-ink mb-4 tracking-tight" style={{ fontSize: 'clamp(28px, 5vw, 52px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-            Empieza gratis. Sube cuando crezcas.
+            {t('Empieza gratis. Sube cuando crezcas.')}
           </h1>
           <p className="text-base sm:text-lg text-body max-w-2xl mx-auto leading-relaxed">
-            Owner y Kennel Free son gratis para siempre, sin tarjeta. Pro y
-            Enterprise vienen con 14 días de prueba.
+            {t('Owner y Kennel Free son gratis para siempre, sin tarjeta. Pro y Enterprise vienen con 14 días de prueba.')}
           </p>
         </div>
 
@@ -390,7 +391,7 @@ export default function PricingClient({
                   : 'text-muted hover:text-body'
               }`}
             >
-              Mensual
+              {t('Mensual')}
             </button>
             <button
               onClick={() => switchCycle('annual')}
@@ -400,7 +401,7 @@ export default function PricingClient({
                   : 'text-muted hover:text-body'
               }`}
             >
-              Anual
+              {t('Anual')}
               <span className="ml-1.5 inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-1.5 py-0.5 text-[10px] font-bold tabular-nums">
                 –15%
               </span>
@@ -420,7 +421,7 @@ export default function PricingClient({
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              Vista simple
+              {t('Vista simple')}
             </button>
             <button
               onClick={() => switchView('avanzada')}
@@ -431,7 +432,7 @@ export default function PricingClient({
               }`}
             >
               <Building2 className="w-3.5 h-3.5" />
-              Comparativa completa
+              {t('Comparativa completa')}
             </button>
           </div>
         </div>
@@ -448,17 +449,10 @@ export default function PricingClient({
             <Info className="w-5 h-5 text-blue-700 mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-sm font-bold text-blue-900 mb-1.5">
-                ¿Cómo cuentan los perros en el límite?
+                {t('¿Cómo cuentan los perros en el límite?')}
               </p>
               <p className="text-[13.5px] text-blue-900/80 leading-relaxed">
-                Un perro cuenta SI es tuyo, tiene más de 90 días, NO está
-                marcado como &ldquo;Disponible&rdquo; o &ldquo;Reservado&rdquo;,
-                y NO está fallecido. Es decir, cuentan tus <strong>reproductores
-                y plantilla fija</strong>. Cachorros para venta, perros que
-                ya transferiste a sus dueños y perros fallecidos
-                <strong> no suman</strong>. Así un criador con 3 reproductoras
-                en Free puede tener una camada de 8 cachorros sin pasarse del
-                límite de 5.
+                {t('Un perro cuenta SI es tuyo, tiene más de 90 días, NO está marcado como “Disponible” o “Reservado”, y NO está fallecido. Es decir, cuentan tus')}{' '}<strong>{t('reproductores y plantilla fija')}</strong>{t('. Cachorros para venta, perros que ya transferiste a sus dueños y perros fallecidos')}<strong> {t('no suman')}</strong>{t('. Así un criador con 3 reproductoras en Free puede tener una camada de 8 cachorros sin pasarse del límite de 5.')}
               </p>
             </div>
           </div>
@@ -470,7 +464,7 @@ export default function PricingClient({
         {/* Volver */}
         <p className="text-center mt-10 sm:mt-12 text-sm">
           <Link href="/" className="text-muted hover:text-ink underline">
-            Volver a Genealogic
+            {t('Volver a Genealogic')}
           </Link>
         </p>
       </div>
@@ -493,6 +487,7 @@ function SimpleView({ isLoggedIn, cycle }: { isLoggedIn: boolean; cycle: Billing
 }
 
 function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: boolean; cycle: BillingCycle }) {
+  const t = useT()
   const Icon = plan.icon
   const priceInfo = fmtPrice(plan, cycle)
   return (
@@ -504,7 +499,7 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
     >
       {plan.highlight && (
         <span className="absolute -top-3 left-5 inline-flex items-center rounded-full text-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: plan.accent }}>
-          Más popular
+          {t('Más popular')}
         </span>
       )}
 
@@ -515,7 +510,7 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
 
       {/* Nombre y para quién */}
       <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: plan.accent }}>
-        {plan.forWho}
+        {t(plan.forWho)}
       </p>
       <h2 className="text-[20px] sm:text-[22px] font-bold text-ink mt-1 leading-tight">
         {plan.name}
@@ -540,7 +535,7 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
 
       {/* Descripción */}
       <p className="mt-3 text-[13px] text-body leading-relaxed">
-        {plan.description}
+        {t(plan.description)}
       </p>
 
       {/* Highlights */}
@@ -548,7 +543,7 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
         {plan.highlights.map((h) => (
           <li key={h} className="flex items-start gap-2 text-[12.5px] text-body leading-snug">
             <Check className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: plan.accent }} />
-            <span>{h}</span>
+            <span>{t(h)}</span>
           </li>
         ))}
       </ul>
@@ -562,7 +557,7 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
             size="md"
             className="w-full"
           >
-            {plan.ctaLabel}
+            {t(plan.ctaLabel)}
           </Button>
         ) : plan.id === 'enterprise' ? (
           // Enterprise: por ahora contacto directo hasta tener checkout activo
@@ -571,13 +566,13 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
             className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border-2 px-5 py-3 text-sm font-bold transition hover:bg-canvas/50"
             style={{ borderColor: plan.accent, color: plan.accent }}
           >
-            {plan.ctaLabel}
+            {t(plan.ctaLabel)}
           </a>
         ) : (
           <CheckoutButton
             plan="pro"
             cadence={cycle}
-            label={plan.ctaLabel}
+            label={t(plan.ctaLabel)}
             isLoggedIn={isLoggedIn}
             className={`inline-flex w-full items-center justify-center gap-1.5 rounded-xl text-on-primary px-5 py-3 text-sm font-bold hover:opacity-90 disabled:opacity-50 transition`}
             style={{ background: plan.accent }}
@@ -585,12 +580,12 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
         )}
         {plan.id === 'pro' && (
           <p className="mt-2 text-[10.5px] text-muted text-center">
-            Sin tarjeta para empezar el trial · Cancela cuando quieras
+            {t('Sin tarjeta para empezar el trial · Cancela cuando quieras')}
           </p>
         )}
         {plan.id === 'enterprise' && (
           <p className="mt-2 text-[10.5px] text-muted text-center">
-            Activación manual tras hablar con soporte · Cancela cuando quieras
+            {t('Activación manual tras hablar con soporte · Cancela cuando quieras')}
           </p>
         )}
       </div>
@@ -603,6 +598,7 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
 // Vista 2 — Avanzada (tabla completa)
 // ──────────────────────────────────────────────────────────────────────
 function AdvancedView({ isLoggedIn, cycle }: { isLoggedIn: boolean; cycle: BillingCycle }) {
+  const t = useT()
   return (
     <div className="space-y-6">
       {/* Header de la tabla con precios resumidos */}
@@ -611,7 +607,7 @@ function AdvancedView({ isLoggedIn, cycle }: { isLoggedIn: boolean; cycle: Billi
           <thead>
             <tr className="border-b border-hairline bg-surface-soft/40">
               <th className="text-left px-4 py-4 font-semibold text-muted text-[11px] uppercase tracking-wider w-[40%]">
-                Característica
+                {t('Característica')}
               </th>
               {PLANS.map((plan) => {
                 const Icon = plan.icon
@@ -625,7 +621,7 @@ function AdvancedView({ isLoggedIn, cycle }: { isLoggedIn: boolean; cycle: Billi
                       <p className="text-[12.5px] font-bold text-ink leading-tight">{plan.name}</p>
                       <p className="text-[16px] font-bold tabular-nums text-ink leading-none">{priceInfo.amount}</p>
                       <p className="text-[10px] text-muted leading-none">{priceInfo.per}</p>
-                      <p className="text-[10px] font-semibold mt-0.5" style={{ color: plan.accent }}>{plan.maxDogs}</p>
+                      <p className="text-[10px] font-semibold mt-0.5" style={{ color: plan.accent }}>{t(plan.maxDogs)}</p>
                     </div>
                   </th>
                 )
@@ -648,7 +644,7 @@ function AdvancedView({ isLoggedIn, cycle }: { isLoggedIn: boolean; cycle: Billi
                       className="inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-[12px] font-bold transition text-on-primary hover:opacity-90"
                       style={{ background: plan.accent }}
                     >
-                      {plan.ctaLabel} <ArrowRight className="w-3 h-3" />
+                      {t(plan.ctaLabel)} <ArrowRight className="w-3 h-3" />
                     </Link>
                   ) : plan.id === 'enterprise' ? (
                     <a
@@ -656,13 +652,13 @@ function AdvancedView({ isLoggedIn, cycle }: { isLoggedIn: boolean; cycle: Billi
                       className="inline-flex items-center justify-center gap-1 rounded-lg border-2 px-3 py-2 text-[12px] font-bold transition hover:bg-canvas/50"
                       style={{ borderColor: plan.accent, color: plan.accent }}
                     >
-                      Contactar
+                      {t('Contactar')}
                     </a>
                   ) : (
                     <CheckoutButton
                       plan="pro"
                       cadence={cycle}
-                      label={plan.ctaLabel}
+                      label={t(plan.ctaLabel)}
                       isLoggedIn={isLoggedIn}
                       className="inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-[12px] font-bold transition text-on-primary hover:opacity-90"
                       style={{ background: plan.accent }}
@@ -679,18 +675,19 @@ function AdvancedView({ isLoggedIn, cycle }: { isLoggedIn: boolean; cycle: Billi
 }
 
 function CategorySection({ cat }: { cat: CategoryDef }) {
+  const t = useT()
   return (
     <>
       <tr>
         <td colSpan={5} className="px-4 py-2.5 bg-[#FE6620]/10 border-y border-[#FE6620]/20">
           <p className="text-[11px] font-bold uppercase tracking-wider text-[#FE6620]">
-            {cat.label}
+            {t(cat.label)}
           </p>
         </td>
       </tr>
       {cat.features.map((feat, idx) => (
         <tr key={feat.name} className={`border-b border-hairline last:border-0 ${idx % 2 === 1 ? 'bg-surface-soft/20' : ''}`}>
-          <td className="px-4 py-2.5 text-[13px] text-ink">{feat.name}</td>
+          <td className="px-4 py-2.5 text-[13px] text-ink">{t(feat.name)}</td>
           {PLANS.map((plan) => {
             const included = feat.marks.includes(PLAN_CODES[plan.id])
             return (
@@ -718,71 +715,42 @@ function CategorySection({ cat }: { cat: CategoryDef }) {
 // FAQ
 // ──────────────────────────────────────────────────────────────────────
 function FAQ() {
+  const t = useT()
   return (
     <section className="mt-14 sm:mt-20 max-w-3xl mx-auto">
       <div className="text-center mb-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#FE6620]">FAQ</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#FE6620]">{t('FAQ')}</p>
         <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3vw, 32px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}>
-          Preguntas frecuentes
+          {t('Preguntas frecuentes')}
         </h2>
       </div>
       <div className="space-y-2">
-        <FaqItem q="¿De verdad Owner y Free son gratis para siempre?">
-          Sí. Owner (3 perros) y Kennel Free (5 perros) no caducan. No te pedimos
-          tarjeta. Si llegas al límite de tu plan y necesitas más, te ofrecemos
-          subir — pero nunca te empujamos.
+        <FaqItem q={t('¿De verdad Owner y Free son gratis para siempre?')}>
+          {t('Sí. Owner (3 perros) y Kennel Free (5 perros) no caducan. No te pedimos tarjeta. Si llegas al límite de tu plan y necesitas más, te ofrecemos subir — pero nunca te empujamos.')}
         </FaqItem>
-        <FaqItem q="¿Qué pasa con los cachorros y el límite?">
-          Los cachorros NO cuentan en tu límite mientras son lactantes (menos de
-          90 días). Pasados los 90 días, si los marcas como &ldquo;Disponible&rdquo;
-          o &ldquo;Reservado&rdquo;, siguen sin contar. Solo cuentan cuando los
-          decides quedarte como parte de tu plantilla (reproductor / cría /
-          retirado). Si los transfieres a sus dueños, pasan a contar a ese
-          cliente, no a ti.
+        <FaqItem q={t('¿Qué pasa con los cachorros y el límite?')}>
+          {t('Los cachorros NO cuentan en tu límite mientras son lactantes (menos de 90 días). Pasados los 90 días, si los marcas como “Disponible” o “Reservado”, siguen sin contar. Solo cuentan cuando los decides quedarte como parte de tu plantilla (reproductor / cría / retirado). Si los transfieres a sus dueños, pasan a contar a ese cliente, no a ti.')}
         </FaqItem>
-        <FaqItem q="¿Y los perros fallecidos?">
-          Cuando marcas un perro como fallecido (In Memoriam), deja de contar en
-          tu límite pero su ficha sigue existiendo con toda su genealogía,
-          fotos y palmarés. Útil para propietarios que han tenido varios perros
-          a lo largo de su vida y quieren documentarlos a todos. Los perros con
-          más de 20 años se marcan automáticamente como fallecidos (puedes
-          contradecirlo en los 30 días siguientes).
+        <FaqItem q={t('¿Y los perros fallecidos?')}>
+          {t('Cuando marcas un perro como fallecido (In Memoriam), deja de contar en tu límite pero su ficha sigue existiendo con toda su genealogía, fotos y palmarés. Útil para propietarios que han tenido varios perros a lo largo de su vida y quieren documentarlos a todos. Los perros con más de 20 años se marcan automáticamente como fallecidos (puedes contradecirlo en los 30 días siguientes).')}
         </FaqItem>
-        <FaqItem q="¿Cómo funciona la prueba de 14 días de Pro?">
-          Te das de alta sin tarjeta. Durante 14 días tienes acceso completo
-          al plan. El día 13 te avisamos por email. El día 14 te pedimos
-          tarjeta para seguir. Si no pagas, vuelves automáticamente a Free
-          (tus datos se mantienen intactos).
+        <FaqItem q={t('¿Cómo funciona la prueba de 14 días de Pro?')}>
+          {t('Te das de alta sin tarjeta. Durante 14 días tienes acceso completo al plan. El día 13 te avisamos por email. El día 14 te pedimos tarjeta para seguir. Si no pagas, vuelves automáticamente a Free (tus datos se mantienen intactos).')}
         </FaqItem>
-        <FaqItem q="¿Y Enterprise? ¿También 14 días gratis?">
-          Enterprise se activa manualmente tras hablar con soporte
-          (hola@genealogic.io). De momento estamos validando el chatbot y la
-          web del criadero con un grupo cerrado de criaderos. Si lo quieres
-          probar, escríbenos y te activamos la cuenta en menos de 24h. Pasaremos
-          a auto-servicio cuando esté pulido.
+        <FaqItem q={t('¿Y Enterprise? ¿También 14 días gratis?')}>
+          {t('Enterprise se activa manualmente tras hablar con soporte (hola@genealogic.io). De momento estamos validando el chatbot y la web del criadero con un grupo cerrado de criaderos. Si lo quieres probar, escríbenos y te activamos la cuenta en menos de 24h. Pasaremos a auto-servicio cuando esté pulido.')}
         </FaqItem>
-        <FaqItem q="¿Puedo cambiar de plan en cualquier momento?">
-          Sí, sube o baja cuando quieras. Si subes, el cobro es prorrateado.
-          Si bajas, los cambios se aplican al final del periodo facturado.
-          Tus datos siguen siempre seguros — solo cambian las features
-          disponibles.
+        <FaqItem q={t('¿Puedo cambiar de plan en cualquier momento?')}>
+          {t('Sí, sube o baja cuando quieras. Si subes, el cobro es prorrateado. Si bajas, los cambios se aplican al final del periodo facturado. Tus datos siguen siempre seguros — solo cambian las features disponibles.')}
         </FaqItem>
-        <FaqItem q="¿Owner vs Kennel Free — cuál elegir?">
-          Owner es para propietarios particulares que solo documentan a sus
-          mascotas (hasta 3 perros). Kennel Free es para criadores caseros
-          o aficionados que ya manejan camadas, reservas y contratos (hasta
-          5 perros — el límite legal antes de núcleo zoológico). Si tienes
-          un macho semental y una hembra y os llega una camada, Free.
+        <FaqItem q={t('¿Owner vs Kennel Free — cuál elegir?')}>
+          {t('Owner es para propietarios particulares que solo documentan a sus mascotas (hasta 3 perros). Kennel Free es para criadores caseros o aficionados que ya manejan camadas, reservas y contratos (hasta 5 perros — el límite legal antes de núcleo zoológico). Si tienes un macho semental y una hembra y os llega una camada, Free.')}
         </FaqItem>
-        <FaqItem q="¿Cancelo cuando quiero?">
-          Sí, sin penalizaciones, sin permanencia. Cancelas desde tu panel
-          y sigues con Pro/Enterprise hasta el final del periodo pagado.
-          Después bajas a Kennel Free automáticamente (no pierdes datos).
+        <FaqItem q={t('¿Cancelo cuando quiero?')}>
+          {t('Sí, sin penalizaciones, sin permanencia. Cancelas desde tu panel y sigues con Pro/Enterprise hasta el final del periodo pagado. Después bajas a Kennel Free automáticamente (no pierdes datos).')}
         </FaqItem>
-        <FaqItem q="¿Mis datos son míos? ¿Puedo exportarlos?">
-          Sí. Cualquier perro, genealogía, contrato o cliente lo exportas a
-          PDF/CSV en un click. Servidores en EU, RGPD por defecto. Si te vas
-          de Genealogic, te llevas tus datos.
+        <FaqItem q={t('¿Mis datos son míos? ¿Puedo exportarlos?')}>
+          {t('Sí. Cualquier perro, genealogía, contrato o cliente lo exportas a PDF/CSV en un click. Servidores en EU, RGPD por defecto. Si te vas de Genealogic, te llevas tus datos.')}
         </FaqItem>
       </div>
     </section>

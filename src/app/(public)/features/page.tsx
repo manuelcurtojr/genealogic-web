@@ -16,27 +16,34 @@ import Link from 'next/link'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import FeaturesSidebar from '@/components/features-page/sidebar'
 import FeaturesContent from '@/components/features-page/content'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
-export const metadata: Metadata = {
-  title: 'Producto',
-  description:
-    'Todo lo que tu criadero necesita: pipeline de reservas, web pública, genealogía interactiva, emailbot, newsletter y analítica. Explora cada herramienta con mockups del producto real.',
-  alternates: { canonical: 'https://genealogic.io/features' },
-  openGraph: {
-    title: 'El producto Genealogic',
-    description: 'Pipeline · Web · Genealogía · Emailbot · Newsletter · Stats. Mira cómo se ven antes de probarlas.',
-    url: 'https://genealogic.io/features',
-    type: 'website',
-    siteName: 'Genealogic',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Genealogic' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    images: ['/opengraph-image'],
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = getTranslator(await getLocale())
+  return {
+    title: t('Producto'),
+    description: t(
+      'Todo lo que tu criadero necesita: pipeline de reservas, web pública, genealogía interactiva, emailbot, newsletter y analítica. Explora cada herramienta con mockups del producto real.'
+    ),
+    alternates: { canonical: 'https://genealogic.io/features' },
+    openGraph: {
+      title: t('El producto Genealogic'),
+      description: t('Pipeline · Web · Genealogía · Emailbot · Newsletter · Stats. Mira cómo se ven antes de probarlas.'),
+      url: 'https://genealogic.io/features',
+      type: 'website',
+      siteName: 'Genealogic',
+      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Genealogic' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      images: ['/opengraph-image'],
+    },
+  }
 }
 
-export default function FeaturesPage() {
+export default async function FeaturesPage() {
+  const t = getTranslator(await getLocale())
   return (
     <main className="min-h-screen bg-canvas text-ink">
       {/* ─── HERO ─────────────────────────────────────────────────────── */}
@@ -48,31 +55,29 @@ export default function FeaturesPage() {
         />
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-14 sm:py-20 relative">
           <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#FE6620]">
-            El producto
+            {t('El producto')}
           </p>
           <h1 className="mt-3 text-[34px] sm:text-[48px] lg:text-[56px] font-semibold tracking-[-0.04em] text-ink leading-[1.05] max-w-3xl">
-            Todo lo que tu criadero necesita, en un solo sitio.
+            {t('Todo lo que tu criadero necesita, en un solo sitio.')}
           </h1>
           <p className="mt-4 text-[15px] sm:text-[17px] text-body leading-snug max-w-2xl">
-            Pipeline de reservas, web pública profesional, árbol genealógico,
-            emailbot que responde solo, newsletter, analítica. Mira cómo se
-            ven antes de probarlas.
+            {t('Pipeline de reservas, web pública profesional, árbol genealógico, emailbot que responde solo, newsletter, analítica. Mira cómo se ven antes de probarlas.')}
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link
               href="/register?intent=breeder"
               className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[14px] font-bold hover:opacity-90 transition"
             >
-              Empezar gratis <ArrowRight className="h-4 w-4" />
+              {t('Empezar gratis')} <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/pricing"
               className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas text-ink px-5 py-3 text-[14px] font-bold hover:border-ink/30 transition"
             >
-              Ver precios
+              {t('Ver precios')}
             </Link>
             <span className="text-[12.5px] text-muted ml-1">
-              7 días de Kennel Pro · sin tarjeta
+              {t('7 días de Kennel Pro · sin tarjeta')}
             </span>
           </div>
         </div>
@@ -93,24 +98,23 @@ export default function FeaturesPage() {
         <div className="mx-auto max-w-3xl px-4 sm:px-6 text-center">
           <Sparkles className="mx-auto h-7 w-7 text-[#FE6620]" />
           <h2 className="mt-4 text-[26px] sm:text-[32px] font-semibold tracking-[-0.03em] text-ink leading-tight">
-            Empieza hoy. Mejora tu criadero mañana.
+            {t('Empieza hoy. Mejora tu criadero mañana.')}
           </h2>
           <p className="mt-3 text-[15px] text-body leading-snug max-w-prose mx-auto">
-            Sin tarjeta. Cancela cuando quieras. Migra tus perros y genealogías
-            en menos de una hora.
+            {t('Sin tarjeta. Cancela cuando quieras. Migra tus perros y genealogías en menos de una hora.')}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link
               href="/register?intent=breeder"
               className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-6 py-3 text-[14px] font-bold hover:opacity-90 transition"
             >
-              Crear cuenta gratis <ArrowRight className="h-4 w-4" />
+              {t('Crear cuenta gratis')} <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/pricing"
               className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas text-ink px-6 py-3 text-[14px] font-bold hover:border-ink/30 transition"
             >
-              Comparar planes
+              {t('Comparar planes')}
             </Link>
           </div>
         </div>

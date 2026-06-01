@@ -557,11 +557,16 @@ const translations: Record<string, Record<string, string>> = {
   },
 }
 
+import { contentTranslations } from './i18n-content'
+
 export function getTranslator(lang: string) {
   const dict = translations[lang] || {}
+  const content = contentTranslations[lang] || {}
   return function t(key: string): string {
     if (lang === 'es') return key // Spanish is default
-    return dict[key] || key // Fallback to Spanish key
+    // Diccionario base (UI dashboard) primero; luego el de contenido
+    // (landings, pricing, SEO...). Fallback a la clave española.
+    return dict[key] || content[key] || key
   }
 }
 

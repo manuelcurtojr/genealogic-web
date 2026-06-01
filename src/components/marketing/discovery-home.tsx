@@ -32,6 +32,7 @@ import {
   Quote, Star, Baby, Mars, Venus, Clock, Plus,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useT } from '@/components/i18n/locale-provider'
 import LiveCounter from './live-counter'
 import BlogSlider from './blog-slider'
 import HeroMosaic from './hero-mosaic'
@@ -99,6 +100,7 @@ export default function DiscoveryHome({
   blogPosts: BlogCard[]
   mosaicPhotos: string[]
 }) {
+  const t = useT()
   const heroThumbs = mosaicPhotos.length > 0
     ? mosaicPhotos
     : (featuredDogs.map((d) => d.thumbnail_url).filter(Boolean) as string[])
@@ -113,26 +115,24 @@ export default function DiscoveryHome({
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-hairline bg-canvas/80 backdrop-blur-md px-3 py-1.5 text-[10.5px] sm:text-[11.5px] font-semibold uppercase tracking-[0.08em] sm:tracking-[0.1em] text-ink shadow-sm">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FE6620] animate-pulse" />
-                <span className="line-clamp-1">El registro público de genealogías caninas</span>
+                <span className="line-clamp-1">{t('El registro público de genealogías caninas')}</span>
               </div>
               <h1
                 className="mt-5 sm:mt-7 font-semibold text-ink"
                 style={{ fontSize: 'clamp(34px, 5.4vw, 64px)', lineHeight: 1.05, letterSpacing: '-0.045em' }}
               >
-                Cada perro con su genealogía.{' '}
-                <span style={{ color: '#FE6620' }} className="font-medium">Cada criador con su escaparate.</span>
+                {t('Cada perro con su genealogía.')}{' '}
+                <span style={{ color: '#FE6620' }} className="font-medium">{t('Cada criador con su escaparate.')}</span>
               </h1>
               <p className="mt-5 sm:mt-7 max-w-[580px] text-body" style={{ fontSize: 'clamp(15px, 1.4vw, 19px)', lineHeight: 1.5 }}>
-                Genealogía verificable, papeles digitales y calendario veterinario.
-                Para criadores que se toman su trabajo en serio y propietarios que
-                merecen tenerlo todo documentado.
+                {t('Genealogía verificable, papeles digitales y calendario veterinario. Para criadores que se toman su trabajo en serio y propietarios que merecen tenerlo todo documentado.')}
               </p>
               <div className="mt-7 flex flex-wrap gap-2.5">
                 <Link href="/register?intent=breeder" className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[14px] font-bold hover:opacity-90 transition">
-                  <Store className="w-4 h-4" /> Empezar como criador <ArrowRight className="w-4 h-4" />
+                  <Store className="w-4 h-4" /> {t('Empezar como criador')} <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link href="/register?intent=owner" className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas/80 backdrop-blur-md text-ink px-5 py-3 text-[14px] font-bold hover:border-ink/30 transition">
-                  <Dog className="w-4 h-4" /> Empezar como propietario
+                  <Dog className="w-4 h-4" /> {t('Empezar como propietario')}
                 </Link>
               </div>
             </div>
@@ -141,17 +141,17 @@ export default function DiscoveryHome({
                 <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
                   <div className="inline-flex items-center gap-2">
                     <Sparkles className="w-3.5 h-3.5 text-[#FE6620]" />
-                    <p className="text-[11px] sm:text-[11.5px] font-bold uppercase tracking-[0.08em] text-ink">Explora el catálogo</p>
+                    <p className="text-[11px] sm:text-[11.5px] font-bold uppercase tracking-[0.08em] text-ink">{t('Explora el catálogo')}</p>
                   </div>
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> En vivo
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> {t('En vivo')}
                   </span>
                 </div>
                 <form action="/search" method="get" className="flex items-center gap-2 rounded-2xl border-2 border-ink/10 bg-canvas px-3.5 sm:px-4 py-2.5 sm:py-3 shadow-[0_4px_16px_rgba(0,0,0,0.04)] focus-within:border-ink/40 hover:shadow-[0_6px_20px_rgba(0,0,0,0.06)] transition-all">
                   <Search className="w-4 h-4 sm:w-5 sm:h-5 text-muted flex-shrink-0" />
-                  <input name="q" type="text" placeholder="Busca un perro, criador o raza…" className="flex-1 bg-transparent text-[14px] sm:text-[15px] text-ink placeholder:text-muted focus:outline-none min-w-0" />
-                  <button type="submit" aria-label="Buscar" className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-3 sm:px-4 py-2 text-[13px] font-bold hover:opacity-90 transition shrink-0">
-                    <span className="hidden sm:inline">Buscar</span> <ArrowRight className="w-4 h-4" />
+                  <input name="q" type="text" placeholder={t('Busca un perro, criador o raza…')} className="flex-1 bg-transparent text-[14px] sm:text-[15px] text-ink placeholder:text-muted focus:outline-none min-w-0" />
+                  <button type="submit" aria-label={t('Buscar')} className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-3 sm:px-4 py-2 text-[13px] font-bold hover:opacity-90 transition shrink-0">
+                    <span className="hidden sm:inline">{t('Buscar')}</span> <ArrowRight className="w-4 h-4" />
                   </button>
                 </form>
                 <div className="mt-3 flex flex-wrap gap-1.5">
@@ -162,11 +162,11 @@ export default function DiscoveryHome({
                   ))}
                 </div>
                 <div className="my-5 sm:my-6 border-t border-hairline" />
-                <p className="text-[10px] sm:text-[10.5px] font-bold uppercase tracking-[0.1em] text-muted mb-3 sm:mb-4">El catálogo crece en tiempo real</p>
+                <p className="text-[10px] sm:text-[10.5px] font-bold uppercase tracking-[0.1em] text-muted mb-3 sm:mb-4">{t('El catálogo crece en tiempo real')}</p>
                 <div className="grid grid-cols-3 gap-3 sm:gap-4">
-                  <CompactCounter><LiveCounter size="compact" initial={counts.kennels} kind="kennels" label="Criaderos" /></CompactCounter>
-                  <CompactCounter><LiveCounter size="compact" initial={counts.breeds} kind="breeds" label="Razas" /></CompactCounter>
-                  <CompactCounter><LiveCounter size="compact" initial={counts.dogs} kind="dogs" label="Perros" /></CompactCounter>
+                  <CompactCounter><LiveCounter size="compact" initial={counts.kennels} kind="kennels" label={t('Criaderos')} /></CompactCounter>
+                  <CompactCounter><LiveCounter size="compact" initial={counts.breeds} kind="breeds" label={t('Razas')} /></CompactCounter>
+                  <CompactCounter><LiveCounter size="compact" initial={counts.dogs} kind="dogs" label={t('Perros')} /></CompactCounter>
                 </div>
               </div>
             </div>
@@ -180,13 +180,12 @@ export default function DiscoveryHome({
       <section className="border-b border-hairline">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="mb-8 sm:mb-10 max-w-3xl">
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">Dos caminos</p>
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Dos caminos')}</p>
             <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-              ¿Qué te trae a Genealogic?
+              {t('¿Qué te trae a Genealogic?')}
             </h2>
             <p className="mt-4 text-[15px] sm:text-[16px] text-body max-w-xl leading-relaxed">
-              Misma plataforma, dos experiencias. Elige la tuya — y empieza gratis,
-              sin tarjeta, sin compromisos.
+              {t('Misma plataforma, dos experiencias. Elige la tuya — y empieza gratis, sin tarjeta, sin compromisos.')}
             </p>
           </div>
 
@@ -199,35 +198,32 @@ export default function DiscoveryHome({
                   <Store className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="mt-4 sm:mt-5 flex items-center gap-2 flex-wrap">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#FE6620]">Para criadores</p>
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">7 días Pro gratis</span>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#FE6620]">{t('Para criadores')}</p>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{t('7 días Pro gratis')}</span>
                 </div>
                 <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 32px)' }}>
-                  Tu criadero, gestionado de cabo a rabo.
+                  {t('Tu criadero, gestionado de cabo a rabo.')}
                 </h3>
                 <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-md">
-                  Genealogías hasta 10 generaciones con COI calculado, calendario
-                  de celos y partos, camadas con un click, pipeline de reservas
-                  que no se pierde un lead, contratos y pagos integrados. Todo
-                  desde un único panel.
+                  {t('Genealogías hasta 10 generaciones con COI calculado, calendario de celos y partos, camadas con un click, pipeline de reservas que no se pierde un lead, contratos y pagos integrados. Todo desde un único panel.')}
                 </p>
                 <ul className="mt-5 sm:mt-6 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px] sm:text-[13px] text-body">
-                  <MiniFeature icon={GitBranch}>Genealogías COI</MiniFeature>
-                  <MiniFeature icon={Heart}>Calendario celos</MiniFeature>
-                  <MiniFeature icon={Baby}>Camadas y cachorros</MiniFeature>
-                  <MiniFeature icon={KanbanSquare}>Pipeline reservas</MiniFeature>
-                  <MiniFeature icon={Globe}>Web con tu dominio</MiniFeature>
-                  <MiniFeature icon={Mail}>Emailbot 24/7</MiniFeature>
+                  <MiniFeature icon={GitBranch}>{t('Genealogías COI')}</MiniFeature>
+                  <MiniFeature icon={Heart}>{t('Calendario celos')}</MiniFeature>
+                  <MiniFeature icon={Baby}>{t('Camadas y cachorros')}</MiniFeature>
+                  <MiniFeature icon={KanbanSquare}>{t('Pipeline reservas')}</MiniFeature>
+                  <MiniFeature icon={Globe}>{t('Web con tu dominio')}</MiniFeature>
+                  <MiniFeature icon={Mail}>{t('Emailbot 24/7')}</MiniFeature>
                 </ul>
                 {/* Social proof + CTA en filas separadas para que no se
                     solapen en viewports estrechos. */}
                 <div className="mt-6 flex items-center gap-2 text-[12px] text-muted">
                   <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
-                  <span><strong className="text-ink tabular-nums">{counts.kennels.toLocaleString('es-ES')}</strong> criaderos ya dentro</span>
+                  <span><strong className="text-ink tabular-nums">{counts.kennels.toLocaleString('es-ES')}</strong> {t('criaderos ya dentro')}</span>
                 </div>
                 <div className="mt-4">
                   <span className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
-                    Empezar gratis <ArrowRight className="w-4 h-4" />
+                    {t('Empezar gratis')} <ArrowRight className="w-4 h-4" />
                   </span>
                 </div>
               </div>
@@ -241,30 +237,28 @@ export default function DiscoveryHome({
                   <Dog className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="mt-4 sm:mt-5 flex items-center gap-2 flex-wrap">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700">Para propietarios</p>
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">Gratis siempre</span>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700">{t('Para propietarios')}</p>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{t('Gratis siempre')}</span>
                 </div>
                 <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 32px)' }}>
-                  Tu perro merece su historia.
+                  {t('Tu perro merece su historia.')}
                 </h3>
                 <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-md">
-                  Sube su ficha, guarda su genealogía hasta 10 generaciones,
-                  recibe avisos de vacunas y enseña su carnet con un link.
-                  Sin coste, para siempre.
+                  {t('Sube su ficha, guarda su genealogía hasta 10 generaciones, recibe avisos de vacunas y enseña su carnet con un link. Sin coste, para siempre.')}
                 </p>
                 <ul className="mt-5 sm:mt-6 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px] sm:text-[13px] text-body">
-                  <MiniFeature icon={Camera}>Galería ilimitada</MiniFeature>
-                  <MiniFeature icon={GitBranch}>10 generaciones</MiniFeature>
-                  <MiniFeature icon={Calendar}>Vacunas y vet</MiniFeature>
-                  <MiniFeature icon={ShieldCheck}>Reclama tu perro</MiniFeature>
+                  <MiniFeature icon={Camera}>{t('Galería ilimitada')}</MiniFeature>
+                  <MiniFeature icon={GitBranch}>{t('10 generaciones')}</MiniFeature>
+                  <MiniFeature icon={Calendar}>{t('Vacunas y vet')}</MiniFeature>
+                  <MiniFeature icon={ShieldCheck}>{t('Reclama tu perro')}</MiniFeature>
                 </ul>
                 <div className="mt-6 flex items-center gap-2 text-[12px] text-muted">
                   <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
-                  <span><strong className="text-ink tabular-nums">{counts.dogs.toLocaleString('es-ES')}</strong> perros documentados</span>
+                  <span><strong className="text-ink tabular-nums">{counts.dogs.toLocaleString('es-ES')}</strong> {t('perros documentados')}</span>
                 </div>
                 <div className="mt-4">
                   <span className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
-                    Crear cuenta gratis <ArrowRight className="w-4 h-4" />
+                    {t('Crear cuenta gratis')} <ArrowRight className="w-4 h-4" />
                   </span>
                 </div>
               </div>
@@ -277,9 +271,9 @@ export default function DiscoveryHome({
       <section className="border-b border-hairline bg-surface-soft/40">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="mb-10 sm:mb-12 max-w-2xl">
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">Cómo funciona</p>
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Cómo funciona')}</p>
             <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-              De cero a tu primer perro publicado en 5 minutos.
+              {t('De cero a tu primer perro publicado en 5 minutos.')}
             </h2>
           </div>
 
@@ -290,23 +284,23 @@ export default function DiscoveryHome({
             <StepCard
               n={1}
               icon={UserPlus}
-              title="Crea tu cuenta"
-              desc="Email + contraseña. Sin tarjeta, sin formularios largos. Eliges si eres criador o propietario y listo."
-              cta="Gratis"
+              title={t('Crea tu cuenta')}
+              desc={t('Email + contraseña. Sin tarjeta, sin formularios largos. Eliges si eres criador o propietario y listo.')}
+              cta={t('Gratis')}
             />
             <StepCard
               n={2}
               icon={Upload}
-              title="Sube tu primer perro"
-              desc="Manual o pegando la URL de Presadb/Dogsfiles/K9data — nuestro importador con IA extrae todo el pedigree en 30 segundos."
-              cta="30s"
+              title={t('Sube tu primer perro')}
+              desc={t('Manual o pegando la URL de Presadb/Dogsfiles/K9data — nuestro importador con IA extrae todo el pedigree en 30 segundos.')}
+              cta={t('30s')}
             />
             <StepCard
               n={3}
               icon={Rocket}
-              title="Empieza a usarlo"
-              desc="Recibe reservas, comparte la ficha pública con clientes, sube fotos, gestiona camadas. Todo desde el primer día."
-              cta="Listo"
+              title={t('Empieza a usarlo')}
+              desc={t('Recibe reservas, comparte la ficha pública con clientes, sube fotos, gestiona camadas. Todo desde el primer día.')}
+              cta={t('Listo')}
             />
           </div>
         </div>
@@ -319,13 +313,12 @@ export default function DiscoveryHome({
       <section className="border-b border-hairline">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="mb-10 max-w-2xl">
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">El producto</p>
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('El producto')}</p>
             <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-              Esto es lo que tienes el día 1.
+              {t('Esto es lo que tienes el día 1.')}
             </h2>
             <p className="mt-4 text-[15px] sm:text-[16px] text-body leading-relaxed">
-              Sin esperas, sin onboarding de horas. Tu dashboard, tu pipeline,
-              tu árbol genealógico — todo operativo desde el momento que entras.
+              {t('Sin esperas, sin onboarding de horas. Tu dashboard, tu pipeline, tu árbol genealógico — todo operativo desde el momento que entras.')}
             </p>
           </div>
           <ProductShowcase featuredDogs={featuredDogs} showcaseDog={showcaseDog} />
@@ -340,13 +333,13 @@ export default function DiscoveryHome({
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="mb-8 sm:mb-10 max-w-3xl flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">Una sola plataforma</p>
+              <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Una sola plataforma')}</p>
               <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-                Todo lo que tu perro o criadero necesita.
+                {t('Todo lo que tu perro o criadero necesita.')}
               </h2>
             </div>
             <Link href="/features" className="inline-flex items-center gap-1.5 text-sm font-bold text-ink hover:opacity-80 whitespace-nowrap">
-              Ver todo el catálogo <ArrowRight className="w-3.5 h-3.5" />
+              {t('Ver todo el catálogo')} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -355,19 +348,19 @@ export default function DiscoveryHome({
               href="/features#directorio"
               className="col-span-2 sm:row-span-2"
               icon={Database}
-              title={`${counts.dogs.toLocaleString('es-ES')} perros indexados`}
-              desc="La mayor red internacional de genealogías caninas. Cuando subes un perro, se conecta automáticamente a su línea existente y aparece en Google."
+              title={`${counts.dogs.toLocaleString('es-ES')} ${t('perros indexados')}`}
+              desc={t('La mayor red internacional de genealogías caninas. Cuando subes un perro, se conecta automáticamente a su línea existente y aparece en Google.')}
               color="#FE6620"
               size="large"
             />
-            <BentoCard href="/features#coi" icon={Activity} title="COI explicado" desc="No solo el número. Te enseñamos qué ancestros lo causan y cómo se compara con la raza." color="#10b981" />
-            <BentoCard href="/features#importer" icon={Zap} title="Importador IA" desc="URL de Dogsfiles o K9data → árbol completo en 30s." color="#a855f7" />
-            <BentoCard href="/features#pedigree" icon={GitBranch} title="Árbol interactivo" desc="Hasta 10 generaciones · navegable · exportable." color="#3b82f6" />
-            <BentoCard href="/features#reservas" icon={KanbanSquare} title="Pipeline de reservas" desc="Tabla densa con tabs por estado." color="#8b5cf6" />
-            <BentoCard href="/features#emailbot" icon={Mail} title="Emailbot 24/7" desc="Responde por ti con tu tono y aprende de tus FAQs." color="#06b6d4" />
-            <BentoCard href="/features#pages" icon={Globe} title="Web pública" desc="Dominio propio, SEO técnico, sin tocar código." color="#0ea5e9" />
-            <BentoCard href="/features#cartilla" icon={Stethoscope} title="Cartilla veterinaria" desc="Vacunas, displasia, DNA — con recordatorios." color="#34d399" />
-            <BentoCard href="/features#reproduccion" icon={Calendar} title="Calendario reproductivo" desc="Celos, montas, partos en un gantt anual." color="#f59e0b" />
+            <BentoCard href="/features#coi" icon={Activity} title={t('COI explicado')} desc={t('No solo el número. Te enseñamos qué ancestros lo causan y cómo se compara con la raza.')} color="#10b981" />
+            <BentoCard href="/features#importer" icon={Zap} title={t('Importador IA')} desc={t('URL de Dogsfiles o K9data → árbol completo en 30s.')} color="#a855f7" />
+            <BentoCard href="/features#pedigree" icon={GitBranch} title={t('Árbol interactivo')} desc={t('Hasta 10 generaciones · navegable · exportable.')} color="#3b82f6" />
+            <BentoCard href="/features#reservas" icon={KanbanSquare} title={t('Pipeline de reservas')} desc={t('Tabla densa con tabs por estado.')} color="#8b5cf6" />
+            <BentoCard href="/features#emailbot" icon={Mail} title={t('Emailbot 24/7')} desc={t('Responde por ti con tu tono y aprende de tus FAQs.')} color="#06b6d4" />
+            <BentoCard href="/features#pages" icon={Globe} title={t('Web pública')} desc={t('Dominio propio, SEO técnico, sin tocar código.')} color="#0ea5e9" />
+            <BentoCard href="/features#cartilla" icon={Stethoscope} title={t('Cartilla veterinaria')} desc={t('Vacunas, displasia, DNA — con recordatorios.')} color="#34d399" />
+            <BentoCard href="/features#reproduccion" icon={Calendar} title={t('Calendario reproductivo')} desc={t('Celos, montas, partos en un gantt anual.')} color="#f59e0b" />
           </div>
         </div>
       </section>
@@ -378,26 +371,26 @@ export default function DiscoveryHome({
           <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
             <div className="mb-6 sm:mb-8 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">El catálogo</p>
+                <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('El catálogo')}</p>
                 <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-                  Perros recién registrados
+                  {t('Perros recién registrados')}
                 </h2>
               </div>
               <Link href="/search" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-ink hover:opacity-80">
-                Ver todos <ArrowRight className="w-3.5 h-3.5" />
+                {t('Ver todos')} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
             {/* Filtros rápidos: top 6 razas */}
             <div className="mb-5 sm:mb-6 flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted mr-1">Filtrar por raza:</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted mr-1">{t('Filtrar por raza:')}</span>
               {topBreeds.slice(0, 6).map((b) => (
                 <Link key={b.id} href={`/search?breed_id=${b.id}`} className="inline-flex items-center rounded-full border border-hairline bg-canvas px-3 py-1 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition">
                   {b.name}
                 </Link>
               ))}
               <Link href="/search" className="inline-flex items-center rounded-full bg-ink text-on-primary px-3 py-1 text-[12px] font-bold hover:opacity-90 transition">
-                Más filtros →
+                {t('Más filtros')} →
               </Link>
             </div>
 
@@ -419,7 +412,7 @@ export default function DiscoveryHome({
             </div>
 
             <Link href="/search" className="sm:hidden mt-6 inline-flex items-center gap-1.5 text-sm font-bold text-ink hover:opacity-80">
-              Ver todos los perros <ArrowRight className="w-3.5 h-3.5" />
+              {t('Ver todos los perros')} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </section>
@@ -434,25 +427,25 @@ export default function DiscoveryHome({
           <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
             <div className="mb-8 sm:mb-10 flex items-end justify-between gap-4">
               <div className="max-w-2xl">
-                <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">Tu raza está aquí</p>
+                <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Tu raza está aquí')}</p>
                 <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-                  {counts.breeds.toLocaleString('es-ES')} razas representadas y subiendo.
+                  {counts.breeds.toLocaleString('es-ES')} {t('razas representadas y subiendo.')}
                 </h2>
                 <p className="mt-3 text-[14px] sm:text-[15px] text-body">
                   {topBreeds[0] ? (
                     <>
-                      Desde el <strong className="text-ink">{topBreeds[0].name}</strong> con{' '}
+                      {t('Desde el')} <strong className="text-ink">{topBreeds[0].name}</strong> {t('con')}{' '}
                       <strong className="text-ink tabular-nums">{topBreeds[0].dog_count.toLocaleString('es-ES')}</strong>{' '}
-                      perros hasta razas raras con apenas un puñado de ejemplares.
+                      {t('perros hasta razas raras con apenas un puñado de ejemplares.')}
                     </>
                   ) : (
-                    <>Cientos de razas con perros documentados.</>
+                    <>{t('Cientos de razas con perros documentados.')}</>
                   )}{' '}
-                  Pulsa una raza para ver su catálogo completo.
+                  {t('Pulsa una raza para ver su catálogo completo.')}
                 </p>
               </div>
               <Link href="/razas" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-ink hover:opacity-80 whitespace-nowrap">
-                Todas las razas <ArrowRight className="w-3.5 h-3.5" />
+                {t('Todas las razas')} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
@@ -487,13 +480,13 @@ export default function DiscoveryHome({
           <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
             <div className="mb-6 sm:mb-8 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">La comunidad</p>
+                <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('La comunidad')}</p>
                 <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-                  Criaderos en Genealogic
+                  {t('Criaderos en Genealogic')}
                 </h2>
               </div>
               <Link href="/kennels" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-ink hover:opacity-80">
-                Ver todos <ArrowRight className="w-3.5 h-3.5" />
+                {t('Ver todos')} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
@@ -532,7 +525,7 @@ export default function DiscoveryHome({
                         {(k.city || k.country) && (k.dog_count ?? 0) > 0 && <span>·</span>}
                         {(k.dog_count ?? 0) > 0 && (
                           <span className="font-semibold text-body whitespace-nowrap">
-                            {k.dog_count} {k.dog_count === 1 ? 'perro' : 'perros'}
+                            {k.dog_count} {k.dog_count === 1 ? t('perro') : t('perros')}
                           </span>
                         )}
                       </div>
@@ -553,9 +546,9 @@ export default function DiscoveryHome({
       <section className="border-b border-hairline bg-surface-soft/40">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="mb-10 max-w-2xl">
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">Lo dicen criadores reales</p>
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Lo dicen criadores reales')}</p>
             <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-              Quien lo usa, lo recomienda.
+              {t('Quien lo usa, lo recomienda.')}
             </h2>
           </div>
 
@@ -564,10 +557,7 @@ export default function DiscoveryHome({
             <article className="lg:col-span-2 relative rounded-2xl sm:rounded-3xl border border-hairline bg-gradient-to-br from-orange-50/50 via-canvas to-amber-50/30 p-6 sm:p-8 lg:p-10">
               <Quote className="absolute top-5 right-5 w-10 h-10 text-[#FE6620]/15" />
               <p className="text-[16px] sm:text-[19px] lg:text-[22px] text-ink leading-snug font-medium tracking-[-0.01em]" style={{ fontFamily: 'var(--font-fraunces, serif)' }}>
-                «50 años criando Presa Canario y mis fichas estaban en libretas, fotos
-                sueltas y carpetas de WhatsApp. Genealogic me ha permitido digitalizar
-                400 perros con sus genealogías completas y enseñarlas con un link. Ya
-                no tengo que escanear nada.»
+                {t('«50 años criando Presa Canario y mis fichas estaban en libretas, fotos sueltas y carpetas de WhatsApp. Genealogic me ha permitido digitalizar 400 perros con sus genealogías completas y enseñarlas con un link. Ya no tengo que escanear nada.»')}
               </p>
               <div className="mt-6 flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FE6620] to-amber-500 flex items-center justify-center text-white font-bold">IC</div>
@@ -587,13 +577,12 @@ export default function DiscoveryHome({
               <article className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 flex flex-col justify-between">
                 <Quote className="w-6 h-6 text-[#FE6620]/30" />
                 <p className="text-[14px] text-body leading-snug mt-3">
-                  «Las reservas se gestionan solas desde que pasé del Excel al
-                  pipeline. La newsletter de cada camada me ahorra horas.»
+                  {t('«Las reservas se gestionan solas desde que pasé del Excel al pipeline. La newsletter de cada camada me ahorra horas.»')}
                 </p>
                 <div className="mt-4 flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[11px] font-bold">CR</div>
                   <div>
-                    <p className="text-[12px] font-bold text-ink">Criadero Pro</p>
+                    <p className="text-[12px] font-bold text-ink">{t('Criadero Pro')}</p>
                     <p className="text-[10.5px] text-muted">Spitz Alemán</p>
                   </div>
                 </div>
@@ -601,13 +590,12 @@ export default function DiscoveryHome({
               <article className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 flex flex-col justify-between">
                 <Quote className="w-6 h-6 text-[#FE6620]/30" />
                 <p className="text-[14px] text-body leading-snug mt-3">
-                  «Importé 200 pedigrees de Dogsfiles en una tarde con la URL.
-                  El COI por camada me ha hecho replantear varios cruces.»
+                  {t('«Importé 200 pedigrees de Dogsfiles en una tarde con la URL. El COI por camada me ha hecho replantear varios cruces.»')}
                 </p>
                 <div className="mt-4 flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-[11px] font-bold">PR</div>
                   <div>
-                    <p className="text-[12px] font-bold text-ink">Criadero Pro</p>
+                    <p className="text-[12px] font-bold text-ink">{t('Criadero Pro')}</p>
                     <p className="text-[10.5px] text-muted">Galgo Italiano</p>
                   </div>
                 </div>
@@ -621,9 +609,9 @@ export default function DiscoveryHome({
       <section className="border-b border-hairline">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="mb-10 max-w-2xl">
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">¿Por qué Genealogic?</p>
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('¿Por qué Genealogic?')}</p>
             <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-              Lo que ya usas vs lo que podrías usar.
+              {t('Lo que ya usas vs lo que podrías usar.')}
             </h2>
           </div>
 
@@ -635,9 +623,9 @@ export default function DiscoveryHome({
       <section className="border-b border-hairline bg-surface-soft/40">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="mb-10 max-w-2xl">
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">Precios</p>
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Precios')}</p>
             <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-              Empieza gratis. Sube cuando quieras.
+              {t('Empieza gratis. Sube cuando quieras.')}
             </h2>
           </div>
 
@@ -645,27 +633,27 @@ export default function DiscoveryHome({
             <PricingCard
               tier="Owner"
               price="0€"
-              period="3 perros"
-              desc="Para documentar tu mascota."
-              features={['Genealogía 10 generaciones', 'Cartilla veterinaria', 'Galería ilimitada', 'Importador IA']}
+              period={t('3 perros')}
+              desc={t('Para documentar tu mascota.')}
+              features={[t('Genealogía 10 generaciones'), t('Cartilla veterinaria'), t('Galería ilimitada'), t('Importador IA')]}
               accent="#3b82f6"
               accentBg="from-blue-50 via-canvas to-sky-50"
             />
             <PricingCard
               tier="Kennel Free"
               price="0€"
-              period="5 perros"
-              desc="Para el criador casero."
-              features={['Camadas + calendario', 'Pipeline reservas', 'Contratos + firma', 'CRM clientes']}
+              period={t('5 perros')}
+              desc={t('Para el criador casero.')}
+              features={[t('Camadas + calendario'), t('Pipeline reservas'), t('Contratos + firma'), t('CRM clientes')]}
               accent="#10b981"
               accentBg="from-emerald-50 via-canvas to-green-50"
             />
             <PricingCard
               tier="Kennel Pro"
               price="49€"
-              period="/mes · ilimitado"
-              desc="Para el criadero profesional."
-              features={['Perros ilimitados', 'COI + simulador cruces', 'Genotipos completos', 'Pagos Stripe Connect']}
+              period={t('/mes · ilimitado')}
+              desc={t('Para el criadero profesional.')}
+              features={[t('Perros ilimitados'), t('COI + simulador cruces'), t('Genotipos completos'), t('Pagos Stripe Connect')]}
               accent="#FE6620"
               accentBg="from-orange-50 via-canvas to-amber-50"
               highlight
@@ -673,9 +661,9 @@ export default function DiscoveryHome({
             <PricingCard
               tier="Kennel Enterprise"
               price="149€"
-              period="/mes · ilimitado"
-              desc="Para el criadero con escaparate público."
-              features={['Web con tu dominio', 'Multi-idioma', 'Emailbot IA + newsletter', 'API + integraciones']}
+              period={t('/mes · ilimitado')}
+              desc={t('Para el criadero con escaparate público.')}
+              features={[t('Web con tu dominio'), t('Multi-idioma'), t('Emailbot IA + newsletter'), t('API + integraciones')]}
               accent="#8b5cf6"
               accentBg="from-violet-50 via-canvas to-purple-50"
             />
@@ -683,9 +671,9 @@ export default function DiscoveryHome({
 
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/pricing" className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-2.5 text-sm font-bold hover:opacity-90 transition">
-              Ver pricing completo <ArrowRight className="w-4 h-4" />
+              {t('Ver pricing completo')} <ArrowRight className="w-4 h-4" />
             </Link>
-            <span className="text-[12.5px] text-muted">Empieza gratis · Sin tarjeta · Cancela cuando quieras</span>
+            <span className="text-[12.5px] text-muted">{t('Empieza gratis · Sin tarjeta · Cancela cuando quieras')}</span>
           </div>
         </div>
       </section>
@@ -695,48 +683,33 @@ export default function DiscoveryHome({
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-10 lg:gap-16">
             <div>
-              <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">FAQ</p>
+              <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('FAQ')}</p>
               <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-                Preguntas frecuentes.
+                {t('Preguntas frecuentes.')}
               </h2>
               <p className="mt-4 text-[14px] text-body leading-relaxed">
-                ¿No encuentras la tuya? Escríbenos a{' '}
+                {t('¿No encuentras la tuya? Escríbenos a')}{' '}
                 <a href="mailto:hola@genealogic.io" className="text-ink font-semibold hover:underline">hola@genealogic.io</a>
               </p>
             </div>
             <div className="space-y-2">
-              <FaqItem q="¿Es realmente gratis?">
-                Sí. Owner (3 perros) y Kennel Free (5 perros) no caducan, sin
-                tarjeta. Sube a Kennel Pro (49€/mes) cuando necesites perros
-                ilimitados, COI completo y Stripe; o a Kennel Enterprise
-                (149€/mes) para web del criadero con dominio propio.
-                Si pagas anual, te ahorras un 15%.
+              <FaqItem q={t('¿Es realmente gratis?')}>
+                {t('Sí. Owner (3 perros) y Kennel Free (5 perros) no caducan, sin tarjeta. Sube a Kennel Pro (49€/mes) cuando necesites perros ilimitados, COI completo y Stripe; o a Kennel Enterprise (149€/mes) para web del criadero con dominio propio. Si pagas anual, te ahorras un 15%.')}
               </FaqItem>
-              <FaqItem q="¿Mis datos son míos? ¿Puedo exportarlos?">
-                Sí. Cualquier perro, contrato o cliente lo exportas a PDF/CSV en
-                un click. Servidores en EU, RGPD por defecto, histórico completo
-                de cambios por perro. Si te vas, te llevas tus datos.
+              <FaqItem q={t('¿Mis datos son míos? ¿Puedo exportarlos?')}>
+                {t('Sí. Cualquier perro, contrato o cliente lo exportas a PDF/CSV en un click. Servidores en EU, RGPD por defecto, histórico completo de cambios por perro. Si te vas, te llevas tus datos.')}
               </FaqItem>
-              <FaqItem q="¿Funciona en móvil? ¿Hay app iOS?">
-                Sí en ambos. La web está optimizada para móvil y hay app iOS
-                en proceso. Todo lo que puedes hacer en el ordenador lo puedes
-                hacer en el teléfono.
+              <FaqItem q={t('¿Funciona en móvil? ¿Hay app iOS?')}>
+                {t('Sí en ambos. La web está optimizada para móvil y hay app iOS en proceso. Todo lo que puedes hacer en el ordenador lo puedes hacer en el teléfono.')}
               </FaqItem>
-              <FaqItem q="¿Tengo que migrar todos mis perros yo mismo?">
-                No. Si están en Dogsfiles, Presadb, K9data, Working-dog o
-                Breedarchive, pegas la URL y nuestro importador con IA extrae
-                la genealogía completa en 30 segundos. También aceptamos PDFs y
-                screenshots.
+              <FaqItem q={t('¿Tengo que migrar todos mis perros yo mismo?')}>
+                {t('No. Si están en Dogsfiles, Presadb, K9data, Working-dog o Breedarchive, pegas la URL y nuestro importador con IA extrae la genealogía completa en 30 segundos. También aceptamos PDFs y screenshots.')}
               </FaqItem>
-              <FaqItem q="¿Qué pasa si dejo de pagar Kennel Pro?">
-                Bajas automáticamente a Kennel Free. Tus perros, fotos y datos
-                siguen ahí — solo pierdes las features Pro (COI completo,
-                simulador, genotipos, Stripe) hasta que vuelvas a suscribirte.
+              <FaqItem q={t('¿Qué pasa si dejo de pagar Kennel Pro?')}>
+                {t('Bajas automáticamente a Kennel Free. Tus perros, fotos y datos siguen ahí — solo pierdes las features Pro (COI completo, simulador, genotipos, Stripe) hasta que vuelvas a suscribirte.')}
               </FaqItem>
-              <FaqItem q="¿Cuántas generaciones soporta el árbol?">
-                Hasta 10 generaciones por perro. El COI (coeficiente de
-                consanguinidad) también se calcula sobre 10 generaciones, no
-                las 4-5 típicas de los PDFs de los clubs.
+              <FaqItem q={t('¿Cuántas generaciones soporta el árbol?')}>
+                {t('Hasta 10 generaciones por perro. El COI (coeficiente de consanguinidad) también se calcula sobre 10 generaciones, no las 4-5 típicas de los PDFs de los clubs.')}
               </FaqItem>
             </div>
           </div>
@@ -753,17 +726,17 @@ export default function DiscoveryHome({
         <div className="relative z-10 mx-auto max-w-[1200px] px-5 sm:px-6 lg:px-12 py-16 sm:py-24 lg:py-28 text-center">
           <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-5 sm:mb-6 text-[#FE6620]" />
           <h2 className="font-semibold mx-auto leading-[1.05]" style={{ fontSize: 'clamp(28px, 5vw, 56px)', letterSpacing: '-0.04em', maxWidth: '18ch' }}>
-            Empieza gratis. <span className="text-white/60 font-medium">Sin tarjeta.</span>
+            {t('Empieza gratis.')} <span className="text-white/60 font-medium">{t('Sin tarjeta.')}</span>
           </h2>
           <p className="mt-4 sm:mt-5 text-[14px] sm:text-[18px] text-white/60 max-w-md mx-auto px-2">
-            Únete a los {counts.kennels.toLocaleString('es-ES')} criaderos que ya documentan a sus perros con Genealogic.
+            {t('Únete a los')} {counts.kennels.toLocaleString('es-ES')} {t('criaderos que ya documentan a sus perros con Genealogic.')}
           </p>
           <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/register?intent=breeder" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#FE6620] text-white px-7 py-3.5 text-sm font-bold hover:scale-105 transition-transform">
-              <Store className="w-4 h-4" /> Soy criador
+              <Store className="w-4 h-4" /> {t('Soy criador')}
             </Link>
             <Link href="/register?intent=owner" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white text-ink px-7 py-3.5 text-sm font-bold hover:scale-105 transition-transform">
-              <Dog className="w-4 h-4" /> Soy propietario
+              <Dog className="w-4 h-4" /> {t('Soy propietario')}
             </Link>
           </div>
         </div>
@@ -790,6 +763,7 @@ function CompactCounter({ children }: { children: React.ReactNode }) {
 }
 
 function StepCard({ n, icon: Icon, title, desc, cta }: { n: number; icon: React.ElementType; title: string; desc: string; cta: string }) {
+  const t = useT()
   return (
     <div className="relative rounded-2xl border border-hairline bg-canvas p-6 sm:p-7 z-10">
       <div className="flex items-center justify-between mb-4">
@@ -798,7 +772,7 @@ function StepCard({ n, icon: Icon, title, desc, cta }: { n: number; icon: React.
         </div>
         <span className="text-[10.5px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">{cta}</span>
       </div>
-      <p className="text-[10.5px] font-bold uppercase tracking-wider text-muted">Paso {n}</p>
+      <p className="text-[10.5px] font-bold uppercase tracking-wider text-muted">{t('Paso')} {n}</p>
       <h3 className="mt-1 text-[18px] sm:text-[20px] font-bold text-ink tracking-[-0.02em]">{title}</h3>
       <p className="mt-2 text-[13.5px] text-body leading-[1.55]">{desc}</p>
     </div>
@@ -841,6 +815,7 @@ function BentoCard({
  * Ven la lista de perros, el árbol y el pipeline en composición.
  */
 function ProductShowcase({ featuredDogs, showcaseDog }: { featuredDogs: Dog[]; showcaseDog: ShowcaseDog | null }) {
+  const t = useT()
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* Mockup 1: Catálogo */}
@@ -849,7 +824,7 @@ function ProductShowcase({ featuredDogs, showcaseDog }: { featuredDogs: Dog[]; s
           <span className="h-2 w-2 rounded-full bg-rose-300" />
           <span className="h-2 w-2 rounded-full bg-amber-300" />
           <span className="h-2 w-2 rounded-full bg-emerald-300" />
-          <span className="ml-2 text-[10px] text-muted">Mis perros</span>
+          <span className="ml-2 text-[10px] text-muted">{t('Mis perros')}</span>
         </div>
         <div className="p-3 grid grid-cols-2 gap-2">
           {featuredDogs.slice(0, 4).map(d => (
@@ -859,8 +834,8 @@ function ProductShowcase({ featuredDogs, showcaseDog }: { featuredDogs: Dog[]; s
           ))}
         </div>
         <div className="px-3 pb-3">
-          <p className="text-[11px] font-semibold text-ink">Catálogo de perros</p>
-          <p className="text-[10px] text-muted">Drag & drop · filtros · estados</p>
+          <p className="text-[11px] font-semibold text-ink">{t('Catálogo de perros')}</p>
+          <p className="text-[10px] text-muted">{t('Drag & drop · filtros · estados')}</p>
         </div>
       </div>
 
@@ -880,14 +855,14 @@ function ProductShowcase({ featuredDogs, showcaseDog }: { featuredDogs: Dog[]; s
           <span className="h-2 w-2 rounded-full bg-rose-300" />
           <span className="h-2 w-2 rounded-full bg-amber-300" />
           <span className="h-2 w-2 rounded-full bg-emerald-300" />
-          <span className="ml-2 text-[10px] text-muted">Reservas · 17 activas</span>
+          <span className="ml-2 text-[10px] text-muted">{t('Reservas')} · 17 {t('activas')}</span>
         </div>
         <div className="p-3 space-y-1">
           {([
-            { name: 'María G.', state: 'Seña', value: '300€', stateClass: 'bg-blue-50 text-blue-700' },
-            { name: 'Carlos M.', state: 'Contrato', value: '1.200€', stateClass: 'bg-violet-50 text-violet-700' },
-            { name: 'Sara H.', state: 'Seña', value: '300€', stateClass: 'bg-blue-50 text-blue-700' },
-            { name: 'Pedro B.', state: 'Entrega', value: '1.200€', stateClass: 'bg-emerald-50 text-emerald-700' },
+            { name: 'María G.', state: t('Seña'), value: '300€', stateClass: 'bg-blue-50 text-blue-700' },
+            { name: 'Carlos M.', state: t('Contrato'), value: '1.200€', stateClass: 'bg-violet-50 text-violet-700' },
+            { name: 'Sara H.', state: t('Seña'), value: '300€', stateClass: 'bg-blue-50 text-blue-700' },
+            { name: 'Pedro B.', state: t('Entrega'), value: '1.200€', stateClass: 'bg-emerald-50 text-emerald-700' },
           ]).map((r, i) => (
             <div key={i} className="flex items-center justify-between text-[9.5px] px-2 py-1 rounded border border-hairline bg-surface-soft">
               <span className="font-semibold text-ink">{r.name}</span>
@@ -897,8 +872,8 @@ function ProductShowcase({ featuredDogs, showcaseDog }: { featuredDogs: Dog[]; s
           ))}
         </div>
         <div className="px-3 pb-3">
-          <p className="text-[11px] font-semibold text-ink">Pipeline de reservas</p>
-          <p className="text-[10px] text-muted">Tabla sortable · estados · pagos</p>
+          <p className="text-[11px] font-semibold text-ink">{t('Pipeline de reservas')}</p>
+          <p className="text-[10px] text-muted">{t('Tabla sortable · estados · pagos')}</p>
         </div>
       </div>
     </div>
@@ -918,11 +893,12 @@ function ProductShowcase({ featuredDogs, showcaseDog }: { featuredDogs: Dog[]; s
  * cambia. Si solo hay 1 foto se queda estática.
  */
 function DogProfileMockup({ showcaseDog, fallbackDog }: { showcaseDog: ShowcaseDog | null; fallbackDog: Dog | null }) {
+  const t = useT()
   // Datos reales del perro insignia (Nestor) o fallback al primer
   // featuredDog. Si NI showcaseDog NI fallbackDog tienen el dato, usamos
   // un default neutro — pero NO mezclamos: si showcaseDog está vivo,
   // mandan SIEMPRE sus datos aunque algún campo sea null.
-  const dogName = showcaseDog?.name || fallbackDog?.name || 'Sin nombre'
+  const dogName = showcaseDog?.name || fallbackDog?.name || t('Sin nombre')
   const slug = showcaseDog?.slug || fallbackDog?.slug || ''
   const breedName = showcaseDog?.breed_name || fallbackDog?.breed?.name || ''
   const colorName = showcaseDog?.color_name || ''
@@ -984,7 +960,7 @@ function DogProfileMockup({ showcaseDog, fallbackDog }: { showcaseDog: ShowcaseD
         {/* Badge sexo en overlay bottom-left */}
         <span className={`absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full ${isMale ? 'bg-blue-500' : 'bg-pink-500'} text-white px-2 py-0.5 text-[9px] font-bold z-10`}>
           {isMale ? <Mars className="w-2.5 h-2.5" /> : <Venus className="w-2.5 h-2.5" />}
-          {isMale ? 'Macho' : 'Hembra'}
+          {isMale ? t('Macho') : t('Hembra')}
         </span>
       </div>
 
@@ -1025,20 +1001,20 @@ function DogProfileMockup({ showcaseDog, fallbackDog }: { showcaseDog: ShowcaseD
       <div className="px-3 pb-2 flex flex-wrap gap-1">
         {birthYear && <ProfileChip icon={Clock} label={`${birthYear}`} />}
         {colorName && <ProfileChip label={colorName} />}
-        {photos.length > 0 && <ProfileChip icon={Camera} label={`${photos.length} fotos`} />}
+        {photos.length > 0 && <ProfileChip icon={Camera} label={`${photos.length} ${t('fotos')}`} />}
       </div>
 
       {/* Padres mini — solo si hay datos reales, no placeholder */}
       {(fatherName || motherName) && (
         <div className="px-3 pb-3">
-          <p className="text-[8.5px] font-semibold uppercase tracking-wider text-muted mb-1">Padres</p>
+          <p className="text-[8.5px] font-semibold uppercase tracking-wider text-muted mb-1">{t('Padres')}</p>
           <div className="grid grid-cols-2 gap-1.5">
             <div className="flex items-center gap-1.5 rounded border border-hairline bg-canvas px-1.5 py-1">
               <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                 <Mars className="w-2.5 h-2.5 text-blue-600" />
               </div>
               <div className="min-w-0">
-                <p className="text-[7px] text-muted uppercase font-semibold">Padre</p>
+                <p className="text-[7px] text-muted uppercase font-semibold">{t('Padre')}</p>
                 <p className="text-[9px] font-bold text-ink truncate">{fatherName || '—'}</p>
               </div>
             </div>
@@ -1047,7 +1023,7 @@ function DogProfileMockup({ showcaseDog, fallbackDog }: { showcaseDog: ShowcaseD
                 <Venus className="w-2.5 h-2.5 text-pink-600" />
               </div>
               <div className="min-w-0">
-                <p className="text-[7px] text-muted uppercase font-semibold">Madre</p>
+                <p className="text-[7px] text-muted uppercase font-semibold">{t('Madre')}</p>
                 <p className="text-[9px] font-bold text-ink truncate">{motherName || '—'}</p>
               </div>
             </div>
@@ -1056,8 +1032,8 @@ function DogProfileMockup({ showcaseDog, fallbackDog }: { showcaseDog: ShowcaseD
       )}
 
       <div className="mt-auto px-3 pb-3 pt-1 border-t border-hairline bg-surface-soft/40">
-        <p className="text-[11px] font-semibold text-ink">Ficha pública del perro</p>
-        <p className="text-[10px] text-muted">URL compartible · indexable en Google</p>
+        <p className="text-[11px] font-semibold text-ink">{t('Ficha pública del perro')}</p>
+        <p className="text-[10px] text-muted">{t('URL compartible · indexable en Google')}</p>
       </div>
     </div>
   )
@@ -1078,26 +1054,27 @@ function ProfileChip({ icon: Icon, label }: { icon?: React.ElementType; label: s
  * de un criador que aún usa hojas de cálculo.
  */
 function ComparisonTable() {
+  const t = useT()
   type CellValue = boolean | 'partial'
   const rows: Array<{ feature: string; excel: CellValue; facebook: CellValue; genealogic: CellValue }> = [
-    { feature: 'Genealogía interactiva con COI', excel: false, facebook: false, genealogic: true },
-    { feature: 'Búsqueda por línea / ancestro común', excel: false, facebook: false, genealogic: true },
-    { feature: 'Pipeline de reservas', excel: 'partial', facebook: false, genealogic: true },
-    { feature: 'Web pública con dominio propio', excel: false, facebook: 'partial', genealogic: true },
-    { feature: 'Contratos y pagos integrados', excel: false, facebook: false, genealogic: true },
-    { feature: 'Cartilla veterinaria con recordatorios', excel: 'partial', facebook: false, genealogic: true },
-    { feature: 'SEO en Google (perros indexables)', excel: false, facebook: false, genealogic: true },
-    { feature: 'Acceso desde móvil', excel: 'partial', facebook: true, genealogic: true },
-    { feature: 'Tus datos son tuyos (exportables)', excel: true, facebook: false, genealogic: true },
+    { feature: t('Genealogía interactiva con COI'), excel: false, facebook: false, genealogic: true },
+    { feature: t('Búsqueda por línea / ancestro común'), excel: false, facebook: false, genealogic: true },
+    { feature: t('Pipeline de reservas'), excel: 'partial', facebook: false, genealogic: true },
+    { feature: t('Web pública con dominio propio'), excel: false, facebook: 'partial', genealogic: true },
+    { feature: t('Contratos y pagos integrados'), excel: false, facebook: false, genealogic: true },
+    { feature: t('Cartilla veterinaria con recordatorios'), excel: 'partial', facebook: false, genealogic: true },
+    { feature: t('SEO en Google (perros indexables)'), excel: false, facebook: false, genealogic: true },
+    { feature: t('Acceso desde móvil'), excel: 'partial', facebook: true, genealogic: true },
+    { feature: t('Tus datos son tuyos (exportables)'), excel: true, facebook: false, genealogic: true },
   ]
   return (
     <div className="overflow-x-auto rounded-2xl border border-hairline bg-canvas">
       <table className="w-full min-w-[640px] text-[13px]">
         <thead>
           <tr className="border-b border-hairline bg-surface-soft/50">
-            <th className="text-left px-4 py-4 font-semibold text-muted text-[11px] uppercase tracking-wider">Lo que necesitas</th>
-            <th className="text-center px-4 py-4 font-semibold text-muted text-[11px] uppercase tracking-wider">Excel / WhatsApp</th>
-            <th className="text-center px-4 py-4 font-semibold text-muted text-[11px] uppercase tracking-wider">Grupo Facebook</th>
+            <th className="text-left px-4 py-4 font-semibold text-muted text-[11px] uppercase tracking-wider">{t('Lo que necesitas')}</th>
+            <th className="text-center px-4 py-4 font-semibold text-muted text-[11px] uppercase tracking-wider">{t('Excel / WhatsApp')}</th>
+            <th className="text-center px-4 py-4 font-semibold text-muted text-[11px] uppercase tracking-wider">{t('Grupo Facebook')}</th>
             <th className="text-center px-4 py-4 font-bold text-ink text-[12px] uppercase tracking-wider bg-[#FE6620]/5">
               <span className="inline-flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#FE6620]" /> Genealogic
@@ -1121,8 +1098,9 @@ function ComparisonTable() {
 }
 
 function CompareCell({ value }: { value: boolean | 'partial' }) {
+  const t = useT()
   if (value === true) return <CheckCircle2 className="w-5 h-5 text-emerald-600 inline" />
-  if (value === 'partial') return <span className="text-[11px] text-amber-700 font-semibold">A medias</span>
+  if (value === 'partial') return <span className="text-[11px] text-amber-700 font-semibold">{t('A medias')}</span>
   return <X className="w-4 h-4 text-rose-400 inline" />
 }
 
@@ -1142,6 +1120,7 @@ function PricingCard({
   /** Tailwind gradient classes para el fondo de la card */
   accentBg: string
 }) {
+  const t = useT()
   return (
     <div
       className={`relative rounded-2xl border-2 bg-gradient-to-br ${accentBg} p-5 sm:p-6 flex flex-col ${
@@ -1154,7 +1133,7 @@ function PricingCard({
           className="absolute -top-3 left-5 inline-flex items-center rounded-full text-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
           style={{ background: accent }}
         >
-          Más popular
+          {t('Más popular')}
         </span>
       )}
       <p className="text-[11.5px] font-bold uppercase tracking-wider" style={{ color: accent }}>{tier}</p>

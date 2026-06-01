@@ -1,25 +1,32 @@
 import Link from 'next/link'
 import { allPosts } from '@/content/blog'
 import type { Metadata } from 'next'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
-export const metadata: Metadata = {
-  title: 'Blog',
-  description:
-    'Guías, tutoriales y artículos sobre cría canina, genética, salud, gestión de criadero y herramientas Genealogic.',
-  alternates: { canonical: 'https://genealogic.io/blog' },
-  openGraph: {
-    title: 'Blog',
-    description:
-      'Guías, tutoriales y artículos sobre cría canina, genética, salud, gestión de criadero y herramientas Genealogic.',
-    url: 'https://genealogic.io/blog',
-    siteName: 'Genealogic',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Genealogic' }],
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    images: ['/opengraph-image'],
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = getTranslator(await getLocale())
+  return {
+    title: t('Blog'),
+    description: t(
+      'Guías, tutoriales y artículos sobre cría canina, genética, salud, gestión de criadero y herramientas Genealogic.'
+    ),
+    alternates: { canonical: 'https://genealogic.io/blog' },
+    openGraph: {
+      title: t('Blog'),
+      description: t(
+        'Guías, tutoriales y artículos sobre cría canina, genética, salud, gestión de criadero y herramientas Genealogic.'
+      ),
+      url: 'https://genealogic.io/blog',
+      siteName: 'Genealogic',
+      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Genealogic' }],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      images: ['/opengraph-image'],
+    },
+  }
 }
 
 function formatDate(iso: string) {
@@ -27,7 +34,8 @@ function formatDate(iso: string) {
   return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-export default function BlogIndexPage() {
+export default async function BlogIndexPage() {
+  const t = getTranslator(await getLocale())
   const [featured, ...rest] = allPosts
 
   return (
@@ -35,16 +43,15 @@ export default function BlogIndexPage() {
       {/* Hero */}
       <section className="border-b border-hairline">
         <div className="mx-auto max-w-[1100px] px-6 pt-16 pb-12 lg:px-12 lg:pt-24 lg:pb-16">
-          <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">Blog</p>
+          <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">{t('Blog')}</p>
           <h1
             className="mt-3 max-w-[20ch] font-semibold text-ink"
             style={{ fontSize: 'clamp(40px, 6vw, 64px)', lineHeight: 1.05, letterSpacing: '-0.035em' }}
           >
-            Genealogía, salud y herramientas de cría canina.
+            {t('Genealogía, salud y herramientas de cría canina.')}
           </h1>
           <p className="mt-6 max-w-[600px] text-[18px] leading-[1.6] text-body">
-            Guías técnicas, tutoriales del producto y reflexiones sobre el oficio de criador.
-            Para criadores que se toman su trabajo en serio y para compradores que quieren entender lo que están comprando.
+            {t('Guías técnicas, tutoriales del producto y reflexiones sobre el oficio de criador. Para criadores que se toman su trabajo en serio y para compradores que quieren entender lo que están comprando.')}
           </p>
         </div>
       </section>
@@ -65,7 +72,7 @@ export default function BlogIndexPage() {
               </div>
               <div>
                 <div className="flex items-center gap-3 text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-                  <span>Destacado</span>
+                  <span>{t('Destacado')}</span>
                   <span>·</span>
                   <span>{featured.meta.category}</span>
                 </div>
@@ -81,7 +88,7 @@ export default function BlogIndexPage() {
                 <div className="mt-6 flex items-center gap-3 text-[13px] text-muted">
                   <span>{formatDate(featured.meta.date)}</span>
                   <span>·</span>
-                  <span>{featured.meta.readMinutes} min lectura</span>
+                  <span>{featured.meta.readMinutes} {t('min lectura')}</span>
                 </div>
               </div>
             </div>
@@ -107,7 +114,7 @@ export default function BlogIndexPage() {
                 <div className="mt-5 flex items-center gap-2 text-[11.5px] font-medium uppercase tracking-[0.12em] text-muted">
                   <span>{meta.category}</span>
                   <span>·</span>
-                  <span>{meta.readMinutes} min</span>
+                  <span>{meta.readMinutes} {t('min')}</span>
                 </div>
                 <h3
                   className="mt-2 font-semibold text-ink transition-colors group-hover:text-ink/80"

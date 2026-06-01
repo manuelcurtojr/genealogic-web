@@ -9,27 +9,34 @@
  */
 import { createKennelAdminClient, createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 import BreedsDirectory, { type DirectoryBreed } from '@/components/breeds/breeds-directory'
 import DirectoryTabs from '@/components/search/directory-tabs'
 
-export const metadata: Metadata = {
-  title: 'Directorio de razas caninas — Genealogic',
-  description:
-    'Catálogo completo de razas con sus estándares oficiales (FCI, RSCE, AKC, KC), colores admitidos y miles de ejemplares con genealogía verificable.',
-  alternates: { canonical: 'https://genealogic.io/razas' },
-  openGraph: {
-    title: 'Razas caninas — Genealogic',
-    description:
-      'Estándares oficiales, colores admitidos y miles de ejemplares de cada raza, con genealogías verificables.',
-    url: 'https://genealogic.io/razas',
-    siteName: 'Genealogic',
-    type: 'website',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Razas — Genealogic' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    images: ['/opengraph-image'],
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = getTranslator(await getLocale())
+  return {
+    title: t('Directorio de razas caninas — Genealogic'),
+    description: t(
+      'Catálogo completo de razas con sus estándares oficiales (FCI, RSCE, AKC, KC), colores admitidos y miles de ejemplares con genealogía verificable.'
+    ),
+    alternates: { canonical: 'https://genealogic.io/razas' },
+    openGraph: {
+      title: t('Razas caninas — Genealogic'),
+      description: t(
+        'Estándares oficiales, colores admitidos y miles de ejemplares de cada raza, con genealogías verificables.'
+      ),
+      url: 'https://genealogic.io/razas',
+      siteName: 'Genealogic',
+      type: 'website',
+      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: t('Razas — Genealogic') }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      images: ['/opengraph-image'],
+    },
+  }
 }
 
 export const revalidate = 3600 // 1h ISR
@@ -49,6 +56,7 @@ type RpcRow = {
 }
 
 export default async function BreedsIndexPage() {
+  const t = getTranslator(await getLocale())
   // ¿Usuario logueado? Cuando lo está, la página vive dentro del shell del
   // dashboard y queremos que ocupe TODO el ancho (como /perros). Para
   // visitantes anónimos mantenemos el ancho centrado a 1200px (look público).
@@ -83,12 +91,12 @@ export default async function BreedsIndexPage() {
     <div className="min-h-screen bg-canvas">
       <div className={user ? 'py-8 sm:py-10' : 'mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-12 py-8 sm:py-10'}>
         <div>
-          <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Directorio</p>
+          <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Directorio')}</p>
           <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-            Razas
+            {t('Razas')}
           </h1>
           <p className="mt-2 text-[14px] text-body">
-            {totalBreeds} razas con sus estándares oficiales y {totalDogs.toLocaleString('es-ES')} ejemplares registrados.
+            {totalBreeds} {t('razas con sus estándares oficiales y')} {totalDogs.toLocaleString('es-ES')} {t('ejemplares registrados.')}
           </p>
         </div>
 

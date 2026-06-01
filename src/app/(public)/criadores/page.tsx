@@ -11,24 +11,30 @@
 import { createClient } from '@/lib/supabase/server'
 import LandingPage from '@/components/landing/landing-page'
 import type { Metadata } from 'next'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
-export const metadata: Metadata = {
-  title: 'Para criadores',
-  description:
-    'Software para criaderos: gestión de afijo, perros, camadas, pipeline de reservas, web pública y emailbot. Empieza gratis.',
-  alternates: { canonical: 'https://genealogic.io/criadores' },
-  openGraph: {
-    title: 'Genealogic para criadores',
-    description: 'Gestiona tu criadero y vende más cachorros con menos esfuerzo.',
-    url: 'https://genealogic.io/criadores',
-    type: 'website',
-    siteName: 'Genealogic',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Genealogic' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    images: ['/opengraph-image'],
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = getTranslator(await getLocale())
+  return {
+    title: t('Para criadores'),
+    description: t(
+      'Software para criaderos: gestión de afijo, perros, camadas, pipeline de reservas, web pública y emailbot. Empieza gratis.'
+    ),
+    alternates: { canonical: 'https://genealogic.io/criadores' },
+    openGraph: {
+      title: t('Genealogic para criadores'),
+      description: t('Gestiona tu criadero y vende más cachorros con menos esfuerzo.'),
+      url: 'https://genealogic.io/criadores',
+      type: 'website',
+      siteName: 'Genealogic',
+      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Genealogic' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      images: ['/opengraph-image'],
+    },
+  }
 }
 
 async function fetchCockerPhotos(): Promise<string[]> {
