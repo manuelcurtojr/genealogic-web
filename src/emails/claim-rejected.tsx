@@ -3,6 +3,7 @@
  * Tono respetuoso, explica la razón y ofrece recurso.
  */
 import { EmailLayout, H1, P, Btn, Eyebrow, Pill, Divider, SITE_URL, COLORS } from './_components'
+import { getTranslator } from '@/lib/i18n'
 
 export type ClaimRejectedProps = {
   recipientName: string | null
@@ -10,33 +11,34 @@ export type ClaimRejectedProps = {
   targetName: string
   resolutionNote: string
   requestId: string
+  locale?: string
 }
 
 export default function ClaimRejectedEmail({
-  recipientName, targetType, targetName, resolutionNote, requestId,
+  recipientName, targetType, targetName, resolutionNote, requestId, locale,
 }: ClaimRejectedProps) {
+  const t = getTranslator(locale || 'es')
   const name = recipientName?.split(' ')[0] || null
-  const kindLabel = targetType === 'dog' ? 'perro' : 'criadero'
+  const kindLabel = targetType === 'dog' ? t('perro') : t('criadero')
 
   return (
-    <EmailLayout preview={`Tu reclamación de ${targetName} no ha podido aprobarse`}>
-      <Eyebrow color={COLORS.danger}>Rechazada</Eyebrow>
+    <EmailLayout preview={`${t('Tu reclamación de')} ${targetName} ${t('no ha podido aprobarse')}`} locale={locale}>
+      <Eyebrow color={COLORS.danger}>{t('Rechazada')}</Eyebrow>
       <H1>
         {name ? `${name}, ` : ''}
-        no hemos podido aprobar tu reclamación.
+        {t('no hemos podido aprobar tu reclamación.')}
       </H1>
       <P>
-        Hemos revisado tu reclamación del {kindLabel}{' '}
-        <strong style={{ color: COLORS.ink }}>{targetName}</strong> y por ahora
-        no podemos transferir la titularidad.
+        {t('Hemos revisado tu reclamación del')} {kindLabel}{' '}
+        <strong style={{ color: COLORS.ink }}>{targetName}</strong> {t('y por ahora no podemos transferir la titularidad.')}
       </P>
 
       <P>
-        <Pill variant="danger">No aprobada</Pill>
+        <Pill variant="danger">{t('No aprobada')}</Pill>
       </P>
 
       <P>
-        <strong style={{ color: COLORS.ink }}>Motivo:</strong>
+        <strong style={{ color: COLORS.ink }}>{t('Motivo:')}</strong>
       </P>
       <div
         style={{
@@ -57,16 +59,15 @@ export default function ClaimRejectedEmail({
       </div>
 
       <P>
-        Si tienes documentación adicional o crees que es un error, puedes responder a
-        este email o desde la página de tu solicitud.
+        {t('Si tienes documentación adicional o crees que es un error, puedes responder a este email o desde la página de tu solicitud.')}
       </P>
 
-      <Btn href={`${SITE_URL}/mis-solicitudes/${requestId}`}>Ver mi solicitud</Btn>
+      <Btn href={`${SITE_URL}/mis-solicitudes/${requestId}`}>{t('Ver mi solicitud')}</Btn>
 
       <Divider />
 
       <P>
-        ¿Necesitas ayuda? Escríbenos a{' '}
+        {t('¿Necesitas ayuda? Escríbenos a')}{' '}
         <a href="mailto:hola@genealogic.io" style={{ color: COLORS.ink }}>hola@genealogic.io</a>.
       </P>
     </EmailLayout>

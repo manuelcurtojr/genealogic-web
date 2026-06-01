@@ -103,15 +103,15 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
   },
   message_new: {
     category: 'messages',
-    subject: (p: MessageNewProps) => `${p.senderName} te ha escrito en Genealogic`,
+    subject: (p: MessageNewProps, t) => `${p.senderName} ${t('te ha escrito en Genealogic')}`,
   },
   claim_approved: {
     category: 'critical',
-    subject: (p: ClaimApprovedProps) => `✓ Tu reclamación de ${p.targetName} ha sido aprobada`,
+    subject: (p: ClaimApprovedProps, t) => `✓ ${t('Tu reclamación de')} ${p.targetName} ${t('ha sido aprobada')}`,
   },
   claim_rejected: {
     category: 'critical',
-    subject: (p: ClaimRejectedProps) => `Sobre tu reclamación de ${p.targetName}`,
+    subject: (p: ClaimRejectedProps, t) => `${t('Sobre tu reclamación de')} ${p.targetName}`,
   },
   support_replied: {
     category: 'critical',
@@ -119,65 +119,65 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
   },
   subscription_activated: {
     category: 'critical',
-    subject: (p: SubscriptionActivatedProps) => {
+    subject: (p: SubscriptionActivatedProps, t) => {
       const isPro = p.plan === 'kennel_pro' || p.plan === 'premium'
       const label = isPro ? 'Kennel Pro' : 'Kennel'
       // Si el email se manda durante el trial, lo decimos en el subject.
       return p.trialEndsAt
-        ? `✓ Prueba de Genealogic ${label} activada`
-        : `✓ Genealogic ${label} activado`
+        ? `✓ ${t('Prueba de Genealogic')} ${label} ${t('activada')}`
+        : `✓ Genealogic ${label} ${t('activado')}`
     },
   },
   trial_ending_soon: {
     category: 'critical',
-    subject: (p: TrialEndingSoonProps) => {
+    subject: (p: TrialEndingSoonProps, t) => {
       const isPro = p.plan === 'kennel_pro' || p.plan === 'premium'
       const label = isPro ? 'Kennel Pro' : 'Kennel'
-      return `Tu prueba de Genealogic ${label} termina pronto`
+      return `${t('Tu prueba de Genealogic')} ${label} ${t('termina pronto')}`
     },
   },
   subscription_cancelled: {
     category: 'critical',
-    subject: () => 'Tu suscripción de Genealogic ha terminado',
+    subject: (_p, t) => t('Tu suscripción de Genealogic ha terminado'),
   },
   payment_failed: {
     category: 'critical',
-    subject: () => 'No hemos podido cobrar tu suscripción',
+    subject: (_p, t) => t('No hemos podido cobrar tu suscripción'),
   },
   vet_reminder: {
     category: 'vet_reminders',
-    subject: (p: VetReminderProps) => {
-      const when = p.bucket === 'today' ? 'Hoy' : p.bucket === 'tomorrow' ? 'Mañana' : 'En 7 días'
-      return `${when}: ${p.reminderTitle} para ${p.dogName}`
+    subject: (p: VetReminderProps, t) => {
+      const when = p.bucket === 'today' ? t('Hoy') : p.bucket === 'tomorrow' ? t('Mañana') : t('En 7 días')
+      return `${when}: ${p.reminderTitle} ${t('para')} ${p.dogName}`
     },
   },
   litter_new: {
     category: 'reservations',
-    subject: (p: LitterNewProps) =>
+    subject: (p: LitterNewProps, t) =>
       p.status === 'born' || p.status === 'delivered'
-        ? `Han nacido los cachorros en ${p.kennelName}`
-        : `Nueva camada${p.breedName ? ` de ${p.breedName}` : ''} en ${p.kennelName}`,
+        ? `${t('Han nacido los cachorros en')} ${p.kennelName}`
+        : `${t('Nueva camada en')} ${p.kennelName}${p.breedName ? ` (${p.breedName})` : ''}`,
   },
   contract_signed: {
     category: 'critical',
-    subject: (p: ContractSignedProps) =>
+    subject: (p: ContractSignedProps, t) =>
       p.recipientRole === 'breeder'
-        ? `${p.otherPartyName} ha firmado el contrato`
-        : `Contrato firmado con ${p.kennelName}`,
+        ? `${p.otherPartyName} ${t('ha firmado el contrato')}`
+        : `${t('Contrato firmado con')} ${p.kennelName}`,
   },
   payment_received: {
     category: 'critical',
-    subject: (p: PaymentReceivedProps) =>
-      `${p.kennelName} ha confirmado tu pago`,
+    subject: (p: PaymentReceivedProps, t) =>
+      `${p.kennelName} ${t('ha confirmado tu pago')}`,
   },
   weekly_digest_breeder: {
     category: 'weekly_digest',
-    subject: (p: WeeklyDigestBreederProps) =>
-      `Tu semana en ${p.kennelName}`,
+    subject: (p: WeeklyDigestBreederProps, t) =>
+      `${t('Tu semana en')} ${p.kennelName}`,
   },
   weekly_digest_owner: {
     category: 'weekly_digest',
-    subject: () => 'Tu resumen semanal en Genealogic',
+    subject: (_p, t) => t('Tu resumen semanal en Genealogic'),
   },
   re_engagement: {
     category: 'marketing',
@@ -189,16 +189,16 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
   // Avisos reproductivos — comparten el opt-out de recordatorios vet.
   repro_next_heat: {
     category: 'vet_reminders',
-    subject: (p: ReproNextHeatProps) => `Próximo celo de ${p.dogName} (~${p.heatDate})`,
+    subject: (p: ReproNextHeatProps, t) => `${t('Próximo celo de')} ${p.dogName} (~${p.heatDate})`,
   },
   repro_confirm_pregnancy: {
     category: 'vet_reminders',
-    subject: (p: ReproConfirmPregnancyProps) => `¿${p.dogName} está preñada? Confírmalo`,
+    subject: (p: ReproConfirmPregnancyProps, t) => `${p.dogName} ${t('está preñada? Confírmalo')}`,
   },
   repro_birth_soon: {
     category: 'vet_reminders',
-    subject: (p: ReproBirthSoonProps) =>
-      p.daysUntil <= 0 ? `${p.dogName} sale de cuentas hoy` : `Parto de ${p.dogName} en ${p.daysUntil} días`,
+    subject: (p: ReproBirthSoonProps, t) =>
+      p.daysUntil <= 0 ? `${p.dogName} ${t('sale de cuentas hoy')}` : `${t('Parto de')} ${p.dogName} ${t('dentro de')} ${p.daysUntil} ${t('días')}`,
   },
   owner_checkin: {
     // 'marketing' → respeta opt-out (no insistimos a quien no quiere emails).

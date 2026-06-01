@@ -4,6 +4,7 @@
  * mensaje pendiente con criador, etc).
  */
 import { EmailLayout, H1, P, Btn, Eyebrow, Divider, Small, SITE_URL, COLORS, FONT_STACK } from './_components'
+import { getTranslator } from '@/lib/i18n'
 
 export type WeeklyDigestOwnerProps = {
   recipientName: string | null
@@ -13,6 +14,7 @@ export type WeeklyDigestOwnerProps = {
   upcomingVet: Array<{ dogName: string; title: string; dueDate: string; dogId: string }>
   /** Mensajes pendientes en reservas */
   pendingMessages: number
+  locale?: string
 }
 
 function fmtShortDate(iso: string): string {
@@ -24,28 +26,28 @@ function fmtShortDate(iso: string): string {
 }
 
 export default function WeeklyDigestOwnerEmail({
-  recipientName, weekLabel, dogsCount, upcomingVet, pendingMessages,
+  recipientName, weekLabel, dogsCount, upcomingVet, pendingMessages, locale,
 }: WeeklyDigestOwnerProps) {
+  const t = getTranslator(locale || 'es')
   const name = recipientName?.split(' ')[0] || null
 
   return (
-    <EmailLayout preview={`Tu resumen: ${upcomingVet.length} recordatorios vet, ${pendingMessages} mensajes`}>
-      <Eyebrow>Resumen semanal</Eyebrow>
+    <EmailLayout preview={`${t('Tu resumen:')} ${upcomingVet.length} ${t('recordatorios vet,')} ${pendingMessages} ${t('mensajes')}`} locale={locale}>
+      <Eyebrow>{t('Resumen semanal')}</Eyebrow>
       <H1>
         {name ? `${name}, ` : ''}
-        esto te interesa esta semana.
+        {t('esto te interesa esta semana.')}
       </H1>
       <P style={{ color: COLORS.muted, fontSize: 13 }}>{weekLabel}</P>
 
       <P>
-        Tienes <strong style={{ color: COLORS.ink }}>{dogsCount}</strong> perro{dogsCount === 1 ? '' : 's'} en
-        Genealogic. Aquí va lo que toca:
+        {t('Tienes')} <strong style={{ color: COLORS.ink }}>{dogsCount}</strong> {dogsCount === 1 ? t('perro en Genealogic. Aquí va lo que toca:') : t('perros en Genealogic. Aquí va lo que toca:')}
       </P>
 
       {upcomingVet.length > 0 && (
         <>
           <P style={{ fontWeight: 600, color: COLORS.ink, fontSize: 14, marginTop: '20px', marginBottom: '8px' }}>
-            Próximos avisos veterinarios:
+            {t('Próximos avisos veterinarios:')}
           </P>
           {upcomingVet.slice(0, 5).map((v, i) => (
             <div
@@ -85,26 +87,23 @@ export default function WeeklyDigestOwnerEmail({
 
       {pendingMessages > 0 && (
         <P style={{ marginTop: 18 }}>
-          Tienes <strong style={{ color: COLORS.ink }}>{pendingMessages}</strong> mensaje{pendingMessages === 1 ? '' : 's'} sin
-          contestar de tu{pendingMessages === 1 ? '' : 's'} criador{pendingMessages === 1 ? '' : 'es'}.
+          {t('Tienes')} <strong style={{ color: COLORS.ink }}>{pendingMessages}</strong> {pendingMessages === 1 ? t('mensaje sin contestar de tu criador.') : t('mensajes sin contestar de tus criadores.')}
         </P>
       )}
 
-      <Btn href={`${SITE_URL}/dashboard`}>Ir a mi panel</Btn>
+      <Btn href={`${SITE_URL}/dashboard`}>{t('Ir a mi panel')}</Btn>
 
       {upcomingVet.length === 0 && pendingMessages === 0 && (
         <P style={{ color: COLORS.muted, fontSize: 13, marginTop: '12px' }}>
-          Semana tranquila — todo al día. Aprovecha para subir alguna foto nueva o
-          completar los papeles de tu perro.
+          {t('Semana tranquila — todo al día. Aprovecha para subir alguna foto nueva o completar los papeles de tu perro.')}
         </P>
       )}
 
       <Divider />
 
       <Small>
-        Recibes este resumen cada lunes. Si prefieres no recibirlo, desactívalo
-        desde{' '}
-        <a href={`${SITE_URL}/settings`} style={{ color: COLORS.ink }}>tus preferencias</a>.
+        {t('Recibes este resumen cada lunes. Si prefieres no recibirlo, desactívalo desde')}{' '}
+        <a href={`${SITE_URL}/settings`} style={{ color: COLORS.ink }}>{t('tus preferencias')}</a>.
       </Small>
     </EmailLayout>
   )

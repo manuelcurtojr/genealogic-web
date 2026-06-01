@@ -2,27 +2,29 @@
  * Email al user cuando el admin contesta a su admin_request (soporte o claim).
  */
 import { EmailLayout, H1, P, Btn, Eyebrow, Divider, Small, SITE_URL, COLORS, FONT_STACK } from './_components'
+import { getTranslator } from '@/lib/i18n'
 
 export type SupportRepliedProps = {
   recipientName: string | null
   requestSubject: string
   adminMessagePreview: string
   requestId: string
+  locale?: string
 }
 
 export default function SupportRepliedEmail({
-  recipientName, requestSubject, adminMessagePreview, requestId,
+  recipientName, requestSubject, adminMessagePreview, requestId, locale,
 }: SupportRepliedProps) {
+  const t = getTranslator(locale || 'es')
   const name = recipientName?.split(' ')[0] || null
 
   return (
-    <EmailLayout preview={`El equipo ha respondido a tu solicitud: ${requestSubject}`}>
-      <Eyebrow>Soporte respondió</Eyebrow>
-      <H1>{name ? `${name}, ` : ''}el equipo te ha contestado.</H1>
+    <EmailLayout preview={`${t('El equipo ha respondido a tu solicitud:')} ${requestSubject}`} locale={locale}>
+      <Eyebrow>{t('Soporte respondió')}</Eyebrow>
+      <H1>{name ? `${name}, ` : ''}{t('el equipo te ha contestado.')}</H1>
       <P>
-        Tu solicitud{' '}
-        <strong style={{ color: COLORS.ink }}>"{requestSubject}"</strong> tiene una
-        respuesta del equipo de Genealogic.
+        {t('Tu solicitud')}{' '}
+        <strong style={{ color: COLORS.ink }}>"{requestSubject}"</strong> {t('tiene una respuesta del equipo de Genealogic.')}
       </P>
 
       <div
@@ -44,13 +46,12 @@ export default function SupportRepliedEmail({
         {adminMessagePreview.length > 500 && '…'}
       </div>
 
-      <Btn href={`${SITE_URL}/mis-solicitudes/${requestId}`}>Ver mi solicitud</Btn>
+      <Btn href={`${SITE_URL}/mis-solicitudes/${requestId}`}>{t('Ver mi solicitud')}</Btn>
 
       <Divider />
 
       <Small>
-        Puedes seguir la conversación directamente desde tu cuenta. Si respondes a este
-        email, también nos llega y lo añadimos al hilo.
+        {t('Puedes seguir la conversación directamente desde tu cuenta. Si respondes a este email, también nos llega y lo añadimos al hilo.')}
       </Small>
     </EmailLayout>
   )

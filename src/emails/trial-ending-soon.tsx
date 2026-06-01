@@ -10,6 +10,7 @@
  *   - Confirmar que quiere seguir
  */
 import { EmailLayout, H1, P, Btn, Eyebrow, InfoCard, Divider, Small, SITE_URL, COLORS, FONT_STACK } from './_components'
+import { getTranslator } from '@/lib/i18n'
 
 export type TrialEndingSoonProps = {
   recipientName: string | null
@@ -17,6 +18,7 @@ export type TrialEndingSoonProps = {
   plan: 'kennel' | 'kennel_pro' | 'pro' | 'premium'
   /** ISO date de cuándo termina el trial. Si null, asumimos "pronto". */
   trialEndsAt: string | null
+  locale?: string
 }
 
 function formatSpanishDate(iso: string | null): string {
@@ -41,70 +43,68 @@ function daysUntil(iso: string | null): number | null {
 }
 
 export default function TrialEndingSoonEmail({
-  recipientName, plan, trialEndsAt,
+  recipientName, plan, trialEndsAt, locale,
 }: TrialEndingSoonProps) {
+  const t = getTranslator(locale || 'es')
   const name = recipientName?.split(' ')[0] || null
   // BBDD: plan 'kennel_pro' = Kennel Enterprise (149€); plan 'kennel' = Kennel Pro (49€).
   const isEnterprise = plan === 'kennel_pro' || plan === 'premium'
   const planLabel = isEnterprise ? 'Kennel Enterprise' : 'Kennel Pro'
   const endDate = formatSpanishDate(trialEndsAt)
   const days = daysUntil(trialEndsAt)
-  const daysLabel = days === 1 ? '1 día' : `${days ?? 3} días`
+  const daysLabel = days === 1 ? `1 ${t('día')}` : `${days ?? 3} ${t('días')}`
 
   return (
-    <EmailLayout preview={`Tu prueba de Genealogic ${planLabel} termina en ${daysLabel}.`}>
-      <Eyebrow color={COLORS.amber}>Tu prueba está por terminar</Eyebrow>
+    <EmailLayout preview={`${t('Tu prueba de Genealogic')} ${planLabel} ${t('termina en')} ${daysLabel}.`} locale={locale}>
+      <Eyebrow color={COLORS.amber}>{t('Tu prueba está por terminar')}</Eyebrow>
       <H1>
         {name ? `${name}, ` : ''}
-        tu prueba acaba en {daysLabel}.
+        {t('tu prueba acaba en')} {daysLabel}.
       </H1>
       <P>
-        El {endDate} se hará el primer cargo automático de tu suscripción
+        {t('El')} {endDate} {t('se hará el primer cargo automático de tu suscripción')}
         <strong style={{ color: COLORS.ink }}> Genealogic {planLabel}</strong>.
-        Si todo está bien, no tienes que hacer nada: la suscripción continuará
-        sin interrupciones.
+        {' '}{t('Si todo está bien, no tienes que hacer nada: la suscripción continuará sin interrupciones.')}
       </P>
 
       <InfoCard>
         <table cellPadding={0} cellSpacing={0} style={{ borderCollapse: 'collapse', width: '100%' }}>
           <tr>
-            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted, width: '140px' }}>Plan</td>
+            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted, width: '140px' }}>{t('Plan')}</td>
             <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.ink, fontWeight: 600 }}>
               Genealogic {planLabel}
             </td>
           </tr>
           <tr>
-            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>Fin de la prueba</td>
+            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>{t('Fin de la prueba')}</td>
             <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.body }}>{endDate}</td>
           </tr>
           <tr>
-            <td style={{ fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>Próximo cobro</td>
-            <td style={{ fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.body }}>El {endDate} en la tarjeta registrada</td>
+            <td style={{ fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>{t('Próximo cobro')}</td>
+            <td style={{ fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.body }}>{t('El')} {endDate} {t('en la tarjeta registrada')}</td>
           </tr>
         </table>
       </InfoCard>
 
-      <P>¿Quieres revisar algo antes del cobro?</P>
+      <P>{t('¿Quieres revisar algo antes del cobro?')}</P>
       <ul style={{ paddingLeft: '20px', margin: '0 0 18px 0' }}>
         <li style={{ marginBottom: '6px', color: COLORS.body, fontSize: '14.5px', lineHeight: 1.6 }}>
-          <strong style={{ color: COLORS.ink }}>Cambiar tarjeta</strong> si la actual va a caducar.
+          <strong style={{ color: COLORS.ink }}>{t('Cambiar tarjeta')}</strong> {t('si la actual va a caducar.')}
         </li>
         <li style={{ marginBottom: '6px', color: COLORS.body, fontSize: '14.5px', lineHeight: 1.6 }}>
-          <strong style={{ color: COLORS.ink }}>Cancelar la suscripción</strong> si decides no continuar (sin coste).
+          <strong style={{ color: COLORS.ink }}>{t('Cancelar la suscripción')}</strong> {t('si decides no continuar (sin coste).')}
         </li>
         <li style={{ marginBottom: '6px', color: COLORS.body, fontSize: '14.5px', lineHeight: 1.6 }}>
-          <strong style={{ color: COLORS.ink }}>Cambiar de plan</strong> a Kennel Pro / Kennel Enterprise según necesites.
+          <strong style={{ color: COLORS.ink }}>{t('Cambiar de plan')}</strong> {t('a Kennel Pro / Kennel Enterprise según necesites.')}
         </li>
       </ul>
 
-      <Btn href={`${SITE_URL}/cuenta/facturacion`}>Gestionar mi suscripción</Btn>
+      <Btn href={`${SITE_URL}/cuenta/facturacion`}>{t('Gestionar mi suscripción')}</Btn>
 
       <Divider />
 
       <Small>
-        Si el cargo falla, lo reintentaremos automáticamente los siguientes días.
-        Pasados los reintentos sin éxito, tu plan vuelve a Free conservando todos
-        tus datos. Para cualquier duda, responde a este email.
+        {t('Si el cargo falla, lo reintentaremos automáticamente los siguientes días. Pasados los reintentos sin éxito, tu plan vuelve a Free conservando todos tus datos. Para cualquier duda, responde a este email.')}
       </Small>
     </EmailLayout>
   )

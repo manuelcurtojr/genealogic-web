@@ -16,6 +16,7 @@ import {
   Html, Head, Body, Container, Section, Row, Column,
   Text, Heading, Link, Img, Hr, Preview,
 } from '@react-email/components'
+import { getTranslator } from '@/lib/i18n'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'
 const ICON_URL = `${SITE_URL}/icon.svg`
@@ -137,11 +138,14 @@ export function EmailLayout({
   preview,
   children,
   showFooter = true,
+  locale,
 }: {
   preview: string
   children: React.ReactNode
   showFooter?: boolean
+  locale?: string
 }) {
+  const t = getTranslator(locale || 'es')
   return (
     <Html>
       <Head>
@@ -185,7 +189,7 @@ export function EmailLayout({
               </Row>
             </Section>
             <Section style={contentSection}>{children}</Section>
-            {showFooter && <EmailFooter />}
+            {showFooter && <EmailFooter locale={locale} />}
           </Container>
           <Text
             style={{
@@ -195,7 +199,7 @@ export function EmailLayout({
               color: COLORS.muted,
             }}
           >
-            © {new Date().getFullYear()} Genealogic · Hecho en España
+            © {new Date().getFullYear()} Genealogic · {t('Hecho en España')}
           </Text>
         </Container>
       </Body>
@@ -203,22 +207,23 @@ export function EmailLayout({
   )
 }
 
-export function EmailFooter() {
+export function EmailFooter({ locale }: { locale?: string }) {
+  const t = getTranslator(locale || 'es')
   return (
     <Section style={footer}>
       <Text style={small}>
-        Recibes este email porque tienes una cuenta en{' '}
+        {t('Recibes este email porque tienes una cuenta en')}{' '}
         <Link href={SITE_URL} style={{ color: COLORS.muted, textDecoration: 'underline' }}>
           Genealogic
         </Link>
         .
         <br />
-        ¿Quieres gestionar qué emails recibes?{' '}
+        {t('¿Quieres gestionar qué emails recibes?')}{' '}
         <Link
           href={`${SITE_URL}/settings`}
           style={{ color: COLORS.muted, textDecoration: 'underline' }}
         >
-          Ajusta tus preferencias
+          {t('Ajusta tus preferencias')}
         </Link>
         .
       </Text>

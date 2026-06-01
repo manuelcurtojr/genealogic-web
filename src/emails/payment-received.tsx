@@ -7,6 +7,7 @@
  * necesita email cuando él mismo marca el pago.
  */
 import { EmailLayout, H1, P, Btn, Eyebrow, Pill, InfoCard, Divider, Small, SITE_URL, COLORS, FONT_STACK } from './_components'
+import { getTranslator } from '@/lib/i18n'
 
 export type PaymentReceivedProps = {
   recipientName: string | null
@@ -17,6 +18,7 @@ export type PaymentReceivedProps = {
   description: string | null
   paidVia: 'stripe' | 'manual' | 'transfer' | 'cash' | string
   paidAt: string  // ISO
+  locale?: string
 }
 
 function fmtMoney(cents: number, currency: string): string {
@@ -45,60 +47,59 @@ const VIA_LABEL: Record<string, string> = {
 
 export default function PaymentReceivedEmail({
   recipientName, kennelName, reservationId, amountCents, currency,
-  description, paidVia, paidAt,
+  description, paidVia, paidAt, locale,
 }: PaymentReceivedProps) {
+  const t = getTranslator(locale || 'es')
   const name = recipientName?.split(' ')[0] || null
   const amount = fmtMoney(amountCents, currency)
-  const viaLabel = VIA_LABEL[paidVia] || paidVia
+  const viaLabel = t(VIA_LABEL[paidVia] || paidVia)
 
   return (
-    <EmailLayout preview={`${kennelName} ha confirmado tu pago de ${amount}`}>
-      <Eyebrow color={COLORS.success}>✓ Pago confirmado</Eyebrow>
-      <H1>{name ? `${name}, ` : ''}pago recibido.</H1>
+    <EmailLayout preview={`${kennelName} ${t('ha confirmado tu pago de')} ${amount}`} locale={locale}>
+      <Eyebrow color={COLORS.success}>{t('✓ Pago confirmado')}</Eyebrow>
+      <H1>{name ? `${name}, ` : ''}{t('pago recibido.')}</H1>
       <P>
-        <strong style={{ color: COLORS.ink }}>{kennelName}</strong> ha confirmado tu
-        pago de <strong style={{ color: COLORS.ink }}>{amount}</strong>.
-        Considéralo tu recibo oficial — guárdalo por si lo necesitas más adelante.
+        <strong style={{ color: COLORS.ink }}>{kennelName}</strong> {t('ha confirmado tu pago de')} <strong style={{ color: COLORS.ink }}>{amount}</strong>.
+        {' '}{t('Considéralo tu recibo oficial — guárdalo por si lo necesitas más adelante.')}
       </P>
 
       <P>
-        <Pill variant="success">Pagado</Pill>
+        <Pill variant="success">{t('Pagado')}</Pill>
       </P>
 
       <InfoCard>
         <table cellPadding={0} cellSpacing={0} style={{ borderCollapse: 'collapse', width: '100%' }}>
           <tr>
-            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted, width: '120px' }}>Importe</td>
+            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted, width: '120px' }}>{t('Importe')}</td>
             <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.ink, fontWeight: 600 }}>{amount}</td>
           </tr>
           {description && (
             <tr>
-              <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>Concepto</td>
+              <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>{t('Concepto')}</td>
               <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.body }}>{description}</td>
             </tr>
           )}
           <tr>
-            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>Método</td>
+            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>{t('Método')}</td>
             <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.body }}>{viaLabel}</td>
           </tr>
           <tr>
-            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>Fecha</td>
+            <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>{t('Fecha')}</td>
             <td style={{ paddingBottom: '6px', fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.body }}>{fmtDate(paidAt)}</td>
           </tr>
           <tr>
-            <td style={{ fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>Criadero</td>
+            <td style={{ fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>{t('Criadero')}</td>
             <td style={{ fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.body }}>{kennelName}</td>
           </tr>
         </table>
       </InfoCard>
 
-      <Btn href={`${SITE_URL}/mis-reservas/${reservationId}/pagos`}>Ver mis pagos</Btn>
+      <Btn href={`${SITE_URL}/mis-reservas/${reservationId}/pagos`}>{t('Ver mis pagos')}</Btn>
 
       <Divider />
 
       <Small>
-        Si tienes dudas sobre este pago o necesitas factura formal, contacta
-        directamente con {kennelName} desde el hilo de tu reserva.
+        {t('Si tienes dudas sobre este pago o necesitas factura formal, contacta directamente con')} {kennelName} {t('desde el hilo de tu reserva.')}
       </Small>
     </EmailLayout>
   )

@@ -5,6 +5,7 @@
  *   - criador escribe → llega al cliente
  */
 import { EmailLayout, H1, P, Btn, Eyebrow, Divider, Small, SITE_URL, COLORS, FONT_STACK } from './_components'
+import { getTranslator } from '@/lib/i18n'
 
 export type MessageNewProps = {
   recipientName: string | null
@@ -13,22 +14,24 @@ export type MessageNewProps = {
   reservationId: string
   /** Si el recipient es el cliente, link va a /mis-reservas, si es el criador a /reservas */
   recipientIsBreeder: boolean
+  locale?: string
 }
 
 export default function MessageNewEmail({
-  recipientName, senderName, preview, reservationId, recipientIsBreeder,
+  recipientName, senderName, preview, reservationId, recipientIsBreeder, locale,
 }: MessageNewProps) {
+  const t = getTranslator(locale || 'es')
   const name = recipientName?.split(' ')[0] || null
   const link = recipientIsBreeder
     ? `${SITE_URL}/reservas/${reservationId}`
     : `${SITE_URL}/mis-reservas/${reservationId}`
 
   return (
-    <EmailLayout preview={`${senderName}: ${preview.slice(0, 80)}`}>
-      <Eyebrow>Mensaje nuevo</Eyebrow>
-      <H1>{name ? `${name}, tienes un mensaje.` : 'Tienes un mensaje nuevo.'}</H1>
+    <EmailLayout preview={`${senderName}: ${preview.slice(0, 80)}`} locale={locale}>
+      <Eyebrow>{t('Mensaje nuevo')}</Eyebrow>
+      <H1>{name ? `${name}${t(', tienes un mensaje.')}` : t('Tienes un mensaje nuevo.')}</H1>
       <P>
-        <strong style={{ color: COLORS.ink }}>{senderName}</strong> te ha escrito.
+        <strong style={{ color: COLORS.ink }}>{senderName}</strong> {t('te ha escrito.')}
       </P>
 
       <div
@@ -50,13 +53,12 @@ export default function MessageNewEmail({
         {preview.length > 400 && '…'}
       </div>
 
-      <Btn href={link}>Responder en Genealogic</Btn>
+      <Btn href={link}>{t('Responder en Genealogic')}</Btn>
 
       <Divider />
 
       <Small>
-        Respondes desde la app para que la conversación quede registrada y ambos
-        veáis el historial completo.
+        {t('Respondes desde la app para que la conversación quede registrada y ambos veáis el historial completo.')}
       </Small>
     </EmailLayout>
   )
