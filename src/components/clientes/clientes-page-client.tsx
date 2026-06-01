@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Plus, Search, Mail, Phone, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useT } from '@/components/i18n/locale-provider'
 import OwnerFormPanel from './owner-form-panel'
 
 interface Owner {
@@ -26,6 +27,7 @@ interface Props {
 export default function ClientesPageClient({
   kennelId, kennelName, initialOwners, reservationsByOwner,
 }: Props) {
+  const t = useT()
   const [owners, setOwners] = useState<Owner[]>(initialOwners)
   const [query, setQuery] = useState('')
   const [panelOpen, setPanelOpen] = useState(false)
@@ -74,12 +76,12 @@ export default function ClientesPageClient({
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-ink tracking-tight">Clientes</h1>
-          <p className="text-sm text-muted mt-0.5">{kennelName} · {owners.length} cliente{owners.length === 1 ? '' : 's'}</p>
+          <h1 className="text-2xl font-bold text-ink tracking-tight">{t('Clientes')}</h1>
+          <p className="text-sm text-muted mt-0.5">{kennelName} · {owners.length} {owners.length === 1 ? t('cliente') : t('clientes')}</p>
         </div>
         <Button onClick={handleNew} size="md" variant="primary">
           <Plus className="w-4 h-4" />
-          Nuevo cliente
+          {t('Nuevo cliente')}
         </Button>
       </div>
 
@@ -90,7 +92,7 @@ export default function ClientesPageClient({
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Buscar por nombre, email, teléfono…"
+          placeholder={t('Buscar por nombre, email, teléfono…')}
           className="w-full pl-9 pr-3 py-2 text-sm border border-hairline rounded-lg bg-canvas text-ink placeholder:text-muted focus:outline-none focus:border-ink transition"
         />
       </div>
@@ -100,8 +102,8 @@ export default function ClientesPageClient({
         <div className="text-center py-16 border border-dashed border-hairline rounded-xl bg-canvas">
           <p className="text-sm text-muted">
             {owners.length === 0
-              ? 'Aún no tienes clientes. Crea el primero para empezar a gestionar reservas.'
-              : 'Ningún cliente coincide con la búsqueda.'}
+              ? t('Aún no tienes clientes. Crea el primero para empezar a gestionar reservas.')
+              : t('Ningún cliente coincide con la búsqueda.')}
           </p>
         </div>
       ) : (
@@ -109,10 +111,10 @@ export default function ClientesPageClient({
           <table className="w-full text-sm">
             <thead className="border-b border-hairline">
               <tr className="text-left">
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">Cliente</th>
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted hidden md:table-cell">Contacto</th>
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted hidden lg:table-cell">Ubicación</th>
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted text-right">Reservas</th>
+                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">{t('Cliente')}</th>
+                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted hidden md:table-cell">{t('Contacto')}</th>
+                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted hidden lg:table-cell">{t('Ubicación')}</th>
+                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted text-right">{t('Reservas')}</th>
               </tr>
             </thead>
             <tbody>
@@ -156,10 +158,10 @@ export default function ClientesPageClient({
                       <div className="inline-flex items-center gap-2">
                         {r.active > 0 && (
                           <span className="text-[11px] font-semibold bg-ink text-on-primary rounded-full px-2 py-0.5">
-                            {r.active} activa{r.active === 1 ? '' : 's'}
+                            {r.active} {r.active === 1 ? t('activa') : t('activas')}
                           </span>
                         )}
-                        <span className="text-[11px] text-muted">{r.total} total</span>
+                        <span className="text-[11px] text-muted">{r.total} {t('total')}</span>
                       </div>
                     </td>
                   </tr>

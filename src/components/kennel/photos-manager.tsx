@@ -10,6 +10,7 @@ import {
   deleteKennelPhotoAction,
   updatePhotoCaptionAction,
 } from '@/lib/kennel/content-actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 type Photo = {
   id: string
@@ -27,6 +28,7 @@ interface Props {
 }
 
 export default function PhotosManager({ kennelId, kind, photos, minToPublish = 3 }: Props) {
+  const t = useT()
   const router = useRouter()
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
@@ -53,9 +55,9 @@ export default function PhotosManager({ kennelId, kind, photos, minToPublish = 3
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'error'
         const human =
-          msg === 'invalid_mime' ? `${file.name}: formato no soportado (JPG/PNG/WebP/HEIC)` :
-          msg === 'file_too_large' ? `${file.name}: pesa más de 10 MB` :
-          msg === 'requires_kennel_pro' ? 'Esta función requiere Kennel Pro' :
+          msg === 'invalid_mime' ? `${file.name}: ${t('formato no soportado (JPG/PNG/WebP/HEIC)')}` :
+          msg === 'file_too_large' ? `${file.name}: ${t('pesa más de 10 MB')}` :
+          msg === 'requires_kennel_pro' ? t('Esta función requiere Kennel Pro') :
           `${file.name}: ${msg}`
         setError(human)
         // Continuamos con las siguientes
@@ -75,10 +77,10 @@ export default function PhotosManager({ kennelId, kind, photos, minToPublish = 3
       <div className="rounded-2xl border-2 border-dashed border-hairline bg-surface-soft p-6 sm:p-8 text-center hover:border-ink/30 transition-colors">
         <Upload className="mx-auto h-7 w-7 text-muted" />
         <p className="mt-3 text-[14px] font-semibold text-ink">
-          {kind === 'gallery' ? 'Sube fotos a tu galería' : 'Sube fotos de tus instalaciones'}
+          {kind === 'gallery' ? t('Sube fotos a tu galería') : t('Sube fotos de tus instalaciones')}
         </p>
         <p className="mt-1 text-[12px] text-muted max-w-md mx-auto leading-snug">
-          JPG, PNG, WebP o HEIC, hasta 10 MB por imagen. Puedes seleccionar varias a la vez.
+          {t('JPG, PNG, WebP o HEIC, hasta 10 MB por imagen. Puedes seleccionar varias a la vez.')}
         </p>
         <input
           ref={fileRef}
@@ -98,20 +100,20 @@ export default function PhotosManager({ kennelId, kind, photos, minToPublish = 3
           {uploading ? (
             <>
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              {progress ? `Subiendo ${progress.done}/${progress.total}...` : 'Subiendo...'}
+              {progress ? `${t('Subiendo')} ${progress.done}/${progress.total}...` : t('Subiendo...')}
             </>
           ) : (
             <>
-              <Upload className="h-3.5 w-3.5" /> Seleccionar fotos
+              <Upload className="h-3.5 w-3.5" /> {t('Seleccionar fotos')}
             </>
           )}
         </button>
         <p className="mt-3 text-[11px] text-muted">
-          {count} {count === 1 ? 'foto' : 'fotos'} ·{' '}
+          {count} {count === 1 ? t('foto') : t('fotos')} ·{' '}
           {remaining > 0 ? (
-            <span className="text-amber-700">faltan {remaining} para publicar esta página</span>
+            <span className="text-amber-700">{t('faltan')} {remaining} {t('para publicar esta página')}</span>
           ) : (
-            <span className="text-emerald-700">✓ Lista para publicar</span>
+            <span className="text-emerald-700">✓ {t('Lista para publicar')}</span>
           )}
         </p>
       </div>
@@ -130,7 +132,7 @@ export default function PhotosManager({ kennelId, kind, photos, minToPublish = 3
       {photos.length === 0 ? (
         <div className="rounded-xl border border-dashed border-hairline bg-canvas p-8 text-center">
           <ImageIcon className="mx-auto h-7 w-7 text-muted" />
-          <p className="mt-3 text-[13.5px] text-body">Aún no has subido ninguna foto.</p>
+          <p className="mt-3 text-[13.5px] text-body">{t('Aún no has subido ninguna foto.')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -144,13 +146,14 @@ export default function PhotosManager({ kennelId, kind, photos, minToPublish = 3
 }
 
 function PhotoCard({ photo, kennelId }: { photo: Photo; kennelId: string }) {
+  const t = useT()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [editing, setEditing] = useState(false)
   const [caption, setCaption] = useState(photo.caption || '')
 
   function remove() {
-    if (!confirm('¿Borrar esta foto? No se puede deshacer.')) return
+    if (!confirm(t('¿Borrar esta foto? No se puede deshacer.'))) return
     startTransition(async () => {
       try {
         await deleteKennelPhotoAction({ photoId: photo.id, kennelId })
@@ -191,7 +194,7 @@ function PhotoCard({ photo, kennelId }: { photo: Photo; kennelId: string }) {
               value={caption}
               onChange={e => setCaption(e.target.value)}
               autoFocus
-              placeholder="Pie de foto (opcional)"
+              placeholder={t('Pie de foto (opcional)')}
               className="flex-1 min-w-0 rounded border border-hairline bg-canvas px-2 py-1 text-[11.5px] text-ink focus:border-ink focus:outline-none"
             />
             <button
@@ -205,12 +208,12 @@ function PhotoCard({ photo, kennelId }: { photo: Photo; kennelId: string }) {
         ) : (
           <div className="flex items-center gap-1.5">
             <p className={`flex-1 min-w-0 truncate text-[11.5px] ${photo.caption ? 'text-body' : 'text-muted italic'}`}>
-              {photo.caption || 'Sin pie de foto'}
+              {photo.caption || t('Sin pie de foto')}
             </p>
             <button
               onClick={() => setEditing(true)}
               className="text-muted hover:text-ink p-0.5 flex-shrink-0"
-              title="Editar pie de foto"
+              title={t('Editar pie de foto')}
             >
               <Pencil className="h-3 w-3" />
             </button>
@@ -218,7 +221,7 @@ function PhotoCard({ photo, kennelId }: { photo: Photo; kennelId: string }) {
               onClick={remove}
               disabled={pending}
               className="text-muted hover:text-red-600 p-0.5 flex-shrink-0 disabled:opacity-50"
-              title="Borrar foto"
+              title={t('Borrar foto')}
             >
               {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
             </button>

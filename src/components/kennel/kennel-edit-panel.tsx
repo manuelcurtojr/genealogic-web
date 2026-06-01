@@ -9,6 +9,7 @@ import { Portal } from '@/components/ui/portal'
 import { AFFIX_FORMATS, getAffixPreview, type AffixFormat } from '@/lib/affix'
 import { getLocalizedCountries, searchCities } from '@/lib/countries'
 import { revalidateKennelHomeAction } from '@/lib/kennel/content-actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   open: boolean
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export default function KennelEditPanel({ open, onClose, kennel }: Props) {
+  const t = useT()
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -46,11 +48,11 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
   // City search with Nominatim
   useEffect(() => {
     if (!cityQ || cityQ.length < 2 || !selectedCountry) { setCitySuggestions([]); return }
-    const t = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       const results = await searchCities(selectedCountry.code, cityQ)
       setCitySuggestions(results)
     }, 300)
-    return () => clearTimeout(t)
+    return () => clearTimeout(timer)
   }, [cityQ, selectedCountry])
 
   useEffect(() => {
@@ -131,7 +133,7 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
-          <h2 className="text-base sm:text-lg font-semibold">Editar criadero</h2>
+          <h2 className="text-base sm:text-lg font-semibold">{t('Editar criadero')}</h2>
           <button onClick={onClose} className="text-muted hover:text-ink transition"><X className="w-5 h-5" /></button>
         </div>
 
@@ -140,36 +142,36 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
           {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
           {/* Basic info */}
-          <Sec title="Información basica">
-            <Field label="Nombre del criadero *" value={form.name} onChange={v => set('name', v)} />
+          <Sec title={t('Información basica')}>
+            <Field label={t('Nombre del criadero *')} value={form.name} onChange={v => set('name', v)} />
             <div>
-              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Descripcion</label>
+              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Descripcion')}</label>
               <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3}
                 className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition resize-none"
-                placeholder="Describe tu criadero, tu filosofia de cria..." />
+                placeholder={t('Describe tu criadero, tu filosofia de cria...')} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Fecha de fundacion" value={form.foundation_date} onChange={v => set('foundation_date', v)} type="date" />
-              <Field label="Sitio web" value={form.website} onChange={v => set('website', v)} placeholder="https://..." />
+              <Field label={t('Fecha de fundacion')} value={form.foundation_date} onChange={v => set('foundation_date', v)} type="date" />
+              <Field label={t('Sitio web')} value={form.website} onChange={v => set('website', v)} placeholder="https://..." />
             </div>
 
             {/* Country & City */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="relative">
-                <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">País</label>
+                <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('País')}</label>
                 <button type="button" onClick={() => { setCountryOpen(!countryOpen); setCityOpen(false) }}
                   className={`w-full bg-surface-card border rounded-lg px-3 py-2 text-sm flex items-center gap-2 transition text-left ${countryOpen ? 'border-ink' : 'border-hairline'}`}>
                   {selectedCountry ? (
                     <><span className="text-base">{selectedCountry.flag}</span><span className="truncate flex-1">{selectedCountry.name}</span></>
                   ) : (
-                    <span className="text-muted flex-1">Seleccionar país</span>
+                    <span className="text-muted flex-1">{t('Seleccionar país')}</span>
                   )}
                   <ChevronDown className="w-3.5 h-3.5 text-muted" />
                 </button>
                 {countryOpen && (
                   <div className="absolute z-30 mt-1 w-full bg-white border border-hairline rounded-lg shadow-xl max-h-48 flex flex-col">
                     <div className="p-2 border-b border-hairline">
-                      <input autoFocus value={countryQ} onChange={e => setCountryQ(e.target.value)} placeholder="Buscar país..."
+                      <input autoFocus value={countryQ} onChange={e => setCountryQ(e.target.value)} placeholder={t('Buscar país...')}
                         className="w-full bg-surface-card border border-hairline rounded pl-3 pr-3 py-1.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
                     </div>
                     <div className="overflow-y-auto flex-1">
@@ -184,8 +186,8 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
                 )}
               </div>
               <div className="relative">
-                <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Ciudad</label>
-                <input type="text" value={cityOpen ? cityQ : form.city} placeholder={selectedCountry ? 'Buscar ciudad...' : 'Selecciona un país primero'}
+                <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Ciudad')}</label>
+                <input type="text" value={cityOpen ? cityQ : form.city} placeholder={selectedCountry ? t('Buscar ciudad...') : t('Selecciona un país primero')}
                   disabled={!selectedCountry}
                   onFocus={() => { setCityOpen(true); setCityQ(form.city) }}
                   onChange={e => { setCityQ(e.target.value); setCityOpen(true) }}
@@ -205,8 +207,8 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
           </Sec>
 
           {/* Affix format */}
-          <Sec title="Formato del nombre (afijo)">
-            <p className="text-[11px] text-muted -mt-1 mb-2">Define como se formara el nombre de los cachorros de tu criadero</p>
+          <Sec title={t('Formato del nombre (afijo)')}>
+            <p className="text-[11px] text-muted -mt-1 mb-2">{t('Define como se formara el nombre de los cachorros de tu criadero')}</p>
             <div className="space-y-1.5">
               {AFFIX_FORMATS.map(f => (
                 <button
@@ -229,8 +231,8 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
           </Sec>
 
           {/* Breeds */}
-          <Sec title="Razas que crias">
-            <p className="text-[11px] text-muted -mt-1 mb-2">Selecciona las razas que apareceran en tu formulario de contacto</p>
+          <Sec title={t('Razas que crias')}>
+            <p className="text-[11px] text-muted -mt-1 mb-2">{t('Selecciona las razas que apareceran en tu formulario de contacto')}</p>
             <div className="flex flex-wrap gap-1.5">
               {allBreeds.map(b => {
                 const selected = form.breed_ids.includes(b.id)
@@ -246,7 +248,7 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
           </Sec>
 
           {/* Social */}
-          <Sec title="Redes sociales">
+          <Sec title={t('Redes sociales')}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Instagram" value={form.social_instagram} onChange={v => set('social_instagram', v)} placeholder="https://instagram.com/..." />
               <Field label="Facebook" value={form.social_facebook} onChange={v => set('social_facebook', v)} placeholder="https://facebook.com/..." />
@@ -261,16 +263,16 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-green-400" />
                 <div>
-                  <p className="text-sm font-medium">Activar WhatsApp</p>
-                  <p className="text-[11px] text-muted">Boton de WhatsApp en tu perfil publico</p>
+                  <p className="text-sm font-medium">{t('Activar WhatsApp')}</p>
+                  <p className="text-[11px] text-muted">{t('Boton de WhatsApp en tu perfil publico')}</p>
                 </div>
               </div>
               <ToggleSwitch value={form.whatsapp_enabled} onChange={(v) => set('whatsapp_enabled', v)} color="bg-green-500" />
             </div>
             {form.whatsapp_enabled && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Número" value={form.whatsapp_phone} onChange={v => set('whatsapp_phone', v)} placeholder="+34 600 000 000" />
-                <Field label="Mensaje predeterminado" value={form.whatsapp_text} onChange={v => set('whatsapp_text', v)} placeholder="Hola, me interesa..." />
+                <Field label={t('Número')} value={form.whatsapp_phone} onChange={v => set('whatsapp_phone', v)} placeholder="+34 600 000 000" />
+                <Field label={t('Mensaje predeterminado')} value={form.whatsapp_text} onChange={v => set('whatsapp_text', v)} placeholder={t('Hola, me interesa...')} />
               </div>
             )}
           </Sec>
@@ -278,11 +280,11 @@ export default function KennelEditPanel({ open, onClose, kennel }: Props) {
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hairline flex-shrink-0">
-          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">{t('Cancelar')}</button>
           <button onClick={handleSave} disabled={saving || !form.name.trim()}
             className="bg-ink text-on-primary hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            {saving ? 'Guardando...' : 'Guardar cambios'}
+            {saving ? t('Guardando...') : t('Guardar cambios')}
           </button>
         </div>
       </div>

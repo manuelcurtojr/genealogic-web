@@ -14,6 +14,7 @@ import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, BookOpen } from 'lucide-react'
 import { transformImageUrl, ImagePresets } from '@/lib/storage/image-url'
+import { useT } from '@/components/i18n/locale-provider'
 
 type Post = {
   id: string
@@ -31,6 +32,7 @@ interface Props {
 }
 
 export default function BlogSlider({ posts, kennelSlug }: Props) {
+  const t = useT()
   const scrollerRef = useRef<HTMLDivElement>(null)
   const [canPrev, setCanPrev] = useState(false)
   const [canNext, setCanNext] = useState(true)
@@ -69,7 +71,7 @@ export default function BlogSlider({ posts, kennelSlug }: Props) {
         type="button"
         onClick={() => scrollBy(-1)}
         disabled={!canPrev}
-        aria-label="Anterior"
+        aria-label={t('Anterior')}
         className={`hidden md:inline-flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 items-center justify-center rounded-full bg-canvas border border-hairline shadow-[0_4px_16px_rgba(0,0,0,0.08)] text-ink transition-all ${
           canPrev ? 'opacity-0 group-hover:opacity-100 hover:bg-ink hover:text-on-primary' : 'opacity-0 cursor-not-allowed'
         }`}
@@ -80,7 +82,7 @@ export default function BlogSlider({ posts, kennelSlug }: Props) {
         type="button"
         onClick={() => scrollBy(1)}
         disabled={!canNext}
-        aria-label="Siguiente"
+        aria-label={t('Siguiente')}
         className={`hidden md:inline-flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 items-center justify-center rounded-full bg-canvas border border-hairline shadow-[0_4px_16px_rgba(0,0,0,0.08)] text-ink transition-all ${
           canNext ? 'opacity-0 group-hover:opacity-100 hover:bg-ink hover:text-on-primary' : 'opacity-0 cursor-not-allowed'
         }`}

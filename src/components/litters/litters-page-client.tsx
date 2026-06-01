@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Search, Plus, Grid3X3, List, Trash2, Edit, Eye, Lock, Globe } from 'lucide-react'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
+import { useT } from '@/components/i18n/locale-provider'
 import SortSelect, { useSortPreference, sortItems } from '@/components/ui/sort-select'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -35,6 +36,7 @@ const statusConfig: Record<string, { label: string; color: string }> = {
 export default function LittersPageClient({
   litters, userId, userKennelId, userKennelName, userAffixFormat,
 }: { litters: Litter[]; userId: string; userKennelId?: string | null; userKennelName?: string | null; userAffixFormat?: string | null }) {
+  const t = useT()
   const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     if (typeof window !== 'undefined') return (localStorage.getItem('litters-view') as 'grid' | 'list') || 'grid'
@@ -90,7 +92,7 @@ export default function LittersPageClient({
     setDeleteError('')
     const litter = litters.find(l => l.id === deleteId)
     if (litter && litter.puppy_count && litter.puppy_count > 0) {
-      setDeleteError('No se puede eliminar una camada con cachorros asignados.')
+      setDeleteError(t('No se puede eliminar una camada con cachorros asignados.'))
       return
     }
     const supabase = createClient()
@@ -111,17 +113,17 @@ export default function LittersPageClient({
       {/* PageHeader Cal */}
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Crianza</p>
+          <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Crianza')}</p>
           <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-            Camadas
+            {t('Camadas')}
           </h1>
-          <p className="mt-2 text-[14px] text-body">{litters.length} {litters.length === 1 ? 'camada' : 'camadas'}</p>
+          <p className="mt-2 text-[14px] text-body">{litters.length} {litters.length === 1 ? t('camada') : t('camadas')}</p>
         </div>
         <button
           onClick={openAdd}
           className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90"
         >
-          <Plus className="h-4 w-4" /> Camada
+          <Plus className="h-4 w-4" /> {t('Camada')}
         </button>
       </div>
 
@@ -132,7 +134,7 @@ export default function LittersPageClient({
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar por padre, madre o raza..."
+            placeholder={t('Buscar por padre, madre o raza...')}
             className="w-full rounded-lg border border-hairline bg-canvas py-2.5 pl-10 pr-4 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
           />
         </div>
@@ -141,14 +143,14 @@ export default function LittersPageClient({
           <button
             onClick={() => changeView('grid')}
             className={`p-2.5 transition-colors ${viewMode === 'grid' ? 'bg-ink text-on-primary' : 'bg-canvas text-muted hover:bg-surface-soft hover:text-ink'}`}
-            title="Vista grid"
+            title={t('Vista grid')}
           >
             <Grid3X3 className="h-4 w-4" />
           </button>
           <button
             onClick={() => changeView('list')}
             className={`p-2.5 transition-colors ${viewMode === 'list' ? 'bg-ink text-on-primary' : 'bg-canvas text-muted hover:bg-surface-soft hover:text-ink'}`}
-            title="Vista lista"
+            title={t('Vista lista')}
           >
             <List className="h-4 w-4" />
           </button>
@@ -156,7 +158,7 @@ export default function LittersPageClient({
       </div>
 
       <p className="-mt-3 text-[12.5px] text-muted">
-        Mostrando {sorted.length} de {filtered.length} {filtered.length === 1 ? 'camada' : 'camadas'}
+        {t('Mostrando')} {sorted.length} {t('de')} {filtered.length} {filtered.length === 1 ? t('camada') : t('camadas')}
       </p>
 
       {/* Grid view */}
@@ -169,7 +171,7 @@ export default function LittersPageClient({
             <div className="flex h-12 w-12 items-center justify-center rounded-full border border-hairline bg-canvas transition-colors group-hover:border-ink group-hover:bg-ink sm:h-14 sm:w-14">
               <Plus className="h-5 w-5 text-muted transition-colors group-hover:text-on-primary sm:h-6 sm:w-6" />
             </div>
-            <p className="mt-3 text-[13px] font-medium text-body">Añadir camada</p>
+            <p className="mt-3 text-[13px] font-medium text-body">{t('Añadir camada')}</p>
           </button>
 
           {sorted.map(litter => {
@@ -207,7 +209,7 @@ export default function LittersPageClient({
                       className="inline-block rounded-full px-2 py-0.5 text-[10.5px] font-medium text-white shadow-[0_1px_3px_rgba(0,0,0,0.12)]"
                       style={{ backgroundColor: status.color }}
                     >
-                      {status.label}
+                      {t(status.label)}
                     </span>
                   </div>
                 </div>
@@ -229,7 +231,7 @@ export default function LittersPageClient({
                       }`}
                     >
                       {litter.is_public ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-                      {litter.is_public ? 'Pública' : 'Privada'}
+                      {litter.is_public ? t('Pública') : t('Privada')}
                     </button>
                   </div>
 
@@ -238,9 +240,9 @@ export default function LittersPageClient({
                       <span>{new Date(litter.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                     )}
                     {litter.mating_date && !litter.birth_date && (
-                      <span>Cruce: {new Date(litter.mating_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</span>
+                      <span>{t('Cruce:')} {new Date(litter.mating_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</span>
                     )}
-                    {hasPuppies && <span>{litter.puppy_count} cachorros</span>}
+                    {hasPuppies && <span>{litter.puppy_count} {t('cachorros')}</span>}
                   </div>
 
                   {/* Actions */}
@@ -249,19 +251,19 @@ export default function LittersPageClient({
                       href={`/litters/${litter.id}`}
                       className="inline-flex items-center gap-1 rounded-md bg-ink px-2.5 py-1.5 text-[11px] font-medium text-on-primary transition-colors hover:opacity-90"
                     >
-                      <Eye className="h-3.5 w-3.5" /> Ver
+                      <Eye className="h-3.5 w-3.5" /> {t('Ver')}
                     </Link>
                     <button
                       onClick={() => openEdit(litter.id)}
                       className="inline-flex items-center gap-1 rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-[11px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
                     >
-                      <Edit className="h-3.5 w-3.5" /> Editar
+                      <Edit className="h-3.5 w-3.5" /> {t('Editar')}
                     </button>
                     {!hasPuppies && (
                       <button
                         onClick={() => { setDeleteError(''); setDeleteId(litter.id) }}
                         className="ml-auto inline-flex h-7 w-7 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-soft hover:text-[color:var(--error)]"
-                        title="Eliminar"
+                        title={t('Eliminar')}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -282,7 +284,7 @@ export default function LittersPageClient({
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-hairline bg-canvas transition-colors group-hover:border-ink group-hover:bg-ink">
               <Plus className="h-5 w-5 text-muted transition-colors group-hover:text-on-primary" />
             </div>
-            <p className="text-[14px] font-medium text-body">Añadir camada</p>
+            <p className="text-[14px] font-medium text-body">{t('Añadir camada')}</p>
           </button>
           {sorted.map(litter => {
             const father = litter.father as any
@@ -310,7 +312,7 @@ export default function LittersPageClient({
                   </p>
                   <div className="mt-0.5 flex items-center gap-3 text-[12px] text-muted">
                     {litter.birth_date && <span>{new Date(litter.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
-                    {hasPuppies && <span>{litter.puppy_count} cachorros</span>}
+                    {hasPuppies && <span>{litter.puppy_count} {t('cachorros')}</span>}
                   </div>
                 </div>
                 <div className="flex flex-shrink-0 items-center gap-1.5">
@@ -318,20 +320,20 @@ export default function LittersPageClient({
                     className="inline-block rounded-full px-2 py-0.5 text-[10.5px] font-medium text-white"
                     style={{ backgroundColor: status.color }}
                   >
-                    {status.label}
+                    {t(status.label)}
                   </span>
                   <Link
                     href={`/litters/${litter.id}`}
                     onClick={e => e.stopPropagation()}
                     className="inline-flex items-center gap-1 rounded-md bg-ink px-2.5 py-1.5 text-[11px] font-medium text-on-primary transition-colors hover:opacity-90"
                   >
-                    <Eye className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Ver</span>
+                    <Eye className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t('Ver')}</span>
                   </Link>
                   <button
                     onClick={e => { e.stopPropagation(); openEdit(litter.id) }}
                     className="inline-flex items-center gap-1 rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-[11px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
                   >
-                    <Edit className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Editar</span>
+                    <Edit className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t('Editar')}</span>
                   </button>
                 </div>
               </div>
@@ -343,9 +345,9 @@ export default function LittersPageClient({
       {/* Empty state */}
       {sorted.length === 0 && search && (
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
-          <p className="text-[14px] text-body">No se encontraron camadas con esa búsqueda.</p>
+          <p className="text-[14px] text-body">{t('No se encontraron camadas con esa búsqueda.')}</p>
           <button onClick={() => setSearch('')} className="mt-3 text-[13px] font-medium text-ink hover:opacity-80">
-            Limpiar búsqueda →
+            {t('Limpiar búsqueda →')}
           </button>
         </div>
       )}
@@ -385,9 +387,9 @@ export default function LittersPageClient({
         open={!!deleteId}
         onCancel={() => { setDeleteId(null); setDeleteError('') }}
         onConfirm={handleDelete}
-        title="Eliminar camada"
-        message={deleteError || 'Esta camada se eliminará permanentemente.'}
-        confirmLabel="Eliminar"
+        title={t('Eliminar camada')}
+        message={deleteError || t('Esta camada se eliminará permanentemente.')}
+        confirmLabel={t('Eliminar')}
         destructive
       />
     </div>

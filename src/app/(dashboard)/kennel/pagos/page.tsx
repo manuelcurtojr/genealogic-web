@@ -22,6 +22,8 @@ import { startStripeOnboardingAction, syncStripeStatusAction } from './actions'
 import { CheckCircle2, AlertTriangle, ExternalLink } from 'lucide-react'
 import { hasEnterpriseFeatures } from '@/lib/permissions'
 import ComingSoon from '@/components/early-access/coming-soon'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Pagos · Mi criadero · Genealogic' }
@@ -35,6 +37,7 @@ export default async function KennelPagosPage({
   const h = await headers()
   if (isIosUserAgent(h.get('user-agent'))) redirect('/dashboard')
   const sp = await searchParams
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -52,7 +55,7 @@ export default async function KennelPagosPage({
   // hasta terminar la configuración. De momento solo accesible a Enterprise
   // (alta manual) para pruebas internas.
   if (!hasEnterpriseFeatures(profile?.plan, user.id)) {
-    return <ComingSoon featureId="stripe_payments" backHref="/kennel" backLabel="← Volver a Mi criadero" />
+    return <ComingSoon featureId="stripe_payments" backHref="/kennel" backLabel={`← ${t('Volver a Mi criadero')}`} />
   }
 
   // Si vuelven del onboarding (?refresh=1), sincronizamos status
@@ -70,25 +73,21 @@ export default async function KennelPagosPage({
         href="/kennel"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted hover:text-ink mb-5"
       >
-        ← Mi criadero
+        ← {t('Mi criadero')}
       </Link>
 
-      <h1 className="text-3xl font-bold tracking-tight text-ink">Pagos online</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-ink">{t('Pagos online')}</h1>
       <p className="mt-2 text-body max-w-2xl">
-        Conecta Stripe para cobrar online a tus clientes con tarjeta. El dinero llega
-        directamente a tu cuenta bancaria (no pasa por Genealogic). Cumple PSD2, SEPA y
-        normativa europea.
+        {t('Conecta Stripe para cobrar online a tus clientes con tarjeta. El dinero llega directamente a tu cuenta bancaria (no pasa por Genealogic). Cumple PSD2, SEPA y normativa europea.')}
       </p>
 
       {!stripeReady && (
         <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="font-semibold text-amber-900">Stripe no disponible</p>
+            <p className="font-semibold text-amber-900">{t('Stripe no disponible')}</p>
             <p className="text-amber-800 mt-0.5">
-              El equipo de Genealogic aún no ha configurado Stripe Connect en producción.
-              Mientras tanto, puedes crear pagos y marcarlos como pagados manualmente
-              (transferencia bancaria, efectivo) desde el panel de cada reserva.
+              {t('El equipo de Genealogic aún no ha configurado Stripe Connect en producción. Mientras tanto, puedes crear pagos y marcarlos como pagados manualmente (transferencia bancaria, efectivo) desde el panel de cada reserva.')}
             </p>
           </div>
         </div>
@@ -96,19 +95,19 @@ export default async function KennelPagosPage({
 
       {stripeReady && (
         <section className="mt-8 rounded-2xl border border-hairline bg-canvas p-6">
-          <h2 className="text-lg font-bold text-ink mb-1">Estado de tu cuenta Stripe</h2>
-          <StatusDisplay status={status} accountId={kennel?.stripe_account_id} />
+          <h2 className="text-lg font-bold text-ink mb-1">{t('Estado de tu cuenta Stripe')}</h2>
+          <StatusDisplay status={status} accountId={kennel?.stripe_account_id} t={t} />
         </section>
       )}
 
       <section className="mt-6 rounded-2xl border border-hairline bg-canvas p-6">
-        <h2 className="text-base font-bold text-ink mb-3">Cómo funciona</h2>
+        <h2 className="text-base font-bold text-ink mb-3">{t('Cómo funciona')}</h2>
         <ol className="space-y-2 text-sm text-body list-decimal list-inside">
-          <li>Conectas Stripe (5-10 min de onboarding, una vez)</li>
-          <li>Creas pagos en cada reserva del cliente (señal, pago intermedio, final)</li>
-          <li>El cliente paga online desde su panel <code>/mis-reservas</code></li>
-          <li>El dinero llega a tu cuenta bancaria en 1-7 días (depende del banco)</li>
-          <li>Sin Stripe puedes seguir creando pagos y marcándolos como pagados manualmente</li>
+          <li>{t('Conectas Stripe (5-10 min de onboarding, una vez)')}</li>
+          <li>{t('Creas pagos en cada reserva del cliente (señal, pago intermedio, final)')}</li>
+          <li>{t('El cliente paga online desde su panel')} <code>/mis-reservas</code></li>
+          <li>{t('El dinero llega a tu cuenta bancaria en 1-7 días (depende del banco)')}</li>
+          <li>{t('Sin Stripe puedes seguir creando pagos y marcándolos como pagados manualmente')}</li>
         </ol>
       </section>
     </div>
@@ -118,16 +117,18 @@ export default async function KennelPagosPage({
 function StatusDisplay({
   status,
   accountId,
+  t,
 }: {
   status: string
   accountId: string | null | undefined
+  t: (key: string) => string
 }) {
   if (status === 'active') {
     return (
       <div>
         <p className="inline-flex items-center gap-2 text-emerald-700 font-semibold">
           <CheckCircle2 className="h-5 w-5" />
-          Cuenta activa — listo para cobrar
+          {t('Cuenta activa — listo para cobrar')}
         </p>
         <p className="mt-1 text-[11px] text-muted font-mono">acct: {accountId}</p>
         <div className="mt-4 flex gap-2">
@@ -138,7 +139,7 @@ function StatusDisplay({
             className="inline-flex items-center gap-1.5 rounded-lg border border-hairline px-4 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            Abrir dashboard Stripe
+            {t('Abrir dashboard Stripe')}
           </a>
           <form
             action={async () => {
@@ -151,7 +152,7 @@ function StatusDisplay({
               type="submit"
               className="rounded-lg border border-hairline px-4 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
             >
-              Sincronizar estado
+              {t('Sincronizar estado')}
             </button>
           </form>
         </div>
@@ -162,17 +163,16 @@ function StatusDisplay({
   if (status === 'restricted') {
     return (
       <div>
-        <p className="text-amber-800 font-semibold mb-2">⚠️ Stripe ha restringido tu cuenta</p>
+        <p className="text-amber-800 font-semibold mb-2">⚠️ {t('Stripe ha restringido tu cuenta')}</p>
         <p className="text-sm text-body mb-3">
-          Stripe necesita información adicional para mantener tu cuenta activa.
-          Revisa el dashboard de Stripe para ver qué falta.
+          {t('Stripe necesita información adicional para mantener tu cuenta activa. Revisa el dashboard de Stripe para ver qué falta.')}
         </p>
         <form action={startStripeOnboardingAction}>
           <button
             type="submit"
             className="rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90"
           >
-            Continuar onboarding
+            {t('Continuar onboarding')}
           </button>
         </form>
       </div>
@@ -182,10 +182,9 @@ function StatusDisplay({
   if (status === 'onboarding') {
     return (
       <div>
-        <p className="text-amber-800 font-semibold mb-2">Onboarding sin completar</p>
+        <p className="text-amber-800 font-semibold mb-2">{t('Onboarding sin completar')}</p>
         <p className="text-sm text-body mb-3">
-          Empezaste a conectar Stripe pero falta completar el formulario. Termina el
-          proceso para poder cobrar online.
+          {t('Empezaste a conectar Stripe pero falta completar el formulario. Termina el proceso para poder cobrar online.')}
         </p>
         <div className="flex gap-2">
           <form action={startStripeOnboardingAction}>
@@ -193,7 +192,7 @@ function StatusDisplay({
               type="submit"
               className="rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90"
             >
-              Continuar onboarding →
+              {t('Continuar onboarding')} →
             </button>
           </form>
           <form
@@ -207,7 +206,7 @@ function StatusDisplay({
               type="submit"
               className="rounded-lg border border-hairline px-5 py-2.5 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink"
             >
-              Sincronizar estado
+              {t('Sincronizar estado')}
             </button>
           </form>
         </div>
@@ -219,14 +218,14 @@ function StatusDisplay({
   return (
     <div>
       <p className="text-body mb-4">
-        Conecta una cuenta Stripe Express (5-10 min) para empezar a cobrar online.
+        {t('Conecta una cuenta Stripe Express (5-10 min) para empezar a cobrar online.')}
       </p>
       <form action={startStripeOnboardingAction}>
         <button
           type="submit"
           className="rounded-lg bg-[#635bff] text-white px-6 py-3 text-sm font-bold hover:opacity-90"
         >
-          Conectar con Stripe →
+          {t('Conectar con Stripe')} →
         </button>
       </form>
     </div>

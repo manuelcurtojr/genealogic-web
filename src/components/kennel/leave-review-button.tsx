@@ -18,6 +18,7 @@ import {
   Star, X, Loader2, Check, AlertCircle, MessageSquare,
 } from 'lucide-react'
 import { submitPublicReviewAction } from '@/lib/kennel/public-review-actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   kennelId: string
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export default function LeaveReviewButton({ kennelId, kennelSlug }: Props) {
+  const t = useT()
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isOwnerOrAnon, setIsOwnerOrAnon] = useState<'loading' | 'anon' | 'owner' | 'other'>('loading')
@@ -75,7 +77,7 @@ export default function LeaveReviewButton({ kennelId, kennelSlug }: Props) {
         className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas text-ink px-3.5 py-2 text-[12.5px] font-semibold hover:border-ink/30 transition"
       >
         <MessageSquare className="h-3.5 w-3.5" />
-        Dejar reseña
+        {t('Dejar reseña')}
       </button>
       {open && (
         <ReviewModal
@@ -88,6 +90,7 @@ export default function LeaveReviewButton({ kennelId, kennelSlug }: Props) {
 }
 
 function ReviewModal({ kennelId, onClose }: { kennelId: string; onClose: () => void }) {
+  const t = useT()
   const router = useRouter()
   const [body, setBody] = useState('')
   const [rating, setRating] = useState<number | null>(5)
@@ -117,12 +120,12 @@ function ReviewModal({ kennelId, onClose }: { kennelId: string; onClose: () => v
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'error'
         const human =
-          msg === 'body_too_short' ? 'La reseña es muy corta (mínimo 20 caracteres).' :
-          msg === 'body_too_long' ? 'La reseña es muy larga (máximo 1500 caracteres).' :
-          msg === 'already_reviewed' ? 'Ya has dejado una reseña en este criadero.' :
-          msg === 'cannot_review_own_kennel' ? 'No puedes dejarte reseñas a ti mismo.' :
-          msg === 'unauthorized' ? 'Tienes que iniciar sesión.' :
-          `No se pudo enviar: ${msg}`
+          msg === 'body_too_short' ? t('La reseña es muy corta (mínimo 20 caracteres).') :
+          msg === 'body_too_long' ? t('La reseña es muy larga (máximo 1500 caracteres).') :
+          msg === 'already_reviewed' ? t('Ya has dejado una reseña en este criadero.') :
+          msg === 'cannot_review_own_kennel' ? t('No puedes dejarte reseñas a ti mismo.') :
+          msg === 'unauthorized' ? t('Tienes que iniciar sesión.') :
+          `${t('No se pudo enviar:')} ${msg}`
         setError(human)
       }
     })
@@ -133,7 +136,7 @@ function ReviewModal({ kennelId, onClose }: { kennelId: string; onClose: () => v
       <button
         type="button"
         onClick={onClose}
-        aria-label="Cerrar"
+        aria-label={t('Cerrar')}
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
       />
       <div
@@ -147,25 +150,25 @@ function ReviewModal({ kennelId, onClose }: { kennelId: string; onClose: () => v
             <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50">
               <Check className="h-6 w-6 text-emerald-700" strokeWidth={2.5} />
             </div>
-            <h3 className="text-[17px] font-semibold text-ink">¡Gracias por tu reseña!</h3>
+            <h3 className="text-[17px] font-semibold text-ink">{t('¡Gracias por tu reseña!')}</h3>
             <p className="mt-2 text-[13.5px] text-body max-w-sm mx-auto leading-snug">
-              El criadero la revisará y aparecerá pública en cuanto la apruebe.
+              {t('El criadero la revisará y aparecerá pública en cuanto la apruebe.')}
             </p>
             <button
               type="button"
               onClick={onClose}
               className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-ink px-5 py-2.5 text-[13px] font-bold text-on-primary hover:opacity-90 transition"
             >
-              Cerrar
+              {t('Cerrar')}
             </button>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-hairline">
               <div>
-                <h3 className="text-[15px] font-semibold text-ink">Dejar reseña</h3>
+                <h3 className="text-[15px] font-semibold text-ink">{t('Dejar reseña')}</h3>
                 <p className="text-[12px] text-muted mt-0.5">
-                  Tu opinión ayuda a otras familias.
+                  {t('Tu opinión ayuda a otras familias.')}
                 </p>
               </div>
               <button
@@ -173,7 +176,7 @@ function ReviewModal({ kennelId, onClose }: { kennelId: string; onClose: () => v
                 onClick={onClose}
                 disabled={pending}
                 className="rounded-md p-1 text-muted hover:bg-surface-soft hover:text-ink"
-                aria-label="Cerrar"
+                aria-label={t('Cerrar')}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -181,7 +184,7 @@ function ReviewModal({ kennelId, onClose }: { kennelId: string; onClose: () => v
 
             <div className="p-5 space-y-4">
               <div>
-                <p className="text-[12.5px] font-semibold text-ink mb-1.5">Valoración</p>
+                <p className="text-[12.5px] font-semibold text-ink mb-1.5">{t('Valoración')}</p>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => {
                     const n = i + 1
@@ -191,7 +194,7 @@ function ReviewModal({ kennelId, onClose }: { kennelId: string; onClose: () => v
                         type="button"
                         onClick={() => setRating(rating === n ? null : n)}
                         className="p-1"
-                        aria-label={`${n} estrellas`}
+                        aria-label={`${n} ${t('estrellas')}`}
                       >
                         <Star
                           className={`h-6 w-6 transition ${n <= (rating || 0) ? 'fill-amber-400 text-amber-400' : 'text-hairline hover:text-amber-300'}`}
@@ -203,12 +206,12 @@ function ReviewModal({ kennelId, onClose }: { kennelId: string; onClose: () => v
               </div>
 
               <label className="block">
-                <span className="text-[12.5px] font-semibold text-ink">Tu reseña</span>
+                <span className="text-[12.5px] font-semibold text-ink">{t('Tu reseña')}</span>
                 <textarea
                   value={body}
                   onChange={e => setBody(e.target.value)}
                   rows={6}
-                  placeholder="Cuenta tu experiencia con el criadero, qué te ha gustado, recomendarías..."
+                  placeholder={t('Cuenta tu experiencia con el criadero, qué te ha gustado, recomendarías...')}
                   className="mt-1.5 w-full rounded-xl border border-hairline bg-canvas px-3 py-2.5 text-[14px] text-ink placeholder:text-muted/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition resize-y leading-[1.55]"
                 />
                 <span className="block mt-1 text-[10.5px] text-muted text-right tabular-nums">
@@ -217,9 +220,7 @@ function ReviewModal({ kennelId, onClose }: { kennelId: string; onClose: () => v
               </label>
 
               <p className="text-[11.5px] text-muted leading-snug">
-                Tu reseña no se publica al instante — el criadero la revisa antes
-                de hacerla visible. Aparecerá con un badge automático según seas
-                cliente o usuario registrado.
+                {t('Tu reseña no se publica al instante — el criadero la revisa antes de hacerla visible. Aparecerá con un badge automático según seas cliente o usuario registrado.')}
               </p>
 
               {error && (
@@ -237,7 +238,7 @@ function ReviewModal({ kennelId, onClose }: { kennelId: string; onClose: () => v
                 disabled={pending}
                 className="rounded-lg px-3 py-2 text-[13px] font-semibold text-body hover:text-ink"
               >
-                Cancelar
+                {t('Cancelar')}
               </button>
               <button
                 type="button"
@@ -246,7 +247,7 @@ function ReviewModal({ kennelId, onClose }: { kennelId: string; onClose: () => v
                 className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-[13px] font-bold text-on-primary hover:opacity-90 disabled:opacity-40 transition"
               >
                 {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-                Enviar reseña
+                {t('Enviar reseña')}
               </button>
             </div>
           </>

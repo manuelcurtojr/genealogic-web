@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { ArrowLeft, Loader2, Plus, Copy, Check, Trash2, Key, AlertTriangle, ExternalLink } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface ApiKey {
   id: string
@@ -15,6 +16,7 @@ interface ApiKey {
 }
 
 export default function KennelApiKeysPage() {
+  const t = useT()
   const [kennelId, setKennelId] = useState<string>('')
   const [kennelName, setKennelName] = useState<string>('')
   const [keys, setKeys] = useState<ApiKey[]>([])
@@ -74,7 +76,7 @@ export default function KennelApiKeysPage() {
   }
 
   async function handleRevoke(id: string) {
-    if (!confirm('¿Revocar esta API key? Cualquier automatización que la use dejará de tener acceso.')) return
+    if (!confirm(t('¿Revocar esta API key? Cualquier automatización que la use dejará de tener acceso.'))) return
     const res = await fetch(`/api/keys?id=${id}`, { method: 'DELETE' })
     if (res.ok) await fetchKeys(kennelId)
   }
@@ -94,8 +96,8 @@ export default function KennelApiKeysPage() {
     return (
       <div className="max-w-2xl mx-auto text-center py-20">
         <Key className="w-10 h-10 text-muted mx-auto mb-4" />
-        <p className="text-body mb-2">Necesitas tener un criadero para gestionar API keys.</p>
-        <Link href="/kennel/new" className="text-sm text-ink hover:underline">Crear criadero</Link>
+        <p className="text-body mb-2">{t('Necesitas tener un criadero para gestionar API keys.')}</p>
+        <Link href="/kennel/new" className="text-sm text-ink hover:underline">{t('Crear criadero')}</Link>
       </div>
     )
   }
@@ -116,12 +118,12 @@ export default function KennelApiKeysPage() {
       </div>
 
       <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 mb-6">
-        <p className="text-sm font-semibold text-blue-300 mb-1">¿Para qué sirven?</p>
+        <p className="text-sm font-semibold text-blue-300 mb-1">{t('¿Para qué sirven?')}</p>
         <p className="text-xs text-body mb-2">
-          Permiten a tus <strong>automatizaciones y herramientas externas</strong> (Make, Zapier, scripts propios…) consultar tus perros, camadas y datos del criadero en tiempo real, vía API.
+          {t('Permiten a tus')} <strong>{t('automatizaciones y herramientas externas')}</strong> {t('(Make, Zapier, scripts propios…) consultar tus perros, camadas y datos del criadero en tiempo real, vía API.')}
         </p>
         <Link href="/api-docs" className="text-xs text-blue-300 hover:text-blue-200 flex items-center gap-1">
-          Ver documentación de la API <ExternalLink className="w-3 h-3" />
+          {t('Ver documentación de la API')} <ExternalLink className="w-3 h-3" />
         </Link>
       </div>
 
@@ -131,17 +133,17 @@ export default function KennelApiKeysPage() {
           <div className="flex items-start gap-2 mb-3">
             <AlertTriangle className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
             <p className="text-xs text-emerald-300">
-              <strong>Esta es la única vez que verás esta clave.</strong> Cópiala y guárdala en un sitio seguro (gestor de contraseñas, variable de entorno de tu automatización, etc.).
+              <strong>{t('Esta es la única vez que verás esta clave.')}</strong> {t('Cópiala y guárdala en un sitio seguro (gestor de contraseñas, variable de entorno de tu automatización, etc.).')}
             </p>
           </div>
           <div className="flex items-center gap-2 bg-canvas border border-emerald-500/20 rounded-lg p-3">
             <code className="text-xs text-emerald-300 font-mono flex-1 break-all">{newKey}</code>
             <button onClick={copyKey} className="text-xs text-emerald-300 hover:text-emerald-200 flex items-center gap-1 flex-shrink-0">
-              {copied ? <><Check className="w-3.5 h-3.5" /> Copiado</> : <><Copy className="w-3.5 h-3.5" /> Copiar</>}
+              {copied ? <><Check className="w-3.5 h-3.5" /> {t('Copiado')}</> : <><Copy className="w-3.5 h-3.5" /> {t('Copiar')}</>}
             </button>
           </div>
           <button onClick={() => setNewKey(null)} className="text-xs text-body hover:text-ink/80 mt-3">
-            Cerrar
+            {t('Cerrar')}
           </button>
         </div>
       )}
@@ -149,13 +151,13 @@ export default function KennelApiKeysPage() {
       {/* Create form */}
       {showCreate ? (
         <form onSubmit={handleCreate} className="bg-surface-card border border-hairline rounded-xl p-4 mb-6">
-          <h3 className="text-sm font-semibold mb-3">Nueva API key</h3>
+          <h3 className="text-sm font-semibold mb-3">{t('Nueva API key')}</h3>
           {error && <div className="bg-red-500/10 border border-red-500/30 rounded p-2 text-xs text-red-400 mb-3">{error}</div>}
           <input
             type="text"
             value={newKeyName}
             onChange={e => setNewKeyName(e.target.value)}
-            placeholder="Ej: Make producción"
+            placeholder={t('Ej: Make producción')}
             required autoFocus
             className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none transition mb-3"
           />
@@ -163,26 +165,26 @@ export default function KennelApiKeysPage() {
             <button type="submit" disabled={creating || !newKeyName.trim()}
               className="bg-ink text-on-primary hover:opacity-90 px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50 flex items-center gap-2">
               {creating && <Loader2 className="w-4 h-4 animate-spin" />}
-              Generar
+              {t('Generar')}
             </button>
             <button type="button" onClick={() => { setShowCreate(false); setNewKeyName(''); setError('') }}
               className="text-sm text-muted hover:text-ink px-3 py-2">
-              Cancelar
+              {t('Cancelar')}
             </button>
           </div>
         </form>
       ) : (
         <button onClick={() => setShowCreate(true)}
           className="bg-ink text-on-primary hover:opacity-90 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 mb-6">
-          <Plus className="w-4 h-4" /> Nueva API key
+          <Plus className="w-4 h-4" /> {t('Nueva API key')}
         </button>
       )}
 
       {/* Active keys */}
       <div className="space-y-2 mb-6">
-        <h3 className="text-xs font-semibold text-body uppercase tracking-wider">Activas ({activeKeys.length})</h3>
+        <h3 className="text-xs font-semibold text-body uppercase tracking-wider">{t('Activas')} ({activeKeys.length})</h3>
         {activeKeys.length === 0 ? (
-          <p className="text-xs text-muted py-4 text-center bg-surface-card rounded-lg">Sin keys activas</p>
+          <p className="text-xs text-muted py-4 text-center bg-surface-card rounded-lg">{t('Sin keys activas')}</p>
         ) : (
           activeKeys.map(k => (
             <div key={k.id} className="bg-surface-card border border-hairline rounded-lg p-3 flex items-center gap-3">
@@ -190,13 +192,13 @@ export default function KennelApiKeysPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{k.name}</p>
                 <p className="text-[10px] text-muted">
-                  gnl_…{k.key_last4} · creada {new Date(k.created_at).toLocaleDateString('es-ES')}
-                  {k.last_used_at ? ` · usada ${new Date(k.last_used_at).toLocaleDateString('es-ES')}` : ' · nunca usada'}
+                  gnl_…{k.key_last4} · {t('creada')} {new Date(k.created_at).toLocaleDateString('es-ES')}
+                  {k.last_used_at ? ` · ${t('usada')} ${new Date(k.last_used_at).toLocaleDateString('es-ES')}` : ` · ${t('nunca usada')}`}
                 </p>
               </div>
               <button onClick={() => handleRevoke(k.id)}
                 className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 px-2 py-1 rounded transition flex-shrink-0">
-                <Trash2 className="w-3 h-3" /> Revocar
+                <Trash2 className="w-3 h-3" /> {t('Revocar')}
               </button>
             </div>
           ))
@@ -206,14 +208,14 @@ export default function KennelApiKeysPage() {
       {/* Revoked keys */}
       {revokedKeys.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-xs font-semibold text-body uppercase tracking-wider">Revocadas ({revokedKeys.length})</h3>
+          <h3 className="text-xs font-semibold text-body uppercase tracking-wider">{t('Revocadas')} ({revokedKeys.length})</h3>
           {revokedKeys.map(k => (
             <div key={k.id} className="bg-surface-card border border-hairline rounded-lg p-3 flex items-center gap-3 opacity-50">
               <Key className="w-4 h-4 text-muted flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate line-through">{k.name}</p>
                 <p className="text-[10px] text-muted">
-                  gnl_…{k.key_last4} · revocada {k.revoked_at ? new Date(k.revoked_at).toLocaleDateString('es-ES') : ''}
+                  gnl_…{k.key_last4} · {t('revocada')} {k.revoked_at ? new Date(k.revoked_at).toLocaleDateString('es-ES') : ''}
                 </p>
               </div>
             </div>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, Baby } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 import {
   parseDate, addDays, daysBetween, toISODate, todayLocal, avgHeatInterval, heatPhaseForDay,
   HEAT_DURATION_DAYS, GESTATION_DAYS,
@@ -33,6 +34,7 @@ export default function AnnualReproCalendar({
   cycles: HeatCycleLike[]
   litters: LitterLike[]
 }) {
+  const t = useT()
   const today = todayLocal()
   const [year, setYear] = useState(today.getFullYear())
 
@@ -57,7 +59,7 @@ export default function AnnualReproCalendar({
     // Camada nacida (prioridad alta)
     for (const l of litters) {
       if (l.status === 'born' && l.birth_date && toISODate(parseDate(l.birth_date)) === iso) {
-        return { className: 'bg-emerald-500 text-white font-semibold', isLitter: true, title: 'Camada nacida' }
+        return { className: 'bg-emerald-500 text-white font-semibold', isLitter: true, title: t('Camada nacida') }
       }
     }
 
@@ -67,29 +69,29 @@ export default function AnnualReproCalendar({
       // Monta
       const matings = (c.mating_dates && c.mating_dates.length) ? c.mating_dates : [c.mating_date].filter(Boolean) as string[]
       if (matings.includes(iso)) {
-        return { className: 'bg-rose-500 text-white font-semibold ring-2 ring-rose-300', title: 'Monta' }
+        return { className: 'bg-rose-500 text-white font-semibold ring-2 ring-rose-300', title: t('Monta') }
       }
       // Gestación / parto previsto (si montada no fallida)
       if (c.was_mated && c.mating_date && (c.pregnancy_status ?? 'none') !== 'failed') {
         const matStart = parseDate(c.mating_date)
         const matEnd = c.mating_end_date ? parseDate(c.mating_end_date) : matStart
         const birth = addDays(matEnd, GESTATION_DAYS)
-        if (toISODate(birth) === iso) return { className: 'bg-pink-500 text-white font-semibold', isBirth: true, title: 'Parto previsto' }
+        if (toISODate(birth) === iso) return { className: 'bg-pink-500 text-white font-semibold', isBirth: true, title: t('Parto previsto') }
         if (date > heatEnd && date >= matStart && date < birth) {
-          return { className: 'bg-pink-100 text-pink-800', title: c.pregnancy_status === 'confirmed' ? 'Gestación' : 'Gestación (sin confirmar)' }
+          return { className: 'bg-pink-100 text-pink-800', title: c.pregnancy_status === 'confirmed' ? t('Gestación') : t('Gestación (sin confirmar)') }
         }
       }
       // Celo por fases
       if (date >= start && date <= heatEnd) {
         const phase = heatPhaseForDay(daysBetween(start, date))
-        if (phase) return { className: PHASE_BG[phase], title: phase === 'estro' ? 'Estro · fértil' : phase === 'proestro' ? 'Proestro' : 'Diestro' }
+        if (phase) return { className: PHASE_BG[phase], title: phase === 'estro' ? t('Estro · fértil') : phase === 'proestro' ? t('Proestro') : t('Diestro') }
       }
     }
 
     // Celo previsto
     for (const f of forecasts) {
       if (date >= f && date <= addDays(f, HEAT_DURATION_DAYS - 1)) {
-        return { className: 'border border-dashed border-blue-400 bg-blue-50 text-blue-700', title: 'Celo previsto (estimado)' }
+        return { className: 'border border-dashed border-blue-400 bg-blue-50 text-blue-700', title: t('Celo previsto (estimado)') }
       }
     }
     return null
@@ -101,7 +103,7 @@ export default function AnnualReproCalendar({
     <div>
       {/* Year nav */}
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-[15px] font-semibold text-ink">Año reproductivo</h3>
+        <h3 className="text-[15px] font-semibold text-ink">{t('Año reproductivo')}</h3>
         <div className="flex items-center gap-1">
           <button onClick={() => setYear((y) => y - 1)} className="rounded-lg p-1.5 text-muted hover:bg-surface-card hover:text-ink"><ChevronLeft className="h-4 w-4" /></button>
           <span className="min-w-[56px] text-center text-[14px] font-semibold tabular-nums text-ink">{year}</span>
@@ -111,7 +113,7 @@ export default function AnnualReproCalendar({
 
       {!hasAnyEvent && (
         <p className="mb-4 rounded-lg border border-dashed border-hairline bg-surface-soft px-4 py-3 text-[12.5px] text-muted">
-          Aún no hay eventos. Registra un celo para ver el año reproductivo de la hembra.
+          {t('Aún no hay eventos. Registra un celo para ver el año reproductivo de la hembra.')}
         </p>
       )}
 
@@ -126,9 +128,9 @@ export default function AnnualReproCalendar({
           const n = daysBetween(gridStart, gridEnd) + 1
           return (
             <div key={m} className="rounded-xl border border-hairline bg-canvas p-3">
-              <p className="mb-2 text-[12px] font-semibold text-ink">{mName}</p>
+              <p className="mb-2 text-[12px] font-semibold text-ink">{t(mName)}</p>
               <div className="grid grid-cols-7 gap-0.5">
-                {WEEKDAYS.map((w) => <div key={w} className="pb-0.5 text-center text-[9px] font-medium uppercase text-muted">{w}</div>)}
+                {WEEKDAYS.map((w, wi) => <div key={wi} className="pb-0.5 text-center text-[9px] font-medium uppercase text-muted">{t(w)}</div>)}
                 {Array.from({ length: n }, (_, i) => {
                   const date = addDays(gridStart, i)
                   const inMonth = date.getMonth() === m
@@ -156,14 +158,14 @@ export default function AnnualReproCalendar({
 
       {/* Leyenda */}
       <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-muted">
-        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-300" /> Proestro</span>
-        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400" /> Estro · fértil</span>
-        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-violet-300" /> Diestro</span>
-        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-rose-500" /> Monta</span>
-        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-pink-300" /> Gestación</span>
-        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-pink-500" /> Parto previsto</span>
-        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500" /> Camada</span>
-        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full border border-dashed border-blue-400 bg-blue-50" /> Celo previsto</span>
+        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-300" /> {t('Proestro')}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400" /> {t('Estro · fértil')}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-violet-300" /> {t('Diestro')}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-rose-500" /> {t('Monta')}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-pink-300" /> {t('Gestación')}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-pink-500" /> {t('Parto previsto')}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500" /> {t('Camada')}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full border border-dashed border-blue-400 bg-blue-50" /> {t('Celo previsto')}</span>
       </div>
     </div>
   )

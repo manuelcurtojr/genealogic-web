@@ -20,6 +20,8 @@
  *
  * Usado tanto en el preview del editor como en la página pública.
  */
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 type Block =
   | { type: 'paragraph'; text: string }
@@ -69,7 +71,8 @@ function parseAboutMd(markdown: string): Block[] {
   return blocks
 }
 
-export default function AboutContent({ markdown }: { markdown: string }) {
+export default async function AboutContent({ markdown }: { markdown: string }) {
+  const t = getTranslator(await getLocale())
   const blocks = parseAboutMd(markdown)
   const milestoneCount = blocks.filter(b => b.type === 'milestone').length
   // Solo activamos timeline si hay al menos 2 hitos. Con 0 ó 1 el render
@@ -117,10 +120,10 @@ export default function AboutContent({ markdown }: { markdown: string }) {
       <section>
         <div className="mb-6 sm:mb-8">
           <p className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#FE6620]">
-            Línea del tiempo
+            {t('Línea del tiempo')}
           </p>
           <h2 className="mt-1.5 text-[22px] sm:text-[28px] font-semibold tracking-[-0.03em] text-ink leading-[1.15]">
-            {milestoneCount} hitos que marcaron la historia
+            {milestoneCount} {t('hitos que marcaron la historia')}
           </h2>
         </div>
 

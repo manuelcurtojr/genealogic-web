@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, Loader2, AlertCircle, Eye, Edit3 } from 'lucide-react'
 import { saveAboutMdAction } from '@/lib/kennel/content-actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   kennelId: string
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function AboutEditor({ kennelId, initialAboutMd }: Props) {
+  const t = useT()
   const router = useRouter()
   const [value, setValue] = useState(initialAboutMd || '')
   const [mode, setMode] = useState<'edit' | 'preview'>('edit')
@@ -35,10 +37,10 @@ export default function AboutEditor({ kennelId, initialAboutMd }: Props) {
         console.error('[saveAboutMdAction] failed', err)
         const raw = err instanceof Error ? err.message : String(err)
         const human =
-          raw === 'unauthorized' ? 'Tienes que iniciar sesión otra vez.' :
-          raw === 'forbidden' ? 'No tienes permisos sobre este criadero.' :
-          raw === 'requires_kennel_pro' ? 'Esta función está en Kennel Pro.' :
-          `No se pudo guardar: ${raw}`
+          raw === 'unauthorized' ? t('Tienes que iniciar sesión otra vez.') :
+          raw === 'forbidden' ? t('No tienes permisos sobre este criadero.') :
+          raw === 'requires_kennel_pro' ? t('Esta función está en Kennel Pro.') :
+          `${t('No se pudo guardar:')} ${raw}`
         setError(human)
       }
     })
@@ -49,12 +51,12 @@ export default function AboutEditor({ kennelId, initialAboutMd }: Props) {
       <div className="flex items-end justify-between gap-3 flex-wrap mb-4">
         <div>
           <h2 className="text-[17px] sm:text-[18px] font-semibold tracking-[-0.02em] text-ink">
-            Sobre nosotros
+            {t('Sobre nosotros')}
           </h2>
           <p className="mt-1 text-[12.5px] text-muted leading-snug max-w-prose">
-            Cuenta tu historia, tu filosofía de cría y qué os distingue. Soporta saltos
-            de línea y <code className="text-[11px]">**negrita**</code>. Hace falta
-            mínimo 50 caracteres para que la página sea pública.
+            {t('Cuenta tu historia, tu filosofía de cría y qué os distingue. Soporta saltos de línea y')}{' '}
+            <code className="text-[11px]">**negrita**</code>.{' '}
+            {t('Hace falta mínimo 50 caracteres para que la página sea pública.')}
           </p>
         </div>
         <div className="inline-flex rounded-lg border border-hairline bg-surface-soft p-0.5">
@@ -65,7 +67,7 @@ export default function AboutEditor({ kennelId, initialAboutMd }: Props) {
               mode === 'edit' ? 'bg-canvas text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)]' : 'text-muted hover:text-ink'
             }`}
           >
-            <Edit3 className="h-3 w-3" /> Editar
+            <Edit3 className="h-3 w-3" /> {t('Editar')}
           </button>
           <button
             type="button"
@@ -74,7 +76,7 @@ export default function AboutEditor({ kennelId, initialAboutMd }: Props) {
               mode === 'preview' ? 'bg-canvas text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)]' : 'text-muted hover:text-ink'
             }`}
           >
-            <Eye className="h-3 w-3" /> Preview
+            <Eye className="h-3 w-3" /> {t('Preview')}
           </button>
         </div>
       </div>
@@ -84,7 +86,7 @@ export default function AboutEditor({ kennelId, initialAboutMd }: Props) {
           value={value}
           onChange={e => setValue(e.target.value)}
           rows={20}
-          placeholder="Empieza por contar cuándo y por qué nació el criadero, qué razas crías y qué valores guían tu trabajo..."
+          placeholder={t('Empieza por contar cuándo y por qué nació el criadero, qué razas crías y qué valores guían tu trabajo...')}
           className="w-full rounded-lg border border-hairline bg-canvas px-3 py-3 text-[14px] font-mono text-ink placeholder:text-muted/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition resize-y leading-[1.5]"
         />
       ) : (
@@ -92,7 +94,7 @@ export default function AboutEditor({ kennelId, initialAboutMd }: Props) {
           {value.trim() ? (
             <AboutPreview md={value} />
           ) : (
-            <p className="text-[13px] text-muted italic">Aún no hay contenido para previsualizar.</p>
+            <p className="text-[13px] text-muted italic">{t('Aún no hay contenido para previsualizar.')}</p>
           )}
         </div>
       )}
@@ -100,14 +102,14 @@ export default function AboutEditor({ kennelId, initialAboutMd }: Props) {
       <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
         <div className="text-[11.5px] text-muted">
           <span className={charCount >= 50 ? 'text-emerald-700 font-medium' : ''}>
-            {charCount.toLocaleString('es-ES')} caracteres
+            {charCount.toLocaleString('es-ES')} {t('caracteres')}
           </span>
           {!isPublishable && (
-            <span className="ml-2 text-amber-700">· Necesitas ≥50 para publicar</span>
+            <span className="ml-2 text-amber-700">· {t('Necesitas ≥50 para publicar')}</span>
           )}
           {savedAt && !dirty && (
             <span className="ml-2 text-emerald-700 inline-flex items-center gap-1">
-              <Check className="h-3 w-3" /> Guardado
+              <Check className="h-3 w-3" /> {t('Guardado')}
             </span>
           )}
         </div>
@@ -118,7 +120,7 @@ export default function AboutEditor({ kennelId, initialAboutMd }: Props) {
           className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-bold text-on-primary hover:opacity-90 disabled:opacity-40 transition"
         >
           {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-          {pending ? 'Guardando...' : 'Guardar'}
+          {pending ? t('Guardando...') : t('Guardar')}
         </button>
       </div>
 

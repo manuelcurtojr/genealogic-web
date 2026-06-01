@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { Search, Plus, Heart, Baby, ArrowLeft, Dna, CalendarRange, X } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 import ReproduccionTab from '@/components/dogs/edit-tabs/reproduccion-tab'
 import AnnualReproCalendar from './annual-repro-calendar'
 import HeatCycleForm from './heat-cycle-form'
@@ -33,6 +34,7 @@ const STATE_TEXT: Record<ReproState, string> = {
 }
 
 export default function ReproWorkspace({ females, cycles, litters, userId }: Props) {
+  const t = useT()
   const today = todayLocal()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [view, setView] = useState<View>('ciclo')
@@ -69,20 +71,20 @@ export default function ReproWorkspace({ females, cycles, litters, userId }: Pro
   const keyDate = (info: ReturnType<typeof computeReproInfo>): string => {
     if (info.state === 'pregnant' && info.expectedBirth) {
       const d = daysBetween(today, info.expectedBirth)
-      return d >= 0 ? `Parto en ${d} d` : `Parto pasado`
+      return d >= 0 ? `${t('Parto en')} ${d} ${t('d')}` : t('Parto pasado')
     }
-    if (info.state === 'mated_pending') return 'Confirmar preñez'
-    if (info.state === 'in_heat') return 'En celo ahora'
-    if (info.nextHeatForecast) return `Próx. celo ~${fmtDate(info.nextHeatForecast)}`
-    return 'En reposo'
+    if (info.state === 'mated_pending') return t('Confirmar preñez')
+    if (info.state === 'in_heat') return t('En celo ahora')
+    if (info.nextHeatForecast) return `${t('Próx. celo ~')}${fmtDate(info.nextHeatForecast)}`
+    return t('En reposo')
   }
 
   const STATE_FILTERS: { key: StateFilter; label: string; n: number }[] = [
-    { key: 'all', label: 'Todas', n: females.length },
-    { key: 'in_heat', label: 'En celo', n: counts.in_heat },
-    { key: 'mated_pending', label: 'Montadas', n: counts.mated_pending },
-    { key: 'pregnant', label: 'Gestantes', n: counts.pregnant },
-    { key: 'idle', label: 'Reposo', n: counts.idle },
+    { key: 'all', label: t('Todas'), n: females.length },
+    { key: 'in_heat', label: t('En celo'), n: counts.in_heat },
+    { key: 'mated_pending', label: t('Montadas'), n: counts.mated_pending },
+    { key: 'pregnant', label: t('Gestantes'), n: counts.pregnant },
+    { key: 'idle', label: t('Reposo'), n: counts.idle },
   ]
 
   const femaleCyclesFor = (id: string) => cycles.filter((c) => c.dog_id === id)
@@ -93,16 +95,16 @@ export default function ReproWorkspace({ females, cycles, litters, userId }: Pro
       {/* ── Columna izquierda: roster con estado + buscador ── */}
       <aside className={`${selected ? 'hidden lg:block' : ''} rounded-2xl border border-hairline bg-canvas`}>
         <div className="flex items-center justify-between gap-2 border-b border-hairline px-4 py-3">
-          <p className="text-[13px] font-semibold text-ink">Reproductoras <span className="text-muted">({females.length})</span></p>
+          <p className="text-[13px] font-semibold text-ink">{t('Reproductoras')} <span className="text-muted">({females.length})</span></p>
           <button onClick={() => setFormOpen(true)}
             className="inline-flex items-center gap-1 rounded-lg bg-ink px-2.5 py-1.5 text-[12px] font-medium text-on-primary transition hover:opacity-90">
-            <Plus className="h-3.5 w-3.5" /> Celo
+            <Plus className="h-3.5 w-3.5" /> {t('Celo')}
           </button>
         </div>
         <div className="space-y-2 p-3">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar hembra..."
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('Buscar hembra...')}
               className="w-full rounded-lg border border-hairline bg-canvas py-2 pl-8 pr-3 text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
           </div>
           <div className="flex flex-wrap gap-1">
@@ -116,7 +118,7 @@ export default function ReproWorkspace({ females, cycles, litters, userId }: Pro
         </div>
         <ul className="max-h-[60vh] overflow-y-auto px-2 pb-3">
           {filtered.length === 0 ? (
-            <li className="px-3 py-6 text-center text-[12.5px] text-muted">Sin hembras.</li>
+            <li className="px-3 py-6 text-center text-[12.5px] text-muted">{t('Sin hembras.')}</li>
           ) : filtered.map((f) => {
             const info = infoById.get(f.id)!
             const isSel = f.id === selectedId
@@ -145,7 +147,7 @@ export default function ReproWorkspace({ females, cycles, litters, userId }: Pro
       <section className={`${selected ? '' : 'hidden lg:block'} min-w-0`}>
         {!selected ? (
           <div className="rounded-2xl border border-hairline bg-canvas p-6">
-            <p className="text-[13px] font-semibold text-ink">Resumen del criadero</p>
+            <p className="text-[13px] font-semibold text-ink">{t('Resumen del criadero')}</p>
             <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {([
                 { k: 'in_heat', label: 'En celo', n: counts.in_heat, dot: STATE_DOT.in_heat },
@@ -156,11 +158,11 @@ export default function ReproWorkspace({ females, cycles, litters, userId }: Pro
                 <div key={s.k} className="rounded-xl border border-hairline p-3">
                   <span className={`inline-block h-2.5 w-2.5 rounded-full ${s.dot}`} />
                   <p className="mt-2 text-[22px] font-semibold tabular-nums text-ink leading-none">{s.n}</p>
-                  <p className="mt-1 text-[11.5px] text-muted">{s.label}</p>
+                  <p className="mt-1 text-[11.5px] text-muted">{t(s.label)}</p>
                 </div>
               ))}
             </div>
-            <p className="mt-5 text-[13px] text-muted">Selecciona una reproductora en la izquierda para ver su ciclo y su año reproductivo.</p>
+            <p className="mt-5 text-[13px] text-muted">{t('Selecciona una reproductora en la izquierda para ver su ciclo y su año reproductivo.')}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -180,11 +182,11 @@ export default function ReproWorkspace({ females, cycles, litters, userId }: Pro
             <div className="inline-flex gap-1 rounded-xl bg-surface-soft p-1">
               <button onClick={() => setView('ciclo')}
                 className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[13px] font-medium transition ${view === 'ciclo' ? 'bg-canvas text-ink shadow-sm' : 'text-muted hover:text-ink'}`}>
-                <Dna className="h-3.5 w-3.5" /> Ciclo
+                <Dna className="h-3.5 w-3.5" /> {t('Ciclo')}
               </button>
               <button onClick={() => setView('anual')}
                 className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[13px] font-medium transition ${view === 'anual' ? 'bg-canvas text-ink shadow-sm' : 'text-muted hover:text-ink'}`}>
-                <CalendarRange className="h-3.5 w-3.5" /> Año
+                <CalendarRange className="h-3.5 w-3.5" /> {t('Año')}
               </button>
             </div>
 

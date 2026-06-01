@@ -14,6 +14,7 @@ import { useState, useTransition, useRef, useEffect } from 'react'
 import { Send, Loader2, Paperclip } from 'lucide-react'
 import type { ReservationMessage } from '@/lib/reservations/messages-shared'
 import { formatMessageTime } from '@/lib/reservations/messages-shared'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function ReservationThread({
   messages,
@@ -32,6 +33,7 @@ export default function ReservationThread({
   /** Nombre que se muestra cuando NO hay mensajes ("Escribir a Irema Curtó..."). */
   otherSideName: string
 }) {
+  const t = useT()
   const [text, setText] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
@@ -74,7 +76,7 @@ export default function ReservationThread({
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <p className="text-sm text-muted max-w-xs">
-              Aún no hay mensajes. Escribe el primero a <strong>{otherSideName}</strong>.
+              {t('Aún no hay mensajes. Escribe el primero a')} <strong>{otherSideName}</strong>.
             </p>
           </div>
         ) : (
@@ -98,7 +100,7 @@ export default function ReservationThread({
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={pending}
-            placeholder={`Escribir a ${otherSideName}...`}
+            placeholder={`${t('Escribir a')} ${otherSideName}...`}
             rows={2}
             className="flex-1 resize-none rounded-lg border border-hairline bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:border-ink/30"
           />
@@ -107,13 +109,13 @@ export default function ReservationThread({
             onClick={handleSend}
             disabled={pending || !text.trim()}
             className="inline-flex items-center justify-center rounded-lg bg-ink text-on-primary px-3 py-2 hover:opacity-90 disabled:opacity-40"
-            title="Enviar (Enter)"
+            title={t('Enviar (Enter)')}
           >
             {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </button>
         </div>
         <p className="text-[10px] text-muted mt-1.5">
-          Enter para enviar · Shift+Enter para nueva línea
+          {t('Enter para enviar · Shift+Enter para nueva línea')}
         </p>
       </div>
     </div>
@@ -127,6 +129,7 @@ function MessageBubble({
   message: ReservationMessage
   isMine: boolean
 }) {
+  const t = useT()
   const isSystem = message.sender_role === 'system'
   if (isSystem) {
     return (
@@ -140,7 +143,7 @@ function MessageBubble({
 
   const senderLabel =
     message.sender_name ||
-    (message.sender_role === 'client' ? 'Cliente' : 'Criador')
+    (message.sender_role === 'client' ? t('Cliente') : t('Criador'))
 
   return (
     <div className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
@@ -154,7 +157,7 @@ function MessageBubble({
         {!isMine && (
           <p className="text-[10px] font-semibold uppercase tracking-wider opacity-70 mb-0.5">
             {senderLabel}
-            {message.origin === 'email' && ' · vía email'}
+            {message.origin === 'email' && ` · ${t('vía email')}`}
           </p>
         )}
         <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.body}</p>

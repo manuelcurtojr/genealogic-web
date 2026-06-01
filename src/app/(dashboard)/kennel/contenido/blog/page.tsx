@@ -2,10 +2,13 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Plus, BookOpen, Pencil } from 'lucide-react'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
 export default async function KennelBlogListPage() {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -35,30 +38,30 @@ export default async function KennelBlogListPage() {
         <div>
           <h2 className="text-[17px] sm:text-[18px] font-semibold tracking-[-0.02em] text-ink">Blog</h2>
           <p className="mt-1 text-[12.5px] text-muted max-w-prose">
-            Posts del criadero. Mínimo 1 publicado para que la página de blog sea pública.
-            Total: {list.length} {list.length === 1 ? 'post' : 'posts'} · {published} publicados.
+            {t('Posts del criadero. Mínimo 1 publicado para que la página de blog sea pública.')}{' '}
+            {t('Total:')} {list.length} {list.length === 1 ? 'post' : 'posts'} · {published} {t('publicados')}.
           </p>
         </div>
         <Link
           href="/kennel/contenido/blog/new"
           className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-bold text-on-primary hover:opacity-90 transition self-start"
         >
-          <Plus className="h-3.5 w-3.5" /> Nuevo post
+          <Plus className="h-3.5 w-3.5" /> {t('Nuevo post')}
         </Link>
       </div>
 
       {list.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft p-10 text-center">
           <BookOpen className="mx-auto h-7 w-7 text-muted" />
-          <p className="mt-3 text-[14px] font-semibold text-ink">Aún no tienes posts</p>
+          <p className="mt-3 text-[14px] font-semibold text-ink">{t('Aún no tienes posts')}</p>
           <p className="mt-1 text-[12.5px] text-body max-w-sm mx-auto leading-snug">
-            Crea tu primer post: nueva camada disponible, lección aprendida, novedad sobre la raza...
+            {t('Crea tu primer post: nueva camada disponible, lección aprendida, novedad sobre la raza...')}
           </p>
           <Link
             href="/kennel/contenido/blog/new"
             className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-bold text-on-primary hover:opacity-90 transition"
           >
-            <Plus className="h-3.5 w-3.5" /> Crear primer post
+            <Plus className="h-3.5 w-3.5" /> {t('Crear primer post')}
           </Link>
         </div>
       ) : (
@@ -90,7 +93,7 @@ export default async function KennelBlogListPage() {
                           : 'bg-amber-100 text-amber-900'
                       }`}
                     >
-                      {post.status === 'published' ? 'Publicado' : 'Borrador'}
+                      {post.status === 'published' ? t('Publicado') : t('Borrador')}
                     </span>
                   </div>
                   {post.excerpt && (
@@ -98,14 +101,14 @@ export default async function KennelBlogListPage() {
                   )}
                   <p className="mt-1 text-[11px] text-muted">
                     {dateLabel}
-                    {post.reading_time_minutes ? ` · ${post.reading_time_minutes} min lectura` : ''}
+                    {post.reading_time_minutes ? ` · ${post.reading_time_minutes} ${t('min lectura')}` : ''}
                   </p>
                 </div>
                 <Link
                   href={`/kennel/contenido/blog/${post.id}`}
                   className="inline-flex items-center gap-1 rounded-lg border border-hairline px-3 py-1.5 text-[12px] font-medium text-body hover:border-ink/30 hover:text-ink transition flex-shrink-0"
                 >
-                  <Pencil className="h-3 w-3" /> Editar
+                  <Pencil className="h-3 w-3" /> {t('Editar')}
                 </Link>
               </li>
             )

@@ -14,6 +14,8 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { getContractTemplate } from '@/lib/contracts/templates-actions'
 import TemplateEditor from '@/components/contracts/template-editor'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Editar plantilla · Genealogic' }
@@ -41,6 +43,8 @@ export default async function ContractTemplateEditorPage({
     redirect('/contratos')
   }
 
+  const t = getTranslator(await getLocale())
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:py-8 space-y-6">
       {/* Breadcrumb / back */}
@@ -48,7 +52,7 @@ export default async function ContractTemplateEditorPage({
         href="/contratos"
         className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-muted hover:text-ink transition"
       >
-        <ArrowLeft className="h-3.5 w-3.5" /> Volver a plantillas
+        <ArrowLeft className="h-3.5 w-3.5" /> {t('Volver a plantillas')}
       </Link>
 
       <TemplateEditor

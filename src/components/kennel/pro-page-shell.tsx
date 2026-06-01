@@ -7,6 +7,8 @@
  */
 import Link from 'next/link'
 import { AlertCircle, ArrowRight, Sparkles } from 'lucide-react'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export function ProPageShell({
   eyebrow, title, description, children, fullWidth = false,
@@ -40,14 +42,15 @@ export function ProPageShell({
   )
 }
 
-export function OwnerDraftBanner({ message, ctaHref, ctaLabel }: { message: string; ctaHref?: string; ctaLabel?: string }) {
+export async function OwnerDraftBanner({ message, ctaHref, ctaLabel }: { message: string; ctaHref?: string; ctaLabel?: string }) {
+  const t = getTranslator(await getLocale())
   return (
     <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-5">
       <div className="flex items-start gap-3">
         <AlertCircle className="h-5 w-5 mt-0.5 text-amber-700 flex-shrink-0" />
         <div className="flex-1">
           <p className="text-[13px] sm:text-[13.5px] font-semibold text-amber-900">
-            Solo tú estás viendo esto.
+            {t('Solo tú estás viendo esto.')}
           </p>
           <p className="mt-0.5 text-[12.5px] sm:text-[13px] text-amber-900/80 leading-[1.55]">
             {message}

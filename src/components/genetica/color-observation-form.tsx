@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Save, Loader2, Check, Palette, Info } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 import { inferGenotype, type ColorObservation } from '@/lib/genetics/inference'
 
 interface Color {
@@ -37,6 +38,7 @@ export default function ColorObservationForm({
   defaultColorId,
   initial,
 }: Props) {
+  const t = useT()
   // Default: observation.color_id si existe, sino dogs.color_id (pre-selección del color del perro)
   const [colorId, setColorId] = useState<string>(initial?.color_id || defaultColorId || '')
   // Si el color por defecto no está en los del estándar de raza, abrir "todos" automáticamente
@@ -115,7 +117,7 @@ export default function ColorObservationForm({
           <div className="flex items-center gap-2">
             <Palette className="h-4 w-4 text-muted" />
             <h3 className="text-[14.5px] font-semibold text-ink">
-              Color y aspecto visible
+              {t('Color y aspecto visible')}
             </h3>
           </div>
           <button
@@ -130,7 +132,7 @@ export default function ColorObservationForm({
             ) : (
               <Save className="h-3.5 w-3.5" />
             )}
-            {savedFlash ? 'Guardado' : 'Guardar'}
+            {savedFlash ? t('Guardado') : t('Guardar')}
           </button>
         </div>
 
@@ -139,10 +141,10 @@ export default function ColorObservationForm({
           <div>
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <label className="text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
-                Color principal
+                {t('Color principal')}
                 {!showAllColors && breedName && breedColors.length > 0 && (
                   <span className="ml-1.5 normal-case tracking-normal text-muted/70">
-                    · estándar {breedName}
+                    {t('· estándar')} {breedName}
                   </span>
                 )}
               </label>
@@ -152,7 +154,7 @@ export default function ColorObservationForm({
                   onClick={() => setShowAllColors((v) => !v)}
                   className="text-[11.5px] font-medium text-body hover:text-ink"
                 >
-                  {showAllColors ? 'Ver solo estándar' : 'Ver todos los colores'}
+                  {showAllColors ? t('Ver solo estándar') : t('Ver todos los colores')}
                 </button>
               )}
             </div>
@@ -161,7 +163,7 @@ export default function ColorObservationForm({
               onChange={(e) => setColorId(e.target.value)}
               className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
             >
-              <option value="">— Selecciona un color —</option>
+              <option value="">{t('— Selecciona un color —')}</option>
               {colorsToShow.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -172,16 +174,16 @@ export default function ColorObservationForm({
               <p className="mt-1 flex items-start gap-1.5 text-[11.5px] text-muted">
                 <Info className="mt-0.5 h-3 w-3 flex-shrink-0" />
                 <span>
-                  No hay colores estándar definidos para esta raza. Mostrando catálogo completo.
+                  {t('No hay colores estándar definidos para esta raza. Mostrando catálogo completo.')}
                 </span>
               </p>
             ) : showAllColors ? (
               <p className="mt-1 text-[11.5px] text-muted">
-                Mostrando todos los colores (incluidos los que no son del estándar de la raza).
+                {t('Mostrando todos los colores (incluidos los que no son del estándar de la raza).')}
               </p>
             ) : (
               <p className="mt-1 text-[11.5px] text-muted">
-                Solo se muestran los {breedColors.length} colores aceptados en el estándar de {breedName}.
+                {t('Solo se muestran los')} {breedColors.length} {t('colores aceptados en el estándar de')} {breedName}.
               </p>
             )}
           </div>
@@ -190,32 +192,32 @@ export default function ColorObservationForm({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
-                Longitud del pelo
+                {t('Longitud del pelo')}
               </label>
               <select
                 value={coatLength}
                 onChange={(e) => setCoatLength(e.target.value as any)}
                 className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
               >
-                <option value="short">Corto</option>
-                <option value="medium">Medio</option>
-                <option value="long">Largo</option>
-                <option value="wire">Duro (wire)</option>
+                <option value="short">{t('Corto')}</option>
+                <option value="medium">{t('Medio')}</option>
+                <option value="long">{t('Largo')}</option>
+                <option value="wire">{t('Duro (wire)')}</option>
               </select>
             </div>
             <div>
               <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
-                Manchas blancas
+                {t('Manchas blancas')}
               </label>
               <select
                 value={whitePattern}
                 onChange={(e) => setWhitePattern(e.target.value as any)}
                 className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
               >
-                <option value="none">Ninguna</option>
-                <option value="small">Pequeñas (pecho/patas)</option>
-                <option value="parti">Bicolor / con blanco</option>
-                <option value="piebald">Piebald / pinto extenso</option>
+                <option value="none">{t('Ninguna')}</option>
+                <option value="small">{t('Pequeñas (pecho/patas)')}</option>
+                <option value="parti">{t('Bicolor / con blanco')}</option>
+                <option value="piebald">{t('Piebald / pinto extenso')}</option>
               </select>
             </div>
           </div>
@@ -223,36 +225,36 @@ export default function ColorObservationForm({
           {/* Toggles */}
           <div>
             <p className="mb-2 text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
-              Características visibles
+              {t('Características visibles')}
             </p>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <Toggle
-                label="Atigrado / bardino / brindle"
-                hint="Rayas verticales sobre color base"
+                label={t('Atigrado / bardino / brindle')}
+                hint={t('Rayas verticales sobre color base')}
                 checked={hasBrindle}
                 onChange={setHasBrindle}
               />
               <Toggle
-                label="Merle / arlequín"
-                hint="⚠️ Cruce M×M peligroso"
+                label={t('Merle / arlequín')}
+                hint={t('⚠️ Cruce M×M peligroso')}
                 checked={hasMerle}
                 onChange={setHasMerle}
               />
               <Toggle
-                label="Negro y fuego (tan points)"
-                hint="Marcas tan en cejas, patas, pecho"
+                label={t('Negro y fuego (tan points)')}
+                hint={t('Marcas tan en cejas, patas, pecho')}
                 checked={hasTanPoints}
                 onChange={setHasTanPoints}
               />
               <Toggle
-                label="Máscara facial negra"
-                hint="Hocico oscuro"
+                label={t('Máscara facial negra')}
+                hint={t('Hocico oscuro')}
                 checked={hasMask}
                 onChange={setHasMask}
               />
               <Toggle
-                label="Color diluido (azul/isabella/lilac)"
-                hint="Pigmento más pálido de lo normal"
+                label={t('Color diluido (azul/isabella/lilac)')}
+                hint={t('Pigmento más pálido de lo normal')}
                 checked={isDiluted}
                 onChange={setIsDiluted}
               />
@@ -262,14 +264,14 @@ export default function ColorObservationForm({
           {/* Notas */}
           <div>
             <label className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
-              Notas
+              {t('Notas')}
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none"
-              placeholder="Observaciones adicionales sobre el color o aspecto del perro..."
+              placeholder={t('Observaciones adicionales sobre el color o aspecto del perro...')}
             />
           </div>
 
@@ -283,9 +285,9 @@ export default function ColorObservationForm({
 
       {/* Preview de inferencia */}
       <div className="rounded-xl border border-hairline bg-surface-soft p-5">
-        <h4 className="mb-3 text-[13px] font-semibold text-ink">Genotipo inferido (preview)</h4>
+        <h4 className="mb-3 text-[13px] font-semibold text-ink">{t('Genotipo inferido (preview)')}</h4>
         <p className="mb-4 text-[12px] text-muted">
-          A partir de lo que has indicado, estos son los alelos compatibles. &quot;?&quot; = desconocido. Si conoces el genotipo exacto desde un test DNA, edítalo en la pestaña &quot;Genotipo DNA&quot;.
+          {t('A partir de lo que has indicado, estos son los alelos compatibles. "?" = desconocido. Si conoces el genotipo exacto desde un test DNA, edítalo en la pestaña "Genotipo DNA".')}
         </p>
         <div className="grid gap-2 sm:grid-cols-2">
           {preview.map((p) => {
@@ -297,7 +299,7 @@ export default function ColorObservationForm({
                 className="rounded-lg border border-hairline bg-canvas px-3 py-2"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[12px] font-medium text-muted">Locus {p.locus}</span>
+                  <span className="text-[12px] font-medium text-muted">{t('Locus')} {p.locus}</span>
                   <span className="font-mono text-[13.5px] font-semibold tabular-nums text-ink">
                     {p.allele1.code}/{p.allele2.code}
                   </span>
@@ -311,7 +313,7 @@ export default function ColorObservationForm({
         </div>
         {preview.every((p) => p.allele1.code === '?' && p.allele2.code === '?') && (
           <p className="text-[12.5px] text-muted">
-            Rellena el color principal y las características arriba para ver los alelos inferidos.
+            {t('Rellena el color principal y las características arriba para ver los alelos inferidos.')}
           </p>
         )}
       </div>

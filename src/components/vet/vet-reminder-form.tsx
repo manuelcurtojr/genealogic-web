@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { X, Loader2, Check, Trash2 } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   open: boolean
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export default function VetReminderForm({ open, onClose, onSaved, initialData, dogs: propDogs, templates: propTemplates, userId: propUserId, reminderId }: Props) {
+  const t = useT()
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [completing, setCompleting] = useState(false)
@@ -120,7 +122,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
   const set = (field: string, value: any) => setForm(prev => ({ ...prev, [field]: value }))
 
   const selectTemplate = (templateId: string) => {
-    const tmpl = templates.find(t => t.id === templateId)
+    const tmpl = templates.find(tpl => tpl.id === templateId)
     if (tmpl) {
       setForm(prev => ({
         ...prev,
@@ -216,7 +218,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
       >
         {/* Fixed header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
-          <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar recordatorio' : 'Nuevo recordatorio'}</h2>
+          <h2 className="text-base sm:text-lg font-semibold">{isEdit ? t('Editar recordatorio') : t('Nuevo recordatorio')}</h2>
           <button onClick={onClose} className="text-muted hover:text-ink transition p-1"><X className="w-5 h-5" /></button>
         </div>
 
@@ -232,60 +234,60 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
             {isCompleted && (
               <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 flex items-center gap-2">
                 <Check className="w-4 h-4 text-green-400" />
-                <span className="text-sm text-green-400 font-medium">Completado el {new Date(editData.completed_date).toLocaleDateString('es-ES')}</span>
+                <span className="text-sm text-green-400 font-medium">{t('Completado el')} {new Date(editData.completed_date).toLocaleDateString('es-ES')}</span>
               </div>
             )}
 
             {/* Dog */}
             <div>
-              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Perro *</label>
+              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Perro *')}</label>
               <select value={form.dog_id} onChange={e => set('dog_id', e.target.value)} disabled={isCompleted}
                 className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition appearance-none disabled:opacity-50">
-                <option value="">Seleccionar perro...</option>
+                <option value="">{t('Seleccionar perro...')}</option>
                 {dogs.map(d => <option key={d.id} value={d.id}>{d.name} {d.sex === 'male' ? '♂' : '♀'}</option>)}
               </select>
             </div>
 
             {/* Template (optional) */}
             <div>
-              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Plantilla (opcional)</label>
+              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Plantilla (opcional)')}</label>
               <select value={form.template_id} onChange={e => selectTemplate(e.target.value)} disabled={isCompleted}
                 className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition appearance-none disabled:opacity-50">
-                <option value="">Personalizado</option>
-                <optgroup label="Vacunas">
-                  {templates.filter(t => t.type === 'vaccine').map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                <option value="">{t('Personalizado')}</option>
+                <optgroup label={t('Vacunas')}>
+                  {templates.filter(tpl => tpl.type === 'vaccine').map(tpl => <option key={tpl.id} value={tpl.id}>{tpl.name}</option>)}
                 </optgroup>
-                <optgroup label="Desparasitación">
-                  {templates.filter(t => t.type === 'deworming').map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                <optgroup label={t('Desparasitación')}>
+                  {templates.filter(tpl => tpl.type === 'deworming').map(tpl => <option key={tpl.id} value={tpl.id}>{tpl.name}</option>)}
                 </optgroup>
-                <optgroup label="Revisiones">
-                  {templates.filter(t => t.type === 'checkup').map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                <optgroup label={t('Revisiones')}>
+                  {templates.filter(tpl => tpl.type === 'checkup').map(tpl => <option key={tpl.id} value={tpl.id}>{tpl.name}</option>)}
                 </optgroup>
               </select>
             </div>
 
             {/* Title */}
             <div>
-              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Título *</label>
+              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Título *')}</label>
               <input type="text" value={form.title} onChange={e => set('title', e.target.value)} disabled={isCompleted}
-                placeholder="Ej: Vacuna anual polivalente"
+                placeholder={t('Ej: Vacuna anual polivalente')}
                 className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition disabled:opacity-50" />
             </div>
 
             {/* Type + Date */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Tipo</label>
+                <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Tipo')}</label>
                 <select value={form.type} onChange={e => set('type', e.target.value)} disabled={isCompleted}
                   className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition appearance-none disabled:opacity-50">
-                  <option value="vaccine">🩺 Vacuna</option>
-                  <option value="deworming">🪱 Desparasitación</option>
-                  <option value="checkup">🔍 Revisión</option>
-                  <option value="custom">📋 Personalizado</option>
+                  <option value="vaccine">🩺 {t('Vacuna')}</option>
+                  <option value="deworming">🪱 {t('Desparasitación')}</option>
+                  <option value="checkup">🔍 {t('Revisión')}</option>
+                  <option value="custom">📋 {t('Personalizado')}</option>
                 </select>
               </div>
               <div>
-                <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Fecha *</label>
+                <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Fecha *')}</label>
                 <input type="date" value={form.due_date} onChange={e => set('due_date', e.target.value)} disabled={isCompleted}
                   className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition disabled:opacity-50" />
               </div>
@@ -293,18 +295,18 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
 
             {/* Recurrence */}
             <div>
-              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Repetir cada (días)</label>
+              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Repetir cada (días)')}</label>
               <input type="number" min="0" value={form.recurrence_days} onChange={e => set('recurrence_days', e.target.value)} disabled={isCompleted}
-                placeholder="0 = sin repetición"
+                placeholder={t('0 = sin repetición')}
                 className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition disabled:opacity-50" />
-              <p className="text-[10px] text-muted mt-1">Al completar un recordatorio recurrente, se creará el siguiente automáticamente</p>
+              <p className="text-[10px] text-muted mt-1">{t('Al completar un recordatorio recurrente, se creará el siguiente automáticamente')}</p>
             </div>
 
             {/* Notes */}
             <div>
-              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Notas</label>
+              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Notas')}</label>
               <textarea value={form.notes} onChange={e => set('notes', e.target.value)} disabled={isCompleted}
-                rows={3} placeholder="Notas adicionales..."
+                rows={3} placeholder={t('Notas adicionales...')}
                 className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition resize-none disabled:opacity-50" />
             </div>
           </div>
@@ -317,7 +319,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
               <button onClick={handleDelete} disabled={deleting}
                 className="text-sm text-red-400 hover:text-red-300 transition flex items-center gap-1.5 disabled:opacity-50">
                 <Trash2 className="w-3.5 h-3.5" />
-                {deleting ? 'Eliminando...' : 'Eliminar'}
+                {deleting ? t('Eliminando...') : t('Eliminar')}
               </button>
             )}
           </div>
@@ -326,18 +328,18 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
               <button onClick={handleComplete} disabled={completing}
                 className="bg-green-500/15 text-green-400 hover:bg-green-500/25 font-semibold px-4 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-1.5 text-sm">
                 {completing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                {completing ? 'Completando...' : 'Completar'}
+                {completing ? t('Completando...') : t('Completar')}
               </button>
             )}
             {!isCompleted && (
               <button onClick={handleSubmit} disabled={loading || !form.dog_id || !form.title.trim() || !form.due_date || selfLoading}
                 className="bg-ink text-on-primary hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {loading ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
+                {loading ? t('Guardando...') : isEdit ? t('Guardar') : t('Crear')}
               </button>
             )}
             {isCompleted && (
-              <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">Cerrar</button>
+              <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">{t('Cerrar')}</button>
             )}
           </div>
         </div>

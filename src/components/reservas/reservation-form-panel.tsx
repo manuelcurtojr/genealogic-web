@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import SlidePanel from '@/components/ui/slide-panel'
 import { Button } from '@/components/ui/button'
 import { Trash2 } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Reservation {
   id: string
@@ -49,6 +50,7 @@ export default function ReservationFormPanel({
   open, onClose, onSaved, onDeleted, editing, kennelId,
   owners, litters, dogs,
 }: Props) {
+  const t = useT()
   const [status, setStatus] = useState('interested')
   const [ownerId, setOwnerId] = useState<string>('')
   const [litterId, setLitterId] = useState<string>('')
@@ -110,7 +112,7 @@ export default function ReservationFormPanel({
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Error al guardar')
+        throw new Error(err.error || t('Error al guardar'))
       }
       const data = await res.json()
       onSaved(data.reservation)
@@ -123,13 +125,13 @@ export default function ReservationFormPanel({
 
   async function handleDelete() {
     if (!editing) return
-    if (!confirm('¿Eliminar esta reserva? Esta acción no se puede deshacer.')) return
+    if (!confirm(t('¿Eliminar esta reserva? Esta acción no se puede deshacer.'))) return
     setDeleting(true)
     try {
       const res = await fetch(`/api/reservations/${editing.id}`, { method: 'DELETE' })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Error al eliminar')
+        throw new Error(err.error || t('Error al eliminar'))
       }
       onDeleted(editing.id)
     } catch (err: any) {
@@ -140,60 +142,60 @@ export default function ReservationFormPanel({
   }
 
   return (
-    <SlidePanel open={open} onClose={onClose} title={editing ? 'Editar reserva' : 'Nueva reserva'}>
+    <SlidePanel open={open} onClose={onClose} title={editing ? t('Editar reserva') : t('Nueva reserva')}>
       <form onSubmit={handleSubmit} className="space-y-5">
-        <Field label="Estado">
+        <Field label={t('Estado')}>
           <select value={status} onChange={e => setStatus(e.target.value)} className="input">
-            {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{t(o.label)}</option>)}
           </select>
         </Field>
 
-        <Field label="Cliente">
+        <Field label={t('Cliente')}>
           <select value={ownerId} onChange={e => setOwnerId(e.target.value)} className="input">
-            <option value="">— Sin asignar —</option>
+            <option value="">{t('— Sin asignar —')}</option>
             {owners.map(o => <option key={o.id} value={o.id}>{o.full_name}</option>)}
           </select>
         </Field>
 
-        <Field label="Camada (opcional)">
+        <Field label={t('Camada (opcional)')}>
           <select value={litterId} onChange={e => setLitterId(e.target.value)} className="input">
-            <option value="">— Sin asignar —</option>
+            <option value="">{t('— Sin asignar —')}</option>
             {litters.map(l => (
               <option key={l.id} value={l.id}>
-                {l.expected_date ? `Camada ${l.expected_date}` : `Camada ${l.id.slice(0, 8)}`}
+                {l.expected_date ? `${t('Camada')} ${l.expected_date}` : `${t('Camada')} ${l.id.slice(0, 8)}`}
               </option>
             ))}
           </select>
         </Field>
 
-        <Field label="Cachorro asignado (opcional)">
+        <Field label={t('Cachorro asignado (opcional)')}>
           <select value={dogId} onChange={e => setDogId(e.target.value)} className="input">
-            <option value="">— Sin asignar —</option>
+            <option value="">{t('— Sin asignar —')}</option>
             {dogs.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
         </Field>
 
-        <Field label="Preferencia sexo">
+        <Field label={t('Preferencia sexo')}>
           <select value={prefSex} onChange={e => setPrefSex(e.target.value)} className="input">
-            <option value="any">Indistinto</option>
-            <option value="male">Macho</option>
-            <option value="female">Hembra</option>
+            <option value="any">{t('Indistinto')}</option>
+            <option value="male">{t('Macho')}</option>
+            <option value="female">{t('Hembra')}</option>
           </select>
         </Field>
 
-        <Field label="Preferencia color">
-          <input type="text" value={prefColor} onChange={e => setPrefColor(e.target.value)} className="input" placeholder="Atigrado, leonado, negro…" />
+        <Field label={t('Preferencia color')}>
+          <input type="text" value={prefColor} onChange={e => setPrefColor(e.target.value)} className="input" placeholder={t('Atigrado, leonado, negro…')} />
         </Field>
 
-        <Field label="Notas">
-          <textarea value={prefNotes} onChange={e => setPrefNotes(e.target.value)} className="input min-h-[80px]" placeholder="Notas internas sobre el cliente, preferencias específicas, etc." />
+        <Field label={t('Notas')}>
+          <textarea value={prefNotes} onChange={e => setPrefNotes(e.target.value)} className="input min-h-[80px]" placeholder={t('Notas internas sobre el cliente, preferencias específicas, etc.')} />
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Depósito (€)">
+          <Field label={t('Depósito (€)')}>
             <input type="number" step="0.01" value={depositEur} onChange={e => setDepositEur(e.target.value)} className="input" placeholder="500" />
           </Field>
-          <Field label="Precio total (€)">
+          <Field label={t('Precio total (€)')}>
             <input type="number" step="0.01" value={totalEur} onChange={e => setTotalEur(e.target.value)} className="input" placeholder="2000" />
           </Field>
         </div>
@@ -207,13 +209,13 @@ export default function ReservationFormPanel({
               className="text-sm text-muted hover:text-[color:var(--error)] transition inline-flex items-center gap-1.5 disabled:opacity-50"
             >
               <Trash2 className="w-4 h-4" />
-              {deleting ? 'Eliminando…' : 'Eliminar'}
+              {deleting ? t('Eliminando…') : t('Eliminar')}
             </button>
           ) : <div />}
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={onClose}>Cancelar</Button>
+            <Button variant="ghost" size="sm" onClick={onClose}>{t('Cancelar')}</Button>
             <Button variant="primary" size="sm" type="submit" disabled={saving}>
-              {saving ? 'Guardando…' : (editing ? 'Guardar' : 'Crear')}
+              {saving ? t('Guardando…') : (editing ? t('Guardar') : t('Crear'))}
             </Button>
           </div>
         </div>

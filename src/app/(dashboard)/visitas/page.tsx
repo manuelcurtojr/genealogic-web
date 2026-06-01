@@ -9,6 +9,8 @@ import {
   type AnalyticsRange,
 } from '@/lib/analytics'
 import { RangeChips } from '@/components/analytics/range-chips'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Estadísticas web · Genealogic Pro' }
@@ -30,6 +32,7 @@ export default async function VisitasPage({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  const t = getTranslator(await getLocale())
 
   const { data: kennelArr } = await supabase
     .from('kennels')
@@ -41,8 +44,8 @@ export default async function VisitasPage({
   if (!kennel) {
     return (
       <div className="max-w-2xl mx-auto py-10">
-        <h1 className="text-3xl font-bold text-ink mb-3">Estadísticas web</h1>
-        <p className="text-body">Necesitas un criadero registrado.</p>
+        <h1 className="text-3xl font-bold text-ink mb-3">{t('Estadísticas web')}</h1>
+        <p className="text-body">{t('Necesitas un criadero registrado.')}</p>
       </div>
     )
   }
@@ -63,24 +66,23 @@ export default async function VisitasPage({
           Analytics
         </p>
         <h1 className="mt-2 text-4xl font-bold tracking-tight text-ink">
-          Estadísticas web
+          {t('Estadísticas web')}
         </h1>
         <p className="mt-3 text-body max-w-2xl">
-          Visitas, fuentes de tráfico, países y dispositivos de quienes entran en tu web del criadero.
-          Datos first-party — sin cookies y sin terceros.
+          {t('Visitas, fuentes de tráfico, países y dispositivos de quienes entran en tu web del criadero. Datos first-party — sin cookies y sin terceros.')}
         </p>
       </div>
 
       <div className="mt-8">
-        <Dashboard data={analytics} range={range} />
+        <Dashboard data={analytics} range={range} t={t} />
       </div>
     </div>
   )
 }
 
-function Dashboard({ data, range }: { data: AnalyticsData; range: AnalyticsRange }) {
+function Dashboard({ data, range, t }: { data: AnalyticsData; range: AnalyticsRange; t: (k: string) => string }) {
   const { kpi, timeseries, pages, referrers, countries, cities, devices } = data
-  const maxTs = Math.max(1, ...timeseries.map((t) => t.visits))
+  const maxTs = Math.max(1, ...timeseries.map((ts) => ts.visits))
   const maxPages = Math.max(1, ...pages.map((p) => p.visits))
   const maxRefs = Math.max(1, ...referrers.map((r) => r.visits))
   const maxCountries = Math.max(1, ...countries.map((c) => c.visits))
@@ -98,42 +100,42 @@ function Dashboard({ data, range }: { data: AnalyticsData; range: AnalyticsRange
     <div className="space-y-8">
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Kpi label="Visitas" value={nfmt.format(kpi.visits)} hint={data.rangeLabel.toLowerCase()} />
-        <Kpi label="Visitantes únicos" value={nfmt.format(kpi.uniqueVisitors)} hint="sesiones distintas" />
+        <Kpi label={t('Visitas')} value={nfmt.format(kpi.visits)} hint={data.rangeLabel.toLowerCase()} />
+        <Kpi label={t('Visitantes únicos')} value={nfmt.format(kpi.uniqueVisitors)} hint={t('sesiones distintas')} />
         <Kpi
-          label="Páginas / visitante"
+          label={t('Páginas / visitante')}
           value={kpi.pagesPerVisitor > 0 ? kpi.pagesPerVisitor.toFixed(1) : '—'}
-          hint="profundidad media"
+          hint={t('profundidad media')}
         />
         <Kpi
-          label="Rebote"
+          label={t('Rebote')}
           value={kpi.uniqueVisitors > 0 ? `${Math.round(kpi.bouncePct * 100)}%` : '—'}
-          hint="sesiones de 1 sola página"
+          hint={t('sesiones de 1 sola página')}
           hintTone={kpi.bouncePct > 0.7 ? 'red' : 'neutral'}
         />
       </div>
 
       {/* Range chips */}
       <div className="flex items-center gap-3">
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted">Rango:</span>
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted">{t('Rango:')}</span>
         <RangeChips active={range} />
       </div>
 
       {/* Timeseries */}
       <section className="rounded-2xl border border-hairline bg-canvas p-6">
-        <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-ink">Visitas en el tiempo</h2>
+        <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-ink">{t('Visitas en el tiempo')}</h2>
         <p className="mt-1 text-[12.5px] text-muted">
-          {range === 'today' ? 'Por hora (UTC).' : range === 'year' ? 'Por mes.' : 'Por día.'}
+          {range === 'today' ? t('Por hora (UTC).') : range === 'year' ? t('Por mes.') : t('Por día.')}
         </p>
         <div className="mt-8 flex h-48 items-end gap-1 border-b border-hairline pb-2">
-          {timeseries.map((t, i) => {
-            const h = (t.visits / maxTs) * 100
-            const minH = t.visits > 0 ? 4 : 0
+          {timeseries.map((ts, i) => {
+            const h = (ts.visits / maxTs) * 100
+            const minH = ts.visits > 0 ? 4 : 0
             return (
               <div key={i} className="group relative flex h-full flex-1 items-end">
                 <div className="pointer-events-none absolute -top-2 left-1/2 z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg bg-ink px-2.5 py-1.5 text-[11.5px] font-medium text-on-primary opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
-                  <div className="font-semibold">{t.label}</div>
-                  <div className="tabular-nums">{nfmt.format(t.visits)} visitas</div>
+                  <div className="font-semibold">{ts.label}</div>
+                  <div className="tabular-nums">{nfmt.format(ts.visits)} {t('visitas')}</div>
                 </div>
                 <div
                   className="w-full rounded-t-md bg-ink transition-opacity group-hover:opacity-80"
@@ -144,11 +146,11 @@ function Dashboard({ data, range }: { data: AnalyticsData; range: AnalyticsRange
           })}
         </div>
         <div className="mt-2 flex gap-1">
-          {timeseries.map((t, i) => {
+          {timeseries.map((ts, i) => {
             const show = timeseries.length <= 12 || i % Math.ceil(timeseries.length / 12) === 0
             return (
               <div key={i} className="flex flex-1 justify-center text-[10.5px] text-muted">
-                {show ? t.label : ''}
+                {show ? ts.label : ''}
               </div>
             )
           })}
@@ -157,14 +159,14 @@ function Dashboard({ data, range }: { data: AnalyticsData; range: AnalyticsRange
 
       {/* Pages + Referrers */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <ListSection title="Páginas más vistas" empty={pages.length === 0}>
+        <ListSection title={t('Páginas más vistas')} empty={pages.length === 0} t={t}>
           {pages.map((p) => (
             <li key={p.path} className="px-5 py-3">
               <div className="flex items-center justify-between gap-3 text-sm">
                 <span className="truncate font-mono text-xs text-body">{p.path}</span>
                 <span className="shrink-0 tabular-nums text-body">
                   <strong className="text-ink">{nfmt.format(p.visits)}</strong>
-                  <span className="ml-1.5 text-xs text-muted">({nfmt.format(p.uniques)} únicos)</span>
+                  <span className="ml-1.5 text-xs text-muted">({nfmt.format(p.uniques)} {t('únicos')})</span>
                 </span>
               </div>
               <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-surface-soft">
@@ -174,12 +176,12 @@ function Dashboard({ data, range }: { data: AnalyticsData; range: AnalyticsRange
           ))}
         </ListSection>
 
-        <ListSection title="Fuentes de tráfico" empty={referrers.length === 0}>
+        <ListSection title={t('Fuentes de tráfico')} empty={referrers.length === 0} t={t}>
           {referrers.map((r, i) => (
             <li key={`${r.referrer ?? 'direct'}-${i}`} className="px-5 py-3">
               <div className="flex items-center justify-between gap-3 text-sm">
                 <span className="truncate text-body">
-                  {r.referrer ?? <span className="italic text-muted">Directo / interno</span>}
+                  {r.referrer ?? <span className="italic text-muted">{t('Directo / interno')}</span>}
                 </span>
                 <span className="shrink-0 tabular-nums font-semibold text-ink">{nfmt.format(r.visits)}</span>
               </div>
@@ -193,7 +195,7 @@ function Dashboard({ data, range }: { data: AnalyticsData; range: AnalyticsRange
 
       {/* Countries + Cities */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <ListSection title="Países" empty={countries.length === 0}>
+        <ListSection title={t('Países')} empty={countries.length === 0} t={t}>
           {countries.map((c, i) => (
             <li key={`${c.country ?? 'unknown'}-${i}`} className="px-5 py-3">
               <div className="flex items-center justify-between gap-3 text-sm">
@@ -210,7 +212,7 @@ function Dashboard({ data, range }: { data: AnalyticsData; range: AnalyticsRange
           ))}
         </ListSection>
 
-        <ListSection title="Ciudades" empty={cities.length === 0}>
+        <ListSection title={t('Ciudades')} empty={cities.length === 0} t={t}>
           {cities.map((c, i) => (
             <li key={`${c.city ?? 'unknown'}-${i}`} className="px-5 py-3">
               <div className="flex items-center justify-between gap-3 text-sm">
@@ -230,10 +232,10 @@ function Dashboard({ data, range }: { data: AnalyticsData; range: AnalyticsRange
 
       {/* Devices */}
       <section className="rounded-2xl border border-hairline bg-canvas p-6">
-        <h2 className="text-xl font-semibold text-ink">Dispositivos</h2>
-        <p className="mt-1 text-xs text-muted">Detectado por User-Agent (no se guarda el UA raw).</p>
+        <h2 className="text-xl font-semibold text-ink">{t('Dispositivos')}</h2>
+        <p className="mt-1 text-xs text-muted">{t('Detectado por User-Agent (no se guarda el UA raw).')}</p>
         {totalDevices === 0 ? (
-          <EmptyState label="Sin datos todavía." />
+          <EmptyState label={t('Sin datos todavía.')} />
         ) : (
           <div className="mt-5 space-y-3">
             {['mobile', 'tablet', 'desktop'].map((d) => {
@@ -245,7 +247,7 @@ function Dashboard({ data, range }: { data: AnalyticsData; range: AnalyticsRange
               return (
                 <div key={d}>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-ink">{deviceLabel[d] ?? d}</span>
+                    <span className="font-medium text-ink">{deviceLabel[d] ? t(deviceLabel[d]) : d}</span>
                     <span className="tabular-nums text-body">
                       {nfmt.format(visits)} · {Math.round(share * 100)}%
                     </span>
@@ -261,22 +263,21 @@ function Dashboard({ data, range }: { data: AnalyticsData; range: AnalyticsRange
       </section>
 
       <p className="text-xs text-muted">
-        Analítica first-party. Sin cookies. No se almacena tu IP ni el User-Agent — solo un hash diario
-        derivado para contar visitantes únicos.
+        {t('Analítica first-party. Sin cookies. No se almacena tu IP ni el User-Agent — solo un hash diario derivado para contar visitantes únicos.')}
       </p>
     </div>
   )
 }
 
 function ListSection({
-  title, empty, children,
-}: { title: string; empty: boolean; children: React.ReactNode }) {
+  title, empty, children, t,
+}: { title: string; empty: boolean; children: React.ReactNode; t: (k: string) => string }) {
   return (
     <section className="overflow-hidden rounded-2xl bg-canvas ring-1 ring-hairline">
       <div className="border-b border-hairline px-6 py-4">
         <h2 className="text-lg font-semibold text-ink">{title}</h2>
       </div>
-      {empty ? <EmptyState label="Sin datos todavía." /> : <ul className="divide-y divide-hairline">{children}</ul>}
+      {empty ? <EmptyState label={t('Sin datos todavía.')} /> : <ul className="divide-y divide-hairline">{children}</ul>}
     </section>
   )
 }

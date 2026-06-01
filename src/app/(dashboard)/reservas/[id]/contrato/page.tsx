@@ -25,6 +25,10 @@ import {
 } from './actions'
 import { listContractTemplatesForUser } from '@/lib/contracts/templates-actions'
 import { CheckCircle2, FileText, AlertCircle } from 'lucide-react'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
+
+type T = (k: string) => string
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Contrato · Genealogic' }
@@ -53,6 +57,7 @@ export default async function BreederContractPage({
   // (marca FPE en /pricing). El acceso se restringe por propiedad de la
   // reserva (check de arriba), no por plan.
   const contract = await getContractByReservation(reservation.id)
+  const t = getTranslator(await getLocale())
 
   return (
     <div>
@@ -64,14 +69,15 @@ export default async function BreederContractPage({
       </Link>
 
       <div className="flex items-baseline justify-between gap-3 flex-wrap mb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-ink">Contrato</h1>
-        {contract && <StatusBadge status={contract.status} />}
+        <h1 className="text-3xl font-bold tracking-tight text-ink">{t('Contrato')}</h1>
+        {contract && <StatusBadge status={contract.status} t={t} />}
       </div>
 
       {!contract ? (
         <CreateContractCard
           reservationId={reservation.id}
           userTemplates={await listContractTemplatesForUser()}
+          t={t}
         />
       ) : contract.status === 'draft' ? (
         <ContractEditor
@@ -84,13 +90,13 @@ export default async function BreederContractPage({
           onSendAction={sendContractAction}
         />
       ) : (
-        <SentOrSignedView reservation={reservation} contract={contract} />
+        <SentOrSignedView reservation={reservation} contract={contract} t={t} />
       )}
     </div>
   )
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, t }: { status: string; t: T }) {
   const meta: Record<string, { label: string; color: string }> = {
     draft: { label: 'Borrador', color: 'bg-gray-100 text-gray-700' },
     sent: { label: 'Enviado al cliente', color: 'bg-blue-50 text-blue-800' },
@@ -103,7 +109,7 @@ function StatusBadge({ status }: { status: string }) {
     <span
       className={`text-[11px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full ${m.color}`}
     >
-      {m.label}
+      {t(m.label)}
     </span>
   )
 }
@@ -111,34 +117,34 @@ function StatusBadge({ status }: { status: string }) {
 function CreateContractCard({
   reservationId,
   userTemplates,
+  t,
 }: {
   reservationId: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   userTemplates: any[]
+  t: T
 }) {
   // Plantilla por defecto del kennel (si la marcó como default en /contratos)
   // sale destacada como CTA principal.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const defaultTpl = userTemplates.find((t: any) => t.is_default) || null
+  const defaultTpl = userTemplates.find((tp: any) => tp.is_default) || null
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const otherUserTpls = userTemplates.filter((t: any) => !t.is_default)
+  const otherUserTpls = userTemplates.filter((tp: any) => !tp.is_default)
   return (
     <div className="rounded-2xl border border-dashed border-hairline bg-canvas p-8">
       <div className="flex items-center gap-3 mb-3">
         <FileText className="h-6 w-6 text-ink" />
-        <p className="text-lg font-bold text-ink">Crea el contrato</p>
+        <p className="text-lg font-bold text-ink">{t('Crea el contrato')}</p>
       </div>
       <p className="text-sm text-body mb-6 max-w-2xl">
-        Elige una plantilla. Se pre-rellena con los datos de la reserva (cliente, cachorro,
-        precio). Después la editas con markdown ligero (negrita, listas, separadores) y la
-        envías al cliente para firma.
+        {t('Elige una plantilla. Se pre-rellena con los datos de la reserva (cliente, cachorro, precio). Después la editas con markdown ligero (negrita, listas, separadores) y la envías al cliente para firma.')}
       </p>
 
       {/* Plantillas del propio criador (contract_templates) */}
       {userTemplates.length > 0 && (
         <div className="mb-6 space-y-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-            Tus plantillas
+            {t('Tus plantillas')}
           </p>
           <div className="flex flex-wrap gap-2">
             {defaultTpl && (
@@ -152,7 +158,7 @@ function CreateContractCard({
                   type="submit"
                   className="inline-flex items-center gap-1.5 rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90"
                 >
-                  ★ {defaultTpl.name} <span className="text-[10px] opacity-75">(por defecto)</span>
+                  ★ {defaultTpl.name} <span className="text-[10px] opacity-75">{t('(por defecto)')}</span>
                 </button>
               </form>
             )}
@@ -180,7 +186,7 @@ function CreateContractCard({
       {/* Plantillas base (hardcoded) — fallback siempre disponible */}
       <div className="space-y-3">
         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-          {userTemplates.length > 0 ? 'O empieza desde modelo base' : 'Modelos base'}
+          {userTemplates.length > 0 ? t('O empieza desde modelo base') : t('Modelos base')}
         </p>
         <div className="flex flex-wrap gap-2">
           {CONTRACT_TEMPLATES.map((tpl) => (
@@ -195,7 +201,7 @@ function CreateContractCard({
                 type="submit"
                 className="rounded-lg border border-hairline bg-canvas text-ink px-4 py-2 text-sm font-semibold hover:border-ink/30 transition"
               >
-                Usar: {tpl.label}
+                {t('Usar:')} {t(tpl.label)}
               </button>
             </form>
           ))}
@@ -203,16 +209,15 @@ function CreateContractCard({
       </div>
 
       <p className="mt-6 text-[12px] text-muted">
-        ¿Quieres crear tu propia plantilla? Ve a{' '}
-        <a href="/contratos" className="text-ink underline">Contratos</a> y guarda tus modelos
-        para reusarlos en cada reserva.
+        {t('¿Quieres crear tu propia plantilla? Ve a')}{' '}
+        <a href="/contratos" className="text-ink underline">{t('Contratos')}</a> {t('y guarda tus modelos para reusarlos en cada reserva.')}
       </p>
     </div>
   )
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function SentOrSignedView({ reservation, contract }: { reservation: any; contract: any }) {
+function SentOrSignedView({ reservation, contract, t }: { reservation: any; contract: any; t: T }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
       <article
@@ -220,21 +225,21 @@ function SentOrSignedView({ reservation, contract }: { reservation: any; contrac
         dangerouslySetInnerHTML={{ __html: renderContractMarkdown(contract.body_html) }}
       />
       <aside className="space-y-4">
-        <SignaturePanel reservation={reservation} contract={contract} />
-        <ContractActionsPanel reservation={reservation} contract={contract} />
+        <SignaturePanel reservation={reservation} contract={contract} t={t} />
+        <ContractActionsPanel reservation={reservation} contract={contract} t={t} />
       </aside>
     </div>
   )
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function SignaturePanel({ reservation, contract }: { reservation: any; contract: any }) {
+function SignaturePanel({ reservation, contract, t }: { reservation: any; contract: any; t: T }) {
   return (
     <section className="rounded-2xl border border-hairline bg-canvas p-5">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-ink mb-3">Firmas</h3>
+      <h3 className="text-xs font-bold uppercase tracking-wider text-ink mb-3">{t('Firmas')}</h3>
       <div className="space-y-3 text-sm">
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-muted mb-0.5">Criador</p>
+          <p className="text-[11px] uppercase tracking-wider text-muted mb-0.5">{t('Criador')}</p>
           {contract.signed_at_breeder ? (
             <p className="font-semibold text-emerald-700 inline-flex items-center gap-1">
               <CheckCircle2 className="h-4 w-4" />
@@ -244,18 +249,19 @@ function SignaturePanel({ reservation, contract }: { reservation: any; contract:
             <SignAsBreederForm
               reservationId={reservation.id}
               contractId={contract.id}
+              t={t}
             />
           )}
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-muted mb-0.5">Cliente</p>
+          <p className="text-[11px] uppercase tracking-wider text-muted mb-0.5">{t('Cliente')}</p>
           {contract.signed_at_client ? (
             <p className="font-semibold text-emerald-700 inline-flex items-center gap-1">
               <CheckCircle2 className="h-4 w-4" />
               {contract.signature_client_name}
             </p>
           ) : (
-            <p className="text-xs text-muted">Pendiente de firma del cliente</p>
+            <p className="text-xs text-muted">{t('Pendiente de firma del cliente')}</p>
           )}
         </div>
       </div>
@@ -266,9 +272,11 @@ function SignaturePanel({ reservation, contract }: { reservation: any; contract:
 function SignAsBreederForm({
   reservationId,
   contractId,
+  t,
 }: {
   reservationId: string
   contractId: string
+  t: T
 }) {
   return (
     <form
@@ -283,24 +291,24 @@ function SignAsBreederForm({
         type="text"
         name="name"
         required
-        placeholder="Tu nombre completo"
+        placeholder={t('Tu nombre completo')}
         className="w-full rounded-md border border-hairline bg-surface-card px-2.5 py-1.5 text-xs text-ink"
       />
       <button
         type="submit"
         className="w-full rounded-md bg-ink text-on-primary px-3 py-1.5 text-xs font-semibold hover:opacity-90"
       >
-        Firmar como criador
+        {t('Firmar como criador')}
       </button>
     </form>
   )
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ContractActionsPanel({ reservation, contract }: { reservation: any; contract: any }) {
+function ContractActionsPanel({ reservation, contract, t }: { reservation: any; contract: any; t: T }) {
   return (
     <section className="rounded-2xl border border-hairline bg-canvas p-5">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-ink mb-3">Acciones</h3>
+      <h3 className="text-xs font-bold uppercase tracking-wider text-ink mb-3">{t('Acciones')}</h3>
       {contract.status !== 'signed_full' && (
         <form
           action={async () => {
@@ -313,14 +321,13 @@ function ContractActionsPanel({ reservation, contract }: { reservation: any; con
             className="w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-hairline bg-canvas px-3 py-2 text-xs font-semibold text-body hover:border-red-300 hover:text-red-600"
           >
             <AlertCircle className="h-3.5 w-3.5" />
-            Volver a borrador (reset firmas)
+            {t('Volver a borrador (reset firmas)')}
           </button>
         </form>
       )}
       <p className="mt-3 text-[11px] text-muted leading-relaxed">
-        El contrato es visible para el cliente desde su panel{' '}
-        <code>/mis-reservas/{reservation.id.slice(0, 6)}…/contrato</code>. Cancelar lo
-        devuelve a borrador y borra ambas firmas.
+        {t('El contrato es visible para el cliente desde su panel')}{' '}
+        <code>/mis-reservas/{reservation.id.slice(0, 6)}…/contrato</code>. {t('Cancelar lo devuelve a borrador y borra ambas firmas.')}
       </p>
     </section>
   )

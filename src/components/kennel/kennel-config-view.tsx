@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import KennelEditPanel from './kennel-edit-panel'
 import ContactFormBuilder from './contact-form-builder'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,6 +45,7 @@ interface Props {
  *   - userId silencer hack
  */
 export default function KennelConfigView({ kennel, stats, isPro = false }: Props) {
+  const t = useT()
   const router = useRouter()
   const [showEdit, setShowEdit] = useState(false)
   const [showFormBuilder, setShowFormBuilder] = useState(false)
@@ -86,41 +88,41 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
   const publicUrl = kennel.slug ? `/kennels/${kennel.slug}` : null
 
   const kpis = [
-    { label: 'Perros', value: stats.dogs, icon: Dog, href: '/dogs', color: '#fb923c' },
-    { label: 'Visibles', value: stats.visible, icon: Eye, href: '/dogs', color: '#34d399' },
-    { label: 'Reproductores', value: stats.reproductive, icon: Heart, href: '/dogs?tab=reproductive', color: '#ec4899' },
-    { label: 'Camadas', value: stats.litters, icon: Baby, href: '/litters', color: '#8b5cf6' },
+    { label: t('Perros'), value: stats.dogs, icon: Dog, href: '/dogs', color: '#fb923c' },
+    { label: t('Visibles'), value: stats.visible, icon: Eye, href: '/dogs', color: '#34d399' },
+    { label: t('Reproductores'), value: stats.reproductive, icon: Heart, href: '/dogs?tab=reproductive', color: '#ec4899' },
+    { label: t('Camadas'), value: stats.litters, icon: Baby, href: '/litters', color: '#8b5cf6' },
   ]
 
   // Herramientas avanzadas — solo las que aportan, agrupadas
   const advancedTools = [
     {
-      label: 'Formulario de contacto',
-      desc: 'Personaliza las preguntas que ven los visitantes (plantilla + campos custom).',
+      label: t('Formulario de contacto'),
+      desc: t('Personaliza las preguntas que ven los visitantes (plantilla + campos custom).'),
       icon: Inbox,
       onClick: () => setShowFormBuilder(true),
     },
     {
-      label: 'Visitas a la web',
-      desc: 'Analíticas de tráfico, países, dispositivos y páginas más vistas.',
+      label: t('Visitas a la web'),
+      desc: t('Analíticas de tráfico, países, dispositivos y páginas más vistas.'),
       icon: TrendingUp,
       href: '/visitas',
     },
     {
-      label: 'Dominio personalizado',
-      desc: 'Conecta tu dominio propio (tucriadero.com).',
+      label: t('Dominio personalizado'),
+      desc: t('Conecta tu dominio propio (tucriadero.com).'),
       icon: Link2,
       href: '/cuenta/dominio',
     },
     {
-      label: 'Pagos online (Stripe)',
-      desc: 'Conecta Stripe Connect para cobrar reservas y entregas online.',
+      label: t('Pagos online (Stripe)'),
+      desc: t('Conecta Stripe Connect para cobrar reservas y entregas online.'),
       icon: CreditCard,
       href: '/kennel/pagos',
     },
     {
-      label: 'API keys',
-      desc: 'Tokens para integrar datos con servicios externos.',
+      label: t('API keys'),
+      desc: t('Tokens para integrar datos con servicios externos.'),
       icon: Key,
       href: '/kennel/api',
     },
@@ -130,12 +132,12 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
     <div className="space-y-6 sm:space-y-8">
       {/* Page header */}
       <div>
-        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Mi cuenta</p>
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Mi cuenta')}</p>
         <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-          Mi criadero
+          {t('Mi criadero')}
         </h1>
         <p className="mt-2 text-[14px] text-body">
-          Datos del criadero, contenido público y herramientas.
+          {t('Datos del criadero, contenido público y herramientas.')}
         </p>
       </div>
 
@@ -154,7 +156,7 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
             className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-ink text-on-primary shadow-sm transition-colors hover:opacity-90 disabled:opacity-50"
-            title="Cambiar logo"
+            title={t('Cambiar logo')}
           >
             {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
           </button>
@@ -170,7 +172,7 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
           <h2 className="truncate text-[18px] font-semibold tracking-[-0.02em] text-ink">{kennel.name}</h2>
           {kennel.affix && (
             <p className="mt-0.5 text-[12px] font-medium uppercase tracking-wider text-muted">
-              Afijo: {kennel.affix}
+              {t('Afijo:')} {kennel.affix}
             </p>
           )}
           {kennel.description && (
@@ -181,7 +183,7 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
           onClick={() => setShowEdit(true)}
           className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-2 text-[12.5px] font-medium text-on-primary transition-colors hover:opacity-90 flex-shrink-0"
         >
-          <Edit className="h-3.5 w-3.5" /> Editar datos
+          <Edit className="h-3.5 w-3.5" /> {t('Editar datos')}
         </button>
       </section>
 
@@ -199,14 +201,13 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
           <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="min-w-0">
               <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FE6620]">
-                <Sparkles className="h-3 w-3" /> Tu web pública
+                <Sparkles className="h-3 w-3" /> {t('Tu web pública')}
               </div>
               <h3 className="mt-1.5 text-[18px] sm:text-[20px] font-semibold tracking-[-0.02em] text-ink">
-                Edita lo que ven tus clientes
+                {t('Edita lo que ven tus clientes')}
               </h3>
               <p className="mt-1 text-[13px] text-body max-w-prose leading-snug">
-                Sobre nosotros, galería, instalaciones y blog. Sin escribir HTML —
-                se rellena solo con tu contenido.
+                {t('Sobre nosotros, galería, instalaciones y blog. Sin escribir HTML — se rellena solo con tu contenido.')}
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
@@ -214,7 +215,7 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
                 href="/kennel/contenido/sobre"
                 className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-ink px-4 py-2.5 text-[13px] font-bold text-on-primary hover:opacity-90 transition"
               >
-                <Pencil className="h-3.5 w-3.5" /> Editar contenido
+                <Pencil className="h-3.5 w-3.5" /> {t('Editar contenido')}
               </Link>
               {publicUrl && (
                 <Link
@@ -223,7 +224,7 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2.5 text-[13px] font-semibold text-body hover:border-ink/30 hover:text-ink transition"
                 >
-                  <ExternalLink className="h-3.5 w-3.5" /> Ver mi web
+                  <ExternalLink className="h-3.5 w-3.5" /> {t('Ver mi web')}
                 </Link>
               )}
             </div>
@@ -239,7 +240,7 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3.5 py-2 text-[12.5px] font-medium text-body hover:border-ink/30 hover:text-ink transition self-start"
         >
-          <ExternalLink className="h-3.5 w-3.5" /> Ver mi perfil público
+          <ExternalLink className="h-3.5 w-3.5" /> {t('Ver mi perfil público')}
         </Link>
       )}
 
@@ -276,9 +277,9 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
           className="flex w-full items-center justify-between gap-3 rounded-xl border border-hairline bg-canvas px-4 py-3 hover:bg-surface-soft transition-colors"
         >
           <div className="text-left">
-            <p className="text-[14px] font-semibold text-ink">Herramientas avanzadas</p>
+            <p className="text-[14px] font-semibold text-ink">{t('Herramientas avanzadas')}</p>
             <p className="text-[12px] text-muted">
-              Formulario, dominio propio, pagos online, API keys, analíticas.
+              {t('Formulario, dominio propio, pagos online, API keys, analíticas.')}
             </p>
           </div>
           <ChevronDown

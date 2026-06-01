@@ -11,6 +11,8 @@
  */
 import { Calendar, MapPin, Medal, Milestone } from 'lucide-react'
 import { pastelByName } from '@/lib/avatars'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 interface Props {
   kennelName: string
@@ -21,36 +23,37 @@ interface Props {
   milestoneCount: number
 }
 
-export default function AboutHero({
+export default async function AboutHero({
   kennelName, logoUrl, foundationYear, location, breedNames, milestoneCount,
 }: Props) {
+  const t = getTranslator(await getLocale())
   const yearsActive = foundationYear ? new Date().getFullYear() - foundationYear : 0
   const chips: Array<{ icon: React.ElementType; primary: string; secondary?: string }> = []
 
   if (foundationYear) {
     chips.push({
       icon: Calendar,
-      primary: `Desde ${foundationYear}`,
-      secondary: yearsActive >= 1 ? `${yearsActive >= 50 ? '50+' : yearsActive} ${yearsActive === 1 ? 'año' : 'años'}` : undefined,
+      primary: `${t('Desde')} ${foundationYear}`,
+      secondary: yearsActive >= 1 ? `${yearsActive >= 50 ? '50+' : yearsActive} ${yearsActive === 1 ? t('año') : t('años')}` : undefined,
     })
   }
   if (location) {
     chips.push({ icon: MapPin, primary: location })
   }
   if (breedNames.length === 1) {
-    chips.push({ icon: Medal, primary: breedNames[0], secondary: 'Especialidad' })
+    chips.push({ icon: Medal, primary: breedNames[0], secondary: t('Especialidad') })
   } else if (breedNames.length > 1) {
     chips.push({
       icon: Medal,
-      primary: `${breedNames.length} razas`,
+      primary: `${breedNames.length} ${t('razas')}`,
       secondary: breedNames.slice(0, 2).join(' · ') + (breedNames.length > 2 ? '…' : ''),
     })
   }
   if (milestoneCount >= 2) {
     chips.push({
       icon: Milestone,
-      primary: `${milestoneCount} hitos`,
-      secondary: 'En la historia',
+      primary: `${milestoneCount} ${t('hitos')}`,
+      secondary: t('En la historia'),
     })
   }
 
@@ -75,14 +78,14 @@ export default function AboutHero({
         )}
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
-            Criadero
+            {t('Criadero')}
           </p>
           <p className="mt-0.5 text-[18px] sm:text-[20px] font-semibold tracking-[-0.02em] text-ink leading-snug">
             {kennelName}
           </p>
           {(foundationYear || location) && (
             <p className="mt-0.5 text-[12.5px] text-body">
-              {[location, foundationYear ? `est. ${foundationYear}` : null].filter(Boolean).join(' · ')}
+              {[location, foundationYear ? `${t('est.')} ${foundationYear}` : null].filter(Boolean).join(' · ')}
             </p>
           )}
         </div>

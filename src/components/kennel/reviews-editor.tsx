@@ -10,6 +10,7 @@ import {
   uploadReviewAvatarAction,
 } from '@/lib/kennel/content-actions'
 import ReviewAvatar from './review-avatar'
+import { useT } from '@/components/i18n/locale-provider'
 
 type Review = {
   id: string
@@ -26,6 +27,7 @@ export default function ReviewsEditor({
   kennelId: string
   initialReviews: Review[]
 }) {
+  const t = useT()
   const router = useRouter()
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -35,11 +37,10 @@ export default function ReviewsEditor({
       <div className="flex items-end justify-between gap-3 flex-wrap">
         <div>
           <h2 className="text-[17px] sm:text-[18px] font-semibold tracking-[-0.02em] text-ink">
-            Reseñas de clientes
+            {t('Reseñas de clientes')}
           </h2>
           <p className="mt-1 text-[12.5px] text-muted max-w-prose">
-            Aparecen en el Inicio de tu web pública. Pega aquí los testimonios que
-            te dan tus clientes (con su permiso, por supuesto).
+            {t('Aparecen en el Inicio de tu web pública. Pega aquí los testimonios que te dan tus clientes (con su permiso, por supuesto).')}
           </p>
         </div>
         {!creating && (
@@ -48,7 +49,7 @@ export default function ReviewsEditor({
             onClick={() => setCreating(true)}
             className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-2 text-[12.5px] font-bold text-on-primary hover:opacity-90 transition self-start"
           >
-            <Plus className="h-3.5 w-3.5" /> Nueva reseña
+            <Plus className="h-3.5 w-3.5" /> {t('Nueva reseña')}
           </button>
         )}
       </div>
@@ -72,9 +73,9 @@ export default function ReviewsEditor({
       {initialReviews.length === 0 && !creating ? (
         <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft p-8 text-center">
           <MessageSquare className="mx-auto h-7 w-7 text-muted" />
-          <p className="mt-3 text-[14px] font-semibold text-ink">Aún no hay reseñas</p>
+          <p className="mt-3 text-[14px] font-semibold text-ink">{t('Aún no hay reseñas')}</p>
           <p className="mt-1 text-[12.5px] text-body max-w-sm mx-auto leading-snug">
-            La opinión sincera de un cliente vale más que cualquier copy de marketing.
+            {t('La opinión sincera de un cliente vale más que cualquier copy de marketing.')}
           </p>
         </div>
       ) : (
@@ -91,19 +92,20 @@ export default function ReviewsEditor({
 function ReviewRow({
   review, kennelId, onError,
 }: { review: Review; kennelId: string; onError: (msg: string | null) => void }) {
+  const t = useT()
   const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [pending, startTransition] = useTransition()
 
   function handleDelete() {
-    if (!confirm('¿Borrar esta reseña?')) return
+    if (!confirm(t('¿Borrar esta reseña?'))) return
     onError(null)
     startTransition(async () => {
       try {
         await deleteReviewAction({ reviewId: review.id, kennelId })
         router.refresh()
       } catch (err) {
-        onError(err instanceof Error ? err.message : 'No se pudo borrar')
+        onError(err instanceof Error ? err.message : t('No se pudo borrar'))
       }
     })
   }
@@ -115,7 +117,7 @@ function ReviewRow({
         await toggleReviewVisibilityAction({ reviewId: review.id, kennelId, visible: !review.is_visible })
         router.refresh()
       } catch (err) {
-        onError(err instanceof Error ? err.message : 'No se pudo cambiar visibilidad')
+        onError(err instanceof Error ? err.message : t('No se pudo cambiar visibilidad'))
       }
     })
   }
@@ -153,7 +155,7 @@ function ReviewRow({
             )}
             {!review.is_visible && (
               <span className="inline-flex items-center gap-1 rounded-full bg-surface-card text-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-                Oculta
+                {t('Oculta')}
               </span>
             )}
           </div>
@@ -164,14 +166,14 @@ function ReviewRow({
             onClick={toggleVisibility}
             disabled={pending}
             className="text-muted hover:text-ink p-1.5 rounded-md hover:bg-surface-soft disabled:opacity-50"
-            title={review.is_visible ? 'Ocultar' : 'Mostrar'}
+            title={review.is_visible ? t('Ocultar') : t('Mostrar')}
           >
             {review.is_visible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
           </button>
           <button
             onClick={() => setEditing(true)}
             className="text-muted hover:text-ink p-1.5 rounded-md hover:bg-surface-soft"
-            title="Editar"
+            title={t('Editar')}
           >
             <Pencil className="h-3.5 w-3.5" />
           </button>
@@ -179,7 +181,7 @@ function ReviewRow({
             onClick={handleDelete}
             disabled={pending}
             className="text-muted hover:text-red-600 p-1.5 rounded-md hover:bg-surface-soft disabled:opacity-50"
-            title="Borrar"
+            title={t('Borrar')}
           >
             {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
           </button>
@@ -198,6 +200,7 @@ function ReviewForm({
   onCancel: () => void
   onError: (msg: string | null) => void
 }) {
+  const t = useT()
   const [authorName, setAuthorName] = useState(initialReview?.author_name || '')
   const [body, setBody] = useState(initialReview?.body || '')
   const [rating, setRating] = useState<number | null>(initialReview?.rating ?? 5)
@@ -216,7 +219,7 @@ function ReviewForm({
       const { url } = await uploadReviewAvatarAction(fd)
       setAvatarUrl(url)
     } catch (err) {
-      onError(err instanceof Error ? err.message : 'No se pudo subir la foto')
+      onError(err instanceof Error ? err.message : t('No se pudo subir la foto'))
     } finally {
       setUploadingAvatar(false)
       if (fileRef.current) fileRef.current.value = ''
@@ -237,9 +240,9 @@ function ReviewForm({
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'error'
         const human =
-          msg === 'author_too_short' ? 'El nombre del cliente es muy corto.' :
-          msg === 'body_too_short' ? 'El texto de la reseña es muy corto.' :
-          `No se pudo guardar: ${msg}`
+          msg === 'author_too_short' ? t('El nombre del cliente es muy corto.') :
+          msg === 'body_too_short' ? t('El texto de la reseña es muy corto.') :
+          `${t('No se pudo guardar:')} ${msg}`
         onError(human)
       }
     })
@@ -256,7 +259,7 @@ function ReviewForm({
             onClick={() => fileRef.current?.click()}
             disabled={uploadingAvatar}
             className="absolute -bottom-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-ink text-on-primary shadow hover:opacity-90 disabled:opacity-50"
-            title="Subir foto del cliente"
+            title={t('Subir foto del cliente')}
           >
             {uploadingAvatar ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImagePlus className="h-3 w-3" />}
           </button>
@@ -275,7 +278,7 @@ function ReviewForm({
           type="text"
           value={authorName}
           onChange={e => setAuthorName(e.target.value)}
-          placeholder="Nombre del cliente (ej: Familia García, Madrid)"
+          placeholder={t('Nombre del cliente (ej: Familia García, Madrid)')}
           autoFocus={!initialReview}
           className="flex-1 min-w-0 rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] font-semibold text-ink placeholder:text-muted/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
         />
@@ -285,7 +288,7 @@ function ReviewForm({
             onClick={() => setAvatarUrl(null)}
             className="text-[11px] text-muted hover:text-red-600 transition flex-shrink-0"
           >
-            Quitar
+            {t('Quitar')}
           </button>
         )}
       </div>
@@ -293,11 +296,11 @@ function ReviewForm({
         value={body}
         onChange={e => setBody(e.target.value)}
         rows={4}
-        placeholder="Texto de la reseña tal cual te la dio el cliente..."
+        placeholder={t('Texto de la reseña tal cual te la dio el cliente...')}
         className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13.5px] text-body placeholder:text-muted/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition resize-y leading-[1.55]"
       />
       <div className="flex items-center gap-2">
-        <span className="text-[11.5px] font-medium text-muted">Valoración:</span>
+        <span className="text-[11.5px] font-medium text-muted">{t('Valoración:')}</span>
         {Array.from({ length: 5 }).map((_, i) => {
           const n = i + 1
           return (
@@ -306,7 +309,7 @@ function ReviewForm({
               type="button"
               onClick={() => setRating(rating === n ? null : n)}
               className="p-1"
-              title={`${n} estrellas`}
+              title={`${n} ${t('estrellas')}`}
             >
               <Star
                 className={`h-4 w-4 transition ${n <= (rating || 0) ? 'fill-amber-400 text-amber-400' : 'text-hairline hover:text-amber-300'}`}
@@ -320,7 +323,7 @@ function ReviewForm({
             onClick={() => setRating(null)}
             className="ml-2 text-[11px] text-muted hover:text-ink transition"
           >
-            Sin nota
+            {t('Sin nota')}
           </button>
         )}
       </div>
@@ -331,7 +334,7 @@ function ReviewForm({
           disabled={pending}
           className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[12.5px] font-semibold text-muted hover:text-ink transition"
         >
-          <X className="h-3 w-3" /> Cancelar
+          <X className="h-3 w-3" /> {t('Cancelar')}
         </button>
         <button
           type="button"
@@ -340,7 +343,7 @@ function ReviewForm({
           className="inline-flex items-center gap-1 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-bold text-on-primary hover:opacity-90 disabled:opacity-40 transition"
         >
           {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-          Guardar
+          {t('Guardar')}
         </button>
       </div>
     </div>

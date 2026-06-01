@@ -12,6 +12,8 @@
  * — esa gate la hace la página padre.
  */
 import { pastelByName } from '@/lib/avatars'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 interface Props {
   owner: {
@@ -22,8 +24,9 @@ interface Props {
   kennelName: string
 }
 
-export default function AboutTeam({ owner, kennelName }: Props) {
-  const name = owner.display_name || 'Equipo del criadero'
+export default async function AboutTeam({ owner, kennelName }: Props) {
+  const t = getTranslator(await getLocale())
+  const name = owner.display_name || t('Equipo del criadero')
   // Trunca bio para no convertir el card en un essay
   const bio = owner.bio ? truncate(owner.bio, 360) : null
 
@@ -31,10 +34,10 @@ export default function AboutTeam({ owner, kennelName }: Props) {
     <section>
       <div className="mb-6 sm:mb-8">
         <p className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#FE6620]">
-          Las personas
+          {t('Las personas')}
         </p>
         <h2 className="mt-1.5 text-[22px] sm:text-[28px] font-semibold tracking-[-0.03em] text-ink leading-[1.15]">
-          Quién está detrás
+          {t('Quién está detrás')}
         </h2>
       </div>
 
@@ -57,7 +60,7 @@ export default function AboutTeam({ owner, kennelName }: Props) {
         )}
         <div className="min-w-0 flex-1">
           <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">
-            Fundador · {kennelName}
+            {t('Fundador')} · {kennelName}
           </p>
           <h3 className="mt-0.5 text-[20px] sm:text-[24px] font-semibold tracking-[-0.025em] text-ink leading-snug">
             {name}
@@ -68,7 +71,7 @@ export default function AboutTeam({ owner, kennelName }: Props) {
             </p>
           ) : (
             <p className="mt-3 text-[13.5px] text-muted italic max-w-prose">
-              Responsable de la cría, selección y continuidad del criadero.
+              {t('Responsable de la cría, selección y continuidad del criadero.')}
             </p>
           )}
         </div>
@@ -79,9 +82,9 @@ export default function AboutTeam({ owner, kennelName }: Props) {
 
 /** Trunca en último espacio antes de maxChars (sin '…'). */
 function truncate(text: string, maxChars: number): string {
-  const t = text.trim()
-  if (t.length <= maxChars) return t
-  const slice = t.slice(0, maxChars)
+  const trimmed = text.trim()
+  if (trimmed.length <= maxChars) return trimmed
+  const slice = trimmed.slice(0, maxChars)
   const lastBreak = Math.max(slice.lastIndexOf(' '), slice.lastIndexOf('\n'))
   if (lastBreak < maxChars * 0.6) return slice.trimEnd() + '…'
   return slice.slice(0, lastBreak).trimEnd() + '…'

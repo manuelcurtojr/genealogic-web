@@ -14,6 +14,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { transformImageUrl } from '@/lib/storage/image-url'
+import { useT } from '@/components/i18n/locale-provider'
 
 type Photo = { id: string; url: string; caption: string | null }
 
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export default function KennelPhotosGallery({ photos, layout = 'gallery' }: Props) {
+  const t = useT()
   const [openIdx, setOpenIdx] = useState<number | null>(null)
 
   const close = useCallback(() => setOpenIdx(null), [])
@@ -75,7 +77,7 @@ export default function KennelPhotosGallery({ photos, layout = 'gallery' }: Prop
               type="button"
               onClick={() => setOpenIdx(i)}
               className={`${aspectClass} block w-full overflow-hidden bg-surface-card cursor-zoom-in`}
-              aria-label={p.caption || 'Ver foto'}
+              aria-label={p.caption || t('Ver foto')}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -118,13 +120,14 @@ function Lightbox({
   onNext: () => void
   onPrev: () => void
 }) {
+  const t = useT()
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm">
       {/* Click fuera de la imagen cierra */}
       <button
         type="button"
         onClick={onClose}
-        aria-label="Cerrar"
+        aria-label={t('Cerrar')}
         className="absolute inset-0 cursor-zoom-out"
       />
 
@@ -147,7 +150,7 @@ function Lightbox({
       <button
         type="button"
         onClick={onClose}
-        aria-label="Cerrar"
+        aria-label={t('Cerrar')}
         className="absolute top-4 right-4 sm:top-6 sm:right-6 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/15 backdrop-blur-md text-white hover:bg-white/25 transition"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
@@ -159,7 +162,7 @@ function Lightbox({
           <button
             type="button"
             onClick={onPrev}
-            aria-label="Anterior"
+            aria-label={t('Anterior')}
             className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 backdrop-blur-md text-white hover:bg-white/25 transition"
           >
             <ChevronLeft className="h-6 w-6" />
@@ -167,7 +170,7 @@ function Lightbox({
           <button
             type="button"
             onClick={onNext}
-            aria-label="Siguiente"
+            aria-label={t('Siguiente')}
             className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 backdrop-blur-md text-white hover:bg-white/25 transition"
           >
             <ChevronRight className="h-6 w-6" />

@@ -22,6 +22,8 @@ import { Globe } from 'lucide-react'
 import { pastelByName } from '@/lib/avatars'
 import type { ExtraPageId } from '@/lib/kennel/pro-web'
 import KennelChromeNav from './kennel-chrome-nav'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 type NavItem = { id: 'home' | 'perros' | ExtraPageId | 'contacto' | 'razas'; href: string; label: string }
 
@@ -149,9 +151,10 @@ export default function KennelChrome({
 }
 
 /* Footer reusable para chrome standalone (custom domain) */
-export function KennelChromeFooter({
+export async function KennelChromeFooter({
   kennelName, kennelSlug, showGenealogicLink = true,
 }: { kennelName: string; kennelSlug: string; showGenealogicLink?: boolean }) {
+  const t = getTranslator(await getLocale())
   return (
     <footer className="bg-surface-soft py-12 sm:py-16 mt-12 sm:mt-16 border-t border-hairline">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
@@ -159,13 +162,13 @@ export function KennelChromeFooter({
           <div>
             <p className="text-xl sm:text-2xl font-bold text-ink tracking-tight">{kennelName}</p>
             <p className="mt-2 text-[12.5px] text-muted">
-              © {new Date().getFullYear()} {kennelName}. Todos los derechos reservados.
+              © {new Date().getFullYear()} {kennelName}. {t('Todos los derechos reservados.')}
             </p>
           </div>
           {showGenealogicLink && (
             <p className="text-[11px] text-muted inline-flex items-center gap-1.5">
               <Globe className="h-3 w-3" />
-              Web creada con{' '}
+              {t('Web creada con')}{' '}
               <Link
                 href={`https://genealogic.io/kennels/${kennelSlug}`}
                 className="font-semibold text-body hover:text-[#FE6620] transition-colors uppercase tracking-[0.1em]"

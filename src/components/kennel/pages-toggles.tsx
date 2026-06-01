@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { EXTRA_PAGES, PAGE_NAV_LABEL, isExtraPageEnabled, type ExtraPageId } from '@/lib/kennel/pro-web'
 import { toggleKennelPageAction } from '@/lib/kennel/pages-actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 const PAGE_ICON: Record<ExtraPageId, React.ElementType> = {
   sobre: UserIcon,
@@ -63,6 +64,7 @@ interface Props {
 }
 
 export default function PagesToggles({ kennelId, enabledPages, canUsePro, contentStatus }: Props) {
+  const t = useT()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [busyId, setBusyId] = useState<ExtraPageId | null>(null)
@@ -78,9 +80,9 @@ export default function PagesToggles({ kennelId, enabledPages, canUsePro, conten
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'error'
         if (msg === 'requires_kennel_pro') {
-          setError('Esta página requiere Kennel Pro. Apúntate a la lista de espera.')
+          setError(t('Esta página requiere Kennel Pro. Apúntate a la lista de espera.'))
         } else {
-          setError('No se pudo cambiar el estado. Inténtalo de nuevo.')
+          setError(t('No se pudo cambiar el estado. Inténtalo de nuevo.'))
         }
       } finally {
         setBusyId(null)
@@ -108,12 +110,12 @@ export default function PagesToggles({ kennelId, enabledPages, canUsePro, conten
   return (
     <div className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6">
       <div className="mb-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Páginas</p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('Páginas')}</p>
         <h2 className="mt-1 text-[18px] sm:text-[20px] font-semibold tracking-[-0.02em] text-ink">
-          Páginas de tu web
+          {t('Páginas de tu web')}
         </h2>
         <p className="mt-1 text-[13px] text-body">
-          Activa las que quieras tener. Solo se publican cuando añades contenido (pulsa "Editar" para añadirlo).
+          {t('Activa las que quieras tener. Solo se publican cuando añades contenido (pulsa "Editar" para añadirlo).')}
         </p>
       </div>
 
@@ -125,12 +127,12 @@ export default function PagesToggles({ kennelId, enabledPages, canUsePro, conten
             <li key={p.id} className="flex items-start gap-3 p-3 sm:p-3.5">
               <Icon className="h-3.5 w-3.5 mt-1 text-muted flex-shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-[13.5px] font-semibold text-ink">{PAGE_NAV_LABEL[p.id]}</p>
-                <p className="text-[12px] text-muted leading-snug">{p.desc}</p>
+                <p className="text-[13.5px] font-semibold text-ink">{t(PAGE_NAV_LABEL[p.id])}</p>
+                <p className="text-[12px] text-muted leading-snug">{t(p.desc)}</p>
               </div>
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider flex-shrink-0">
                 <Check className="h-2.5 w-2.5" />
-                Siempre activa
+                {t('Siempre activa')}
               </span>
             </li>
           )
@@ -158,14 +160,14 @@ export default function PagesToggles({ kennelId, enabledPages, canUsePro, conten
               <Icon className="h-3.5 w-3.5 mt-1 text-muted flex-shrink-0" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-[13.5px] font-semibold text-ink">{PAGE_NAV_LABEL[id]}</p>
+                  <p className="text-[13.5px] font-semibold text-ink">{t(PAGE_NAV_LABEL[id])}</p>
                   {showContentWarning && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-900 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider">
-                      Pendiente: contenido
+                      {t('Pendiente: contenido')}
                     </span>
                   )}
                 </div>
-                <p className="text-[12px] text-muted leading-snug">{PAGE_DESC[id]}</p>
+                <p className="text-[12px] text-muted leading-snug">{t(PAGE_DESC[id])}</p>
               </div>
               {!canUsePro ? (
                 <a
@@ -173,16 +175,16 @@ export default function PagesToggles({ kennelId, enabledPages, canUsePro, conten
                   className="inline-flex items-center gap-1 rounded-full bg-blue-100 text-blue-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider flex-shrink-0 hover:bg-blue-200 transition"
                 >
                   <Lock className="h-2.5 w-2.5" />
-                  Próximamente
+                  {t('Próximamente')}
                 </a>
               ) : (
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <Link
                     href={editorHref[id]}
                     className="inline-flex items-center gap-1 text-[11.5px] font-semibold text-muted hover:text-ink transition"
-                    title="Editar contenido"
+                    title={t('Editar contenido')}
                   >
-                    Editar <ArrowRight className="h-3 w-3" />
+                    {t('Editar')} <ArrowRight className="h-3 w-3" />
                   </Link>
                   <Toggle
                     enabled={isEnabled}
@@ -199,9 +201,7 @@ export default function PagesToggles({ kennelId, enabledPages, canUsePro, conten
       {/* FAQ — vive en la home, no es página propia. Lo aclaramos. */}
       <p className="mt-3 text-[11.5px] text-muted leading-snug flex items-start gap-1.5">
         <HelpCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-        La sección "Preguntas frecuentes" se renderiza dentro del Inicio
-        cuando tienes entradas en la biblioteca del Emailbot — no es una
-        página propia.
+        {t('La sección "Preguntas frecuentes" se renderiza dentro del Inicio cuando tienes entradas en la biblioteca del Emailbot — no es una página propia.')}
       </p>
 
       {error && (

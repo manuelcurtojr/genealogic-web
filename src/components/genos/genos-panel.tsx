@@ -19,6 +19,7 @@ import {
   X, Send, Loader2, Sparkles, Plus, ChevronLeft, User,
   Headphones, CheckCircle2, AlertCircle, MessageSquare,
 } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 import {
   createConversationAction, sendMessageAction,
   listConversationsAction, getConversationMessagesAction,
@@ -66,6 +67,7 @@ export default function GenosPanel({
   open: boolean
   onClose: () => void
 }) {
+  const t = useT()
   const [convs, setConvs] = useState<Conv[]>([])
   const [activeConvId, setActiveConvId] = useState<string | null>(null)
   const [activeIsEscalated, setActiveIsEscalated] = useState<string | null>(null)
@@ -116,7 +118,7 @@ export default function GenosPanel({
       const c = convs.find((x) => x.id === convId)
       setActiveIsEscalated(c?.escalated_to_request_id || null)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error cargando')
+      setError(e instanceof Error ? e.message : t('Error cargando'))
     }
   }
 
@@ -174,7 +176,7 @@ export default function GenosPanel({
         void newConvId
       } catch (e) {
         setMessages((prev) => prev.filter((m) => !m.pending))
-        const msg = e instanceof Error ? e.message : 'Error'
+        const msg = e instanceof Error ? e.message : t('Error')
         setError(msg)
       }
     })
@@ -184,7 +186,7 @@ export default function GenosPanel({
     if (!activeConvId) return
     const summary = escalateSummary.trim()
     if (summary.length < 5) {
-      setError('Resume el problema en una frase (mín. 5 caracteres)')
+      setError(t('Resume el problema en una frase (mín. 5 caracteres)'))
       return
     }
     startTransition(async () => {
@@ -197,7 +199,7 @@ export default function GenosPanel({
         setActiveIsEscalated(r.requestId)
         setEscalating(false)
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Error escalando')
+        setError(e instanceof Error ? e.message : t('Error escalando'))
       }
     })
   }
@@ -245,14 +247,14 @@ export default function GenosPanel({
             </div>
             <div>
               <h2 className="text-base font-bold text-ink leading-none">Genos</h2>
-              <p className="text-[11px] text-muted leading-none mt-0.5">Asistente de Genealogic</p>
+              <p className="text-[11px] text-muted leading-none mt-0.5">{t('Asistente de Genealogic')}</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
             {view === 'chat' && convs.length > 0 && (
               <button
                 onClick={() => setView('history')}
-                title="Historial"
+                title={t('Historial')}
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:text-ink hover:bg-surface-card transition"
               >
                 <MessageSquare className="w-4 h-4" />
@@ -260,7 +262,7 @@ export default function GenosPanel({
             )}
             <button
               onClick={startNew}
-              title="Nueva conversación"
+              title={t('Nueva conversación')}
               className="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:text-ink hover:bg-surface-card transition"
             >
               <Plus className="w-4 h-4" />
@@ -277,7 +279,7 @@ export default function GenosPanel({
             {convs.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted px-6 text-center">
                 <MessageSquare className="w-10 h-10 mb-3 opacity-30" />
-                <p className="text-sm text-body">No tienes conversaciones aún.</p>
+                <p className="text-sm text-body">{t('No tienes conversaciones aún.')}</p>
               </div>
             ) : (
               <ul className="divide-y divide-hairline-soft">
@@ -290,7 +292,7 @@ export default function GenosPanel({
                       }`}
                     >
                       <p className="text-sm font-medium text-ink line-clamp-1">
-                        {c.title || 'Conversación'}
+                        {c.title || t('Conversación')}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
                         <p className="text-[11px] text-muted">
@@ -301,7 +303,7 @@ export default function GenosPanel({
                         </p>
                         {c.escalated_to_request_id && (
                           <span className="text-[10px] uppercase tracking-wider font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
-                            Escalada
+                            {t('Escalada')}
                           </span>
                         )}
                       </div>
@@ -320,25 +322,25 @@ export default function GenosPanel({
                   <div className="w-14 h-14 rounded-2xl bg-ink flex items-center justify-center mb-3">
                     <Sparkles className="w-6 h-6 text-on-primary" />
                   </div>
-                  <h3 className="text-lg font-bold text-ink">Hola, soy Genos</h3>
+                  <h3 className="text-lg font-bold text-ink">{t('Hola, soy Genos')}</h3>
                   <p className="text-sm text-body max-w-xs mt-1.5">
-                    Te ayudo con todo lo de Genealogic: criadero, perros, genealogía, web, emailbot…
+                    {t('Te ayudo con todo lo de Genealogic: criadero, perros, genealogía, web, emailbot…')}
                   </p>
                   <div className="mt-5 space-y-1.5 w-full max-w-xs">
                     <SuggestionChip
-                      label="¿Cómo subo una foto al perro?"
+                      label={t('¿Cómo subo una foto al perro?')}
                       onClick={(s) => { setInput(s) }}
                     />
                     <SuggestionChip
-                      label="Reclamar un perro importado"
+                      label={t('Reclamar un perro importado')}
                       onClick={(s) => { setInput(s) }}
                     />
                     <SuggestionChip
-                      label="Configurar mi web pública"
+                      label={t('Configurar mi web pública')}
                       onClick={(s) => { setInput(s) }}
                     />
                     <SuggestionChip
-                      label="Hablar con un humano"
+                      label={t('Hablar con un humano')}
                       onClick={(s) => { setInput(s) }}
                     />
                   </div>
@@ -366,7 +368,7 @@ export default function GenosPanel({
                       {m.pending ? (
                         <span className="inline-flex items-center gap-1.5 text-sm">
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          Pensando…
+                          {t('Pensando…')}
                         </span>
                       ) : m.role === 'assistant' ? (
                         <p className="text-sm whitespace-pre-wrap leading-relaxed">
@@ -385,13 +387,13 @@ export default function GenosPanel({
                 <div className="rounded-xl border-2 border-ink/15 bg-surface-soft p-3 ml-9">
                   <p className="text-xs font-semibold text-ink mb-2 flex items-center gap-1.5">
                     <Headphones className="w-3.5 h-3.5" />
-                    ¿Te conecto con un humano del equipo?
+                    {t('¿Te conecto con un humano del equipo?')}
                   </p>
                   <button
                     onClick={() => setEscalating(true)}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-ink text-on-primary px-3 py-1.5 text-xs font-bold hover:opacity-90"
                   >
-                    Sí, escalar a soporte
+                    {t('Sí, escalar a soporte')}
                   </button>
                 </div>
               )}
@@ -401,16 +403,16 @@ export default function GenosPanel({
                 <div className="rounded-xl border-2 border-ink/20 bg-canvas p-4 ml-9">
                   <p className="text-xs font-bold text-ink mb-2 flex items-center gap-1.5">
                     <Headphones className="w-3.5 h-3.5" />
-                    Hablar con un humano
+                    {t('Hablar con un humano')}
                   </p>
                   <p className="text-[11px] text-muted mb-2">
-                    Resume en una frase qué necesitas. Se enviará a soporte junto con esta conversación.
+                    {t('Resume en una frase qué necesitas. Se enviará a soporte junto con esta conversación.')}
                   </p>
                   <textarea
                     value={escalateSummary}
                     onChange={(e) => setEscalateSummary(e.target.value)}
                     rows={3}
-                    placeholder="Ej: el emailbot no responde a leads desde ayer…"
+                    placeholder={t('Ej: el emailbot no responde a leads desde ayer…')}
                     className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2 text-xs text-ink focus:border-ink focus:outline-none resize-none"
                   />
                   <div className="mt-2 flex gap-2">
@@ -420,14 +422,14 @@ export default function GenosPanel({
                       className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-ink text-on-primary px-3 py-2 text-xs font-bold hover:opacity-90 disabled:opacity-50"
                     >
                       {pending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                      Enviar a soporte
+                      {t('Enviar a soporte')}
                     </button>
                     <button
                       onClick={() => setEscalating(false)}
                       disabled={pending}
                       className="px-3 py-2 text-xs text-body hover:text-ink"
                     >
-                      Cancelar
+                      {t('Cancelar')}
                     </button>
                   </div>
                 </div>
@@ -438,17 +440,17 @@ export default function GenosPanel({
                 <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50/50 p-4 ml-9">
                   <p className="text-xs font-bold text-emerald-900 mb-1 flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    Solicitud enviada
+                    {t('Solicitud enviada')}
                   </p>
                   <p className="text-[11px] text-emerald-800 mb-2">
-                    El equipo te responderá lo antes posible.
+                    {t('El equipo te responderá lo antes posible.')}
                   </p>
                   <Link
                     href={`/mis-solicitudes/${escalateResult?.requestId || activeIsEscalated}`}
                     onClick={onClose}
                     className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-900 underline"
                   >
-                    Ver mi solicitud →
+                    {t('Ver mi solicitud →')}
                   </Link>
                 </div>
               )}
@@ -475,7 +477,7 @@ export default function GenosPanel({
                       }
                     }}
                     rows={1}
-                    placeholder="Pregúntale a Genos…"
+                    placeholder={t('Pregúntale a Genos…')}
                     disabled={pending}
                     className="flex-1 bg-surface-card border border-hairline rounded-xl px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none resize-none disabled:opacity-50"
                     style={{ maxHeight: '120px' }}
@@ -489,7 +491,7 @@ export default function GenosPanel({
                   </button>
                 </div>
                 <p className="text-[10px] text-muted mt-1.5 text-center">
-                  Enter para enviar · Shift+Enter para nueva línea
+                  {t('Enter para enviar · Shift+Enter para nueva línea')}
                 </p>
               </div>
             )}
@@ -501,7 +503,7 @@ export default function GenosPanel({
                   className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-2 text-xs font-semibold text-body hover:border-ink hover:text-ink"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  Nueva conversación
+                  {t('Nueva conversación')}
                 </button>
               </div>
             )}

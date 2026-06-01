@@ -12,6 +12,7 @@ import {
   TEMPLATES, getEffectiveConfig,
   type ContactFormConfig, type FormField, type FieldType, type FieldMap,
 } from '@/lib/kennel/contact-form'
+import { useT } from '@/components/i18n/locale-provider'
 
 const FIELD_TYPES: { value: FieldType; label: string; icon: any }[] = [
   { value: 'text', label: 'Texto corto', icon: Type },
@@ -44,6 +45,7 @@ interface Props {
 }
 
 export default function ContactFormBuilder({ kennelId, initialConfig, onClose, onSaved }: Props) {
+  const t = useT()
   const router = useRouter()
   const [config, setConfig] = useState<ContactFormConfig>(() => getEffectiveConfig(initialConfig))
   const [editingFieldId, setEditingFieldId] = useState<string | null>(null)
@@ -53,7 +55,7 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
   const [showPreview, setShowPreview] = useState(false)
 
   const applyTemplate = (key: 'generic' | 'breeding') => {
-    if (!confirm('Esto sobrescribirá los campos actuales. ¿Continuar?')) return
+    if (!confirm(t('Esto sobrescribirá los campos actuales. ¿Continuar?'))) return
     setConfig(TEMPLATES[key])
     setEditingFieldId(null)
   }
@@ -63,9 +65,9 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
     const newField: FormField = {
       id: newId,
       type,
-      label: 'Nueva pregunta',
+      label: t('Nueva pregunta'),
       required: false,
-      ...(type === 'select' || type === 'radio' ? { options: ['Opción 1', 'Opción 2'] } : {}),
+      ...(type === 'select' || type === 'radio' ? { options: [t('Opción 1'), t('Opción 2')] } : {}),
       ...(type === 'textarea' ? { rows: 4 } : {}),
     }
     setConfig((c) => ({ ...c, template: 'custom', fields: [...c.fields, newField] }))
@@ -81,7 +83,7 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
   }
 
   const deleteField = (id: string) => {
-    if (!confirm('¿Eliminar este campo?')) return
+    if (!confirm(t('¿Eliminar este campo?'))) return
     setConfig((c) => ({
       ...c,
       template: 'custom',
@@ -126,12 +128,12 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
         <div className="sticky top-0 z-10 border-b border-hairline bg-canvas px-5 py-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">Constructor</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{t('Constructor')}</p>
               <h2 className="mt-0.5 text-[20px] font-semibold tracking-[-0.02em] text-ink">
-                Formulario de contacto
+                {t('Formulario de contacto')}
               </h2>
               <p className="mt-1 text-[12px] text-muted">
-                Configura las preguntas. Se usa en tu perfil estándar y en tu web personalizada.
+                {t('Configura las preguntas. Se usa en tu perfil estándar y en tu web personalizada.')}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -139,7 +141,7 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
                 onClick={() => setShowPreview((v) => !v)}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12px] font-medium text-body hover:bg-surface-soft"
               >
-                <Eye className="h-3.5 w-3.5" /> {showPreview ? 'Editor' : 'Vista previa'}
+                <Eye className="h-3.5 w-3.5" /> {showPreview ? t('Editor') : t('Vista previa')}
               </button>
               <button
                 onClick={handleSave}
@@ -147,7 +149,7 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
                 className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-1.5 text-[12px] font-medium text-on-primary hover:opacity-90 disabled:opacity-40"
               >
                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : saved ? <Check className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
-                {saved ? 'Guardado' : 'Guardar'}
+                {saved ? t('Guardado') : t('Guardar')}
               </button>
               <button onClick={onClose} className="rounded-lg p-1 text-muted hover:bg-surface-soft hover:text-ink">
                 <X className="h-4 w-4" />
@@ -165,7 +167,7 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
             {/* Plantillas */}
             <section>
               <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted">
-                Plantillas rápidas
+                {t('Plantillas rápidas')}
               </h3>
               <div className="grid gap-3 sm:grid-cols-2">
                 <button
@@ -181,9 +183,9 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
                       <FileText className="h-4 w-4 text-ink" />
                     </div>
                     <div>
-                      <p className="text-[13.5px] font-semibold text-ink">Genérica</p>
+                      <p className="text-[13.5px] font-semibold text-ink">{t('Genérica')}</p>
                       <p className="mt-0.5 text-[12px] text-body">
-                        Nombre, email, teléfono y mensaje. Para contactos generales sin filtros.
+                        {t('Nombre, email, teléfono y mensaje. Para contactos generales sin filtros.')}
                       </p>
                     </div>
                   </div>
@@ -201,9 +203,9 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
                       <Sparkles className="h-4 w-4 text-purple-600" />
                     </div>
                     <div>
-                      <p className="text-[13.5px] font-semibold text-ink">Cría enfocada</p>
+                      <p className="text-[13.5px] font-semibold text-ink">{t('Cría enfocada')}</p>
                       <p className="mt-0.5 text-[12px] text-body">
-                        Color, sexo, función (familia / guarda / trabajo) + descripción. Filtra leads serios.
+                        {t('Color, sexo, función (familia / guarda / trabajo) + descripción. Filtra leads serios.')}
                       </p>
                     </div>
                   </div>
@@ -211,7 +213,7 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
               </div>
               {config.template === 'custom' && (
                 <p className="mt-2 text-[11.5px] italic text-muted">
-                  Configuración personalizada — has modificado los campos de una plantilla.
+                  {t('Configuración personalizada — has modificado los campos de una plantilla.')}
                 </p>
               )}
             </section>
@@ -220,7 +222,7 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
             <section>
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-                  Campos del formulario ({config.fields.length})
+                  {t('Campos del formulario')} ({config.fields.length})
                 </h3>
               </div>
 
@@ -239,7 +241,7 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
                         <button
                           onClick={(e) => e.stopPropagation()}
                           className="cursor-grab text-muted"
-                          title="Reordenar (usa los botones)"
+                          title={t('Reordenar (usa los botones)')}
                         >
                           <GripVertical className="h-3.5 w-3.5" />
                         </button>
@@ -247,8 +249,8 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-[13px] font-medium text-ink">{field.label}</p>
                           <p className="text-[11px] text-muted">
-                            {field.required ? 'Obligatorio · ' : 'Opcional · '}
-                            {field.map_to ? `→ ${MAP_OPTIONS.find((m) => m.value === field.map_to)?.label}` : 'extra'}
+                            {field.required ? `${t('Obligatorio')} · ` : `${t('Opcional')} · `}
+                            {field.map_to ? `→ ${t(MAP_OPTIONS.find((m) => m.value === field.map_to)?.label || '')}` : t('extra')}
                           </p>
                         </div>
                         <div className="flex items-center gap-0.5">
@@ -289,19 +291,19 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
               {/* Add field */}
               <details className="mt-3 rounded-xl border border-dashed border-hairline bg-surface-soft p-3">
                 <summary className="flex cursor-pointer items-center gap-2 text-[13px] font-medium text-body hover:text-ink">
-                  <Plus className="h-3.5 w-3.5" /> Añadir campo
+                  <Plus className="h-3.5 w-3.5" /> {t('Añadir campo')}
                 </summary>
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {FIELD_TYPES.map((t) => {
-                    const Icon = t.icon
+                  {FIELD_TYPES.map((ft) => {
+                    const Icon = ft.icon
                     return (
                       <button
-                        key={t.value}
-                        onClick={() => addField(t.value)}
+                        key={ft.value}
+                        onClick={() => addField(ft.value)}
                         className="flex flex-col items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-center transition-colors hover:bg-surface-card"
                       >
                         <Icon className="h-3.5 w-3.5 text-muted" />
-                        <span className="text-[11.5px] text-body">{t.label}</span>
+                        <span className="text-[11.5px] text-body">{t(ft.label)}</span>
                       </button>
                     )
                   })}
@@ -312,30 +314,30 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
             {/* Mensajes del form */}
             <section>
               <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted">
-                Textos del formulario
+                {t('Textos del formulario')}
               </h3>
               <div className="space-y-3 rounded-xl border border-hairline bg-canvas p-4">
                 <div>
                   <label className="block text-[11.5px] font-medium uppercase tracking-[0.06em] text-muted">
-                    Botón de envío
+                    {t('Botón de envío')}
                   </label>
                   <input
                     type="text"
                     value={config.submit_label || ''}
                     onChange={(e) => setConfig((c) => ({ ...c, submit_label: e.target.value }))}
-                    placeholder="Enviar solicitud"
+                    placeholder={t('Enviar solicitud')}
                     className="mt-1 w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13px] text-ink focus:border-ink focus:outline-none"
                   />
                 </div>
                 <div>
                   <label className="block text-[11.5px] font-medium uppercase tracking-[0.06em] text-muted">
-                    Mensaje de éxito
+                    {t('Mensaje de éxito')}
                   </label>
                   <input
                     type="text"
                     value={config.success_message || ''}
                     onChange={(e) => setConfig((c) => ({ ...c, success_message: e.target.value }))}
-                    placeholder="¡Gracias! Te responderemos pronto."
+                    placeholder={t('¡Gracias! Te responderemos pronto.')}
                     className="mt-1 w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13px] text-ink focus:border-ink focus:outline-none"
                   />
                 </div>
@@ -357,12 +359,13 @@ export default function ContactFormBuilder({ kennelId, initialConfig, onClose, o
 // ─── Editor de un campo individual ────────────────────────────────
 
 function FieldEditor({ field, onChange }: { field: FormField; onChange: (patch: Partial<FormField>) => void }) {
+  const t = useT()
   return (
     <div className="space-y-3 border-t border-hairline px-4 pb-4 pt-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-            Etiqueta visible
+            {t('Etiqueta visible')}
           </label>
           <input
             type="text"
@@ -373,7 +376,7 @@ function FieldEditor({ field, onChange }: { field: FormField; onChange: (patch: 
         </div>
         <div>
           <label className="block text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-            Mapea a
+            {t('Mapea a')}
           </label>
           <select
             value={field.map_to || ''}
@@ -381,7 +384,7 @@ function FieldEditor({ field, onChange }: { field: FormField; onChange: (patch: 
             className="mt-1 w-full rounded-lg border border-hairline bg-canvas px-2.5 py-1.5 text-[13px] text-ink focus:border-ink focus:outline-none"
           >
             {MAP_OPTIONS.map((m) => (
-              <option key={m.value || 'extra'} value={m.value}>{m.label}</option>
+              <option key={m.value || 'extra'} value={m.value}>{t(m.label)}</option>
             ))}
           </select>
         </div>
@@ -390,7 +393,7 @@ function FieldEditor({ field, onChange }: { field: FormField; onChange: (patch: 
       {(field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'textarea') && (
         <div>
           <label className="block text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-            Placeholder
+            {t('Placeholder')}
           </label>
           <input
             type="text"
@@ -404,7 +407,7 @@ function FieldEditor({ field, onChange }: { field: FormField; onChange: (patch: 
       {(field.type === 'select' || field.type === 'radio' || field.type === 'checkbox') && (
         <div>
           <label className="block text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-            Opciones (una por línea)
+            {t('Opciones (una por línea)')}
           </label>
           <textarea
             value={(field.options || []).join('\n')}
@@ -417,13 +420,13 @@ function FieldEditor({ field, onChange }: { field: FormField; onChange: (patch: 
 
       <div>
         <label className="block text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-          Texto de ayuda (opcional)
+          {t('Texto de ayuda (opcional)')}
         </label>
         <input
           type="text"
           value={field.helper || ''}
           onChange={(e) => onChange({ helper: e.target.value })}
-          placeholder="Texto pequeño debajo del campo"
+          placeholder={t('Texto pequeño debajo del campo')}
           className="mt-1 w-full rounded-lg border border-hairline bg-canvas px-2.5 py-1.5 text-[13px] text-ink focus:border-ink focus:outline-none"
         />
       </div>
@@ -435,15 +438,15 @@ function FieldEditor({ field, onChange }: { field: FormField; onChange: (patch: 
           onChange={(e) => onChange({ required: e.target.checked })}
           className="h-4 w-4 rounded border-hairline"
         />
-        Obligatorio
+        {t('Obligatorio')}
       </label>
     </div>
   )
 }
 
 function FieldTypeBadge({ type }: { type: FieldType }) {
-  const t = FIELD_TYPES.find((x) => x.value === type)
-  const Icon = t?.icon || Type
+  const meta = FIELD_TYPES.find((x) => x.value === type)
+  const Icon = meta?.icon || Type
   return (
     <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-surface-card text-muted">
       <Icon className="h-3.5 w-3.5" />
@@ -454,9 +457,10 @@ function FieldTypeBadge({ type }: { type: FieldType }) {
 // ─── Vista previa del form (no funcional, solo render) ─────────
 
 function FormPreview({ config }: { config: ContactFormConfig }) {
+  const t = useT()
   return (
     <div className="mx-auto max-w-md space-y-3 rounded-2xl border border-hairline bg-canvas p-5">
-      <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">Vista previa</p>
+      <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{t('Vista previa')}</p>
       {config.fields.map((f) => (
         <div key={f.id}>
           <label className="block text-[11.5px] font-medium uppercase tracking-[0.06em] text-muted">
@@ -467,7 +471,7 @@ function FormPreview({ config }: { config: ContactFormConfig }) {
               className="mt-1 w-full rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-[13.5px] text-ink" />
           ) : f.type === 'select' ? (
             <select disabled className="mt-1 w-full rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-[13.5px] text-ink">
-              <option>— Seleccionar —</option>
+              <option>{t('— Seleccionar —')}</option>
               {(f.options || []).map((o) => <option key={o}>{o}</option>)}
             </select>
           ) : f.type === 'radio' ? (
@@ -496,7 +500,7 @@ function FormPreview({ config }: { config: ContactFormConfig }) {
         </div>
       ))}
       <button disabled className="w-full rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary opacity-60">
-        {config.submit_label || 'Enviar'}
+        {config.submit_label || t('Enviar')}
       </button>
     </div>
   )

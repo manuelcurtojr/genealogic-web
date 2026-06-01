@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { hasEnterpriseFeatures } from '@/lib/permissions'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 import KnowledgePageClient from '@/components/conocimiento/knowledge-page-client'
 import EmailbotSubnav from '@/components/emailbot/emailbot-subnav'
 import ComingSoon from '@/components/early-access/coming-soon'
@@ -12,6 +14,8 @@ export default async function ConocimientoPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const t = getTranslator(await getLocale())
+
   // La Biblioteca alimenta al Emailbot IA → feature de Kennel Enterprise.
   const { data: profile } = await supabase
     .from('profiles').select('plan').eq('id', user.id).maybeSingle()
@@ -19,9 +23,9 @@ export default async function ConocimientoPage() {
     return (
       <ComingSoon
         featureId="emailbot"
-        description="La Biblioteca de conocimiento alimenta al Emailbot IA de tu criadero. Disponible en Kennel Enterprise."
+        description={t('La Biblioteca de conocimiento alimenta al Emailbot IA de tu criadero. Disponible en Kennel Enterprise.')}
         backHref="/dashboard"
-        backLabel="← Volver al dashboard"
+        backLabel={t('← Volver al dashboard')}
       />
     )
   }
@@ -36,10 +40,9 @@ export default async function ConocimientoPage() {
   if (!kennel) {
     return (
       <div className="max-w-2xl mx-auto py-10">
-        <h1 className="text-3xl font-bold text-ink mb-3">Biblioteca</h1>
+        <h1 className="text-3xl font-bold text-ink mb-3">{t('Biblioteca')}</h1>
         <p className="text-body">
-          Para usar la Biblioteca necesitas un criadero registrado. Crea tu
-          kennel desde Mi Criadero.
+          {t('Para usar la Biblioteca necesitas un criadero registrado. Crea tu kennel desde Mi Criadero.')}
         </p>
       </div>
     )

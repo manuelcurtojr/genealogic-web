@@ -6,9 +6,12 @@ import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 import { BRAND } from '@/lib/constants'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import LitterEditButton from '@/components/litters/litter-edit-button'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export default async function LitterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -65,7 +68,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
     ])
     pedigreeData.push({
       id: virtualRootId,
-      name: 'Camada',
+      name: t('Camada'),
       sex: 'male',
       registration: null,
       father_id: father.id,
@@ -96,7 +99,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Camada</p>
+            <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Camada')}</p>
             <h1 className="mt-1 text-[28px] sm:text-[36px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
               {father?.name || '?'} × {mother?.name || '?'}
             </h1>
@@ -121,7 +124,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
         <div className="flex items-center gap-2">
           {kennel?.whatsapp_enabled && kennel.whatsapp_phone && (
             <a
-              href={`https://wa.me/${kennel.whatsapp_phone.replace(/\D/g, '')}?text=${encodeURIComponent(kennel.whatsapp_text || `Hola, me interesa la camada de ${father?.name || ''} x ${mother?.name || ''}`)}`}
+              href={`https://wa.me/${kennel.whatsapp_phone.replace(/\D/g, '')}?text=${encodeURIComponent(kennel.whatsapp_text || `${t('Hola, me interesa la camada de')} ${father?.name || ''} x ${mother?.name || ''}`)}`}
               target="_blank"
               rel="noopener"
               className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-4 py-2 text-[13px] font-medium text-white transition-colors hover:opacity-90"
@@ -144,8 +147,8 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
       {/* Parents + Timeline */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[auto_1fr]">
         <div className="flex gap-2">
-          <CompactParent parent={father} role="Padre" />
-          <CompactParent parent={mother} role="Madre" />
+          <CompactParent parent={father} role="Padre" t={t} />
+          <CompactParent parent={mother} role="Madre" t={t} />
         </div>
 
         <div className="flex items-center gap-6 rounded-xl border border-hairline bg-canvas p-5">
@@ -159,7 +162,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
                     {step.active ? <Check className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
                   </div>
                   <p className={`mt-2 text-[11px] font-medium ${step.active ? 'text-ink' : 'text-muted'}`}>
-                    {step.label}
+                    {t(step.label)}
                   </p>
                   {step.date && step.active && (
                     <p className="text-[10px] text-muted">
@@ -180,7 +183,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
                   <p className="text-[24px] font-semibold tabular-nums tracking-[-0.04em] text-ink leading-none">
                     {litter.puppy_count}
                   </p>
-                  <p className="mt-1 text-[10px] uppercase tracking-[0.06em] text-muted">cachorros</p>
+                  <p className="mt-1 text-[10px] uppercase tracking-[0.06em] text-muted">{t('cachorros')}</p>
                 </div>
               )}
               {isOwner && (
@@ -189,7 +192,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
                     ? 'bg-[color:var(--success)]/10 text-[color:var(--success)]'
                     : 'bg-surface-card text-muted'
                 }`}>
-                  {litter.is_public ? 'Pública' : 'Privada'}
+                  {litter.is_public ? t('Pública') : t('Privada')}
                 </span>
               )}
             </div>
@@ -201,7 +204,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
       {puppies.length > 0 && (
         <section>
           <h2 className="mb-3 flex items-center gap-2 text-[22px] font-semibold tracking-[-0.04em] text-ink">
-            <Baby className="h-5 w-5 text-muted" /> Cachorros
+            <Baby className="h-5 w-5 text-muted" /> {t('Cachorros')}
             <span className="text-[13px] font-normal text-muted">({puppies.length})</span>
           </h2>
           <div className="flex gap-2 overflow-x-auto pb-1">
@@ -232,7 +235,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
       {pedigreeData.length > 1 && pedigreeRootId && (
         <section className="-mx-4 sm:-mx-[30px] lg:mx-[calc(50%-50vw)] lg:px-6">
           <h2 className="mb-4 px-4 sm:px-[30px] lg:px-2 text-[22px] font-semibold tracking-[-0.04em] text-ink">
-            Genealogía
+            {t('Genealogía')}
           </h2>
           <PedigreeTree data={pedigreeData} rootId={pedigreeRootId} />
         </section>
@@ -241,13 +244,13 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
   )
 }
 
-function CompactParent({ parent, role }: { parent: any; role: string }) {
+function CompactParent({ parent, role, t }: { parent: any; role: string; t: (k: string) => string }) {
   const isFather = role === 'Padre'
   const sc = isFather ? BRAND.male : BRAND.female
   if (!parent) return (
     <div className="flex h-28 w-28 flex-col items-center justify-center rounded-xl border border-dashed border-hairline bg-surface-soft text-center">
-      <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-muted">{role}</p>
-      <p className="mt-1 text-[12px] text-body">Desconocido</p>
+      <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-muted">{t(role)}</p>
+      <p className="mt-1 text-[12px] text-body">{t('Desconocido')}</p>
     </div>
   )
   return (
@@ -261,7 +264,7 @@ function CompactParent({ parent, role }: { parent: any; role: string }) {
         : <div className="flex h-full w-full items-center justify-center bg-surface-card text-3xl" style={{ color: sc + '60' }}>{isFather ? '♂' : '♀'}</div>
       }
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-2 pb-2 pt-6">
-        <p className="text-[9px] font-medium uppercase tracking-[0.06em] text-white/80">{role}</p>
+        <p className="text-[9px] font-medium uppercase tracking-[0.06em] text-white/80">{t(role)}</p>
         <p className="truncate text-[12px] font-semibold text-white">{parent.name}</p>
       </div>
     </Link>

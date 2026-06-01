@@ -19,6 +19,8 @@ import { KennelJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
 import { getKennelHomeData } from '@/lib/kennel/kennel-home-cache'
 import type { Metadata } from 'next'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 /**
  * Home pública del criadero.
@@ -71,6 +73,7 @@ export default async function KennelDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -178,8 +181,8 @@ export default async function KennelDetailPage({
     stats.push({
       icon: 'calendar',
       value: yearsActive >= 50 ? `${yearsActive}+` : String(yearsActive),
-      label: yearsActive === 1 ? 'año' : 'años',
-      sublabel: `Desde ${foundationYear}`,
+      label: yearsActive === 1 ? t('año') : t('años'),
+      sublabel: `${t('Desde')} ${foundationYear}`,
       highlight: true,
     })
   }
@@ -187,24 +190,24 @@ export default async function KennelDetailPage({
     stats.push({
       icon: 'dog',
       value: dogs.length.toLocaleString('es-ES'),
-      label: dogs.length === 1 ? 'Perro' : 'Perros',
-      sublabel: 'En la familia',
+      label: dogs.length === 1 ? t('Perro') : t('Perros'),
+      sublabel: t('En la familia'),
     })
   }
   if (completedLittersCount > 0) {
     stats.push({
       icon: 'baby',
       value: completedLittersCount.toLocaleString('es-ES'),
-      label: completedLittersCount === 1 ? 'Camada' : 'Camadas',
-      sublabel: puppiesCount > 0 ? `${puppiesCount.toLocaleString('es-ES')} cachorros` : undefined,
+      label: completedLittersCount === 1 ? t('Camada') : t('Camadas'),
+      sublabel: puppiesCount > 0 ? `${puppiesCount.toLocaleString('es-ES')} ${t('cachorros')}` : undefined,
     })
   }
   if (breedNames.length > 0) {
     stats.push({
       icon: 'medal',
       value: breedNames.length === 1 ? breedNames[0] : String(breedNames.length),
-      label: breedNames.length === 1 ? 'Raza' : 'Razas',
-      sublabel: breedNames.length === 1 ? 'Especialidad' : undefined,
+      label: breedNames.length === 1 ? t('Raza') : t('Razas'),
+      sublabel: breedNames.length === 1 ? t('Especialidad') : undefined,
     })
   }
 
@@ -258,11 +261,11 @@ export default async function KennelDetailPage({
           <EyeOff className="h-5 w-5 text-red-700 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-red-900">
-              Este criadero está oculto al público
+              {t('Este criadero está oculto al público')}
             </p>
             <p className="text-[12px] text-red-800 mt-1">
-              Motivo: <strong>{kennel.hidden_reason && HIDDEN_REASON_LABELS[kennel.hidden_reason as HiddenReason]}</strong>.
-              Para apelar o aportar pruebas, contacta con{' '}
+              {t('Motivo:')} <strong>{kennel.hidden_reason && HIDDEN_REASON_LABELS[kennel.hidden_reason as HiddenReason]}</strong>.
+              {' '}{t('Para apelar o aportar pruebas, contacta con')}{' '}
               <a href="mailto:hola@genealogic.io?subject=Apelaci%C3%B3n%20criadero%20oculto" className="font-medium underline">
                 hola@genealogic.io
               </a>.
@@ -325,11 +328,11 @@ export default async function KennelDetailPage({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dogsWithPhoto = (dogs as any[]).filter(d => d.thumbnail_url) as Array<{ thumbnail_url: string; name: string }>
     const aboutImage = dogsWithPhoto[0]?.thumbnail_url || kennel.logo_url || null
-    const aboutImageAlt = dogsWithPhoto[0]?.name || `${kennel.name} — sobre nosotros`
+    const aboutImageAlt = dogsWithPhoto[0]?.name || `${kennel.name} — ${t('sobre nosotros')}`
     const perrosImage = dogsWithPhoto[1]?.thumbnail_url || dogsWithPhoto[0]?.thumbnail_url || null
-    const perrosImageAlt = dogsWithPhoto[1]?.name || dogsWithPhoto[0]?.name || 'Nuestros perros'
+    const perrosImageAlt = dogsWithPhoto[1]?.name || dogsWithPhoto[0]?.name || t('Nuestros perros')
     const galleryImage = dogsWithPhoto[2]?.thumbnail_url || dogsWithPhoto[0]?.thumbnail_url || null
-    const galleryImageAlt = dogsWithPhoto[2]?.name || `${kennel.name} — galería`
+    const galleryImageAlt = dogsWithPhoto[2]?.name || `${kennel.name} — ${t('galería')}`
 
     const teasers: Array<{
       id: string
@@ -346,10 +349,10 @@ export default async function KennelDetailPage({
     if (kennel.about_md && kennel.about_md.trim().length >= 50 && aboutImage) {
       teasers.push({
         id: 'sobre',
-        eyebrow: 'Quiénes somos',
-        title: `${kennel.name}, ${foundationYear ? `desde ${foundationYear}` : 'criadero familiar'}`,
+        eyebrow: t('Quiénes somos'),
+        title: `${kennel.name}, ${foundationYear ? `${t('desde')} ${foundationYear}` : t('criadero familiar')}`,
         body: kennel.about_md.split(/\n\n+/)[0].replace(/\*\*([^*]+)\*\*/g, '$1').slice(0, 220).trim(),
-        ctaLabel: 'Conoce nuestra historia',
+        ctaLabel: t('Conoce nuestra historia'),
         ctaHref: `/kennels/${kennel.slug}/sobre`,
         imageUrl: aboutImage,
         imageAlt: aboutImageAlt,
@@ -358,13 +361,13 @@ export default async function KennelDetailPage({
 
     // 2) Nuestros perros (si hay perros con foto)
     if (perrosImage) {
-      const breedHint = breedNames[0] ? ` especializado en ${breedNames[0]}` : ''
+      const breedHint = breedNames[0] ? ` ${t('especializado en')} ${breedNames[0]}` : ''
       teasers.push({
         id: 'perros',
-        eyebrow: 'Nuestros perros',
-        title: 'Conoce a los protagonistas',
-        body: `Catálogo completo de reproductores, cachorros en venta, camadas y producidos por el criadero${breedHint}. Cada perro con su genealogía completa documentada en Genealogic.`,
-        ctaLabel: 'Ver todos los perros',
+        eyebrow: t('Nuestros perros'),
+        title: t('Conoce a los protagonistas'),
+        body: `${t('Catálogo completo de reproductores, cachorros en venta, camadas y producidos por el criadero')}${breedHint}. ${t('Cada perro con su genealogía completa documentada en Genealogic.')}`,
+        ctaLabel: t('Ver todos los perros'),
         ctaHref: `/kennels/${kennel.slug}/perros`,
         imageUrl: perrosImage,
         imageAlt: perrosImageAlt,
@@ -377,10 +380,10 @@ export default async function KennelDetailPage({
     if (galleryEnabled && galleryImage && galleryPhotos.length >= 3) {
       teasers.push({
         id: 'galeria',
-        eyebrow: 'Imágenes',
-        title: 'Cinco décadas en imágenes',
-        body: `Fotos del día a día del criadero, eventos, familias que ya tienen su cachorro y los perros que han marcado la trayectoria de ${kennel.name}.`,
-        ctaLabel: 'Ver galería',
+        eyebrow: t('Imágenes'),
+        title: t('Cinco décadas en imágenes'),
+        body: `${t('Fotos del día a día del criadero, eventos, familias que ya tienen su cachorro y los perros que han marcado la trayectoria de')} ${kennel.name}.`,
+        ctaLabel: t('Ver galería'),
         ctaHref: `/kennels/${kennel.slug}/galeria`,
         imageUrl: galleryImage,
         imageAlt: galleryImageAlt,
@@ -456,7 +459,7 @@ export default async function KennelDetailPage({
           href={isOwner ? '/kennel' : '/kennels'}
           className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted transition-colors hover:text-ink"
         >
-          <ArrowLeft className="h-4 w-4" /> Volver
+          <ArrowLeft className="h-4 w-4" /> {t('Volver')}
         </Link>
       </div>
 
@@ -485,10 +488,10 @@ export default async function KennelDetailPage({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Criadero</span>
+                  <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('Criadero')}</span>
                   {hasOwner && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-                      <BadgeCheck className="h-3 w-3" /> Verificado
+                      <BadgeCheck className="h-3 w-3" /> {t('Verificado')}
                     </span>
                   )}
                 </div>
@@ -497,7 +500,7 @@ export default async function KennelDetailPage({
                 </h1>
                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-muted">
                   {location && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {location}</span>}
-                  {foundationYear && <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> Desde {foundationYear}</span>}
+                  {foundationYear && <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {t('Desde')} {foundationYear}</span>}
                 </div>
               </div>
             </div>
@@ -527,7 +530,7 @@ export default async function KennelDetailPage({
                 href="#perros"
                 className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas text-ink px-4 py-2.5 text-[13px] font-bold hover:border-ink/30 transition"
               >
-                Ver perros
+                {t('Ver perros')}
               </Link>
               {kennel.social_instagram && (
                 <a href={kennel.social_instagram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas/70 backdrop-blur-sm text-body px-3 py-2.5 text-[12.5px] font-semibold hover:border-ink/30 hover:text-ink transition">
@@ -536,7 +539,7 @@ export default async function KennelDetailPage({
               )}
               {kennel.website && (
                 <a href={kennel.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas/70 backdrop-blur-sm text-body px-3 py-2.5 text-[12.5px] font-semibold hover:border-ink/30 hover:text-ink transition">
-                  <Globe className="h-3.5 w-3.5" /> Web
+                  <Globe className="h-3.5 w-3.5" /> {t('Web')}
                 </a>
               )}
             </div>
@@ -545,7 +548,7 @@ export default async function KennelDetailPage({
           {stats.length > 0 && (
             <aside className="rounded-2xl bg-canvas/80 backdrop-blur-md border border-hairline p-5 sm:p-6 self-start w-full">
               <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#FE6620] mb-3">
-                Trayectoria
+                {t('Trayectoria')}
               </p>
               <div className="grid grid-cols-3 gap-3 sm:gap-4">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -572,8 +575,8 @@ export default async function KennelDetailPage({
       {/* NUESTROS PERROS */}
       <section id="perros" className="scroll-mt-24">
         <div className="mb-5 sm:mb-6">
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Catálogo</p>
-          <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">Nuestros perros</h2>
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('Catálogo')}</p>
+          <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">{t('Nuestros perros')}</h2>
         </div>
         <KennelPublicTabs
           kennelName={kennel.name}
@@ -590,9 +593,9 @@ export default async function KennelDetailPage({
         <section className="rounded-2xl border border-hairline bg-canvas p-6 sm:p-8">
           <div className="grid grid-cols-1 sm:grid-cols-[1.4fr_0.6fr] gap-5 sm:gap-8 items-center">
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Hablemos</p>
-              <h2 className="mt-1 text-[20px] sm:text-[24px] font-semibold tracking-[-0.02em] text-ink">¿Te interesa una camada o un perro?</h2>
-              <p className="mt-2 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-prose">Escríbenos por el formulario y te respondemos en breve. Sin compromiso.</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('Hablemos')}</p>
+              <h2 className="mt-1 text-[20px] sm:text-[24px] font-semibold tracking-[-0.02em] text-ink">{t('¿Te interesa una camada o un perro?')}</h2>
+              <p className="mt-2 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-prose">{t('Escríbenos por el formulario y te respondemos en breve. Sin compromiso.')}</p>
             </div>
             <div className="flex sm:justify-end">
               <ContactKennelButton kennelId={kennel.id} kennelName={kennel.name} config={kennel.contact_form_config || null} />

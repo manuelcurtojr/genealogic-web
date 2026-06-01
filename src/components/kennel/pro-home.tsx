@@ -25,6 +25,8 @@ import SectionTeasers from './section-teasers'
 import StickyContactMobile from './sticky-contact-mobile'
 import { pastelByName } from '@/lib/avatars'
 import ContactKennelButton from './contact-kennel-button'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 interface Dog {
   id: string
@@ -133,9 +135,9 @@ interface Props {
  * anterior; si tampoco hay, hace un slice duro.
  */
 function truncateAtWord(text: string, maxChars: number): string {
-  const t = text.trim()
-  if (t.length <= maxChars) return t
-  const slice = t.slice(0, maxChars)
+  const trimmed = text.trim()
+  if (trimmed.length <= maxChars) return trimmed
+  const slice = trimmed.slice(0, maxChars)
   // Busca el último espacio/punto/coma antes del límite
   const lastBreak = Math.max(
     slice.lastIndexOf(' '),
@@ -148,10 +150,11 @@ function truncateAtWord(text: string, maxChars: number): string {
   return slice.slice(0, lastBreak).trimEnd()
 }
 
-export default function KennelProHome({
+export default async function KennelProHome({
   kennel, featuredDogs, faqEntries, reviews, recentPosts = [],
   breedNames, stats, teasers, availability,
 }: Props) {
+  const t = getTranslator(await getLocale())
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const foundationYear = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null
   // Tagline del hero: usamos hasta 320 chars y cortamos en el último
@@ -222,10 +225,10 @@ export default function KennelProHome({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Criadero</span>
+                  <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('Criadero')}</span>
                   {hasOwner && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-                      <BadgeCheck className="h-3 w-3" /> Verificado
+                      <BadgeCheck className="h-3 w-3" /> {t('Verificado')}
                     </span>
                   )}
                 </div>
@@ -234,7 +237,7 @@ export default function KennelProHome({
                     <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {location}</span>
                   )}
                   {foundationYear && (
-                    <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> Desde {foundationYear}</span>
+                    <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {t('Desde')} {foundationYear}</span>
                   )}
                 </div>
               </div>
@@ -266,8 +269,8 @@ export default function KennelProHome({
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 </span>
                 {availability.availablePuppiesCount > 0
-                  ? `${availability.availablePuppiesCount} ${availability.availablePuppiesCount === 1 ? 'cachorro disponible' : 'cachorros disponibles'} ahora`
-                  : 'Próxima camada planificada'}
+                  ? `${availability.availablePuppiesCount} ${availability.availablePuppiesCount === 1 ? t('cachorro disponible') : t('cachorros disponibles')} ${t('ahora')}`
+                  : t('Próxima camada planificada')}
               </a>
             )}
 
@@ -293,7 +296,7 @@ export default function KennelProHome({
                 href={`/kennels/${kennel.slug}/perros`}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas text-ink px-4 py-2.5 text-[13.5px] font-bold hover:border-ink/30 transition"
               >
-                Ver nuestros perros <ArrowRight className="h-3.5 w-3.5" />
+                {t('Ver nuestros perros')} <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           </div>
@@ -322,7 +325,7 @@ export default function KennelProHome({
               <aside className="rounded-2xl bg-canvas/90 backdrop-blur-md border border-hairline shadow-[0_4px_24px_rgba(0,0,0,0.04)] self-start w-full overflow-hidden">
                 <div className="p-5 sm:p-6">
                   <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#FE6620]">
-                    Trayectoria
+                    {t('Trayectoria')}
                   </p>
 
                   {highlight && (() => {
@@ -420,19 +423,19 @@ export default function KennelProHome({
         <section className="rounded-3xl border border-dashed border-hairline bg-surface-soft p-8 sm:p-12 text-center">
           <Sparkles className="mx-auto h-8 w-8 text-muted" />
           <h2 className="mt-4 text-[20px] sm:text-[24px] font-semibold tracking-[-0.03em] text-ink">
-            {hasOwner ? `Acabas de crear ${kennel.name}` : `${kennel.name} está empezando`}
+            {hasOwner ? `${t('Acabas de crear')} ${kennel.name}` : `${kennel.name} ${t('está empezando')}`}
           </h2>
           <p className="mt-2 text-[14px] sm:text-[15px] text-body max-w-md mx-auto leading-snug">
             {hasOwner
-              ? 'Sube fotos a tu galería, escribe tu historia y añade tus perros para que tu web se vea increíble.'
-              : 'Pronto encontrarás aquí los perros, la historia y todo lo que hace único a este criadero.'}
+              ? t('Sube fotos a tu galería, escribe tu historia y añade tus perros para que tu web se vea increíble.')
+              : t('Pronto encontrarás aquí los perros, la historia y todo lo que hace único a este criadero.')}
           </p>
           {hasOwner && (
             <Link
               href="/kennel/contenido/sobre"
               className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[13.5px] font-bold hover:opacity-90 transition"
             >
-              Empezar a llenar mi web <ArrowRight className="h-4 w-4" />
+              {t('Empezar a llenar mi web')} <ArrowRight className="h-4 w-4" />
             </Link>
           )}
         </section>
@@ -442,9 +445,9 @@ export default function KennelProHome({
       <section>
         <div className="flex items-end justify-between gap-3 flex-wrap mb-5 sm:mb-6">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">La voz de los clientes</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('La voz de los clientes')}</p>
             <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
-              {reviews.length > 0 ? 'Lo que dicen las familias' : 'Comparte tu experiencia'}
+              {reviews.length > 0 ? t('Lo que dicen las familias') : t('Comparte tu experiencia')}
             </h2>
             {/* Calificación media + count — solo si hay >=2 reseñas con rating */}
             {(() => {
@@ -466,7 +469,7 @@ export default function KennelProHome({
                     {rounded.toLocaleString('es-ES')}
                   </span>
                   <span className="text-[12.5px] text-muted">
-                    · {reviews.length} {reviews.length === 1 ? 'reseña' : 'reseñas'}
+                    · {reviews.length} {reviews.length === 1 ? t('reseña') : t('reseñas')}
                   </span>
                 </div>
               )
@@ -501,12 +504,12 @@ export default function KennelProHome({
                     <p className="text-[12.5px] font-semibold text-ink truncate">{r.author_name}</p>
                     {r.badge === 'client' && (
                       <span className="inline-flex items-center gap-1 mt-0.5 rounded-full bg-emerald-100 text-emerald-800 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider">
-                        <BadgeCheck className="h-2.5 w-2.5" /> Cliente
+                        <BadgeCheck className="h-2.5 w-2.5" /> {t('Cliente')}
                       </span>
                     )}
                     {r.badge === 'user' && (
                       <span className="inline-flex items-center mt-0.5 rounded-full bg-blue-100 text-blue-900 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider">
-                        Usuario
+                        {t('Usuario')}
                       </span>
                     )}
                   </div>
@@ -516,9 +519,9 @@ export default function KennelProHome({
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft p-8 text-center">
-            <p className="text-[14px] font-semibold text-ink">Sé el primero en dejar una reseña</p>
+            <p className="text-[14px] font-semibold text-ink">{t('Sé el primero en dejar una reseña')}</p>
             <p className="mt-1 text-[12.5px] text-body max-w-md mx-auto leading-snug">
-              ¿Has tratado con {kennel.name}? Cuenta tu experiencia y ayuda a otras familias a decidir.
+              {t('¿Has tratado con')} {kennel.name}? {t('Cuenta tu experiencia y ayuda a otras familias a decidir.')}
             </p>
           </div>
         )}
@@ -528,9 +531,9 @@ export default function KennelProHome({
       {faqEntries.length > 0 && (
         <section>
           <div className="mb-5 sm:mb-6">
-            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Antes de contactar</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('Antes de contactar')}</p>
             <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
-              Preguntas frecuentes
+              {t('Preguntas frecuentes')}
             </h2>
           </div>
           <div className="rounded-2xl border border-hairline bg-canvas divide-y divide-hairline">
@@ -559,16 +562,16 @@ export default function KennelProHome({
         <section>
           <div className="flex items-end justify-between gap-3 flex-wrap mb-5 sm:mb-6">
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Desde el blog</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('Desde el blog')}</p>
               <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
-                Últimas notas
+                {t('Últimas notas')}
               </h2>
             </div>
             <Link
               href={`/kennels/${kennel.slug}/blog`}
               className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-body hover:text-ink transition"
             >
-              Ver todas <ArrowRight className="h-3.5 w-3.5" />
+              {t('Ver todas')} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           <BlogSlider posts={recentPosts} kennelSlug={kennel.slug} />
@@ -593,7 +596,7 @@ export default function KennelProHome({
  *  - Si hay cachorros en venta: counter destacado + CTA "Ver disponibles"
  *  - Si ambos: dos sub-cards
  */
-function AvailabilitySection({
+async function AvailabilitySection({
   availability, kennelSlug, kennelId, kennelName, contactFormConfig, hasOwner,
 }: {
   availability: NonNullable<Props['availability']>
@@ -604,6 +607,7 @@ function AvailabilitySection({
   contactFormConfig: any
   hasOwner: boolean
 }) {
+  const t = getTranslator(await getLocale())
   const STATUS_LABEL: Record<string, string> = {
     planned: 'Camada planificada',
     mated: 'En gestación',
@@ -622,13 +626,13 @@ function AvailabilitySection({
     <section id="disponibilidad" className="scroll-mt-20">
       <div className="mb-5 sm:mb-6 flex items-end justify-between gap-3 flex-wrap">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#FE6620]">Disponible ahora</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#FE6620]">{t('Disponible ahora')}</p>
           <h2 className="mt-1 text-[22px] sm:text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
             {showLitter && hasPuppies
-              ? 'Próxima camada y cachorros disponibles'
+              ? t('Próxima camada y cachorros disponibles')
               : showLitter
-                ? 'Próxima camada'
-                : 'Cachorros disponibles'}
+                ? t('Próxima camada')
+                : t('Cachorros disponibles')}
           </h2>
         </div>
       </div>
@@ -645,7 +649,7 @@ function AvailabilitySection({
               <div className="flex items-center gap-2 mb-3">
                 <Calendar className="h-3.5 w-3.5 text-[#FE6620]" />
                 <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FE6620]">
-                  {STATUS_LABEL[litter.status] || 'Próxima camada'}
+                  {t(STATUS_LABEL[litter.status] || 'Próxima camada')}
                 </p>
               </div>
               <div className="flex items-center gap-3 mb-3">
@@ -656,14 +660,14 @@ function AvailabilitySection({
               <p className="text-[14px] sm:text-[15px] font-semibold text-ink mb-1">
                 {litter.father?.name && litter.mother?.name
                   ? `${litter.father.name} × ${litter.mother.name}`
-                  : 'Próxima camada'}
+                  : t('Próxima camada')}
               </p>
               {litter.breedName && (
                 <p className="text-[12.5px] text-muted">{litter.breedName}</p>
               )}
               {litter.expectedDate && (
                 <p className="mt-3 text-[13.5px] text-body">
-                  <strong className="text-ink">{formatExpected(litter.expectedDate, litter.status)}</strong>
+                  <strong className="text-ink">{formatExpected(litter.expectedDate, litter.status, t)}</strong>
                 </p>
               )}
               <div className="mt-4 flex flex-wrap gap-2">
@@ -671,7 +675,7 @@ function AvailabilitySection({
                   href={`/litters/${litter.id}`}
                   className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2 text-[12.5px] font-bold hover:opacity-90 transition"
                 >
-                  Ver camada <ArrowRight className="h-3.5 w-3.5" />
+                  {t('Ver camada')} <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
                 {hasOwner && (
                   <ContactKennelButton
@@ -696,7 +700,7 @@ function AvailabilitySection({
               <div className="flex items-center gap-2 mb-3">
                 <DogIcon className="h-3.5 w-3.5 text-amber-700" />
                 <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-amber-700">
-                  En venta ahora mismo
+                  {t('En venta ahora mismo')}
                 </p>
               </div>
               <p className="text-[44px] sm:text-[56px] font-semibold tabular-nums tracking-[-0.04em] text-ink leading-none">
@@ -704,15 +708,15 @@ function AvailabilitySection({
               </p>
               <p className="mt-2 text-[14px] sm:text-[15px] text-body">
                 {availability.availablePuppiesCount === 1
-                  ? 'cachorro buscando familia'
-                  : 'cachorros buscando familia'}
+                  ? t('cachorro buscando familia')
+                  : t('cachorros buscando familia')}
               </p>
               <div className="mt-5">
                 <Link
                   href={`/kennels/${kennelSlug}/perros`}
                   className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2 text-[12.5px] font-bold hover:opacity-90 transition"
                 >
-                  Ver disponibles <ArrowRight className="h-3.5 w-3.5" />
+                  {t('Ver disponibles')} <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </div>
@@ -740,18 +744,18 @@ function ParentMini({ name, thumbnail }: { name: string; thumbnail: string | nul
   )
 }
 
-function formatExpected(iso: string, status: string): string {
+function formatExpected(iso: string, status: string, t: (key: string) => string): string {
   try {
     const d = new Date(iso)
     const mes = d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
     if (status === 'mated' || status === 'confirmed' || status === 'pending') {
-      return `Nacimiento esperado en ${mes}`
+      return `${t('Nacimiento esperado en')} ${mes}`
     }
     if (status === 'planned') {
-      return `Planificada para ${mes}`
+      return `${t('Planificada para')} ${mes}`
     }
     if (status === 'born') {
-      return `Nacidos en ${mes} — disponibles próximamente`
+      return `${t('Nacidos en')} ${mes} ${t('— disponibles próximamente')}`
     }
     return `${mes}`
   } catch {

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Dna, AlertTriangle, Loader2, Eye, Microscope, Info } from 'lucide-react'
 import Link from 'next/link'
+import { useT } from '@/components/i18n/locale-provider'
 import { crossAllLoci, type Genotype, type CrossResult } from '@/lib/genetics/punnett'
 import { inferGenotype, inferredToGenotypes, type ColorObservation } from '@/lib/genetics/inference'
 import { LOCI } from '@/lib/genetics/loci'
@@ -23,6 +24,7 @@ interface ParentData {
 }
 
 export default function GeneticsForecast({ sireId, damId }: Props) {
+  const t = useT()
   const [loading, setLoading] = useState(true)
   const [sire, setSire] = useState<ParentData | null>(null)
   const [dam, setDam] = useState<ParentData | null>(null)
@@ -89,7 +91,7 @@ export default function GeneticsForecast({ sireId, damId }: Props) {
         setSire(sireData)
         setDam(damData)
       } catch (err: any) {
-        setError(err.message || 'Error cargando datos genéticos')
+        setError(err.message || t('Error cargando datos genéticos'))
       } finally {
         setLoading(false)
       }
@@ -102,7 +104,7 @@ export default function GeneticsForecast({ sireId, damId }: Props) {
     return (
       <div className="rounded-xl border border-hairline bg-canvas px-5 py-8 text-center">
         <Loader2 className="mx-auto h-5 w-5 animate-spin text-muted" />
-        <p className="mt-2 text-[12.5px] text-muted">Calculando predicción genética...</p>
+        <p className="mt-2 text-[12.5px] text-muted">{t('Calculando predicción genética...')}</p>
       </div>
     )
   }
@@ -110,7 +112,7 @@ export default function GeneticsForecast({ sireId, damId }: Props) {
   if (error) {
     return (
       <div className="rounded-xl bg-[color:var(--error)]/10 px-5 py-4 text-[13px] text-[color:var(--error)]">
-        Error: {error}
+        {t('Error:')} {error}
       </div>
     )
   }
@@ -133,16 +135,16 @@ export default function GeneticsForecast({ sireId, damId }: Props) {
       <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-5 py-8 text-center">
         <Dna className="mx-auto h-8 w-8 text-muted" />
         <p className="mt-2 text-[13.5px] text-body">
-          Ninguno de los padres tiene datos de color ni genotipo.
+          {t('Ninguno de los padres tiene datos de color ni genotipo.')}
         </p>
         <p className="mt-1 text-[12px] text-muted">
-          Empieza registrando el color visible — solo te llevará un minuto.
+          {t('Empieza registrando el color visible — solo te llevará un minuto.')}
         </p>
         <Link
           href="/genetica"
           className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-on-primary transition-colors hover:opacity-90"
         >
-          Ir a Genética
+          {t('Ir a Genética')}
         </Link>
       </div>
     )
@@ -166,10 +168,10 @@ export default function GeneticsForecast({ sireId, damId }: Props) {
   if (results.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-5 py-6 text-center text-[13px] text-muted">
-        Datos insuficientes para predecir el cruce.
+        {t('Datos insuficientes para predecir el cruce.')}
         <br />
         <Link href="/genetica" className="mt-2 inline-block text-ink underline">
-          Editar genética →
+          {t('Editar genética →')}
         </Link>
       </div>
     )
@@ -185,8 +187,8 @@ export default function GeneticsForecast({ sireId, damId }: Props) {
     <div className="space-y-3">
       {/* Resumen de fuentes */}
       <div className="grid gap-2 sm:grid-cols-2">
-        <SourceBadge label="Padre" source={sireSource} colorName={sire.colorName} />
-        <SourceBadge label="Madre" source={damSource} colorName={dam.colorName} />
+        <SourceBadge label={t('Padre')} source={sireSource} colorName={sire.colorName} />
+        <SourceBadge label={t('Madre')} source={damSource} colorName={dam.colorName} />
       </div>
 
       {/* Warnings críticos */}
@@ -211,9 +213,7 @@ export default function GeneticsForecast({ sireId, damId }: Props) {
           <div className="flex items-start gap-2.5">
             <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
             <p className="text-[12.5px] text-amber-900">
-              Algunos loci se han inferido a partir del color visible (no DNA). Los porcentajes son
-              estimaciones razonables pero pueden ser imprecisos. Para precisión total, haz tests
-              DNA (Embark / Wisdom Panel) en ambos padres.
+              {t('Algunos loci se han inferido a partir del color visible (no DNA). Los porcentajes son estimaciones razonables pero pueden ser imprecisos. Para precisión total, haz tests DNA (Embark / Wisdom Panel) en ambos padres.')}
             </p>
           </div>
         </div>
@@ -237,9 +237,9 @@ export default function GeneticsForecast({ sireId, damId }: Props) {
 
       {results.length < LOCI.length && (
         <p className="text-[11.5px] text-muted">
-          Mostrando {results.length} de {LOCI.length} loci.{' '}
+          {t('Mostrando')} {results.length} {t('de')} {LOCI.length} {t('loci.')}{' '}
           <Link href="/genetica" className="text-ink underline">
-            Completar datos →
+            {t('Completar datos →')}
           </Link>
         </p>
       )}
@@ -256,10 +256,11 @@ function SourceBadge({
   source: DataSource
   colorName: string | null
 }) {
+  const t = useT()
   if (source === 'none') {
     return (
       <div className="rounded-lg border border-dashed border-hairline bg-surface-soft px-3 py-2 text-[12px] text-muted">
-        {label}: <span className="font-medium">Sin datos genéticos</span>
+        {label}: <span className="font-medium">{t('Sin datos genéticos')}</span>
       </div>
     )
   }
@@ -268,7 +269,7 @@ function SourceBadge({
       <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[12px] text-emerald-900">
         <Microscope className="h-3.5 w-3.5" />
         <span>
-          {label}: <span className="font-medium">Genotipo DNA confirmado</span>
+          {label}: <span className="font-medium">{t('Genotipo DNA confirmado')}</span>
         </span>
       </div>
     )
@@ -277,7 +278,7 @@ function SourceBadge({
     <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[12px] text-blue-900">
       <Eye className="h-3.5 w-3.5" />
       <span>
-        {label}: <span className="font-medium">Color visible</span>
+        {label}: <span className="font-medium">{t('Color visible')}</span>
         {colorName && <span className="text-blue-700"> · {colorName}</span>}
       </span>
     </div>
@@ -291,6 +292,7 @@ function LocusCard({
   result: CrossResult
   confidence: 'high' | 'estimated'
 }) {
+  const t = useT()
   const hasWarning = !!result.warning
 
   return (
@@ -312,9 +314,9 @@ function LocusCard({
               ? 'bg-emerald-100 text-emerald-700'
               : 'bg-amber-100 text-amber-700'
           }`}
-          title={confidence === 'high' ? 'Predicción exacta (ambos padres con DNA)' : 'Estimación con incertidumbre'}
+          title={confidence === 'high' ? t('Predicción exacta (ambos padres con DNA)') : t('Estimación con incertidumbre')}
         >
-          {confidence === 'high' ? 'Exacto' : 'Estimado'}
+          {confidence === 'high' ? t('Exacto') : t('Estimado')}
         </span>
       </div>
 

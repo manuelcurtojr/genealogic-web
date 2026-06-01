@@ -5,6 +5,8 @@ import { MapPin, Calendar, Globe, ExternalLink, MessageCircle } from 'lucide-rea
 import { createClient } from '@/lib/supabase/server'
 import { isUUID } from '@/lib/slug'
 import type { Metadata } from 'next'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,6 +36,7 @@ export async function generateMetadata(
 
 export default async function KennelContactoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const t = getTranslator(await getLocale())
   const { kennel } = await loadProPage({ kennelId: id, pageId: null })
 
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
@@ -42,27 +45,26 @@ export default async function KennelContactoPage({ params }: { params: Promise<{
 
   return (
     <ProPageShell
-      eyebrow="Hablemos"
-      title={`Contacta con ${kennel.name}`}
-      description="Estamos aquí para responder dudas, planificar visitas y mantenerte al día sobre próximas camadas. Sin compromiso."
+      eyebrow={t('Hablemos')}
+      title={`${t('Contacta con')} ${kennel.name}`}
+      description={t('Estamos aquí para responder dudas, planificar visitas y mantenerte al día sobre próximas camadas. Sin compromiso.')}
     >
       <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6 lg:gap-8">
         {/* Form CTA */}
         <div className="rounded-2xl border border-hairline bg-canvas p-6 sm:p-8">
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Formulario</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('Formulario')}</p>
           <h2 className="mt-1 text-[20px] sm:text-[22px] font-semibold tracking-[-0.02em] text-ink">
-            Escríbenos por aquí
+            {t('Escríbenos por aquí')}
           </h2>
           <p className="mt-2 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-prose">
-            Te respondemos en menos de 24 horas. El formulario es la mejor vía
-            para que no se nos escape ningún mensaje.
+            {t('Te respondemos en menos de 24 horas. El formulario es la mejor vía para que no se nos escape ningún mensaje.')}
           </p>
           <div className="mt-5">
             {hasOwner ? (
               <ContactKennelButton kennelId={kennel.id} kennelName={kennel.name} config={kennel.contact_form_config || null} />
             ) : (
               <p className="text-[13px] text-muted italic">
-                Este criadero aún no tiene un dueño registrado en Genealogic.
+                {t('Este criadero aún no tiene un dueño registrado en Genealogic.')}
               </p>
             )}
           </div>
@@ -70,7 +72,7 @@ export default async function KennelContactoPage({ params }: { params: Promise<{
 
         {/* Datos del kennel */}
         <aside className="rounded-2xl border border-hairline bg-surface-soft p-6 sm:p-8">
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">El criadero</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('El criadero')}</p>
           <h3 className="mt-1 text-[16px] font-semibold tracking-[-0.01em] text-ink">{kennel.name}</h3>
           <dl className="mt-4 space-y-3 text-[13.5px]">
             {location && (
@@ -82,7 +84,7 @@ export default async function KennelContactoPage({ params }: { params: Promise<{
             {foundationYear && (
               <div className="flex items-start gap-2">
                 <Calendar className="h-3.5 w-3.5 mt-0.5 text-muted flex-shrink-0" />
-                <span className="text-body">Fundado en {foundationYear}</span>
+                <span className="text-body">{t('Fundado en')} {foundationYear}</span>
               </div>
             )}
             {kennel.whatsapp_enabled && kennel.whatsapp_phone && (
@@ -102,7 +104,7 @@ export default async function KennelContactoPage({ params }: { params: Promise<{
               <div className="flex items-start gap-2">
                 <Globe className="h-3.5 w-3.5 mt-0.5 text-muted flex-shrink-0" />
                 <a href={kennel.website} target="_blank" rel="noopener noreferrer" className="text-body hover:text-ink transition truncate">
-                  Web propia
+                  {t('Web propia')}
                 </a>
               </div>
             )}

@@ -6,6 +6,7 @@
 import { useState, useTransition } from 'react'
 import { Loader2, Pen } from 'lucide-react'
 import { signContractAsClientAction } from '@/app/(dashboard)/mis-reservas/[id]/contrato/actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function ClientSignForm({
   reservationId,
@@ -14,6 +15,7 @@ export default function ClientSignForm({
   reservationId: string
   contractId: string
 }) {
+  const t = useT()
   const [pending, startTransition] = useTransition()
   const [accepted, setAccepted] = useState(false)
   const [name, setName] = useState('')
@@ -35,11 +37,10 @@ export default function ClientSignForm({
     >
       <h3 className="text-base font-bold text-ink mb-1 inline-flex items-center gap-2">
         <Pen className="h-4 w-4" />
-        Firmar contrato
+        {t('Firmar contrato')}
       </h3>
       <p className="text-xs text-muted mb-4">
-        Tu firma queda registrada con sello de tiempo. Equivale legalmente a una firma
-        manuscrita (Reglamento eIDAS).
+        {t('Tu firma queda registrada con sello de tiempo. Equivale legalmente a una firma manuscrita (Reglamento eIDAS).')}
       </p>
 
       <label className="flex items-start gap-2 cursor-pointer mb-3">
@@ -51,13 +52,13 @@ export default function ClientSignForm({
           required
         />
         <span className="text-sm text-body">
-          He leído el contrato completo y acepto sus términos y condiciones.
+          {t('He leído el contrato completo y acepto sus términos y condiciones.')}
         </span>
       </label>
 
       <label className="block mb-3">
         <span className="block text-[11px] font-semibold uppercase tracking-wider text-muted mb-1">
-          Tu nombre completo
+          {t('Tu nombre completo')}
         </span>
         <input
           type="text"
@@ -65,7 +66,7 @@ export default function ClientSignForm({
           onChange={(e) => setName(e.target.value)}
           required
           minLength={3}
-          placeholder="Nombre y apellidos"
+          placeholder={t('Nombre y apellidos')}
           className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink placeholder:text-muted"
         />
       </label>
@@ -82,10 +83,10 @@ export default function ClientSignForm({
         {pending ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Firmando...
+            {t('Firmando...')}
           </>
         ) : (
-          'Firmar el contrato'
+          t('Firmar el contrato')
         )}
       </button>
     </form>

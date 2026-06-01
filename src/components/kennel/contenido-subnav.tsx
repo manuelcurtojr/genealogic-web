@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { User, Image as ImageIcon, Building2, BookOpen, HelpCircle, MessageSquare, Dog, Award, Scale } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 const ITEMS = [
   { href: '/kennel/contenido/sobre',              label: 'Sobre nosotros', icon: User },
@@ -17,6 +18,7 @@ const ITEMS = [
 ]
 
 export default function ContenidoSubNav() {
+  const t = useT()
   const pathname = usePathname() || ''
   return (
     <nav className="flex gap-1 overflow-x-auto scrollbar-hide border-b border-hairline -mb-px">
@@ -34,7 +36,7 @@ export default function ContenidoSubNav() {
             }`}
           >
             <Icon className="h-3.5 w-3.5" />
-            {item.label}
+            {t(item.label)}
           </Link>
         )
       })}

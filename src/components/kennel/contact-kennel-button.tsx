@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { Send, X, Loader2, Check } from 'lucide-react'
 import { getEffectiveConfig, validateForm, type ContactFormConfig, type FormField } from '@/lib/kennel/contact-form'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   kennelId: string
@@ -20,6 +21,7 @@ interface Props {
  * Mismo componente en /kennels/[slug] (perfil) y /c/[slug] (web custom).
  */
 export default function ContactKennelButton({ kennelId, kennelName, config: rawConfig, variant = 'primary' }: Props) {
+  const t = useT()
   const config = getEffectiveConfig(rawConfig)
 
   const [open, setOpen] = useState(false)
@@ -59,13 +61,13 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        setServerError(data?.error || 'No se pudo enviar')
+        setServerError(data?.error || t('No se pudo enviar'))
         setSubmitting(false)
         return
       }
       setDone(true); setSubmitting(false)
     } catch (err: any) {
-      setServerError(err.message || 'Error de red')
+      setServerError(err.message || t('Error de red'))
       setSubmitting(false)
     }
   }
@@ -103,19 +105,19 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
             <div className="flex-shrink-0 relative flex items-center px-5 sm:px-6 py-4 sm:py-5 bg-canvas border-b border-hairline">
               <div className="min-w-0 flex-1 pr-12">
                 <p className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[#FE6620]">
-                  Pedir información
+                  {t('Pedir información')}
                 </p>
                 <h2 className="mt-1 text-[18px] sm:text-[20px] font-semibold tracking-[-0.025em] text-ink leading-snug">
-                  {config.title || `Contacta con ${kennelName}`}
+                  {config.title || `${t('Contacta con')} ${kennelName}`}
                 </h2>
                 <p className="mt-1.5 text-[13px] text-body leading-snug max-w-prose">
-                  {config.subtitle || 'Cuéntanos qué buscas y te respondemos en breve. Sin compromiso.'}
+                  {config.subtitle || t('Cuéntanos qué buscas y te respondemos en breve. Sin compromiso.')}
                 </p>
               </div>
               <button
                 onClick={close}
                 className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-surface-soft transition flex-shrink-0"
-                aria-label="Cerrar"
+                aria-label={t('Cerrar')}
               >
                 <X className="h-6 w-6" />
               </button>
@@ -127,15 +129,15 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50">
                   <Check className="h-7 w-7 text-emerald-700" strokeWidth={2.5} />
                 </div>
-                <p className="mt-4 text-[17px] font-semibold text-ink">¡Enviado!</p>
+                <p className="mt-4 text-[17px] font-semibold text-ink">{t('¡Enviado!')}</p>
                 <p className="mt-1.5 text-[13.5px] text-body max-w-sm mx-auto leading-snug">
-                  {config.success_message || `${kennelName} verá tu mensaje y te responderá en breve.`}
+                  {config.success_message || `${kennelName} ${t('verá tu mensaje y te responderá en breve.')}`}
                 </p>
                 <button
                   onClick={close}
                   className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-ink px-5 py-2.5 text-[13px] font-bold text-on-primary hover:opacity-90 transition"
                 >
-                  Cerrar
+                  {t('Cerrar')}
                 </button>
               </div>
             ) : (
@@ -170,7 +172,7 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
                   onClick={close}
                   className="rounded-lg px-3.5 py-2 text-[13px] font-semibold text-body hover:text-ink transition"
                 >
-                  Cancelar
+                  {t('Cancelar')}
                 </button>
                 <button
                   type="submit"
@@ -179,7 +181,7 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
                   className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-5 py-2.5 text-[13px] font-bold text-on-primary hover:opacity-90 disabled:opacity-40 transition"
                 >
                   {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                  {submitting ? 'Enviando…' : (config.submit_label || 'Enviar')}
+                  {submitting ? t('Enviando…') : (config.submit_label || t('Enviar'))}
                 </button>
               </div>
             )}
@@ -191,7 +193,7 @@ export default function ContactKennelButton({ kennelId, kennelName, config: rawC
     <>
       <button onClick={() => setOpen(true)} className={triggerClass}>
         <Send className="h-3.5 w-3.5" />
-        Pedir información
+        {t('Pedir información')}
       </button>
       {/* Portal a document.body — escapa de cualquier ancestro con
           transform / filter / backdrop-filter que confine `fixed`. */}
@@ -209,6 +211,7 @@ function FieldRenderer({
 }: {
   field: FormField; value: any; error?: string; onChange: (v: any) => void
 }) {
+  const t = useT()
   const baseInput =
     'w-full rounded-lg border bg-canvas px-3 py-2 text-[14px] text-ink focus:outline-none transition-colors'
   const inputCls = `${baseInput} ${
@@ -236,7 +239,7 @@ function FieldRenderer({
           onChange={(e) => onChange(e.target.value)}
           className={inputCls}
         >
-          <option value="">— Seleccionar —</option>
+          <option value="">{t('— Seleccionar —')}</option>
           {(field.options || []).map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
       ) : field.type === 'radio' ? (

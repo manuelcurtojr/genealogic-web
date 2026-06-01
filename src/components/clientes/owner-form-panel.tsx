@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import SlidePanel from '@/components/ui/slide-panel'
 import { Button } from '@/components/ui/button'
+import { useT } from '@/components/i18n/locale-provider'
 import { Trash2 } from 'lucide-react'
 
 interface Owner {
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export default function OwnerFormPanel({ open, onClose, onSaved, onDeleted, editing, kennelId }: Props) {
+  const t = useT()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -59,7 +61,7 @@ export default function OwnerFormPanel({ open, onClose, onSaved, onDeleted, edit
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!fullName.trim()) {
-      alert('El nombre es obligatorio')
+      alert(t('El nombre es obligatorio'))
       return
     }
     setSaving(true)
@@ -85,7 +87,7 @@ export default function OwnerFormPanel({ open, onClose, onSaved, onDeleted, edit
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Error al guardar')
+        throw new Error(err.error || t('Error al guardar'))
       }
       const data = await res.json()
       onSaved(data.owner)
@@ -98,13 +100,13 @@ export default function OwnerFormPanel({ open, onClose, onSaved, onDeleted, edit
 
   async function handleDelete() {
     if (!editing) return
-    if (!confirm('¿Eliminar este cliente? Sus reservas no se borrarán pero quedarán sin cliente asignado.')) return
+    if (!confirm(t('¿Eliminar este cliente? Sus reservas no se borrarán pero quedarán sin cliente asignado.'))) return
     setDeleting(true)
     try {
       const res = await fetch(`/api/owners/${editing.id}`, { method: 'DELETE' })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Error al eliminar')
+        throw new Error(err.error || t('Error al eliminar'))
       }
       onDeleted(editing.id)
     } catch (err: any) {
@@ -115,50 +117,50 @@ export default function OwnerFormPanel({ open, onClose, onSaved, onDeleted, edit
   }
 
   return (
-    <SlidePanel open={open} onClose={onClose} title={editing ? 'Editar cliente' : 'Nuevo cliente'}>
+    <SlidePanel open={open} onClose={onClose} title={editing ? t('Editar cliente') : t('Nuevo cliente')}>
       <form onSubmit={handleSubmit} className="space-y-5">
-        <Field label="Nombre completo *">
+        <Field label={t('Nombre completo *')}>
           <input type="text" required value={fullName} onChange={e => setFullName(e.target.value)} className="input" placeholder="María García López" />
         </Field>
 
         <div className="grid grid-cols-1 gap-3">
-          <Field label="Email">
+          <Field label={t('Email')}>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="input" placeholder="maria@ejemplo.com" />
           </Field>
-          <Field label="Teléfono">
+          <Field label={t('Teléfono')}>
             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="input" placeholder="+34 600 000 000" />
           </Field>
         </div>
 
-        <Field label="Dirección">
-          <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="input" placeholder="Calle, número, piso" />
+        <Field label={t('Dirección')}>
+          <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="input" placeholder={t('Calle, número, piso')} />
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Ciudad">
+          <Field label={t('Ciudad')}>
             <input type="text" value={city} onChange={e => setCity(e.target.value)} className="input" placeholder="A Coruña" />
           </Field>
-          <Field label="País">
+          <Field label={t('País')}>
             <input type="text" value={country} onChange={e => setCountry(e.target.value)} className="input" placeholder="España" />
           </Field>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Tipo doc.">
+          <Field label={t('Tipo doc.')}>
             <select value={idDocType} onChange={e => setIdDocType(e.target.value)} className="input">
               <option value="">—</option>
               <option value="dni">DNI</option>
               <option value="nie">NIE</option>
-              <option value="passport">Pasaporte</option>
+              <option value="passport">{t('Pasaporte')}</option>
             </select>
           </Field>
-          <Field label="Número doc.">
+          <Field label={t('Número doc.')}>
             <input type="text" value={idDocNumber} onChange={e => setIdDocNumber(e.target.value)} className="input" placeholder="12345678X" />
           </Field>
         </div>
 
-        <Field label="Notas internas">
-          <textarea value={notes} onChange={e => setNotes(e.target.value)} className="input min-h-[80px]" placeholder="Información privada que solo verás tú: preferencias, conversaciones previas, alergias del cliente, etc." />
+        <Field label={t('Notas internas')}>
+          <textarea value={notes} onChange={e => setNotes(e.target.value)} className="input min-h-[80px]" placeholder={t('Información privada que solo verás tú: preferencias, conversaciones previas, alergias del cliente, etc.')} />
         </Field>
 
         <div className="flex items-center justify-between pt-4 border-t border-hairline">
@@ -170,13 +172,13 @@ export default function OwnerFormPanel({ open, onClose, onSaved, onDeleted, edit
               className="text-sm text-muted hover:text-[color:var(--error)] transition inline-flex items-center gap-1.5 disabled:opacity-50"
             >
               <Trash2 className="w-4 h-4" />
-              {deleting ? 'Eliminando…' : 'Eliminar'}
+              {deleting ? t('Eliminando…') : t('Eliminar')}
             </button>
           ) : <div />}
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={onClose}>Cancelar</Button>
+            <Button variant="ghost" size="sm" onClick={onClose}>{t('Cancelar')}</Button>
             <Button variant="primary" size="sm" type="submit" disabled={saving}>
-              {saving ? 'Guardando…' : (editing ? 'Guardar' : 'Crear')}
+              {saving ? t('Guardando…') : (editing ? t('Guardar') : t('Crear'))}
             </Button>
           </div>
         </div>

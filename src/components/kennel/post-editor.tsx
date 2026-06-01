@@ -10,6 +10,7 @@ import {
   deletePostAction,
   uploadPostCoverAction,
 } from '@/lib/kennel/content-actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   kennelId: string
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export default function PostEditor({ kennelId, initialPost }: Props) {
+  const t = useT()
   const router = useRouter()
   const isEdit = !!initialPost
 
@@ -58,8 +60,8 @@ export default function PostEditor({ kennelId, initialPost }: Props) {
           router.refresh()
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'No se pudo guardar'
-        const human = msg === 'title_too_short' ? 'El título es muy corto (mínimo 3 caracteres)' : msg
+        const msg = err instanceof Error ? err.message : t('No se pudo guardar')
+        const human = msg === 'title_too_short' ? t('El título es muy corto (mínimo 3 caracteres)') : msg
         setError(human)
       }
     })
@@ -67,13 +69,13 @@ export default function PostEditor({ kennelId, initialPost }: Props) {
 
   function handleDelete() {
     if (!initialPost) return
-    if (!confirm('¿Borrar este post? No se puede deshacer.')) return
+    if (!confirm(t('¿Borrar este post? No se puede deshacer.'))) return
     startDeleting(async () => {
       try {
         await deletePostAction({ postId: initialPost.id, kennelId })
         router.push('/kennel/contenido/blog')
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'No se pudo borrar')
+        setError(err instanceof Error ? err.message : t('No se pudo borrar'))
       }
     })
   }
@@ -88,7 +90,7 @@ export default function PostEditor({ kennelId, initialPost }: Props) {
       const { url } = await uploadPostCoverAction(fd)
       setCoverUrl(url)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo subir la imagen')
+      setError(err instanceof Error ? err.message : t('No se pudo subir la imagen'))
     } finally {
       setUploadingCover(false)
       if (fileRef.current) fileRef.current.value = ''
@@ -100,31 +102,31 @@ export default function PostEditor({ kennelId, initialPost }: Props) {
       <div className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 space-y-4">
         {/* Título */}
         <label className="block">
-          <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">Título</span>
+          <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">{t('Título')}</span>
           <input
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            placeholder="Ej: Nueva camada disponible — primavera 2026"
+            placeholder={t('Ej: Nueva camada disponible — primavera 2026')}
             className="mt-1.5 w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-[16px] font-semibold text-ink placeholder:text-muted/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
           />
         </label>
 
         {/* Excerpt */}
         <label className="block">
-          <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">Resumen <span className="font-normal lowercase text-muted/70">(opcional)</span></span>
+          <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">{t('Resumen')} <span className="font-normal lowercase text-muted/70">{t('(opcional)')}</span></span>
           <textarea
             value={excerpt}
             onChange={e => setExcerpt(e.target.value)}
             rows={2}
-            placeholder="Frase corta que invite a leer (aparece en la lista del blog y en redes sociales)."
+            placeholder={t('Frase corta que invite a leer (aparece en la lista del blog y en redes sociales).')}
             className="mt-1.5 w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13.5px] text-body placeholder:text-muted/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition resize-y"
           />
         </label>
 
         {/* Cover */}
         <div>
-          <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">Imagen de portada</span>
+          <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">{t('Imagen de portada')}</span>
           {coverUrl ? (
             <div className="mt-1.5 relative rounded-lg overflow-hidden border border-hairline aspect-[16/9] bg-surface-card">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -133,7 +135,7 @@ export default function PostEditor({ kennelId, initialPost }: Props) {
                 type="button"
                 onClick={() => setCoverUrl(null)}
                 className="absolute top-2 right-2 inline-flex items-center justify-center h-7 w-7 rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-black/80 transition"
-                title="Quitar imagen"
+                title={t('Quitar imagen')}
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -158,7 +160,7 @@ export default function PostEditor({ kennelId, initialPost }: Props) {
                 className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-[13px] font-medium text-body hover:border-ink/30 hover:text-ink transition disabled:opacity-50"
               >
                 {uploadingCover ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />}
-                {uploadingCover ? 'Subiendo...' : 'Subir imagen'}
+                {uploadingCover ? t('Subiendo...') : t('Subir imagen')}
               </button>
             </div>
           )}
@@ -166,12 +168,12 @@ export default function PostEditor({ kennelId, initialPost }: Props) {
 
         {/* Body */}
         <label className="block">
-          <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">Cuerpo del post</span>
+          <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">{t('Cuerpo del post')}</span>
           <textarea
             value={body}
             onChange={e => setBody(e.target.value)}
             rows={18}
-            placeholder="Escribe el contenido del post. Soporta saltos de párrafo."
+            placeholder={t('Escribe el contenido del post. Soporta saltos de párrafo.')}
             className="mt-1.5 w-full rounded-lg border border-hairline bg-canvas px-3 py-3 text-[14.5px] text-ink placeholder:text-muted/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition resize-y leading-[1.55]"
           />
         </label>
@@ -194,7 +196,7 @@ export default function PostEditor({ kennelId, initialPost }: Props) {
             className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2 text-[13px] font-semibold text-body hover:border-ink/30 hover:text-ink disabled:opacity-40 transition"
           >
             {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-            Guardar borrador
+            {t('Guardar borrador')}
           </button>
           <button
             type="button"
@@ -203,7 +205,7 @@ export default function PostEditor({ kennelId, initialPost }: Props) {
             className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-bold text-on-primary hover:opacity-90 disabled:opacity-40 transition"
           >
             {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-            Publicar
+            {t('Publicar')}
           </button>
         </div>
         {isEdit && (
@@ -214,7 +216,7 @@ export default function PostEditor({ kennelId, initialPost }: Props) {
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[12.5px] font-medium text-muted hover:text-red-600 transition disabled:opacity-50"
           >
             {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-            Borrar post
+            {t('Borrar post')}
           </button>
         )}
       </div>

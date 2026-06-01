@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { updateSectionProps } from '../actions';
 import { getSectionSchema } from '@/lib/kennel/section-schemas';
 import { SectionForm } from '@/components/admin/web/section-form';
+import { useT } from '@/components/i18n/locale-provider';
 
 type Section = {
   id: string;
@@ -38,6 +39,7 @@ export function SectionEditor({
 }
 
 function RawJsonEditor({ pageSlug, section }: { pageSlug: string; section: Section }) {
+  const t = useT();
   const initial = JSON.stringify(section.props ?? {}, null, 2);
   const [value, setValue] = useState(initial);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +80,7 @@ function RawJsonEditor({ pageSlug, section }: { pageSlug: string; section: Secti
   return (
     <div>
       <p className="mb-2 text-[11px] text-muted">
-        Esta sección aún no tiene formulario específico. Edita las props como JSON crudo.
+        {t('Esta sección aún no tiene formulario específico. Edita las props como JSON crudo.')}
       </p>
       <textarea
         value={value}
@@ -89,13 +91,13 @@ function RawJsonEditor({ pageSlug, section }: { pageSlug: string; section: Secti
       />
       {error && (
         <p className="mt-2 rounded-md bg-[var(--red-200/60)] px-3 py-2 text-xs text-[color:var(--red-700)] ring-1 ring-[color:var(--red-200/60)]">
-          JSON no válido: {error}
+          {t('JSON no válido:')} {error}
         </p>
       )}
       <div className="mt-3 flex items-center justify-between gap-2">
         <p className="text-[11px] text-muted">
-          {isPending && 'Guardando…'}
-          {!isPending && savedAt && `✓ Guardado a las ${savedAt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`}
+          {isPending && t('Guardando…')}
+          {!isPending && savedAt && `✓ ${t('Guardado a las')} ${savedAt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`}
         </p>
         <div className="flex gap-2">
           <button
@@ -103,7 +105,7 @@ function RawJsonEditor({ pageSlug, section }: { pageSlug: string; section: Secti
             onClick={format}
             className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-body hover:border-muted"
           >
-            Formatear
+            {t('Formatear')}
           </button>
           <button
             type="button"
@@ -111,7 +113,7 @@ function RawJsonEditor({ pageSlug, section }: { pageSlug: string; section: Secti
             disabled={!isDirty || isPending}
             className="rounded-lg bg-ink px-4 py-1.5 text-xs font-medium text-white transition hover:bg-ink disabled:opacity-40"
           >
-            Guardar
+            {t('Guardar')}
           </button>
         </div>
       </div>

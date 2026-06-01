@@ -6,6 +6,7 @@ import {
   ChevronRight, ChevronLeft, LayoutDashboard, Dog, Baby, GitCompareArrows,
   Heart, Calendar, KanbanSquare, Store, Mail, Settings,
 } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 /**
  * Mini-sidebar flotante para el OWNER del kennel cuya web custom está viendo.
@@ -43,6 +44,7 @@ export default function OwnerFloatingNav({
   serverIsOwner?: boolean
   kennelSlug?: string
 }) {
+  const t = useT()
   const [expanded, setExpanded] = useState(false)
   // Detecta owner por query/sessionStorage. Empieza false en SSR.
   const [clientIsOwner, setClientIsOwner] = useState(false)
@@ -99,15 +101,15 @@ export default function OwnerFloatingNav({
             <button
               onClick={toggle}
               className="rounded-md p-1 text-muted hover:bg-surface-soft hover:text-ink"
-              title="Plegar"
-              aria-label="Plegar menú"
+              title={t('Plegar')}
+              aria-label={t('Plegar menú')}
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </button>
           </div>
 
           <p className="px-2 pb-1 text-[10px] font-medium uppercase tracking-[0.08em] text-muted">
-            Tu vista de criador
+            {t('Tu vista de criador')}
           </p>
 
           {/* Items */}
@@ -121,7 +123,7 @@ export default function OwnerFloatingNav({
                 className="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
               >
                 <Icon className="h-3.5 w-3.5 text-muted" />
-                {it.label}
+                {t(it.label)}
               </Link>
             )
           })}
@@ -129,8 +131,8 @@ export default function OwnerFloatingNav({
           <div className="mt-1 border-t border-hairline-soft px-2 pt-2">
             <p className="text-[10.5px] text-muted leading-tight">
               {baseUrl
-                ? 'Estás viendo tu web pública en tu dominio. Los enlaces abren tu dashboard en genealogic.io en una pestaña nueva.'
-                : 'Estás viendo tu web pública. Solo tú ves este menú porque estás logueado como propietario.'}
+                ? t('Estás viendo tu web pública en tu dominio. Los enlaces abren tu dashboard en genealogic.io en una pestaña nueva.')
+                : t('Estás viendo tu web pública. Solo tú ves este menú porque estás logueado como propietario.')}
             </p>
           </div>
         </div>
@@ -138,8 +140,8 @@ export default function OwnerFloatingNav({
         <button
           onClick={toggle}
           className="group flex h-10 w-10 items-center justify-center rounded-full bg-canvas/95 backdrop-blur-md shadow-lg ring-1 ring-black/10 transition-all hover:bg-canvas hover:shadow-xl"
-          title="Abrir menú de criador"
-          aria-label="Abrir menú de criador"
+          title={t('Abrir menú de criador')}
+          aria-label={t('Abrir menú de criador')}
         >
           <span className="font-display text-[15px] font-bold tracking-tight text-ink">G</span>
           <ChevronRight className="absolute -right-1 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-canvas text-muted opacity-0 shadow ring-1 ring-black/5 transition-opacity group-hover:opacity-100" />

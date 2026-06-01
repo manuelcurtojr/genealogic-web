@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Dog, Baby, UsersRound, KanbanSquare, BookOpen, Mail, TrendingUp, ArrowRight } from 'lucide-react'
 import AnalyticsSubnav from '@/components/analytics/analytics-subnav'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const metadata = { title: 'Estadísticas · Genealogic Pro' }
 
@@ -10,6 +12,8 @@ export default async function EstadisticasPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const t = getTranslator(await getLocale())
 
   const { data: kennelArr } = await supabase
     .from('kennels')
@@ -21,8 +25,8 @@ export default async function EstadisticasPage() {
   if (!kennel) {
     return (
       <div className="max-w-2xl mx-auto py-10">
-        <h1 className="text-3xl font-bold text-ink mb-3">Estadísticas</h1>
-        <p className="text-body">Necesitas un criadero registrado.</p>
+        <h1 className="text-3xl font-bold text-ink mb-3">{t('Estadísticas')}</h1>
+        <p className="text-body">{t('Necesitas un criadero registrado.')}</p>
       </div>
     )
   }
@@ -84,24 +88,24 @@ export default async function EstadisticasPage() {
         <AnalyticsSubnav />
       </div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-ink tracking-tight">Estadísticas</h1>
-        <p className="text-sm text-muted mt-0.5">{kennel.name} · resumen general</p>
+        <h1 className="text-2xl font-bold text-ink tracking-tight">{t('Estadísticas')}</h1>
+        <p className="text-sm text-muted mt-0.5">{kennel.name} · {t('resumen general')}</p>
       </div>
 
       {/* KPI grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-        <StatCard icon={Dog} label="Perros" value={stats.dogs} href="/dogs" />
-        <StatCard icon={Baby} label="Camadas" value={stats.litters} href="/litters" />
-        <StatCard icon={KanbanSquare} label="Reservas activas" value={stats.activeReservas}
-                  sub={`${stats.totalReservas} totales`} href="/reservas" />
-        <StatCard icon={UsersRound} label="Contactos" value={stats.owners} href="/contactos" />
-        <StatCard icon={BookOpen} label="Biblioteca" value={stats.knowledge}
-                  sub="entradas activas" href="/conocimiento" />
-        <StatCard icon={Mail} label="Newsletter" value={stats.subs}
-                  sub="suscriptores" href="/newsletter" />
-        <StatCard icon={TrendingUp} label="Visitas 30d" value={stats.pageviews30d}
-                  sub={`${stats.pageviewsTotal} histórico`} />
-        <StatCard icon={TrendingUp} label="Visitas totales" value={stats.pageviewsTotal} />
+        <StatCard icon={Dog} label={t('Perros')} value={stats.dogs} href="/dogs" />
+        <StatCard icon={Baby} label={t('Camadas')} value={stats.litters} href="/litters" />
+        <StatCard icon={KanbanSquare} label={t('Reservas activas')} value={stats.activeReservas}
+                  sub={`${stats.totalReservas} ${t('totales')}`} href="/reservas" />
+        <StatCard icon={UsersRound} label={t('Contactos')} value={stats.owners} href="/contactos" />
+        <StatCard icon={BookOpen} label={t('Biblioteca')} value={stats.knowledge}
+                  sub={t('entradas activas')} href="/conocimiento" />
+        <StatCard icon={Mail} label={t('Newsletter')} value={stats.subs}
+                  sub={t('suscriptores')} href="/newsletter" />
+        <StatCard icon={TrendingUp} label={t('Visitas 30d')} value={stats.pageviews30d}
+                  sub={`${stats.pageviewsTotal} ${t('histórico')}`} />
+        <StatCard icon={TrendingUp} label={t('Visitas totales')} value={stats.pageviewsTotal} />
       </div>
 
       {/* Pageviews note */}
@@ -109,12 +113,11 @@ export default async function EstadisticasPage() {
         <div className="rounded-xl border border-hairline bg-surface-card p-4 mb-8 flex items-start gap-3">
           <TrendingUp className="w-5 h-5 text-muted flex-shrink-0 mt-0.5" />
           <div className="text-sm text-body leading-relaxed">
-            <p className="mb-1"><strong>Tracking de visitas aún sin datos.</strong></p>
+            <p className="mb-1"><strong>{t('Tracking de visitas aún sin datos.')}</strong></p>
             <p>
-              El conteo de visitas a tu perfil público y a las fichas de tus perros se activa
-              en la próxima fase. La infraestructura ya está en la base de datos
-              (<code className="text-[12px] bg-canvas border border-hairline rounded px-1">page_views</code>),
-              falta enganchar el middleware de tracking ligero y anónimo (sha256 de ip+user-agent+día, GDPR-friendly).
+              {t('El conteo de visitas a tu perfil público y a las fichas de tus perros se activa en la próxima fase. La infraestructura ya está en la base de datos')}
+              {' '}(<code className="text-[12px] bg-canvas border border-hairline rounded px-1">page_views</code>),
+              {' '}{t('falta enganchar el middleware de tracking ligero y anónimo (sha256 de ip+user-agent+día, GDPR-friendly).')}
             </p>
           </div>
         </div>
@@ -123,20 +126,20 @@ export default async function EstadisticasPage() {
       {/* Pipeline status breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
         <div className="rounded-xl border border-hairline bg-canvas p-5">
-          <h3 className="text-sm font-semibold text-ink mb-4">Pipeline de reservas</h3>
+          <h3 className="text-sm font-semibold text-ink mb-4">{t('Pipeline de reservas')}</h3>
           {stats.totalReservas === 0 ? (
-            <p className="text-sm text-muted">Sin reservas todavía. Crea la primera en <Link href="/reservas" className="text-ink underline">Reservas</Link>.</p>
+            <p className="text-sm text-muted">{t('Sin reservas todavía. Crea la primera en')} <Link href="/reservas" className="text-ink underline">{t('Reservas')}</Link>.</p>
           ) : (
             <div className="space-y-2">
               {[
-                ['interested', 'Interesado'],
-                ['waitlisted', 'Lista de espera'],
-                ['deposit_paid', 'Depósito pagado'],
-                ['assigned', 'Asignado'],
-                ['contract_signed', 'Contrato firmado'],
-                ['paid_in_full', 'Pago total'],
-                ['delivered', 'Entregado'],
-                ['cancelled', 'Cancelado'],
+                ['interested', t('Interesado')],
+                ['waitlisted', t('Lista de espera')],
+                ['deposit_paid', t('Depósito pagado')],
+                ['assigned', t('Asignado')],
+                ['contract_signed', t('Contrato firmado')],
+                ['paid_in_full', t('Pago total')],
+                ['delivered', t('Entregado')],
+                ['cancelled', t('Cancelado')],
               ].map(([key, label]) => {
                 const count = byStatus[key] || 0
                 const pct = stats.totalReservas > 0 ? (count / stats.totalReservas) * 100 : 0
@@ -158,9 +161,9 @@ export default async function EstadisticasPage() {
         </div>
 
         <div className="rounded-xl border border-hairline bg-canvas p-5">
-          <h3 className="text-sm font-semibold text-ink mb-4">Top perros (por reservas asociadas)</h3>
+          <h3 className="text-sm font-semibold text-ink mb-4">{t('Top perros (por reservas asociadas)')}</h3>
           {topDogs.length === 0 ? (
-            <p className="text-sm text-muted">Aún no hay reservas asociadas a perros concretos.</p>
+            <p className="text-sm text-muted">{t('Aún no hay reservas asociadas a perros concretos.')}</p>
           ) : (
             <div className="space-y-2">
               {topDogs.map((d, i) => (
@@ -173,7 +176,7 @@ export default async function EstadisticasPage() {
                     <span className="text-xs text-muted font-medium w-4">{i + 1}</span>
                     <span className="text-sm font-medium text-ink truncate">{d.name}</span>
                   </div>
-                  <span className="text-xs text-muted whitespace-nowrap">{d.count} reserva{d.count === 1 ? '' : 's'}</span>
+                  <span className="text-xs text-muted whitespace-nowrap">{d.count} {d.count === 1 ? t('reserva') : t('reservas')}</span>
                 </Link>
               ))}
             </div>
@@ -185,9 +188,9 @@ export default async function EstadisticasPage() {
       <div className="rounded-xl border border-hairline bg-canvas p-5">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-sm font-semibold text-ink mb-1">Tu perfil público</p>
+            <p className="text-sm font-semibold text-ink mb-1">{t('Tu perfil público')}</p>
             <p className="text-sm text-muted">
-              Las visitas y conversiones a este perfil se medirán aquí en cuanto se active el tracking.
+              {t('Las visitas y conversiones a este perfil se medirán aquí en cuanto se active el tracking.')}
             </p>
           </div>
           <Link
@@ -195,7 +198,7 @@ export default async function EstadisticasPage() {
             target="_blank"
             className="text-xs font-medium text-body hover:text-ink border border-hairline rounded-lg px-3 py-1.5 inline-flex items-center gap-1.5 transition hover:bg-surface-soft"
           >
-            Ver perfil
+            {t('Ver perfil')}
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>

@@ -21,6 +21,8 @@ import type { Metadata } from 'next'
 import { isUUID } from '@/lib/slug'
 import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
 import { getKennelReproductiveBreeds, pickKennelHeroPhotoForBreed } from '@/lib/kennel/breeds'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 600
@@ -48,6 +50,7 @@ export default async function KennelRazasPage(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const field = isUUID(id) ? 'id' : 'slug'
 
@@ -91,10 +94,10 @@ export default async function KennelRazasPage(
   )
 
   const isSingular = breeds.length === 1
-  const heading = isSingular ? 'Nuestra raza' : 'Nuestras razas'
+  const heading = isSingular ? t('Nuestra raza') : t('Nuestras razas')
   const sub = isSingular
-    ? `La raza que criamos en ${kennel.name}. Lo que la hace especial — y lo que conviene saber antes.`
-    : `Las razas que criamos en ${kennel.name}. Lo que las hace especiales — y lo que conviene saber antes.`
+    ? `${t('La raza que criamos en')} ${kennel.name}. ${t('Lo que la hace especial — y lo que conviene saber antes.')}`
+    : `${t('Las razas que criamos en')} ${kennel.name}. ${t('Lo que las hace especiales — y lo que conviene saber antes.')}`
 
   return (
     <>
@@ -139,7 +142,7 @@ export default async function KennelRazasPage(
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-[11px] uppercase tracking-wider text-muted/60">
-                      Sin imagen
+                      {t('Sin imagen')}
                     </div>
                   )}
                   {b.card_credit_dog && (
@@ -160,7 +163,7 @@ export default async function KennelRazasPage(
                     </p>
                   )}
                   <div className="mt-4 flex items-center gap-2 text-[13px] font-medium text-ink">
-                    <span>Conoce la raza</span>
+                    <span>{t('Conoce la raza')}</span>
                     <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
                   </div>
                 </div>

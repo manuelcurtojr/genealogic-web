@@ -17,8 +17,10 @@ import Link from 'next/link'
 import { ArrowLeft, Loader2, Sparkles } from 'lucide-react'
 import { readIntentClient, clearIntentClient } from '@/lib/signup-intent'
 import FeedbackButton from '@/components/feedback/feedback-button'
+import { useT } from '@/components/i18n/locale-provider'
 
 function NewKennelInner() {
+  const t = useT()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -52,7 +54,7 @@ function NewKennelInner() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      setError('No autenticado')
+      setError(t('No autenticado'))
       setLoading(false)
       return
     }
@@ -84,7 +86,7 @@ function NewKennelInner() {
         <Link href="/dashboard" className="text-muted hover:text-ink transition">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold">Crear criadero</h1>
+        <h1 className="text-2xl font-bold">{t('Crear criadero')}</h1>
       </div>
 
       {/* Badge plan elegido */}
@@ -92,10 +94,10 @@ function NewKennelInner() {
         <div className="mb-6 rounded-xl border-2 border-ink/10 bg-canvas p-4">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-4 h-4 text-ink" />
-            <p className="text-sm font-bold text-ink">Plan {planLabel} elegido</p>
+            <p className="text-sm font-bold text-ink">{t('Plan')} {planLabel} {t('elegido')}</p>
           </div>
           <p className="text-xs text-muted">
-            Crea primero tu afijo. En el siguiente paso activarás{' '}
+            {t('Crea primero tu afijo. En el siguiente paso activarás')}{' '}
             <strong>Genealogic {planLabel}</strong>.
           </p>
         </div>
@@ -110,7 +112,7 @@ function NewKennelInner() {
 
         <div>
           <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1.5 block">
-            Nombre del criadero *
+            {t('Nombre del criadero *')}
           </label>
           <input
             type="text"
@@ -118,7 +120,7 @@ function NewKennelInner() {
             onChange={(e) => setName(e.target.value)}
             required
             autoFocus
-            placeholder="Ej: Irema Curtó"
+            placeholder={t('Ej: Irema Curtó')}
             className="w-full bg-canvas border border-hairline rounded-lg px-4 py-3 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition"
           />
         </div>
@@ -129,11 +131,11 @@ function NewKennelInner() {
           className="w-full bg-ink text-on-primary hover:opacity-90 font-semibold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-          {loading ? 'Creando...' : isPaidPlan ? `Continuar con ${planLabel}` : 'Crear criadero'}
+          {loading ? t('Creando...') : isPaidPlan ? `${t('Continuar con')} ${planLabel}` : t('Crear criadero')}
         </button>
 
         <p className="text-xs text-muted text-center">
-          Podrás completar logo, raza y demás detalles después.
+          {t('Podrás completar logo, raza y demás detalles después.')}
         </p>
       </form>
     </div>

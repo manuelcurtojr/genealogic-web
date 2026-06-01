@@ -9,6 +9,8 @@
  */
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import KennelsClient from '@/components/kennels/kennels-client'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 60
@@ -16,6 +18,7 @@ export const revalidate = 60
 const FIRST_PAGE_SIZE = 30
 
 export default async function KennelsPage() {
+  const t = getTranslator(await getLocale())
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createKennelAdminClient() as any
 
@@ -54,12 +57,12 @@ export default async function KennelsPage() {
   return (
     <div>
       <div className="mb-8">
-        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Descubrimiento</p>
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Descubrimiento')}</p>
         <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-          Directorio de criaderos
+          {t('Directorio de criaderos')}
         </h1>
         <p className="mt-2 text-[14px] text-body">
-          {total.toLocaleString('es-ES')} criadero{total === 1 ? '' : 's'} registrado{total === 1 ? '' : 's'} en Genealogic.
+          {total.toLocaleString('es-ES')} {t(total === 1 ? 'criadero registrado en' : 'criaderos registrados en')} Genealogic.
         </p>
       </div>
       <KennelsClient

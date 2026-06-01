@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import {
   Loader2, Crown, Mail, Phone, Inbox, ShoppingCart, Users2, Sparkles, Filter,
 } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 import ReservationDetailPanel, { type Reservation as FullReservation, type DogOption } from './reservation-detail-panel'
 
 type Status =
@@ -63,6 +64,7 @@ interface Props {
 type Pipeline = 'ventas' | 'clientes'
 
 export default function ReservationsPipeline({ kennelId, kennelName, reservations: initialReservations, dogs, isPro }: Props) {
+  const t = useT()
   const router = useRouter()
   const [reservations, setReservations] = useState(initialReservations)
   const [pipeline, setPipeline] = useState<Pipeline>('ventas')
@@ -118,17 +120,17 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
           dejando al usuario sin saber qué sección era — fix de la auditoría UX. */}
       <div>
         <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">
-          {isPro ? 'Pipeline' : 'Bandeja'}
+          {isPro ? t('Pipeline') : t('Bandeja')}
         </p>
         <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-          Reservas
+          {t('Reservas')}
         </h1>
         <p className="mt-2 text-[14px] text-body">
           {isPro
             ? pipeline === 'ventas'
-              ? `${totalVentas} ${totalVentas === 1 ? 'reserva activa' : 'reservas activas'} en pipeline · ${kennelName}`
-              : `${totalClientes} ${totalClientes === 1 ? 'reserva cerrada' : 'reservas cerradas'} · ${kennelName}`
-            : `${reservations.length} ${reservations.length === 1 ? 'solicitud recibida' : 'solicitudes recibidas'} · ${kennelName}`}
+              ? `${totalVentas} ${totalVentas === 1 ? t('reserva activa en pipeline') : t('reservas activas en pipeline')} · ${kennelName}`
+              : `${totalClientes} ${totalClientes === 1 ? t('reserva cerrada') : t('reservas cerradas')} · ${kennelName}`
+            : `${reservations.length} ${reservations.length === 1 ? t('solicitud recibida') : t('solicitudes recibidas')} · ${kennelName}`}
         </p>
       </div>
 
@@ -142,7 +144,7 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
             }`}
           >
             <ShoppingCart className="h-3.5 w-3.5" />
-            Activas
+            {t('Activas')}
             <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${pipeline === 'ventas' ? 'bg-white/20 text-on-primary' : 'bg-surface-card text-muted'}`}>{totalVentas}</span>
           </button>
           <button
@@ -152,7 +154,7 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
             }`}
           >
             <Users2 className="h-3.5 w-3.5" />
-            Cerradas
+            {t('Cerradas')}
             <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${pipeline === 'clientes' ? 'bg-white/20 text-on-primary' : 'bg-surface-card text-muted'}`}>{totalClientes}</span>
           </button>
         </div>
@@ -164,12 +166,12 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
           <Crown className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-600" />
           <div className="flex-1">
             <p className="text-[13px] font-semibold text-purple-900">
-              Pipeline completo de Ventas + Clientes con Pro
+              {t('Pipeline completo de Ventas + Clientes con Pro')}
             </p>
             <p className="mt-0.5 text-[12.5px] text-purple-800">
-              Gestiona depósitos, contratos, asignación a cachorros y emailbot automático.{' '}
+              {t('Gestiona depósitos, contratos, asignación a cachorros y emailbot automático.')}{' '}
               <Link href="/cuenta/suscripcion" className="font-semibold underline">
-                Ver planes →
+                {t('Ver planes →')}
               </Link>
             </p>
           </div>
@@ -185,7 +187,7 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
               statusFilter === 'all' ? 'bg-ink text-on-primary' : 'text-body hover:bg-surface-soft'
             }`}
           >
-            Todas
+            {t('Todas')}
             <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${statusFilter === 'all' ? 'bg-white/20 text-on-primary' : 'bg-surface-card text-muted'}`}>
               {totalPipeline}
             </span>
@@ -202,7 +204,7 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
                   isActive ? 'bg-ink text-on-primary' : 'text-body hover:bg-surface-soft'
                 }`}
               >
-                {STATUS_LABEL[s]}
+                {t(STATUS_LABEL[s])}
                 <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${isActive ? 'bg-white/20 text-on-primary' : 'bg-surface-card text-muted'}`}>
                   {count}
                 </span>
@@ -216,9 +218,9 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
       {filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
           <Inbox className="mx-auto h-8 w-8 text-muted" />
-          <p className="mt-3 text-[14px] text-body">No hay solicitudes que mostrar.</p>
+          <p className="mt-3 text-[14px] text-body">{t('No hay solicitudes que mostrar.')}</p>
           <p className="mt-1 text-[12.5px] text-muted">
-            Cuando alguien envíe el formulario "Solicitudes" desde tu perfil público, aparecerá aquí.
+            {t('Cuando alguien envíe el formulario "Solicitudes" desde tu perfil público, aparecerá aquí.')}
           </p>
         </div>
       ) : (
@@ -226,11 +228,11 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
           <table className="w-full text-[13.5px]">
             <thead className="bg-surface-soft text-[11px] uppercase tracking-wider text-muted">
               <tr>
-                <th className="px-4 py-3 text-left font-semibold">Solicitante</th>
-                <th className="px-4 py-3 text-left font-semibold">Estado</th>
-                <th className="px-4 py-3 text-left font-semibold">Preferencia</th>
-                <th className="px-4 py-3 text-left font-semibold">Origen</th>
-                <th className="px-4 py-3 text-right font-semibold">Recibida</th>
+                <th className="px-4 py-3 text-left font-semibold">{t('Solicitante')}</th>
+                <th className="px-4 py-3 text-left font-semibold">{t('Estado')}</th>
+                <th className="px-4 py-3 text-left font-semibold">{t('Preferencia')}</th>
+                <th className="px-4 py-3 text-left font-semibold">{t('Origen')}</th>
+                <th className="px-4 py-3 text-right font-semibold">{t('Recibida')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-hairline-soft">
@@ -256,20 +258,20 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
                         className={`rounded-md px-2 py-1 text-[11.5px] font-medium border-0 cursor-pointer ${STATUS_TONE[r.status]}`}
                       >
                         {[...VENTAS_STATUSES, ...CLIENTES_STATUSES].map((s) => (
-                          <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+                          <option key={s} value={s}>{t(STATUS_LABEL[s])}</option>
                         ))}
                       </select>
                     </td>
                     <td className="px-4 py-3 text-muted">
                       {[
-                        r.preference_sex === 'male' ? 'Macho' : r.preference_sex === 'female' ? 'Hembra' : null,
+                        r.preference_sex === 'male' ? t('Macho') : r.preference_sex === 'female' ? t('Hembra') : null,
                         r.preference_color,
                       ].filter(Boolean).join(' · ') || '—'}
                     </td>
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center gap-1 rounded bg-surface-card px-2 py-0.5 text-[10.5px] font-medium uppercase tracking-wider text-muted">
                         {r.source === 'public_form' && <Sparkles className="h-2.5 w-2.5" />}
-                        {SOURCE_LABEL[r.source || 'manual'] || 'Manual'}
+                        {t(SOURCE_LABEL[r.source || 'manual'] || 'Manual')}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right text-[12.5px] text-muted tabular-nums">

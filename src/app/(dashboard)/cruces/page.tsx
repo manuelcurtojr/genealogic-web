@@ -7,8 +7,10 @@ import SearchableSelect from '@/components/ui/searchable-select'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import GeneticsForecast from '@/components/planner/genetics-forecast'
 import { BRAND } from '@/lib/constants'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function PlannerPage() {
+  const t = useT()
   const [males, setMales] = useState<{ value: string; label: string }[]>([])
   const [females, setFemales] = useState<{ value: string; label: string }[]>([])
   const [sireId, setSireId] = useState('')
@@ -55,7 +57,7 @@ export default function PlannerPage() {
 
       const virtualRoot = {
         id: 'virtual-litter',
-        name: 'Camada hipotética',
+        name: t('Camada hipotética'),
         sex: 'unknown',
         registration: null,
         father_id: sireId,
@@ -76,12 +78,12 @@ export default function PlannerPage() {
   return (
     <div className="space-y-6 sm:space-y-8">
       <div>
-        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Crianza</p>
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Crianza')}</p>
         <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-          Simulador de cruces
+          {t('Simulador de cruces')}
         </h1>
         <p className="mt-2 text-[14px] text-body">
-          Selecciona un macho y una hembra para ver la genealogía combinada de la camada hipotética.
+          {t('Selecciona un macho y una hembra para ver la genealogía combinada de la camada hipotética.')}
         </p>
       </div>
 
@@ -92,13 +94,13 @@ export default function PlannerPage() {
             <div className="flex h-7 w-7 items-center justify-center rounded-md" style={{ backgroundColor: BRAND.male }}>
               <Mars className="h-4 w-4 text-white" />
             </div>
-            <h3 className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Padre (macho)</h3>
+            <h3 className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Padre (macho)')}</h3>
           </div>
           <SearchableSelect
             options={males}
             value={sireId}
             onChange={setSireId}
-            placeholder="Seleccionar macho..."
+            placeholder={t('Seleccionar macho...')}
           />
         </div>
         <div className="rounded-xl border border-hairline bg-canvas p-5">
@@ -106,13 +108,13 @@ export default function PlannerPage() {
             <div className="flex h-7 w-7 items-center justify-center rounded-md" style={{ backgroundColor: BRAND.female }}>
               <Venus className="h-4 w-4 text-white" />
             </div>
-            <h3 className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Madre (hembra)</h3>
+            <h3 className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Madre (hembra)')}</h3>
           </div>
           <SearchableSelect
             options={females}
             value={damId}
             onChange={setDamId}
-            placeholder="Seleccionar hembra..."
+            placeholder={t('Seleccionar hembra...')}
           />
         </div>
       </div>
@@ -122,7 +124,7 @@ export default function PlannerPage() {
         <section>
           <h2 className="mb-4 flex items-center gap-2 text-[22px] font-semibold tracking-[-0.04em] text-ink">
             <Dna className="h-5 w-5" />
-            Predicción genética
+            {t('Predicción genética')}
           </h2>
           <GeneticsForecast sireId={sireId} damId={damId} />
         </section>
@@ -131,23 +133,23 @@ export default function PlannerPage() {
       {/* Combined pedigree */}
       {loading ? (
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center text-[14px] text-muted">
-          Cargando genealogía combinada...
+          {t('Cargando genealogía combinada...')}
         </div>
       ) : pedigreeData.length > 1 ? (
         <section className="-mx-4 lg:mx-0">
           <h2 className="mb-4 px-4 text-[22px] font-semibold tracking-[-0.04em] text-ink lg:px-0">
-            Genealogía combinada
+            {t('Genealogía combinada')}
           </h2>
           <PedigreeTree data={pedigreeData} rootId="virtual-litter" />
         </section>
       ) : sireId && damId ? (
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
-          <p className="text-[14px] text-body">No hay datos de genealogía disponibles para este cruce.</p>
+          <p className="text-[14px] text-body">{t('No hay datos de genealogía disponibles para este cruce.')}</p>
         </div>
       ) : (
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-20 text-center">
           <Heart className="mx-auto h-10 w-10 text-muted" />
-          <p className="mt-3 text-[14px] text-body">Selecciona un macho y una hembra para comenzar.</p>
+          <p className="mt-3 text-[14px] text-body">{t('Selecciona un macho y una hembra para comenzar.')}</p>
         </div>
       )}
     </div>

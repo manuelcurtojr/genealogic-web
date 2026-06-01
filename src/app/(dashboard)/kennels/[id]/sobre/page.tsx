@@ -9,6 +9,8 @@ import AboutHero from '@/components/kennel/about-hero'
 import AboutGallery from '@/components/kennel/about-gallery'
 import AboutTeam from '@/components/kennel/about-team'
 import type { Metadata } from 'next'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -53,6 +55,7 @@ export async function generateMetadata(
  */
 export default async function KennelSobrePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -135,14 +138,14 @@ export default async function KennelSobrePage({ params }: { params: Promise<{ id
   const foundationYear = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null
 
   return (
-    <ProPageShell eyebrow="Quiénes somos" title={`Sobre ${kennel.name}`}>
+    <ProPageShell eyebrow={t('Quiénes somos')} title={`${t('Sobre')} ${kennel.name}`}>
       {isOwner && (!enabled || !hasContent) && (
         <OwnerDraftBanner
           message={!enabled
-            ? 'Activa la página "Sobre nosotros" desde Mi criadero para que sea pública.'
+            ? t('Activa la página "Sobre nosotros" desde Mi criadero para que sea pública.')
             : pageNotYetPublicMessage('sobre')}
           ctaHref="/kennel/contenido/sobre"
-          ctaLabel="Editar contenido"
+          ctaLabel={t('Editar contenido')}
         />
       )}
 
@@ -163,13 +166,13 @@ export default async function KennelSobrePage({ params }: { params: Promise<{ id
         <AboutContent markdown={kennel.about_md} />
       ) : isOwner ? (
         <EmptyContentState
-          title="Cuenta tu historia"
-          description='Escribe la historia del criadero, vuestra filosofía y qué os distingue. Se edita desde "Mi criadero → Editar contenido".'
+          title={t('Cuenta tu historia')}
+          description={t('Escribe la historia del criadero, vuestra filosofía y qué os distingue. Se edita desde "Mi criadero → Editar contenido".')}
         />
       ) : (
         <EmptyContentState
-          title="Próximamente"
-          description={`Más información sobre ${kennel.name} estará disponible muy pronto.`}
+          title={t('Próximamente')}
+          description={`${t('Más información sobre')} ${kennel.name} ${t('estará disponible muy pronto.')}`}
         />
       )}
 

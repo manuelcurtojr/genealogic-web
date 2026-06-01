@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { X, Loader2, Heart, CalendarDays, Baby, Trash2 } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 import { Portal } from '@/components/ui/portal'
 import MatingDatesInput, { cleanMatingDates } from './mating-dates-input'
 import { parseDate, addDays, fmtDate, GESTATION_DAYS, type HeatCycleLike } from '@/lib/repro/cycle'
@@ -30,6 +31,7 @@ const today = () => new Date().toISOString().split('T')[0]
  * calcula la ventana de parto.
  */
 export default function HeatCycleForm({ open, females, defaultFemaleId, editCycle, onClose, onSaved }: Props) {
+  const t = useT()
   const isEdit = !!editCycle
   const [dogId, setDogId] = useState(defaultFemaleId || females[0]?.id || '')
   const [startDate, setStartDate] = useState(today())
@@ -82,12 +84,12 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    if (!dogId) { setError('Selecciona una hembra.'); return }
-    if (wasMated && cleaned.length === 0) { setError('Añade al menos un día de monta.'); return }
+    if (!dogId) { setError(t('Selecciona una hembra.')); return }
+    if (wasMated && cleaned.length === 0) { setError(t('Añade al menos un día de monta.')); return }
     setSaving(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setError('No se pudo identificar al usuario.'); setSaving(false); return }
+    if (!user) { setError(t('No se pudo identificar al usuario.')); setSaving(false); return }
 
     // pregnancy_status: si hay monta, 'suspected' (salvo que ya estuviera
     // confirmada/descartada en edición, en cuyo caso lo respetamos).
@@ -147,12 +149,12 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
               </div>
               <div className="min-w-0">
                 <h2 className="truncate text-[16px] font-semibold tracking-[-0.01em] text-ink">
-                  {isEdit ? 'Editar celo' : 'Registrar celo'}
+                  {isEdit ? t('Editar celo') : t('Registrar celo')}
                 </h2>
-                <p className="text-[11.5px] text-muted">Celo, monta y predicción de parto</p>
+                <p className="text-[11.5px] text-muted">{t('Celo, monta y predicción de parto')}</p>
               </div>
             </div>
-            <button onClick={onClose} className="rounded-lg p-1.5 text-muted transition hover:bg-surface-soft hover:text-ink flex-shrink-0" aria-label="Cerrar">
+            <button onClick={onClose} className="rounded-lg p-1.5 text-muted transition hover:bg-surface-soft hover:text-ink flex-shrink-0" aria-label={t('Cerrar')}>
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -166,7 +168,7 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
 
               {/* Hembra */}
               <div>
-                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-muted">Hembra</label>
+                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-muted">{t('Hembra')}</label>
                 <select
                   value={dogId}
                   onChange={(e) => setDogId(e.target.value)}
@@ -180,21 +182,21 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
               {/* Celo */}
               <div className="rounded-2xl border border-hairline bg-surface-soft/50 p-3.5">
                 <p className="mb-2.5 flex items-center gap-1.5 text-[12px] font-semibold text-ink">
-                  <CalendarDays className="h-3.5 w-3.5 text-muted" /> Celo
+                  <CalendarDays className="h-3.5 w-3.5 text-muted" /> {t('Celo')}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="mb-1 block text-[10.5px] font-medium uppercase tracking-[0.06em] text-muted">Inicio *</label>
+                    <label className="mb-1 block text-[10.5px] font-medium uppercase tracking-[0.06em] text-muted">{t('Inicio *')}</label>
                     <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required
                       className="w-full rounded-xl border border-hairline bg-canvas px-3 py-2.5 text-[14px] text-ink focus:border-ink focus:outline-none" />
                   </div>
                   <div>
-                    <label className="mb-1 block text-[10.5px] font-medium uppercase tracking-[0.06em] text-muted">Fin (opcional)</label>
+                    <label className="mb-1 block text-[10.5px] font-medium uppercase tracking-[0.06em] text-muted">{t('Fin (opcional)')}</label>
                     <input type="date" value={endDate} min={startDate || undefined} onChange={(e) => setEndDate(e.target.value)}
                       className="w-full rounded-xl border border-hairline bg-canvas px-3 py-2.5 text-[14px] text-ink focus:border-ink focus:outline-none" />
                   </div>
                 </div>
-                <p className="mt-1.5 text-[11px] text-muted">Si dejas el fin en blanco, se estima 21 días tras el inicio.</p>
+                <p className="mt-1.5 text-[11px] text-muted">{t('Si dejas el fin en blanco, se estima 21 días tras el inicio.')}</p>
               </div>
 
               {/* Monta */}
@@ -204,7 +206,7 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
                     onChange={(e) => { const v = e.target.checked; setWasMated(v); if (v && cleanMatingDates(matingDates).length === 0) setMatingDates([today()]) }}
                     className="h-4 w-4 rounded border-rose-300 text-rose-600" />
                   <span className="flex items-center gap-1.5 text-[13.5px] font-medium text-ink">
-                    <Heart className="h-3.5 w-3.5 text-rose-500" /> Hubo cruce / monta
+                    <Heart className="h-3.5 w-3.5 text-rose-500" /> {t('Hubo cruce / monta')}
                   </span>
                 </label>
 
@@ -215,7 +217,7 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
                       <div className="flex items-center gap-2 rounded-xl bg-pink-100/70 px-3 py-2 text-[12.5px] text-pink-900">
                         <Baby className="h-4 w-4 flex-shrink-0 text-pink-600" />
                         <span>
-                          Parto previsto:{' '}
+                          {t('Parto previsto:')}{' '}
                           <strong>{birthFrom === birthTo ? birthFrom : `${birthFrom} – ${birthTo}`}</strong>
                         </span>
                       </div>
@@ -226,9 +228,9 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
 
               {/* Notas */}
               <div>
-                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-muted">Notas</label>
+                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-muted">{t('Notas')}</label>
                 <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3}
-                  placeholder="Semental, progesterona, observaciones..."
+                  placeholder={t('Semental, progesterona, observaciones...')}
                   className="w-full resize-none rounded-xl border border-hairline bg-canvas px-3 py-2.5 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
               </div>
             </div>
@@ -239,25 +241,25 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
               {isEdit && (
                 confirmingDelete ? (
                   <div className="mr-auto flex items-center gap-2">
-                    <span className="text-[12px] text-red-600">¿Eliminar?</span>
+                    <span className="text-[12px] text-red-600">{t('¿Eliminar?')}</span>
                     <button type="button" onClick={handleDelete} disabled={deleting}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-[12.5px] font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
-                      {deleting && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Sí, eliminar
+                      {deleting && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {t('Sí, eliminar')}
                     </button>
-                    <button type="button" onClick={() => setConfirmingDelete(false)} className="rounded-lg px-2 py-2 text-[12.5px] text-body hover:text-ink">No</button>
+                    <button type="button" onClick={() => setConfirmingDelete(false)} className="rounded-lg px-2 py-2 text-[12.5px] text-body hover:text-ink">{t('No')}</button>
                   </div>
                 ) : (
                   <button type="button" onClick={() => setConfirmingDelete(true)}
                     className="mr-auto inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-[13px] text-red-500 transition hover:bg-red-50 hover:text-red-600">
-                    <Trash2 className="h-4 w-4" /> Eliminar
+                    <Trash2 className="h-4 w-4" /> {t('Eliminar')}
                   </button>
                 )
               )}
-              <button type="button" onClick={onClose} className="rounded-xl px-4 py-2.5 text-[13.5px] text-body transition hover:bg-surface-card hover:text-ink">Cancelar</button>
+              <button type="button" onClick={onClose} className="rounded-xl px-4 py-2.5 text-[13.5px] text-body transition hover:bg-surface-card hover:text-ink">{t('Cancelar')}</button>
               <button type="submit" disabled={saving}
                 className="inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-2.5 text-[13.5px] font-semibold text-on-primary transition hover:opacity-90 disabled:opacity-50">
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                {isEdit ? 'Guardar cambios' : 'Guardar celo'}
+                {isEdit ? t('Guardar cambios') : t('Guardar celo')}
               </button>
             </div>
           </form>

@@ -1,10 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import PhotosManager from '@/components/kennel/photos-manager'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
 export default async function KennelGaleriaEditorPage() {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -29,10 +32,9 @@ export default async function KennelGaleriaEditorPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-[17px] sm:text-[18px] font-semibold tracking-[-0.02em] text-ink">Galería</h2>
+        <h2 className="text-[17px] sm:text-[18px] font-semibold tracking-[-0.02em] text-ink">{t('Galería')}</h2>
         <p className="mt-1 text-[12.5px] text-muted max-w-prose">
-          Fotos generales del criadero: perros, eventos, familias con sus cachorros, momentos especiales.
-          Mínimo 3 fotos para que la página sea pública.
+          {t('Fotos generales del criadero: perros, eventos, familias con sus cachorros, momentos especiales. Mínimo 3 fotos para que la página sea pública.')}
         </p>
       </div>
       <PhotosManager

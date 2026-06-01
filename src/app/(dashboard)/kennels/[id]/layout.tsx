@@ -29,6 +29,8 @@ import {
   type ExtraPageId,
 } from '@/lib/kennel/pro-web'
 import { getKennelReproductiveBreeds } from '@/lib/kennel/breeds'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export default async function KennelLayout({
   children, params,
@@ -37,6 +39,7 @@ export default async function KennelLayout({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const field = isUUID(id) ? 'id' : 'slug'
 
@@ -155,7 +158,7 @@ export default async function KennelLayout({
     navItems.push({
       id: 'razas',
       href: 'razas',
-      label: breedsForNav.length === 1 ? 'Nuestra raza' : 'Nuestras razas',
+      label: breedsForNav.length === 1 ? t('Nuestra raza') : t('Nuestras razas'),
     })
   }
 

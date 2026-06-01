@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Check, Dog as DogIcon, Star } from 'lucide-react'
 import { toggleDogFeaturedInHomeAction } from '@/lib/kennel/content-actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 type DogRow = {
   id: string
@@ -14,6 +15,7 @@ type DogRow = {
 }
 
 export default function FeaturedDogsPicker({ dogs }: { dogs: DogRow[] }) {
+  const t = useT()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [busyId, setBusyId] = useState<string | null>(null)
@@ -36,25 +38,24 @@ export default function FeaturedDogsPicker({ dogs }: { dogs: DogRow[] }) {
     <div className="space-y-5">
       <div>
         <h2 className="text-[17px] sm:text-[18px] font-semibold tracking-[-0.02em] text-ink">
-          Perros destacados en el Inicio
+          {t('Perros destacados en el Inicio')}
         </h2>
         <p className="mt-1 text-[12.5px] text-muted max-w-prose">
-          Elige los perros que verán primero los visitantes en la home de tu web pública.
-          Si no marcas ninguno, mostramos automáticamente los de mejor foto.
+          {t('Elige los perros que verán primero los visitantes en la home de tu web pública. Si no marcas ninguno, mostramos automáticamente los de mejor foto.')}
         </p>
         <p className="mt-2 text-[11.5px] font-semibold">
           <span className={count > 0 ? 'text-emerald-700' : 'text-muted'}>
-            {count} {count === 1 ? 'perro destacado' : 'perros destacados'}
+            {count} {count === 1 ? t('perro destacado') : t('perros destacados')}
           </span>
-          {count > 6 && <span className="text-amber-700 ml-2">· se mostrarán solo los 6 primeros</span>}
+          {count > 6 && <span className="text-amber-700 ml-2">· {t('se mostrarán solo los 6 primeros')}</span>}
         </p>
       </div>
 
       {dogs.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft p-8 text-center">
           <DogIcon className="mx-auto h-7 w-7 text-muted" />
-          <p className="mt-3 text-[14px] font-semibold text-ink">Aún no tienes perros en el criadero</p>
-          <p className="mt-1 text-[12.5px] text-body">Crea tu primer perro desde Mis perros.</p>
+          <p className="mt-3 text-[14px] font-semibold text-ink">{t('Aún no tienes perros en el criadero')}</p>
+          <p className="mt-1 text-[12.5px] text-body">{t('Crea tu primer perro desde Mis perros.')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">

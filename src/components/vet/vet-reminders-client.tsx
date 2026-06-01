@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Stethoscope, Plus, Check, Clock, AlertTriangle, Syringe, Bug, Search as SearchIcon, Filter, Dog, X, Loader2, Sparkles, Calendar } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
+import { useT } from '@/components/i18n/locale-provider'
 import VetReminderForm from './vet-reminder-form'
 
 interface Props {
@@ -21,6 +22,7 @@ const TYPE_CONFIG: Record<string, { label: string; color: string; icon: any }> =
 }
 
 export default function VetRemindersClient({ initialReminders, dogs, templates, userId }: Props) {
+  const t = useT()
   const [reminders, setReminders] = useState(initialReminders)
   const [showForm, setShowForm] = useState(false)
   const [editingReminder, setEditingReminder] = useState<any>(null)
@@ -93,9 +95,9 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
     const isPuppy = ageMonths < 12
 
     // Filter templates applicable to this dog's age
-    const applicable = templates.filter(t => {
-      if (t.applies_to === 'puppy' && !isPuppy) return false
-      if (t.applies_to === 'adult' && isPuppy) return false
+    const applicable = templates.filter(tpl => {
+      if (tpl.applies_to === 'puppy' && !isPuppy) return false
+      if (tpl.applies_to === 'adult' && isPuppy) return false
       return true
     })
 
@@ -146,29 +148,29 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
   }
 
   const stats = [
-    { label: 'Total', value: reminders.length, icon: Stethoscope, color: '#3b82f6' },
-    { label: 'Pendientes', value: pendingCount, icon: Clock, color: '#f59e0b' },
-    { label: 'Vencidos', value: overdueCount, icon: AlertTriangle, color: '#ef4444' },
-    { label: 'Completados', value: reminders.filter(r => r.completed_date).length, icon: Check, color: '#34d399' },
+    { label: t('Total'), value: reminders.length, icon: Stethoscope, color: '#3b82f6' },
+    { label: t('Pendientes'), value: pendingCount, icon: Clock, color: '#f59e0b' },
+    { label: t('Vencidos'), value: overdueCount, icon: AlertTriangle, color: '#ef4444' },
+    { label: t('Completados'), value: reminders.filter(r => r.completed_date).length, icon: Check, color: '#34d399' },
   ]
 
   return (
     <div className="space-y-6 sm:space-y-8">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Salud</p>
+          <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Salud')}</p>
           <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-            Recordatorios vet.
+            {t('Recordatorios vet.')}
           </h1>
           <p className="mt-2 text-[14px] text-body">
-            Vacunas, desparasitaciones y revisiones de tus perros.
+            {t('Vacunas, desparasitaciones y revisiones de tus perros.')}
           </p>
         </div>
         <button
           onClick={() => { setEditingReminder(null); setShowForm(true) }}
           className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90"
         >
-          <Plus className="h-4 w-4" /> Recordatorio
+          <Plus className="h-4 w-4" /> {t('Recordatorio')}
         </button>
       </div>
 
@@ -191,10 +193,10 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
       <div className="flex flex-wrap items-center gap-2">
         <div className="inline-flex gap-1 rounded-lg bg-surface-card p-1">
           {[
-            { key: 'pending', label: 'Pendientes' },
-            { key: 'overdue', label: 'Vencidos' },
-            { key: 'completed', label: 'Completados' },
-            { key: 'all', label: 'Todos' },
+            { key: 'pending', label: t('Pendientes') },
+            { key: 'overdue', label: t('Vencidos') },
+            { key: 'completed', label: t('Completados') },
+            { key: 'all', label: t('Todos') },
           ].map(f => (
             <button
               key={f.key}
@@ -213,7 +215,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
           dogs={dogs}
           value={dogFilter}
           onChange={setDogFilter}
-          placeholder="Filtrar por perro..."
+          placeholder={t('Filtrar por perro...')}
         />
 
         {/* Auto-generate with search */}
@@ -229,9 +231,9 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
           <Stethoscope className="mx-auto h-10 w-10 text-muted" />
           <p className="mt-3 text-[14px] text-body">
-            No hay recordatorios {filter !== 'all' ? 'en esta categoría' : 'todavía'}.
+            {t('No hay recordatorios')} {filter !== 'all' ? t('en esta categoría') : t('todavía')}.
           </p>
-          <p className="text-[12.5px] text-muted">Añade uno o usa auto-generar.</p>
+          <p className="text-[12.5px] text-muted">{t('Añade uno o usa auto-generar.')}</p>
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-hairline bg-canvas">
@@ -276,10 +278,10 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
                         className="inline-flex items-center rounded-full px-2 py-0.5 text-[10.5px] font-medium"
                         style={{ backgroundColor: typeConf.color + '18', color: typeConf.color }}
                       >
-                        {typeConf.label}
+                        {t(typeConf.label)}
                       </span>
-                      {r.auto_generated && <span className="text-[#8b5cf6]">Auto</span>}
-                      {r.recurrence_days && <span>↻ cada {r.recurrence_days}d</span>}
+                      {r.auto_generated && <span className="text-[#8b5cf6]">{t('Auto')}</span>}
+                      {r.recurrence_days && <span>↻ {t('cada')} {r.recurrence_days}d</span>}
                       {r.notes && <span className="truncate">{r.notes}</span>}
                     </div>
                   </div>
@@ -302,7 +304,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
                       }
                     </p>
                     <p className="text-[10.5px] text-muted">
-                      {r.completed_date ? 'Completado' : isOverdue ? 'Vencido' : isDueToday ? 'Hoy' : isDueSoon ? 'Próximo' : ''}
+                      {r.completed_date ? t('Completado') : isOverdue ? t('Vencido') : isDueToday ? t('Hoy') : isDueSoon ? t('Próximo') : ''}
                     </p>
                   </div>
 
@@ -310,7 +312,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
                     {!r.completed_date && (
                       <button
                         onClick={() => markCompleted(r.id)}
-                        title="Marcar como completado"
+                        title={t('Marcar como completado')}
                         className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-[color:var(--success)]/10 text-[color:var(--success)] transition-colors hover:bg-[color:var(--success)]/15"
                       >
                         <Check className="h-4 w-4" />
@@ -318,14 +320,14 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
                     )}
                     <button
                       onClick={() => { setEditingReminder(r); setShowForm(true) }}
-                      title="Editar"
+                      title={t('Editar')}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-card hover:text-ink"
                     >
                       <Calendar className="h-3.5 w-3.5" />
                     </button>
                     <button
                       onClick={() => deleteReminder(r.id)}
-                      title="Eliminar"
+                      title={t('Eliminar')}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-soft hover:text-[color:var(--error)]"
                     >
                       <X className="h-3.5 w-3.5" />
@@ -356,6 +358,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
 function DogSearchFilter({ dogs, value, onChange, placeholder }: {
   dogs: any[]; value: string; onChange: (v: string) => void; placeholder?: string
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const ref = useRef<HTMLDivElement>(null)
@@ -379,7 +382,7 @@ function DogSearchFilter({ dogs, value, onChange, placeholder }: {
           value ? 'bg-surface-card text-ink border-hairline' : 'bg-surface-card text-body border-hairline hover:bg-surface-card'
         }`}>
         <Dog className="w-3.5 h-3.5" />
-        {selectedDog ? selectedDog.name : (placeholder || 'Todos los perros')}
+        {selectedDog ? selectedDog.name : (placeholder || t('Todos los perros'))}
         {value && (
           <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="ml-1 hover:text-ink transition">
             <X className="w-3 h-3" />
@@ -393,13 +396,13 @@ function DogSearchFilter({ dogs, value, onChange, placeholder }: {
             <div className="relative">
               <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
               <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar perro..." className="w-full bg-canvas border border-hairline rounded pl-8 pr-3 py-1.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
+                placeholder={t('Buscar perro...')} className="w-full bg-canvas border border-hairline rounded pl-8 pr-3 py-1.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
             </div>
           </div>
           <div className="max-h-56 overflow-y-auto">
             <button onClick={() => { onChange(''); setOpen(false) }}
               className={`w-full text-left px-3 py-2 text-xs transition ${!value ? 'bg-surface-card text-ink' : 'text-body hover:bg-surface-card'}`}>
-              Todos los perros
+              {t('Todos los perros')}
             </button>
             {filtered.map(d => (
               <button key={d.id} onClick={() => { onChange(d.id); setOpen(false); setSearch('') }}
@@ -412,7 +415,7 @@ function DogSearchFilter({ dogs, value, onChange, placeholder }: {
                 <span className="truncate">{d.name}</span>
               </button>
             ))}
-            {filtered.length === 0 && <p className="text-[10px] text-muted px-3 py-3 text-center">Sin resultados</p>}
+            {filtered.length === 0 && <p className="text-[10px] text-muted px-3 py-3 text-center">{t('Sin resultados')}</p>}
           </div>
         </div>
       )}
@@ -424,6 +427,7 @@ function DogSearchFilter({ dogs, value, onChange, placeholder }: {
 function AutoGenerateButton({ dogs, generatingFor, onGenerate }: {
   dogs: any[]; generatingFor: string | null; onGenerate: (dogId: string) => void
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const ref = useRef<HTMLDivElement>(null)
@@ -443,17 +447,17 @@ function AutoGenerateButton({ dogs, generatingFor, onGenerate }: {
     <div ref={ref} className="relative ml-auto">
       <button onClick={() => { setOpen(!open); setSearch('') }}
         className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-medium hover:bg-purple-500/15 transition">
-        <Sparkles className="w-3.5 h-3.5" /> Auto-generar
+        <Sparkles className="w-3.5 h-3.5" /> {t('Auto-generar')}
       </button>
 
       {open && (
         <div className="absolute right-0 top-full mt-1 w-72 bg-surface-card border border-hairline rounded-lg shadow-xl z-30 flex flex-col">
-          <p className="text-[10px] text-muted px-3 pt-2 pb-1">Busca un perro para generar recordatorios automáticos según su edad</p>
+          <p className="text-[10px] text-muted px-3 pt-2 pb-1">{t('Busca un perro para generar recordatorios automáticos según su edad')}</p>
           <div className="p-2 border-b border-hairline">
             <div className="relative">
               <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
               <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar perro..." className="w-full bg-canvas border border-hairline rounded pl-8 pr-3 py-1.5 text-sm text-ink placeholder:text-muted focus:border-purple-500 focus:outline-none" />
+                placeholder={t('Buscar perro...')} className="w-full bg-canvas border border-hairline rounded pl-8 pr-3 py-1.5 text-sm text-ink placeholder:text-muted focus:border-purple-500 focus:outline-none" />
             </div>
           </div>
           <div className="max-h-56 overflow-y-auto">
@@ -468,7 +472,7 @@ function AutoGenerateButton({ dogs, generatingFor, onGenerate }: {
                 {generatingFor === d.id && <Loader2 className="w-3 h-3 animate-spin" />}
               </button>
             ))}
-            {filtered.length === 0 && <p className="text-[10px] text-muted px-3 py-3 text-center">{dogs.length === 0 ? 'Tus perros necesitan fecha de nacimiento' : 'Sin resultados'}</p>}
+            {filtered.length === 0 && <p className="text-[10px] text-muted px-3 py-3 text-center">{dogs.length === 0 ? t('Tus perros necesitan fecha de nacimiento') : t('Sin resultados')}</p>}
           </div>
         </div>
       )}

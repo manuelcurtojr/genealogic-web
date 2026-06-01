@@ -19,10 +19,13 @@ import {
   pickKennelHeroPhotoForBreed,
   listKennelDogsByBreedWithPhoto,
 } from '@/lib/kennel/breeds'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
 export default async function KennelRazasPickerPage() {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -65,12 +68,10 @@ export default async function KennelRazasPickerPage() {
       <header className="mb-6">
         <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Web Pro</p>
         <h2 className="mt-1 text-[22px] sm:text-[24px] font-semibold tracking-[-0.025em] text-ink">
-          Nuestras razas
+          {t('Nuestras razas')}
         </h2>
         <p className="mt-2 text-[13.5px] text-body max-w-prose">
-          Elige qué perro tuyo representa cada raza en tu web pública. Si no
-          eliges nada, el sistema escoge automáticamente un reproductor con
-          foto.
+          {t('Elige qué perro tuyo representa cada raza en tu web pública. Si no eliges nada, el sistema escoge automáticamente un reproductor con foto.')}
         </p>
       </header>
 

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Loader2, Check, Trash2, Pencil, X, HelpCircle, AlertCircle } from 'lucide-react'
 import { upsertFAQEntryAction, deleteFAQEntryAction } from '@/lib/kennel/content-actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 type Entry = { id: string; title: string; content: string }
 
@@ -13,6 +14,7 @@ export default function FAQEditor({
   kennelId: string
   initialEntries: Entry[]
 }) {
+  const t = useT()
   const router = useRouter()
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -22,11 +24,10 @@ export default function FAQEditor({
       <div className="flex items-end justify-between gap-3 flex-wrap">
         <div>
           <h2 className="text-[17px] sm:text-[18px] font-semibold tracking-[-0.02em] text-ink">
-            Preguntas frecuentes
+            {t('Preguntas frecuentes')}
           </h2>
           <p className="mt-1 text-[12.5px] text-muted max-w-prose">
-            Aparecen en el Inicio de tu web pública. Las respondes una vez y ahorras
-            tiempo a tus clientes (y a ti).
+            {t('Aparecen en el Inicio de tu web pública. Las respondes una vez y ahorras tiempo a tus clientes (y a ti).')}
           </p>
         </div>
         {!creating && (
@@ -35,7 +36,7 @@ export default function FAQEditor({
             onClick={() => setCreating(true)}
             className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-2 text-[12.5px] font-bold text-on-primary hover:opacity-90 transition self-start"
           >
-            <Plus className="h-3.5 w-3.5" /> Nueva pregunta
+            <Plus className="h-3.5 w-3.5" /> {t('Nueva pregunta')}
           </button>
         )}
       </div>
@@ -59,10 +60,9 @@ export default function FAQEditor({
       {initialEntries.length === 0 && !creating ? (
         <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft p-8 text-center">
           <HelpCircle className="mx-auto h-7 w-7 text-muted" />
-          <p className="mt-3 text-[14px] font-semibold text-ink">Aún no hay preguntas</p>
+          <p className="mt-3 text-[14px] font-semibold text-ink">{t('Aún no hay preguntas')}</p>
           <p className="mt-1 text-[12.5px] text-body max-w-sm mx-auto leading-snug">
-            Empieza con las 3-5 que te preguntan siempre: precio, disponibilidad, garantía,
-            documentación, visitas...
+            {t('Empieza con las 3-5 que te preguntan siempre: precio, disponibilidad, garantía, documentación, visitas...')}
           </p>
         </div>
       ) : (
@@ -79,19 +79,20 @@ export default function FAQEditor({
 function EntryRow({
   entry, kennelId, onError,
 }: { entry: Entry; kennelId: string; onError: (msg: string | null) => void }) {
+  const t = useT()
   const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [pending, startTransition] = useTransition()
 
   function handleDelete() {
-    if (!confirm('¿Borrar esta pregunta?')) return
+    if (!confirm(t('¿Borrar esta pregunta?'))) return
     onError(null)
     startTransition(async () => {
       try {
         await deleteFAQEntryAction({ entryId: entry.id, kennelId })
         router.refresh()
       } catch (err) {
-        onError(err instanceof Error ? err.message : 'No se pudo borrar')
+        onError(err instanceof Error ? err.message : t('No se pudo borrar'))
       }
     })
   }
@@ -121,7 +122,7 @@ function EntryRow({
         <button
           onClick={() => setEditing(true)}
           className="text-muted hover:text-ink p-1.5 rounded-md hover:bg-surface-soft"
-          title="Editar"
+          title={t('Editar')}
         >
           <Pencil className="h-3.5 w-3.5" />
         </button>
@@ -129,7 +130,7 @@ function EntryRow({
           onClick={handleDelete}
           disabled={pending}
           className="text-muted hover:text-red-600 p-1.5 rounded-md hover:bg-surface-soft disabled:opacity-50"
-          title="Borrar"
+          title={t('Borrar')}
         >
           {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
         </button>
@@ -147,6 +148,7 @@ function EntryForm({
   onCancel: () => void
   onError: (msg: string | null) => void
 }) {
+  const t = useT()
   const [title, setTitle] = useState(initialEntry?.title || '')
   const [content, setContent] = useState(initialEntry?.content || '')
   const [pending, startTransition] = useTransition()
@@ -165,9 +167,9 @@ function EntryForm({
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'error'
         const human =
-          msg === 'title_too_short' ? 'La pregunta es muy corta.' :
-          msg === 'content_too_short' ? 'La respuesta es muy corta.' :
-          `No se pudo guardar: ${msg}`
+          msg === 'title_too_short' ? t('La pregunta es muy corta.') :
+          msg === 'content_too_short' ? t('La respuesta es muy corta.') :
+          `${t('No se pudo guardar:')} ${msg}`
         onError(human)
       }
     })
@@ -179,7 +181,7 @@ function EntryForm({
         type="text"
         value={title}
         onChange={e => setTitle(e.target.value)}
-        placeholder="Pregunta (ej: ¿Hacéis envíos a península?)"
+        placeholder={t('Pregunta (ej: ¿Hacéis envíos a península?)')}
         autoFocus
         className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] font-semibold text-ink placeholder:text-muted/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
       />
@@ -187,7 +189,7 @@ function EntryForm({
         value={content}
         onChange={e => setContent(e.target.value)}
         rows={4}
-        placeholder="Respuesta clara y directa..."
+        placeholder={t('Respuesta clara y directa...')}
         className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13.5px] text-body placeholder:text-muted/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition resize-y leading-[1.55]"
       />
       <div className="flex gap-2 justify-end">
@@ -197,7 +199,7 @@ function EntryForm({
           disabled={pending}
           className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[12.5px] font-semibold text-muted hover:text-ink transition"
         >
-          <X className="h-3 w-3" /> Cancelar
+          <X className="h-3 w-3" /> {t('Cancelar')}
         </button>
         <button
           type="button"
@@ -206,7 +208,7 @@ function EntryForm({
           className="inline-flex items-center gap-1 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-bold text-on-primary hover:opacity-90 disabled:opacity-40 transition"
         >
           {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-          Guardar
+          {t('Guardar')}
         </button>
       </div>
     </div>

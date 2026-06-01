@@ -1,10 +1,14 @@
 'use client'
 
 import { Plus, X, CalendarHeart } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
-const ORDINALS = ['Primera', 'Segunda', 'Tercera', 'Cuarta', 'Quinta', 'Sexta', 'Séptima', 'Octava', 'Novena', 'Décima']
-function ordinalLabel(i: number): string {
-  return ORDINALS[i] ? `${ORDINALS[i]} monta` : `Monta ${i + 1}`
+const ORDINAL_LABELS = [
+  'Primera monta', 'Segunda monta', 'Tercera monta', 'Cuarta monta', 'Quinta monta',
+  'Sexta monta', 'Séptima monta', 'Octava monta', 'Novena monta', 'Décima monta',
+]
+function ordinalLabel(i: number, t: (k: string) => string): string {
+  return ORDINAL_LABELS[i] ? t(ORDINAL_LABELS[i]) : `${t('Monta')} ${i + 1}`
 }
 
 /** Filtra vacíos, ordena y deduplica una lista de fechas de monta. */
@@ -24,6 +28,7 @@ export default function MatingDatesInput({
   value: string[]
   onChange: (dates: string[]) => void
 }) {
+  const t = useT()
   const rows = value.length ? value : ['']
 
   const setAt = (i: number, v: string) => {
@@ -44,7 +49,7 @@ export default function MatingDatesInput({
           <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-rose-200 bg-rose-50/40 px-3 py-2">
             <CalendarHeart className="h-4 w-4 flex-shrink-0 text-rose-400" />
             <span className="w-[92px] flex-shrink-0 text-[11.5px] font-medium text-rose-900">
-              {ordinalLabel(i)}
+              {ordinalLabel(i, t)}
             </span>
             <input
               type="date"
@@ -56,7 +61,7 @@ export default function MatingDatesInput({
               <button
                 type="button"
                 onClick={() => removeAt(i)}
-                title="Quitar esta monta"
+                title={t('Quitar esta monta')}
                 className="flex-shrink-0 rounded-md p-1 text-rose-400 transition hover:bg-rose-100 hover:text-rose-600"
               >
                 <X className="h-3.5 w-3.5" />
@@ -68,7 +73,7 @@ export default function MatingDatesInput({
             <button
               type="button"
               onClick={add}
-              title="Añadir otra monta"
+              title={t('Añadir otra monta')}
               className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-dashed border-rose-300 text-rose-500 transition hover:border-rose-500 hover:bg-rose-50"
             >
               <Plus className="h-4 w-4" />
@@ -77,7 +82,7 @@ export default function MatingDatesInput({
         </div>
       ))}
       <p className="text-[11px] text-muted">
-        Apunta cada día de cubrición. Calcularemos el parto como una ventana desde la primera a la última monta (~63 días).
+        {t('Apunta cada día de cubrición. Calcularemos el parto como una ventana desde la primera a la última monta (~63 días).')}
       </p>
     </div>
   )

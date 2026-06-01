@@ -4,6 +4,8 @@ import { Dna, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import GenotypeEditor from '@/components/genetica/genotype-editor'
 import DogPicker from '@/components/dogs/dog-picker'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,6 +26,7 @@ export default async function GeneticaPage({
   searchParams: Promise<{ dog?: string }>
 }) {
   const { dog: queryDog } = await searchParams
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -83,12 +86,12 @@ export default async function GeneticaPage({
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Crianza</p>
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Crianza')}</p>
         <h1 className="mt-1.5 text-[28px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-          Genotipos
+          {t('Genotipos')}
         </h1>
         <p className="mt-2 text-[13.5px] sm:text-[14px] text-body leading-snug">
-          Registra el color visible de tus perros (lo más común) o su genotipo DNA si tienes tests. Los datos alimentan la predicción de cruces en el planificador.
+          {t('Registra el color visible de tus perros (lo más común) o su genotipo DNA si tienes tests. Los datos alimentan la predicción de cruces en el planificador.')}
         </p>
       </div>
 
@@ -96,13 +99,13 @@ export default async function GeneticaPage({
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-20 text-center">
           <Dna className="mx-auto h-10 w-10 text-muted" />
           <p className="mt-3 text-[14px] text-body">
-            No tienes perros registrados. Añade perros para empezar.
+            {t('No tienes perros registrados. Añade perros para empezar.')}
           </p>
           <Link
             href="/dogs/new"
             className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90"
           >
-            Añadir perro
+            {t('Añadir perro')}
           </Link>
         </div>
       ) : (
@@ -114,7 +117,7 @@ export default async function GeneticaPage({
             selectedDogId={selectedDogId}
             routerPath="/genetica"
             hideOnMobile={!!selectedDog}
-            label="Mis perros"
+            label={t('Mis perros')}
           />
 
           {/* Editor (o estado vacío). En mobile cuando hay selectedDog,
@@ -126,7 +129,7 @@ export default async function GeneticaPage({
                 href="/genetica"
                 className="lg:hidden mb-3 inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12.5px] font-semibold text-body hover:text-ink hover:border-ink/30 transition"
               >
-                <ArrowLeft className="h-3.5 w-3.5" /> Cambiar perro
+                <ArrowLeft className="h-3.5 w-3.5" /> {t('Cambiar perro')}
               </Link>
               <GenotypeEditor
                 dog={{
@@ -154,7 +157,7 @@ export default async function GeneticaPage({
             // Sin perro seleccionado: en desktop placeholder, en mobile no se
             // ve (el picker ocupa todo y el padre no muestra editor).
             <div className="hidden lg:flex rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-20 items-center justify-center text-center text-[14px] text-muted">
-              Selecciona un perro para editar su genética.
+              {t('Selecciona un perro para editar su genética.')}
             </div>
           )}
         </div>

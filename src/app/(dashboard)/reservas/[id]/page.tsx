@@ -15,6 +15,8 @@ import { listReservationMessages, markThreadRead } from '@/lib/reservations/mess
 import ReservationThread from '@/components/reservations/reservation-thread'
 import { sendBreederMessageAction } from './actions'
 import FeedbackButton from '@/components/feedback/feedback-button'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Reserva · Genealogic' }
@@ -47,21 +49,22 @@ export default async function BreederReservationDetailPage({
   markThreadRead(reservation.id, 'breeder').catch(() => {})
 
   const hasClientAccount = !!reservation.client_user_id
+  const t = getTranslator(await getLocale())
 
   return (
     <div>
-      <FeedbackButton scope="reservation_form" pageLabel="Detalle de reserva" />
+      <FeedbackButton scope="reservation_form" pageLabel={t('Detalle de reserva')} />
       <Link
         href="/reservas"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted hover:text-ink mb-5"
       >
-        ← Solicitudes
+        ← {t('Solicitudes')}
       </Link>
 
       <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-ink">
-            {reservation.applicant_name || 'Sin nombre'}
+            {reservation.applicant_name || t('Sin nombre')}
           </h1>
           <p className="mt-1 text-sm text-body">
             {reservation.applicant_email}
@@ -74,10 +77,10 @@ export default async function BreederReservationDetailPage({
           </span>
           {hasClientAccount ? (
             <span className="text-[11px] text-emerald-700 font-semibold">
-              ✓ Cuenta vinculada
+              ✓ {t('Cuenta vinculada')}
             </span>
           ) : (
-            <span className="text-[11px] text-muted">Sin cuenta · solo email</span>
+            <span className="text-[11px] text-muted">{t('Sin cuenta · solo email')}</span>
           )}
         </div>
       </div>
@@ -87,9 +90,9 @@ export default async function BreederReservationDetailPage({
         <div>
           <section>
             <div className="flex items-end justify-between mb-3">
-              <h2 className="text-base font-bold text-ink">Mensajes</h2>
+              <h2 className="text-base font-bold text-ink">{t('Mensajes')}</h2>
               <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-                {messages.length} {messages.length === 1 ? 'mensaje' : 'mensajes'}
+                {messages.length} {messages.length === 1 ? t('mensaje') : t('mensajes')}
               </span>
             </div>
             {hasClientAccount ? (
@@ -98,15 +101,14 @@ export default async function BreederReservationDetailPage({
                 currentRole="breeder"
                 reservationId={reservation.id}
                 onSendAction={sendBreederMessageAction}
-                otherSideName={reservation.applicant_name || 'el cliente'}
+                otherSideName={reservation.applicant_name || t('el cliente')}
               />
             ) : (
               <div className="rounded-2xl border border-dashed border-hairline bg-canvas p-6 text-center text-sm text-muted">
-                <p className="text-ink font-semibold mb-1">Cliente sin cuenta</p>
+                <p className="text-ink font-semibold mb-1">{t('Cliente sin cuenta')}</p>
                 <p>
-                  Cuando el cliente cree cuenta en Genealogic con el email{' '}
-                  <strong>{reservation.applicant_email}</strong>, podrás chatear
-                  con él aquí. Mientras tanto, usa email/WhatsApp.
+                  {t('Cuando el cliente cree cuenta en Genealogic con el email')}{' '}
+                  <strong>{reservation.applicant_email}</strong>{t(', podrás chatear con él aquí. Mientras tanto, usa email/WhatsApp.')}
                 </p>
               </div>
             )}
@@ -117,7 +119,7 @@ export default async function BreederReservationDetailPage({
         <aside className="space-y-4">
           <section className="rounded-2xl border border-hairline bg-canvas p-5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-ink mb-3">
-              Cachorro
+              {t('Cachorro')}
             </h3>
             {reservation.dog ? (
               <div>
@@ -143,7 +145,7 @@ export default async function BreederReservationDetailPage({
                       target="_blank"
                       className="text-[11px] text-muted hover:text-ink"
                     >
-                      Ver ficha →
+                      {t('Ver ficha →')}
                     </Link>
                   </div>
                 </div>
@@ -151,41 +153,41 @@ export default async function BreederReservationDetailPage({
                   href={`/dogs/${reservation.dog.id}/papeles`}
                   className="mt-3 inline-flex items-center gap-1 w-full justify-center rounded-lg border border-hairline px-3 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
                 >
-                  Gestionar papeles →
+                  {t('Gestionar papeles →')}
                 </Link>
               </div>
             ) : (
-              <p className="text-xs text-muted">No hay cachorro asignado a esta reserva.</p>
+              <p className="text-xs text-muted">{t('No hay cachorro asignado a esta reserva.')}</p>
             )}
           </section>
 
           <section className="rounded-2xl border border-hairline bg-canvas p-5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-ink mb-3">
-              Contrato
+              {t('Contrato')}
             </h3>
             <p className="text-xs text-muted mb-3">
-              Crea, edita y envía el contrato al cliente.
+              {t('Crea, edita y envía el contrato al cliente.')}
             </p>
             <Link
               href={`/reservas/${reservation.id}/contrato`}
               className="inline-flex items-center gap-1 w-full justify-center rounded-lg bg-ink text-on-primary px-3 py-2 text-xs font-semibold hover:opacity-90"
             >
-              Abrir contrato →
+              {t('Abrir contrato →')}
             </Link>
           </section>
 
           <section className="rounded-2xl border border-hairline bg-canvas p-5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-ink mb-3">
-              Pagos
+              {t('Pagos')}
             </h3>
             <p className="text-xs text-muted mb-3">
-              Crear cobros (Stripe Connect o manual) y marcar pagos recibidos.
+              {t('Crear cobros (Stripe Connect o manual) y marcar pagos recibidos.')}
             </p>
             <Link
               href={`/reservas/${reservation.id}/pagos`}
               className="inline-flex items-center gap-1 w-full justify-center rounded-lg border border-hairline px-3 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
             >
-              Ver pagos →
+              {t('Ver pagos →')}
             </Link>
           </section>
         </aside>

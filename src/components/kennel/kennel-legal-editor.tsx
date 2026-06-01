@@ -9,6 +9,7 @@ import {
   deleteKennelLegalOverride,
 } from '@/lib/kennel/legal-actions'
 import type { LegalDocType } from '@/lib/kennel/legal'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface DocRow {
   type: LegalDocType
@@ -33,6 +34,7 @@ export default function KennelLegalEditor({
   legal: LegalData
   docs: DocRow[]
 }) {
+  const t = useT()
   // ── Datos legales (placeholders) ──────────────────────────────────────
   const [form, setForm] = useState({
     legal_name: legal.legal_name || '',
@@ -86,7 +88,7 @@ export default function KennelLegalEditor({
       ))
       setEditing(null)
     } catch (e) {
-      setDocErr(e instanceof Error ? e.message : 'Error al guardar')
+      setDocErr(e instanceof Error ? e.message : t('Error al guardar'))
     } finally {
       setDocBusy(false)
     }
@@ -101,7 +103,7 @@ export default function KennelLegalEditor({
       ))
       if (editing === type) setEditing(null)
     } catch (e) {
-      setDocErr(e instanceof Error ? e.message : 'Error')
+      setDocErr(e instanceof Error ? e.message : t('Error'))
     } finally {
       setDocBusy(false)
     }
@@ -127,18 +129,16 @@ export default function KennelLegalEditor({
     <div className="space-y-8">
       {/* ── Datos legales ─────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-[17px] font-semibold text-ink">Datos legales de tu criadero</h2>
+        <h2 className="text-[17px] font-semibold text-ink">{t('Datos legales de tu criadero')}</h2>
         <p className="text-[13px] text-muted mt-1 max-w-2xl">
-          Estos datos rellenan automáticamente tus documentos legales (aviso
-          legal, privacidad, cookies y términos). Si los dejas vacíos, se usa tu
-          nombre y ubicación, y los huecos sin completar se marcan entre corchetes.
+          {t('Estos datos rellenan automáticamente tus documentos legales (aviso legal, privacidad, cookies y términos). Si los dejas vacíos, se usa tu nombre y ubicación, y los huecos sin completar se marcan entre corchetes.')}
         </p>
 
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {field('legal_name', 'Razón social / titular', 'Ej: Manuel Curtó SL', 'Quién es el responsable legal del sitio.')}
-          {field('legal_id', 'NIF / CIF / DNI', 'Ej: B12345678')}
-          {field('legal_email', 'Email de contacto legal', 'Ej: info@tucriadero.com', 'Para ejercer derechos RGPD.')}
-          {field('legal_address', 'Domicilio', 'Calle, código postal, localidad')}
+          {field('legal_name', t('Razón social / titular'), t('Ej: Manuel Curtó SL'), t('Quién es el responsable legal del sitio.'))}
+          {field('legal_id', t('NIF / CIF / DNI'), t('Ej: B12345678'))}
+          {field('legal_email', t('Email de contacto legal'), t('Ej: info@tucriadero.com'), t('Para ejercer derechos RGPD.'))}
+          {field('legal_address', t('Domicilio'), t('Calle, código postal, localidad'))}
         </div>
 
         {dataErr && (
@@ -150,16 +150,15 @@ export default function KennelLegalEditor({
           disabled={savingData}
           className="mt-4 inline-flex items-center gap-1.5 bg-ink text-on-primary rounded-lg px-4 py-2 text-[13px] font-semibold hover:opacity-90 disabled:opacity-50 transition"
         >
-          {savedData ? <><Check className="w-4 h-4" /> Guardado</> : <><Save className="w-4 h-4" /> {savingData ? 'Guardando…' : 'Guardar datos'}</>}
+          {savedData ? <><Check className="w-4 h-4" /> {t('Guardado')}</> : <><Save className="w-4 h-4" /> {savingData ? t('Guardando…') : t('Guardar datos')}</>}
         </button>
       </section>
 
       {/* ── Documentos ────────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-[17px] font-semibold text-ink">Tus documentos legales</h2>
+        <h2 className="text-[17px] font-semibold text-ink">{t('Tus documentos legales')}</h2>
         <p className="text-[13px] text-muted mt-1 max-w-2xl">
-          Por defecto usan las plantillas de Genealogic con tus datos. Puedes
-          verlos o, si lo necesitas, escribir tu propia versión.
+          {t('Por defecto usan las plantillas de Genealogic con tus datos. Puedes verlos o, si lo necesitas, escribir tu propia versión.')}
         </p>
 
         {docErr && (
@@ -173,7 +172,7 @@ export default function KennelLegalEditor({
                 <div className="flex-1 min-w-0">
                   <p className="text-[14px] font-medium text-ink">{d.label}</p>
                   <p className="text-[11.5px] text-muted">
-                    {d.hasOverride ? 'Versión personalizada' : 'Plantilla por defecto'}
+                    {d.hasOverride ? t('Versión personalizada') : t('Plantilla por defecto')}
                   </p>
                 </div>
                 <Link
@@ -181,23 +180,23 @@ export default function KennelLegalEditor({
                   target="_blank"
                   className="inline-flex items-center gap-1 text-[12.5px] text-body hover:text-ink transition"
                 >
-                  <ExternalLink className="w-3.5 h-3.5" /> Ver
+                  <ExternalLink className="w-3.5 h-3.5" /> {t('Ver')}
                 </Link>
                 {d.hasOverride && (
                   <button
                     onClick={() => resetToGlobal(d.type)}
                     disabled={docBusy}
                     className="inline-flex items-center gap-1 text-[12.5px] text-body hover:text-ink transition disabled:opacity-50"
-                    title="Volver a la plantilla por defecto"
+                    title={t('Volver a la plantilla por defecto')}
                   >
-                    <RotateCcw className="w-3.5 h-3.5" /> Restablecer
+                    <RotateCcw className="w-3.5 h-3.5" /> {t('Restablecer')}
                   </button>
                 )}
                 <button
                   onClick={() => startEdit(d)}
                   className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-ink hover:opacity-80 transition"
                 >
-                  <Pencil className="w-3.5 h-3.5" /> {d.hasOverride ? 'Editar' : 'Personalizar'}
+                  <Pencil className="w-3.5 h-3.5" /> {d.hasOverride ? t('Editar') : t('Personalizar')}
                 </button>
               </div>
 
@@ -207,7 +206,7 @@ export default function KennelLegalEditor({
                     type="text"
                     value={docDraft.title}
                     onChange={e => setDocDraft(p => ({ ...p, title: e.target.value }))}
-                    placeholder="Título"
+                    placeholder={t('Título')}
                     className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2 text-[14px] font-semibold text-ink focus:border-ink focus:outline-none"
                   />
                   <textarea
@@ -215,13 +214,13 @@ export default function KennelLegalEditor({
                     onChange={e => setDocDraft(p => ({ ...p, body_md: e.target.value }))}
                     rows={16}
                     spellCheck={false}
-                    placeholder="Escribe tu versión en Markdown. Puedes usar placeholders como {{kennel_legal_name}}."
+                    placeholder={t('Escribe tu versión en Markdown. Puedes usar placeholders como {{kennel_legal_name}}.')}
                     className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-[13px] font-mono leading-relaxed text-ink focus:border-ink focus:outline-none resize-y"
                   />
                   <p className="text-[11.5px] text-muted">
-                    Placeholders: <code>{'{{kennel_legal_name}}'}</code>, <code>{'{{kennel_legal_id}}'}</code>,
+                    {t('Placeholders:')} <code>{'{{kennel_legal_name}}'}</code>, <code>{'{{kennel_legal_id}}'}</code>,
                     {' '}<code>{'{{kennel_legal_address}}'}</code>, <code>{'{{kennel_legal_email}}'}</code>,
-                    {' '}<code>{'{{kennel_name}}'}</code>, <code>{'{{date}}'}</code>. Markdown: <code>## Título</code>, <code>**negrita**</code>, listas con <code>-</code>.
+                    {' '}<code>{'{{kennel_name}}'}</code>, <code>{'{{date}}'}</code>. {t('Markdown:')} <code>## Título</code>, <code>**negrita**</code>, {t('listas con')} <code>-</code>.
                   </p>
                   <div className="flex items-center gap-2">
                     <button
@@ -229,13 +228,13 @@ export default function KennelLegalEditor({
                       disabled={docBusy || !docDraft.title.trim() || !docDraft.body_md.trim()}
                       className="inline-flex items-center gap-1.5 bg-ink text-on-primary rounded-lg px-4 py-2 text-[13px] font-semibold hover:opacity-90 disabled:opacity-50 transition"
                     >
-                      <Save className="w-4 h-4" /> {docBusy ? 'Guardando…' : 'Guardar versión'}
+                      <Save className="w-4 h-4" /> {docBusy ? t('Guardando…') : t('Guardar versión')}
                     </button>
                     <button
                       onClick={() => setEditing(null)}
                       className="text-[13px] text-body hover:text-ink px-3 py-2 transition"
                     >
-                      Cancelar
+                      {t('Cancelar')}
                     </button>
                   </div>
                 </div>

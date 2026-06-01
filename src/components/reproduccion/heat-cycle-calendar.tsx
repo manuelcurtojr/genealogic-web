@@ -1,6 +1,7 @@
 'use client'
 
 import { Heart } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 import {
   parseDate, addDays, daysBetween, todayLocal, toISODate,
   heatPhaseForDay, HEAT_PHASE_META, PROESTRO_DAYS, ESTRO_DAYS, OVULATION_DAY, HEAT_DURATION_DAYS,
@@ -42,6 +43,7 @@ export default function HeatCycleCalendar({
   matingDates?: string[] | null
   dogName?: string
 }) {
+  const t = useT()
   const start = parseDate(startDate)
   const today = todayLocal()
   const matings = new Set((matingDates || []).filter(Boolean))
@@ -76,31 +78,31 @@ export default function HeatCycleCalendar({
   return (
     <div className="rounded-xl border border-hairline bg-canvas p-4">
       <div className="mb-3">
-        <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">Ciclo de celo</p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{t('Ciclo de celo')}</p>
         <p className="mt-0.5 text-[13px] text-body">
-          {dogName ? <strong className="text-ink">{dogName}</strong> : 'Esta hembra'} · inicio {fmtShort(start)}.
-          {' '}Ventana fértil estimada (estro): <strong className="text-emerald-700">{fmtShort(estroStart)}–{fmtShort(estroEnd)}</strong>, ovulación ~{fmtShort(addDays(start, OVULATION_DAY))}.
+          {dogName ? <strong className="text-ink">{dogName}</strong> : t('Esta hembra')} · {t('inicio')} {fmtShort(start)}.
+          {' '}{t('Ventana fértil estimada (estro):')} <strong className="text-emerald-700">{fmtShort(estroStart)}–{fmtShort(estroEnd)}</strong>, {t('ovulación ~')}{fmtShort(addDays(start, OVULATION_DAY))}.
         </p>
       </div>
 
       {/* Mini-calendario */}
       <div className="grid grid-cols-7 gap-1">
-        {WEEKDAYS.map((w) => (
-          <div key={w} className="pb-1 text-center text-[10px] font-semibold uppercase text-muted">{w}</div>
+        {WEEKDAYS.map((w, wi) => (
+          <div key={wi} className="pb-1 text-center text-[10px] font-semibold uppercase text-muted">{t(w)}</div>
         ))}
         {cells.map((c, i) => {
           const inHeat = c.phase !== null
           return (
             <div
               key={i}
-              title={inHeat ? `${HEAT_PHASE_META[c.phase!].label} · ${c.date.getDate()} ${MONTHS_SHORT[c.date.getMonth()]}${c.isMating ? ' · monta' : ''}${c.isOvulation ? ' · ovulación estimada' : ''}` : undefined}
+              title={inHeat ? `${HEAT_PHASE_META[c.phase!].label} · ${c.date.getDate()} ${MONTHS_SHORT[c.date.getMonth()]}${c.isMating ? ` · ${t('monta')}` : ''}${c.isOvulation ? ` · ${t('ovulación estimada')}` : ''}` : undefined}
               className={`relative flex aspect-square items-center justify-center rounded-lg text-[11.5px] font-medium ${
                 inHeat ? PHASE_CELL[c.phase!] : 'text-muted/40'
               } ${c.isToday ? 'ring-2 ring-ink' : ''} ${c.isMating ? 'ring-2 ring-rose-500' : ''}`}
             >
               {c.date.getDate()}
               {c.isOvulation && !c.isMating && (
-                <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-600" title="Ovulación estimada" />
+                <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-600" title={t('Ovulación estimada')} />
               )}
               {c.isMating && (
                 <Heart className="absolute -top-1 -right-1 h-3 w-3 fill-rose-500 text-rose-500" />
@@ -119,9 +121,9 @@ export default function HeatCycleCalendar({
           </span>
         ))}
         <span className="inline-flex items-center gap-1.5">
-          <Heart className="h-3 w-3 fill-rose-500 text-rose-500" /> Monta
+          <Heart className="h-3 w-3 fill-rose-500 text-rose-500" /> {t('Monta')}
         </span>
-        {!endDate && <span className="text-muted/70">· fases estimadas (varían por perra)</span>}
+        {!endDate && <span className="text-muted/70">{t('· fases estimadas (varían por perra)')}</span>}
       </div>
     </div>
   )

@@ -7,8 +7,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Loader2, Globe, ExternalLink } from 'lucide-react'
 import FeedbackButton from '@/components/feedback/feedback-button'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function EditKennelPage() {
+  const t = useT()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
@@ -89,7 +91,7 @@ export default function EditKennelPage() {
         <Link href="/kennel" className="text-muted hover:text-ink transition">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold">Editar criadero</h1>
+        <h1 className="text-2xl font-bold">{t('Editar criadero')}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -97,23 +99,23 @@ export default function EditKennelPage() {
 
         {/* Basic */}
         <section>
-          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">Información basica</h2>
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">{t('Información basica')}</h2>
           <div className="space-y-4">
-            <Field label="Nombre del criadero *" value={form.name} onChange={(v) => set('name', v)} required />
+            <Field label={t('Nombre del criadero *')} value={form.name} onChange={(v) => set('name', v)} required />
             <div>
-              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1.5 block">Descripcion</label>
+              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1.5 block">{t('Descripcion')}</label>
               <textarea value={form.description} onChange={(e) => set('description', e.target.value)} rows={4}
                 className="w-full bg-canvas border border-hairline rounded-lg px-4 py-3 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition resize-none"
-                placeholder="Describe tu criadero..." />
+                placeholder={t('Describe tu criadero...')} />
             </div>
-            <Field label="Fecha de fundacion" value={form.foundation_date} onChange={(v) => set('foundation_date', v)} type="date" />
-            <Field label="Sitio web" value={form.website} onChange={(v) => set('website', v)} placeholder="https://..." icon={Globe} />
+            <Field label={t('Fecha de fundacion')} value={form.foundation_date} onChange={(v) => set('foundation_date', v)} type="date" />
+            <Field label={t('Sitio web')} value={form.website} onChange={(v) => set('website', v)} placeholder="https://..." icon={Globe} />
           </div>
         </section>
 
         {/* Social */}
         <section>
-          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">Redes sociales</h2>
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">{t('Redes sociales')}</h2>
           <div className="space-y-4">
             <Field label="Instagram" value={form.social_instagram} onChange={(v) => set('social_instagram', v)} placeholder="https://instagram.com/..." icon={ExternalLink} />
             <Field label="Facebook" value={form.social_facebook} onChange={(v) => set('social_facebook', v)} placeholder="https://facebook.com/..." icon={ExternalLink} />
@@ -128,15 +130,15 @@ export default function EditKennelPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-lg p-4">
               <div>
-                <p className="text-sm font-medium">Activar WhatsApp</p>
-                <p className="text-xs text-muted mt-0.5">Mostrar boton de WhatsApp en tu perfil</p>
+                <p className="text-sm font-medium">{t('Activar WhatsApp')}</p>
+                <p className="text-xs text-muted mt-0.5">{t('Mostrar boton de WhatsApp en tu perfil')}</p>
               </div>
               <ToggleSwitch value={form.whatsapp_enabled} onChange={(v) => set('whatsapp_enabled', v)} color="bg-green-500" />
             </div>
             {form.whatsapp_enabled && (
               <>
-                <Field label="Número de WhatsApp" value={form.whatsapp_phone} onChange={(v) => set('whatsapp_phone', v)} placeholder="+34 600 000 000" />
-                <Field label="Mensaje predeterminado" value={form.whatsapp_text} onChange={(v) => set('whatsapp_text', v)} placeholder="Hola, me interesa..." />
+                <Field label={t('Número de WhatsApp')} value={form.whatsapp_phone} onChange={(v) => set('whatsapp_phone', v)} placeholder="+34 600 000 000" />
+                <Field label={t('Mensaje predeterminado')} value={form.whatsapp_text} onChange={(v) => set('whatsapp_text', v)} placeholder={t('Hola, me interesa...')} />
               </>
             )}
           </div>
@@ -145,7 +147,7 @@ export default function EditKennelPage() {
         <button type="submit" disabled={loading || !form.name.trim()}
           className="w-full bg-ink text-on-primary hover:opacity-90 font-semibold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2">
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-          {loading ? 'Guardando...' : 'Guardar cambios'}
+          {loading ? t('Guardando...') : t('Guardar cambios')}
         </button>
       </form>
 
@@ -155,7 +157,7 @@ export default function EditKennelPage() {
           className="flex items-center justify-between bg-surface-card hover:bg-surface-card border border-hairline rounded-xl px-4 py-3 transition group">
           <div>
             <p className="text-sm font-semibold">API keys</p>
-            <p className="text-xs text-muted">Conecta tus automatizaciones (Make, Zapier, scripts) u otras apps externas a tu criadero.</p>
+            <p className="text-xs text-muted">{t('Conecta tus automatizaciones (Make, Zapier, scripts) u otras apps externas a tu criadero.')}</p>
           </div>
           <ExternalLink className="w-4 h-4 text-muted group-hover:text-body" />
         </Link>

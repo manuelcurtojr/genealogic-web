@@ -16,6 +16,8 @@ import {
   type PaymentType,
   type PaidVia,
 } from '@/lib/payments/payments'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function assertBreeder(reservationId: string): Promise<{ userId: string; reservation: any }> {
@@ -43,7 +45,7 @@ export async function createPaymentAction(
     const amountStr = (formData.get('amount') as string) || ''
     const amountFloat = parseFloat(amountStr.replace(',', '.'))
     if (!isFinite(amountFloat) || amountFloat <= 0) {
-      return { ok: false, error: 'Importe inválido' }
+      return { ok: false, error: getTranslator(await getLocale())('Importe inválido') }
     }
     const amountCents = Math.round(amountFloat * 100)
     const type = ((formData.get('type') as PaymentType) || 'milestone')

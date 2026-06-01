@@ -14,6 +14,8 @@
  */
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 import ContactosPageClient, {
   type Subscriber,
   type Lead,
@@ -39,12 +41,12 @@ export default async function ContactosPage() {
   const kennel = kennelArr?.[0]
 
   if (!kennel) {
+    const t = getTranslator(await getLocale())
     return (
       <div className="max-w-2xl mx-auto py-10">
-        <h1 className="text-3xl font-bold text-ink mb-3">Contactos</h1>
+        <h1 className="text-3xl font-bold text-ink mb-3">{t('Contactos')}</h1>
         <p className="text-body">
-          Para gestionar contactos necesitas un criadero registrado. Crea tu
-          kennel desde <strong>Mi Criadero</strong>.
+          {t('Para gestionar contactos necesitas un criadero registrado. Crea tu kennel desde')} <strong>{t('Mi Criadero')}</strong>.
         </p>
       </div>
     )

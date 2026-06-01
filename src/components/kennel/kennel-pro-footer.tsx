@@ -16,6 +16,8 @@ import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
 import NewsletterSubscribe from './newsletter-subscribe'
 import { LEGAL_DOCS } from '@/lib/kennel/legal'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export type KennelProFooterProps = {
   kennelId: string
@@ -34,7 +36,7 @@ export type KennelProFooterProps = {
   shortHrefs?: boolean
 }
 
-export default function KennelProFooter({
+export default async function KennelProFooter({
   kennelId,
   kennelName,
   kennelSlug,
@@ -43,6 +45,7 @@ export default function KennelProFooter({
   socials,
   shortHrefs = false,
 }: KennelProFooterProps) {
+  const t = getTranslator(await getLocale())
   const hasAnySocial = !!(socials.instagram || socials.facebook)
   // Base de las URLs legales: corta bajo dominio propio, absoluta en genealogic.io.
   const legalBase = shortHrefs ? '/legal' : `/kennels/${kennelSlug}/legal`
@@ -110,10 +113,10 @@ export default function KennelProFooter({
             )}
 
             <p className="mt-6 text-[11.5px] text-muted">
-              © {new Date().getFullYear()} {kennelName}. Todos los derechos reservados.
+              © {new Date().getFullYear()} {kennelName}. {t('Todos los derechos reservados.')}
             </p>
             <p className="mt-1 text-[11px] text-muted inline-flex items-center gap-1">
-              Web creada con{' '}
+              {t('Web creada con')}{' '}
               <Link
                 href="https://genealogic.io"
                 className="font-semibold text-body hover:text-[#FE6620] transition-colors uppercase tracking-[0.1em]"
@@ -129,11 +132,10 @@ export default function KennelProFooter({
           <div className="order-1 lg:order-2">
             <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#3b82f6]">Newsletter</p>
             <h3 className="mt-1 text-[20px] sm:text-[24px] font-semibold tracking-[-0.025em] text-ink leading-[1.2]">
-              Mantente al día con {kennelName}
+              {t('Mantente al día con')} {kennelName}
             </h3>
             <p className="mt-2 text-[13.5px] text-body leading-snug max-w-prose">
-              Próximas camadas, novedades, eventos. Cero spam. Te das de baja
-              con un click.
+              {t('Próximas camadas, novedades, eventos. Cero spam. Te das de baja con un click.')}
             </p>
             <div className="mt-5">
               <NewsletterSubscribe kennelId={kennelId} kennelName={kennelName} inline />
@@ -153,7 +155,7 @@ export default function KennelProFooter({
               href={`${legalBase}/${d.slug}`}
               className="text-[12px] text-muted hover:text-ink transition-colors"
             >
-              {d.label}
+              {t(d.label)}
             </Link>
           ))}
         </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Dna, Save, Loader2, Check, Palette, Microscope } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 import { LOCI } from '@/lib/genetics/loci'
 import ColorObservationForm from './color-observation-form'
 
@@ -56,6 +57,7 @@ interface Props {
 type Tab = 'color' | 'dna'
 
 export default function GenotypeEditor({ dog, initialGenotypes, breedColors, allColors, initialObservation }: Props) {
+  const t = useT()
   const [activeTab, setActiveTab] = useState<Tab>(initialGenotypes.length > 0 ? 'dna' : 'color')
 
   const hasColorData = !!initialObservation
@@ -76,9 +78,9 @@ export default function GenotypeEditor({ dog, initialGenotypes, breedColors, all
           <div>
             <h2 className="text-[17px] font-semibold tracking-[-0.02em] text-ink">{dog.name}</h2>
             <p className="text-[12px] text-muted">
-              {dog.sex === 'male' ? 'Macho' : dog.sex === 'female' ? 'Hembra' : 'Sexo no definido'}
-              {hasColorData && ' · Color registrado'}
-              {hasDnaData && ` · ${initialGenotypes.length} loci DNA`}
+              {dog.sex === 'male' ? t('Macho') : dog.sex === 'female' ? t('Hembra') : t('Sexo no definido')}
+              {hasColorData && ` · ${t('Color registrado')}`}
+              {hasDnaData && ` · ${initialGenotypes.length} ${t('loci DNA')}`}
             </p>
           </div>
         </div>
@@ -93,7 +95,7 @@ export default function GenotypeEditor({ dog, initialGenotypes, breedColors, all
           }`}
         >
           <Palette className="h-3.5 w-3.5" />
-          Color visible
+          {t('Color visible')}
           {hasColorData && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-emerald-500" />}
         </button>
         <button
@@ -103,7 +105,7 @@ export default function GenotypeEditor({ dog, initialGenotypes, breedColors, all
           }`}
         >
           <Microscope className="h-3.5 w-3.5" />
-          Genotipo DNA (avanzado)
+          {t('Genotipo DNA (avanzado)')}
           {hasDnaData && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-emerald-500" />}
         </button>
       </div>
@@ -129,6 +131,7 @@ export default function GenotypeEditor({ dog, initialGenotypes, breedColors, all
  * Editor de genotipo DNA (loci avanzados). Para usuarios con test DNA.
  */
 function DnaEditor({ dogId, initialGenotypes }: { dogId: string; initialGenotypes: Genotype[] }) {
+  const t = useT()
   const initialMap = new Map<string, { allele1: string; allele2: string }>()
   for (const g of initialGenotypes) {
     initialMap.set(g.locus, { allele1: g.allele_1, allele2: g.allele_2 })
@@ -201,7 +204,7 @@ function DnaEditor({ dogId, initialGenotypes }: { dogId: string; initialGenotype
       setSavedFlash(true)
       setTimeout(() => setSavedFlash(false), 2000)
     } catch (err: any) {
-      setError(err.message || 'Error al guardar')
+      setError(err.message || t('Error al guardar'))
     } finally {
       setSaving(false)
     }
@@ -211,9 +214,9 @@ function DnaEditor({ dogId, initialGenotypes }: { dogId: string; initialGenotype
     <div className="space-y-4">
       <div className="flex items-center justify-between rounded-xl border border-hairline bg-canvas px-5 py-3">
         <div>
-          <p className="text-[13px] font-medium text-ink">Genotipo confirmado por DNA</p>
+          <p className="text-[13px] font-medium text-ink">{t('Genotipo confirmado por DNA')}</p>
           <p className="text-[11.5px] text-muted">
-            Rellena solo si tienes resultados de Embark, Wisdom Panel u otro test genético.
+            {t('Rellena solo si tienes resultados de Embark, Wisdom Panel u otro test genético.')}
           </p>
         </div>
         <button
@@ -228,7 +231,7 @@ function DnaEditor({ dogId, initialGenotypes }: { dogId: string; initialGenotype
           ) : (
             <Save className="h-3.5 w-3.5" />
           )}
-          {savedFlash ? 'Guardado' : 'Guardar'}
+          {savedFlash ? t('Guardado') : t('Guardar')}
         </button>
       </div>
 
@@ -297,7 +300,7 @@ function DnaEditor({ dogId, initialGenotypes }: { dogId: string; initialGenotype
                       onClick={() => handleClear(locus.code)}
                       className="ml-1 text-[11px] text-muted hover:text-ink"
                     >
-                      Borrar
+                      {t('Borrar')}
                     </button>
                   )}
                 </div>
@@ -308,7 +311,7 @@ function DnaEditor({ dogId, initialGenotypes }: { dogId: string; initialGenotype
       </div>
 
       <div className="rounded-lg border border-dashed border-hairline bg-surface-soft px-4 py-3 text-[12.5px] text-muted">
-        💡 Los datos DNA tienen prioridad sobre la observación visual en el cálculo del forecast.
+        💡 {t('Los datos DNA tienen prioridad sobre la observación visual en el cálculo del forecast.')}
       </div>
     </div>
   )

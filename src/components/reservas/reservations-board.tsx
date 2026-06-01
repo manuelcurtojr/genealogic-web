@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Plus, GripVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useT } from '@/components/i18n/locale-provider'
 import ReservationFormPanel from './reservation-form-panel'
 
 interface Reservation {
@@ -66,14 +67,14 @@ function fmtPrice(cents: number | null, currency: string) {
   return `${(cents / 100).toFixed(0)} ${currency}`
 }
 
-function daysSince(iso: string) {
+function daysSince(iso: string, t: (k: string) => string) {
   const diff = Date.now() - new Date(iso).getTime()
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-  if (days === 0) return 'hoy'
-  if (days === 1) return 'hace 1 día'
-  if (days < 30) return `hace ${days} días`
+  if (days === 0) return t('hoy')
+  if (days === 1) return t('hace 1 día')
+  if (days < 30) return `${t('hace')} ${days} ${t('días')}`
   const months = Math.floor(days / 30)
-  return `hace ${months} mes${months > 1 ? 'es' : ''}`
+  return `${t('hace')} ${months} ${months > 1 ? t('meses') : t('mes')}`
 }
 
 export default function ReservationsBoard({
@@ -84,6 +85,7 @@ export default function ReservationsBoard({
   litters,
   dogs,
 }: Props) {
+  const t = useT()
   const [reservations, setReservations] = useState<Reservation[]>(initialReservations)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOverCol, setDragOverCol] = useState<string | null>(null)
@@ -122,7 +124,7 @@ export default function ReservationsBoard({
     if (!res.ok) {
       setReservations(prev)
       const err = await res.json().catch(() => ({}))
-      alert(`Error al mover: ${err.error || 'desconocido'}`)
+      alert(`${t('Error al mover')}: ${err.error || t('desconocido')}`)
     }
   }
 
@@ -179,12 +181,12 @@ export default function ReservationsBoard({
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-ink tracking-tight">Reservas</h1>
-          <p className="text-sm text-muted mt-0.5">{kennelName} · {reservations.length} reserva{reservations.length === 1 ? '' : 's'}</p>
+          <h1 className="text-2xl font-bold text-ink tracking-tight">{t('Reservas')}</h1>
+          <p className="text-sm text-muted mt-0.5">{kennelName} · {reservations.length} {reservations.length === 1 ? t('reserva') : t('reservas')}</p>
         </div>
         <Button onClick={handleNew} size="md" variant="primary">
           <Plus className="w-4 h-4" />
-          Nueva reserva
+          {t('Nueva reserva')}
         </Button>
       </div>
 
@@ -208,14 +210,14 @@ export default function ReservationsBoard({
               className={`sm:flex-shrink-0 w-full sm:w-72 rounded-xl border bg-canvas ${isOver ? 'border-ink' : 'border-hairline'} transition`}
             >
               <div className="flex items-center justify-between px-3 py-2.5 border-b border-hairline">
-                <h3 className="text-xs font-semibold uppercase tracking-[0.06em] text-ink">{col.label}</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-[0.06em] text-ink">{t(col.label)}</h3>
                 <span className="text-[11px] text-muted bg-surface-card rounded-full px-2 py-0.5">{items.length}</span>
               </div>
               <div className="p-2 space-y-2 sm:min-h-[200px]">
                 {items.length === 0 && (
                   <p className="text-xs text-muted text-center py-4 sm:py-8 px-3">
-                    <span className="hidden sm:inline">Arrastra aquí o crea una reserva</span>
-                    <span className="sm:hidden">Sin reservas en este estado</span>
+                    <span className="hidden sm:inline">{t('Arrastra aquí o crea una reserva')}</span>
+                    <span className="sm:hidden">{t('Sin reservas en este estado')}</span>
                   </p>
                 )}
                 {items.map(r => {
@@ -233,18 +235,18 @@ export default function ReservationsBoard({
                         <GripVertical className="w-3.5 h-3.5 text-muted mt-0.5 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-ink truncate">
-                            {owner?.full_name || 'Sin cliente'}
+                            {owner?.full_name || t('Sin cliente')}
                           </p>
                           {dog ? (
                             <p className="text-[12px] text-body mt-0.5 truncate">{dog.name}</p>
                           ) : (
                             <p className="text-[12px] text-muted mt-0.5">
-                              {r.preference_sex === 'male' ? 'Macho' : r.preference_sex === 'female' ? 'Hembra' : 'Indistinto'}
+                              {r.preference_sex === 'male' ? t('Macho') : r.preference_sex === 'female' ? t('Hembra') : t('Indistinto')}
                               {r.preference_color ? ` · ${r.preference_color}` : ''}
                             </p>
                           )}
                           <div className="flex items-center gap-2 mt-2 text-[11px] text-muted">
-                            <span>{daysSince(r.created_at)}</span>
+                            <span>{daysSince(r.created_at, t)}</span>
                             {r.total_price_cents != null && (
                               <>
                                 <span>·</span>

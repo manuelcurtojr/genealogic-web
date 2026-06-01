@@ -6,6 +6,8 @@ import { pageNotYetPublicMessage } from '@/lib/kennel/pro-page-loader'
 import { ProPageShell, OwnerDraftBanner, EmptyContentState } from '@/components/kennel/pro-page-shell'
 import KennelPhotosGallery from '@/components/kennel/photos-gallery'
 import type { Metadata } from 'next'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,6 +37,7 @@ export async function generateMetadata(
 
 export default async function KennelGaleriaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -75,27 +78,27 @@ export default async function KennelGaleriaPage({ params }: { params: Promise<{ 
   if (!isOwner && (!enabled || !hasEnough)) notFound()
 
   return (
-    <ProPageShell eyebrow="Imágenes" title="Galería" fullWidth>
+    <ProPageShell eyebrow={t('Imágenes')} title={t('Galería')} fullWidth>
       {isOwner && (!enabled || !hasEnough) && (
         <OwnerDraftBanner
           message={!enabled
-            ? 'Activa la página "Galería" desde Mi criadero para que sea pública.'
+            ? t('Activa la página "Galería" desde Mi criadero para que sea pública.')
             : pageNotYetPublicMessage('galeria')}
           ctaHref="/kennel/contenido/galeria"
-          ctaLabel="Subir fotos"
+          ctaLabel={t('Subir fotos')}
         />
       )}
 
       {list.length === 0 ? (
         isOwner ? (
           <EmptyContentState
-            title="Aún no has subido fotos"
-            description="Sube al menos 3 fotos para que esta galería se haga pública."
+            title={t('Aún no has subido fotos')}
+            description={t('Sube al menos 3 fotos para que esta galería se haga pública.')}
           />
         ) : (
           <EmptyContentState
-            title="Próximamente"
-            description={`${kennel.name} subirá fotos en breve.`}
+            title={t('Próximamente')}
+            description={`${kennel.name} ${t('subirá fotos en breve.')}`}
           />
         )
       ) : (

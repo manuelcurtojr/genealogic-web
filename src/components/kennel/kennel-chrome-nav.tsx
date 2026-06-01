@@ -19,6 +19,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Menu, X } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 export type NavItem = {
   id: string
@@ -37,6 +38,7 @@ export default function KennelChromeNav({
    *  así que isActive() usa SIEMPRE la ruta absoluta para detectar la activa. */
   shortHrefs?: boolean
 }) {
+  const t = useT()
   const pathname = usePathname() || ''
   const [open, setOpen] = useState(false)
   // Portal target — sólo cliente. Sin esto el drawer queda atrapado en el
@@ -119,7 +121,7 @@ export default function KennelChromeNav({
     <button
       type="button"
       onClick={() => setOpen(true)}
-      aria-label="Abrir menú"
+      aria-label={t('Abrir menú')}
       className="md:hidden ml-auto inline-flex h-9 w-9 items-center justify-center rounded-lg text-ink hover:bg-surface-soft transition"
     >
       <Menu className="h-5 w-5" />
@@ -152,11 +154,11 @@ export default function KennelChromeNav({
         aria-hidden={!open}
       >
         <div className="flex items-center justify-between h-14 px-4 border-b border-hairline" style={{ backgroundColor: '#ffffff' }}>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">Menú</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">{t('Menú')}</p>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            aria-label="Cerrar menú"
+            aria-label={t('Cerrar menú')}
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-ink hover:bg-surface-soft transition"
           >
             <X className="h-6 w-6" />

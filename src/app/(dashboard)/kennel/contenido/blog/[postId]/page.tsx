@@ -3,11 +3,14 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import PostEditor from '@/components/kennel/post-editor'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
 export default async function KennelBlogEditPage({ params }: { params: Promise<{ postId: string }> }) {
   const { postId } = await params
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -40,7 +43,7 @@ export default async function KennelBlogEditPage({ params }: { params: Promise<{
           href="/kennel/contenido/blog"
           className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-muted hover:text-ink transition"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> Volver al blog
+          <ArrowLeft className="h-3.5 w-3.5" /> {t('Volver al blog')}
         </Link>
         {publicUrl && (
           <Link
@@ -49,15 +52,15 @@ export default async function KennelBlogEditPage({ params }: { params: Promise<{
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12.5px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
           >
-            <ExternalLink className="h-3.5 w-3.5" /> Ver post público
+            <ExternalLink className="h-3.5 w-3.5" /> {t('Ver post público')}
           </Link>
         )}
       </div>
       <div>
-        <h2 className="text-[17px] sm:text-[18px] font-semibold tracking-[-0.02em] text-ink">Editar post</h2>
+        <h2 className="text-[17px] sm:text-[18px] font-semibold tracking-[-0.02em] text-ink">{t('Editar post')}</h2>
         <p className="mt-1 text-[12.5px] text-muted">
-          Estado actual: <span className={`font-semibold ${post.status === 'published' ? 'text-emerald-700' : 'text-amber-700'}`}>
-            {post.status === 'published' ? 'Publicado' : 'Borrador'}
+          {t('Estado actual:')} <span className={`font-semibold ${post.status === 'published' ? 'text-emerald-700' : 'text-amber-700'}`}>
+            {post.status === 'published' ? t('Publicado') : t('Borrador')}
           </span>
         </p>
       </div>

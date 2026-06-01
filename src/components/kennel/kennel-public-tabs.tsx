@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Dog, Heart, Tag, Baby } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
+import { useT } from '@/components/i18n/locale-provider'
 
 type TabKey = 'reproductores' | 'venta' | 'camadas' | 'criados'
 
@@ -26,6 +27,7 @@ const TABS: { key: TabKey; label: string; icon: any; iconColor: string }[] = [
 export default function KennelPublicTabs({
   kennelName, reproductores, forSale, litters, criados, currencySymbol,
 }: KennelPublicTabsProps) {
+  const t = useT()
   const counts: Record<TabKey, number> = {
     reproductores: reproductores.length,
     venta: forSale.length,
@@ -34,7 +36,7 @@ export default function KennelPublicTabs({
   }
 
   // Default a la primera tab con contenido, si todas vacías → reproductores
-  const firstWithContent = TABS.find(t => counts[t.key] > 0)?.key || 'reproductores'
+  const firstWithContent = TABS.find(tab => counts[tab.key] > 0)?.key || 'reproductores'
   const [active, setActive] = useState<TabKey>(firstWithContent)
 
   const empty = counts.reproductores === 0 && counts.venta === 0 && counts.camadas === 0 && counts.criados === 0
@@ -43,7 +45,7 @@ export default function KennelPublicTabs({
     return (
       <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
         <Dog className="mx-auto h-10 w-10 text-muted" />
-        <p className="mt-3 text-[14px] text-body">No hay perros visibles en este criadero.</p>
+        <p className="mt-3 text-[14px] text-body">{t('No hay perros visibles en este criadero.')}</p>
       </div>
     )
   }
@@ -70,7 +72,7 @@ export default function KennelPublicTabs({
               }`}
             >
               <Icon className="h-4 w-4" style={isActive ? { color: iconColor } : undefined} />
-              <span>{label}</span>
+              <span>{t(label)}</span>
               <span
                 className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-medium tabular-nums ${
                   isActive ? 'bg-ink text-on-primary' : 'bg-surface-card text-muted'
@@ -86,16 +88,16 @@ export default function KennelPublicTabs({
       {/* Tab content */}
       <div>
         {active === 'reproductores' && (
-          <DogGrid dogs={reproductores} emptyLabel="Sin reproductores publicados." />
+          <DogGrid dogs={reproductores} emptyLabel={t('Sin reproductores publicados.')} />
         )}
         {active === 'venta' && (
-          <DogGrid dogs={forSale} forSale currencySymbol={currencySymbol} emptyLabel="No hay perros en venta ahora mismo." />
+          <DogGrid dogs={forSale} forSale currencySymbol={currencySymbol} emptyLabel={t('No hay perros en venta ahora mismo.')} />
         )}
         {active === 'camadas' && (
-          <LitterGrid litters={litters} emptyLabel="Sin camadas publicadas." />
+          <LitterGrid litters={litters} emptyLabel={t('Sin camadas publicadas.')} />
         )}
         {active === 'criados' && (
-          <DogGrid dogs={criados} emptyLabel={`${kennelName} aún no tiene perros criados publicados.`} />
+          <DogGrid dogs={criados} emptyLabel={`${kennelName} ${t('aún no tiene perros criados publicados.')}`} />
         )}
       </div>
     </div>
@@ -123,6 +125,7 @@ function DogGrid({ dogs, emptyLabel, forSale, currencySymbol }: {
 }
 
 function LitterGrid({ litters, emptyLabel }: { litters: any[]; emptyLabel: string }) {
+  const t = useT()
   if (litters.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
@@ -143,7 +146,7 @@ function LitterGrid({ litters, emptyLabel }: { litters: any[]; emptyLabel: strin
         const father = litter.father
         const mother = litter.mother
         const breedName = litter.breed?.name
-        const title = father && mother ? `${father.name} × ${mother.name}` : father?.name || mother?.name || 'Camada'
+        const title = father && mother ? `${father.name} × ${mother.name}` : father?.name || mother?.name || t('Camada')
         const cfg = statusCfg[litter.status] || statusCfg.planned
         return (
           <Link
@@ -174,7 +177,7 @@ function LitterGrid({ litters, emptyLabel }: { litters: any[]; emptyLabel: strin
                   className="inline-block rounded-full px-2 py-0.5 text-[10.5px] font-medium text-white"
                   style={{ backgroundColor: cfg.color }}
                 >
-                  {cfg.label}
+                  {t(cfg.label)}
                 </span>
                 {litter.birth_date && (
                   <span className="text-[11px] text-muted">
@@ -191,6 +194,7 @@ function LitterGrid({ litters, emptyLabel }: { litters: any[]; emptyLabel: strin
 }
 
 function SaleDogCard({ dog, currencySymbol }: { dog: any; currencySymbol: Record<string, string> }) {
+  const t = useT()
   const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
   const symbol = currencySymbol[dog.sale_currency] || '€'
   return (
@@ -199,7 +203,7 @@ function SaleDogCard({ dog, currencySymbol }: { dog: any; currencySymbol: Record
       className="group relative overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft"
     >
       <span className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-full bg-[#f59e0b] px-2 py-0.5 text-[10.5px] font-medium text-white shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
-        <Tag className="h-2.5 w-2.5" /> En venta
+        <Tag className="h-2.5 w-2.5" /> {t('En venta')}
       </span>
       <div className="relative aspect-square overflow-hidden bg-surface-card">
         {dog.thumbnail_url
@@ -221,7 +225,7 @@ function SaleDogCard({ dog, currencySymbol }: { dog: any; currencySymbol: Record
               {Number(dog.sale_price).toLocaleString('es-ES')} {symbol}
             </p>
           ) : (
-            <p className="text-[12px] text-muted">Consultar precio</p>
+            <p className="text-[12px] text-muted">{t('Consultar precio')}</p>
           )}
           {dog.sale_location && <p className="truncate text-[10.5px] text-muted">{dog.sale_location}</p>}
         </div>

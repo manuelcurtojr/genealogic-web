@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Mail, Loader2, Check, AlertCircle } from 'lucide-react'
 import { subscribePublicNewsletterAction } from '@/lib/kennel/content-actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   kennelId: string
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function NewsletterSubscribe({ kennelId, kennelName, inline = false }: Props) {
+  const t = useT()
   const [email, setEmail] = useState('')
   const [pending, startTransition] = useTransition()
   const [done, setDone] = useState(false)
@@ -32,8 +34,8 @@ export default function NewsletterSubscribe({ kennelId, kennelName, inline = fal
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'error'
         const human =
-          msg === 'invalid_email' ? 'Email no válido.' :
-          `No se pudo suscribir: ${msg}`
+          msg === 'invalid_email' ? t('Email no válido.') :
+          `${t('No se pudo suscribir:')} ${msg}`
         setError(human)
       }
     })
@@ -49,12 +51,12 @@ export default function NewsletterSubscribe({ kennelId, kennelName, inline = fal
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[13.5px] font-semibold text-emerald-900">
-              {duplicate ? '¡Ya estabas suscrito!' : '¡Apuntado!'}
+              {duplicate ? t('¡Ya estabas suscrito!') : t('¡Apuntado!')}
             </p>
             <p className="text-[12px] text-emerald-900/80 leading-snug">
               {duplicate
-                ? 'Recibirás todas las novedades de este criadero.'
-                : 'Te avisamos cuando haya novedades.'}
+                ? t('Recibirás todas las novedades de este criadero.')
+                : t('Te avisamos cuando haya novedades.')}
             </p>
           </div>
         </div>
@@ -76,7 +78,7 @@ export default function NewsletterSubscribe({ kennelId, kennelName, inline = fal
             disabled={pending || !email}
             className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2.5 text-[13px] font-bold text-on-primary hover:opacity-90 disabled:opacity-40 transition flex-shrink-0"
           >
-            {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Suscribirme'}
+            {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t('Suscribirme')}
           </button>
         </form>
       )}
@@ -106,10 +108,10 @@ export default function NewsletterSubscribe({ kennelId, kennelName, inline = fal
         <div>
           <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#3b82f6]">Newsletter</p>
           <h2 className="mt-1 text-[22px] sm:text-[26px] font-semibold tracking-[-0.03em] text-ink leading-[1.15]">
-            Mantente al día con {kennelName}
+            {t('Mantente al día con')} {kennelName}
           </h2>
           <p className="mt-2 text-[13.5px] sm:text-[14.5px] text-body leading-snug max-w-prose">
-            Próximas camadas, novedades, eventos. Cero spam. Te das de baja con un click.
+            {t('Próximas camadas, novedades, eventos. Cero spam. Te das de baja con un click.')}
           </p>
         </div>
         <div className="w-full sm:w-[360px]">
@@ -120,12 +122,12 @@ export default function NewsletterSubscribe({ kennelId, kennelName, inline = fal
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[13.5px] font-semibold text-emerald-900">
-                  {duplicate ? '¡Ya estabas suscrito!' : '¡Apuntado!'}
+                  {duplicate ? t('¡Ya estabas suscrito!') : t('¡Apuntado!')}
                 </p>
                 <p className="text-[12px] text-emerald-900/80 leading-snug">
                   {duplicate
-                    ? 'Recibirás todas las novedades de este criadero.'
-                    : 'Te avisamos cuando haya novedades.'}
+                    ? t('Recibirás todas las novedades de este criadero.')
+                    : t('Te avisamos cuando haya novedades.')}
                 </p>
               </div>
             </div>
@@ -147,7 +149,7 @@ export default function NewsletterSubscribe({ kennelId, kennelName, inline = fal
                 disabled={pending || !email}
                 className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2.5 text-[13px] font-bold text-on-primary hover:opacity-90 disabled:opacity-40 transition flex-shrink-0"
               >
-                {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Suscribirme'}
+                {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t('Suscribirme')}
               </button>
             </form>
           )}

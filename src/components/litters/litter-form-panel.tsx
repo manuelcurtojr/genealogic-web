@@ -5,6 +5,7 @@ import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Search, ChevronDown, Lock, Calendar, Heart, PawPrint, Plus, Dog } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 import { Portal } from '@/components/ui/portal'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
@@ -24,6 +25,7 @@ const STATUSES = [
 ]
 
 export default function LitterFormPanel({ open, onClose, editLitterId, userId, onAddPuppy }: LitterFormPanelProps) {
+  const t = useT()
   const router = useRouter()
   const isEdit = !!editLitterId
   const [loading, setLoading] = useState(false)
@@ -154,7 +156,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
         style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
       >
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
-          <h2 className="text-base sm:text-lg font-semibold">{isEdit ? 'Editar camada' : 'Nueva camada'}</h2>
+          <h2 className="text-base sm:text-lg font-semibold">{isEdit ? t('Editar camada') : t('Nueva camada')}</h2>
           <button onClick={onClose} className="text-muted hover:text-ink transition"><X className="w-5 h-5" /></button>
         </div>
 
@@ -166,42 +168,42 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
 
             {/* Breed — searchable like header */}
             <div>
-              <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Raza</h3>
+              <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">{t('Raza')}</h3>
               <DogSearch
-                label="Raza"
+                label={t('Raza')}
                 items={breeds.map(b => ({ id: b.id, name: b.name, image: null }))}
                 value={form.breed_id}
                 onChange={v => { set('breed_id', v); set('father_id', ''); set('mother_id', '') }}
-                placeholder="Buscar raza..."
+                placeholder={t('Buscar raza...')}
               />
             </div>
 
             {/* Parents */}
             <div>
               <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">
-                Padres {isEdit && <span className="text-muted normal-case">(no editables)</span>}
+                {t('Padres')} {isEdit && <span className="text-muted normal-case">{t('(no editables)')}</span>}
               </h3>
               {isEdit ? (
                 <div className="space-y-2">
-                  <LockedField label="Padre" dogs={maleDogs} value={form.father_id} sex="male" />
-                  <LockedField label="Madre" dogs={femaleDogs} value={form.mother_id} sex="female" />
+                  <LockedField label={t('Padre')} dogs={maleDogs} value={form.father_id} sex="male" />
+                  <LockedField label={t('Madre')} dogs={femaleDogs} value={form.mother_id} sex="female" />
                 </div>
               ) : (
                 <div className="space-y-3">
                   <DogSearch
-                    label="Padre"
+                    label={t('Padre')}
                     items={filteredMales.map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))}
                     value={form.father_id}
                     onChange={v => set('father_id', v)}
-                    placeholder="Buscar padre..."
+                    placeholder={t('Buscar padre...')}
                     sexColor={BRAND.male}
                   />
                   <DogSearch
-                    label="Madre"
+                    label={t('Madre')}
                     items={filteredFemales.map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))}
                     value={form.mother_id}
                     onChange={v => set('mother_id', v)}
-                    placeholder="Buscar madre..."
+                    placeholder={t('Buscar madre...')}
                     sexColor={BRAND.female}
                   />
                 </div>
@@ -210,7 +212,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
 
             {/* Status — 3 cards with inline fields */}
             <div>
-              <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Estado actual</h3>
+              <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">{t('Estado actual')}</h3>
               <div className="space-y-2">
                 {STATUSES.map(s => {
                   const Icon = s.icon
@@ -225,8 +227,8 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                           <Icon className="w-5 h-5" style={{ color: active ? '#fb923c' : s.color }} />
                         </div>
                         <div>
-                          <p className={`text-sm font-semibold ${active ? 'text-ink' : 'text-ink'}`}>{s.label}</p>
-                          <p className="text-xs text-muted">{s.desc}</p>
+                          <p className={`text-sm font-semibold ${active ? 'text-ink' : 'text-ink'}`}>{t(s.label)}</p>
+                          <p className="text-xs text-muted">{t(s.desc)}</p>
                         </div>
                       </button>
 
@@ -234,7 +236,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                       {active && s.value === 'mated' && (
                         <div className="mt-2 ml-4 pl-4 border-l-2 border-hairline space-y-3 pb-1">
                           <div>
-                            <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">Fecha del cruce</label>
+                            <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Fecha del cruce')}</label>
                             <input type="date" value={form.mating_date} onChange={e => set('mating_date', e.target.value)}
                               className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition" />
                           </div>
@@ -245,18 +247,18 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                       {active && s.value === 'born' && (
                         <div className="mt-2 ml-4 pl-4 border-l-2 border-hairline space-y-3 pb-1">
                           <div>
-                            <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">Fecha del cruce</label>
+                            <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Fecha del cruce')}</label>
                             <input type="date" value={form.mating_date} onChange={e => set('mating_date', e.target.value)}
                               className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition" />
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">Nacimiento</label>
+                              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Nacimiento')}</label>
                               <input type="date" value={form.birth_date} onChange={e => set('birth_date', e.target.value)}
                                 className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition" />
                             </div>
                             <div>
-                              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">Cachorros</label>
+                              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Cachorros')}</label>
                               <input type="number" min="0" value={form.puppy_count} onChange={e => set('puppy_count', e.target.value)}
                                 className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition" />
                             </div>
@@ -272,8 +274,8 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
             {/* Visibility */}
             <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-lg p-3">
               <div>
-                <p className="text-sm font-medium">Camada publica</p>
-                <p className="text-xs text-muted">Visible para otros usuarios</p>
+                <p className="text-sm font-medium">{t('Camada publica')}</p>
+                <p className="text-xs text-muted">{t('Visible para otros usuarios')}</p>
               </div>
               <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
             </div>
@@ -282,7 +284,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
             {isEdit && (
               <div>
                 <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">
-                  Cachorros {puppies.length > 0 && <span className="text-muted">({puppies.length})</span>}
+                  {t('Cachorros')} {puppies.length > 0 && <span className="text-muted">({puppies.length})</span>}
                 </h3>
                 {puppies.length > 0 ? (
                   <div className="space-y-1.5 mb-3">
@@ -303,14 +305,14 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                     })}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted mb-3">No hay cachorros asignados a esta camada</p>
+                  <p className="text-xs text-muted mb-3">{t('No hay cachorros asignados a esta camada')}</p>
                 )}
                 <button
                   type="button"
                   onClick={() => onAddPuppy?.(editLitterId!, form.breed_id || null, form.father_id || null, form.mother_id || null)}
                   className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-hairline text-xs text-muted hover:text-ink hover:border-hairline transition"
                 >
-                  <Plus className="w-3.5 h-3.5" /> Añadir cachorro
+                  <Plus className="w-3.5 h-3.5" /> {t('Añadir cachorro')}
                 </button>
               </div>
             )}
@@ -318,11 +320,11 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
         )}
 
         <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hairline flex-shrink-0">
-          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">{t('Cancelar')}</button>
           <button onClick={handleSubmit} disabled={loading || dataLoading}
             className="bg-ink text-on-primary hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {loading ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear camada'}
+            {loading ? t('Guardando...') : isEdit ? t('Guardar cambios') : t('Crear camada')}
           </button>
         </div>
       </div>
@@ -335,6 +337,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
 function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
   label: string; items: { id: string; name: string; image: string | null }[]; value: string; onChange: (v: string) => void; placeholder?: string; sexColor?: string
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const ref = useRef<HTMLDivElement>(null)
@@ -380,14 +383,14 @@ function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
                 ref={inputRef}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar..."
+                placeholder={t('Buscar...')}
                 className="w-full rounded border border-hairline bg-canvas py-1.5 pl-8 pr-3 text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink"
               />
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
             {filtered.length === 0 ? (
-              <p className="p-3 text-center text-[13px] text-muted">Sin resultados</p>
+              <p className="p-3 text-center text-[13px] text-muted">{t('Sin resultados')}</p>
             ) : (
               filtered.map(item => (
                 <button
@@ -421,6 +424,7 @@ function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
 }
 
 function LockedField({ label, dogs, value, sex }: { label: string; dogs: any[]; value: string; sex: string }) {
+  const t = useT()
   const dog = dogs.find(d => d.id === value)
   const sexColor = sex === 'male' ? BRAND.male : BRAND.female
   return (
@@ -438,7 +442,7 @@ function LockedField({ label, dogs, value, sex }: { label: string; dogs: any[]; 
             <span className="truncate text-ink">{dog.name}</span>
           </>
         ) : (
-          <span className="text-muted">No asignado</span>
+          <span className="text-muted">{t('No asignado')}</span>
         )}
         <Lock className="ml-auto h-3.5 w-3.5 flex-shrink-0 text-muted" />
       </div>

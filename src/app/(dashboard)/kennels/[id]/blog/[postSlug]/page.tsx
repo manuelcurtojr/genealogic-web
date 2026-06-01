@@ -5,6 +5,8 @@ import { isUUID } from '@/lib/slug'
 import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
 import { ProPageShell } from '@/components/kennel/pro-page-shell'
 import { ArrowLeft } from 'lucide-react'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,6 +14,7 @@ export default async function KennelBlogPostPage({
   params,
 }: { params: Promise<{ id: string; postSlug: string }> }) {
   const { id, postSlug } = await params
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
 
   const field = isUUID(id) ? 'id' : 'slug'
@@ -50,13 +53,13 @@ export default async function KennelBlogPostPage({
         href={`/kennels/${kennel.slug}/blog`}
         className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-muted hover:text-ink transition"
       >
-        <ArrowLeft className="h-3.5 w-3.5" /> Volver al blog
+        <ArrowLeft className="h-3.5 w-3.5" /> {t('Volver al blog')}
       </Link>
 
       <div className="flex flex-wrap items-center gap-3 text-[12px] text-muted">
         {date && <span>{date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</span>}
-        {post.author_name && <span>· por {post.author_name}</span>}
-        {post.reading_time_minutes && <span>· {post.reading_time_minutes} min lectura</span>}
+        {post.author_name && <span>· {t('por')} {post.author_name}</span>}
+        {post.reading_time_minutes && <span>· {post.reading_time_minutes} {t('min lectura')}</span>}
       </div>
 
       {post.cover_image_url && (

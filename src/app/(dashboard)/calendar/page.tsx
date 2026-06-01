@@ -8,6 +8,7 @@ import VetReminderForm from '@/components/vet/vet-reminder-form'
 import CalendarSubnav from '@/components/calendar/calendar-subnav'
 import { Portal } from '@/components/ui/portal'
 import { parseDate as parseReproDate, addDays as addReproDays, toISODate, GESTATION_DAYS } from '@/lib/repro/cycle'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface CalendarEvent {
   id: string
@@ -30,6 +31,7 @@ const DAY_NAMES_FULL = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'S
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 
 export default function CalendarPage() {
+  const t = useT()
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
@@ -112,7 +114,7 @@ export default function CalendarPage() {
       const dogName = r.dog?.name ? ` — ${r.dog.name}` : ''
       if (inRange(r.start_date)) {
         heatAsEvents.push({
-          id: `heat-celo-${r.id}`, title: `🔵 Celo${dogName}`, event_type: 'breeding',
+          id: `heat-celo-${r.id}`, title: `🔵 ${t('Celo')}${dogName}`, event_type: 'breeding',
           start_date: `${r.start_date}T08:00:00`, end_date: null, all_day: true,
           is_completed: false, color: '#3b82f6', notes: null,
         })
@@ -123,7 +125,7 @@ export default function CalendarPage() {
           const confirmed = r.pregnancy_status === 'confirmed'
           heatAsEvents.push({
             id: `heat-parto-${r.id}`,
-            title: `🍼 Parto previsto${dogName}${confirmed ? '' : ' (sin confirmar)'}`,
+            title: `🍼 ${t('Parto previsto')}${dogName}${confirmed ? '' : ` ${t('(sin confirmar)')}`}`,
             event_type: 'birth', start_date: `${birth}T08:00:00`, end_date: null, all_day: true,
             is_completed: false, color: confirmed ? '#e84393' : '#f59e0b', notes: null,
           })
@@ -133,7 +135,7 @@ export default function CalendarPage() {
 
     setEvents([...(eventsRes.data || []), ...vetAsEvents, ...heatAsEvents])
     setLoading(false)
-  }, [year, month])
+  }, [year, month, t])
 
   useEffect(() => { fetchEvents() }, [fetchEvents])
 
@@ -169,14 +171,14 @@ export default function CalendarPage() {
   }), [weekStart])
 
   const headerTitle = useMemo(() => {
-    if (view === 'month') return `${MONTH_NAMES[month]} ${year}`
+    if (view === 'month') return `${t(MONTH_NAMES[month])} ${year}`
     if (view === 'week') {
       const end = new Date(weekStart); end.setDate(end.getDate() + 6)
-      const fmt = (d: Date) => `${d.getDate()} ${MONTH_NAMES[d.getMonth()].slice(0, 3)}`
+      const fmt = (d: Date) => `${d.getDate()} ${t(MONTH_NAMES[d.getMonth()]).slice(0, 3)}`
       return `${fmt(weekStart)} - ${fmt(end)} ${end.getFullYear()}`
     }
-    return `${DAY_NAMES_FULL[(currentDate.getDay() + 6) % 7]}, ${currentDate.getDate()} ${MONTH_NAMES[currentDate.getMonth()]} ${year}`
-  }, [view, month, year, weekStart, currentDate])
+    return `${t(DAY_NAMES_FULL[(currentDate.getDay() + 6) % 7])}, ${currentDate.getDate()} ${t(MONTH_NAMES[currentDate.getMonth()])} ${year}`
+  }, [view, month, year, weekStart, currentDate, t])
 
   // ─── Calendar grid (mobile) ───
   const calendarDays = useMemo(() => {
@@ -265,10 +267,10 @@ export default function CalendarPage() {
 
   const dayPanelLabel = useMemo(() => {
     const d = dayPanelDate
-    if (isToday(d)) return 'Hoy'
+    if (isToday(d)) return t('Hoy')
     const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
-    return `${days[d.getDay()]}, ${d.getDate()} de ${MONTH_NAMES[d.getMonth()]}`
-  }, [dayPanelDate])
+    return `${t(days[d.getDay()])}, ${d.getDate()} ${t(MONTH_NAMES[d.getMonth()])}`
+  }, [dayPanelDate, t])
 
   // ─── LEGEND ───
   const Legend = () => (
@@ -280,11 +282,11 @@ export default function CalendarPage() {
         { label: 'Expo', labelFull: 'Exposición', color: '#f39c12' },
         { label: 'Salud', color: '#27ae60' },
         { label: 'Otro', color: '#95a5a6' },
-      ].map(t => (
-        <div key={t.label} className="flex items-center gap-1 lg:gap-1.5 text-[10px] lg:text-xs text-muted">
-          <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full" style={{ backgroundColor: t.color }} />
-          <span className="hidden lg:inline">{'labelFull' in t ? t.labelFull : t.label}</span>
-          <span className="lg:hidden">{t.label}</span>
+      ].map(leg => (
+        <div key={leg.label} className="flex items-center gap-1 lg:gap-1.5 text-[10px] lg:text-xs text-muted">
+          <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full" style={{ backgroundColor: leg.color }} />
+          <span className="hidden lg:inline">{'labelFull' in leg && leg.labelFull ? t(leg.labelFull) : t(leg.label)}</span>
+          <span className="lg:hidden">{t(leg.label)}</span>
         </div>
       ))}
     </div>
@@ -304,11 +306,11 @@ export default function CalendarPage() {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1">
             <button onClick={() => goToMonth(-1)} className="text-body hover:text-ink transition p-1.5"><ChevronLeft className="w-5 h-5" /></button>
-            <h2 className="text-base font-bold min-w-[160px] text-center">{MONTH_NAMES[month]} {year}</h2>
+            <h2 className="text-base font-bold min-w-[160px] text-center">{t(MONTH_NAMES[month])} {year}</h2>
             <button onClick={() => goToMonth(1)} className="text-body hover:text-ink transition p-1.5"><ChevronRight className="w-5 h-5" /></button>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={goToday} className="text-[11px] text-body hover:text-ink border border-hairline bg-canvas rounded-lg px-2.5 py-1.5 transition">Hoy</button>
+            <button onClick={goToday} className="text-[11px] text-body hover:text-ink border border-hairline bg-canvas rounded-lg px-2.5 py-1.5 transition">{t('Hoy')}</button>
             <button onClick={() => handleNewEvent()} className="bg-ink text-on-primary hover:opacity-90 p-2 rounded-full transition">
               <Plus className="w-4 h-4" />
             </button>
@@ -319,8 +321,8 @@ export default function CalendarPage() {
         <div className="flex-1 flex flex-col min-h-0">
           {/* Day initials */}
           <div className="grid grid-cols-7">
-            {DAY_NAMES_SHORT.map(d => (
-              <div key={d} className="text-center text-[11px] font-semibold text-muted py-1">{d}</div>
+            {DAY_NAMES_SHORT.map((d, i) => (
+              <div key={i} className="text-center text-[11px] font-semibold text-muted py-1">{t(d)}</div>
             ))}
           </div>
 
@@ -382,7 +384,7 @@ export default function CalendarPage() {
           {/* Panel events */}
           <div className="flex-1 overflow-y-auto p-4">
             {dayPanelEvents.length === 0 ? (
-              <p className="text-center text-muted text-sm py-8">Sin eventos este día</p>
+              <p className="text-center text-muted text-sm py-8">{t('Sin eventos este día')}</p>
             ) : (
               <div className="space-y-2">
                 {dayPanelEvents.map(ev => (
@@ -396,7 +398,7 @@ export default function CalendarPage() {
                       <p className={`text-sm font-medium ${ev.is_completed ? 'line-through text-muted' : ''}`}>{ev.title}</p>
                       <span className="text-[11px] text-muted flex items-center gap-1 mt-1">
                         <Clock className="w-3 h-3" />
-                        {ev.all_day ? 'Todo el día' : (
+                        {ev.all_day ? t('Todo el día') : (
                           <>
                             {new Date(ev.start_date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                             {ev.end_date && ` - ${new Date(ev.end_date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`}
@@ -431,18 +433,18 @@ export default function CalendarPage() {
             <button onClick={() => navigate(-1)} className="text-body hover:text-ink transition p-2"><ChevronLeft className="w-5 h-5" /></button>
             <h2 className="text-lg font-semibold min-w-[240px] text-center">{headerTitle}</h2>
             <button onClick={() => navigate(1)} className="text-body hover:text-ink transition p-2"><ChevronRight className="w-5 h-5" /></button>
-            <button onClick={goToday} className="text-xs text-muted hover:text-ink border border-hairline bg-canvas rounded-lg px-2.5 py-1.5 ml-2 transition">Hoy</button>
+            <button onClick={goToday} className="text-xs text-muted hover:text-ink border border-hairline bg-canvas rounded-lg px-2.5 py-1.5 ml-2 transition">{t('Hoy')}</button>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex border border-hairline bg-canvas rounded-lg overflow-hidden">
               {(['month', 'week', 'day'] as ViewMode[]).map(v => (
                 <button key={v} onClick={() => setView(v)} className={`px-4 py-1.5 text-xs font-medium transition ${view === v ? 'bg-ink text-on-primary' : 'text-body hover:text-ink hover:bg-surface-soft'}`}>
-                  {v === 'month' ? 'Mes' : v === 'week' ? 'Semana' : 'Día'}
+                  {v === 'month' ? t('Mes') : v === 'week' ? t('Semana') : t('Día')}
                 </button>
               ))}
             </div>
             <button onClick={() => handleNewEvent()} className="bg-ink text-on-primary hover:opacity-90 px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
-              <Plus className="w-3.5 h-3.5" /> Evento
+              <Plus className="w-3.5 h-3.5" /> {t('Evento')}
             </button>
           </div>
         </div>
@@ -451,8 +453,8 @@ export default function CalendarPage() {
         {view === 'month' && (
           <div className="border border-hairline bg-canvas rounded-xl overflow-hidden">
             <div className="grid grid-cols-7">
-              {DAY_NAMES.map(d => (
-                <div key={d} className="py-3 text-center text-xs font-semibold text-muted border-b border-hairline">{d}</div>
+              {DAY_NAMES.map((d, i) => (
+                <div key={i} className="py-3 text-center text-xs font-semibold text-muted border-b border-hairline">{t(d)}</div>
               ))}
             </div>
             <div className="grid grid-cols-7">
@@ -468,7 +470,7 @@ export default function CalendarPage() {
                     <span className={`inline-flex w-7 h-7 items-center justify-center rounded-full text-xs font-semibold ${isToday(new Date(year, month, day)) ? 'bg-ink text-on-primary' : 'text-body'}`}>{day}</span>
                     <div className="mt-1 space-y-1">
                       {dayEvents.slice(0, 4).map(ev => <EventDot key={ev.id} ev={ev} compact />)}
-                      {dayEvents.length > 4 && <span className="text-[10px] text-muted pl-1">+{dayEvents.length - 4} más</span>}
+                      {dayEvents.length > 4 && <span className="text-[10px] text-muted pl-1">+{dayEvents.length - 4} {t('más')}</span>}
                     </div>
                   </div>
                 )
@@ -484,7 +486,7 @@ export default function CalendarPage() {
               <div className="border-b border-r border-hairline py-3" />
               {weekDays.map((d, i) => (
                 <div key={i} className={`py-3 text-center border-b border-hairline cursor-pointer ${isToday(d) ? 'bg-surface-card' : ''}`} onClick={() => { setCurrentDate(d); setView('day') }}>
-                  <p className="text-[10px] text-muted uppercase">{DAY_NAMES[i]}</p>
+                  <p className="text-[10px] text-muted uppercase">{t(DAY_NAMES[i])}</p>
                   <p className={`text-sm font-bold ${isToday(d) ? 'text-ink' : 'text-ink'}`}>{d.getDate()}</p>
                 </div>
               ))}
@@ -529,7 +531,7 @@ export default function CalendarPage() {
                 if (allDayEvs.length === 0) return null
                 return (
                   <div className="px-4 py-2 border-b border-hairline bg-canvas">
-                    <p className="text-[10px] text-muted mb-1">TODO EL DIA</p>
+                    <p className="text-[10px] text-muted mb-1">{t('TODO EL DIA')}</p>
                     <div className="space-y-1">{allDayEvs.map(ev => <EventDot key={ev.id} ev={ev} />)}</div>
                   </div>
                 )

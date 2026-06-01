@@ -563,6 +563,11 @@ import { contentTranslations3 } from './i18n-content3'
 import { content4Dogs } from './i18n-content4-dogs'
 import { content4Pages } from './i18n-content4-pages'
 import { content4Account } from './i18n-content4-account'
+import { content4Kennel } from './i18n-content4-kennel'
+import { content4KennelPages } from './i18n-content4-kennelpages'
+import { content4Reservas } from './i18n-content4-reservas'
+import { content4Repro } from './i18n-content4-repro'
+import { content4Crm } from './i18n-content4-crm'
 
 export function getTranslator(lang: string) {
   const dict = translations[lang] || {}
@@ -572,12 +577,18 @@ export function getTranslator(lang: string) {
   const c4dogs = content4Dogs[lang] || {}
   const c4pages = content4Pages[lang] || {}
   const c4account = content4Account[lang] || {}
+  const c4kennel = content4Kennel[lang] || {}
+  const c4kennelpages = content4KennelPages[lang] || {}
+  const c4reservas = content4Reservas[lang] || {}
+  const c4repro = content4Repro[lang] || {}
+  const c4crm = content4Crm[lang] || {}
   return function t(key: string): string {
     if (lang === 'es') return key // Spanish is default
     // Cascada: base → content (Fase 1) → content2 (Fase 2-3) → content3 (Fase 3b emails)
     //          → content4 (Fase 4 dashboard: dogs/pages/account). Fallback a la clave española.
     return dict[key] || content[key] || content2[key] || content3[key]
-      || c4dogs[key] || c4pages[key] || c4account[key] || key
+      || c4dogs[key] || c4pages[key] || c4account[key]
+      || c4kennel[key] || c4kennelpages[key] || c4reservas[key] || c4repro[key] || c4crm[key] || key
   }
 }
 

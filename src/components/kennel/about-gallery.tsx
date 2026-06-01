@@ -14,6 +14,8 @@
 import Link from 'next/link'
 import { ArrowRight, ImageIcon } from 'lucide-react'
 import { transformImageUrl, ImagePresets } from '@/lib/storage/image-url'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 type Photo = {
   id: string
@@ -22,13 +24,14 @@ type Photo = {
   kind: 'gallery' | 'facilities'
 }
 
-export default function AboutGallery({
+export default async function AboutGallery({
   photos, kennelName, kennelSlug,
 }: {
   photos: Photo[]
   kennelName: string
   kennelSlug: string
 }) {
+  const t = getTranslator(await getLocale())
   if (photos.length < 2) return null
 
   // Tomamos 4 ó 6 según haya — números pares para que el grid quede
@@ -55,10 +58,10 @@ export default function AboutGallery({
       <div className="mb-6 sm:mb-8 flex items-end justify-between gap-3 flex-wrap">
         <div>
           <p className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#FE6620]">
-            Conoce el lugar
+            {t('Conoce el lugar')}
           </p>
           <h2 className="mt-1.5 text-[22px] sm:text-[28px] font-semibold tracking-[-0.03em] text-ink leading-[1.15]">
-            Donde vive {kennelName}
+            {t('Donde vive')} {kennelName}
           </h2>
         </div>
         <div className="flex items-center gap-3">
@@ -67,7 +70,7 @@ export default function AboutGallery({
               href={`/kennels/${kennelSlug}/instalaciones`}
               className="text-[12.5px] font-semibold text-body hover:text-ink inline-flex items-center gap-1 transition"
             >
-              Instalaciones <ArrowRight className="h-3.5 w-3.5" />
+              {t('Instalaciones')} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           )}
           {hasGallery && (
@@ -75,7 +78,7 @@ export default function AboutGallery({
               href={`/kennels/${kennelSlug}/galeria`}
               className="text-[12.5px] font-semibold text-body hover:text-ink inline-flex items-center gap-1 transition"
             >
-              Galería <ArrowRight className="h-3.5 w-3.5" />
+              {t('Galería')} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           )}
         </div>
@@ -101,7 +104,7 @@ export default function AboutGallery({
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={transformImageUrl(p.url, ImagePresets.galleryTile) || p.url}
-                  alt={p.caption || `${kennelName} — foto`}
+                  alt={p.caption || `${kennelName} — ${t('foto')}`}
                   loading="lazy"
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                 />
@@ -112,7 +115,7 @@ export default function AboutGallery({
               )}
               {/* Etiqueta de tipo en esquina */}
               <span className="absolute top-2 left-2 inline-flex items-center rounded-full bg-canvas/95 backdrop-blur-sm px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-ink shadow-sm">
-                {p.kind === 'facilities' ? 'Instalaciones' : 'Galería'}
+                {p.kind === 'facilities' ? t('Instalaciones') : t('Galería')}
               </span>
               {/* Caption opcional, solo si es ancha y tiene texto */}
               {p.caption && (isWide || isTall) && (

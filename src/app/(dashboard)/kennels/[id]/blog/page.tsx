@@ -7,6 +7,8 @@ import { pageNotYetPublicMessage } from '@/lib/kennel/pro-page-loader'
 import { ProPageShell, OwnerDraftBanner, EmptyContentState } from '@/components/kennel/pro-page-shell'
 import { BookOpen } from 'lucide-react'
 import type { Metadata } from 'next'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,6 +38,7 @@ export async function generateMetadata(
 
 export default async function KennelBlogPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -77,30 +80,30 @@ export default async function KennelBlogPage({ params }: { params: Promise<{ id:
 
   return (
     <ProPageShell
-      eyebrow="Notas y noticias"
-      title="Desde el criadero"
-      description="Camadas anunciadas, lecciones aprendidas, novedades y todo lo que merece la pena contar."
+      eyebrow={t('Notas y noticias')}
+      title={t('Desde el criadero')}
+      description={t('Camadas anunciadas, lecciones aprendidas, novedades y todo lo que merece la pena contar.')}
     >
       {isOwner && (!enabled || !hasContent) && (
         <OwnerDraftBanner
           message={!enabled
-            ? 'Activa la página "Blog" desde Mi criadero para que sea pública.'
+            ? t('Activa la página "Blog" desde Mi criadero para que sea pública.')
             : pageNotYetPublicMessage('blog')}
           ctaHref="/kennel/contenido/blog"
-          ctaLabel="Crear post"
+          ctaLabel={t('Crear post')}
         />
       )}
 
       {list.length === 0 ? (
         isOwner ? (
           <EmptyContentState
-            title="Aún no hay posts publicados"
-            description="Publica al menos 1 post para que esta sección se haga pública."
+            title={t('Aún no hay posts publicados')}
+            description={t('Publica al menos 1 post para que esta sección se haga pública.')}
           />
         ) : (
           <EmptyContentState
-            title="Próximamente"
-            description={`${kennel.name} publicará posts en breve.`}
+            title={t('Próximamente')}
+            description={`${kennel.name} ${t('publicará posts en breve.')}`}
           />
         )
       ) : (
@@ -138,7 +141,7 @@ export default async function KennelBlogPage({ params }: { params: Promise<{ id:
                     {post.reading_time_minutes && (
                       <>
                         <span>·</span>
-                        <span>{post.reading_time_minutes} min lectura</span>
+                        <span>{post.reading_time_minutes} {t('min lectura')}</span>
                       </>
                     )}
                   </div>

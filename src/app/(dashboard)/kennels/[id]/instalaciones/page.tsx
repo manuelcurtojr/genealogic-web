@@ -6,6 +6,8 @@ import { pageNotYetPublicMessage } from '@/lib/kennel/pro-page-loader'
 import { ProPageShell, OwnerDraftBanner, EmptyContentState } from '@/components/kennel/pro-page-shell'
 import KennelPhotosGallery from '@/components/kennel/photos-gallery'
 import type { Metadata } from 'next'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,6 +37,7 @@ export async function generateMetadata(
 
 export default async function KennelInstalacionesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -76,31 +79,31 @@ export default async function KennelInstalacionesPage({ params }: { params: Prom
 
   return (
     <ProPageShell
-      eyebrow="Dónde viven"
-      title="Instalaciones"
-      description="Un vistazo a dónde viven, juegan y crecen nuestros perros."
+      eyebrow={t('Dónde viven')}
+      title={t('Instalaciones')}
+      description={t('Un vistazo a dónde viven, juegan y crecen nuestros perros.')}
       fullWidth
     >
       {isOwner && (!enabled || !hasEnough) && (
         <OwnerDraftBanner
           message={!enabled
-            ? 'Activa la página "Instalaciones" desde Mi criadero para que sea pública.'
+            ? t('Activa la página "Instalaciones" desde Mi criadero para que sea pública.')
             : pageNotYetPublicMessage('instalaciones')}
           ctaHref="/kennel/contenido/instalaciones"
-          ctaLabel="Subir fotos"
+          ctaLabel={t('Subir fotos')}
         />
       )}
 
       {list.length === 0 ? (
         isOwner ? (
           <EmptyContentState
-            title="Aún no has subido fotos"
-            description="Sube al menos 3 fotos de tus instalaciones para que esta página se haga pública."
+            title={t('Aún no has subido fotos')}
+            description={t('Sube al menos 3 fotos de tus instalaciones para que esta página se haga pública.')}
           />
         ) : (
           <EmptyContentState
-            title="Próximamente"
-            description={`${kennel.name} subirá fotos de sus instalaciones en breve.`}
+            title={t('Próximamente')}
+            description={`${kennel.name} ${t('subirá fotos de sus instalaciones en breve.')}`}
           />
         )
       ) : (

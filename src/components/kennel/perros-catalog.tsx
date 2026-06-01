@@ -15,6 +15,7 @@ import Link from 'next/link'
 import { Search, Filter, X, Tag, ChevronDown, Dog, Heart, Baby } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
+import { useT } from '@/components/i18n/locale-provider'
 
 type DogRow = {
   id: string
@@ -68,6 +69,7 @@ interface Props {
 export default function PerrosCatalog({
   kennelName, kennelId, contactConfig, reproductores, forSale, litters, criados, currencySymbol, dogsToGenealogic,
 }: Props) {
+  const t = useT()
   // Siempre arrancamos en Reproductores: es el escaparate del criadero (su
   // línea de cría), el contenido más fuerte y el que mejor vende. Aunque
   // En venta / Camadas estén vacíos, el visitante entra viendo lo bueno.
@@ -161,7 +163,7 @@ export default function PerrosCatalog({
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder={`Buscar en ${kennelName}…`}
+            placeholder={`${t('Buscar en')} ${kennelName}…`}
             className="w-full rounded-lg border border-hairline bg-canvas py-2.5 pl-10 pr-4 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
           />
         </div>
@@ -193,7 +195,7 @@ export default function PerrosCatalog({
                 onChange={e => setBreedFilter(e.target.value)}
                 className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 pr-9 text-[13px] text-body focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none"
               >
-                <option value="">Todas las razas</option>
+                <option value="">{t('Todas las razas')}</option>
                 {breeds.map(b => <option key={b} value={b}>{b}</option>)}
               </select>
               <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
@@ -205,9 +207,9 @@ export default function PerrosCatalog({
               onChange={e => setSexFilter(e.target.value)}
               className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 pr-9 text-[13px] text-body focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none"
             >
-              <option value="">Ambos sexos</option>
-              <option value="male">Macho</option>
-              <option value="female">Hembra</option>
+              <option value="">{t('Ambos sexos')}</option>
+              <option value="male">{t('Macho')}</option>
+              <option value="female">{t('Hembra')}</option>
             </select>
             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
           </div>
@@ -217,7 +219,7 @@ export default function PerrosCatalog({
               onClick={() => { setQuery(''); setBreedFilter(''); setSexFilter('') }}
               className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-[12.5px] font-medium text-body hover:border-ink/30 hover:text-ink transition"
             >
-              <X className="h-3.5 w-3.5" /> Limpiar
+              <X className="h-3.5 w-3.5" /> {t('Limpiar')}
             </button>
           )}
         </div>
@@ -249,7 +251,7 @@ export default function PerrosCatalog({
               }`}
             >
               <Icon className="h-4 w-4" style={isActive ? { color: iconColor } : undefined} />
-              <span>{label}</span>
+              <span>{t(label)}</span>
               {/* El badge de número se oculta cuando es 0 — un tab que grita
                   "0" transmite el mismo mensaje negativo que queríamos quitar.
                   Con contenido (o filtrado >0) sí se muestra el contador. */}
@@ -276,17 +278,17 @@ export default function PerrosCatalog({
           divisor de las tabs — el space-y del padre no basta porque su
           selector descendiente gana al margin y el border-b queda pegado. */}
       <div className="pt-5 sm:pt-6">
-        {tab === 'reproductores' && <DogGrid dogs={filteredReproductores} emptyLabel={hasActiveFilters ? 'No hay reproductores que coincidan con los filtros.' : 'Sin reproductores publicados.'} dogsToGenealogic={dogsToGenealogic} />}
+        {tab === 'reproductores' && <DogGrid dogs={filteredReproductores} emptyLabel={hasActiveFilters ? t('No hay reproductores que coincidan con los filtros.') : t('Sin reproductores publicados.')} dogsToGenealogic={dogsToGenealogic} />}
         {tab === 'venta' && (
           filteredVenta.length === 0 && !hasActiveFilters
             ? <ContactEmptyState
                 kennelId={kennelId}
                 kennelName={kennelName}
                 contactConfig={contactConfig}
-                title="Ahora mismo no hay cachorros disponibles"
-                body="Trabajamos por lista de espera. Pide información y te avisamos en cuanto haya una camada que encaje contigo."
+                title={t('Ahora mismo no hay cachorros disponibles')}
+                body={t('Trabajamos por lista de espera. Pide información y te avisamos en cuanto haya una camada que encaje contigo.')}
               />
-            : <DogGrid dogs={filteredVenta} forSale currencySymbol={currencySymbol} emptyLabel="No hay perros en venta que coincidan." dogsToGenealogic={dogsToGenealogic} />
+            : <DogGrid dogs={filteredVenta} forSale currencySymbol={currencySymbol} emptyLabel={t('No hay perros en venta que coincidan.')} dogsToGenealogic={dogsToGenealogic} />
         )}
         {tab === 'camadas' && (
           filteredCamadas.length === 0 && !hasActiveFilters
@@ -294,12 +296,12 @@ export default function PerrosCatalog({
                 kennelId={kennelId}
                 kennelName={kennelName}
                 contactConfig={contactConfig}
-                title="No hay camadas publicadas ahora mismo"
-                body="Planificamos las camadas con cuidado. Pide información y te contamos qué tenemos previsto."
+                title={t('No hay camadas publicadas ahora mismo')}
+                body={t('Planificamos las camadas con cuidado. Pide información y te contamos qué tenemos previsto.')}
               />
-            : <LitterGrid litters={filteredCamadas} emptyLabel="No hay camadas que coincidan." />
+            : <LitterGrid litters={filteredCamadas} emptyLabel={t('No hay camadas que coincidan.')} />
         )}
-        {tab === 'criados'       && <DogGrid dogs={filteredCriados} emptyLabel={hasActiveFilters ? 'No hay perros que coincidan.' : `${kennelName} aún no tiene perros criados publicados.`} dogsToGenealogic={dogsToGenealogic} />}
+        {tab === 'criados'       && <DogGrid dogs={filteredCriados} emptyLabel={hasActiveFilters ? t('No hay perros que coincidan.') : `${kennelName} ${t('aún no tiene perros criados publicados.')}`} dogsToGenealogic={dogsToGenealogic} />}
       </div>
     </div>
   )
@@ -364,6 +366,7 @@ function DogGrid({ dogs, emptyLabel, forSale, currencySymbol, dogsToGenealogic }
 }
 
 function LitterGrid({ litters, emptyLabel }: { litters: LitterRow[]; emptyLabel: string }) {
+  const t = useT()
   if (litters.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
@@ -385,7 +388,7 @@ function LitterGrid({ litters, emptyLabel }: { litters: LitterRow[]; emptyLabel:
         const father = litter.father
         const mother = litter.mother
         const breedName = litter.breed?.name
-        const title = father && mother ? `${father.name} × ${mother.name}` : father?.name || mother?.name || 'Camada'
+        const title = father && mother ? `${father.name} × ${mother.name}` : father?.name || mother?.name || t('Camada')
         const cfg = statusCfg[litter.status] || statusCfg.planned
         return (
           <Link
@@ -415,7 +418,7 @@ function LitterGrid({ litters, emptyLabel }: { litters: LitterRow[]; emptyLabel:
               {breedName && <p className="mt-0.5 text-[11px] text-muted">{breedName}</p>}
               <div className="mt-2 flex items-center gap-2">
                 <span className="inline-block rounded-full px-2 py-0.5 text-[10.5px] font-medium text-white" style={{ backgroundColor: cfg.color }}>
-                  {cfg.label}
+                  {t(cfg.label)}
                 </span>
                 {litter.birth_date && (
                   <span className="text-[11px] text-muted">
@@ -432,6 +435,7 @@ function LitterGrid({ litters, emptyLabel }: { litters: LitterRow[]; emptyLabel:
 }
 
 function SaleDogCard({ dog, currencySymbol, dogsToGenealogic }: { dog: DogRow; currencySymbol: Record<string, string>; dogsToGenealogic?: boolean }) {
+  const t = useT()
   const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
   const symbol = currencySymbol[dog.sale_currency || 'EUR'] || '€'
   return (
@@ -442,7 +446,7 @@ function SaleDogCard({ dog, currencySymbol, dogsToGenealogic }: { dog: DogRow; c
       className="group relative overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft"
     >
       <span className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-full bg-[#f59e0b] px-2 py-0.5 text-[10.5px] font-medium text-white shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
-        <Tag className="h-2.5 w-2.5" /> En venta
+        <Tag className="h-2.5 w-2.5" /> {t('En venta')}
       </span>
       <div className="relative aspect-square overflow-hidden bg-surface-card">
         {dog.thumbnail_url
@@ -465,7 +469,7 @@ function SaleDogCard({ dog, currencySymbol, dogsToGenealogic }: { dog: DogRow; c
               {Number(dog.sale_price).toLocaleString('es-ES')} {symbol}
             </p>
           ) : (
-            <p className="text-[12px] text-muted">Consultar precio</p>
+            <p className="text-[12px] text-muted">{t('Consultar precio')}</p>
           )}
           {dog.sale_location && <p className="truncate text-[10.5px] text-muted">{dog.sale_location}</p>}
         </div>

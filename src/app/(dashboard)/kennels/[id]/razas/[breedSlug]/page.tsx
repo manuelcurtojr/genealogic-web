@@ -30,6 +30,8 @@ import {
   isReproductiveBreedOfKennel,
   pickKennelHeroPhotoForBreed,
 } from '@/lib/kennel/breeds'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 600
@@ -127,6 +129,7 @@ export default async function KennelBreedPromoPage(
   { params }: { params: Promise<{ id: string; breedSlug: string }> },
 ) {
   const { id, breedSlug } = await params
+  const t = getTranslator(await getLocale())
   const data = await loadData(id, breedSlug)
   if (!data) notFound()
   const { kennel, breed, heroUrl, heroFromKennel, kennelPhoto, colors } = data
@@ -161,7 +164,7 @@ export default async function KennelBreedPromoPage(
           </Link>
           <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.22em] text-white/85 mb-4 flex items-center gap-3">
             <span className="inline-block h-px w-8 bg-white/70" />
-            La raza que criamos
+            {t('La raza que criamos')}
           </p>
           <h1
             className="font-bold text-white tracking-[-0.035em] leading-[0.95] drop-shadow-[0_2px_30px_rgba(0,0,0,0.5)] max-w-4xl"
@@ -176,7 +179,7 @@ export default async function KennelBreedPromoPage(
           )}
           {heroFromKennel && kennelPhoto && (
             <p className="mt-6 text-[11px] sm:text-[12px] text-white/65 italic">
-              En la foto: <span className="text-white/80">{kennelPhoto.dogName}</span>, criado en {kennel.name}
+              {t('En la foto:')} <span className="text-white/80">{kennelPhoto.dogName}</span>, {t('criado en')} {kennel.name}
             </p>
           )}
         </div>
@@ -187,7 +190,7 @@ export default async function KennelBreedPromoPage(
         <section className="border-b border-hairline">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
             <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted mb-5">
-              Colores admitidos en el estándar
+              {t('Colores admitidos en el estándar')}
             </h2>
             <div className="flex flex-wrap gap-x-6 gap-y-4 sm:gap-x-8 sm:gap-y-6">
               {colors.slice(0, 10).map((c) => (
@@ -207,7 +210,7 @@ export default async function KennelBreedPromoPage(
                   <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 border-dashed border-muted/40 flex items-center justify-center text-[12px] font-semibold text-muted">
                     +{colors.length - 10}
                   </div>
-                  <span className="text-[11px] text-muted">más</span>
+                  <span className="text-[11px] text-muted">{t('más')}</span>
                 </div>
               )}
             </div>
@@ -233,10 +236,10 @@ export default async function KennelBreedPromoPage(
         >
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
             <h2 className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.18em] text-muted mb-3">
-              Por qué nos gusta esta raza
+              {t('Por qué nos gusta esta raza')}
             </h2>
             <p className="max-w-2xl text-[22px] sm:text-[26px] font-semibold text-ink tracking-[-0.02em] leading-[1.2] mb-10">
-              Lo que la distingue, en {promo.virtues.length} puntos.
+              {t('Lo que la distingue, en')} {promo.virtues.length} {t('puntos.')}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
               {promo.virtues.map((v, i) => (
@@ -259,16 +262,16 @@ export default async function KennelBreedPromoPage(
         <section>
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-14 sm:py-20 space-y-12">
             {promo.temperament && (
-              <LongBlock label="Temperamento" body={promo.temperament} />
+              <LongBlock label={t('Temperamento')} body={promo.temperament} />
             )}
             {promo.ideal_for && (
-              <LongBlock label="¿Para quién es esta raza?" body={promo.ideal_for} />
+              <LongBlock label={t('¿Para quién es esta raza?')} body={promo.ideal_for} />
             )}
             {promo.daily_life && (
-              <LongBlock label="Cómo es vivir con uno" body={promo.daily_life} />
+              <LongBlock label={t('Cómo es vivir con uno')} body={promo.daily_life} />
             )}
             {promo.considerations && (
-              <LongBlock label="Lo que conviene saber" body={promo.considerations} />
+              <LongBlock label={t('Lo que conviene saber')} body={promo.considerations} />
             )}
           </div>
         </section>
@@ -289,19 +292,19 @@ export default async function KennelBreedPromoPage(
               href={`/kennels/${kennel.slug || kennel.id}/perros`}
               className="inline-flex items-center gap-2 rounded-full bg-canvas text-ink px-6 py-3 text-[14px] font-semibold tracking-[-0.005em] hover:bg-canvas/90 transition-colors w-full sm:w-auto justify-center"
             >
-              Ver nuestros {breed.name}
+              {t('Ver nuestros')} {breed.name}
               <span aria-hidden>→</span>
             </Link>
             <Link
               href={`/razas/${breed.slug}`}
               className="inline-flex items-center gap-2 rounded-full border border-canvas/40 text-canvas px-6 py-3 text-[14px] font-semibold tracking-[-0.005em] hover:bg-canvas/10 hover:border-canvas/60 transition-colors w-full sm:w-auto justify-center"
             >
-              Ver estándar
+              {t('Ver estándar')}
               <span aria-hidden className="text-canvas/70">↗</span>
             </Link>
           </div>
           <p className="mt-5 text-[12px] text-canvas/60">
-            El estándar técnico completo de la raza en Genealogic
+            {t('El estándar técnico completo de la raza en Genealogic')}
           </p>
         </div>
       </section>

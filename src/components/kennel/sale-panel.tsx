@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Tag, MapPin, DollarSign, Dog } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   open: boolean
@@ -24,6 +25,7 @@ const CURRENCIES = [
 ]
 
 export default function SalePanel({ open, onClose, dog }: Props) {
+  const t = useT()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(false)
@@ -124,7 +126,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
           <div className="flex items-center gap-2">
             <Tag className="w-4 h-4 text-ink" />
-            <h2 className="text-base sm:text-lg font-semibold">Anuncio de venta</h2>
+            <h2 className="text-base sm:text-lg font-semibold">{t('Anuncio de venta')}</h2>
           </div>
           <button onClick={onClose} className="text-muted hover:text-ink transition"><X className="w-5 h-5" /></button>
         </div>
@@ -149,8 +151,8 @@ export default function SalePanel({ open, onClose, dog }: Props) {
             {/* Sale status */}
             <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-xl p-4">
               <div>
-                <p className="text-sm font-medium">{form.is_for_sale ? 'En venta' : 'No en venta'}</p>
-                <p className="text-[11px] text-muted">{form.is_for_sale ? 'El anuncio esta activo' : 'Activa el anuncio para vender'}</p>
+                <p className="text-sm font-medium">{form.is_for_sale ? t('En venta') : t('No en venta')}</p>
+                <p className="text-[11px] text-muted">{form.is_for_sale ? t('El anuncio esta activo') : t('Activa el anuncio para vender')}</p>
               </div>
               <ToggleSwitch value={form.is_for_sale} onChange={(v) => set('is_for_sale', v)} color="bg-green-500" />
             </div>
@@ -159,23 +161,23 @@ export default function SalePanel({ open, onClose, dog }: Props) {
               <>
                 {/* Price section */}
                 <div className="bg-surface-card border border-hairline rounded-xl p-4 space-y-3">
-                  <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wider">Precio</h3>
+                  <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wider">{t('Precio')}</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Divisa</label>
+                      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Divisa')}</label>
                       <select value={form.sale_currency} onChange={e => set('sale_currency', e.target.value)}
                         className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none transition appearance-none">
                         {CURRENCIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Precio total</label>
+                      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Precio total')}</label>
                       <input type="number" step="0.01" value={form.sale_price} onChange={e => set('sale_price', e.target.value)}
                         placeholder="0.00"
                         className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
                     </div>
                     <div>
-                      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Reserva</label>
+                      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Reserva')}</label>
                       <input type="number" step="0.01" value={form.sale_reservation_price} onChange={e => set('sale_reservation_price', e.target.value)}
                         placeholder="0.00"
                         className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
@@ -185,30 +187,30 @@ export default function SalePanel({ open, onClose, dog }: Props) {
 
                 {/* Location */}
                 <div className="bg-surface-card border border-hairline rounded-xl p-4 space-y-3">
-                  <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1"><MapPin className="w-3 h-3" /> Ubicacion</h3>
+                  <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1"><MapPin className="w-3 h-3" /> {t('Ubicacion')}</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Código postal</label>
+                      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Código postal')}</label>
                       <input type="text" value={form.sale_zipcode} onChange={e => set('sale_zipcode', e.target.value)}
                         onBlur={lookupZipcode}
                         placeholder="28001"
                         className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
                     </div>
                     <div>
-                      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Ciudad, Pais</label>
+                      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Ciudad, Pais')}</label>
                       <input type="text" value={form.sale_location} onChange={e => set('sale_location', e.target.value)}
                         placeholder="Madrid, Spain"
                         className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
                     </div>
                   </div>
-                  <p className="text-[10px] text-muted">Introduce el código postal para autocompletar la ubicacion</p>
+                  <p className="text-[10px] text-muted">{t('Introduce el código postal para autocompletar la ubicacion')}</p>
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Descripcion del anuncio</label>
+                  <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Descripcion del anuncio')}</label>
                   <textarea value={form.sale_description} onChange={e => set('sale_description', e.target.value)} rows={4}
-                    placeholder="Describe el caracter, morfologia, vacunas incluidas, por que es especial..."
+                    placeholder={t('Describe el caracter, morfologia, vacunas incluidas, por que es especial...')}
                     className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition resize-none" />
                 </div>
               </>
@@ -218,11 +220,11 @@ export default function SalePanel({ open, onClose, dog }: Props) {
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hairline flex-shrink-0">
-          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">{t('Cancelar')}</button>
           <button onClick={handleSave} disabled={saving || fetching}
             className="bg-ink text-on-primary hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            {saving ? 'Guardando...' : 'Guardar anuncio'}
+            {saving ? t('Guardando...') : t('Guardar anuncio')}
           </button>
         </div>
       </div>

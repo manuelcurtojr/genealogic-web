@@ -14,6 +14,8 @@ import { AddSectionButton } from '@/components/admin/web/add-section-button'
 import { PreviewFrame } from '@/components/admin/web/preview-frame'
 import { EditorShortcuts, UndoRedoButtons } from '@/components/admin/web/editor-shortcuts'
 import { EditorLayout } from '@/components/admin/web/editor-layout'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,6 +37,7 @@ export default async function PageEditorPage({
 }) {
   const { slug } = await params
   if (!PAGE_SLUGS.includes(slug as any)) notFound()
+  const t = getTranslator(await getLocale())
   const sp = await searchParams
   const selectedSectionId = sp.section ?? null
 
@@ -76,13 +79,13 @@ export default async function PageEditorPage({
       <header className="flex items-center justify-between gap-4 border-b border-hairline bg-canvas px-5 py-3">
         <div className="min-w-0 flex items-baseline gap-3">
           <Link href="/web" className="text-xs font-semibold uppercase tracking-wider text-muted hover:text-ink">
-            ← Páginas
+            ← {t('Páginas')}
           </Link>
           <h1 className="font-bold text-xl tracking-tight text-ink truncate">{pageTitle}</h1>
           <span className="text-xs font-mono text-muted hidden sm:inline">{publicHref}</span>
           {isDraft && (
             <span className="rounded-full bg-yellow-200/60 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-yellow-900 ring-1 ring-yellow-300/60">
-              Borrador
+              {t('Borrador')}
             </span>
           )}
         </div>
@@ -91,19 +94,19 @@ export default async function PageEditorPage({
           {page.enabled && (
             <Link href={publicHref} target="_blank"
               className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-body hover:border-ink/30 hover:text-ink">
-              Ver web pública
+              {t('Ver web pública')}
             </Link>
           )}
           {isDraft && (
             <>
               <form action={discardDraft.bind(null, slug)}>
                 <button type="submit" className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-body hover:border-ink/30 hover:text-ink">
-                  Descartar
+                  {t('Descartar')}
                 </button>
               </form>
               <form action={publishPage.bind(null, slug)}>
                 <button type="submit" className="rounded-lg bg-ink px-4 py-1.5 text-xs font-semibold text-on-primary hover:opacity-90">
-                  Publicar
+                  {t('Publicar')}
                 </button>
               </form>
             </>
@@ -129,20 +132,20 @@ export default async function PageEditorPage({
               <div className="flex h-full items-center justify-center p-6">
                 <div className="max-w-[260px] text-center">
                   <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-surface-card text-xl text-ink">✎</div>
-                  <p className="text-base font-bold text-ink">Selecciona una sección</p>
+                  <p className="text-base font-bold text-ink">{t('Selecciona una sección')}</p>
                   <p className="mt-2 text-xs text-muted">
-                    Pulsa una sección en la lista de la izquierda o directamente sobre ella en la vista previa.
+                    {t('Pulsa una sección en la lista de la izquierda o directamente sobre ella en la vista previa.')}
                   </p>
                   <div className="mt-6 rounded-xl border border-hairline bg-surface-card p-3 text-left">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Atajos</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t('Atajos')}</p>
                     <ul className="mt-2 space-y-1 text-[11px] text-body">
-                      <Shortcut keys={['Doble-click']} desc="Editar texto en línea" />
-                      <Shortcut keys={['D']} desc="Duplicar sección" />
-                      <Shortcut keys={['Supr']} desc="Eliminar sección" />
-                      <Shortcut keys={['Esc']} desc="Deseleccionar" />
-                      <Shortcut keys={['⌘', 'Z']} desc="Deshacer" />
-                      <Shortcut keys={['⌘', '⇧', 'Z']} desc="Rehacer" />
-                      <Shortcut keys={['⌘', 'S']} desc="Publicar" />
+                      <Shortcut keys={['Doble-click']} desc={t('Editar texto en línea')} />
+                      <Shortcut keys={['D']} desc={t('Duplicar sección')} />
+                      <Shortcut keys={['Supr']} desc={t('Eliminar sección')} />
+                      <Shortcut keys={['Esc']} desc={t('Deseleccionar')} />
+                      <Shortcut keys={['⌘', 'Z']} desc={t('Deshacer')} />
+                      <Shortcut keys={['⌘', '⇧', 'Z']} desc={t('Rehacer')} />
+                      <Shortcut keys={['⌘', 'S']} desc={t('Publicar')} />
                     </ul>
                   </div>
                 </div>
@@ -153,18 +156,18 @@ export default async function PageEditorPage({
               <div className="flex flex-col">
                 <div className="border-b border-hairline px-5 py-4">
                   <p className="text-[10px] font-mono uppercase tracking-wider text-muted">
-                    {selected.type}{!getSectionSchema(selected.type) && ' · sin form'}
+                    {selected.type}{!getSectionSchema(selected.type) && ` · ${t('sin form')}`}
                   </p>
                   <h2 className="mt-1 text-lg font-bold text-ink">{labelForType(selected.type)}</h2>
                   <div className="mt-3 flex items-center gap-2">
                     <form action={duplicateSection.bind(null, slug, selected.id)}>
                       <button type="submit" className="rounded-lg border border-hairline px-2.5 py-1 text-[11px] text-body hover:border-ink/30 hover:text-ink">
-                        Duplicar
+                        {t('Duplicar')}
                       </button>
                     </form>
                     <form action={removeSection.bind(null, slug, selected.id)}>
                       <button type="submit" className="rounded-lg border border-red-200 px-2.5 py-1 text-[11px] text-red-700 hover:bg-red-50">
-                        Eliminar
+                        {t('Eliminar')}
                       </button>
                     </form>
                   </div>

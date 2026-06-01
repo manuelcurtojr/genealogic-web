@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Store, Sparkles, Check, Loader2, AlertCircle, Crown, Eye } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 type PublicView = 'standard' | 'custom_web'
 
@@ -27,6 +28,7 @@ interface Props {
  * - Si todo OK → toggle funcional con optimistic update
  */
 export default function PublicViewToggle({ kennelId, kennelSlug, current, hasCustomWeb, isPro }: Props) {
+  const t = useT()
   const router = useRouter()
   const [value, setValue] = useState<PublicView>(current)
   const [saving, setSaving] = useState(false)
@@ -64,10 +66,10 @@ export default function PublicViewToggle({ kennelId, kennelSlug, current, hasCus
         <div>
           <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-ink flex items-center gap-2">
             <Eye className="h-4 w-4 text-muted" />
-            Vista pública por defecto
+            {t('Vista pública por defecto')}
           </h2>
           <p className="mt-1 text-[13px] text-body">
-            Cuando alguien entra a tu URL pública, ¿qué quieres que vea?
+            {t('Cuando alguien entra a tu URL pública, ¿qué quieres que vea?')}
           </p>
         </div>
         {saving && <Loader2 className="h-4 w-4 animate-spin text-muted" />}
@@ -89,15 +91,15 @@ export default function PublicViewToggle({ kennelId, kennelSlug, current, hasCus
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p className="text-[14px] font-semibold text-ink">Perfil estándar</p>
+                <p className="text-[14px] font-semibold text-ink">{t('Perfil estándar')}</p>
                 {value === 'standard' && (
                   <span className="inline-flex items-center gap-1 rounded bg-ink px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-on-primary">
-                    <Check className="h-2.5 w-2.5" /> Activo
+                    <Check className="h-2.5 w-2.5" /> {t('Activo')}
                   </span>
                 )}
               </div>
               <p className="mt-1 text-[12.5px] text-body">
-                Vista automática de Genealogic con tus perros, camadas y palmarés. Funciona desde el día 1, sin configurar.
+                {t('Vista automática de Genealogic con tus perros, camadas y palmarés. Funciona desde el día 1, sin configurar.')}
               </p>
               {kennelSlug && (
                 <p className="mt-2 text-[11px] text-muted">
@@ -126,10 +128,10 @@ export default function PublicViewToggle({ kennelId, kennelSlug, current, hasCus
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-[14px] font-semibold text-ink">Web personalizada</p>
+                <p className="text-[14px] font-semibold text-ink">{t('Web personalizada')}</p>
                 {value === 'custom_web' && (
                   <span className="inline-flex items-center gap-1 rounded bg-ink px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-on-primary">
-                    <Check className="h-2.5 w-2.5" /> Activo
+                    <Check className="h-2.5 w-2.5" /> {t('Activo')}
                   </span>
                 )}
                 {!isPro && (
@@ -139,11 +141,11 @@ export default function PublicViewToggle({ kennelId, kennelSlug, current, hasCus
                 )}
               </div>
               <p className="mt-1 text-[12.5px] text-body">
-                Tu URL pública lleva directo a tu web hecha con el builder. Tu marca, tu diseño, sin "powered by".
+                {t('Tu URL pública lleva directo a tu web hecha con el builder. Tu marca, tu diseño, sin "powered by".')}
               </p>
               {kennelSlug && hasCustomWeb && (
                 <p className="mt-2 text-[11px] text-muted">
-                  → redirige a genealogic.io/c/{kennelSlug}
+                  → {t('redirige a')} genealogic.io/c/{kennelSlug}
                 </p>
               )}
             </div>
@@ -156,9 +158,9 @@ export default function PublicViewToggle({ kennelId, kennelSlug, current, hasCus
         <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5">
           <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-600" />
           <p className="text-[12.5px] text-amber-900">
-            Aún no has publicado tu web personalizada.{' '}
+            {t('Aún no has publicado tu web personalizada.')}{' '}
             <Link href="/web" className="font-medium underline hover:text-amber-700">
-              Créala desde el editor →
+              {t('Créala desde el editor →')}
             </Link>
           </p>
         </div>
@@ -168,9 +170,9 @@ export default function PublicViewToggle({ kennelId, kennelSlug, current, hasCus
         <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 px-3.5 py-2.5">
           <Crown className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-purple-600" />
           <p className="text-[12.5px] text-purple-900">
-            Para hacer que tu URL pública lleve directo a tu web personalizada necesitas el plan Pro.{' '}
+            {t('Para hacer que tu URL pública lleve directo a tu web personalizada necesitas el plan Pro.')}{' '}
             <Link href="/cuenta/suscripcion" className="font-medium underline hover:text-purple-700">
-              Ver planes →
+              {t('Ver planes →')}
             </Link>
           </p>
         </div>

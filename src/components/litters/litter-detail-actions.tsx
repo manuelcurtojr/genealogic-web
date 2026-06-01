@@ -4,9 +4,11 @@ import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useT } from '@/components/i18n/locale-provider'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
 
 export default function LitterDetailActions({ litterId }: { litterId: string }) {
+  const t = useT()
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const router = useRouter()
@@ -30,9 +32,9 @@ export default function LitterDetailActions({ litterId }: { litterId: string }) 
         open={showDelete}
         onConfirm={handleDelete}
         onCancel={() => setShowDelete(false)}
-        title="Eliminar camada"
-        message="¿Estas seguro de que quieres eliminar esta camada? Esta accion no se puede deshacer."
-        confirmLabel="Eliminar"
+        title={t('Eliminar camada')}
+        message={t('¿Estas seguro de que quieres eliminar esta camada? Esta accion no se puede deshacer.')}
+        confirmLabel={t('Eliminar')}
         destructive
         loading={deleting}
       />

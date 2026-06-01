@@ -20,6 +20,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import { renderContractMarkdown } from '@/lib/contracts/markdown'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function ContractEditor({
   reservationId,
@@ -46,6 +47,7 @@ export default function ContractEditor({
     contractId: string,
   ) => Promise<{ ok: true } | { ok: false; error: string }>
 }) {
+  const t = useT()
   const [body, setBody] = useState(initialBody)
   const [title, setTitle] = useState(initialTitle)
   const [pending, startTransition] = useTransition()
@@ -76,7 +78,7 @@ export default function ContractEditor({
   }
 
   function send() {
-    if (!confirm('¿Enviar el contrato al cliente? Después de enviar no podrás editarlo (puedes cancelar y reescribir).')) return
+    if (!confirm(t('¿Enviar el contrato al cliente? Después de enviar no podrás editarlo (puedes cancelar y reescribir).'))) return
     setError(null)
     startTransition(async () => {
       // Save first
@@ -119,7 +121,7 @@ export default function ContractEditor({
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Título del contrato"
+        placeholder={t('Título del contrato')}
         className="w-full text-2xl font-bold tracking-tight text-ink bg-transparent border-0 border-b border-hairline focus:outline-none focus:border-ink/30 pb-2 mb-4"
       />
 
@@ -135,17 +137,17 @@ export default function ContractEditor({
           <Heading3 className="h-4 w-4" />
         </ToolbarBtn>
         <div className="w-px h-5 bg-hairline mx-1" />
-        <ToolbarBtn onClick={() => insertWrap('**')} title="Negrita (Cmd+B)">
+        <ToolbarBtn onClick={() => insertWrap('**')} title={t('Negrita (Cmd+B)')}>
           <Bold className="h-4 w-4" />
         </ToolbarBtn>
-        <ToolbarBtn onClick={() => insertWrap('*')} title="Cursiva">
+        <ToolbarBtn onClick={() => insertWrap('*')} title={t('Cursiva')}>
           <Italic className="h-4 w-4" />
         </ToolbarBtn>
         <div className="w-px h-5 bg-hairline mx-1" />
-        <ToolbarBtn onClick={() => insertLinePrefix('- ')} title="Lista">
+        <ToolbarBtn onClick={() => insertLinePrefix('- ')} title={t('Lista')}>
           <List className="h-4 w-4" />
         </ToolbarBtn>
-        <ToolbarBtn onClick={() => setBody(body + '\n\n---\n\n')} title="Separador">
+        <ToolbarBtn onClick={() => setBody(body + '\n\n---\n\n')} title={t('Separador')}>
           <Minus className="h-4 w-4" />
         </ToolbarBtn>
 
@@ -153,7 +155,7 @@ export default function ContractEditor({
           {savedAt && !pending && (
             <span className="text-[11px] text-emerald-700 inline-flex items-center gap-1">
               <CheckCircle2 className="h-3 w-3" />
-              Guardado {savedAt}
+              {t('Guardado')} {savedAt}
             </span>
           )}
           <button
@@ -163,7 +165,7 @@ export default function ContractEditor({
             className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-canvas px-3 py-1.5 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink disabled:opacity-50"
           >
             {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-            Guardar
+            {t('Guardar')}
           </button>
           {canSend && (
             <button
@@ -173,7 +175,7 @@ export default function ContractEditor({
               className="inline-flex items-center gap-1.5 rounded-md bg-ink text-on-primary px-3 py-1.5 text-xs font-semibold hover:opacity-90 disabled:opacity-50"
             >
               <Send className="h-3.5 w-3.5" />
-              Enviar al cliente
+              {t('Enviar al cliente')}
             </button>
           )}
         </div>
@@ -199,7 +201,7 @@ export default function ContractEditor({
         </div>
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">
-            Vista previa
+            {t('Vista previa')}
           </p>
           <div
             className="contract-preview h-[600px] overflow-y-auto rounded-lg border border-hairline bg-canvas p-6 text-sm text-ink"

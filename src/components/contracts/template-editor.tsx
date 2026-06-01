@@ -23,6 +23,7 @@ import {
   setDefaultContractTemplate,
 } from '@/lib/contracts/templates-actions'
 import { renderContractMarkdown } from '@/lib/contracts/markdown'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   templateId: string
@@ -39,6 +40,7 @@ const AUTOSAVE_MS = 1500
 export default function TemplateEditor({
   templateId, initialName, initialBodyMd, isDefault: initialIsDefault, kennelName,
 }: Props) {
+  const t = useT()
   const router = useRouter()
   const [name, setName] = useState(initialName)
   const [bodyMd, setBodyMd] = useState(initialBodyMd)
@@ -70,9 +72,9 @@ export default function TemplateEditor({
       setTimeout(() => setSaveState(s => (s === 'saved' ? 'idle' : s)), 2000)
     } catch (e) {
       setSaveState('error')
-      setError((e as Error).message || 'Error guardando')
+      setError((e as Error).message || t('Error guardando'))
     }
-  }, [templateId])
+  }, [templateId, t])
 
   // Autosave con debounce
   useEffect(() => {
@@ -103,17 +105,17 @@ export default function TemplateEditor({
       setIsDefault(true)
       router.refresh()
     } catch (e) {
-      alert((e as Error).message || 'Error marcando por defecto')
+      alert((e as Error).message || t('Error marcando por defecto'))
     }
   }
 
   async function handleDelete() {
-    if (!confirm('¿Borrar esta plantilla? No se podrá recuperar.')) return
+    if (!confirm(t('¿Borrar esta plantilla? No se podrá recuperar.'))) return
     try {
       await deleteContractTemplate(templateId)
       router.push('/contratos')
     } catch (e) {
-      alert((e as Error).message || 'Error borrando la plantilla')
+      alert((e as Error).message || t('Error borrando la plantilla'))
     }
   }
 
@@ -123,10 +125,10 @@ export default function TemplateEditor({
       <div className="flex items-end gap-3 flex-wrap">
         <div className="flex-1 min-w-0">
           <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#FE6620] mb-1.5 flex items-center gap-1.5">
-            <FileText className="h-3 w-3" /> Plantilla — {kennelName}
+            <FileText className="h-3 w-3" /> {t('Plantilla')} — {kennelName}
             {isDefault && (
               <span className="inline-flex items-center gap-1 rounded-full bg-[#FE6620] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
-                <Star className="h-2.5 w-2.5 fill-current" /> Por defecto
+                <Star className="h-2.5 w-2.5 fill-current" /> {t('Por defecto')}
               </span>
             )}
           </p>
@@ -134,7 +136,7 @@ export default function TemplateEditor({
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Nombre de la plantilla"
+            placeholder={t('Nombre de la plantilla')}
             className="w-full text-[24px] sm:text-[28px] font-semibold tracking-[-0.025em] text-ink bg-transparent border-0 outline-none focus:ring-0 placeholder:text-muted/50 leading-tight"
             maxLength={120}
           />
@@ -147,14 +149,14 @@ export default function TemplateEditor({
               onClick={handleSetDefault}
               className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[12.5px] font-semibold text-body hover:text-ink hover:bg-surface-soft transition"
             >
-              <Star className="h-3.5 w-3.5" /> Marcar por defecto
+              <Star className="h-3.5 w-3.5" /> {t('Marcar por defecto')}
             </button>
           )}
           <button
             type="button"
             onClick={handleDelete}
             className="inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted hover:text-rose-600 hover:bg-rose-50 transition"
-            aria-label="Borrar plantilla"
+            aria-label={t('Borrar plantilla')}
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -169,9 +171,9 @@ export default function TemplateEditor({
 
       {/* Tabs mobile */}
       <div className="md:hidden inline-flex rounded-lg bg-surface-soft p-1">
-        <TabBtn active={tab === 'edit'} onClick={() => setTab('edit')}>Editar</TabBtn>
+        <TabBtn active={tab === 'edit'} onClick={() => setTab('edit')}>{t('Editar')}</TabBtn>
         <TabBtn active={tab === 'preview'} onClick={() => setTab('preview')}>
-          <Eye className="h-3.5 w-3.5 inline mr-1" /> Vista previa
+          <Eye className="h-3.5 w-3.5 inline mr-1" /> {t('Vista previa')}
         </TabBtn>
       </div>
 
@@ -186,34 +188,32 @@ export default function TemplateEditor({
             value={bodyMd}
             onChange={(e) => setBodyMd(e.target.value)}
             spellCheck
-            placeholder="# Contrato de compraventa de cachorro&#10;&#10;Empieza a escribir aquí…"
+            placeholder={t('# Contrato de compraventa de cachorro\n\nEmpieza a escribir aquí…')}
             className="w-full min-h-[60vh] rounded-xl border border-hairline bg-canvas px-4 py-3.5 text-[13.5px] text-ink font-mono leading-[1.55] resize-y focus:outline-none focus:border-ink/30 transition-colors"
           />
           <details className="mt-2 group">
             <summary className="cursor-pointer text-[11px] text-muted hover:text-ink transition list-none inline-flex items-center gap-1">
-              <span>Variables disponibles ↓</span>
+              <span>{t('Variables disponibles ↓')}</span>
             </summary>
             <div className="mt-2 rounded-lg border border-hairline bg-surface-soft p-3 text-[11.5px] text-body leading-relaxed">
               <p className="mb-2 text-muted">
-                Escribe <code className="bg-canvas px-1 rounded">{'{{nombreVariable}}'}</code> donde
-                quieras que se inserten datos de la reserva al crear el contrato.
-                Si la variable no tiene valor, queda en blanco.
+                {t('Escribe')} <code className="bg-canvas px-1 rounded">{'{{nombreVariable}}'}</code> {t('donde quieras que se inserten datos de la reserva al crear el contrato. Si la variable no tiene valor, queda en blanco.')}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 font-mono text-[11px]">
-                <div><code className="text-[#FE6620]">{'{{kennelName}}'}</code> Nombre del criadero</div>
-                <div><code className="text-[#FE6620]">{'{{kennelAddress}}'}</code> Domicilio del criadero</div>
-                <div><code className="text-[#FE6620]">{'{{clientName}}'}</code> Nombre del cliente</div>
-                <div><code className="text-[#FE6620]">{'{{clientEmail}}'}</code> Email del cliente</div>
-                <div><code className="text-[#FE6620]">{'{{clientId}}'}</code> DNI/NIE del cliente</div>
-                <div><code className="text-[#FE6620]">{'{{clientAddress}}'}</code> Dirección del cliente</div>
-                <div><code className="text-[#FE6620]">{'{{dogName}}'}</code> Nombre del cachorro</div>
-                <div><code className="text-[#FE6620]">{'{{breed}}'}</code> Raza</div>
-                <div><code className="text-[#FE6620]">{'{{birthDate}}'}</code> Fecha de nacimiento</div>
-                <div><code className="text-[#FE6620]">{'{{microchip}}'}</code> Nº microchip</div>
-                <div><code className="text-[#FE6620]">{'{{registration}}'}</code> Inscripción / LOE</div>
-                <div><code className="text-[#FE6620]">{'{{totalPrice}}'}</code> Precio total</div>
-                <div><code className="text-[#FE6620]">{'{{depositAmount}}'}</code> Importe de la señal</div>
-                <div><code className="text-[#FE6620]">{'{{todayDate}}'}</code> Fecha actual</div>
+                <div><code className="text-[#FE6620]">{'{{kennelName}}'}</code> {t('Nombre del criadero')}</div>
+                <div><code className="text-[#FE6620]">{'{{kennelAddress}}'}</code> {t('Domicilio del criadero')}</div>
+                <div><code className="text-[#FE6620]">{'{{clientName}}'}</code> {t('Nombre del cliente')}</div>
+                <div><code className="text-[#FE6620]">{'{{clientEmail}}'}</code> {t('Email del cliente')}</div>
+                <div><code className="text-[#FE6620]">{'{{clientId}}'}</code> {t('DNI/NIE del cliente')}</div>
+                <div><code className="text-[#FE6620]">{'{{clientAddress}}'}</code> {t('Dirección del cliente')}</div>
+                <div><code className="text-[#FE6620]">{'{{dogName}}'}</code> {t('Nombre del cachorro')}</div>
+                <div><code className="text-[#FE6620]">{'{{breed}}'}</code> {t('Raza')}</div>
+                <div><code className="text-[#FE6620]">{'{{birthDate}}'}</code> {t('Fecha de nacimiento')}</div>
+                <div><code className="text-[#FE6620]">{'{{microchip}}'}</code> {t('Nº microchip')}</div>
+                <div><code className="text-[#FE6620]">{'{{registration}}'}</code> {t('Inscripción / LOE')}</div>
+                <div><code className="text-[#FE6620]">{'{{totalPrice}}'}</code> {t('Precio total')}</div>
+                <div><code className="text-[#FE6620]">{'{{depositAmount}}'}</code> {t('Importe de la señal')}</div>
+                <div><code className="text-[#FE6620]">{'{{todayDate}}'}</code> {t('Fecha actual')}</div>
               </div>
             </div>
           </details>
@@ -222,11 +222,11 @@ export default function TemplateEditor({
         {/* Preview */}
         <div className={`${tab === 'edit' ? 'hidden md:block' : ''}`}>
           <label className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted mb-1.5 block">
-            Vista previa
+            {t('Vista previa')}
           </label>
           <div
             className="contract-preview rounded-xl border border-hairline bg-canvas px-6 py-6 min-h-[60vh] overflow-y-auto text-[13.5px] text-ink leading-[1.6] prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: renderContractMarkdown(bodyMd || '*Vacío*') }}
+            dangerouslySetInnerHTML={{ __html: renderContractMarkdown(bodyMd || `*${t('Vacío')}*`) }}
           />
         </div>
       </div>
@@ -240,7 +240,7 @@ export default function TemplateEditor({
           className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-2.5 text-[13.5px] font-bold hover:opacity-90 disabled:opacity-50 transition"
         >
           {saveState === 'saving' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-          Guardar
+          {t('Guardar')}
         </button>
       </div>
     </div>
@@ -248,24 +248,25 @@ export default function TemplateEditor({
 }
 
 function SaveBadge({ state }: { state: SaveState }) {
+  const t = useT()
   if (state === 'saving') {
     return (
       <span className="inline-flex items-center gap-1 text-[11.5px] text-muted">
-        <Loader2 className="h-3 w-3 animate-spin" /> Guardando…
+        <Loader2 className="h-3 w-3 animate-spin" /> {t('Guardando…')}
       </span>
     )
   }
   if (state === 'saved') {
     return (
       <span className="inline-flex items-center gap-1 text-[11.5px] text-emerald-700">
-        <Check className="h-3 w-3" /> Guardado
+        <Check className="h-3 w-3" /> {t('Guardado')}
       </span>
     )
   }
   if (state === 'error') {
     return (
       <span className="inline-flex items-center gap-1 text-[11.5px] text-rose-700">
-        Error al guardar
+        {t('Error al guardar')}
       </span>
     )
   }

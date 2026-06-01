@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ReservationsPipeline from '@/components/reservas/reservations-pipeline'
 import { hasProAccess } from '@/lib/permissions'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Reservas · Genealogic' }
@@ -23,14 +25,14 @@ export default async function ReservasPage() {
   ])
   const kennel = kennelArr.data?.[0]
   const isPro = hasProAccess(profileRes.data?.plan)
+  const t = getTranslator(await getLocale())
 
   if (!kennel) {
     return (
       <div className="max-w-2xl mx-auto py-10">
-        <h1 className="text-3xl font-bold text-ink mb-3">Reservas</h1>
+        <h1 className="text-3xl font-bold text-ink mb-3">{t('Reservas')}</h1>
         <p className="text-body">
-          Para gestionar solicitudes necesitas un criadero registrado.
-          Crea tu kennel desde Mi Criadero.
+          {t('Para gestionar solicitudes necesitas un criadero registrado. Crea tu kennel desde Mi Criadero.')}
         </p>
       </div>
     )

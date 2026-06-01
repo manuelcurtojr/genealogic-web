@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { X, Loader2, Search, ArrowRightLeft, Dog, Check, AlertTriangle } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import FeedbackButton from '@/components/feedback/feedback-button'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   open: boolean
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function TransferPanel({ open, onClose, dog, kennelName }: Props) {
+  const t = useT()
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [searching, setSearching] = useState(false)
@@ -64,7 +66,7 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
 
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setError('No autenticado'); setTransferring(false); return }
+    if (!user) { setError(t('No autenticado')); setTransferring(false); return }
 
     // Update owner_id, preserve breeder_id
     const { error: err } = await supabase.from('dogs').update({
@@ -119,14 +121,14 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
           <div className="flex items-center gap-2">
             <ArrowRightLeft className="w-4 h-4 text-ink" />
-            <h2 className="text-base sm:text-lg font-semibold">Transferir perro</h2>
+            <h2 className="text-base sm:text-lg font-semibold">{t('Transferir perro')}</h2>
           </div>
           <div className="flex items-center gap-2">
             <FeedbackButton
               scope="transfer"
-              pageLabel={dog?.name ? `Transferir perro: ${dog.name}` : 'Transferir perro'}
+              pageLabel={dog?.name ? `${t('Transferir perro')}: ${dog.name}` : t('Transferir perro')}
               variant="inline"
-              label="¿Algo falla?"
+              label={t('¿Algo falla?')}
             />
             <button onClick={onClose} className="text-muted hover:text-ink transition"><X className="w-5 h-5" /></button>
           </div>
@@ -151,12 +153,12 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
           {/* Warning */}
           <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-orange-400">Al transferir, el nuevo propietario podra gestionar este perro. El perro seguira apareciendo en tu criadero.</p>
+            <p className="text-xs text-orange-400">{t('Al transferir, el nuevo propietario podra gestionar este perro. El perro seguira apareciendo en tu criadero.')}</p>
           </div>
 
           {/* Email search */}
           <div>
-            <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Email del nuevo propietario</label>
+            <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Email del nuevo propietario')}</label>
             <div className="flex gap-2">
               <input
                 type="email"
@@ -172,7 +174,7 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
                 className="px-4 py-2 bg-surface-card border border-hairline rounded-lg text-sm text-body hover:bg-surface-card transition disabled:opacity-30 flex items-center gap-1.5"
               >
                 {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                Buscar
+                {t('Buscar')}
               </button>
             </div>
           </div>
@@ -184,7 +186,7 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
                 {(foundUser.display_name || foundUser.email)[0].toUpperCase()}
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-green-400">{foundUser.display_name || 'Usuario'}</p>
+                <p className="text-sm font-semibold text-green-400">{foundUser.display_name || t('Usuario')}</p>
                 <p className="text-xs text-muted">{foundUser.email}</p>
               </div>
               <Check className="w-5 h-5 text-green-400" />
@@ -194,8 +196,8 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
           {/* Not found */}
           {notFound && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-center">
-              <p className="text-sm text-red-400">No se encontro ningun usuario con ese email</p>
-              <p className="text-xs text-muted mt-1">El usuario debe estar registrado en Genealogic</p>
+              <p className="text-sm text-red-400">{t('No se encontro ningun usuario con ese email')}</p>
+              <p className="text-xs text-muted mt-1">{t('El usuario debe estar registrado en Genealogic')}</p>
             </div>
           )}
 
@@ -204,21 +206,21 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
           {done && (
             <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 text-center">
               <Check className="w-8 h-8 text-green-400 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-green-400">Perro transferido correctamente</p>
+              <p className="text-sm font-semibold text-green-400">{t('Perro transferido correctamente')}</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hairline flex-shrink-0">
-          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">{t('Cancelar')}</button>
           <button
             onClick={handleTransfer}
             disabled={!foundUser || transferring || done}
             className="bg-ink text-on-primary hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm"
           >
             {transferring ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRightLeft className="w-4 h-4" />}
-            {transferring ? 'Transfiriendo...' : 'Transferir perro'}
+            {transferring ? t('Transfiriendo...') : t('Transferir perro')}
           </button>
         </div>
       </div>

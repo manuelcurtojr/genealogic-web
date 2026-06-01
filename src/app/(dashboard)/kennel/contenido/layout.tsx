@@ -13,10 +13,13 @@ import { redirect } from 'next/navigation'
 import { hasProFeatures, isEnterpriseUser, normalizePlan } from '@/lib/permissions'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
 import ContenidoSubNav from '@/components/kennel/contenido-subnav'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
 export default async function KennelContenidoLayout({ children }: { children: React.ReactNode }) {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -47,11 +50,11 @@ export default async function KennelContenidoLayout({ children }: { children: Re
             href="/kennel"
             className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-muted hover:text-ink transition mb-2"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Mi criadero
+            <ArrowLeft className="h-3.5 w-3.5" /> {t('Mi criadero')}
           </Link>
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Edita tu web</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('Edita tu web')}</p>
           <h1 className="mt-1 text-[24px] sm:text-[28px] font-semibold tracking-[-0.03em] text-ink">
-            Contenido de {kennel.name}
+            {t('Contenido de')} {kennel.name}
           </h1>
         </div>
         {kennel.slug && (
@@ -61,7 +64,7 @@ export default async function KennelContenidoLayout({ children }: { children: Re
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-2 text-[12.5px] font-medium text-body hover:border-ink/30 hover:text-ink transition self-start sm:self-auto"
           >
-            <ExternalLink className="h-3.5 w-3.5" /> Ver mi web
+            <ExternalLink className="h-3.5 w-3.5" /> {t('Ver mi web')}
           </Link>
         )}
       </div>

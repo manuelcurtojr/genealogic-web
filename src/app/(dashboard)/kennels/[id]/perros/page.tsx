@@ -7,6 +7,8 @@ import PerrosCatalog from '@/components/kennel/perros-catalog'
 import { headers } from 'next/headers'
 import { isDynamicSiteHost } from '@/lib/kennel/custom-site'
 import type { Metadata } from 'next'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,6 +38,7 @@ export async function generateMetadata(
 
 export default async function KennelPerrosPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
 
   const field = isUUID(id) ? 'id' : 'slug'
@@ -130,12 +133,12 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
   return (
     <div className="space-y-6 sm:space-y-8">
       <header>
-        <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Catálogo</p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('Catálogo')}</p>
         <h1 className="mt-1 text-[28px] sm:text-[36px] font-semibold leading-[1.08] tracking-[-0.03em] text-ink">
-          Nuestros perros
+          {t('Nuestros perros')}
         </h1>
         <p className="mt-2 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-prose">
-          Reproductores activos, cachorros en venta, camadas planificadas y producidos por el criadero.
+          {t('Reproductores activos, cachorros en venta, camadas planificadas y producidos por el criadero.')}
         </p>
       </header>
 

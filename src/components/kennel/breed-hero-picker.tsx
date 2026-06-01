@@ -13,6 +13,7 @@
 import { useState, useTransition } from 'react'
 import Image from 'next/image'
 import { saveBreedHero } from '@/app/(dashboard)/kennel/contenido/razas/actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 type Dog = {
   id: string
@@ -40,15 +41,15 @@ export default function BreedHeroPicker({
 }: {
   breeds: BreedHeroPickerBreed[]
 }) {
+  const t = useT()
   if (breeds.length === 0) {
     return (
       <div className="rounded-2xl border border-hairline bg-canvas px-6 py-10 text-center">
         <p className="text-[14px] text-body">
-          Aún no se han detectado razas en tu criadero.
+          {t('Aún no se han detectado razas en tu criadero.')}
         </p>
         <p className="mt-2 text-[12.5px] text-muted">
-          Marca al menos un perro como reproductor en su ficha. Cuando lo hagas,
-          la raza aparecerá automáticamente aquí y en tu web Pro.
+          {t('Marca al menos un perro como reproductor en su ficha. Cuando lo hagas, la raza aparecerá automáticamente aquí y en tu web Pro.')}
         </p>
       </div>
     )
@@ -57,11 +58,10 @@ export default function BreedHeroPicker({
   return (
     <div className="space-y-8">
       <p className="text-[13.5px] leading-[1.65] text-body max-w-prose">
-        Elige qué perro tuyo representa cada raza en tu web pública. La foto
-        elegida aparecerá como portada en{' '}
-        <span className="font-medium text-ink">Nuestras razas</span> y en la
-        ficha promocional de cada raza. Si dejas <em>Automático</em>, el
-        sistema elige solo un reproductor con foto.
+        {t('Elige qué perro tuyo representa cada raza en tu web pública. La foto elegida aparecerá como portada en')}{' '}
+        <span className="font-medium text-ink">{t('Nuestras razas')}</span>{' '}
+        {t('y en la ficha promocional de cada raza. Si dejas')} <em>{t('Automático')}</em>,{' '}
+        {t('el sistema elige solo un reproductor con foto.')}
       </p>
 
       {breeds.map((b) => (
@@ -72,6 +72,7 @@ export default function BreedHeroPicker({
 }
 
 function BreedCard({ breed }: { breed: BreedHeroPickerBreed }) {
+  const t = useT()
   const [picked, setPicked] = useState<string | null>(breed.picked_dog_id)
   const [pending, startTransition] = useTransition()
   const [savedMsg, setSavedMsg] = useState<string | null>(null)
@@ -84,10 +85,10 @@ function BreedCard({ breed }: { breed: BreedHeroPickerBreed }) {
     startTransition(async () => {
       const r = await saveBreedHero(fd)
       if (r.ok) {
-        setSavedMsg(dogId ? 'Foto actualizada' : 'Vuelves al modo automático')
+        setSavedMsg(dogId ? t('Foto actualizada') : t('Vuelves al modo automático'))
         setTimeout(() => setSavedMsg(null), 2500)
       } else {
-        setSavedMsg(`Error: ${r.error}`)
+        setSavedMsg(`${t('Error:')} ${r.error}`)
       }
     })
   }
@@ -106,7 +107,7 @@ function BreedCard({ breed }: { breed: BreedHeroPickerBreed }) {
             {breed.name}
           </h2>
           <p className="text-[12px] text-muted mt-0.5">
-            {breed.dogs.length} {breed.dogs.length === 1 ? 'perro con foto' : 'perros con foto'} disponibles
+            {breed.dogs.length} {breed.dogs.length === 1 ? t('perro con foto') : t('perros con foto')} {t('disponibles')}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -114,7 +115,7 @@ function BreedCard({ breed }: { breed: BreedHeroPickerBreed }) {
             <span className="text-[12px] text-emerald-600 font-medium">{savedMsg}</span>
           )}
           {pending && (
-            <span className="text-[12px] text-muted">Guardando…</span>
+            <span className="text-[12px] text-muted">{t('Guardando…')}</span>
           )}
         </div>
       </header>
@@ -132,13 +133,13 @@ function BreedCard({ breed }: { breed: BreedHeroPickerBreed }) {
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-[12px] uppercase tracking-wider text-muted/60">
-              Sin foto
+              {t('Sin foto')}
             </div>
           )}
           {previewName && (
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 to-transparent px-4 py-3">
               <p className="text-[11px] text-white/70 uppercase tracking-[0.1em]">
-                {picked ? 'Foto elegida' : 'Foto automática'}
+                {picked ? t('Foto elegida') : t('Foto automática')}
               </p>
               <p className="text-[14px] text-white font-medium mt-0.5">{previewName}</p>
             </div>
@@ -149,7 +150,7 @@ function BreedCard({ breed }: { breed: BreedHeroPickerBreed }) {
         <div className="p-5 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">
-              Elige una foto
+              {t('Elige una foto')}
             </p>
             <button
               type="button"
@@ -161,13 +162,13 @@ function BreedCard({ breed }: { breed: BreedHeroPickerBreed }) {
                   : 'border border-hairline text-body hover:border-ink/30 hover:text-ink'
               }`}
             >
-              {picked === null ? '✓ Automático' : 'Volver a automático'}
+              {picked === null ? `✓ ${t('Automático')}` : t('Volver a automático')}
             </button>
           </div>
 
           {breed.dogs.length === 0 ? (
             <p className="text-[13px] text-muted">
-              No tienes ningún perro de esta raza con foto subida.
+              {t('No tienes ningún perro de esta raza con foto subida.')}
             </p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -195,7 +196,7 @@ function BreedCard({ breed }: { breed: BreedHeroPickerBreed }) {
                     />
                     {d.is_reproductive && (
                       <span className="absolute top-1.5 left-1.5 inline-flex items-center rounded-full bg-emerald-50/95 px-1.5 py-px text-[9px] font-semibold text-emerald-700 backdrop-blur">
-                        Reproductor
+                        {t('Reproductor')}
                       </span>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5">

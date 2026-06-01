@@ -20,6 +20,7 @@ import {
   PartyPopper, Dog, Calendar,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useT } from '@/components/i18n/locale-provider'
 import OwnerFormPanel from '@/components/clientes/owner-form-panel'
 
 export type Subscriber = {
@@ -100,6 +101,7 @@ export default function ContactosPageClient({
   leads: Lead[]
   clients: Client[]
 }) {
+  const t = useT()
   const [tab, setTab] = useState<Tab>('subscribers')
   const [query, setQuery] = useState('')
 
@@ -116,7 +118,7 @@ export default function ContactosPageClient({
     return subscribers.filter(s =>
       s.email.toLowerCase().includes(q) ||
       s.full_name?.toLowerCase().includes(q) ||
-      s.tags?.some(t => t.toLowerCase().includes(q))
+      s.tags?.some(tg => tg.toLowerCase().includes(q))
     )
   }, [subscribers, q])
 
@@ -159,9 +161,9 @@ export default function ContactosPageClient({
           <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">
             {kennelName}
           </p>
-          <h1 className="mt-1 text-3xl font-bold text-ink tracking-tight">Contactos</h1>
+          <h1 className="mt-1 text-3xl font-bold text-ink tracking-tight">{t('Contactos')}</h1>
           <p className="text-sm text-muted mt-1">
-            Suscriptores del newsletter, leads de solicitudes y clientes que cerraron.
+            {t('Suscriptores del newsletter, leads de solicitudes y clientes que cerraron.')}
           </p>
         </div>
         {tab === 'clients' && (
@@ -171,20 +173,20 @@ export default function ContactosPageClient({
             variant="primary"
           >
             <Plus className="w-4 h-4" />
-            Nuevo cliente manual
+            {t('Nuevo cliente manual')}
           </Button>
         )}
       </div>
 
       {/* Tabs */}
       <div className="flex border-b border-hairline mb-4 -mx-2 sm:mx-0">
-        {TABS.map((t) => {
-          const Icon = t.icon
-          const active = tab === t.id
+        {TABS.map((tabItem) => {
+          const Icon = tabItem.icon
+          const active = tab === tabItem.id
           return (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
+              key={tabItem.id}
+              onClick={() => setTab(tabItem.id)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 -mb-px transition ${
                 active
                   ? 'border-ink text-ink'
@@ -192,13 +194,13 @@ export default function ContactosPageClient({
               }`}
             >
               <Icon className="w-4 h-4" />
-              {t.label}
+              {t(tabItem.label)}
               <span
                 className={`text-[11px] font-bold rounded-full px-2 py-0.5 ${
                   active ? 'bg-ink text-on-primary' : 'bg-surface-card text-muted'
                 }`}
               >
-                {counts[t.id]}
+                {counts[tabItem.id]}
               </span>
             </button>
           )
@@ -212,14 +214,14 @@ export default function ContactosPageClient({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar por nombre, email, teléfono…"
+          placeholder={t('Buscar por nombre, email, teléfono…')}
           className="w-full pl-9 pr-3 py-2 text-sm border border-hairline rounded-lg bg-canvas text-ink placeholder:text-muted focus:outline-none focus:border-ink transition"
         />
       </div>
 
       {q && (
         <p className="text-xs text-muted mb-3">
-          {filteredCount} de {counts[tab]} {tab === 'subscribers' ? 'suscriptores' : tab === 'leads' ? 'leads' : 'clientes'} coinciden con &ldquo;{query}&rdquo;
+          {filteredCount} {t('de')} {counts[tab]} {tab === 'subscribers' ? t('suscriptores') : tab === 'leads' ? t('leads') : t('clientes')} {t('coinciden con')} &ldquo;{query}&rdquo;
         </p>
       )}
 
@@ -249,14 +251,15 @@ export default function ContactosPageClient({
 
 // ─── Tabla SUSCRIPTORES ─────────────────────────────────────────────────────
 function SubscribersTable({ rows, total }: { rows: Subscriber[]; total: number }) {
+  const t = useT()
   if (rows.length === 0) {
     return (
       <EmptyState
         icon={Mail}
-        title={total === 0 ? 'Sin suscriptores' : 'Ningún suscriptor coincide'}
+        title={total === 0 ? t('Sin suscriptores') : t('Ningún suscriptor coincide')}
         description={
           total === 0
-            ? 'Cuando alguien se suscriba a tu newsletter desde tu web, aparecerá aquí.'
+            ? t('Cuando alguien se suscriba a tu newsletter desde tu web, aparecerá aquí.')
             : undefined
         }
       />
@@ -267,12 +270,12 @@ function SubscribersTable({ rows, total }: { rows: Subscriber[]; total: number }
       <table className="w-full text-sm">
         <thead className="border-b border-hairline bg-surface-soft/50">
           <tr className="text-left">
-            <Th>Email</Th>
-            <Th hideOn="sm">Nombre</Th>
-            <Th hideOn="md">Origen</Th>
-            <Th hideOn="lg">Tags</Th>
-            <Th align="right">Estado</Th>
-            <Th align="right">Fecha</Th>
+            <Th>{t('Email')}</Th>
+            <Th hideOn="sm">{t('Nombre')}</Th>
+            <Th hideOn="md">{t('Origen')}</Th>
+            <Th hideOn="lg">{t('Tags')}</Th>
+            <Th align="right">{t('Estado')}</Th>
+            <Th align="right">{t('Fecha')}</Th>
           </tr>
         </thead>
         <tbody>
@@ -295,10 +298,10 @@ function SubscribersTable({ rows, total }: { rows: Subscriber[]; total: number }
               <Td hideOn="lg">
                 {s.tags && s.tags.length > 0 ? (
                   <div className="flex flex-wrap gap-1">
-                    {s.tags.slice(0, 3).map((t) => (
-                      <span key={t} className="inline-flex items-center gap-0.5 rounded bg-surface-card px-1.5 py-0.5 text-[10px] text-body">
+                    {s.tags.slice(0, 3).map((tg) => (
+                      <span key={tg} className="inline-flex items-center gap-0.5 rounded bg-surface-card px-1.5 py-0.5 text-[10px] text-body">
                         <Tag className="w-2.5 h-2.5" />
-                        {t}
+                        {tg}
                       </span>
                     ))}
                   </div>
@@ -309,11 +312,11 @@ function SubscribersTable({ rows, total }: { rows: Subscriber[]; total: number }
               <td className="px-4 py-3 text-right">
                 {s.is_active ? (
                   <span className="text-[11px] font-semibold bg-emerald-50 text-emerald-800 rounded-full px-2 py-0.5">
-                    Activo
+                    {t('Activo')}
                   </span>
                 ) : (
                   <span className="text-[11px] font-semibold bg-red-50 text-red-700 rounded-full px-2 py-0.5">
-                    Baja
+                    {t('Baja')}
                   </span>
                 )}
               </td>
@@ -325,7 +328,7 @@ function SubscribersTable({ rows, total }: { rows: Subscriber[]; total: number }
         </tbody>
       </table>
       <div className="px-4 py-3 border-t border-hairline bg-surface-soft/30 text-[11px] text-muted text-right">
-        Gestionar campañas en{' '}
+        {t('Gestionar campañas en')}{' '}
         <Link href="/newsletter" className="font-semibold text-ink hover:underline">
           /newsletter →
         </Link>
@@ -336,14 +339,15 @@ function SubscribersTable({ rows, total }: { rows: Subscriber[]; total: number }
 
 // ─── Tabla LEADS ────────────────────────────────────────────────────────────
 function LeadsTable({ rows, total }: { rows: Lead[]; total: number }) {
+  const t = useT()
   if (rows.length === 0) {
     return (
       <EmptyState
         icon={Inbox}
-        title={total === 0 ? 'Sin leads abiertos' : 'Ningún lead coincide'}
+        title={total === 0 ? t('Sin leads abiertos') : t('Ningún lead coincide')}
         description={
           total === 0
-            ? 'Los leads son interesados que han enviado solicitud pero no han cerrado todavía. Aparecen aquí cuando llega un formulario de contacto o se paga una señal.'
+            ? t('Los leads son interesados que han enviado solicitud pero no han cerrado todavía. Aparecen aquí cuando llega un formulario de contacto o se paga una señal.')
             : undefined
         }
       />
@@ -354,11 +358,11 @@ function LeadsTable({ rows, total }: { rows: Lead[]; total: number }) {
       <table className="w-full text-sm">
         <thead className="border-b border-hairline bg-surface-soft/50">
           <tr className="text-left">
-            <Th>Lead</Th>
-            <Th hideOn="md">Contacto</Th>
-            <Th hideOn="lg">Preferencias</Th>
-            <Th align="right">Estado</Th>
-            <Th align="right">Fecha</Th>
+            <Th>{t('Lead')}</Th>
+            <Th hideOn="md">{t('Contacto')}</Th>
+            <Th hideOn="lg">{t('Preferencias')}</Th>
+            <Th align="right">{t('Estado')}</Th>
+            <Th align="right">{t('Fecha')}</Th>
           </tr>
         </thead>
         <tbody>
@@ -372,7 +376,7 @@ function LeadsTable({ rows, total }: { rows: Lead[]; total: number }) {
                   href={`/reservas/${l.id}`}
                   className="text-ink font-medium hover:underline"
                 >
-                  {l.applicant_name || 'Sin nombre'}
+                  {l.applicant_name || t('Sin nombre')}
                 </Link>
                 {l.applicant_city && (
                   <p className="text-[11px] text-muted mt-0.5 inline-flex items-center gap-1">
@@ -400,7 +404,7 @@ function LeadsTable({ rows, total }: { rows: Lead[]; total: number }) {
               <Td hideOn="lg">
                 <div className="flex flex-col text-[12px] text-body">
                   {l.preference_sex && (
-                    <span>{l.preference_sex === 'male' ? '♂ Macho' : '♀ Hembra'}</span>
+                    <span>{l.preference_sex === 'male' ? `♂ ${t('Macho')}` : `♀ ${t('Hembra')}`}</span>
                   )}
                   {l.preference_color && <span>{l.preference_color}</span>}
                   {!l.preference_sex && !l.preference_color && (
@@ -416,7 +420,7 @@ function LeadsTable({ rows, total }: { rows: Lead[]; total: number }) {
                       : 'bg-blue-50 text-blue-800'
                   }`}
                 >
-                  {LEAD_STATUS_LABEL[l.status] || l.status}
+                  {LEAD_STATUS_LABEL[l.status] ? t(LEAD_STATUS_LABEL[l.status]) : l.status}
                 </span>
               </td>
               <td className="px-4 py-3 text-right text-[12px] text-muted whitespace-nowrap">
@@ -427,7 +431,7 @@ function LeadsTable({ rows, total }: { rows: Lead[]; total: number }) {
         </tbody>
       </table>
       <div className="px-4 py-3 border-t border-hairline bg-surface-soft/30 text-[11px] text-muted text-right">
-        Pipeline completo en{' '}
+        {t('Pipeline completo en')}{' '}
         <Link href="/reservas" className="font-semibold text-ink hover:underline">
           /reservas →
         </Link>
@@ -445,14 +449,15 @@ function ClientsTable({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onEditOwner: (owner: any) => void
 }) {
+  const t = useT()
   if (rows.length === 0) {
     return (
       <EmptyState
         icon={Users}
-        title={total === 0 ? 'Sin clientes todavía' : 'Ningún cliente coincide'}
+        title={total === 0 ? t('Sin clientes todavía') : t('Ningún cliente coincide')}
         description={
           total === 0
-            ? 'Cuando un lead se convierte (asignación de cachorro, contrato firmado, entrega) aparece aquí. También puedes añadir clientes manualmente.'
+            ? t('Cuando un lead se convierte (asignación de cachorro, contrato firmado, entrega) aparece aquí. También puedes añadir clientes manualmente.')
             : undefined
         }
       />
@@ -463,12 +468,12 @@ function ClientsTable({
       <table className="w-full text-sm">
         <thead className="border-b border-hairline bg-surface-soft/50">
           <tr className="text-left">
-            <Th>Cliente</Th>
-            <Th hideOn="md">Contacto</Th>
-            <Th hideOn="lg">Ubicación</Th>
-            <Th hideOn="md">Último perro</Th>
-            <Th align="right">Reservas</Th>
-            <Th align="right">Actividad</Th>
+            <Th>{t('Cliente')}</Th>
+            <Th hideOn="md">{t('Contacto')}</Th>
+            <Th hideOn="lg">{t('Ubicación')}</Th>
+            <Th hideOn="md">{t('Último perro')}</Th>
+            <Th align="right">{t('Reservas')}</Th>
+            <Th align="right">{t('Actividad')}</Th>
           </tr>
         </thead>
         <tbody>
@@ -493,12 +498,12 @@ function ClientsTable({
               >
                 <td className="px-4 py-3">
                   <p className="text-ink font-medium">
-                    {c.full_name || <span className="text-muted">Sin nombre</span>}
+                    {c.full_name || <span className="text-muted">{t('Sin nombre')}</span>}
                   </p>
                   {c.delivered_count > 0 && (
                     <p className="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider inline-flex items-center gap-1 mt-0.5">
                       <PartyPopper className="w-3 h-3" />
-                      Recibió {c.delivered_count}
+                      {t('Recibió')} {c.delivered_count}
                     </p>
                   )}
                 </td>
@@ -562,11 +567,11 @@ function ClientsTable({
                     <span className="inline-flex items-center gap-1 text-[12px] text-body">
                       <span className="font-bold text-ink tabular-nums">{c.reservations_count}</span>
                       <span className="text-muted">
-                        {c.reservations_count === 1 ? 'reserva' : 'reservas'}
+                        {c.reservations_count === 1 ? t('reserva') : t('reservas')}
                       </span>
                     </span>
                   ) : (
-                    <span className="text-[11px] text-muted">manual</span>
+                    <span className="text-[11px] text-muted">{t('manual')}</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-right text-[12px] text-muted whitespace-nowrap">

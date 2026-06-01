@@ -22,6 +22,8 @@ import {
   type ContractTemplateVars,
 } from '@/lib/contracts/templates'
 import { getContractTemplate } from '@/lib/contracts/templates-actions'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 async function getClientIp(): Promise<string | null> {
   const h = await headers()
@@ -90,7 +92,7 @@ export async function createOrInitContractAction(
     const existing = await getContractByReservation(reservationId)
     if (existing) return { ok: true, contractId: existing.id }
 
-    const tpl = CONTRACT_TEMPLATES.find((t) => t.id === templateId) ?? CONTRACT_TEMPLATES[0]
+    const tpl = CONTRACT_TEMPLATES.find((ct) => ct.id === templateId) ?? CONTRACT_TEMPLATES[0]
     const body = tpl.body(buildVars(reservation))
     const created = await createContract({
       reservationId,
@@ -130,9 +132,10 @@ export async function createFromUserTemplateAction(
     if (existing) return { ok: true, contractId: existing.id }
 
     const tpl = await getContractTemplate(userTemplateId)
-    if (!tpl) return { ok: false, error: 'Plantilla no encontrada' }
+    const t = getTranslator(await getLocale())
+    if (!tpl) return { ok: false, error: t('Plantilla no encontrada') }
     if (tpl.kennel_id !== reservation.kennel.id) {
-      return { ok: false, error: 'Plantilla no pertenece a este criadero' }
+      return { ok: false, error: t('Plantilla no pertenece a este criadero') }
     }
 
     const vars = buildVars(reservation) as unknown as Record<string, string | undefined>
@@ -191,8 +194,9 @@ export async function signContractAsBreederAction(
   signatureName: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   try {
+    const t = getTranslator(await getLocale())
     const name = signatureName.trim()
-    if (!name) return { ok: false, error: 'Escribe tu nombre completo para firmar' }
+    if (!name) return { ok: false, error: t('Escribe tu nombre completo para firmar') }
     const ip = await getClientIp()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = createKennelAdminClient() as any
@@ -202,7 +206,7 @@ export async function signContractAsBreederAction(
       .select('signed_at_client, status')
       .eq('id', contractId)
       .maybeSingle()
-    if (!row) return { ok: false, error: 'Contrato no encontrado' }
+    if (!row) return { ok: false, error: t('Contrato no encontrado') }
     const nextStatus = row.signed_at_client ? 'signed_full' : 'signed_partial'
     await setContractStatus(contractId, nextStatus, {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

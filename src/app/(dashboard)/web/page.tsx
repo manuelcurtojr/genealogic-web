@@ -3,6 +3,8 @@ import { createKennelAdminClient } from '@/lib/supabase/server'
 import { getMyKennel } from '@/lib/kennel-site'
 import { DEFAULT_NAV_LABELS, pageHref, publicUrl } from '@/lib/kennel/pages'
 import { ensureAllPages, togglePageEnabled } from './actions'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Web pública · Genealogic Pro' }
@@ -29,6 +31,7 @@ type Row = {
 }
 
 export default async function AdminWebIndexPage() {
+  const t = getTranslator(await getLocale())
   const kennel = await getMyKennel()
   await ensureAllPages()
 
@@ -42,22 +45,21 @@ export default async function AdminWebIndexPage() {
 
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wider text-muted">Web pública</p>
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('Web pública')}</p>
       <div className="mt-2 flex items-baseline justify-between gap-4 flex-wrap">
-        <h1 className="text-4xl font-bold tracking-tight text-ink">Páginas</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-ink">{t('Páginas')}</h1>
         {/* Sub-nav local: General | Páginas (default) */}
         <nav className="flex items-center gap-1 rounded-lg border border-hairline p-1 text-xs">
           <Link href="/web" className="rounded-md bg-ink text-on-primary px-3 py-1.5 font-semibold">
-            Páginas
+            {t('Páginas')}
           </Link>
           <Link href="/web/general" className="rounded-md px-3 py-1.5 font-medium text-body hover:bg-surface-soft hover:text-ink">
-            General
+            {t('General')}
           </Link>
         </nav>
       </div>
       <p className="mt-2 text-body">
-        9 páginas troncales, siempre las mismas. Activa las que quieras mostrar y construye el
-        contenido por secciones.
+        {t('9 páginas troncales, siempre las mismas. Activa las que quieras mostrar y construye el contenido por secciones.')}
       </p>
 
       <div className="mt-8 rounded-2xl bg-canvas border border-hairline overflow-hidden">
@@ -72,7 +74,7 @@ export default async function AdminWebIndexPage() {
                     type="submit"
                     aria-pressed={p.enabled}
                     className={`relative h-5 w-9 rounded-full transition ${p.enabled ? 'bg-ink' : 'bg-hairline'}`}
-                    title={p.enabled ? 'Desactivar página' : 'Activar página'}
+                    title={p.enabled ? t('Desactivar página') : t('Activar página')}
                   >
                     <span
                       className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition ${p.enabled ? 'left-[18px]' : 'left-0.5'}`}
@@ -86,14 +88,14 @@ export default async function AdminWebIndexPage() {
                     <span className="text-[11px] font-mono text-muted">{pageHref(kennel.slug, p.slug)}</span>
                     {draftCount !== null && (
                       <span className="rounded-full bg-yellow-200/60 px-2 py-0.5 text-[10px] font-medium text-yellow-900 ring-1 ring-yellow-300/60">
-                        Borrador sin publicar
+                        {t('Borrador sin publicar')}
                       </span>
                     )}
                   </div>
-                  <p className="mt-1 text-xs text-muted">{PAGE_HINT[p.slug]}</p>
+                  <p className="mt-1 text-xs text-muted">{t(PAGE_HINT[p.slug])}</p>
                   <p className="mt-1 text-[11px] text-muted">
-                    {sectionsCount} {sectionsCount === 1 ? 'sección publicada' : 'secciones publicadas'}
-                    {draftCount !== null && ` · ${draftCount} en borrador`}
+                    {sectionsCount} {sectionsCount === 1 ? t('sección publicada') : t('secciones publicadas')}
+                    {draftCount !== null && ` · ${draftCount} ${t('en borrador')}`}
                   </p>
                 </div>
 
@@ -108,14 +110,14 @@ export default async function AdminWebIndexPage() {
                       target="_blank"
                       className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-body hover:border-ink/30 hover:text-ink"
                     >
-                      Ver
+                      {t('Ver')}
                     </Link>
                   )}
                   <Link
                     href={`/web/${p.slug}`}
                     className="rounded-lg bg-ink px-3 py-1.5 text-xs font-medium text-on-primary hover:opacity-90"
                   >
-                    Editar →
+                    {t('Editar')} →
                   </Link>
                 </div>
               </li>
