@@ -136,10 +136,44 @@ export async function GET(request: NextRequest) {
   }
 
   // ───────────────────────────────────────────────────────────────────────
-  // Enviar todas las alertas detectadas
+  // 6. Nuevos usuarios registrados — 1 aviso por usuario (catch-all)
   // ───────────────────────────────────────────────────────────────────────
-  const results = await Promise.all(
-    alerts.map(a => notifySuperAdmin({
+  // /api/track-signup ya avisa al instante en las altas por formulario email,
+  // pero los registros por OAuth (Google/Apple) pasan por /auth/callback y NO
+  // llaman a track-signup → quedaban sin aviso. Este barrido cubre TODAS las
+  // vías: lee profiles creados en la última ventana y manda un aviso por cada
+  // uno. Usa la MISMA dedupe_key que track-signup (`admin_alert:signup:<id>`):
+  //   · altas email → track-signup ya mandó → aquí se hace skip (no duplica)
+  //   · altas OAuth → nadie avisó → aquí se manda
+  // Ventana de 90 min: cubre el hueco de 30 min entre pasadas del cron + margen
+  // para tolerar una ejecución fallida, sin arriesgar avisar usuarios históricos.
+  const ninety_min_ago = new Date(now.getTime() - 90 * 60_000).toISOString()
+  const { data: newUsers } = await admin
+    .from('profiles')
+    .select('id, email, display_name, created_at, signup_meta')
+    .gte('created_at', ninety_min_ago)
+    .order('created_at', { ascending: false })
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const signupAlerts = (newUsers || []).map((u: any) => {
+    const meta = u.signup_meta || {}
+    const source = meta.utm_source
+      ? `${meta.utm_source}${meta.utm_medium ? ` / ${meta.utm_medium}` : ''}`
+      : meta.referrer
+        ? `referrer: ${meta.referrer}`
+        : 'directo / OAuth'
+    return {
+      subject: 'Nuevo usuario registrado',
+      body: `Email: ${u.email || 'sin email'}\nNombre: ${u.display_name || '—'}\nFuente: ${source}\nRegistrado: ${new Date(u.created_at).toLocaleString('es-ES')}`,
+      dedupeKey: `admin_alert:signup:${u.id}`,
+    }
+  })
+
+  // ───────────────────────────────────────────────────────────────────────
+  // Enviar: alertas de sistema (al panel) + un aviso por nuevo usuario
+  // ───────────────────────────────────────────────────────────────────────
+  const results = await Promise.all([
+    ...alerts.map(a => notifySuperAdmin({
       kind: a.kind,
       subject: a.subject,
       body: a.body,
@@ -147,13 +181,23 @@ export async function GET(request: NextRequest) {
       ctaUrl: `${SITE_URL}/admin`,
       ctaLabel: 'Ir al panel',
     })),
-  )
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...signupAlerts.map((a: any) => notifySuperAdmin({
+      kind: 'signup' as const,
+      subject: a.subject,
+      body: a.body,
+      dedupeKey: a.dedupeKey,
+      ctaUrl: `${SITE_URL}/admin/users`,
+      ctaLabel: 'Ver usuarios',
+    })),
+  ])
 
   return NextResponse.json({
     ok: true,
     checked_at: now.toISOString(),
     alerts_detected: alerts.length,
-    alerts_sent: results.filter(r => r.ok).length,
+    new_users_in_window: signupAlerts.length,
+    alerts_sent: results.filter(r => r.ok && !r.skipped).length,
     alerts_skipped: results.filter(r => r.skipped).length,
   })
 }
