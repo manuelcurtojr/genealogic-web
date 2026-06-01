@@ -17,6 +17,7 @@ import MarketingHeader from '@/components/marketing/marketing-header'
 import MarketingFooter from '@/components/marketing/marketing-footer'
 import { loadShellContext } from '@/lib/auth/load-shell-context'
 import { isDynamicSiteHost } from '@/lib/kennel/custom-site'
+import { getLocale } from '@/lib/locale'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Si la petición llega por el dominio propio de un criadero migrado a la
@@ -33,13 +34,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const ctx = await loadShellContext()
 
   if (!ctx) {
+    const locale = await getLocale()
     return (
       <div className="min-h-screen bg-canvas text-[var(--foreground)] flex flex-col">
-        <MarketingHeader />
+        <MarketingHeader locale={locale} />
         <main className="flex-1 px-4 sm:px-[30px] py-4 sm:py-6 max-w-7xl mx-auto w-full">
           {children}
         </main>
-        <MarketingFooter />
+        <MarketingFooter locale={locale} />
       </div>
     )
   }

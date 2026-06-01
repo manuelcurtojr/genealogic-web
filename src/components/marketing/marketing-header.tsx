@@ -20,8 +20,10 @@ import { Menu, X, Search, Store, Dog, BookOpen, Tag, Zap, LogIn, Compass, LifeBu
 import SearchBar from '@/components/layout/search-bar'
 import { Wordmark } from '@/components/ui/wordmark'
 import { Button } from '@/components/ui/button'
+import { getTranslator } from '@/lib/i18n'
 
-export default function MarketingHeader() {
+export default function MarketingHeader({ locale = 'es' }: { locale?: string }) {
+  const t = getTranslator(locale)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   useEffect(() => {
@@ -79,35 +81,35 @@ export default function MarketingHeader() {
               href="/perros"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body hover:text-ink hover:bg-surface-card transition"
             >
-              <Dog className="w-4 h-4" /> Perros
+              <Dog className="w-4 h-4" /> {t('Perros')}
             </Link>
             <Link
               href="/kennels"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body hover:text-ink hover:bg-surface-card transition"
             >
-              <Store className="w-4 h-4" /> Criaderos
+              <Store className="w-4 h-4" /> {t('Criaderos')}
             </Link>
             <Link
               href="/razas"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body hover:text-ink hover:bg-surface-card transition"
             >
-              <Tag className="w-4 h-4" /> Razas
+              <Tag className="w-4 h-4" /> {t('Razas')}
             </Link>
             <Link
               href="/blog"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-muted hover:text-ink hover:bg-surface-card transition"
             >
-              <BookOpen className="w-4 h-4" /> Blog
+              <BookOpen className="w-4 h-4" /> {t('Blog')}
             </Link>
           </nav>
           <div className="flex-1 max-w-md ml-auto">
             <SearchBar />
           </div>
           <Button href="/login" variant="ghost" size="sm">
-            Iniciar sesión
+            {t('Iniciar sesión')}
           </Button>
           <Button href="/register" variant="primary" size="sm">
-            Empezar gratis
+            {t('Empezar gratis')}
           </Button>
         </div>
       </header>
@@ -138,42 +140,42 @@ export default function MarketingHeader() {
               <div className="mb-4 px-1">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[#FE6620] px-2 mt-1 mb-2">
                   <Compass className="w-3 h-3 inline mr-1 -mt-0.5" />
-                  Explorar el catálogo
+                  {t('Explorar el catálogo')}
                 </p>
                 <div className="space-y-1.5">
-                  <BigDrawerLink href="/perros" icon={Dog} desc="+250.000 perros con genealogía" onClick={() => setDrawerOpen(false)}>
-                    Perros
+                  <BigDrawerLink href="/perros" icon={Dog} desc={t('+250.000 perros con genealogía')} onClick={() => setDrawerOpen(false)}>
+                    {t('Perros')}
                   </BigDrawerLink>
-                  <BigDrawerLink href="/kennels" icon={Store} desc="Criaderos verificados" onClick={() => setDrawerOpen(false)}>
-                    Buscar criaderos
+                  <BigDrawerLink href="/kennels" icon={Store} desc={t('Criaderos verificados')} onClick={() => setDrawerOpen(false)}>
+                    {t('Buscar criaderos')}
                   </BigDrawerLink>
-                  <BigDrawerLink href="/razas" icon={Tag} desc="Estándares raciales" onClick={() => setDrawerOpen(false)}>
-                    Razas
+                  <BigDrawerLink href="/razas" icon={Tag} desc={t('Estándares raciales')} onClick={() => setDrawerOpen(false)}>
+                    {t('Razas')}
                   </BigDrawerLink>
                 </div>
               </div>
 
-              <DrawerSection label="Recursos">
+              <DrawerSection label={t('Recursos')}>
                 <DrawerLink href="/blog" icon={BookOpen} onClick={() => setDrawerOpen(false)}>
-                  Blog
+                  {t('Blog')}
                 </DrawerLink>
                 <DrawerLink href="/soporte" icon={LifeBuoy} onClick={() => setDrawerOpen(false)}>
-                  Soporte
+                  {t('Soporte')}
                 </DrawerLink>
               </DrawerSection>
 
               {/* Genealogic (producto) — al final del drawer. Los visitantes
                   que vienen por discovery convierten mejor explorando que
                   leyendo marketing. */}
-              <DrawerSection label="Genealogic">
+              <DrawerSection label={t('Genealogic')}>
                 <DrawerLink href="/features" icon={Search} onClick={() => setDrawerOpen(false)}>
-                  Producto
+                  {t('Producto')}
                 </DrawerLink>
                 <DrawerLink href="/pricing" icon={Tag} onClick={() => setDrawerOpen(false)}>
-                  Precios
+                  {t('Precios')}
                 </DrawerLink>
                 <DrawerLink href="/api-docs" icon={Zap} onClick={() => setDrawerOpen(false)}>
-                  API pública
+                  {t('API pública')}
                 </DrawerLink>
               </DrawerSection>
             </nav>
@@ -184,14 +186,14 @@ export default function MarketingHeader() {
                 onClick={() => setDrawerOpen(false)}
                 className="block w-full text-center rounded-lg bg-ink text-on-primary px-4 py-2.5 text-sm font-bold hover:opacity-90 transition"
               >
-                Empezar gratis
+                {t('Empezar gratis')}
               </Link>
               <Link
                 href="/login"
                 onClick={() => setDrawerOpen(false)}
                 className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2.5 text-sm font-semibold text-body hover:text-ink hover:border-ink/30 transition"
               >
-                <LogIn className="w-3.5 h-3.5" /> Iniciar sesión
+                <LogIn className="w-3.5 h-3.5" /> {t('Iniciar sesión')}
               </Link>
             </div>
           </aside>

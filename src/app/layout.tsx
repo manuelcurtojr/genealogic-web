@@ -5,6 +5,7 @@ import "./globals.css";
 import CookieBanner from "@/components/ui/cookie-banner";
 import { PlatformProvider } from "@/components/platform/platform-provider";
 import { isIosUserAgent } from "@/lib/platform";
+import { getLocale } from "@/lib/locale";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -78,9 +79,12 @@ export default async function RootLayout({
   // SOLO User-Agent. La cookie se descartó como fallback (ver platform.ts):
   // se quedaba pegada en navegadores móviles normales y los redirigía a /login.
   const isIos = isIosUserAgent(headerStore.get("user-agent"));
+  // Locale resuelto server-side (cookie → Accept-Language → es) para el
+  // atributo lang del <html> (SEO + accesibilidad).
+  const locale = await getLocale();
   return (
     <html
-      lang="es"
+      lang={locale}
       data-platform={isIos ? "ios" : "web"}
       className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >

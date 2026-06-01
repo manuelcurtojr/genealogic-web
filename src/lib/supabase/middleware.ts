@@ -235,5 +235,37 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
+  // ─── Semilla de idioma desde Accept-Language (autodetección) ─────────
+  // Si el visitante NO tiene aún cookie de idioma, la sembramos desde el
+  // Accept-Language del navegador. Así los server components (header/footer/
+  // landings públicas) ya renderizan en su idioma en el PRIMER hit, sin
+  // depender de localStorage. El switcher del footer o /settings la
+  // sobrescriben después con la preferencia explícita.
+  const LOCALE_COOKIE = 'genealogic-lang'
+  if (!request.cookies.get(LOCALE_COOKIE)) {
+    const al = request.headers.get('accept-language')
+    if (al) {
+      // Primer idioma soportado por orden de q-value.
+      const supported = ['es', 'en', 'fr', 'de', 'pt', 'it']
+      const ranked = al
+        .split(',')
+        .map((p) => {
+          const [tag, qPart] = p.trim().split(';')
+          const q = qPart?.startsWith('q=') ? parseFloat(qPart.slice(2)) : 1
+          return { base: tag.trim().toLowerCase().split('-')[0], q: Number.isFinite(q) ? q : 1 }
+        })
+        .sort((a, b) => b.q - a.q)
+      const detected = ranked.find((r) => supported.includes(r.base))?.base
+      if (detected) {
+        supabaseResponse.cookies.set(LOCALE_COOKIE, detected, {
+          maxAge: 60 * 60 * 24 * 365, // 1 año
+          httpOnly: false,            // getLocale (server) + getTranslator (client) la leen
+          sameSite: 'lax',
+          path: '/',
+        })
+      }
+    }
+  }
+
   return supabaseResponse
 }

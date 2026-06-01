@@ -96,6 +96,34 @@ const translations: Record<string, Record<string, string>> = {
     // ─── Auth ───
     'Iniciar sesión': 'Log in', 'Registrarse': 'Sign up',
 
+    // ─── Public header / footer / nav (Fase 1 i18n) ───
+    // (claves ya presentes arriba — 'Buscar perros', 'Privacidad',
+    //  'Iniciar sesión' — NO se repiten aquí para no duplicar.)
+    'Criaderos': 'Kennels', 'Precios': 'Pricing', 'Blog': 'Blog',
+    'Abrir menú': 'Open menu', 'Cerrar menú': 'Close menu',
+    'Explorar': 'Explore', 'Producto': 'Product', 'Recursos': 'Resources',
+    'Crear cuenta': 'Create account',
+    'Para criadores': 'For breeders', 'Para propietarios': 'For owners',
+    'Directorio criaderos': 'Kennel directory',
+    'API pública': 'Public API', 'Cuenta': 'Account',
+    'Crear cuenta criador': 'Create breeder account',
+    'Crear cuenta propietario': 'Create owner account',
+    'Recuperar contraseña': 'Reset password', 'Soporte': 'Support',
+    'Legal': 'Legal', 'Aviso legal': 'Legal notice',
+    'Términos y condiciones': 'Terms & conditions',
+    'Cookies': 'Cookies', 'Propiedad intelectual': 'Intellectual property',
+    'Reportar contenido': 'Report content',
+    'El registro público de genealogías caninas. Para criadores serios y propietarios que documentan a sus perros.':
+      'The public registry of canine genealogies. For serious breeders and owners who document their dogs.',
+    'La genealogía de tu perro, donde tiene que estar.':
+      'Your dog’s genealogy, where it belongs.',
+    'Razas': 'Breeds', 'Empezar gratis': 'Start free',
+    'Explorar el catálogo': 'Explore the catalog',
+    'Buscar criaderos': 'Search kennels', 'Estándares raciales': 'Breed standards',
+    '+250.000 perros con genealogía': '+250,000 dogs with genealogy',
+    'Criaderos verificados': 'Verified kennels',
+    'Genealogic': 'Genealogic',
+
     // ─── Filters ───
     'Todos los sexos': 'All sexes', 'Todas las razas': 'All breeds',
     'Ambos sexos': 'Both sexes', 'Todos los origenes': 'All sources',

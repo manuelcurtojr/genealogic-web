@@ -6,11 +6,16 @@
  *   + páginas públicas de perro/criadero (cuando no logueado).
  *
  * Diseño dark con 4 columnas: brand · Producto · Cuenta · Legal.
+ * i18n: recibe `locale` (resuelto server-side) y traduce con getTranslator.
+ * Incluye el LanguageSwitcher (cliente) para que el anónimo cambie idioma.
  */
 import Link from 'next/link'
 import { Wordmark } from '@/components/ui/wordmark'
+import { getTranslator } from '@/lib/i18n'
+import LanguageSwitcher from '@/components/ui/language-switcher'
 
-export default function MarketingFooter() {
+export default function MarketingFooter({ locale = 'es' }: { locale?: string }) {
+  const t = getTranslator(locale)
   return (
     <footer className="bg-surface-dark text-on-dark">
       <div className="mx-auto max-w-[1200px] px-6 py-16 lg:px-12">
@@ -18,50 +23,53 @@ export default function MarketingFooter() {
           <div>
             <Wordmark size="text-2xl" className="!text-white" asLink={false} />
             <p className="mt-3 max-w-[280px] text-[13px] leading-[1.55] text-on-dark-soft">
-              El registro público de genealogías caninas. Para criadores serios y propietarios que documentan a sus perros.
+              {t('El registro público de genealogías caninas. Para criadores serios y propietarios que documentan a sus perros.')}
             </p>
           </div>
 
           <FooterCol
-            title="Producto"
+            title={t('Producto')}
             links={[
-              { label: 'Para criadores', href: '/criadores' },
-              { label: 'Para propietarios', href: '/propietarios' },
-              { label: 'Precios', href: '/pricing' },
-              { label: 'Buscar perros', href: '/search' },
-              { label: 'Directorio criaderos', href: '/kennels' },
-              { label: 'Blog', href: '/blog' },
-              { label: 'API pública', href: '/api-docs' },
+              { label: t('Para criadores'), href: '/criadores' },
+              { label: t('Para propietarios'), href: '/propietarios' },
+              { label: t('Precios'), href: '/pricing' },
+              { label: t('Buscar perros'), href: '/search' },
+              { label: t('Directorio criaderos'), href: '/kennels' },
+              { label: t('Blog'), href: '/blog' },
+              { label: t('API pública'), href: '/api-docs' },
             ]}
           />
 
           <FooterCol
-            title="Cuenta"
+            title={t('Cuenta')}
             links={[
-              { label: 'Iniciar sesión', href: '/login' },
-              { label: 'Crear cuenta criador', href: '/register?intent=breeder' },
-              { label: 'Crear cuenta propietario', href: '/register?intent=owner' },
-              { label: 'Recuperar contraseña', href: '/forgot-password' },
-              { label: 'Soporte', href: '/soporte' },
+              { label: t('Iniciar sesión'), href: '/login' },
+              { label: t('Crear cuenta criador'), href: '/register?intent=breeder' },
+              { label: t('Crear cuenta propietario'), href: '/register?intent=owner' },
+              { label: t('Recuperar contraseña'), href: '/forgot-password' },
+              { label: t('Soporte'), href: '/soporte' },
             ]}
           />
 
           <FooterCol
-            title="Legal"
+            title={t('Legal')}
             links={[
-              { label: 'Aviso legal', href: '/legal' },
-              { label: 'Términos y condiciones', href: '/terms' },
-              { label: 'Privacidad', href: '/privacy' },
-              { label: 'Cookies', href: '/cookies' },
-              { label: 'Propiedad intelectual', href: '/ip-policy' },
-              { label: 'Reportar contenido', href: 'mailto:hola@genealogic.io?subject=Reporte%20de%20contenido' },
+              { label: t('Aviso legal'), href: '/legal' },
+              { label: t('Términos y condiciones'), href: '/terms' },
+              { label: t('Privacidad'), href: '/privacy' },
+              { label: t('Cookies'), href: '/cookies' },
+              { label: t('Propiedad intelectual'), href: '/ip-policy' },
+              { label: t('Reportar contenido'), href: 'mailto:hola@genealogic.io?subject=Reporte%20de%20contenido' },
             ]}
           />
         </div>
 
-        <div className="mt-12 pt-6 flex flex-col gap-2 text-[12px] text-on-dark-soft sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col gap-4 text-[12px] text-on-dark-soft sm:flex-row sm:items-center sm:justify-between">
           <span>© {new Date().getFullYear()} <strong className="font-medium text-white/90">Manuel Curtó SL</strong> · B56932098 · Tenerife, España</span>
-          <span>La genealogía de tu perro, donde tiene que estar.</span>
+          <div className="flex items-center gap-5">
+            <span className="hidden sm:inline">{t('La genealogía de tu perro, donde tiene que estar.')}</span>
+            <LanguageSwitcher current={locale} variant="dark" />
+          </div>
         </div>
       </div>
     </footer>

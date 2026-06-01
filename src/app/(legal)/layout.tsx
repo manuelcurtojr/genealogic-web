@@ -5,6 +5,7 @@ import LegalSidebar from '@/components/legal/legal-sidebar'
 import LegalHero from '@/components/legal/legal-hero'
 import LegalFooterNav from '@/components/legal/legal-footer-nav'
 import { loadShellContext } from '@/lib/auth/load-shell-context'
+import { getLocale } from '@/lib/locale'
 
 /**
  * Layout único para todas las páginas legales.
@@ -72,11 +73,12 @@ export default async function LegalLayout({ children }: { children: React.ReactN
     )
   }
 
+  const locale = await getLocale()
   return (
     <div className="min-h-screen bg-canvas text-ink flex flex-col">
-      <MarketingHeader />
+      <MarketingHeader locale={locale} />
       <main className="flex-1">{legalBody}</main>
-      <MarketingFooter />
+      <MarketingFooter locale={locale} />
     </div>
   )
 }

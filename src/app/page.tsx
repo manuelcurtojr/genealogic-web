@@ -16,6 +16,7 @@ import MarketingFooter from '@/components/marketing/marketing-footer'
 import DiscoveryHome from '@/components/marketing/discovery-home'
 import { WebSiteJsonLd, SiteNavigationJsonLd } from '@/lib/seo/json-ld'
 import { allPosts } from '@/content/blog'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,6 +28,9 @@ export default async function Home() {
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
     redirect(profile?.role === 'admin' ? '/admin' : '/dashboard')
   }
+
+  // Locale para header/footer (anónimo: cookie → Accept-Language → es).
+  const locale = await getLocale()
 
   // Admin client para que los counts no se trunquen a 1000 en tablas grandes
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -131,7 +135,7 @@ export default async function Home() {
           marca), pero sin estos schemas la probabilidad es muy baja. */}
       <WebSiteJsonLd />
       <SiteNavigationJsonLd />
-      <MarketingHeader />
+      <MarketingHeader locale={locale} />
       <main className="flex-1">
         <DiscoveryHome
           counts={{
@@ -157,7 +161,7 @@ export default async function Home() {
           mosaicPhotos={mosaicPhotos}
         />
       </main>
-      <MarketingFooter />
+      <MarketingFooter locale={locale} />
     </div>
   )
 }
