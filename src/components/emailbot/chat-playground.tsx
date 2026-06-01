@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { Send, RotateCcw, BookOpen, Beaker, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   kennelId: string
@@ -41,6 +42,7 @@ const EXAMPLES: Record<string, string[]> = {
 }
 
 export default function ChatPlayground({ kennelId, kennelName, knowledgeCount }: Props) {
+  const t = useT()
   const [scenario, setScenario] = useState('new_lead')
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -69,7 +71,7 @@ export default function ChatPlayground({ kennelId, kennelName, knowledgeCount }:
         body: JSON.stringify({ kennel_id: kennelId, scenario, messages: next }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Error en el bot')
+      if (!res.ok) throw new Error(data.error || t('Error en el bot'))
       setMessages([...next, { role: 'assistant', content: data.reply }])
     } catch (err: any) {
       setError(err.message)
@@ -90,10 +92,10 @@ export default function ChatPlayground({ kennelId, kennelName, knowledgeCount }:
         <div>
           <h1 className="text-2xl font-bold text-ink tracking-tight flex items-center gap-2">
             <Beaker className="w-6 h-6 text-muted" />
-            Test del Emailbot
+            {t('Test del Emailbot')}
           </h1>
           <p className="text-sm text-muted mt-0.5">
-            Simula consultas reales para ver cómo respondería tu bot con la Biblioteca actual.
+            {t('Simula consultas reales para ver cómo respondería tu bot con la Biblioteca actual.')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -102,7 +104,7 @@ export default function ChatPlayground({ kennelId, kennelName, knowledgeCount }:
             className="text-xs font-medium text-body hover:text-ink inline-flex items-center gap-1.5 border border-hairline rounded-lg px-3 py-1.5 transition hover:bg-surface-soft"
           >
             <BookOpen className="w-3.5 h-3.5" />
-            {knowledgeCount} en Biblioteca
+            {knowledgeCount} {t('en Biblioteca')}
           </Link>
           {messages.length > 0 && (
             <button
@@ -110,7 +112,7 @@ export default function ChatPlayground({ kennelId, kennelName, knowledgeCount }:
               className="text-xs font-medium text-body hover:text-ink inline-flex items-center gap-1.5 border border-hairline rounded-lg px-3 py-1.5 transition hover:bg-surface-soft"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              Limpiar
+              {t('Limpiar')}
             </button>
           )}
         </div>
@@ -121,7 +123,7 @@ export default function ChatPlayground({ kennelId, kennelName, knowledgeCount }:
         <div className="flex items-start gap-2.5 bg-surface-card border border-hairline rounded-xl p-3 mb-4">
           <AlertCircle className="w-4 h-4 text-muted flex-shrink-0 mt-0.5" />
           <div className="text-sm text-body flex-1">
-            La <Link href="/conocimiento" className="font-semibold text-ink underline">Biblioteca</Link> está vacía. El bot responderá de forma genérica hasta que añadas precio, política de reserva, etc.
+            {t('La')} <Link href="/conocimiento" className="font-semibold text-ink underline">{t('Biblioteca')}</Link> {t('está vacía. El bot responderá de forma genérica hasta que añadas precio, política de reserva, etc.')}
           </div>
         </div>
       )}
@@ -132,14 +134,14 @@ export default function ChatPlayground({ kennelId, kennelName, knowledgeCount }:
           <button
             key={s.key}
             onClick={() => setScenario(s.key)}
-            title={s.help}
+            title={t(s.help)}
             className={`text-xs font-medium px-3 py-1.5 rounded-full transition ${
               scenario === s.key
                 ? 'bg-ink text-on-primary'
                 : 'border border-hairline text-body hover:text-ink hover:bg-surface-soft'
             }`}
           >
-            {s.label}
+            {t(s.label)}
           </button>
         ))}
       </div>
@@ -151,15 +153,15 @@ export default function ChatPlayground({ kennelId, kennelName, knowledgeCount }:
       >
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center">
-            <p className="text-sm text-muted mb-4">Escribe una consulta o prueba un ejemplo:</p>
+            <p className="text-sm text-muted mb-4">{t('Escribe una consulta o prueba un ejemplo:')}</p>
             <div className="space-y-2 max-w-md w-full">
               {(EXAMPLES[scenario] || []).map((ex, i) => (
                 <button
                   key={i}
-                  onClick={() => sendMessage(ex)}
+                  onClick={() => sendMessage(t(ex))}
                   className="w-full text-left text-sm text-body bg-surface-card hover:bg-surface-soft border border-hairline rounded-lg px-3 py-2 transition"
                 >
-                  {ex}
+                  {t(ex)}
                 </button>
               ))}
             </div>
@@ -212,12 +214,12 @@ export default function ChatPlayground({ kennelId, kennelName, knowledgeCount }:
           value={input}
           onChange={e => setInput(e.target.value)}
           disabled={loading}
-          placeholder="Escribe una consulta como si fueras una familia interesada…"
+          placeholder={t('Escribe una consulta como si fueras una familia interesada…')}
           className="flex-1 px-4 py-2.5 text-sm border border-hairline rounded-lg bg-canvas text-ink placeholder:text-muted focus:outline-none focus:border-ink transition disabled:opacity-50"
         />
         <Button variant="primary" size="md" type="submit" disabled={!input.trim() || loading}>
           <Send className="w-4 h-4" />
-          Enviar
+          {t('Enviar')}
         </Button>
       </form>
     </div>

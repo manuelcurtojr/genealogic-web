@@ -20,11 +20,14 @@ import { getModel, getDefaultModel } from '@/lib/ai/models'
 import { estimateRunCostCents } from '@/lib/ai/emailbot-tester'
 import { hasEnterpriseFeatures } from '@/lib/permissions'
 import ComingSoon from '@/components/early-access/coming-soon'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Test Suite · Emailbot · Genealogic Pro' }
 
 export default async function TestSuitePage() {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -40,7 +43,7 @@ export default async function TestSuitePage() {
         <EmailbotSubnav />
         <div className="max-w-2xl mx-auto py-10">
           <h1 className="text-3xl font-bold text-ink mb-3">Test Suite</h1>
-          <p className="text-body">Necesitas un criadero registrado.</p>
+          <p className="text-body">{t('Necesitas un criadero registrado.')}</p>
         </div>
       </div>
     )
@@ -54,9 +57,9 @@ export default async function TestSuitePage() {
         <EmailbotSubnav />
         <ComingSoon
           featureId="bot_test_suite"
-          description="Bate 16 perfiles ficticios contra tu bot y obtén scoring + bugs detectados. Llegará para todos cuando tengamos sistema de cuotas y pago por uso."
+          description={t('Bate 16 perfiles ficticios contra tu bot y obtén scoring + bugs detectados. Llegará para todos cuando tengamos sistema de cuotas y pago por uso.')}
           backHref="/emailbot"
-          backLabel="← Volver al Emailbot"
+          backLabel={t('← Volver al Emailbot')}
         />
       </div>
     )
@@ -92,17 +95,14 @@ export default async function TestSuitePage() {
 
       <header className="mt-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-          Emailbot · Suite de tests
+          Emailbot · {t('Suite de tests')}
         </p>
         <h1 className="mt-2 text-3xl font-bold text-ink tracking-tight inline-flex items-center gap-3">
           <FlaskConical className="h-7 w-7" />
-          Probar el bot con {profiles} perfiles ficticios
+          {t('Probar el bot con')} {profiles} {t('perfiles ficticios')}
         </h1>
         <p className="mt-2 text-body max-w-3xl">
-          Lanza una batería de conversaciones simuladas con perfiles de cliente
-          diversos (familias, criadores, abogados, intentos de fraude). Un
-          evaluador puntúa cada hilo y detecta bugs como alucinaciones,
-          descuentos no autorizados o filtraciones de datos.
+          {t('Lanza una batería de conversaciones simuladas con perfiles de cliente diversos (familias, criadores, abogados, intentos de fraude). Un evaluador puntúa cada hilo y detecta bugs como alucinaciones, descuentos no autorizados o filtraciones de datos.')}
         </p>
       </header>
 
@@ -111,25 +111,22 @@ export default async function TestSuitePage() {
         <div className="flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-amber-900 flex-1">
-            <p className="font-bold mb-1">Herramienta potente con coste real</p>
+            <p className="font-bold mb-1">{t('Herramienta potente con coste real')}</p>
             <p className="leading-relaxed">
-              Cada test lanza ~{profiles || 16} conversaciones contra IAs reales (modelo
-              del bot + simulador del cliente + evaluador). El gasto se carga a
-              tu cuenta de Genealogic y aparece en{' '}
+              {t('Cada test lanza ~')}{profiles || 16} {t('conversaciones contra IAs reales (modelo del bot + simulador del cliente + evaluador). El gasto se carga a tu cuenta de Genealogic y aparece en')}{' '}
               <Link href="/cuenta/facturacion" className="underline font-semibold">
                 /cuenta/facturación
               </Link>
-              {' '}como uso de IA fuera de la cuota de respuestas del bot.
+              {' '}{t('como uso de IA fuera de la cuota de respuestas del bot.')}
             </p>
             <p className="mt-2 leading-relaxed">
-              <strong>Coste estimado por test completo:</strong>{' '}
+              <strong>{t('Coste estimado por test completo:')}</strong>{' '}
               ~<strong>{(estimatedCostCents / 100).toFixed(2)} €</strong>{' '}
-              con tu modelo actual (<strong>{model.label}</strong>). Cambia a un
-              modelo más barato en{' '}
+              {t('con tu modelo actual (')}<strong>{model.label}</strong>{t('). Cambia a un modelo más barato en')}{' '}
               <Link href="/emailbot" className="underline font-semibold">
-                la configuración del bot
+                {t('la configuración del bot')}
               </Link>{' '}
-              si quieres bajar el coste.
+              {t('si quieres bajar el coste.')}
             </p>
           </div>
         </div>
@@ -147,23 +144,23 @@ export default async function TestSuitePage() {
 
       {/* Historial de runs */}
       <section className="mt-8">
-        <h2 className="text-base font-bold text-ink mb-3">Historial de tests</h2>
+        <h2 className="text-base font-bold text-ink mb-3">{t('Historial de tests')}</h2>
         {(!runs || runs.length === 0) ? (
           <div className="rounded-xl border border-dashed border-hairline px-6 py-12 text-center text-muted">
-            Aún no has lanzado ningún test. Pulsa el botón de arriba para empezar.
+            {t('Aún no has lanzado ningún test. Pulsa el botón de arriba para empezar.')}
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-hairline bg-canvas">
             <table className="w-full text-sm">
               <thead className="bg-surface-soft/50 border-b border-hairline">
                 <tr>
-                  <Th>Fecha</Th>
-                  <Th>Estado</Th>
-                  <Th align="right">Conv.</Th>
-                  <Th align="right">Pass rate</Th>
-                  <Th align="right">Duración</Th>
-                  <Th align="right">Coste</Th>
-                  <Th align="right">Modelo</Th>
+                  <Th>{t('Fecha')}</Th>
+                  <Th>{t('Estado')}</Th>
+                  <Th align="right">{t('Conv.')}</Th>
+                  <Th align="right">{t('Pass rate')}</Th>
+                  <Th align="right">{t('Duración')}</Th>
+                  <Th align="right">{t('Coste')}</Th>
+                  <Th align="right">{t('Modelo')}</Th>
                   <Th />
                 </tr>
               </thead>
@@ -174,7 +171,7 @@ export default async function TestSuitePage() {
                   return (
                     <tr key={r.id} className="border-t border-hairline-soft hover:bg-surface-soft transition">
                       <td className="px-4 py-2.5 text-body text-[12.5px]">{fmtDate(r.started_at)}</td>
-                      <td className="px-4 py-2.5"><StatusBadge status={r.status} /></td>
+                      <td className="px-4 py-2.5"><StatusBadge status={r.status} t={t} /></td>
                       <td className="px-4 py-2.5 text-right text-body tabular-nums">{total}</td>
                       <td className="px-4 py-2.5 text-right">
                         <PassRateBadge total={total} passed={r.passed} pct={passRate} />
@@ -193,7 +190,7 @@ export default async function TestSuitePage() {
                           href={`/emailbot/test-suite/runs/${r.id}`}
                           className="inline-flex items-center text-ink hover:underline text-[12.5px] font-semibold"
                         >
-                          Ver <ChevronRight className="w-3.5 h-3.5" />
+                          {t('Ver')} <ChevronRight className="w-3.5 h-3.5" />
                         </Link>
                       </td>
                     </tr>
@@ -229,11 +226,11 @@ function Th({ children, align = 'left' }: { children?: React.ReactNode; align?: 
   )
 }
 
-function StatusBadge({ status }: { status: 'running' | 'completed' | 'failed' }) {
+function StatusBadge({ status, t }: { status: 'running' | 'completed' | 'failed'; t: (k: string) => string }) {
   const map = {
-    running:   { label: '⏳ Ejecutando', cls: 'bg-blue-50 text-blue-800' },
-    completed: { label: '✓ Completado',  cls: 'bg-emerald-50 text-emerald-800' },
-    failed:    { label: '✕ Falló',       cls: 'bg-red-50 text-red-700' },
+    running:   { label: `⏳ ${t('Ejecutando')}`, cls: 'bg-blue-50 text-blue-800' },
+    completed: { label: `✓ ${t('Completado')}`,  cls: 'bg-emerald-50 text-emerald-800' },
+    failed:    { label: `✕ ${t('Falló')}`,       cls: 'bg-red-50 text-red-700' },
   }[status]
   return (
     <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${map.cls}`}>

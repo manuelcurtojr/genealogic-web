@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import SlidePanel from '@/components/ui/slide-panel'
 import { Button } from '@/components/ui/button'
 import { Trash2 } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Subscriber {
   id: string
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export default function SubscriberFormPanel({ open, onClose, onSaved, onDeleted, editing, kennelId }: Props) {
+  const t = useT()
   const [email, setEmail] = useState('')
   const [fullName, setFullName] = useState('')
   const [source, setSource] = useState('manual')
@@ -52,9 +54,9 @@ export default function SubscriberFormPanel({ open, onClose, onSaved, onDeleted,
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!email.trim()) return alert('Email es obligatorio')
+    if (!email.trim()) return alert(t('Email es obligatorio'))
     setSaving(true)
-    const tags = tagsText.split(',').map(t => t.trim()).filter(Boolean)
+    const tags = tagsText.split(',').map(tag => tag.trim()).filter(Boolean)
     try {
       const url = editing ? `/api/newsletter/subscribers/${editing.id}` : '/api/newsletter/subscribers'
       const method = editing ? 'PATCH' : 'POST'
@@ -70,7 +72,7 @@ export default function SubscriberFormPanel({ open, onClose, onSaved, onDeleted,
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Error al guardar')
+        throw new Error(err.error || t('Error al guardar'))
       }
       const data = await res.json()
       onSaved(data.subscriber)
@@ -83,13 +85,13 @@ export default function SubscriberFormPanel({ open, onClose, onSaved, onDeleted,
 
   async function handleDelete() {
     if (!editing) return
-    if (!confirm('¿Eliminar este suscriptor? Si solo quieres marcarlo como baja, desactiva el checkbox de activo en su lugar.')) return
+    if (!confirm(t('¿Eliminar este suscriptor? Si solo quieres marcarlo como baja, desactiva el checkbox de activo en su lugar.'))) return
     setDeleting(true)
     try {
       const res = await fetch(`/api/newsletter/subscribers/${editing.id}`, { method: 'DELETE' })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Error al eliminar')
+        throw new Error(err.error || t('Error al eliminar'))
       }
       onDeleted(editing.id)
     } catch (err: any) {
@@ -100,44 +102,44 @@ export default function SubscriberFormPanel({ open, onClose, onSaved, onDeleted,
   }
 
   return (
-    <SlidePanel open={open} onClose={onClose} title={editing ? 'Editar suscriptor' : 'Nuevo suscriptor'}>
+    <SlidePanel open={open} onClose={onClose} title={editing ? t('Editar suscriptor') : t('Nuevo suscriptor')}>
       <form onSubmit={handleSubmit} className="space-y-5">
-        <Field label="Email *">
+        <Field label={t('Email *')}>
           <input
             type="email" required value={email} onChange={e => setEmail(e.target.value)}
             className="input" placeholder="familia@ejemplo.com"
             disabled={!!editing}
           />
-          {editing && <span className="block text-[11px] text-muted mt-1">El email no se puede editar.</span>}
+          {editing && <span className="block text-[11px] text-muted mt-1">{t('El email no se puede editar.')}</span>}
         </Field>
 
-        <Field label="Nombre">
+        <Field label={t('Nombre')}>
           <input
             type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-            className="input" placeholder="María García (opcional)"
+            className="input" placeholder={t('María García (opcional)')}
           />
         </Field>
 
-        <Field label="Origen">
+        <Field label={t('Origen')}>
           <select value={source} onChange={e => setSource(e.target.value)} className="input">
-            <option value="manual">Manual</option>
-            <option value="import">Importado</option>
-            <option value="web_form">Formulario web</option>
-            <option value="reservation">Reserva</option>
-            <option value="contract">Contrato</option>
+            <option value="manual">{t('Manual')}</option>
+            <option value="import">{t('Importado')}</option>
+            <option value="web_form">{t('Formulario web')}</option>
+            <option value="reservation">{t('Reserva')}</option>
+            <option value="contract">{t('Contrato')}</option>
           </select>
         </Field>
 
-        <Field label="Etiquetas (separadas por coma)">
+        <Field label={t('Etiquetas (separadas por coma)')}>
           <input
             type="text" value={tagsText} onChange={e => setTagsText(e.target.value)}
-            className="input" placeholder="cliente, monográfica-madrid, lista-espera"
+            className="input" placeholder={t('cliente, monográfica-madrid, lista-espera')}
           />
         </Field>
 
         <label className="flex items-center gap-2.5 cursor-pointer">
           <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} className="w-4 h-4" />
-          <span className="text-sm text-body">Suscripción activa</span>
+          <span className="text-sm text-body">{t('Suscripción activa')}</span>
         </label>
 
         <div className="flex items-center justify-between pt-4 border-t border-hairline">
@@ -147,13 +149,13 @@ export default function SubscriberFormPanel({ open, onClose, onSaved, onDeleted,
               className="text-sm text-muted hover:text-[color:var(--error)] transition inline-flex items-center gap-1.5 disabled:opacity-50"
             >
               <Trash2 className="w-4 h-4" />
-              {deleting ? 'Eliminando…' : 'Eliminar'}
+              {deleting ? t('Eliminando…') : t('Eliminar')}
             </button>
           ) : <div />}
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={onClose}>Cancelar</Button>
+            <Button variant="ghost" size="sm" onClick={onClose}>{t('Cancelar')}</Button>
             <Button variant="primary" size="sm" type="submit" disabled={saving}>
-              {saving ? 'Guardando…' : (editing ? 'Guardar' : 'Crear')}
+              {saving ? t('Guardando…') : (editing ? t('Guardar') : t('Crear'))}
             </Button>
           </div>
         </div>

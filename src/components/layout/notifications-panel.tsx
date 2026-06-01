@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { getNotificationMeta, timeAgo } from '@/lib/notifications/types'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Notification {
   id: string
@@ -40,20 +41,21 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Baby, KanbanSquare, Upload, Store, Info,
 }
 
-function renderMessage(n: Notification): string {
+function renderMessage(n: Notification, t: (k: string) => string): string {
   if (n.type === 'import') {
     try {
       const p = JSON.parse(n.message)
-      return `${p.createdIds?.length ?? p.count ?? 0} perros importados`
+      return `${p.createdIds?.length ?? p.count ?? 0} ${t('perros importados')}`
     } catch {
       return n.message
     }
   }
-  if (n.type === 'import_draft') return 'Borrador pendiente de confirmar'
+  if (n.type === 'import_draft') return t('Borrador pendiente de confirmar')
   return n.message
 }
 
 export default function NotificationsPanel({ open, onClose }: NotificationsPanelProps) {
+  const t = useT()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(false)
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
@@ -145,7 +147,7 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-hairline flex-shrink-0">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold text-ink">Notificaciones</h2>
+            <h2 className="text-lg font-semibold text-ink">{t('Notificaciones')}</h2>
             {unread > 0 && (
               <span className="bg-ink text-on-primary text-[10px] font-bold rounded-full min-w-[20px] h-5 px-1.5 flex items-center justify-center">
                 {unread}
@@ -167,7 +169,7 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
                 : 'border-transparent text-muted hover:text-body'
             }`}
           >
-            Todas
+            {t('Todas')}
           </button>
           <button
             onClick={() => setFilter('unread')}
@@ -177,14 +179,14 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
                 : 'border-transparent text-muted hover:text-body'
             }`}
           >
-            No leídas {unread > 0 && <span className="text-muted">({unread})</span>}
+            {t('No leídas')} {unread > 0 && <span className="text-muted">({unread})</span>}
           </button>
           <button
             onClick={markAllRead}
             disabled={unread === 0}
             className="ml-auto self-center text-xs text-muted hover:text-ink transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
           >
-            <Check className="w-3 h-3" /> Marcar leídas
+            <Check className="w-3 h-3" /> {t('Marcar leídas')}
           </button>
         </div>
 
@@ -198,12 +200,12 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
             <div className="flex flex-col items-center justify-center h-full text-muted px-6 text-center">
               <Bell className="w-10 h-10 mb-3 opacity-30" />
               <p className="text-sm font-semibold text-ink">
-                {filter === 'unread' ? '¡Todo al día!' : 'Sin notificaciones'}
+                {filter === 'unread' ? t('¡Todo al día!') : t('Sin notificaciones')}
               </p>
               <p className="text-xs text-muted mt-1">
                 {filter === 'unread'
-                  ? 'No tienes nada pendiente.'
-                  : 'Te avisaremos aquí en tiempo real.'}
+                  ? t('No tienes nada pendiente.')
+                  : t('Te avisaremos aquí en tiempo real.')}
               </p>
             </div>
           ) : (
@@ -246,7 +248,7 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
                           )}
                         </div>
                         <p className="text-xs text-muted mt-0.5 line-clamp-2">
-                          {renderMessage(notif)}
+                          {renderMessage(notif, t)}
                         </p>
                         <p className="text-[11px] text-muted mt-1">{timeAgo(notif.created_at)}</p>
                       </div>
@@ -265,7 +267,7 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
             onClick={onClose}
             className="flex items-center justify-center gap-1.5 w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink transition"
           >
-            Ver centro de notificaciones
+            {t('Ver centro de notificaciones')}
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>

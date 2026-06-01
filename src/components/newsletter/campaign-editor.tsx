@@ -23,6 +23,7 @@ import {
 import { AUDIENCE_LABELS, AUDIENCE_HINTS, type AudienceType } from '@/lib/newsletter/audiences-shared'
 import { renderContractMarkdown } from '@/lib/contracts/markdown'
 import { ComingSoonChip } from '@/components/early-access/coming-soon'
+import { useT } from '@/components/i18n/locale-provider'
 
 export type CampaignRow = {
   id: string
@@ -66,6 +67,7 @@ export default function CampaignEditor({
   canSend?: boolean
 }) {
   const router = useRouter()
+  const t = useT()
   const isLocked = ['sending', 'sent'].includes(initial.status)
   const [tab, setTab] = useState<Tab>(isLocked ? 'send' : 'edit')
 
@@ -132,9 +134,9 @@ export default function CampaignEditor({
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'test_failed')
-      setTestResult(`✓ Prueba enviada a ${testEmail}`)
+      setTestResult(`✓ ${t('Prueba enviada a')} ${testEmail}`)
     } catch (e) {
-      setTestResult(`✕ ${e instanceof Error ? e.message : 'Error'}`)
+      setTestResult(`✕ ${e instanceof Error ? e.message : t('Error')}`)
     } finally {
       setTestSending(false)
     }
@@ -152,16 +154,16 @@ export default function CampaignEditor({
         setSendResult({ sent: json.sent, failed: json.failed })
         router.refresh()
       } catch (e) {
-        setSendError(e instanceof Error ? e.message : 'Error enviando')
+        setSendError(e instanceof Error ? e.message : t('Error enviando'))
       }
     })
   }
 
   async function deleteCampaign() {
-    if (!confirm('¿Borrar esta campaña? No se puede deshacer.')) return
+    if (!confirm(t('¿Borrar esta campaña? No se puede deshacer.'))) return
     const res = await fetch(`/api/newsletter/campaigns/${initial.id}`, { method: 'DELETE' })
     if (res.ok) router.push('/newsletter')
-    else alert('Error al borrar')
+    else alert(t('Error al borrar'))
   }
 
   const audienceCount = audiences[draft.audience_type] || 0
@@ -176,20 +178,20 @@ export default function CampaignEditor({
             value={draft.title}
             onChange={(e) => update('title', e.target.value)}
             disabled={isLocked}
-            placeholder="Título interno de la campaña"
+            placeholder={t('Título interno de la campaña')}
             className="w-full text-3xl font-bold tracking-tight text-ink bg-transparent border-0 border-b border-hairline pb-2 focus:outline-none focus:border-ink/30 disabled:opacity-60"
           />
           <div className="mt-2 flex items-center gap-3 text-[12px] text-muted">
-            <StatusBadge status={draft.status} />
+            <StatusBadge status={draft.status} t={t} />
             {saving ? (
               <span className="inline-flex items-center gap-1">
                 <Loader2 className="w-3 h-3 animate-spin" />
-                Guardando...
+                {t('Guardando...')}
               </span>
             ) : savedAt ? (
               <span className="inline-flex items-center gap-1 text-emerald-700">
                 <CheckCircle2 className="w-3 h-3" />
-                Guardado {savedAt}
+                {t('Guardado')} {savedAt}
               </span>
             ) : null}
           </div>
@@ -200,7 +202,7 @@ export default function CampaignEditor({
             className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-red-600"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            Borrar
+            {t('Borrar')}
           </button>
         )}
       </header>
@@ -208,13 +210,13 @@ export default function CampaignEditor({
       {/* Tabs */}
       <div className="flex border-b border-hairline mb-5">
         <TabButton active={tab === 'edit'} onClick={() => setTab('edit')} icon={FileText} disabled={isLocked}>
-          1. Editar contenido
+          1. {t('Editar contenido')}
         </TabButton>
         <TabButton active={tab === 'audience'} onClick={() => setTab('audience')} icon={Users} disabled={isLocked}>
-          2. Audiencia ({audienceCount})
+          2. {t('Audiencia')} ({audienceCount})
         </TabButton>
         <TabButton active={tab === 'send'} onClick={() => setTab('send')} icon={Send}>
-          3. {isLocked ? 'Resultado' : 'Enviar'}
+          3. {isLocked ? t('Resultado') : t('Enviar')}
         </TabButton>
       </div>
 
@@ -223,27 +225,27 @@ export default function CampaignEditor({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Form */}
           <div className="space-y-3">
-            <Field label="Asunto del email" required>
+            <Field label={t('Asunto del email')} required>
               <input
                 type="text"
                 value={draft.subject}
                 onChange={(e) => update('subject', e.target.value)}
                 disabled={isLocked}
-                placeholder="Novedades de mayo"
+                placeholder={t('Novedades de mayo')}
                 className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink"
               />
             </Field>
-            <Field label="Preheader (preview text)">
+            <Field label={t('Preheader (preview text)')}>
               <input
                 type="text"
                 value={draft.preheader || ''}
                 onChange={(e) => update('preheader', e.target.value || null)}
                 disabled={isLocked}
-                placeholder="Lo que se ve antes de abrir el email"
+                placeholder={t('Lo que se ve antes de abrir el email')}
                 className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink"
               />
             </Field>
-            <Field label="Imagen cabecera (URL)">
+            <Field label={t('Imagen cabecera (URL)')}>
               <input
                 type="url"
                 value={draft.hero_image_url || ''}
@@ -253,31 +255,31 @@ export default function CampaignEditor({
                 className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink"
               />
             </Field>
-            <Field label="Cuerpo (markdown)">
+            <Field label={t('Cuerpo (markdown)')}>
               <textarea
                 value={draft.body_markdown}
                 onChange={(e) => update('body_markdown', e.target.value)}
                 disabled={isLocked}
                 rows={12}
-                placeholder={'## Próximas novedades\n\nEste mes tenemos camada nueva...'}
+                placeholder={t('## Próximas novedades\n\nEste mes tenemos camada nueva...')}
                 className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink font-mono"
               />
               <p className="mt-1 text-[11px] text-muted">
-                Soporta **negrita**, *cursiva*, # H1, ## H2, listas, [links](url).
+                {t('Soporta **negrita**, *cursiva*, # H1, ## H2, listas, [links](url).')}
               </p>
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="CTA — texto botón">
+              <Field label={t('CTA — texto botón')}>
                 <input
                   type="text"
                   value={draft.cta_label || ''}
                   onChange={(e) => update('cta_label', e.target.value || null)}
                   disabled={isLocked}
-                  placeholder="Ver más"
+                  placeholder={t('Ver más')}
                   className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink"
                 />
               </Field>
-              <Field label="CTA — URL">
+              <Field label={t('CTA — URL')}>
                 <input
                   type="url"
                   value={draft.cta_url || ''}
@@ -288,13 +290,13 @@ export default function CampaignEditor({
                 />
               </Field>
             </div>
-            <Field label="Reply-to (opcional)">
+            <Field label={t('Reply-to (opcional)')}>
               <input
                 type="email"
                 value={draft.reply_to || ''}
                 onChange={(e) => update('reply_to', e.target.value || null)}
                 disabled={isLocked}
-                placeholder="Default: tu email de criador"
+                placeholder={t('Default: tu email de criador')}
                 className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink"
               />
             </Field>
@@ -306,7 +308,7 @@ export default function CampaignEditor({
               className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink disabled:opacity-50"
             >
               <Save className="w-3.5 h-3.5" />
-              Guardar ahora
+              {t('Guardar ahora')}
             </button>
           </div>
 
@@ -314,7 +316,7 @@ export default function CampaignEditor({
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
               <Eye className="inline w-3 h-3 mr-1" />
-              Vista previa
+              {t('Vista previa')}
             </p>
             <div className="rounded-xl border border-hairline bg-canvas overflow-hidden">
               {draft.hero_image_url && (
@@ -323,12 +325,12 @@ export default function CampaignEditor({
               )}
               <div className="p-5">
                 <p className="text-xs text-muted mb-2">
-                  <strong className="text-ink">{kennelName}</strong> · {draft.subject || '(sin asunto)'}
+                  <strong className="text-ink">{kennelName}</strong> · {draft.subject || t('(sin asunto)')}
                 </p>
                 {draft.preheader && (
                   <p className="text-[11px] text-muted italic mb-3">{draft.preheader}</p>
                 )}
-                <p className="text-sm text-body mb-3">Hola [nombre],</p>
+                <p className="text-sm text-body mb-3">{t('Hola [nombre],')}</p>
                 <div
                   className="contract-preview text-sm text-ink"
                   dangerouslySetInnerHTML={{ __html: renderContractMarkdown(draft.body_markdown || '') }}
@@ -341,10 +343,10 @@ export default function CampaignEditor({
                   </div>
                 )}
                 <p className="mt-6 pt-4 border-t border-hairline text-[10px] text-muted text-center">
-                  Recibes este email porque te suscribiste al newsletter de
+                  {t('Recibes este email porque te suscribiste al newsletter de')}
                   {' '}<strong>{kennelName}</strong>.
                   <br />
-                  <span className="underline">Darme de baja</span> · Genealogic
+                  <span className="underline">{t('Darme de baja')}</span> · Genealogic
                 </p>
               </div>
             </div>
@@ -372,10 +374,10 @@ export default function CampaignEditor({
                   } ${isLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                 >
                   <div className="flex items-baseline justify-between gap-2">
-                    <p className="font-bold text-ink">{AUDIENCE_LABELS[a]}</p>
+                    <p className="font-bold text-ink">{t(AUDIENCE_LABELS[a])}</p>
                     <p className="text-2xl font-bold text-ink tabular-nums">{count}</p>
                   </div>
-                  <p className="text-xs text-muted mt-1 leading-relaxed">{AUDIENCE_HINTS[a]}</p>
+                  <p className="text-xs text-muted mt-1 leading-relaxed">{t(AUDIENCE_HINTS[a])}</p>
                 </button>
               )
             })}
@@ -387,12 +389,12 @@ export default function CampaignEditor({
         <div className="space-y-5 max-w-2xl">
           {/* Resumen pre-envío */}
           <div className="rounded-2xl border border-hairline bg-canvas p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Resumen</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">{t('Resumen')}</p>
             <dl className="mt-3 space-y-1.5 text-sm">
-              <Row dt="Asunto" dd={draft.subject || '(sin asunto)'} />
-              <Row dt="Audiencia" dd={`${AUDIENCE_LABELS[draft.audience_type]} (${audienceCount} destinatarios)`} />
-              <Row dt="Reply-to" dd={draft.reply_to || 'tu email por defecto'} />
-              <Row dt="Estado" dd={<StatusBadge status={draft.status} />} />
+              <Row dt={t('Asunto')} dd={draft.subject || t('(sin asunto)')} />
+              <Row dt={t('Audiencia')} dd={`${t(AUDIENCE_LABELS[draft.audience_type])} (${audienceCount} ${t('destinatarios')})`} />
+              <Row dt="Reply-to" dd={draft.reply_to || t('tu email por defecto')} />
+              <Row dt={t('Estado')} dd={<StatusBadge status={draft.status} t={t} />} />
             </dl>
           </div>
 
@@ -400,20 +402,20 @@ export default function CampaignEditor({
           {isLocked ? (
             <div className="rounded-2xl border border-hairline bg-canvas p-5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-3">
-                Resultado del envío
+                {t('Resultado del envío')}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <BigStat label="Destinatarios" value={draft.recipients_total} />
-                <BigStat label="Entregados" value={draft.delivered_count} accent="text-emerald-700" />
-                <BigStat label="Abiertos" value={draft.opened_count} sub={pct(draft.opened_count, draft.delivered_count)} />
-                <BigStat label="Clicks" value={draft.clicked_count} sub={pct(draft.clicked_count, draft.delivered_count)} />
-                <BigStat label="Rebotes" value={draft.bounced_count} accent={draft.bounced_count > 0 ? 'text-amber-700' : ''} />
-                <BigStat label="Bajas" value={draft.unsubscribed_count} accent={draft.unsubscribed_count > 0 ? 'text-amber-700' : ''} />
-                <BigStat label="Fallos" value={draft.failed_count} accent={draft.failed_count > 0 ? 'text-red-700' : ''} />
+                <BigStat label={t('Destinatarios')} value={draft.recipients_total} />
+                <BigStat label={t('Entregados')} value={draft.delivered_count} accent="text-emerald-700" />
+                <BigStat label={t('Abiertos')} value={draft.opened_count} sub={pct(draft.opened_count, draft.delivered_count)} />
+                <BigStat label={t('Clicks')} value={draft.clicked_count} sub={pct(draft.clicked_count, draft.delivered_count)} />
+                <BigStat label={t('Rebotes')} value={draft.bounced_count} accent={draft.bounced_count > 0 ? 'text-amber-700' : ''} />
+                <BigStat label={t('Bajas')} value={draft.unsubscribed_count} accent={draft.unsubscribed_count > 0 ? 'text-amber-700' : ''} />
+                <BigStat label={t('Fallos')} value={draft.failed_count} accent={draft.failed_count > 0 ? 'text-red-700' : ''} />
               </div>
               {draft.sent_at && (
                 <p className="mt-4 text-[11px] text-muted">
-                  Enviada el {new Date(draft.sent_at).toLocaleString('es-ES')}
+                  {t('Enviada el')} {new Date(draft.sent_at).toLocaleString('es-ES')}
                 </p>
               )}
             </div>
@@ -423,11 +425,10 @@ export default function CampaignEditor({
               <div className="rounded-2xl border border-hairline bg-canvas p-5">
                 <p className="text-sm font-semibold text-ink inline-flex items-center gap-2">
                   <Beaker className="w-4 h-4" />
-                  Enviar prueba (1 email)
+                  {t('Enviar prueba (1 email)')}
                 </p>
                 <p className="mt-1 text-xs text-muted">
-                  Te llega un email idéntico al real, con asunto <strong>[PRUEBA]</strong> delante.
-                  Útil para revisar el render antes del envío masivo.
+                  {t('Te llega un email idéntico al real, con asunto')} <strong>[PRUEBA]</strong> {t('delante. Útil para revisar el render antes del envío masivo.')}
                 </p>
                 <div className="mt-3 flex gap-2">
                   <input
@@ -440,11 +441,11 @@ export default function CampaignEditor({
                   <button
                     onClick={sendTest}
                     disabled={testSending || !testEmail.trim() || !canSend}
-                    title={!canSend ? 'Envío de newsletter próximamente disponible' : undefined}
+                    title={!canSend ? t('Envío de newsletter próximamente disponible') : undefined}
                     className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {testSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                    Enviar prueba
+                    {t('Enviar prueba')}
                   </button>
                 </div>
                 {testResult && (
@@ -459,21 +460,19 @@ export default function CampaignEditor({
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-sm font-bold text-ink inline-flex items-center gap-2">
                     <Mail className="w-4 h-4" />
-                    Enviar a {audienceCount} suscriptores
+                    {t('Enviar a')} {audienceCount} {t('suscriptores')}
                   </p>
                   {!canSend && <ComingSoonChip featureId="newsletter_send" />}
                 </div>
                 <p className="mt-1 text-xs text-muted">
                   {canSend ? (
                     <>
-                      Manda la campaña a toda la audiencia <strong>{AUDIENCE_LABELS[draft.audience_type]}</strong>.
-                      Tarda ~{Math.max(5, Math.ceil(audienceCount / 20))} segundos.
-                      No se puede deshacer.
+                      {t('Manda la campaña a toda la audiencia')} <strong>{t(AUDIENCE_LABELS[draft.audience_type])}</strong>.
+                      {' '}{t('Tarda ~')}{Math.max(5, Math.ceil(audienceCount / 20))}{t(' segundos. No se puede deshacer.')}
                     </>
                   ) : (
                     <>
-                      El envío real de campañas está disponible para todos en las próximas semanas.
-                      Mientras tanto puedes diseñar la campaña y previsualizarla aquí.
+                      {t('El envío real de campañas está disponible para todos en las próximas semanas. Mientras tanto puedes diseñar la campaña y previsualizarla aquí.')}
                     </>
                   )}
                 </p>
@@ -486,24 +485,24 @@ export default function CampaignEditor({
                 {sendResult && (
                   <p className="mt-2 text-xs text-emerald-700">
                     <CheckCircle2 className="inline w-3 h-3 mr-1" />
-                    Envío completado: {sendResult.sent} OK, {sendResult.failed} fallaron.
+                    {t('Envío completado:')} {sendResult.sent} OK, {sendResult.failed} {t('fallaron.')}
                   </p>
                 )}
                 <button
                   onClick={() => setConfirmOpen(true)}
                   disabled={sending || audienceCount === 0 || !canSend}
-                  title={!canSend ? 'Envío de newsletter próximamente disponible' : undefined}
+                  title={!canSend ? t('Envío de newsletter próximamente disponible') : undefined}
                   className="mt-3 inline-flex items-center gap-2 rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {sending ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Enviando a {audienceCount} suscriptores...
+                      {t('Enviando a')} {audienceCount} {t('suscriptores...')}
                     </>
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
-                      Enviar ahora
+                      {t('Enviar ahora')}
                     </>
                   )}
                 </button>
@@ -524,20 +523,19 @@ export default function CampaignEditor({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="px-5 py-4 border-b border-hairline flex items-center justify-between">
-              <h3 className="text-base font-bold text-ink">Confirmar envío</h3>
+              <h3 className="text-base font-bold text-ink">{t('Confirmar envío')}</h3>
               <button onClick={() => setConfirmOpen(false)} className="text-muted hover:text-ink">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-5 space-y-3 text-sm text-body">
               <p>
-                Vas a enviar &ldquo;<strong>{draft.subject}</strong>&rdquo; a{' '}
-                <strong>{audienceCount} suscriptores</strong>{' '}
-                ({AUDIENCE_LABELS[draft.audience_type]}).
+                {t('Vas a enviar')} &ldquo;<strong>{draft.subject}</strong>&rdquo; {t('a')}{' '}
+                <strong>{audienceCount} {t('suscriptores')}</strong>{' '}
+                ({t(AUDIENCE_LABELS[draft.audience_type])}).
               </p>
               <p className="text-xs text-muted">
-                No se puede deshacer. Si necesitas cambiar algo, cancela y vuelve a la
-                tab Editar.
+                {t('No se puede deshacer. Si necesitas cambiar algo, cancela y vuelve a la tab Editar.')}
               </p>
             </div>
             <div className="px-5 py-4 bg-surface-soft/40 border-t border-hairline flex gap-2 justify-end">
@@ -545,13 +543,13 @@ export default function CampaignEditor({
                 onClick={() => setConfirmOpen(false)}
                 className="rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:bg-surface-soft"
               >
-                Cancelar
+                {t('Cancelar')}
               </button>
               <button
                 onClick={launchSend}
                 className="rounded-lg bg-ink text-on-primary px-5 py-2 text-sm font-semibold hover:opacity-90"
               >
-                Sí, enviar
+                {t('Sí, enviar')}
               </button>
             </div>
           </div>
@@ -602,7 +600,7 @@ function Row({ dt, dd }: { dt: string; dd: React.ReactNode }) {
   )
 }
 
-function StatusBadge({ status }: { status: CampaignRow['status'] }) {
+function StatusBadge({ status, t }: { status: CampaignRow['status']; t: (key: string) => string }) {
   const map = {
     draft:     { label: 'Borrador',   cls: 'bg-gray-100 text-gray-700' },
     scheduled: { label: 'Programada', cls: 'bg-amber-50 text-amber-800' },
@@ -613,7 +611,7 @@ function StatusBadge({ status }: { status: CampaignRow['status'] }) {
   }[status]
   return (
     <span className={`inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${map.cls}`}>
-      {map.label}
+      {t(map.label)}
     </span>
   )
 }

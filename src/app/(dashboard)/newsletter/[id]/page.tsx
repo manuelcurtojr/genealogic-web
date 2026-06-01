@@ -14,6 +14,8 @@ import CampaignEditor, {
   type CampaignRow,
   type AudienceCounts,
 } from '@/components/newsletter/campaign-editor'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Editor campaña · Newsletter · Genealogic' }
@@ -22,6 +24,7 @@ export default async function CampaignPage({
   params,
 }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -49,7 +52,7 @@ export default async function CampaignPage({
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted hover:text-ink"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
-        Volver a newsletter
+        {t('Volver a newsletter')}
       </Link>
       <CampaignEditor
         kennelId={kennel.id}

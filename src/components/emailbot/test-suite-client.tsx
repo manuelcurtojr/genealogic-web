@@ -15,6 +15,7 @@ import Link from 'next/link'
 import {
   Sparkles, Loader2, AlertTriangle, Check, X, BookOpen, FlaskConical,
 } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function TestSuiteClient({
   kennelId, kennelName, profileCount, knowledgeCount, botModelLabel, estimatedCostCents,
@@ -26,6 +27,7 @@ export default function TestSuiteClient({
   botModelLabel: string
   estimatedCostCents: number
 }) {
+  const t = useT()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [seeding, setSeeding] = useState(false)
@@ -44,7 +46,7 @@ export default function TestSuiteClient({
       if (!res.ok) throw new Error(json.error || 'seed_failed')
       router.refresh()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al sembrar perfiles')
+      setError(e instanceof Error ? e.message : t('Error al sembrar perfiles'))
     } finally {
       setSeeding(false)
     }
@@ -64,7 +66,7 @@ export default function TestSuiteClient({
         // Redirect a detalle del run
         router.push(`/emailbot/test-suite/runs/${json.run_id}`)
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Error al lanzar test')
+        setError(e instanceof Error ? e.message : t('Error al lanzar test'))
       }
     })
   }
@@ -74,11 +76,9 @@ export default function TestSuiteClient({
     return (
       <div className="rounded-2xl border-2 border-dashed border-hairline bg-canvas p-8 text-center">
         <FlaskConical className="mx-auto h-10 w-10 text-muted mb-3" />
-        <p className="text-base font-bold text-ink">Sin perfiles de cliente todavía</p>
+        <p className="text-base font-bold text-ink">{t('Sin perfiles de cliente todavía')}</p>
         <p className="mt-2 text-sm text-muted max-w-md mx-auto">
-          Te sembramos 16 perfiles default (6 happy path, 4 con objeción,
-          4 casos límite, 2 de seguridad) para que empieces a probar tu bot.
-          Después podrás editarlos o añadir los tuyos.
+          {t('Te sembramos 16 perfiles default (6 happy path, 4 con objeción, 4 casos límite, 2 de seguridad) para que empieces a probar tu bot. Después podrás editarlos o añadir los tuyos.')}
         </p>
         {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
         <button
@@ -87,7 +87,7 @@ export default function TestSuiteClient({
           className="mt-5 inline-flex items-center gap-2 rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90 disabled:opacity-50"
         >
           {seeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          Sembrar 16 perfiles default
+          {t('Sembrar 16 perfiles default')}
         </button>
       </div>
     )
@@ -100,15 +100,13 @@ export default function TestSuiteClient({
         <div className="flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-bold text-amber-900">Tu biblioteca está vacía</p>
+            <p className="text-sm font-bold text-amber-900">{t('Tu biblioteca está vacía')}</p>
             <p className="mt-1 text-sm text-amber-800">
-              El bot responderá demasiado genérico (sin precio, sin política, sin
-              garantías) y la mayoría de los tests fallarán. Añade al menos 4-5
-              entradas en la{' '}
+              {t('El bot responderá demasiado genérico (sin precio, sin política, sin garantías) y la mayoría de los tests fallarán. Añade al menos 4-5 entradas en la')}{' '}
               <Link href="/conocimiento" className="underline font-semibold">
-                Biblioteca
+                {t('Biblioteca')}
               </Link>{' '}
-              antes de lanzar el test.
+              {t('antes de lanzar el test.')}
             </p>
           </div>
         </div>
@@ -121,10 +119,10 @@ export default function TestSuiteClient({
     <>
       <div className="rounded-2xl border border-hairline bg-canvas p-5">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
-          <StatBox label="Perfiles activos" value={profileCount.toString()} />
-          <StatBox label="Entradas biblioteca" value={knowledgeCount.toString()} />
-          <StatBox label="Modelo del bot" value={botModelLabel} small />
-          <StatBox label="Coste estimado" value={`~${(estimatedCostCents / 100).toFixed(2)} €`} accent />
+          <StatBox label={t('Perfiles activos')} value={profileCount.toString()} />
+          <StatBox label={t('Entradas biblioteca')} value={knowledgeCount.toString()} />
+          <StatBox label={t('Modelo del bot')} value={botModelLabel} small />
+          <StatBox label={t('Coste estimado')} value={`~${(estimatedCostCents / 100).toFixed(2)} €`} accent />
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 justify-end">
@@ -133,7 +131,7 @@ export default function TestSuiteClient({
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink"
           >
             <BookOpen className="w-4 h-4" />
-            Ver / editar perfiles
+            {t('Ver / editar perfiles')}
           </Link>
           <button
             onClick={() => setConfirmOpen(true)}
@@ -143,19 +141,19 @@ export default function TestSuiteClient({
             {pending ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Procesando {profileCount} conversaciones...
+                {t('Procesando')} {profileCount} {t('conversaciones...')}
               </>
             ) : (
               <>
                 <FlaskConical className="w-4 h-4" />
-                Lanzar test ({profileCount} conv.)
+                {t('Lanzar test')} ({profileCount} {t('conv.')})
               </>
             )}
           </button>
         </div>
         {pending && (
           <p className="mt-3 text-xs text-muted text-right">
-            Tarda ~1-2 minutos. Te redirigimos al detalle cuando termine.
+            {t('Tarda ~1-2 minutos. Te redirigimos al detalle cuando termine.')}
           </p>
         )}
         {error && <p className="mt-3 text-xs text-red-600 text-right">{error}</p>}
@@ -174,7 +172,7 @@ export default function TestSuiteClient({
             <div className="px-5 py-4 border-b border-hairline flex items-center justify-between">
               <h3 className="text-base font-bold text-ink inline-flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-amber-600" />
-                Confirma el lanzamiento
+                {t('Confirma el lanzamiento')}
               </h3>
               <button onClick={() => setConfirmOpen(false)} className="text-muted hover:text-ink">
                 <X className="w-5 h-5" />
@@ -182,38 +180,36 @@ export default function TestSuiteClient({
             </div>
             <div className="p-5 space-y-3 text-sm text-body">
               <p>
-                Vas a lanzar un test con <strong>{profileCount} conversaciones</strong> contra
-                tu bot ({botModelLabel}).
+                {t('Vas a lanzar un test con')} <strong>{profileCount} {t('conversaciones')}</strong> {t('contra tu bot')} ({botModelLabel}).
               </p>
               <ul className="space-y-1 text-[13px] pl-1">
                 <li className="flex items-start gap-2">
                   <Check className="w-3.5 h-3.5 mt-0.5 text-emerald-700 flex-shrink-0" />
-                  Duración: <strong>~1-2 minutos</strong>
+                  {t('Duración:')} <strong>{t('~1-2 minutos')}</strong>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-3.5 h-3.5 mt-0.5 text-emerald-700 flex-shrink-0" />
-                  Coste estimado: <strong>~{(estimatedCostCents / 100).toFixed(2)} €</strong> (se
-                  carga a tu cuenta como uso de IA)
+                  {t('Coste estimado:')} <strong>~{(estimatedCostCents / 100).toFixed(2)} €</strong> {t('(se carga a tu cuenta como uso de IA)')}
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-3.5 h-3.5 mt-0.5 text-emerald-700 flex-shrink-0" />
-                  No afecta a la cuota mensual de respuestas reales del bot
+                  {t('No afecta a la cuota mensual de respuestas reales del bot')}
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-3.5 h-3.5 mt-0.5 text-emerald-700 flex-shrink-0" />
-                  Verás transcript completo + scoring de cada conversación
+                  {t('Verás transcript completo + scoring de cada conversación')}
                 </li>
               </ul>
               <p className="text-xs text-muted pt-1">
-                Para bajar el coste, cambia a un modelo más barato en{' '}
+                {t('Para bajar el coste, cambia a un modelo más barato en')}{' '}
                 <Link
                   href="/emailbot"
                   onClick={() => setConfirmOpen(false)}
                   className="underline font-semibold text-ink"
                 >
-                  configuración del bot
+                  {t('configuración del bot')}
                 </Link>{' '}
-                antes de lanzar (Haiku/GPT-4o mini/Gemini Flash bajan el coste 10x).
+                {t('antes de lanzar (Haiku/GPT-4o mini/Gemini Flash bajan el coste 10x).')}
               </p>
             </div>
             <div className="px-5 py-4 bg-surface-soft/40 border-t border-hairline flex gap-2 justify-end">
@@ -221,13 +217,13 @@ export default function TestSuiteClient({
                 onClick={() => setConfirmOpen(false)}
                 className="rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:bg-surface-soft"
               >
-                Cancelar
+                {t('Cancelar')}
               </button>
               <button
                 onClick={launch}
                 className="rounded-lg bg-ink text-on-primary px-5 py-2 text-sm font-semibold hover:opacity-90"
               >
-                Sí, lanzar y cargar coste
+                {t('Sí, lanzar y cargar coste')}
               </button>
             </div>
           </div>

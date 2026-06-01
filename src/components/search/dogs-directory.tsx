@@ -8,6 +8,7 @@ import { BRAND } from '@/lib/constants'
 import { DogImage } from '@/components/ui/dog-image'
 import InfiniteScrollSentinel from '@/components/ui/infinite-scroll-sentinel'
 import { SkeletonGrid } from '@/components/ui/skeletons'
+import { useT } from '@/components/i18n/locale-provider'
 
 /**
  * Directorio público de perros: buscador por nombre + filtros (raza, sexo,
@@ -21,6 +22,7 @@ export default function DogsDirectory({
   initialQuery?: string
   initialBreedId?: string
 }) {
+  const t = useT()
   const [query, setQuery] = useState(initialQuery)
   const [breeds, setBreeds] = useState<any[]>([])
   const [results, setResults] = useState<any[]>([])
@@ -111,7 +113,7 @@ export default function DogsDirectory({
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            placeholder="Buscar perro por nombre..."
+            placeholder={t('Buscar perro por nombre...')}
             className="w-full rounded-lg border border-hairline bg-canvas py-2.5 pl-10 pr-4 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
           />
         </div>
@@ -137,7 +139,7 @@ export default function DogsDirectory({
               onChange={e => setBreedFilter(e.target.value)}
               className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 pr-9 text-[13px] text-body focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none"
             >
-              <option value="">Todas las razas</option>
+              <option value="">{t('Todas las razas')}</option>
               {breeds.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
@@ -148,9 +150,9 @@ export default function DogsDirectory({
               onChange={e => setSexFilter(e.target.value)}
               className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 pr-9 text-[13px] text-body focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none"
             >
-              <option value="">Ambos sexos</option>
-              <option value="male">Macho</option>
-              <option value="female">Hembra</option>
+              <option value="">{t('Ambos sexos')}</option>
+              <option value="male">{t('Macho')}</option>
+              <option value="female">{t('Hembra')}</option>
             </select>
             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
           </div>
@@ -162,14 +164,14 @@ export default function DogsDirectory({
                 : 'border border-hairline bg-canvas text-body hover:bg-surface-card hover:text-ink'
             }`}
           >
-            <Tag className="h-4 w-4" /> En venta
+            <Tag className="h-4 w-4" /> {t('En venta')}
           </button>
         </div>
       )}
 
       {loaded && (
         <p className="text-[12.5px] text-muted">
-          {total.toLocaleString('es-ES')} {total === 1 ? 'resultado' : 'resultados'}
+          {total.toLocaleString('es-ES')} {total === 1 ? t('resultado') : t('resultados')}
         </p>
       )}
 
@@ -180,8 +182,8 @@ export default function DogsDirectory({
       ) : results.length === 0 && loaded ? (
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
           <Dog className="mx-auto h-10 w-10 text-muted" />
-          <p className="mt-3 text-[14px] text-body">No se encontraron resultados.</p>
-          <p className="text-[12.5px] text-muted">Prueba con otros filtros.</p>
+          <p className="mt-3 text-[14px] text-body">{t('No se encontraron resultados.')}</p>
+          <p className="text-[12.5px] text-muted">{t('Prueba con otros filtros.')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
@@ -213,7 +215,7 @@ export default function DogsDirectory({
                   )}
                   {dog.is_for_sale && (
                     <span className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-full bg-[#f59e0b] px-2 py-0.5 text-[10.5px] font-medium text-white shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
-                      <Tag className="h-2.5 w-2.5" /> En venta
+                      <Tag className="h-2.5 w-2.5" /> {t('En venta')}
                     </span>
                   )}
                   <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: sexColor }} />
@@ -236,7 +238,7 @@ export default function DogsDirectory({
                           {Number(dog.sale_price).toLocaleString('es-ES')} {symbol}
                         </span>
                       ) : (
-                        <span className="text-[11.5px] text-muted">Consultar precio</span>
+                        <span className="text-[11.5px] text-muted">{t('Consultar precio')}</span>
                       )}
                       {dog.sale_location && (
                         <span className="inline-flex items-center gap-0.5 text-[10.5px] text-muted">
@@ -264,7 +266,7 @@ export default function DogsDirectory({
 
       {!loading && !hasMore && results.length > 0 && results.length === total && total > PAGE_SIZE && (
         <p className="text-center text-[12px] text-muted pt-6">
-          Has llegado al final · {total.toLocaleString('es-ES')} resultados
+          {t('Has llegado al final')} · {total.toLocaleString('es-ES')} {t('resultados')}
         </p>
       )}
     </div>

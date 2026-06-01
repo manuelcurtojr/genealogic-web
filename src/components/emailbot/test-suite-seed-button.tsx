@@ -6,8 +6,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Sparkles, Loader2 } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function TestSuiteSeedButton({ kennelId }: { kennelId: string }) {
+  const t = useT()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -38,7 +40,7 @@ export default function TestSuiteSeedButton({ kennelId }: { kennelId: string }) 
         className="inline-flex items-center gap-2 rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90 disabled:opacity-50"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-        Sembrar 16 perfiles default
+        {t('Sembrar 16 perfiles default')}
       </button>
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
     </div>

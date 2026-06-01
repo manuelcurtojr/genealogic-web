@@ -11,8 +11,10 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Menu, X, Search, Store, Dog, BookOpen, Tag, Zap, LogIn } from 'lucide-react'
 import { Wordmark } from '@/components/ui/wordmark'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function PublicMenuButton({ className }: { className?: string }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export default function PublicMenuButton({ className }: { className?: string }) 
     <>
       <button
         onClick={() => setOpen(true)}
-        aria-label="Abrir menú"
+        aria-label={t('Abrir menú')}
         className={className || 'w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition'}
       >
         <Menu className="w-5 h-5" />
@@ -47,7 +49,7 @@ export default function PublicMenuButton({ className }: { className?: string }) 
               <Wordmark size="text-lg" asLink={false} />
               <button
                 onClick={() => setOpen(false)}
-                aria-label="Cerrar menú"
+                aria-label={t('Cerrar menú')}
                 className="w-9 h-9 rounded-lg flex items-center justify-center text-muted hover:text-ink hover:bg-surface-card transition"
               >
                 <X className="w-5 h-5" />
@@ -55,17 +57,17 @@ export default function PublicMenuButton({ className }: { className?: string }) 
             </div>
 
             <nav className="flex-1 overflow-y-auto py-3 px-2">
-              <Section label="Explorar">
-                <Item href="/search" icon={Search} onClick={() => setOpen(false)}>Buscar perros</Item>
-                <Item href="/kennels" icon={Store} onClick={() => setOpen(false)}>Criaderos</Item>
+              <Section label={t('Explorar')}>
+                <Item href="/search" icon={Search} onClick={() => setOpen(false)}>{t('Buscar perros')}</Item>
+                <Item href="/kennels" icon={Store} onClick={() => setOpen(false)}>{t('Criaderos')}</Item>
               </Section>
-              <Section label="Producto">
-                <Item href="/" icon={Dog} onClick={() => setOpen(false)}>Para criadores</Item>
-                <Item href="/pricing" icon={Tag} onClick={() => setOpen(false)}>Precios</Item>
-                <Item href="/api-docs" icon={Zap} onClick={() => setOpen(false)}>API pública</Item>
+              <Section label={t('Producto')}>
+                <Item href="/" icon={Dog} onClick={() => setOpen(false)}>{t('Para criadores')}</Item>
+                <Item href="/pricing" icon={Tag} onClick={() => setOpen(false)}>{t('Precios')}</Item>
+                <Item href="/api-docs" icon={Zap} onClick={() => setOpen(false)}>{t('API pública')}</Item>
               </Section>
-              <Section label="Recursos">
-                <Item href="/blog" icon={BookOpen} onClick={() => setOpen(false)}>Blog</Item>
+              <Section label={t('Recursos')}>
+                <Item href="/blog" icon={BookOpen} onClick={() => setOpen(false)}>{t('Blog')}</Item>
               </Section>
             </nav>
 
@@ -75,14 +77,14 @@ export default function PublicMenuButton({ className }: { className?: string }) 
                 onClick={() => setOpen(false)}
                 className="block w-full text-center rounded-lg bg-ink text-on-primary px-4 py-2.5 text-sm font-bold hover:opacity-90 transition"
               >
-                Crear cuenta
+                {t('Crear cuenta')}
               </Link>
               <Link
                 href="/login"
                 onClick={() => setOpen(false)}
                 className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2.5 text-sm font-semibold text-body hover:text-ink hover:border-ink/30 transition"
               >
-                <LogIn className="w-3.5 h-3.5" /> Iniciar sesión
+                <LogIn className="w-3.5 h-3.5" /> {t('Iniciar sesión')}
               </Link>
             </div>
           </aside>

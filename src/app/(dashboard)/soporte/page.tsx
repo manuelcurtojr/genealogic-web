@@ -11,6 +11,8 @@ import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import SupportForm from '@/components/admin-requests/support-form'
 import { MessageSquare } from 'lucide-react'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,6 +38,7 @@ export const metadata: Metadata = {
 }
 
 export default async function SoportePage() {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login?redirect=/soporte')
@@ -57,9 +60,9 @@ export default async function SoportePage() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-ink mb-4">
             <MessageSquare className="w-7 h-7 text-on-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-ink tracking-tight">¿En qué te ayudamos?</h1>
+          <h1 className="text-3xl font-bold text-ink tracking-tight">{t('¿En qué te ayudamos?')}</h1>
           <p className="mt-2 text-sm text-body max-w-md mx-auto">
-            Escribe tu consulta y un humano del equipo te responderá lo antes posible. Solemos tardar menos de 24h en días laborables.
+            {t('Escribe tu consulta y un humano del equipo te responderá lo antes posible. Solemos tardar menos de 24h en días laborables.')}
           </p>
         </div>
 
@@ -68,7 +71,7 @@ export default async function SoportePage() {
         {recent && recent.length > 0 && (
           <div className="mt-10">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-3">
-              Tus últimas solicitudes
+              {t('Tus últimas solicitudes')}
             </p>
             <ul className="space-y-1.5">
               {recent.map((r) => (
@@ -89,7 +92,7 @@ export default async function SoportePage() {
               href="/mis-solicitudes"
               className="mt-3 inline-block text-xs font-semibold text-ink hover:opacity-80"
             >
-              Ver todas mis solicitudes →
+              {t('Ver todas mis solicitudes')} →
             </Link>
           </div>
         )}

@@ -11,6 +11,8 @@ import Link from 'next/link'
 import { Users, Mail } from 'lucide-react'
 import { countAllAudiences, AUDIENCE_LABELS } from '@/lib/newsletter/audiences'
 import NewsletterCreateButton from '@/components/newsletter/create-campaign-button'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Newsletter · Genealogic Pro' }
@@ -40,6 +42,7 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
 }
 
 export default async function NewsletterPage() {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -50,7 +53,7 @@ export default async function NewsletterPage() {
     return (
       <div className="max-w-2xl mx-auto py-10">
         <h1 className="text-3xl font-bold text-ink mb-3">Newsletter</h1>
-        <p className="text-body">Necesitas un criadero registrado.</p>
+        <p className="text-body">{t('Necesitas un criadero registrado.')}</p>
       </div>
     )
   }
@@ -80,8 +83,7 @@ export default async function NewsletterPage() {
             Newsletter
           </h1>
           <p className="mt-2 text-body max-w-2xl text-sm">
-            Envía novedades, próximas camadas y noticias del criadero a tus
-            contactos. Cada email incluye link de baja automático.
+            {t('Envía novedades, próximas camadas y noticias del criadero a tus contactos. Cada email incluye link de baja automático.')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -90,7 +92,7 @@ export default async function NewsletterPage() {
             className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink"
           >
             <Users className="w-4 h-4" />
-            Suscriptores ({audiences.all})
+            {t('Suscriptores')} ({audiences.all})
           </Link>
           <NewsletterCreateButton kennelId={kennel.id} />
         </div>
@@ -99,28 +101,28 @@ export default async function NewsletterPage() {
       {/* Audiencias */}
       <section className="rounded-2xl border border-hairline bg-canvas p-5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted mb-3">
-          Tu audiencia
+          {t('Tu audiencia')}
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <AudienceStat label={AUDIENCE_LABELS.all} count={audiences.all} />
-          <AudienceStat label={AUDIENCE_LABELS.customers} count={audiences.customers} hint="con reserva" />
-          <AudienceStat label={AUDIENCE_LABELS.leads} count={audiences.leads} hint="sin reserva" />
-          <AudienceStat label={AUDIENCE_LABELS.delivered} count={audiences.delivered} hint="ya recibieron" />
+          <AudienceStat label={t(AUDIENCE_LABELS.all)} count={audiences.all} />
+          <AudienceStat label={t(AUDIENCE_LABELS.customers)} count={audiences.customers} hint={t('con reserva')} />
+          <AudienceStat label={t(AUDIENCE_LABELS.leads)} count={audiences.leads} hint={t('sin reserva')} />
+          <AudienceStat label={t(AUDIENCE_LABELS.delivered)} count={audiences.delivered} hint={t('ya recibieron')} />
         </div>
         <p className="mt-3 text-[11px] text-muted">
-          Cifras basadas en suscriptores activos. Se actualizan al momento.
+          {t('Cifras basadas en suscriptores activos. Se actualizan al momento.')}
         </p>
       </section>
 
       {/* Campañas */}
       <section>
-        <h2 className="text-base font-bold text-ink mb-3">Campañas ({campaigns.length})</h2>
+        <h2 className="text-base font-bold text-ink mb-3">{t('Campañas')} ({campaigns.length})</h2>
         {campaigns.length === 0 ? (
           <div className="rounded-xl border border-dashed border-hairline px-6 py-12 text-center">
             <Mail className="mx-auto h-10 w-10 text-muted mb-3" />
-            <p className="text-base font-bold text-ink">Aún no hay campañas</p>
+            <p className="text-base font-bold text-ink">{t('Aún no hay campañas')}</p>
             <p className="text-sm text-muted mt-1">
-              Pulsa &ldquo;Nueva campaña&rdquo; arriba a la derecha para crear la primera.
+              {t('Pulsa “Nueva campaña” arriba a la derecha para crear la primera.')}
             </p>
           </div>
         ) : (
@@ -128,12 +130,12 @@ export default async function NewsletterPage() {
             <table className="w-full text-sm">
               <thead className="bg-surface-soft/50 border-b border-hairline">
                 <tr>
-                  <Th>Título</Th>
-                  <Th hide="md">Asunto</Th>
-                  <Th align="right">Destinatarios</Th>
-                  <Th align="right" hide="md">Open rate</Th>
-                  <Th align="right">Fecha</Th>
-                  <Th align="right">Estado</Th>
+                  <Th>{t('Título')}</Th>
+                  <Th hide="md">{t('Asunto')}</Th>
+                  <Th align="right">{t('Destinatarios')}</Th>
+                  <Th align="right" hide="md">{t('Open rate')}</Th>
+                  <Th align="right">{t('Fecha')}</Th>
+                  <Th align="right">{t('Estado')}</Th>
                 </tr>
               </thead>
               <tbody>
@@ -161,7 +163,7 @@ export default async function NewsletterPage() {
                       </td>
                       <td className="px-4 py-2.5 text-right">
                         <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${meta.cls}`}>
-                          {meta.label}
+                          {t(meta.label)}
                         </span>
                       </td>
                     </tr>

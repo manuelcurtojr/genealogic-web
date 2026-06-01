@@ -2,10 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ChatPlayground from '@/components/emailbot/chat-playground'
 import EmailbotSubnav from '@/components/emailbot/emailbot-subnav'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const metadata = { title: 'Test Emailbot · Genealogic Pro' }
 
 export default async function EmailbotTestPage() {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -20,8 +23,8 @@ export default async function EmailbotTestPage() {
   if (!kennel) {
     return (
       <div className="max-w-2xl mx-auto py-10">
-        <h1 className="text-3xl font-bold text-ink mb-3">Test del Emailbot</h1>
-        <p className="text-body">Necesitas un criadero registrado.</p>
+        <h1 className="text-3xl font-bold text-ink mb-3">{t('Test del Emailbot')}</h1>
+        <p className="text-body">{t('Necesitas un criadero registrado.')}</p>
       </div>
     )
   }

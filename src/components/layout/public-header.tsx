@@ -20,8 +20,10 @@ import { Menu, X, User, Search, Dog, Store, BookOpen, Tag, Zap, LogIn } from 'lu
 import SearchBar from './search-bar'
 import { Wordmark } from '@/components/ui/wordmark'
 import { Button } from '@/components/ui/button'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function PublicHeader() {
+  const t = useT()
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   // Cerrar con ESC + lock scroll
@@ -43,7 +45,7 @@ export default function PublicHeader() {
         <div className="lg:hidden flex items-center gap-3 px-4 h-14">
           <button
             onClick={() => setDrawerOpen(true)}
-            aria-label="Abrir menú"
+            aria-label={t('Abrir menú')}
             className="w-10 h-10 -ml-1 flex items-center justify-center text-ink hover:bg-surface-card rounded-lg transition shrink-0"
           >
             <Menu className="w-5 h-5" />
@@ -54,7 +56,7 @@ export default function PublicHeader() {
           </div>
           <Link
             href="/login"
-            aria-label="Iniciar sesión"
+            aria-label={t('Iniciar sesión')}
             className="w-10 h-10 rounded-full bg-surface-card border border-hairline flex items-center justify-center text-ink hover:bg-hairline transition shrink-0"
           >
             <User className="w-5 h-5" />
@@ -65,26 +67,26 @@ export default function PublicHeader() {
         <div className="hidden lg:flex items-center gap-4 px-6 py-3 max-w-[1280px] mx-auto">
           <button
             onClick={() => setDrawerOpen(true)}
-            aria-label="Abrir menú"
+            aria-label={t('Abrir menú')}
             className="w-10 h-10 -ml-1 flex items-center justify-center text-ink hover:bg-surface-card rounded-lg transition shrink-0"
           >
             <Menu className="w-5 h-5" />
           </button>
           <Wordmark size="text-xl" />
           <nav className="flex items-center gap-5 ml-2 text-[13.5px] font-medium text-body">
-            <Link href="/search" className="hover:text-ink transition">Perros</Link>
-            <Link href="/kennels" className="hover:text-ink transition">Criaderos</Link>
-            <Link href="/blog" className="hover:text-ink transition">Blog</Link>
-            <Link href="/pricing" className="hover:text-ink transition">Precios</Link>
+            <Link href="/search" className="hover:text-ink transition">{t('Perros')}</Link>
+            <Link href="/kennels" className="hover:text-ink transition">{t('Criaderos')}</Link>
+            <Link href="/blog" className="hover:text-ink transition">{t('Blog')}</Link>
+            <Link href="/pricing" className="hover:text-ink transition">{t('Precios')}</Link>
           </nav>
           <div className="flex-1 max-w-md">
             <SearchBar />
           </div>
           <Button href="/login" variant="ghost" size="sm">
-            Iniciar sesión
+            {t('Iniciar sesión')}
           </Button>
           <Button href="/register" variant="primary" size="sm">
-            Registrarse
+            {t('Registrarse')}
           </Button>
         </div>
       </header>
@@ -101,7 +103,7 @@ export default function PublicHeader() {
               <Wordmark size="text-lg" asLink={false} />
               <button
                 onClick={() => setDrawerOpen(false)}
-                aria-label="Cerrar menú"
+                aria-label={t('Cerrar menú')}
                 className="w-9 h-9 rounded-lg flex items-center justify-center text-muted hover:text-ink hover:bg-surface-card transition"
               >
                 <X className="w-5 h-5" />
@@ -109,30 +111,30 @@ export default function PublicHeader() {
             </div>
 
             <nav className="flex-1 overflow-y-auto py-3 px-2">
-              <DrawerSection label="Explorar">
+              <DrawerSection label={t('Explorar')}>
                 <DrawerLink href="/search" icon={Search} onClick={() => setDrawerOpen(false)}>
-                  Buscar perros
+                  {t('Buscar perros')}
                 </DrawerLink>
                 <DrawerLink href="/kennels" icon={Store} onClick={() => setDrawerOpen(false)}>
-                  Criaderos
+                  {t('Criaderos')}
                 </DrawerLink>
               </DrawerSection>
 
-              <DrawerSection label="Producto">
+              <DrawerSection label={t('Producto')}>
                 <DrawerLink href="/" icon={Dog} onClick={() => setDrawerOpen(false)}>
-                  Para criadores
+                  {t('Para criadores')}
                 </DrawerLink>
                 <DrawerLink href="/pricing" icon={Tag} onClick={() => setDrawerOpen(false)}>
-                  Precios
+                  {t('Precios')}
                 </DrawerLink>
                 <DrawerLink href="/api-docs" icon={Zap} onClick={() => setDrawerOpen(false)}>
-                  API pública
+                  {t('API pública')}
                 </DrawerLink>
               </DrawerSection>
 
-              <DrawerSection label="Recursos">
+              <DrawerSection label={t('Recursos')}>
                 <DrawerLink href="/blog" icon={BookOpen} onClick={() => setDrawerOpen(false)}>
-                  Blog
+                  {t('Blog')}
                 </DrawerLink>
               </DrawerSection>
             </nav>
@@ -143,14 +145,14 @@ export default function PublicHeader() {
                 onClick={() => setDrawerOpen(false)}
                 className="block w-full text-center rounded-lg bg-ink text-on-primary px-4 py-2.5 text-sm font-bold hover:opacity-90 transition"
               >
-                Crear cuenta
+                {t('Crear cuenta')}
               </Link>
               <Link
                 href="/login"
                 onClick={() => setDrawerOpen(false)}
                 className="block w-full text-center rounded-lg border border-hairline bg-canvas px-4 py-2.5 text-sm font-semibold text-body hover:text-ink hover:border-ink/30 transition inline-flex items-center justify-center gap-1.5"
               >
-                <LogIn className="w-3.5 h-3.5" /> Iniciar sesión
+                <LogIn className="w-3.5 h-3.5" /> {t('Iniciar sesión')}
               </Link>
             </div>
           </aside>

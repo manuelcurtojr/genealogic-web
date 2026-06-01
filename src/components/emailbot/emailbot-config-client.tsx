@@ -6,6 +6,7 @@ import { Mail, BookOpen, MessageSquare, Beaker, AlertTriangle, Power, ExternalLi
 import { Button } from '@/components/ui/button'
 import { AI_MODELS, getDefaultModel, getModel } from '@/lib/ai/models'
 import type { QuotaStatus } from '@/lib/ai/quotas'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Config {
   kennel_id: string
@@ -36,6 +37,7 @@ interface Props {
 export default function EmailbotConfigClient({
   kennelId, kennelName, kennelSlug, initialConfig, initialBotModel, quota, stats,
 }: Props) {
+  const t = useT()
   const [botModel, setBotModel] = useState<string>(initialBotModel || getDefaultModel().id)
   const [savingModel, setSavingModel] = useState(false)
 
@@ -49,7 +51,7 @@ export default function EmailbotConfigClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ kennel_id: kennelId, bot_model: newId }),
       })
-      if (!res.ok) throw new Error('Error al guardar modelo')
+      if (!res.ok) throw new Error(t('Error al guardar modelo'))
     } catch (err: any) {
       alert(err.message)
       setBotModel(prev)
@@ -85,7 +87,7 @@ export default function EmailbotConfigClient({
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Error al guardar')
+        throw new Error(err.error || t('Error al guardar'))
       }
       const data = await res.json()
       setCfg(data.config)
@@ -113,25 +115,25 @@ export default function EmailbotConfigClient({
             Emailbot
           </h1>
           <p className="text-sm text-muted mt-0.5">
-            Tu asistente de email para responder consultas con tu Biblioteca como contexto.
+            {t('Tu asistente de email para responder consultas con tu Biblioteca como contexto.')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/emailbot/test" className="text-xs font-medium text-body hover:text-ink border border-hairline rounded-lg px-3 py-1.5 inline-flex items-center gap-1.5 hover:bg-surface-soft transition">
-            <Beaker className="w-3.5 h-3.5" /> Test
+            <Beaker className="w-3.5 h-3.5" /> {t('Test')}
           </Link>
           <Link href="/emailbot/hilos" className="text-xs font-medium text-body hover:text-ink border border-hairline rounded-lg px-3 py-1.5 inline-flex items-center gap-1.5 hover:bg-surface-soft transition">
-            <MessageSquare className="w-3.5 h-3.5" /> Hilos
+            <MessageSquare className="w-3.5 h-3.5" /> {t('Hilos')}
           </Link>
         </div>
       </div>
 
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <StatBox label="Biblioteca" value={stats.knowledgeCount} sub="entradas activas" href="/conocimiento" />
-        <StatBox label="Hilos totales" value={stats.threadsTotal} href="/emailbot/hilos" />
-        <StatBox label="Activos (30d)" value={stats.threads30d} href="/emailbot/hilos" />
-        <StatBox label="Escalados" value={stats.escalated} sub="derivados a ti" href="/emailbot/hilos" />
+        <StatBox label={t('Biblioteca')} value={stats.knowledgeCount} sub={t('entradas activas')} href="/conocimiento" />
+        <StatBox label={t('Hilos totales')} value={stats.threadsTotal} href="/emailbot/hilos" />
+        <StatBox label={t('Activos (30d)')} value={stats.threads30d} href="/emailbot/hilos" />
+        <StatBox label={t('Escalados')} value={stats.escalated} sub={t('derivados a ti')} href="/emailbot/hilos" />
       </div>
 
       {/* Knowledge prerequisite */}
@@ -139,11 +141,11 @@ export default function EmailbotConfigClient({
         <div className="flex items-start gap-3 bg-surface-card border border-hairline rounded-xl p-4 mb-6">
           <AlertTriangle className="w-5 h-5 text-muted flex-shrink-0 mt-0.5" />
           <div className="flex-1 text-sm text-body">
-            <p className="mb-1"><strong>La Biblioteca está vacía.</strong></p>
+            <p className="mb-1"><strong>{t('La Biblioteca está vacía.')}</strong></p>
             <p>
-              Para activar el bot necesitas al menos una entrada en la{' '}
-              <Link href="/conocimiento" className="font-semibold text-ink underline">Biblioteca</Link>.
-              El bot responde basándose en lo que tú le hayas dicho — sin entradas, responde demasiado genérico.
+              {t('Para activar el bot necesitas al menos una entrada en la')}{' '}
+              <Link href="/conocimiento" className="font-semibold text-ink underline">{t('Biblioteca')}</Link>.
+              {' '}{t('El bot responde basándose en lo que tú le hayas dicho — sin entradas, responde demasiado genérico.')}
             </p>
           </div>
         </div>
@@ -156,13 +158,11 @@ export default function EmailbotConfigClient({
       <div className="rounded-2xl border border-hairline bg-canvas p-5 lg:p-6 mb-4">
         <div className="flex items-center gap-2 mb-1">
           <Cpu className="w-4 h-4 text-ink" />
-          <p className="text-sm font-semibold text-ink">Modelo de IA</p>
-          {savingModel && <span className="text-[11px] text-muted">guardando...</span>}
+          <p className="text-sm font-semibold text-ink">{t('Modelo de IA')}</p>
+          {savingModel && <span className="text-[11px] text-muted">{t('guardando...')}</span>}
         </div>
         <p className="text-xs text-muted mb-4">
-          Elige el modelo que usará el bot para responder. Cuesta más calidad,
-          menos coste por email. Genealogic se encarga de las APIs — tu plan
-          cubre el uso normal.
+          {t('Elige el modelo que usará el bot para responder. Cuesta más calidad, menos coste por email. Genealogic se encarga de las APIs — tu plan cubre el uso normal.')}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {AI_MODELS.map((m) => {
@@ -203,7 +203,7 @@ export default function EmailbotConfigClient({
           })}
         </div>
         <p className="text-[11px] text-muted mt-3">
-          Modelo activo: <strong className="text-ink">{getModel(botModel).label}</strong>
+          {t('Modelo activo:')} <strong className="text-ink">{getModel(botModel).label}</strong>
           {' '}({getModel(botModel).provider})
         </p>
       </div>
@@ -214,7 +214,7 @@ export default function EmailbotConfigClient({
           <div className="flex-1 min-w-[260px]">
             <div className="flex items-center gap-2 mb-1">
               <Power className={`w-4 h-4 ${cfg.is_enabled ? 'text-ink' : 'text-muted'}`} />
-              <p className="text-sm font-semibold text-ink">Auto-responder activo</p>
+              <p className="text-sm font-semibold text-ink">{t('Auto-responder activo')}</p>
               {cfg.is_enabled ? (
                 <span className="text-[10px] font-bold uppercase tracking-[0.08em] bg-ink text-on-primary rounded-full px-2 py-0.5">On</span>
               ) : (
@@ -222,7 +222,7 @@ export default function EmailbotConfigClient({
               )}
             </div>
             <p className="text-sm text-muted">
-              Cuando está activo, el bot responde automáticamente a emails entrantes en la dirección de abajo. Cuando está apagado, los emails se guardan pero no se responden.
+              {t('Cuando está activo, el bot responde automáticamente a emails entrantes en la dirección de abajo. Cuando está apagado, los emails se guardan pero no se responden.')}
             </p>
           </div>
           <Button
@@ -230,35 +230,35 @@ export default function EmailbotConfigClient({
             disabled={saving || (!ready && !cfg.is_enabled)}
             onClick={() => save({ is_enabled: !cfg.is_enabled })}
           >
-            {cfg.is_enabled ? 'Desactivar' : 'Activar bot'}
+            {cfg.is_enabled ? t('Desactivar') : t('Activar bot')}
           </Button>
         </div>
       </div>
 
       {/* Inbound address card */}
       <div className="rounded-2xl border border-hairline bg-canvas p-5 lg:p-6 mb-4">
-        <p className="text-sm font-semibold text-ink mb-1">Dirección de recepción</p>
+        <p className="text-sm font-semibold text-ink mb-1">{t('Dirección de recepción')}</p>
         <p className="text-sm text-muted mb-4">
-          Los emails que lleguen a esta dirección se procesan automáticamente. Reenvía aquí desde tu inbox real (o configura un alias) para que el bot tome el control.
+          {t('Los emails que lleguen a esta dirección se procesan automáticamente. Reenvía aquí desde tu inbox real (o configura un alias) para que el bot tome el control.')}
         </p>
         <div className="flex items-center gap-2 flex-wrap">
           <code className="flex-1 min-w-[260px] bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm font-mono text-ink">
             {cfg.inbound_address || '—'}
           </code>
           <Button variant="secondary" size="sm" onClick={copyInbound}>
-            {copied ? <><Check className="w-3.5 h-3.5" /> Copiado</> : <><Copy className="w-3.5 h-3.5" /> Copiar</>}
+            {copied ? <><Check className="w-3.5 h-3.5" /> {t('Copiado')}</> : <><Copy className="w-3.5 h-3.5" /> {t('Copiar')}</>}
           </Button>
         </div>
       </div>
 
       {/* Reply identity */}
       <div className="rounded-2xl border border-hairline bg-canvas p-5 lg:p-6 mb-4">
-        <p className="text-sm font-semibold text-ink mb-1">Identidad de respuesta</p>
+        <p className="text-sm font-semibold text-ink mb-1">{t('Identidad de respuesta')}</p>
         <p className="text-sm text-muted mb-4">
-          Cómo aparece el remitente cuando el bot responde. Usa tu dominio personal si quieres que vaya en tu nombre.
+          {t('Cómo aparece el remitente cuando el bot responde. Usa tu dominio personal si quieres que vaya en tu nombre.')}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Field label="Nombre">
+          <Field label={t('Nombre')}>
             <input
               type="text"
               defaultValue={cfg.reply_from_name || ''}
@@ -266,7 +266,7 @@ export default function EmailbotConfigClient({
               className="input" placeholder="Irema Curtó"
             />
           </Field>
-          <Field label="Email">
+          <Field label={t('Email')}>
             <input
               type="email"
               defaultValue={cfg.reply_from_email || ''}
@@ -279,7 +279,7 @@ export default function EmailbotConfigClient({
 
       {/* Signature + escalation threshold */}
       <div className="rounded-2xl border border-hairline bg-canvas p-5 lg:p-6 mb-4">
-        <Field label="Firma (se añade al final de cada respuesta)">
+        <Field label={t('Firma (se añade al final de cada respuesta)')}>
           <textarea
             defaultValue={cfg.signature || ''}
             onBlur={e => e.target.value !== cfg.signature && save({ signature: e.target.value || null })}
@@ -288,7 +288,7 @@ export default function EmailbotConfigClient({
           />
         </Field>
         <div className="mt-4">
-          <Field label="Derivar a humano después de N respuestas automáticas">
+          <Field label={t('Derivar a humano después de N respuestas automáticas')}>
             <input
               type="number" min={1} max={20}
               defaultValue={cfg.fallback_after_n_replies || 3}
@@ -305,21 +305,21 @@ export default function EmailbotConfigClient({
       {/* Last inbound */}
       {cfg.last_inbound_at && (
         <p className="text-xs text-muted text-center">
-          Último email recibido: {new Date(cfg.last_inbound_at).toLocaleString('es-ES')}
+          {t('Último email recibido:')} {new Date(cfg.last_inbound_at).toLocaleString('es-ES')}
         </p>
       )}
 
       {/* Setup notes */}
       <div className="mt-8 rounded-xl border border-hairline bg-surface-card p-5">
         <p className="text-sm font-semibold text-ink mb-2 flex items-center gap-1.5">
-          <BookOpen className="w-4 h-4" /> Setup técnico (una sola vez)
+          <BookOpen className="w-4 h-4" /> {t('Setup técnico (una sola vez)')}
         </p>
         <ol className="text-sm text-body space-y-1.5 list-decimal pl-5">
-          <li>Configura el dominio inbound en Resend (o el provider que prefieras) — p.ej. <code className="text-[12px] bg-canvas border border-hairline rounded px-1">inbound.genealogic.io</code>.</li>
-          <li>Añade los registros MX que indique Resend.</li>
-          <li>En Resend crea una Inbound webhook apuntando a <code className="text-[12px] bg-canvas border border-hairline rounded px-1">https://genealogic.io/api/emailbot/inbound</code> con header <code className="text-[12px] bg-canvas border border-hairline rounded px-1">X-Inbound-Secret: {'<EMAILBOT_INBOUND_SECRET>'}</code>.</li>
-          <li>En Vercel define las env vars <code className="text-[12px] bg-canvas border border-hairline rounded px-1">EMAILBOT_INBOUND_SECRET</code> y <code className="text-[12px] bg-canvas border border-hairline rounded px-1">RESEND_API_KEY</code>.</li>
-          <li>Confirma que la dirección de arriba aparece en el campo &quot;to&quot; del webhook de Resend.</li>
+          <li>{t('Configura el dominio inbound en Resend (o el provider que prefieras) — p.ej.')} <code className="text-[12px] bg-canvas border border-hairline rounded px-1">inbound.genealogic.io</code>.</li>
+          <li>{t('Añade los registros MX que indique Resend.')}</li>
+          <li>{t('En Resend crea una Inbound webhook apuntando a')} <code className="text-[12px] bg-canvas border border-hairline rounded px-1">https://genealogic.io/api/emailbot/inbound</code> {t('con header')} <code className="text-[12px] bg-canvas border border-hairline rounded px-1">X-Inbound-Secret: {'<EMAILBOT_INBOUND_SECRET>'}</code>.</li>
+          <li>{t('En Vercel define las env vars')} <code className="text-[12px] bg-canvas border border-hairline rounded px-1">EMAILBOT_INBOUND_SECRET</code> {t('y')} <code className="text-[12px] bg-canvas border border-hairline rounded px-1">RESEND_API_KEY</code>.</li>
+          <li>{t('Confirma que la dirección de arriba aparece en el campo «to» del webhook de Resend.')}</li>
         </ol>
       </div>
 
@@ -362,6 +362,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function QuotaCard({ quota }: { quota: QuotaStatus }) {
+  const t = useT()
   const isUnlimited = quota.limit < 0
   const isBlocked = !quota.allowed
   const pct = isUnlimited || quota.limit === 0
@@ -382,7 +383,7 @@ function QuotaCard({ quota }: { quota: QuotaStatus }) {
       <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-            Uso este mes · plan {planLabel}
+            {t('Uso este mes · plan')} {planLabel}
           </p>
           <p className="mt-1 text-2xl font-bold text-ink tabular-nums">
             {quota.used.toLocaleString('es-ES')}
@@ -390,7 +391,7 @@ function QuotaCard({ quota }: { quota: QuotaStatus }) {
               <span className="text-muted font-normal text-base"> / {quota.limit.toLocaleString('es-ES')}</span>
             )}
             <span className="text-muted font-normal text-sm ml-2">
-              respuesta{quota.used === 1 ? '' : 's'} del bot
+              {quota.used === 1 ? t('respuesta del bot') : t('respuestas del bot')}
             </span>
           </p>
         </div>
@@ -399,12 +400,12 @@ function QuotaCard({ quota }: { quota: QuotaStatus }) {
             href="/cuenta/suscripcion"
             className="inline-flex items-center gap-1.5 rounded-lg bg-ink text-on-primary px-4 py-2 text-sm font-semibold hover:opacity-90"
           >
-            Subir de plan
+            {t('Subir de plan')}
           </Link>
         )}
         {isUnlimited && (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-800 px-3 py-1 text-[11px] font-bold uppercase tracking-wider">
-            Ilimitado
+            {t('Ilimitado')}
           </span>
         )}
       </div>
@@ -420,8 +421,8 @@ function QuotaCard({ quota }: { quota: QuotaStatus }) {
           <div className="flex items-center justify-between mt-1.5">
             <p className="text-[11px] text-muted">
               {quota.remaining > 0
-                ? `${quota.remaining.toLocaleString('es-ES')} respuestas restantes`
-                : 'Cuota agotada'}
+                ? `${quota.remaining.toLocaleString('es-ES')} ${t('respuestas restantes')}`
+                : t('Cuota agotada')}
             </p>
             <p className="text-[11px] text-muted">{pct}%</p>
           </div>
@@ -431,22 +432,22 @@ function QuotaCard({ quota }: { quota: QuotaStatus }) {
       {isBlocked && (
         <p className="mt-3 text-xs text-red-700">
           {quota.reason === 'plan_no_bot'
-            ? `Tu plan ${planLabel} no incluye el emailbot. El emailbot está en Kennel Pro (próximamente). Apúntate a la lista de espera en /pricing.`
-            : `Has agotado las respuestas del mes. El bot dejará de contestar emails hasta el día 1. Los emails entrantes siguen guardándose en /emailbot/hilos para que respondas tú.`}
+            ? `${t('Tu plan')} ${planLabel} ${t('no incluye el emailbot. El emailbot está en Kennel Pro (próximamente). Apúntate a la lista de espera en /pricing.')}`
+            : t('Has agotado las respuestas del mes. El bot dejará de contestar emails hasta el día 1. Los emails entrantes siguen guardándose en /emailbot/hilos para que respondas tú.')}
         </p>
       )}
       {!isBlocked && quota.isNearLimit && !isUnlimited && (
         <p className="mt-3 text-xs text-amber-700">
-          ⚠️ Te quedan {quota.remaining} respuestas este mes. Considera subir de plan si tu volumen crece.
+          ⚠️ {t('Te quedan')} {quota.remaining} {t('respuestas este mes. Considera subir de plan si tu volumen crece.')}
         </p>
       )}
 
       <p className="mt-3 text-[11px] text-muted">
-        Detalles e historial en{' '}
+        {t('Detalles e historial en')}{' '}
         <Link href="/cuenta/facturacion" className="font-semibold text-ink hover:underline">
           /cuenta/facturación
         </Link>
-        . Solo cuentan las respuestas reales del bot; el playground y los imports no consumen cuota.
+        . {t('Solo cuentan las respuestas reales del bot; el playground y los imports no consumen cuota.')}
       </p>
     </div>
   )

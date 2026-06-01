@@ -9,6 +9,7 @@ import { BRAND } from '@/lib/constants'
 import { DogImage } from '@/components/ui/dog-image'
 import DirectoryTabs from '@/components/search/directory-tabs'
 import RecentViewsSlider from '@/components/search/recent-views-slider'
+import { useT } from '@/components/i18n/locale-provider'
 
 /**
  * /search — buscador universal (resumen). Una sola página con resultados de
@@ -18,6 +19,7 @@ import RecentViewsSlider from '@/components/search/recent-views-slider'
  * categoría, "Ver todos" enlaza a su directorio (/perros, /kennels, /razas).
  */
 export default function SearchPage() {
+  const t = useT()
   const searchParams = useSearchParams()
   const router = useRouter()
   const initialQ = searchParams.get('q') || ''
@@ -59,9 +61,9 @@ export default function SearchPage() {
   return (
     <div className="space-y-6 sm:space-y-8">
       <div>
-        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Descubrimiento</p>
-        <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">Buscar</h1>
-        <p className="mt-2 text-[14px] text-body">Perros, criaderos y razas registrados en Genealogic.</p>
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Descubrimiento')}</p>
+        <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">{t('Buscar')}</h1>
+        <p className="mt-2 text-[14px] text-body">{t('Perros, criaderos y razas registrados en Genealogic.')}</p>
       </div>
 
       {/* Descubrimiento: Buscar · Perros · Criaderos · Razas */}
@@ -74,7 +76,7 @@ export default function SearchPage() {
           autoFocus
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar por nombre de perro, criadero o raza..."
+          placeholder={t('Buscar por nombre de perro, criadero o raza...')}
           className="w-full rounded-xl border border-hairline bg-canvas py-3 pl-11 pr-4 text-[15px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition"
         />
       </form>
@@ -86,14 +88,14 @@ export default function SearchPage() {
       {!hasQuery && (
         <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
           <Search className="mx-auto h-9 w-9 text-muted" />
-          <p className="mt-3 text-[14px] text-body">Escribe al menos 2 letras para buscar.</p>
-          <p className="mt-1 text-[12.5px] text-muted">Busca a la vez entre perros, criaderos y razas.</p>
+          <p className="mt-3 text-[14px] text-body">{t('Escribe al menos 2 letras para buscar.')}</p>
+          <p className="mt-1 text-[12.5px] text-muted">{t('Busca a la vez entre perros, criaderos y razas.')}</p>
         </div>
       )}
 
       {empty && (
         <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
-          <p className="text-[14px] text-body">Sin resultados para &ldquo;{submitted.trim()}&rdquo;.</p>
+          <p className="text-[14px] text-body">{t('Sin resultados para')} &ldquo;{submitted.trim()}&rdquo;.</p>
         </div>
       )}
 
@@ -101,9 +103,9 @@ export default function SearchPage() {
         <div className="space-y-8">
           {/* ── Perros ── */}
           {(loading || dogs.length > 0) && (
-            <Section title="Perros" icon={Dog} count={dogs.length} viewAllHref={`/perros?q=${encodeURIComponent(submitted.trim())}`}>
+            <Section title={t('Perros')} icon={Dog} count={dogs.length} viewAllHref={`/perros?q=${encodeURIComponent(submitted.trim())}`}>
               {dogs.length === 0 ? (
-                <p className="text-[13px] text-muted">Buscando…</p>
+                <p className="text-[13px] text-muted">{t('Buscando…')}</p>
               ) : (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
                   {dogs.map((d) => {
@@ -131,7 +133,7 @@ export default function SearchPage() {
 
           {/* ── Criaderos ── */}
           {kennels.length > 0 && (
-            <Section title="Criaderos" icon={Home} count={kennels.length} viewAllHref="/kennels">
+            <Section title={t('Criaderos')} icon={Home} count={kennels.length} viewAllHref="/kennels">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                 {kennels.map((k) => (
                   <Link key={k.id} href={`/kennels/${k.slug || k.id}`} className="group flex items-center gap-3 rounded-xl border border-hairline bg-canvas p-3.5 transition-colors hover:bg-surface-soft">
@@ -150,7 +152,7 @@ export default function SearchPage() {
 
           {/* ── Razas ── */}
           {breeds.length > 0 && (
-            <Section title="Razas" icon={Tag} count={breeds.length} viewAllHref="/razas">
+            <Section title={t('Razas')} icon={Tag} count={breeds.length} viewAllHref="/razas">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                 {breeds.map((b) => (
                   <Link key={b.id} href={b.slug ? `/razas/${b.slug}` : '/razas'} className="group flex items-center gap-3 rounded-xl border border-hairline bg-canvas p-3.5 transition-colors hover:bg-surface-soft">
@@ -159,7 +161,7 @@ export default function SearchPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[14px] font-medium text-ink">{b.name}</p>
-                      {b.dog_count > 0 && <p className="truncate text-[12px] text-muted">{Number(b.dog_count).toLocaleString('es-ES')} perros</p>}
+                      {b.dog_count > 0 && <p className="truncate text-[12px] text-muted">{Number(b.dog_count).toLocaleString('es-ES')} {t('perros')}</p>}
                     </div>
                   </Link>
                 ))}
@@ -173,6 +175,7 @@ export default function SearchPage() {
 }
 
 function Section({ title, icon: Icon, count, viewAllHref, children }: { title: string; icon: React.ElementType; count: number; viewAllHref: string; children: React.ReactNode }) {
+  const t = useT()
   return (
     <section>
       <div className="mb-3 flex items-center justify-between">
@@ -183,7 +186,7 @@ function Section({ title, icon: Icon, count, viewAllHref, children }: { title: s
         </div>
         {count > 0 && (
           <Link href={viewAllHref} className="inline-flex items-center gap-0.5 text-[12.5px] font-medium text-ink hover:opacity-70 transition">
-            Ver todos <ChevronRight className="h-3.5 w-3.5" />
+            {t('Ver todos')} <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         )}
       </div>

@@ -3,10 +3,13 @@ import { redirect } from 'next/navigation'
 import EmailbotConfigClient from '@/components/emailbot/emailbot-config-client'
 import EmailbotSubnav from '@/components/emailbot/emailbot-subnav'
 import { checkBotReplyQuota } from '@/lib/ai/quotas'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const metadata = { title: 'Emailbot · Genealogic Pro' }
 
 export default async function EmailbotPage() {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -22,7 +25,7 @@ export default async function EmailbotPage() {
     return (
       <div className="max-w-2xl mx-auto py-10">
         <h1 className="text-3xl font-bold text-ink mb-3">Emailbot</h1>
-        <p className="text-body">Necesitas un criadero registrado.</p>
+        <p className="text-body">{t('Necesitas un criadero registrado.')}</p>
       </div>
     )
   }

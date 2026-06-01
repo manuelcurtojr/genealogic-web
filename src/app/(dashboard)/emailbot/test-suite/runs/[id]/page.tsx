@@ -12,6 +12,8 @@ import EmailbotSubnav from '@/components/emailbot/emailbot-subnav'
 import RunAutoRefresh from '@/components/emailbot/test-suite-auto-refresh'
 import ConversationCard from '@/components/emailbot/test-suite-conversation-card'
 import { getModel } from '@/lib/ai/models'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Run · Test Suite · Genealogic Pro' }
@@ -35,6 +37,7 @@ type Run = {
 export default async function RunDetailPage({
   params,
 }: { params: Promise<{ id: string }> }) {
+  const t = getTranslator(await getLocale())
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -78,17 +81,17 @@ export default async function RunDetailPage({
           className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted hover:text-ink mb-3"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          Volver al historial
+          {t('Volver al historial')}
         </Link>
         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-          Test run · {new Date(run.started_at).toLocaleString('es-ES')}
+          {t('Test run')} · {new Date(run.started_at).toLocaleString('es-ES')}
         </p>
         <h1 className="mt-2 text-3xl font-bold text-ink tracking-tight">
           {isRunning
-            ? 'Ejecutando…'
+            ? t('Ejecutando…')
             : run.status === 'failed'
-              ? 'Test falló'
-              : `${passRate}% pass rate (${run.passed}/${total})`}
+              ? t('Test falló')
+              : `${passRate}% ${t('pass rate')} (${run.passed}/${total})`}
         </h1>
       </div>
 
@@ -96,8 +99,7 @@ export default async function RunDetailPage({
         <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-4 flex items-center gap-3">
           <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-blue-700 border-t-transparent" />
           <p className="text-[13.5px] text-blue-900">
-            El run sigue ejecutando. Las conversaciones aparecen abajo a medida
-            que terminan. Esta página se refresca sola cada 5 segundos.
+            {t('El run sigue ejecutando. Las conversaciones aparecen abajo a medida que terminan. Esta página se refresca sola cada 5 segundos.')}
           </p>
         </div>
       )}
@@ -106,7 +108,7 @@ export default async function RunDetailPage({
         <div className="rounded-xl bg-red-50 border border-red-200 p-4 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-red-700 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-red-900">
-            <p className="font-semibold mb-1">Notas del run</p>
+            <p className="font-semibold mb-1">{t('Notas del run')}</p>
             <p>{run.notes}</p>
           </div>
         </div>
@@ -114,11 +116,11 @@ export default async function RunDetailPage({
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Stat label="Conversaciones" value={total.toString()} />
-        <Stat label="Pasaron" value={run.passed.toString()} color="text-emerald-700" />
-        <Stat label="Fallaron" value={run.failed.toString()} color="text-red-700" />
+        <Stat label={t('Conversaciones')} value={total.toString()} />
+        <Stat label={t('Pasaron')} value={run.passed.toString()} color="text-emerald-700" />
+        <Stat label={t('Fallaron')} value={run.failed.toString()} color="text-red-700" />
         <Stat
-          label="Coste total"
+          label={t('Coste total')}
           value={`${(run.total_cost_cents / 100).toFixed(3)} €`}
           sub={run.bot_model ? getModel(run.bot_model).label : ''}
         />
@@ -127,11 +129,11 @@ export default async function RunDetailPage({
       {/* Conversaciones */}
       <section className="mt-6">
         <h2 className="text-base font-bold text-ink mb-3">
-          Conversaciones ({conversations.length})
+          {t('Conversaciones')} ({conversations.length})
         </h2>
         {conversations.length === 0 ? (
           <div className="rounded-xl border border-dashed border-hairline px-6 py-12 text-center text-muted">
-            {isRunning ? 'Esperando primera conversación…' : 'Sin conversaciones'}
+            {isRunning ? t('Esperando primera conversación…') : t('Sin conversaciones')}
           </div>
         ) : (
           <div className="space-y-3">

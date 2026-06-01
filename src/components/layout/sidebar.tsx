@@ -209,7 +209,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
           </a>
           <button
             onClick={handleLogout}
-            title={collapsed && !mobileOpen ? 'Cerrar sesion' : undefined}
+            title={collapsed && !mobileOpen ? t('Cerrar sesión') : undefined}
             className={`flex items-center gap-3 rounded-lg text-[13px] font-medium text-body hover:text-[color:var(--error)] hover:bg-surface-soft transition w-full ${
               collapsed && !mobileOpen ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
             }`}

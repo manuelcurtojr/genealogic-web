@@ -13,6 +13,7 @@ import GenosPanel from '@/components/genos/genos-panel'
 import { CommandBar } from './command-bar'
 import { hasProAccess } from '@/lib/permissions'
 import { usePlatform } from '@/components/platform/platform-provider'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface DashboardShellProps {
   user: { display_name: string; email: string; role: string; avatar_url: string | null } | null
@@ -27,6 +28,7 @@ interface DashboardShellProps {
 }
 
 export default function DashboardShell({ user, kennel, plan, planIsFounder, userId, isClient, children }: DashboardShellProps) {
+  const t = useT()
   const pathname = usePathname()
   const { isIos } = usePlatform()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -265,7 +267,7 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={() => setGenosOpen(true)}
-            title="Genos — asistente de Genealogic"
+            title={t('Genos — asistente de Genealogic')}
             className={`w-9 h-9 rounded-full flex items-center justify-center ${iconColor} hover:bg-surface-card transition`}
           >
             <Sparkles className="w-[18px] h-[18px]" />

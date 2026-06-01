@@ -7,8 +7,11 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { hasEnterpriseFeatures } from '@/lib/permissions'
 import ComingSoon from '@/components/early-access/coming-soon'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export default async function NewsletterLayout({ children }: { children: React.ReactNode }) {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -23,9 +26,9 @@ export default async function NewsletterLayout({ children }: { children: React.R
     return (
       <ComingSoon
         featureId="newsletter"
-        description="Mantén informados a tus clientes y lista de espera: campañas, plantillas, segmentación. Disponible próximamente para todos."
+        description={t('Mantén informados a tus clientes y lista de espera: campañas, plantillas, segmentación. Disponible próximamente para todos.')}
         backHref="/dashboard"
-        backLabel="← Volver al dashboard"
+        backLabel={t('← Volver al dashboard')}
       />
     )
   }

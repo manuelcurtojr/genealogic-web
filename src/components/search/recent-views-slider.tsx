@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Clock, Dog, Home, Tag, X } from 'lucide-react'
 import { getRecentViews, clearRecentViews, hrefForRecent, type RecentItem, type RecentType } from '@/lib/recent-views'
+import { useT } from '@/components/i18n/locale-provider'
 
 const ICON: Record<RecentType, typeof Dog> = { dog: Dog, kennel: Home, breed: Tag }
 const TYPE_LABEL: Record<RecentType, string> = { dog: 'Perro', kennel: 'Criadero', breed: 'Raza' }
@@ -13,6 +14,7 @@ const TYPE_LABEL: Record<RecentType, string> = { dog: 'Perro', kennel: 'Criadero
  * Lee de localStorage en el cliente; si no hay nada, no renderiza nada.
  */
 export default function RecentViewsSlider() {
+  const t = useT()
   const [items, setItems] = useState<RecentItem[] | null>(null)
 
   useEffect(() => { setItems(getRecentViews()) }, [])
@@ -25,13 +27,13 @@ export default function RecentViewsSlider() {
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 text-muted" />
-          <h2 className="text-[14px] font-semibold text-ink">Vistos recientemente</h2>
+          <h2 className="text-[14px] font-semibold text-ink">{t('Vistos recientemente')}</h2>
         </div>
         <button
           onClick={() => { clearRecentViews(); setItems([]) }}
           className="inline-flex items-center gap-1 text-[12px] font-medium text-muted transition hover:text-ink"
         >
-          <X className="h-3 w-3" /> Limpiar
+          <X className="h-3 w-3" /> {t('Limpiar')}
         </button>
       </div>
 
@@ -55,7 +57,7 @@ export default function RecentViewsSlider() {
                   </div>
                 )}
                 <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-canvas/90 px-1.5 py-0.5 text-[9.5px] font-medium text-muted shadow-[0_1px_2px_rgba(0,0,0,0.06)] backdrop-blur-sm">
-                  <Icon className="h-2.5 w-2.5" /> {TYPE_LABEL[it.type]}
+                  <Icon className="h-2.5 w-2.5" /> {t(TYPE_LABEL[it.type])}
                 </span>
               </div>
               <div className="p-2.5">

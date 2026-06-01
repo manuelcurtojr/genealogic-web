@@ -11,6 +11,7 @@
 
 import { useState } from 'react'
 import { ChevronDown, ChevronRight, CheckCircle2, XCircle, AlertTriangle, Bug } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 type TranscriptEntry = {
   role: 'client' | 'bot' | 'system'
@@ -56,6 +57,7 @@ const SEVERITY_COLOR: Record<string, string> = {
 }
 
 export default function ConversationCard({ conv }: { conv: Conv }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
 
   const passed = conv.passed === true
@@ -95,10 +97,10 @@ export default function ConversationCard({ conv }: { conv: Conv }) {
 
         {/* Outcome comparison */}
         <span className="text-[11px] text-muted hidden sm:inline">
-          esperado: <strong className="text-ink">{OUTCOME_LABEL[conv.expected_outcome || ''] || '—'}</strong>
+          {t('esperado:')} <strong className="text-ink">{OUTCOME_LABEL[conv.expected_outcome || ''] ? t(OUTCOME_LABEL[conv.expected_outcome || '']) : '—'}</strong>
         </span>
         <span className={`text-[11px] hidden md:inline ${outcomeMatch ? 'text-emerald-700' : 'text-red-700'}`}>
-          real: <strong>{OUTCOME_LABEL[conv.outcome || ''] || (errored ? 'error' : '—')}</strong>
+          {t('real:')} <strong>{OUTCOME_LABEL[conv.outcome || ''] ? t(OUTCOME_LABEL[conv.outcome || '']) : (errored ? t('error') : '—')}</strong>
         </span>
 
         {(conv.bugs_detected?.length ?? 0) > 0 && (
@@ -109,7 +111,7 @@ export default function ConversationCard({ conv }: { conv: Conv }) {
         )}
 
         <span className="text-[11px] text-muted whitespace-nowrap hidden lg:inline">
-          {conv.total_turns} turnos · {(conv.cost_cents / 100).toFixed(3)} €
+          {conv.total_turns} {t('turnos')} · {(conv.cost_cents / 100).toFixed(3)} €
         </span>
       </button>
 
@@ -117,7 +119,7 @@ export default function ConversationCard({ conv }: { conv: Conv }) {
         <div className="border-t border-hairline px-4 py-4 space-y-4 bg-surface-soft/30">
           {errored ? (
             <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-900">
-              <strong>Error en la conversación:</strong> {conv.error}
+              <strong>{t('Error en la conversación:')}</strong> {conv.error}
             </div>
           ) : (
             <>
@@ -125,7 +127,7 @@ export default function ConversationCard({ conv }: { conv: Conv }) {
               {conv.evaluator_analysis && (
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">
-                    Análisis del evaluador
+                    {t('Análisis del evaluador')}
                   </p>
                   <p className="text-sm text-body leading-relaxed">{conv.evaluator_analysis}</p>
                 </div>
@@ -135,7 +137,7 @@ export default function ConversationCard({ conv }: { conv: Conv }) {
               {(conv.bugs_detected?.length ?? 0) > 0 && (
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">
-                    Bugs detectados ({conv.bugs_detected!.length})
+                    {t('Bugs detectados')} ({conv.bugs_detected!.length})
                   </p>
                   <ul className="space-y-1.5">
                     {conv.bugs_detected!.map((b, i) => (
@@ -156,29 +158,29 @@ export default function ConversationCard({ conv }: { conv: Conv }) {
               {/* Transcript */}
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">
-                  Transcript ({conv.transcript.length} mensajes)
+                  {t('Transcript')} ({conv.transcript.length} {t('mensajes')})
                 </p>
                 <ol className="space-y-2">
-                  {conv.transcript.map((t, i) => (
+                  {conv.transcript.map((entry, i) => (
                     <li
                       key={i}
                       className={`rounded-lg p-3 text-[13px] ${
-                        t.role === 'client'
+                        entry.role === 'client'
                           ? 'bg-blue-50 border border-blue-100'
-                          : t.role === 'bot'
+                          : entry.role === 'bot'
                             ? 'bg-canvas border border-hairline'
                             : 'bg-surface-card border border-hairline text-muted'
                       }`}
                     >
                       <p className="text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
-                        {t.role === 'client' ? '👤 Cliente simulado' : t.role === 'bot' ? '🤖 Bot' : 'Sistema'}
-                        {t.tokens_in != null && (
+                        {entry.role === 'client' ? `👤 ${t('Cliente simulado')}` : entry.role === 'bot' ? '🤖 Bot' : t('Sistema')}
+                        {entry.tokens_in != null && (
                           <span className="ml-2 font-normal">
-                            · in {t.tokens_in} / out {t.tokens_out}
+                            · in {entry.tokens_in} / out {entry.tokens_out}
                           </span>
                         )}
                       </p>
-                      <p className="whitespace-pre-wrap text-ink leading-relaxed">{t.content}</p>
+                      <p className="whitespace-pre-wrap text-ink leading-relaxed">{entry.content}</p>
                     </li>
                   ))}
                 </ol>
@@ -186,9 +188,9 @@ export default function ConversationCard({ conv }: { conv: Conv }) {
 
               <div className="pt-2 border-t border-hairline-soft flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted">
                 <span>
-                  Tokens: {conv.tokens_input.toLocaleString('es-ES')} in / {conv.tokens_output.toLocaleString('es-ES')} out
+                  {t('Tokens:')} {conv.tokens_input.toLocaleString('es-ES')} in / {conv.tokens_output.toLocaleString('es-ES')} out
                 </span>
-                <span>Coste: {(conv.cost_cents / 100).toFixed(4)} €</span>
+                <span>{t('Coste:')} {(conv.cost_cents / 100).toFixed(4)} €</span>
               </div>
             </>
           )}

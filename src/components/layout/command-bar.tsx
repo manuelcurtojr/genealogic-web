@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import { commandsFor, filterCommands, type Command } from '@/lib/commands'
+import { useT } from '@/components/i18n/locale-provider'
 
 const ICONS: Record<string, React.ElementType> = {
   LayoutDashboard, Search, Bell, Dog, Plus, PlusCircle, Baby, GitCompareArrows,
@@ -34,6 +35,7 @@ interface Props {
  * cualquier botón de la UI lo pueda invocar.
  */
 export function CommandBar({ hasKennel, isPro, isAdmin }: Props) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [activeIdx, setActiveIdx] = useState(0)
@@ -138,7 +140,7 @@ export function CommandBar({ hasKennel, isPro, isAdmin }: Props) {
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Buscar o ir a…"
+              placeholder={t('Buscar o ir a…')}
               className="flex-1 bg-transparent text-[15px] text-ink placeholder:text-muted focus:outline-none"
               autoComplete="off"
               spellCheck={false}
@@ -152,7 +154,7 @@ export function CommandBar({ hasKennel, isPro, isAdmin }: Props) {
           <div ref={listRef} className="max-h-[60vh] overflow-y-auto p-2">
             {results.length === 0 ? (
               <div className="px-3 py-10 text-center text-sm text-muted">
-                Sin resultados para <strong className="text-ink">{query}</strong>
+                {t('Sin resultados para')} <strong className="text-ink">{query}</strong>
               </div>
             ) : (
               grouped.map(([section, items]) => (
@@ -197,14 +199,14 @@ export function CommandBar({ hasKennel, isPro, isAdmin }: Props) {
               <span className="inline-flex items-center gap-1">
                 <kbd className="font-mono border border-hairline rounded px-1 py-0.5 bg-canvas">↑</kbd>
                 <kbd className="font-mono border border-hairline rounded px-1 py-0.5 bg-canvas">↓</kbd>
-                navegar
+                {t('navegar')}
               </span>
               <span className="inline-flex items-center gap-1">
                 <kbd className="font-mono border border-hairline rounded px-1 py-0.5 bg-canvas">↵</kbd>
-                ir
+                {t('ir')}
               </span>
             </div>
-            <span>{results.length} resultado{results.length === 1 ? '' : 's'}</span>
+            <span>{results.length} {results.length === 1 ? t('resultado') : t('resultados')}</span>
           </div>
         </div>
       </div>
@@ -217,6 +219,7 @@ export function CommandBar({ hasKennel, isPro, isAdmin }: Props) {
  * Pensado para sidebar / header. Muestra el atajo ⌘K como pista visual.
  */
 export function CommandBarTrigger({ className = '', collapsed = false }: { className?: string; collapsed?: boolean }) {
+  const t = useT()
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
   function open() {
     window.dispatchEvent(new CustomEvent('genealogic:open-command-bar'))
@@ -225,7 +228,7 @@ export function CommandBarTrigger({ className = '', collapsed = false }: { class
     return (
       <button
         onClick={open}
-        title={`Buscar (${isMac ? '⌘' : 'Ctrl'}+K)`}
+        title={`${t('Buscar')} (${isMac ? '⌘' : 'Ctrl'}+K)`}
         className={`inline-flex items-center justify-center w-10 h-10 rounded-lg text-muted hover:text-ink hover:bg-surface-card transition ${className}`}
       >
         <Search className="w-[18px] h-[18px]" />
@@ -238,7 +241,7 @@ export function CommandBarTrigger({ className = '', collapsed = false }: { class
       className={`group flex items-center gap-2 w-full px-3 py-2 rounded-lg border border-hairline bg-canvas text-muted hover:text-ink hover:border-ink/30 transition ${className}`}
     >
       <Search className="w-4 h-4 flex-shrink-0" />
-      <span className="text-[13px] flex-1 text-left">Buscar o ir a…</span>
+      <span className="text-[13px] flex-1 text-left">{t('Buscar o ir a…')}</span>
       <kbd className="text-[10px] font-mono border border-hairline rounded px-1.5 py-0.5 group-hover:border-ink/30 transition">
         {isMac ? '⌘' : 'Ctrl'}K
       </kbd>

@@ -7,11 +7,14 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import SubscribersPageClient from '@/components/newsletter/subscribers-page-client'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Suscriptores · Newsletter · Genealogic' }
 
 export default async function SuscriptoresPage() {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -21,8 +24,8 @@ export default async function SuscriptoresPage() {
   if (!kennel) {
     return (
       <div className="max-w-2xl mx-auto py-10">
-        <h1 className="text-3xl font-bold text-ink mb-3">Suscriptores</h1>
-        <p className="text-body">Necesitas un criadero registrado.</p>
+        <h1 className="text-3xl font-bold text-ink mb-3">{t('Suscriptores')}</h1>
+        <p className="text-body">{t('Necesitas un criadero registrado.')}</p>
       </div>
     )
   }
@@ -40,7 +43,7 @@ export default async function SuscriptoresPage() {
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted hover:text-ink mb-4"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
-        Volver a campañas
+        {t('Volver a campañas')}
       </Link>
       <SubscribersPageClient
         kennelId={kennel.id}
