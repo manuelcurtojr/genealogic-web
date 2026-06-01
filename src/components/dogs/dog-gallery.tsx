@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react'
 import Lightbox from '@/components/ui/lightbox'
 import AiUpscaledBadge from '@/components/dogs/ai-upscaled-badge'
 import { videoEmbedUrl, type VideoProvider } from '@/lib/video'
+import { useT } from '@/components/i18n/locale-provider'
 
 export interface MediaItem {
   /** Foto, o PORTADA del vídeo. */
@@ -33,6 +34,7 @@ export default function DogGallery({ media, name, sex, upscaledPhotoUrl, upscale
   const [desktopOffset, setDesktopOffset] = useState(0)
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
   const [videoItem, setVideoItem] = useState<MediaItem | null>(null)
+  const t = useT()
 
   const hasMedia = media.length > 0
   const desktopVisible = 4
@@ -59,7 +61,7 @@ export default function DogGallery({ media, name, sex, upscaledPhotoUrl, upscale
     <div className="relative h-full w-full cursor-pointer" onClick={() => openItem(i)}>
       {m.type === 'video' ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={m.url} alt={`${name} vídeo`} className="h-full w-full object-cover" />
+        <img src={m.url} alt={`${name} ${t('vídeo')}`} className="h-full w-full object-cover" />
       ) : (
         <Image src={m.url} alt={`${name} ${i + 1}`} fill sizes={sizes} priority={priority} className="object-cover transition-opacity hover:opacity-90" />
       )}
@@ -149,7 +151,7 @@ export default function DogGallery({ media, name, sex, upscaledPhotoUrl, upscale
       {/* Modal de VÍDEO — fondo oscuro, igual que las fotos */}
       {videoItem && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4" onClick={() => setVideoItem(null)}>
-          <button onClick={() => setVideoItem(null)} className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20" aria-label="Cerrar">
+          <button onClick={() => setVideoItem(null)} className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20" aria-label={t('Cerrar')}>
             <X className="h-5 w-5" />
           </button>
           <div className="w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
@@ -163,7 +165,7 @@ export default function DogGallery({ media, name, sex, upscaledPhotoUrl, upscale
                   className="absolute inset-0 h-full w-full"
                   allow="autoplay; fullscreen; picture-in-picture"
                   allowFullScreen
-                  title={`${name} vídeo`}
+                  title={`${name} ${t('vídeo')}`}
                 />
               </div>
             )}

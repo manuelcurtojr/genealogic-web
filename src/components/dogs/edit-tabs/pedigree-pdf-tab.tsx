@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { FileText, Download, AlertTriangle, Loader2, CheckCircle } from 'lucide-react'
 import { generatePedigreePdf } from '@/lib/pedigree-pdf'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   dogId: string
@@ -21,6 +22,7 @@ interface TreeNode {
 }
 
 export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
+  const t = useT()
   const [generating, setGenerating] = useState(false)
   const [done, setDone] = useState(false)
 
@@ -44,8 +46,8 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
         dog.father_id ? supabase.from('dogs').select('name').eq('id', dog.father_id).single() : null,
         dog.mother_id ? supabase.from('dogs').select('name').eq('id', dog.mother_id).single() : null,
       ])
-      const fatherName = fatherRes?.data?.name || 'Desconocido'
-      const motherName = motherRes?.data?.name || 'Desconocido'
+      const fatherName = fatherRes?.data?.name || t('Desconocido')
+      const motherName = motherRes?.data?.name || t('Desconocido')
 
       // Fetch owner name
       const { data: profile } = await supabase
@@ -69,7 +71,7 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
 
       const dogData = {
         name: dog.name || '',
-        breed: b?.name || 'Sin raza',
+        breed: b?.name || t('Sin raza'),
         color: c?.name || '',
         sex: dog.sex || 'male',
         birth_date: dog.birth_date ? formatDate(dog.birth_date) : '',
@@ -78,7 +80,7 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
         father: fatherName,
         mother: motherName,
         kennel: k?.name || '',
-        owner: profile?.display_name || profile?.email || 'Propietario',
+        owner: profile?.display_name || profile?.email || t('Propietario'),
       }
 
       generatePedigreePdf(dogData, tree)
@@ -86,7 +88,7 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
       setTimeout(() => setDone(false), 3000)
     } catch (err: any) {
       console.error('PDF generation error:', err)
-      alert('Error al generar el PDF: ' + (err?.message || 'Inténtalo de nuevo'))
+      alert(t('Error al generar el PDF:') + ' ' + (err?.message || t('Inténtalo de nuevo')))
     } finally {
       setGenerating(false)
     }
@@ -98,18 +100,16 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
         <FileText className="w-8 h-8" />
       </div>
       <div>
-        <h3 className="text-xl font-bold">Exportar Genealogía en PDF</h3>
+        <h3 className="text-xl font-bold">{t('Exportar Genealogía en PDF')}</h3>
         <p className="text-sm text-body mt-2">
-          Genera un documento PDF con la genealogia digital de{' '}
-          <strong className="font-semibold text-ink">{dogName || 'este perro'}</strong>, incluyendo los datos
-          del perro, propietario y arbol genealogico de 4 generaciones.
+          {t('Genera un documento PDF con la genealogia digital de')}{' '}
+          <strong className="font-semibold text-ink">{dogName || t('este perro')}</strong>{t(', incluyendo los datos del perro, propietario y arbol genealogico de 4 generaciones.')}
         </p>
       </div>
       <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 flex items-start gap-2 text-left">
         <AlertTriangle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
         <p className="text-xs text-orange-400">
-          Este PDF es una version digital de la genealogia registrada en Genealogic. No es un
-          genealogía oficial emitido por un club canofilo (FCI, AKC, KC, RSCE, etc.).
+          {t('Este PDF es una version digital de la genealogia registrada en Genealogic. No es un genealogía oficial emitido por un club canofilo (FCI, AKC, KC, RSCE, etc.).')}
         </p>
       </div>
       <button
@@ -119,15 +119,15 @@ export default function PedigreePdfTab({ dogId, dogName, userId }: Props) {
       >
         {generating ? (
           <>
-            <Loader2 className="w-5 h-5 animate-spin" /> Generando...
+            <Loader2 className="w-5 h-5 animate-spin" /> {t('Generando...')}
           </>
         ) : done ? (
           <>
-            <CheckCircle className="w-5 h-5" /> Descargado
+            <CheckCircle className="w-5 h-5" /> {t('Descargado')}
           </>
         ) : (
           <>
-            <Download className="w-5 h-5" /> Descargar Genealogía PDF
+            <Download className="w-5 h-5" /> {t('Descargar Genealogía PDF')}
           </>
         )}
       </button>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
 import GenotypeEditor from '@/components/genetica/genotype-editor'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   dogId: string
@@ -27,6 +28,7 @@ interface Dog {
  * Evita que el criador tenga que salir a otra ruta para gestionar genotipos.
  */
 export default function GeneticaTab({ dogId }: Props) {
+  const t = useT()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -56,7 +58,7 @@ export default function GeneticaTab({ dogId }: Props) {
 
         if (cancelled) return
         if (dogRes.error) throw dogRes.error
-        if (!dogRes.data) throw new Error('Perro no encontrado')
+        if (!dogRes.data) throw new Error(t('Perro no encontrado'))
 
         const dogData = dogRes.data as any
         const normalizedDog: Dog = {
@@ -101,7 +103,7 @@ export default function GeneticaTab({ dogId }: Props) {
             .sort((a: any, b: any) => a.name.localeCompare(b.name, 'es'))
         )
       } catch (err: any) {
-        if (!cancelled) setError(err.message || 'Error cargando datos genéticos')
+        if (!cancelled) setError(err.message || t('Error cargando datos genéticos'))
       } finally {
         if (!cancelled) setLoading(false)
       }

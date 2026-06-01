@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Edit } from 'lucide-react'
 import DogFormPanel from './dog-form-panel'
 import { useRouter } from 'next/navigation'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   dogId: string
@@ -13,6 +14,7 @@ interface Props {
 export default function DogEditButton({ dogId, userId }: Props) {
   const router = useRouter()
   const [showPanel, setShowPanel] = useState(false)
+  const t = useT()
 
   return (
     <>
@@ -20,7 +22,7 @@ export default function DogEditButton({ dogId, userId }: Props) {
         onClick={() => setShowPanel(true)}
         className="inline-flex items-center gap-2 rounded-lg bg-canvas/90 px-4 py-2 text-[13px] font-medium text-ink shadow-[0_2px_8px_rgba(0,0,0,0.15)] backdrop-blur-sm transition-colors hover:bg-canvas"
       >
-        <Edit className="h-4 w-4" /> Editar
+        <Edit className="h-4 w-4" /> {t('Editar')}
       </button>
 
       <DogFormPanel

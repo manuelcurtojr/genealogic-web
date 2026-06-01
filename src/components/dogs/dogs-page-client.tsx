@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 import SortSelect, { useSortPreference, sortItems } from '@/components/ui/sort-select'
 import { createClient } from '@/lib/supabase/client'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Dog {
   id: string
@@ -43,6 +44,7 @@ const PUPPY_MAX_MONTHS = 12 // un perro < 12 meses se considera cachorro
 const PAGE_SIZE = 24
 
 export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBreeder = false, myKennelId = null }: DogsPageClientProps) {
+  const t = useT()
   // Estado local de dogs para optimistic updates al hacer toggles desde la card
   const [dogs, setDogs] = useState(initialDogs)
   // Sync si el server entrega lista nueva (ej. después de router.refresh)
@@ -63,13 +65,13 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
     if (p === 'reproductive' || p === 'puppies' || p === 'bred' || p === 'sale') return p
     return 'all'
   })
-  const changeTab = (t: DogTab) => {
-    setActiveTab(t)
+  const changeTab = (tab: DogTab) => {
+    setActiveTab(tab)
     setVisibleCount(PAGE_SIZE)
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href)
-      if (t === 'all') url.searchParams.delete('tab')
-      else url.searchParams.set('tab', t)
+      if (tab === 'all') url.searchParams.delete('tab')
+      else url.searchParams.set('tab', tab)
       window.history.replaceState(null, '', url.toString())
     }
   }
@@ -179,14 +181,14 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">
-            Catálogo
+            {t('Catálogo')}
           </p>
           <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-            {isBreeder ? 'Perros' : 'Mis perros'}
+            {isBreeder ? t('Perros') : t('Mis perros')}
           </h1>
           {!isBreeder && (
             <p className="mt-2 text-[14px] text-body">
-              {dogs.length} {dogs.length === 1 ? 'perro registrado' : 'perros registrados'}
+              {dogs.length} {dogs.length === 1 ? t('perro registrado') : t('perros registrados')}
             </p>
           )}
         </div>
@@ -194,7 +196,7 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
           onClick={openAdd}
           className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90"
         >
-          <Plus className="h-4 w-4" /> Perro
+          <Plus className="h-4 w-4" /> {t('Perro')}
         </button>
       </div>
 
@@ -208,20 +210,20 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
               { key: 'puppies' as const, label: 'Cachorros' },
               { key: 'bred' as const, label: 'Criados por mí' },
               { key: 'sale' as const, label: 'En venta' },
-            ]).map((t) => {
-              const isActive = activeTab === t.key
-              const count = tabCounts[t.key]
+            ]).map((tab) => {
+              const isActive = activeTab === tab.key
+              const count = tabCounts[tab.key]
               return (
                 <button
-                  key={t.key}
-                  onClick={() => changeTab(t.key)}
+                  key={tab.key}
+                  onClick={() => changeTab(tab.key)}
                   className={`flex-shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
                     isActive
                       ? 'border-ink bg-ink text-on-primary'
                       : 'border-hairline bg-canvas text-body hover:bg-surface-soft'
                   }`}
                 >
-                  {t.label}
+                  {t(tab.label)}
                   <span
                     className={`rounded px-1.5 py-0.5 text-[11px] tabular-nums ${
                       isActive ? 'bg-white/15 text-on-primary' : 'bg-surface-soft text-muted'
@@ -243,7 +245,7 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
             <input
               type="text"
-              placeholder="Buscar por nombre, raza, color..."
+              placeholder={t('Buscar por nombre, raza, color...')}
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               className={`${inputCls} pl-10`}
@@ -254,16 +256,16 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
             onChange={(e) => { setSexFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
             className={`${selectCls} hidden lg:block min-w-[140px]`}
           >
-            <option value="">Todos los sexos</option>
-            <option value="male">Machos</option>
-            <option value="female">Hembras</option>
+            <option value="">{t('Todos los sexos')}</option>
+            <option value="male">{t('Machos')}</option>
+            <option value="female">{t('Hembras')}</option>
           </select>
           <select
             value={breedFilter}
             onChange={(e) => { setBreedFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
             className={`${selectCls} hidden lg:block min-w-[160px]`}
           >
-            <option value="">Todas las razas</option>
+            <option value="">{t('Todas las razas')}</option>
             {breeds.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
           <div className="hidden lg:block">
@@ -273,14 +275,14 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
             <button
               onClick={() => changeView('grid')}
               className={`p-2.5 transition-colors ${viewMode === 'grid' ? 'bg-ink text-on-primary' : 'bg-canvas text-muted hover:bg-surface-soft hover:text-ink'}`}
-              title="Vista grid"
+              title={t('Vista grid')}
             >
               <Grid3X3 className="h-4 w-4" />
             </button>
             <button
               onClick={() => changeView('list')}
               className={`p-2.5 transition-colors ${viewMode === 'list' ? 'bg-ink text-on-primary' : 'bg-canvas text-muted hover:bg-surface-soft hover:text-ink'}`}
-              title="Vista lista"
+              title={t('Vista lista')}
             >
               <List className="h-4 w-4" />
             </button>
@@ -293,16 +295,16 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
             onChange={(e) => { setSexFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
             className={`${selectCls} flex-1 min-w-0 text-[12px] py-2`}
           >
-            <option value="">Todos los sexos</option>
-            <option value="male">Machos</option>
-            <option value="female">Hembras</option>
+            <option value="">{t('Todos los sexos')}</option>
+            <option value="male">{t('Machos')}</option>
+            <option value="female">{t('Hembras')}</option>
           </select>
           <select
             value={breedFilter}
             onChange={(e) => { setBreedFilter(e.target.value); setVisibleCount(PAGE_SIZE) }}
             className={`${selectCls} flex-1 min-w-0 text-[12px] py-2`}
           >
-            <option value="">Todas las razas</option>
+            <option value="">{t('Todas las razas')}</option>
             {breeds.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
           <SortSelect value={sortBy} onChange={setSortBy} storageKey="dogs-sort" />
@@ -311,7 +313,7 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
 
       {/* Count */}
       <p className="-mt-3 text-[12.5px] text-muted">
-        Mostrando {paged.length} de {filtered.length} {filtered.length === 1 ? 'perro' : 'perros'}
+        {t('Mostrando')} {paged.length} / {filtered.length} {filtered.length === 1 ? t('perro') : t('perros')}
       </p>
 
       {/* Grid view — en mobile (1 columna) usa la card híbrida horizontal del
@@ -327,7 +329,7 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-canvas border border-hairline transition-colors group-hover:bg-ink group-hover:border-ink sm:h-14 sm:w-14">
               <Plus className="h-5 w-5 text-muted transition-colors group-hover:text-on-primary sm:h-6 sm:w-6" />
             </div>
-            <p className="text-[13px] font-medium text-body sm:mt-3">Añadir perro</p>
+            <p className="text-[13px] font-medium text-body sm:mt-3">{t('Añadir perro')}</p>
           </button>
 
           {paged.map((dog) => (
@@ -351,7 +353,7 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-canvas border border-hairline transition-colors group-hover:bg-ink group-hover:border-ink">
               <Plus className="h-5 w-5 text-muted transition-colors group-hover:text-on-primary" />
             </div>
-            <p className="text-[14px] font-medium text-body">Añadir perro</p>
+            <p className="text-[14px] font-medium text-body">{t('Añadir perro')}</p>
           </button>
           {paged.map((dog) => {
             const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#888'
@@ -385,17 +387,17 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
                       perfil del perro (línea ~362 onClick = window.location). */}
                   <button
                     onClick={e => { e.stopPropagation(); openEdit(dog.id) }}
-                    title="Editar"
+                    title={t('Editar')}
                     className="inline-flex items-center gap-1 rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-[11px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
                   >
-                    <Edit className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Editar</span>
+                    <Edit className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t('Editar')}</span>
                   </button>
                   <button
                     onClick={e => { e.stopPropagation(); openPedigree(dog.id) }}
-                    title="Constructor de genealogía"
+                    title={t('Constructor de genealogía')}
                     className="inline-flex items-center gap-1 rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-[11px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
                   >
-                    <GitBranch className="h-3.5 w-3.5" /> <span className="hidden md:inline">Genealogía</span>
+                    <GitBranch className="h-3.5 w-3.5" /> <span className="hidden md:inline">{t('Genealogía')}</span>
                   </button>
 
                   {/* Toggles solo para criadores */}
@@ -403,7 +405,7 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
                     <>
                       <button
                         onClick={e => { e.stopPropagation(); handleToggleVisible(dog.id, dog.show_in_kennel !== false) }}
-                        title={dog.show_in_kennel !== false ? 'Visible en perfil público — click para ocultar' : 'Oculto — click para mostrar'}
+                        title={dog.show_in_kennel !== false ? t('Visible en perfil público — click para ocultar') : t('Oculto — click para mostrar')}
                         aria-pressed={dog.show_in_kennel !== false}
                         className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
                           dog.show_in_kennel !== false
@@ -412,11 +414,11 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
                         }`}
                       >
                         {dog.show_in_kennel !== false ? <Globe className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                        <span className="hidden md:inline">{dog.show_in_kennel !== false ? 'Visible' : 'Oculto'}</span>
+                        <span className="hidden md:inline">{dog.show_in_kennel !== false ? t('Visible') : t('Oculto')}</span>
                       </button>
                       <button
                         onClick={e => { e.stopPropagation(); handleToggleReproductive(dog.id, !!dog.is_reproductive) }}
-                        title={dog.is_reproductive ? 'Es reproductor — click para desmarcar' : 'No es reproductor — click para marcar'}
+                        title={dog.is_reproductive ? t('Es reproductor — click para desmarcar') : t('No es reproductor — click para marcar')}
                         aria-pressed={!!dog.is_reproductive}
                         className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
                           dog.is_reproductive
@@ -425,7 +427,7 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
                         }`}
                       >
                         <Heart className={`h-3.5 w-3.5 ${dog.is_reproductive ? 'fill-current' : ''}`} />
-                        <span className="hidden md:inline">{dog.is_reproductive ? 'Reproductor' : 'No reproductor'}</span>
+                        <span className="hidden md:inline">{dog.is_reproductive ? t('Reproductor') : t('No reproductor')}</span>
                       </button>
                     </>
                   )}
@@ -440,10 +442,10 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
                         breed_name: Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name,
                       })
                     }}
-                    title="Transferir a otro dueño"
+                    title={t('Transferir a otro dueño')}
                     className="inline-flex items-center gap-1 rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-[11px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
                   >
-                    <ArrowRightLeft className="h-3.5 w-3.5" /> <span className="hidden md:inline">Transferir</span>
+                    <ArrowRightLeft className="h-3.5 w-3.5" /> <span className="hidden md:inline">{t('Transferir')}</span>
                   </button>
                 </div>
               </div>
@@ -455,12 +457,12 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
       {/* Empty state */}
       {filtered.length === 0 && (
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
-          <p className="text-[14px] text-body">No se encontraron perros con esos filtros.</p>
+          <p className="text-[14px] text-body">{t('No se encontraron perros con esos filtros.')}</p>
           <button
             onClick={() => { setSearch(''); setSexFilter(''); setBreedFilter('') }}
             className="mt-3 text-[13px] font-medium text-ink hover:opacity-80"
           >
-            Limpiar filtros →
+            {t('Limpiar filtros →')}
           </button>
         </div>
       )}

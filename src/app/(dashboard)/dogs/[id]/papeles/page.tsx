@@ -15,6 +15,8 @@ import { listDogDocuments } from '@/lib/dogs/documents'
 import DogDocumentsGrid from '@/components/dogs/dog-documents-grid'
 import UploadDogDocumentForm from './upload-form'
 import { deleteDogDocumentAction } from './actions'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Papeles del perro · Genealogic' }
@@ -24,6 +26,7 @@ export default async function DogPapelesPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const t = getTranslator(await getLocale())
   const { id } = await params
   const supabase = await createClient()
   const {
@@ -73,9 +76,9 @@ export default async function DogPapelesPage({
           </div>
         )}
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-ink">Papeles</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-ink">{t('Papeles')}</h1>
           <p className="text-sm text-muted mt-0.5">
-            Contratos, cartillas, registros y documentos de <strong>{dog.name}</strong>
+            {t('Contratos, cartillas, registros y documentos de')} <strong>{dog.name}</strong>
           </p>
         </div>
       </div>
@@ -84,7 +87,7 @@ export default async function DogPapelesPage({
         <section>
           <div className="flex items-end justify-between mb-3">
             <h2 className="text-sm font-bold uppercase tracking-wider text-ink">
-              Documentos ({documents.length})
+              {t('Documentos')} ({documents.length})
             </h2>
           </div>
           <DogDocumentsGrid
@@ -97,10 +100,10 @@ export default async function DogPapelesPage({
         <aside>
           <UploadDogDocumentForm dogId={dog.id} />
           <div className="mt-4 rounded-2xl border border-hairline bg-canvas p-4 text-xs text-muted">
-            <p className="font-semibold text-ink mb-1">¿Cuándo se ve el documento?</p>
+            <p className="font-semibold text-ink mb-1">{t('¿Cuándo se ve el documento?')}</p>
             <p>
-              Marca <strong>Visible para el propietario</strong> para que aparezca en su panel{' '}
-              <code>/mis-perros/{dog.id.slice(0, 6)}…</code>. Desmárcalo si es una copia interna.
+              {t('Marca')} <strong>{t('Visible para el propietario')}</strong> {t('para que aparezca en su panel')}{' '}
+              <code>/mis-perros/{dog.id.slice(0, 6)}…</code>. {t('Desmárcalo si es una copia interna.')}
             </p>
           </div>
         </aside>

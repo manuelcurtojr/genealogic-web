@@ -20,6 +20,7 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, Filter, X } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 export interface DogPickerDog {
   id: string
@@ -54,6 +55,7 @@ export default function DogPicker({
   femalesOnly = false,
 }: Props) {
   const router = useRouter()
+  const t = useT()
   const [query, setQuery] = useState('')
   const [sexFilter, setSexFilter] = useState<'all' | 'male' | 'female'>(femalesOnly ? 'female' : 'all')
   const [breedFilter, setBreedFilter] = useState<string>('all')
@@ -109,8 +111,8 @@ export default function DogPicker({
       {/* ─── Filtros ───────────────────────────────────────────────────── */}
       <div className="border-b border-hairline p-3 space-y-2.5">
         <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-          {label}
-          <span className="ml-1.5 text-muted/70 normal-case font-normal">· {filtered.length} de {dogs.length}</span>
+          {t(label)}
+          <span className="ml-1.5 text-muted/70 normal-case font-normal">· {filtered.length} / {dogs.length}</span>
         </p>
 
         {/* Search */}
@@ -120,7 +122,7 @@ export default function DogPicker({
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por nombre…"
+            placeholder={t('Buscar por nombre…')}
             // text-base en mobile evita zoom auto de iOS Safari
             className="w-full rounded-lg border border-hairline bg-surface-card pl-8 pr-3 py-2 text-base sm:text-[13px] text-ink placeholder:text-muted focus:outline-none focus:border-ink/30 transition-colors"
           />
@@ -135,13 +137,13 @@ export default function DogPicker({
               onChange={(e) => setSexFilter(e.target.value as 'all' | 'male' | 'female')}
               className="rounded-lg border border-hairline bg-surface-card px-2.5 py-2 text-base sm:text-[12.5px] text-ink focus:outline-none focus:border-ink/30 transition-colors"
             >
-              <option value="all">Todos los sexos</option>
-              <option value="male">♂ Machos</option>
-              <option value="female">♀ Hembras</option>
+              <option value="all">{t('Todos los sexos')}</option>
+              <option value="male">♂ {t('Machos')}</option>
+              <option value="female">♀ {t('Hembras')}</option>
             </select>
           ) : (
             <div className="rounded-lg border border-hairline bg-surface-soft px-2.5 py-2 text-[12.5px] text-muted text-center">
-              ♀ Solo hembras
+              ♀ {t('Solo hembras')}
             </div>
           )}
           {/* Breed */}
@@ -151,7 +153,7 @@ export default function DogPicker({
             disabled={availableBreeds.length === 0}
             className="rounded-lg border border-hairline bg-surface-card px-2.5 py-2 text-base sm:text-[12.5px] text-ink focus:outline-none focus:border-ink/30 transition-colors disabled:opacity-50"
           >
-            <option value="all">Todas las razas</option>
+            <option value="all">{t('Todas las razas')}</option>
             {availableBreeds.map((b) => (
               <option key={b.id} value={b.id}>{b.name}</option>
             ))}
@@ -164,7 +166,7 @@ export default function DogPicker({
             onClick={clearFilters}
             className="inline-flex items-center gap-1 text-[11.5px] text-muted hover:text-ink transition"
           >
-            <X className="h-3 w-3" /> Limpiar filtros
+            <X className="h-3 w-3" /> {t('Limpiar filtros')}
           </button>
         )}
       </div>
@@ -174,7 +176,7 @@ export default function DogPicker({
         {filtered.length === 0 ? (
           <li className="px-3 py-6 text-center text-[12.5px] text-muted">
             <Filter className="mx-auto h-4 w-4 mb-1.5 opacity-50" />
-            Sin perros con esos filtros
+            {t('Sin perros con esos filtros')}
           </li>
         ) : (
           filtered.map((dog) => {

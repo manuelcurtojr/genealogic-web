@@ -5,11 +5,13 @@ import { Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function DogDetailActions({ dogId }: { dogId: string }) {
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const router = useRouter()
+  const t = useT()
 
   const handleDelete = async () => {
     setDeleting(true)
@@ -30,9 +32,9 @@ export default function DogDetailActions({ dogId }: { dogId: string }) {
         open={showDelete}
         onConfirm={handleDelete}
         onCancel={() => setShowDelete(false)}
-        title="Eliminar perro"
-        message="¿Estas seguro de que quieres eliminar este perro? Esta accion no se puede deshacer."
-        confirmLabel="Eliminar"
+        title={t('Eliminar perro')}
+        message={t('¿Estas seguro de que quieres eliminar este perro? Esta accion no se puede deshacer.')}
+        confirmLabel={t('Eliminar')}
         destructive
         loading={deleting}
       />

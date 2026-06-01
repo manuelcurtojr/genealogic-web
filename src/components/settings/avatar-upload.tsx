@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Camera, Loader2, X, ZoomIn, ZoomOut } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   userId: string
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function AvatarUpload({ userId, currentUrl, displayName, onUploaded }: Props) {
+  const t = useT()
   const [modalOpen, setModalOpen] = useState(false)
   const [imgSrc, setImgSrc] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -151,7 +153,7 @@ export default function AvatarUpload({ userId, currentUrl, displayName, onUpload
           <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm" onClick={() => { setModalOpen(false); setImgSrc(null) }} />
           <div className="fixed z-[101] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] max-w-[90vw] bg-surface-card border border-hairline rounded-2xl shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-5 py-3 border-b border-hairline">
-              <h3 className="text-sm font-semibold">Recortar avatar</h3>
+              <h3 className="text-sm font-semibold">{t('Recortar avatar')}</h3>
               <button onClick={() => { setModalOpen(false); setImgSrc(null) }} className="text-muted hover:text-ink">
                 <X className="w-5 h-5" />
               </button>
@@ -209,14 +211,14 @@ export default function AvatarUpload({ userId, currentUrl, displayName, onUpload
                   onClick={() => { setModalOpen(false); setImgSrc(null) }}
                   className="flex-1 py-2.5 rounded-lg text-sm text-body bg-surface-card hover:bg-surface-card transition"
                 >
-                  Cancelar
+                  {t('Cancelar')}
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={uploading}
                   className="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-ink text-on-primary hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</> : 'Guardar avatar'}
+                  {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('Subiendo...')}</> : t('Guardar avatar')}
                 </button>
               </div>
             </div>

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Edit, ArrowRightLeft, GitBranch, Globe, EyeOff, Heart } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { DogImage } from '@/components/ui/dog-image'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface DogCardProps {
   dog: {
@@ -57,6 +58,7 @@ export default function DogCard({
   onToggleVisible,
   onToggleReproductive,
 }: DogCardProps) {
+  const t = useT()
   const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#888'
   const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
   const colorName = Array.isArray(dog.color) ? dog.color[0]?.name : dog.color?.name
@@ -71,8 +73,8 @@ export default function DogCard({
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onEdit?.() }}
-        title="Editar"
-        aria-label="Editar"
+        title={t('Editar')}
+        aria-label={t('Editar')}
         className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-card hover:text-ink"
       >
         <Edit className="h-4 w-4" />
@@ -81,8 +83,8 @@ export default function DogCard({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onEditPedigree() }}
-          title="Constructor de genealogía"
-          aria-label="Genealogía"
+          title={t('Constructor de genealogía')}
+          aria-label={t('Genealogía')}
           className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-card hover:text-ink"
         >
           <GitBranch className="h-4 w-4" />
@@ -94,10 +96,10 @@ export default function DogCard({
           onClick={(e) => { e.stopPropagation(); onToggleVisible() }}
           title={
             dog.show_in_kennel !== false
-              ? 'Visible en tu perfil público — click para ocultar'
-              : 'Oculto en tu perfil público — click para mostrar'
+              ? t('Visible en tu perfil público — click para ocultar')
+              : t('Oculto en tu perfil público — click para mostrar')
           }
-          aria-label={dog.show_in_kennel !== false ? 'Ocultar de perfil público' : 'Mostrar en perfil público'}
+          aria-label={dog.show_in_kennel !== false ? t('Ocultar de perfil público') : t('Mostrar en perfil público')}
           aria-pressed={dog.show_in_kennel !== false}
           className={`inline-flex h-9 w-9 items-center justify-center rounded-md border transition-colors ${
             dog.show_in_kennel !== false
@@ -114,10 +116,10 @@ export default function DogCard({
           onClick={(e) => { e.stopPropagation(); onToggleReproductive() }}
           title={
             dog.is_reproductive
-              ? 'Es reproductor — click para desmarcar'
-              : 'No es reproductor — click para marcar'
+              ? t('Es reproductor — click para desmarcar')
+              : t('No es reproductor — click para marcar')
           }
-          aria-label={dog.is_reproductive ? 'Quitar marca de reproductor' : 'Marcar como reproductor'}
+          aria-label={dog.is_reproductive ? t('Quitar marca de reproductor') : t('Marcar como reproductor')}
           aria-pressed={!!dog.is_reproductive}
           className={`inline-flex h-9 w-9 items-center justify-center rounded-md border transition-colors ${
             dog.is_reproductive
@@ -132,8 +134,8 @@ export default function DogCard({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onTransfer() }}
-          title="Transferir a otro dueño"
-          aria-label="Transferir"
+          title={t('Transferir a otro dueño')}
+          aria-label={t('Transferir')}
           className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-card hover:text-ink"
         >
           <ArrowRightLeft className="h-4 w-4" />
@@ -153,7 +155,7 @@ export default function DogCard({
       {/* Link overlay — cubre toda la card detrás (z-0). Aria-label para SR. */}
       <Link
         href={dogHref}
-        aria-label={`Ver perfil de ${dog.name}`}
+        aria-label={`${t('Ver perfil de')} ${dog.name}`}
         className="absolute inset-0 z-0"
       />
       {/* Columna foto — ocupa el alto completo de la card */}

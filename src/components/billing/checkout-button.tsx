@@ -22,6 +22,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, ArrowRight } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 type Plan = 'pro' | 'premium'
 
@@ -42,6 +43,7 @@ export default function CheckoutButton({
   isLoggedIn: boolean
 }) {
   const router = useRouter()
+  const t = useT()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
@@ -66,9 +68,9 @@ export default function CheckoutButton({
         const json = await res.json()
         if (!res.ok) {
           if (res.status === 503) {
-            setError('Pagos online próximamente. Escribe a hola@genealogic.io para activar tu plan manualmente.')
+            setError(t('Pagos online próximamente. Escribe a hola@genealogic.io para activar tu plan manualmente.'))
           } else {
-            setError(json.message || 'Error iniciando el pago')
+            setError(json.message || t('Error iniciando el pago'))
           }
           return
         }
@@ -76,7 +78,7 @@ export default function CheckoutButton({
           window.location.href = json.url
         }
       } catch {
-        setError('No se pudo iniciar el pago. Revisa tu conexión.')
+        setError(t('No se pudo iniciar el pago. Revisa tu conexión.'))
       }
     })
   }

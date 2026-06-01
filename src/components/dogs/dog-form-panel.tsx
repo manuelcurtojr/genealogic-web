@@ -19,6 +19,7 @@ import ImportPedigreeTab from './import-pedigree-tab'
 import HistoricoTab from './edit-tabs/historico-tab'
 import PedigreeEditor from '@/components/pedigree/pedigree-editor'
 import TransferPanel from '@/components/kennel/transfer-panel'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface DogFormPanelProps {
   open: boolean
@@ -50,6 +51,7 @@ type TabKey = typeof TABS[number]['key']
 
 export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId, defaultLitterId, defaultBreedId, defaultFatherId, defaultMotherId, defaultKennelId, defaultKennelName, defaultAffixFormat }: DogFormPanelProps) {
   const router = useRouter()
+  const t = useT()
   const isEdit = !!editDogId
   const [activeTab, setActiveTab] = useState<TabKey>('datos')
   const [createMode, setCreateMode] = useState<'manual' | 'import'>('manual')
@@ -248,7 +250,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       setLoading(false)
       if (err) {
         if (err.message?.includes('DOG_LIMIT_REACHED')) {
-          setError('Has alcanzado el límite de perros de tu plan. Marca un perro como "en venta" o fallecido para liberar espacio, o pásate a Kennel Pro para perros ilimitados (genealogic.io/pricing).')
+          setError(t('Has alcanzado el límite de perros de tu plan. Marca un perro como "en venta" o fallecido para liberar espacio, o pásate a Kennel Pro para perros ilimitados (genealogic.io/pricing).'))
         } else {
           setError(err.message)
         }
@@ -282,107 +284,106 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   const selFather = allMaleDogs.find(d => d.id === form.father_id)
   const selMother = allFemaleDogs.find(d => d.id === form.mother_id)
   const selKennel = kennels.find(k => k.id === form.kennel_id)
-  const sexLabel = form.sex === 'male' ? 'Macho' : form.sex === 'female' ? 'Hembra' : null
-  const visibleTabs = TABS.filter((t) => !('femaleOnly' in t && t.femaleOnly) || form.sex === 'female')
+  const sexLabel = form.sex === 'male' ? t('Macho') : form.sex === 'female' ? t('Hembra') : null
+  const visibleTabs = TABS.filter((tab) => !('femaleOnly' in tab && tab.femaleOnly) || form.sex === 'female')
 
   // ── Contenido de la pestaña "Datos" (compartido creación/edición) ──────
   const datosContent = (
     <div className="space-y-5">
       {/* Identity */}
-      <Section icon={CreditCard} title="Identidad">
+      <Section icon={CreditCard} title={t('Identidad')}>
         <div className="space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <Field label={isFromLitter && kennelAffix ? 'Nombre del cachorro *' : 'Nombre *'} value={form.name} onChange={v => set('name', v)} placeholder={isFromLitter && kennelAffix ? 'Solo el nombre (sin afijo)' : ''} />
+              <Field label={isFromLitter && kennelAffix ? t('Nombre del cachorro *') : t('Nombre *')} value={form.name} onChange={v => set('name', v)} placeholder={isFromLitter && kennelAffix ? t('Solo el nombre (sin afijo)') : ''} />
               {isFromLitter && kennelAffix && form.name.trim() && (
                 <p className="text-[10px] text-ink mt-1 font-medium">{formatDogName(form.name.trim(), defaultKennelName!, defaultAffixFormat as AffixFormat)}</p>
               )}
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">Sexo *</label>
+              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">{t('Sexo *')}</label>
               <div className="flex gap-2">
                 {(['male', 'female'] as const).map(s => (
                   <button key={s} type="button" onClick={() => set('sex', s)}
                     className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border transition ${form.sex === s
                       ? (s === 'male' ? 'border-blue-400 bg-blue-400/10 text-blue-400' : 'border-pink-400 bg-pink-400/10 text-pink-400')
                       : 'border-hairline bg-surface-card text-body hover:bg-surface-card'}`}>
-                    {s === 'male' ? '♂ Macho' : '♀ Hembra'}
+                    {s === 'male' ? `♂ ${t('Macho')}` : `♀ ${t('Hembra')}`}
                   </button>
                 ))}
               </div>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field label="Nacimiento" value={form.birth_date} onChange={v => set('birth_date', v)} type="date" />
-            <Field label="Microchip" value={form.microchip} onChange={v => set('microchip', v)} placeholder="Número" />
+            <Field label={t('Nacimiento')} value={form.birth_date} onChange={v => set('birth_date', v)} type="date" />
+            <Field label={t('Microchip')} value={form.microchip} onChange={v => set('microchip', v)} placeholder={t('Número')} />
           </div>
-          <Field label="Registro" value={form.registration} onChange={v => set('registration', v)} placeholder="UKC, FCI, etc." />
+          <Field label={t('Registro')} value={form.registration} onChange={v => set('registration', v)} placeholder="UKC, FCI, etc." />
         </div>
       </Section>
 
       {/* Genealogy */}
-      <Section icon={GitBranch} title={isFromLitter ? 'Genealogía (de la camada)' : 'Genealogía'}>
+      <Section icon={GitBranch} title={isFromLitter ? t('Genealogía (de la camada)') : t('Genealogía')}>
         {isFromLitter ? (
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <LockedCard label="Raza" name={selBreed?.name} />
-              <LockedCard label="Criadero" name={selKennel?.name} />
+              <LockedCard label={t('Raza')} name={selBreed?.name} />
+              <LockedCard label={t('Criadero')} name={selKennel?.name} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <LockedCard label="Padre" name={selFather?.name} sexColor={BRAND.male} />
-              <LockedCard label="Madre" name={selMother?.name} sexColor={BRAND.female} />
+              <LockedCard label={t('Padre')} name={selFather?.name} sexColor={BRAND.male} />
+              <LockedCard label={t('Madre')} name={selMother?.name} sexColor={BRAND.female} />
             </div>
-            {form.breed_id && <DropdownSearch label="Color" items={colors.map(c => ({ id: c.id, name: c.name, image: null }))} value={form.color_id} onChange={v => set('color_id', v)} placeholder="Buscar color..." />}
+            {form.breed_id && <DropdownSearch label={t('Color')} items={colors.map(c => ({ id: c.id, name: c.name, image: null }))} value={form.color_id} onChange={v => set('color_id', v)} placeholder={t('Buscar color...')} />}
           </div>
         ) : (
           <div className="space-y-3">
-            <SelectCard label="Raza" name={selBreed?.name} onClear={() => set('breed_id', '')}
-              selector={<SearchList items={breeds.map(b => ({ id: b.id, name: b.name, image: null }))} value={form.breed_id} onChange={v => set('breed_id', v)} placeholder="Buscar raza..." />} />
+            <SelectCard label={t('Raza')} name={selBreed?.name} onClear={() => set('breed_id', '')}
+              selector={<SearchList items={breeds.map(b => ({ id: b.id, name: b.name, image: null }))} value={form.breed_id} onChange={v => set('breed_id', v)} placeholder={t('Buscar raza...')} />} />
             {form.breed_id && (
               <>
-                <DropdownSearch label="Color" items={colors.map(c => ({ id: c.id, name: c.name, image: null }))} value={form.color_id} onChange={v => set('color_id', v)} placeholder="Buscar color..." />
+                <DropdownSearch label={t('Color')} items={colors.map(c => ({ id: c.id, name: c.name, image: null }))} value={form.color_id} onChange={v => set('color_id', v)} placeholder={t('Buscar color...')} />
                 {isEdit ? (
                   <>
-                    <LockedParentCard label="Padre" dog={selFather} sexColor={BRAND.male} />
-                    <LockedParentCard label="Madre" dog={selMother} sexColor={BRAND.female} />
+                    <LockedParentCard label={t('Padre')} dog={selFather} sexColor={BRAND.male} />
+                    <LockedParentCard label={t('Madre')} dog={selMother} sexColor={BRAND.female} />
                     <p className="text-[11px] text-muted leading-snug px-1">
-                      Los padres están bloqueados aquí para proteger la integridad de la genealogía.
-                      Para modificarlos usa <strong>Gestión → Editar genealogía</strong>.
+                      {t('Los padres están bloqueados aquí para proteger la integridad de la genealogía. Para modificarlos usa')} <strong>{t('Gestión → Editar genealogía')}</strong>.
                     </p>
                   </>
                 ) : (
                   <>
-                    <SelectCard label="Padre" name={selFather?.name} image={selFather?.thumbnail_url} sexColor={BRAND.male} onClear={() => set('father_id', '')}
-                      selector={<SearchList items={maleDogs.filter(d => d.id !== editDogId).map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))} value={form.father_id} onChange={v => set('father_id', v)} placeholder="Buscar padre..." sexColor={BRAND.male} />} />
-                    <SelectCard label="Madre" name={selMother?.name} image={selMother?.thumbnail_url} sexColor={BRAND.female} onClear={() => set('mother_id', '')}
-                      selector={<SearchList items={femaleDogs.filter(d => d.id !== editDogId).map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))} value={form.mother_id} onChange={v => set('mother_id', v)} placeholder="Buscar madre..." sexColor={BRAND.female} />} />
+                    <SelectCard label={t('Padre')} name={selFather?.name} image={selFather?.thumbnail_url} sexColor={BRAND.male} onClear={() => set('father_id', '')}
+                      selector={<SearchList items={maleDogs.filter(d => d.id !== editDogId).map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))} value={form.father_id} onChange={v => set('father_id', v)} placeholder={t('Buscar padre...')} sexColor={BRAND.male} />} />
+                    <SelectCard label={t('Madre')} name={selMother?.name} image={selMother?.thumbnail_url} sexColor={BRAND.female} onClear={() => set('mother_id', '')}
+                      selector={<SearchList items={femaleDogs.filter(d => d.id !== editDogId).map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))} value={form.mother_id} onChange={v => set('mother_id', v)} placeholder={t('Buscar madre...')} sexColor={BRAND.female} />} />
                   </>
                 )}
               </>
             )}
-            <SelectCard label="Criadero" name={selKennel?.name} image={selKennel?.logo_url} onClear={() => set('kennel_id', '')}
-              selector={<SearchList items={kennels.map(k => ({ id: k.id, name: k.name, image: k.logo_url }))} value={form.kennel_id} onChange={v => set('kennel_id', v)} placeholder="Buscar criadero..." />} />
+            <SelectCard label={t('Criadero')} name={selKennel?.name} image={selKennel?.logo_url} onClear={() => set('kennel_id', '')}
+              selector={<SearchList items={kennels.map(k => ({ id: k.id, name: k.name, image: k.logo_url }))} value={form.kennel_id} onChange={v => set('kennel_id', v)} placeholder={t('Buscar criadero...')} />} />
           </div>
         )}
       </Section>
 
       {/* Measurements */}
       {!isFromLitter && (
-        <Section icon={Weight} title="Medidas">
+        <Section icon={Weight} title={t('Medidas')}>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Peso (kg)" value={form.weight} onChange={v => set('weight', v)} type="number" />
-            <Field label="Altura (cm)" value={form.height} onChange={v => set('height', v)} type="number" />
+            <Field label={t('Peso (kg)')} value={form.weight} onChange={v => set('weight', v)} type="number" />
+            <Field label={t('Altura (cm)')} value={form.height} onChange={v => set('height', v)} type="number" />
           </div>
         </Section>
       )}
 
       {/* Gallery */}
-      <Section icon={ImageIcon} title="Galería">
+      <Section icon={ImageIcon} title={t('Galería')}>
         {editDogId ? (
           <GalleryTab dogId={editDogId} userId={userId} />
         ) : (
           <p className="text-xs text-muted text-center py-4">
-            {isFromLitter ? 'Guarda el cachorro para subir fotos' : 'Guarda el perro primero para subir fotos'}
+            {isFromLitter ? t('Guarda el cachorro para subir fotos') : t('Guarda el perro primero para subir fotos')}
           </p>
         )}
       </Section>
@@ -393,8 +394,8 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           <div className="flex items-center gap-3">
             {form.is_public ? <Eye className="w-5 h-5 text-green-400" /> : <EyeOff className="w-5 h-5 text-muted" />}
             <div>
-              <p className="text-sm font-medium">{form.is_public ? 'Público' : 'Privado'}</p>
-              <p className="text-xs text-muted">{form.is_public ? 'Visible para otros' : 'Solo tú'}</p>
+              <p className="text-sm font-medium">{form.is_public ? t('Público') : t('Privado')}</p>
+              <p className="text-xs text-muted">{form.is_public ? t('Visible para otros') : t('Solo tú')}</p>
             </div>
           </div>
           <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
@@ -416,38 +417,38 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-ink truncate">{externalOwner.display_name || externalOwner.email || 'Propietario sin nombre'}</p>
-            <p className="text-[11px] text-amber-700 mt-0.5 leading-snug">Este perro ya fue transferido. La propiedad ahora es de otro usuario.</p>
+            <p className="text-sm font-semibold text-ink truncate">{externalOwner.display_name || externalOwner.email || t('Propietario sin nombre')}</p>
+            <p className="text-[11px] text-amber-700 mt-0.5 leading-snug">{t('Este perro ya fue transferido. La propiedad ahora es de otro usuario.')}</p>
           </div>
         </div>
       )}
 
       {/* Visibilidad y estado */}
       <div>
-        <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">Visibilidad y estado</p>
+        <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">{t('Visibilidad y estado')}</p>
         <div className="mt-3 space-y-2.5">
-          <ToggleCard icon={Globe} accent="emerald" title="Visible en tu criadero"
-            desc="Aparece en la web pública de tu criadero." value={showInKennel}
+          <ToggleCard icon={Globe} accent="emerald" title={t('Visible en tu criadero')}
+            desc={t('Aparece en la web pública de tu criadero.')} value={showInKennel}
             saving={savingField === 'show_in_kennel'} onChange={(v) => persistField('show_in_kennel', v)} />
-          <ToggleCard icon={Eye} accent="blue" title="Perfil público"
-            desc="Visible en el directorio y el buscador de Genealogic." value={form.is_public}
+          <ToggleCard icon={Eye} accent="blue" title={t('Perfil público')}
+            desc={t('Visible en el directorio y el buscador de Genealogic.')} value={form.is_public}
             saving={savingField === 'is_public'} onChange={(v) => persistField('is_public', v)} />
-          <ToggleCard icon={Heart} accent="pink" title="Reproductor" fill
-            desc="Aparece en tu calendario reproductivo y en el catálogo de reproductores." value={isReproductive}
+          <ToggleCard icon={Heart} accent="pink" title={t('Reproductor')} fill
+            desc={t('Aparece en tu calendario reproductivo y en el catálogo de reproductores.')} value={isReproductive}
             saving={savingField === 'is_reproductive'} onChange={(v) => persistField('is_reproductive', v)} />
         </div>
       </div>
 
       {/* Acciones */}
       <div>
-        <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">Acciones</p>
+        <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">{t('Acciones')}</p>
         <div className="mt-3 space-y-2.5">
-          <ActionCard icon={GitBranch} accent="violet" title="Editar genealogía"
-            desc="Añade o cambia padres y construye el árbol genealógico." cta="Abrir"
+          <ActionCard icon={GitBranch} accent="violet" title={t('Editar genealogía')}
+            desc={t('Añade o cambia padres y construye el árbol genealógico.')} cta={t('Abrir')}
             onClick={() => setPedigreeOpen(true)} />
           {!externalOwner && (
-            <ActionCard icon={ArrowRightLeft} accent="amber" title="Transferir a otro dueño"
-              desc="Pasa la propiedad de este perro a otro usuario de Genealogic." cta="Abrir"
+            <ActionCard icon={ArrowRightLeft} accent="amber" title={t('Transferir a otro dueño')}
+              desc={t('Pasa la propiedad de este perro a otro usuario de Genealogic.')} cta={t('Abrir')}
               onClick={() => setTransferOpen(true)} />
           )}
           {deceasedAt ? (
@@ -456,15 +457,15 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                 <Heart className="h-4 w-4 fill-current" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[13.5px] font-medium text-ink">En memoria</p>
+                <p className="text-[13.5px] font-medium text-ink">{t('En memoria')}</p>
                 <p className="text-[11.5px] text-muted leading-snug">
-                  Fallecido el {new Date(deceasedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}. Para revertirlo, escribe a soporte.
+                  {t('Fallecido el')} {new Date(deceasedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}. {t('Para revertirlo, escribe a soporte.')}
                 </p>
               </div>
             </div>
           ) : (
-            <ActionCard icon={Heart} accent="rose" title="Marcar In Memoriam"
-              desc="Deja de contar en tu límite. La ficha y la genealogía se conservan." cta="Marcar" danger
+            <ActionCard icon={Heart} accent="rose" title={t('Marcar In Memoriam')}
+              desc={t('Deja de contar en tu límite. La ficha y la genealogía se conservan.')} cta={t('Marcar')} danger
               onClick={() => setConfirmDeceased(true)} />
           )}
         </div>
@@ -502,14 +503,14 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                 {thumbnailUrl ? <img src={thumbnailUrl} alt="" className="h-full w-full object-cover" /> : <Dog className="h-5 w-5 text-muted" />}
               </div>
               <div className="min-w-0">
-                <h2 className="truncate text-[15px] sm:text-base font-semibold tracking-[-0.01em] text-ink">{form.name || 'Editar perro'}</h2>
+                <h2 className="truncate text-[15px] sm:text-base font-semibold tracking-[-0.01em] text-ink">{form.name || t('Editar perro')}</h2>
                 {(selBreed?.name || sexLabel) && (
                   <p className="truncate text-[12px] text-muted">{[selBreed?.name, sexLabel].filter(Boolean).join(' · ')}</p>
                 )}
               </div>
             </div>
           ) : (
-            <h2 className="text-base sm:text-lg font-semibold tracking-[-0.01em]">{defaultLitterId ? 'Añadir cachorro' : 'Añadir perro'}</h2>
+            <h2 className="text-base sm:text-lg font-semibold tracking-[-0.01em]">{defaultLitterId ? t('Añadir cachorro') : t('Añadir perro')}</h2>
           )}
           <button onClick={onClose} className="text-muted hover:text-ink transition p-1 flex-shrink-0"><X className="w-5 h-5" /></button>
         </div>
@@ -518,10 +519,10 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         {!isEdit && !isFromLitter && (
           <div className="flex border-b border-hairline px-4 flex-shrink-0">
             <button onClick={() => setCreateMode('manual')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'manual' ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}>
-              <Dog className="w-3.5 h-3.5" /> Manual
+              <Dog className="w-3.5 h-3.5" /> {t('Manual')}
             </button>
             <button onClick={() => setCreateMode('import')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'import' ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}>
-              <Globe className="w-3.5 h-3.5" /> Importar genealogía
+              <Globe className="w-3.5 h-3.5" /> {t('Importar genealogía')}
             </button>
           </div>
         )}
@@ -538,27 +539,27 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           <div className="flex-1 min-h-0 flex flex-col sm:flex-row overflow-hidden">
             {/* Móvil: pills scrollables */}
             <nav className="sm:hidden flex gap-1.5 overflow-x-auto px-4 py-2.5 border-b border-hairline flex-shrink-0">
-              {visibleTabs.map((t) => {
-                const Icon = t.icon
-                const active = activeTab === t.key
+              {visibleTabs.map((tab) => {
+                const Icon = tab.icon
+                const active = activeTab === tab.key
                 return (
-                  <button key={t.key} onClick={() => setActiveTab(t.key)}
+                  <button key={tab.key} onClick={() => setActiveTab(tab.key)}
                     className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium whitespace-nowrap transition ${active ? 'bg-ink text-on-primary' : 'bg-surface-card text-body hover:text-ink'}`}>
-                    <Icon className="w-3.5 h-3.5" /> {t.label}
+                    <Icon className="w-3.5 h-3.5" /> {t(tab.label)}
                   </button>
                 )
               })}
             </nav>
             {/* Desktop: sidebar */}
             <nav className="hidden sm:flex sm:flex-col gap-0.5 w-52 flex-shrink-0 border-r border-hairline p-3 overflow-y-auto">
-              {visibleTabs.map((t) => {
-                const Icon = t.icon
-                const active = activeTab === t.key
+              {visibleTabs.map((tab) => {
+                const Icon = tab.icon
+                const active = activeTab === tab.key
                 return (
-                  <button key={t.key} onClick={() => setActiveTab(t.key)}
+                  <button key={tab.key} onClick={() => setActiveTab(tab.key)}
                     className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] transition ${active ? 'bg-surface-card text-ink font-medium shadow-[0_1px_2px_rgba(17,17,17,0.04)]' : 'text-muted hover:text-ink hover:bg-surface-soft'}`}>
                     {active && <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-ink" />}
-                    <Icon className={`h-4 w-4 flex-shrink-0 ${active ? 'text-ink' : 'text-muted'}`} /> <span className="truncate">{t.label}</span>
+                    <Icon className={`h-4 w-4 flex-shrink-0 ${active ? 'text-ink' : 'text-muted'}`} /> <span className="truncate">{t(tab.label)}</span>
                   </button>
                 )
               })}
@@ -579,11 +580,11 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         {/* Footer — guardar (solo pestaña Datos, modo manual) */}
         {activeTab === 'datos' && createMode === 'manual' && (
           <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hairline flex-shrink-0">
-            <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">Cancelar</button>
+            <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">{t('Cancelar')}</button>
             <button onClick={handleSubmit} disabled={loading || !form.name.trim() || dataLoading}
               className="bg-ink text-on-primary hover:opacity-90 font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              {loading ? 'Guardando...' : isEdit ? 'Actualizar' : 'Crear perro'}
+              {loading ? t('Guardando...') : isEdit ? t('Actualizar') : t('Crear perro')}
             </button>
           </div>
         )}
@@ -608,25 +609,23 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
               <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center flex-shrink-0">
                 <Heart className="w-5 h-5 text-rose-500" />
               </div>
-              <h3 className="text-base font-semibold">Marcar como fallecido</h3>
+              <h3 className="text-base font-semibold">{t('Marcar como fallecido')}</h3>
             </div>
             <p className="text-sm text-body leading-relaxed">
-              {form.name ? <strong>{form.name}</strong> : 'Este perro'} aparecerá como
-              «En memoria». Su ficha, genealogía, fotos y palmarés se conservan, pero
-              deja de contar en el límite de tu plan y se oculta del directorio público.
+              {form.name ? <strong>{form.name}</strong> : t('Este perro')} {t('aparecerá como «En memoria». Su ficha, genealogía, fotos y palmarés se conservan, pero deja de contar en el límite de tu plan y se oculta del directorio público.')}
             </p>
             <p className="mt-2 text-xs text-muted">
-              Esta acción es irreversible desde la app. Si te equivocas, escribe a soporte.
+              {t('Esta acción es irreversible desde la app. Si te equivocas, escribe a soporte.')}
             </p>
             <div className="flex items-center justify-end gap-3 mt-5">
               <button onClick={() => setConfirmDeceased(false)} disabled={deceasedLoading}
                 className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition disabled:opacity-50">
-                Cancelar
+                {t('Cancelar')}
               </button>
               <button onClick={handleMarkDeceased} disabled={deceasedLoading}
                 className="bg-rose-500 text-white hover:opacity-90 font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
                 {deceasedLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {deceasedLoading ? 'Marcando...' : 'Sí, marcar'}
+                {deceasedLoading ? t('Marcando...') : t('Sí, marcar')}
               </button>
             </div>
           </div>
@@ -710,6 +709,7 @@ function Field({ label, value, onChange, type = 'text', placeholder }: { label: 
 }
 
 function SelectCard({ label, name, image, sexColor, onClear, selector, disabled }: { label: string; name?: string; image?: string | null; sexColor?: string; onClear: () => void; selector: React.ReactNode; disabled?: boolean }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -729,13 +729,13 @@ function SelectCard({ label, name, image, sexColor, onClear, selector, disabled 
           </div>
         )}
         {sexColor && !image && <div className="w-1 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: sexColor }} />}
-        <span className={`flex-1 text-[14px] `}>{name || 'Seleccionar...'}</span>
+        <span className={`flex-1 text-[14px] `}>{name || t('Seleccionar...')}</span>
         <ChevronDown className={`w-4 h-4 text-muted transition ${open ? 'rotate-180' : ''}`} />
       </div>
       {open && !disabled && (
         <div className="absolute z-[80] top-full mt-1 left-0 right-0 bg-canvas border border-hairline rounded-lg shadow-lg max-h-56 overflow-hidden">
           {selector}
-          {name && <button onClick={() => { onClear(); setOpen(false) }} className="w-full text-left px-3 py-2.5 text-xs text-red-400 hover:bg-red-500/10 border-t border-hairline">Quitar selección</button>}
+          {name && <button onClick={() => { onClear(); setOpen(false) }} className="w-full text-left px-3 py-2.5 text-xs text-red-400 hover:bg-red-500/10 border-t border-hairline">{t('Quitar selección')}</button>}
         </div>
       )}
     </div>
@@ -743,6 +743,7 @@ function SelectCard({ label, name, image, sexColor, onClear, selector, disabled 
 }
 
 function SearchList({ items, value, onChange, placeholder, sexColor }: { items: { id: string; name: string; image: string | null }[]; value: string; onChange: (v: string) => void; placeholder?: string; sexColor?: string }) {
+  const t = useT()
   const [search, setSearch] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const filtered = items.filter(d => d.name.toLowerCase().includes(search.toLowerCase()))
@@ -753,13 +754,13 @@ function SearchList({ items, value, onChange, placeholder, sexColor }: { items: 
       <div className="p-2.5 border-b border-hairline">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
-          <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)} placeholder={placeholder || 'Buscar...'}
+          <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)} placeholder={placeholder || t('Buscar...')}
             className="w-full bg-surface-card border border-hairline rounded-lg pl-8 pr-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
         </div>
       </div>
       <div className="overflow-y-auto max-h-44">
         {filtered.length === 0 ? (
-          <p className="text-sm text-muted p-4 text-center">Sin resultados</p>
+          <p className="text-sm text-muted p-4 text-center">{t('Sin resultados')}</p>
         ) : filtered.map(item => (
           <button key={item.id} type="button" onClick={() => { onChange(item.id); setSearch('') }}
             className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2.5 transition ${item.id === value ? 'bg-surface-card text-ink' : 'text-ink hover:bg-surface-card'}`}>
@@ -824,6 +825,7 @@ function LockedParentCard({ label, dog, sexColor }: {
   dog?: { id: string; name: string; thumbnail_url?: string | null } | null
   sexColor?: string
 }) {
+  const t = useT()
   return (
     <div>
       <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">{label}</label>
@@ -835,7 +837,7 @@ function LockedParentCard({ label, dog, sexColor }: {
         ) : sexColor ? (
           <div className="w-1 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: sexColor }} />
         ) : null}
-        <span className="flex-1 text-[14px] text-ink truncate">{dog?.name || 'Sin asignar'}</span>
+        <span className="flex-1 text-[14px] text-ink truncate">{dog?.name || t('Sin asignar')}</span>
         <Lock className="w-3.5 h-3.5 text-muted flex-shrink-0" />
       </div>
     </div>

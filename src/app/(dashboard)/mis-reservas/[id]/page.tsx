@@ -18,6 +18,8 @@ import {
 import { listReservationMessages, markThreadRead } from '@/lib/reservations/messages'
 import ReservationThread from '@/components/reservations/reservation-thread'
 import { sendClientMessageAction } from './actions'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Reserva · Mis reservas · Genealogic' }
@@ -27,6 +29,7 @@ export default async function MyReservationDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const t = getTranslator(await getLocale())
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -39,7 +42,7 @@ export default async function MyReservationDetailPage({
   const isArchived = reservation.status === 'delivered' || reservation.status === 'cancelled'
 
   // Línea de tiempo: pasos del journey de la reserva
-  const timeline = buildTimeline(reservation)
+  const timeline = buildTimeline(reservation, t)
 
   // Mensajería
   const messages = await listReservationMessages(reservation.id)
@@ -52,13 +55,13 @@ export default async function MyReservationDetailPage({
         href="/mis-reservas"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted hover:text-ink mb-5"
       >
-        ← Mis reservas
+        ← {t('Mis reservas')}
       </Link>
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Reserva con
+            {t('Reserva con')}
           </p>
           <div className="mt-2 flex items-center gap-3">
             {reservation.kennel?.logo_url ? (
@@ -89,7 +92,7 @@ export default async function MyReservationDetailPage({
           {/* Cachorro asignado */}
           {reservation.dog && (
             <section className="rounded-2xl border border-hairline bg-canvas p-5">
-              <h2 className="text-base font-bold text-ink mb-4">Cachorro asignado</h2>
+              <h2 className="text-base font-bold text-ink mb-4">{t('Cachorro asignado')}</h2>
               <Link
                 href={`/dogs/${reservation.dog.slug}`}
                 target="_blank"
@@ -108,7 +111,7 @@ export default async function MyReservationDetailPage({
                     {reservation.dog.name}
                   </p>
                   <p className="text-xs text-muted mt-1">
-                    Ver ficha completa en Genealogic →
+                    {t('Ver ficha completa en Genealogic')} →
                   </p>
                 </div>
               </Link>
@@ -121,31 +124,31 @@ export default async function MyReservationDetailPage({
             reservation.preference_sex ||
             reservation.preference_color) && (
             <section className="rounded-2xl border border-hairline bg-canvas p-5">
-              <h2 className="text-base font-bold text-ink mb-4">Tu solicitud</h2>
+              <h2 className="text-base font-bold text-ink mb-4">{t('Tu solicitud')}</h2>
               <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {reservation.preference_sex && (
-                  <Field label="Sexo preferido">
+                  <Field label={t('Sexo preferido')}>
                     {reservation.preference_sex === 'male'
-                      ? 'Macho'
+                      ? t('Macho')
                       : reservation.preference_sex === 'female'
-                        ? 'Hembra'
-                        : 'Indiferente'}
+                        ? t('Hembra')
+                        : t('Indiferente')}
                   </Field>
                 )}
                 {reservation.preference_color && (
-                  <Field label="Color preferido">{reservation.preference_color}</Field>
+                  <Field label={t('Color preferido')}>{reservation.preference_color}</Field>
                 )}
                 {reservation.applicant_purpose && (
-                  <Field label="Función">{reservation.applicant_purpose}</Field>
+                  <Field label={t('Función')}>{reservation.applicant_purpose}</Field>
                 )}
                 {reservation.preference_notes && (
-                  <Field label="Notas">{reservation.preference_notes}</Field>
+                  <Field label={t('Notas')}>{reservation.preference_notes}</Field>
                 )}
               </dl>
               {reservation.applicant_message && (
                 <div className="mt-5 pt-5 border-t border-hairline">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
-                    Mensaje al criador
+                    {t('Mensaje al criador')}
                   </p>
                   <p className="text-sm text-body leading-relaxed whitespace-pre-line">
                     {reservation.applicant_message}
@@ -158,15 +161,15 @@ export default async function MyReservationDetailPage({
           {/* Camada (si está asignada) */}
           {reservation.litter && (
             <section className="rounded-2xl border border-hairline bg-canvas p-5">
-              <h2 className="text-base font-bold text-ink mb-4">Camada</h2>
+              <h2 className="text-base font-bold text-ink mb-4">{t('Camada')}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {reservation.litter.expected_date && (
-                  <Field label="Fecha esperada">
+                  <Field label={t('Fecha esperada')}>
                     {formatDate(reservation.litter.expected_date)}
                   </Field>
                 )}
                 {reservation.litter.birth_date && (
-                  <Field label="Nacimiento">{formatDate(reservation.litter.birth_date)}</Field>
+                  <Field label={t('Nacimiento')}>{formatDate(reservation.litter.birth_date)}</Field>
                 )}
               </div>
             </section>
@@ -174,7 +177,7 @@ export default async function MyReservationDetailPage({
 
           {/* Timeline */}
           <section className="rounded-2xl border border-hairline bg-canvas p-5">
-            <h2 className="text-base font-bold text-ink mb-4">Línea de tiempo</h2>
+            <h2 className="text-base font-bold text-ink mb-4">{t('Línea de tiempo')}</h2>
             <ol className="relative border-l-2 border-hairline pl-5 space-y-5">
               {timeline.map((step, i) => (
                 <li key={i} className="relative">
@@ -202,11 +205,11 @@ export default async function MyReservationDetailPage({
         {/* Columna lateral: pagos + acciones */}
         <div className="space-y-6">
           <section className="rounded-2xl border border-hairline bg-canvas p-5">
-            <h2 className="text-base font-bold text-ink mb-4">Económico</h2>
+            <h2 className="text-base font-bold text-ink mb-4">{t('Económico')}</h2>
             <dl className="space-y-3 text-sm">
               {reservation.deposit_amount_cents != null && (
                 <div className="flex items-center justify-between">
-                  <dt className="text-muted">Seña</dt>
+                  <dt className="text-muted">{t('Seña')}</dt>
                   <dd className="font-semibold text-ink tabular-nums">
                     {formatPrice(reservation.deposit_amount_cents, reservation.currency)}
                   </dd>
@@ -214,7 +217,7 @@ export default async function MyReservationDetailPage({
               )}
               {reservation.total_price_cents != null && (
                 <div className="flex items-center justify-between pt-3 border-t border-hairline">
-                  <dt className="text-muted">Total</dt>
+                  <dt className="text-muted">{t('Total')}</dt>
                   <dd className="font-bold text-ink tabular-nums text-base">
                     {formatPrice(reservation.total_price_cents, reservation.currency)}
                   </dd>
@@ -223,7 +226,7 @@ export default async function MyReservationDetailPage({
               {reservation.deposit_amount_cents == null &&
                 reservation.total_price_cents == null && (
                   <p className="text-xs text-muted italic">
-                    El criador no ha configurado importes todavía.
+                    {t('El criador no ha configurado importes todavía.')}
                   </p>
                 )}
             </dl>
@@ -231,34 +234,34 @@ export default async function MyReservationDetailPage({
               href={`/mis-reservas/${reservation.id}/pagos`}
               className="mt-5 inline-flex items-center gap-1 w-full justify-center rounded-lg border border-hairline px-3 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
             >
-              Ver pagos y abonar →
+              {t('Ver pagos y abonar')} →
             </Link>
           </section>
 
           <section className="rounded-2xl border border-hairline bg-canvas p-5">
-            <h2 className="text-base font-bold text-ink mb-3">Contrato</h2>
+            <h2 className="text-base font-bold text-ink mb-3">{t('Contrato')}</h2>
             {reservation.contract_signed_at ? (
               <p className="text-sm font-semibold text-emerald-700 mb-3">
-                ✓ Firmado el {formatDate(reservation.contract_signed_at)}
+                ✓ {t('Firmado el')} {formatDate(reservation.contract_signed_at)}
               </p>
             ) : (
               <p className="text-sm text-muted mb-3">
-                Revisa el estado del contrato y fírmalo cuando el criador lo envíe.
+                {t('Revisa el estado del contrato y fírmalo cuando el criador lo envíe.')}
               </p>
             )}
             <Link
               href={`/mis-reservas/${reservation.id}/contrato`}
               className="inline-flex items-center gap-1 w-full justify-center rounded-lg border border-hairline px-3 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
             >
-              Abrir contrato →
+              {t('Abrir contrato')} →
             </Link>
           </section>
 
           <section>
             <div className="flex items-end justify-between mb-3">
-              <h2 className="text-base font-bold text-ink">Mensajes</h2>
+              <h2 className="text-base font-bold text-ink">{t('Mensajes')}</h2>
               <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-                {messages.length} {messages.length === 1 ? 'mensaje' : 'mensajes'}
+                {messages.length} {messages.length === 1 ? t('mensaje') : t('mensajes')}
               </span>
             </div>
             <ReservationThread
@@ -266,7 +269,7 @@ export default async function MyReservationDetailPage({
               currentRole="client"
               reservationId={reservation.id}
               onSendAction={sendClientMessageAction}
-              otherSideName={reservation.kennel?.name || 'el criador'}
+              otherSideName={reservation.kennel?.name || t('el criador')}
             />
           </section>
         </div>
@@ -274,8 +277,7 @@ export default async function MyReservationDetailPage({
 
       {isArchived && (
         <div className="mt-10 rounded-xl bg-surface-soft border border-hairline p-4 text-xs text-muted">
-          Esta reserva está archivada. Se mantiene visible para tu histórico pero
-          ya no recibirá actualizaciones.
+          {t('Esta reserva está archivada. Se mantiene visible para tu histórico pero ya no recibirá actualizaciones.')}
         </div>
       )}
     </div>
@@ -312,25 +314,25 @@ function StatusPill({ status }: { status: string }) {
   )
 }
 
-function buildTimeline(r: ClientReservation): { label: string; date: string | null; done: boolean }[] {
+function buildTimeline(r: ClientReservation, t: (k: string) => string): { label: string; date: string | null; done: boolean }[] {
   return [
-    { label: 'Solicitud enviada', date: r.created_at, done: true },
-    { label: 'Seña pagada', date: r.deposit_paid_at, done: !!r.deposit_paid_at },
+    { label: t('Solicitud enviada'), date: r.created_at, done: true },
+    { label: t('Seña pagada'), date: r.deposit_paid_at, done: !!r.deposit_paid_at },
     {
-      label: 'Cachorro asignado',
+      label: t('Cachorro asignado'),
       date: null,
       done: ['assigned', 'contract_signed', 'paid_in_full', 'delivered'].includes(r.status),
     },
     {
-      label: 'Contrato firmado',
+      label: t('Contrato firmado'),
       date: r.contract_signed_at,
       done: !!r.contract_signed_at,
     },
     {
-      label: 'Pago final',
+      label: t('Pago final'),
       date: null,
       done: ['paid_in_full', 'delivered'].includes(r.status),
     },
-    { label: 'Cachorro entregado', date: r.delivered_at, done: !!r.delivered_at },
+    { label: t('Cachorro entregado'), date: r.delivered_at, done: !!r.delivered_at },
   ]
 }

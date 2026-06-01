@@ -17,6 +17,8 @@ import {
   formatDate,
   formatPrice,
 } from '@/lib/owner/reservations'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Mis reservas · Genealogic' }
@@ -26,6 +28,7 @@ export default async function MisReservasPage({
 }: {
   searchParams: Promise<{ tab?: string }>
 }) {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -43,26 +46,25 @@ export default async function MisReservasPage({
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-wider text-muted">
-        Panel del propietario
+        {t('Panel del propietario')}
       </p>
       <h1 className="mt-2 text-4xl font-bold tracking-tight text-ink">
-        Mis reservas
+        {t('Mis reservas')}
       </h1>
       <p className="mt-2 text-body max-w-2xl">
-        Todas tus reservas de cachorros con cualquier criador en Genealogic.
-        Estado en tiempo real, contratos y pagos en un solo sitio.
+        {t('Todas tus reservas de cachorros con cualquier criador en Genealogic. Estado en tiempo real, contratos y pagos en un solo sitio.')}
       </p>
 
       {/* Tabs activas / historial */}
       <div className="mt-8 flex items-center gap-0 border-b border-hairline">
         <TabLink
-          label="Activas"
+          label={t('Activas')}
           count={active.length}
           active={tab === 'activas'}
           href="/mis-reservas?tab=activas"
         />
         <TabLink
-          label="Histórico"
+          label={t('Histórico')}
           count={historical.length}
           active={tab === 'historial'}
           href="/mis-reservas?tab=historial"
@@ -72,20 +74,18 @@ export default async function MisReservasPage({
       {/* Contenido */}
       <div className="mt-8">
         {reservations.length === 0 ? (
-          <EmptyState tab={tab} />
+          <EmptyState tab={tab} t={t} />
         ) : (
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {reservations.map((r) => (
-              <ReservationCard key={r.id} reservation={r} archived={tab === 'historial'} />
+              <ReservationCard key={r.id} reservation={r} archived={tab === 'historial'} t={t} />
             ))}
           </ul>
         )}
       </div>
 
       <p className="mt-10 text-xs text-muted">
-        ¿Falta alguna reserva? Asegúrate de usar el mismo email con el que
-        contactaste al criador. Si la reserva era antigua, debería aparecer
-        automáticamente al iniciar sesión.
+        {t('¿Falta alguna reserva? Asegúrate de usar el mismo email con el que contactaste al criador. Si la reserva era antigua, debería aparecer automáticamente al iniciar sesión.')}
       </p>
     </div>
   )
@@ -114,23 +114,22 @@ function TabLink({
   )
 }
 
-function EmptyState({ tab }: { tab: 'activas' | 'historial' }) {
+function EmptyState({ tab, t }: { tab: 'activas' | 'historial'; t: (k: string) => string }) {
   return (
     <div className="rounded-2xl border border-dashed border-hairline bg-canvas p-12 text-center">
       <p className="text-base font-semibold text-ink">
         {tab === 'historial'
-          ? 'Sin reservas en histórico todavía.'
-          : 'No tienes reservas activas.'}
+          ? t('Sin reservas en histórico todavía.')
+          : t('No tienes reservas activas.')}
       </p>
       <p className="mt-2 text-sm text-muted max-w-md mx-auto">
-        Cuando reserves un cachorro con un criador que use Genealogic, aparecerá
-        aquí con su estado, contrato y pagos.
+        {t('Cuando reserves un cachorro con un criador que use Genealogic, aparecerá aquí con su estado, contrato y pagos.')}
       </p>
       <Link
         href="/kennels"
         className="mt-6 inline-flex items-center gap-2 rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition"
       >
-        Explorar criaderos →
+        {t('Explorar criaderos')} →
       </Link>
     </div>
   )
@@ -139,10 +138,11 @@ function EmptyState({ tab }: { tab: 'activas' | 'historial' }) {
 import type { ClientReservation } from '@/lib/owner/reservations'
 
 function ReservationCard({
-  reservation, archived,
+  reservation, archived, t,
 }: {
   reservation: ClientReservation
   archived: boolean
+  t: (k: string) => string
 }) {
   const meta = STATUS_META[reservation.status] ?? STATUS_META.interested
   const colorBg: Record<string, string> = {
@@ -178,7 +178,7 @@ function ReservationCard({
             )}
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
-                Criador
+                {t('Criador')}
               </p>
               <p className="text-sm font-bold text-ink truncate">
                 {reservation.kennel?.name ?? '—'}
@@ -204,7 +204,7 @@ function ReservationCard({
             )}
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
-                Cachorro asignado
+                {t('Cachorro asignado')}
               </p>
               <p className="text-sm font-semibold text-ink truncate">{reservation.dog.name}</p>
             </div>
@@ -213,12 +213,12 @@ function ReservationCard({
 
         <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Reservada</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t('Reservada')}</p>
             <p className="text-ink font-medium">{formatDate(reservation.created_at)}</p>
           </div>
           {reservation.deposit_amount_cents != null && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Seña</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t('Seña')}</p>
               <p className="text-ink font-medium">
                 {formatPrice(reservation.deposit_amount_cents, reservation.currency)}
               </p>
@@ -226,13 +226,13 @@ function ReservationCard({
           )}
           {reservation.position_in_queue != null && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Posición</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t('Posición')}</p>
               <p className="text-ink font-medium">#{reservation.position_in_queue}</p>
             </div>
           )}
           {archived && reservation.delivered_at && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Entregado</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t('Entregado')}</p>
               <p className="text-ink font-medium">{formatDate(reservation.delivered_at)}</p>
             </div>
           )}

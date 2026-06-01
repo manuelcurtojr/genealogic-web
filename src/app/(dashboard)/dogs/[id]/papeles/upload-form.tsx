@@ -7,8 +7,10 @@ import { useState, useTransition, useRef } from 'react'
 import { Upload, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { DOCUMENT_TYPES } from '@/lib/dogs/documents-shared'
 import { uploadDogDocumentAction } from './actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function UploadDogDocumentForm({ dogId }: { dogId: string }) {
+  const t = useT()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -26,7 +28,7 @@ export default function UploadDogDocumentForm({ dogId }: { dogId: string }) {
         formRef.current?.reset()
         setTimeout(() => setSuccess(false), 3000)
       } else {
-        setError(humanizeError(res.error))
+        setError(humanizeError(res.error, t))
       }
     })
   }
@@ -37,39 +39,39 @@ export default function UploadDogDocumentForm({ dogId }: { dogId: string }) {
       onSubmit={handleSubmit}
       className="rounded-2xl border border-hairline bg-canvas p-5"
     >
-      <h3 className="text-sm font-bold uppercase tracking-wider text-ink">Subir documento</h3>
+      <h3 className="text-sm font-bold uppercase tracking-wider text-ink">{t('Subir documento')}</h3>
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label="Tipo">
+        <Field label={t('Tipo')}>
           <select
             name="type"
             required
             defaultValue="contract"
             className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink"
           >
-            {DOCUMENT_TYPES.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
+            {DOCUMENT_TYPES.map((dt) => (
+              <option key={dt.id} value={dt.id}>
+                {dt.label}
               </option>
             ))}
           </select>
         </Field>
-        <Field label="Título">
+        <Field label={t('Título')}>
           <input
             type="text"
             name="title"
             required
-            placeholder="Ej: Contrato de compraventa"
+            placeholder={t('Ej: Contrato de compraventa')}
             className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink placeholder:text-muted"
           />
         </Field>
-        <Field label="Fecha del documento (opcional)">
+        <Field label={t('Fecha del documento (opcional)')}>
           <input
             type="date"
             name="issued_at"
             className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink"
           />
         </Field>
-        <Field label="Archivo (max 25 MB)">
+        <Field label={t('Archivo (max 25 MB)')}>
           <input
             type="file"
             name="file"
@@ -79,11 +81,11 @@ export default function UploadDogDocumentForm({ dogId }: { dogId: string }) {
           />
         </Field>
         <div className="sm:col-span-2">
-          <Field label="Descripción (opcional)">
+          <Field label={t('Descripción (opcional)')}>
             <textarea
               name="description"
               rows={2}
-              placeholder="Notas internas o para el propietario..."
+              placeholder={t('Notas internas o para el propietario...')}
               className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink placeholder:text-muted"
             />
           </Field>
@@ -95,7 +97,7 @@ export default function UploadDogDocumentForm({ dogId }: { dogId: string }) {
             defaultChecked
             className="rounded border-hairline"
           />
-          Visible para el propietario en su panel
+          {t('Visible para el propietario en su panel')}
         </label>
       </div>
 
@@ -108,7 +110,7 @@ export default function UploadDogDocumentForm({ dogId }: { dogId: string }) {
       {success && (
         <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
           <CheckCircle2 className="h-4 w-4" />
-          Documento subido correctamente
+          {t('Documento subido correctamente')}
         </div>
       )}
 
@@ -121,12 +123,12 @@ export default function UploadDogDocumentForm({ dogId }: { dogId: string }) {
           {pending ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Subiendo...
+              {t('Subiendo...')}
             </>
           ) : (
             <>
               <Upload className="h-4 w-4" />
-              Subir documento
+              {t('Subir documento')}
             </>
           )}
         </button>
@@ -146,19 +148,19 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
-function humanizeError(code: string): string {
+function humanizeError(code: string, t: (k: string) => string): string {
   switch (code) {
     case 'file_required':
-      return 'Selecciona un archivo'
+      return t('Selecciona un archivo')
     case 'file_too_large_25mb':
-      return 'El archivo supera 25 MB'
+      return t('El archivo supera 25 MB')
     case 'forbidden':
-      return 'No tienes permiso para subir documentos a este perro'
+      return t('No tienes permiso para subir documentos a este perro')
     case 'dog_not_found':
-      return 'Perro no encontrado'
+      return t('Perro no encontrado')
     case 'unauthorized':
-      return 'Sesión no válida'
+      return t('Sesión no válida')
     default:
-      return `Error: ${code}`
+      return `${t('Error')}: ${code}`
   }
 }

@@ -20,6 +20,7 @@ import {
   Loader2, Dog as DogIcon, Camera, Trash2, ArrowRightLeft, Stethoscope,
   Trophy, Edit3, Eye, EyeOff, Tag, AlertCircle,
 } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface AuditEntry {
   id: string
@@ -31,6 +32,7 @@ interface AuditEntry {
 }
 
 export default function HistoricoTab({ dogId }: { dogId: string }) {
+  const t = useT()
   const [entries, setEntries] = useState<AuditEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -76,9 +78,9 @@ export default function HistoricoTab({ dogId }: { dogId: string }) {
     return (
       <div className="text-center py-12">
         <Edit3 className="w-8 h-8 text-muted mx-auto mb-2 opacity-50" />
-        <p className="text-sm text-muted">Sin actividad registrada todavía.</p>
+        <p className="text-sm text-muted">{t('Sin actividad registrada todavía.')}</p>
         <p className="text-[11px] text-muted mt-1">
-          Aquí aparecerán todos los cambios: fotos, peso, salud, transferencias, etc.
+          {t('Aquí aparecerán todos los cambios: fotos, peso, salud, transferencias, etc.')}
         </p>
       </div>
     )
@@ -97,7 +99,7 @@ export default function HistoricoTab({ dogId }: { dogId: string }) {
   return (
     <div className="space-y-5">
       <div className="text-[11px] text-muted">
-        {entries.length} {entries.length === 1 ? 'evento' : 'eventos'} registrados
+        {entries.length} {t(entries.length === 1 ? 'evento registrado' : 'eventos registrados')}
       </div>
       {Object.entries(grouped).map(([day, items]) => (
         <div key={day}>
@@ -116,7 +118,8 @@ export default function HistoricoTab({ dogId }: { dogId: string }) {
 }
 
 function EntryRow({ entry }: { entry: AuditEntry }) {
-  const { Icon, color, summary } = describeAction(entry)
+  const t = useT()
+  const { Icon, color, summary } = describeAction(entry, t)
   const time = new Date(entry.created_at).toLocaleTimeString('es-ES', {
     hour: '2-digit', minute: '2-digit',
   })
@@ -132,7 +135,7 @@ function EntryRow({ entry }: { entry: AuditEntry }) {
       <div className="bg-surface-card border border-hairline rounded-lg px-3 py-2">
         <p className="text-[13px] text-ink leading-snug">{summary}</p>
         <p className="text-[11px] text-muted mt-1 flex items-center gap-1.5">
-          <span className="font-medium">{entry.actor_name || 'Usuario desconocido'}</span>
+          <span className="font-medium">{entry.actor_name || t('Usuario desconocido')}</span>
           <span>·</span>
           <span>{time}</span>
         </p>
@@ -145,84 +148,84 @@ function EntryRow({ entry }: { entry: AuditEntry }) {
  * Traduce action+payload a un mensaje legible en español + icono.
  * Se mantiene en un único sitio para que añadir un evento nuevo sea trivial.
  */
-function describeAction(e: AuditEntry): { Icon: typeof DogIcon; color: string; summary: string } {
+function describeAction(e: AuditEntry, t: (k: string) => string): { Icon: typeof DogIcon; color: string; summary: string } {
   const p = e.payload || {}
   switch (e.action) {
     case 'created':
-      return { Icon: DogIcon, color: '#10b981', summary: `Creó el perro "${str(p.name)}"` }
+      return { Icon: DogIcon, color: '#10b981', summary: `${t('Creó el perro')} "${str(p.name)}"` }
     case 'photo_added':
-      return { Icon: Camera, color: '#3b82f6', summary: 'Subió una nueva foto' }
+      return { Icon: Camera, color: '#3b82f6', summary: t('Subió una nueva foto') }
     case 'photo_removed':
-      return { Icon: Trash2, color: '#ef4444', summary: 'Eliminó una foto' }
+      return { Icon: Trash2, color: '#ef4444', summary: t('Eliminó una foto') }
     case 'transferred':
-      return { Icon: ArrowRightLeft, color: '#f59e0b', summary: 'Transfirió la propiedad del perro' }
+      return { Icon: ArrowRightLeft, color: '#f59e0b', summary: t('Transfirió la propiedad del perro') }
     case 'vet_record_added': {
-      const type = vetRecordLabel(str(p.record_type))
-      return { Icon: Stethoscope, color: '#06b6d4', summary: `Añadió ${type}: ${str(p.name)}` }
+      const type = vetRecordLabel(str(p.record_type), t)
+      return { Icon: Stethoscope, color: '#06b6d4', summary: `${t('Añadió')} ${type}: ${str(p.name)}` }
     }
     case 'award_added':
-      return { Icon: Trophy, color: '#eab308', summary: `Añadió premio: ${str(p.event_name)} (${str(p.award_type)})` }
+      return { Icon: Trophy, color: '#eab308', summary: `${t('Añadió premio:')} ${str(p.event_name)} (${str(p.award_type)})` }
     case 'updated':
-      return { Icon: Edit3, color: '#6366f1', summary: describeUpdate(p as Record<string, { from: unknown; to: unknown }>) }
+      return { Icon: Edit3, color: '#6366f1', summary: describeUpdate(p as Record<string, { from: unknown; to: unknown }>, t) }
     case 'pedigree_imported':
-      return { Icon: DogIcon, color: '#10b981', summary: `Importó genealogía${p.source ? ` desde ${str(p.source)}` : ''}` }
+      return { Icon: DogIcon, color: '#10b981', summary: p.source ? `${t('Importó genealogía desde')} ${str(p.source)}` : t('Importó genealogía') }
     case 'pdf_generated':
-      return { Icon: Tag, color: '#8b5cf6', summary: 'Generó el PDF de la genealogía' }
+      return { Icon: Tag, color: '#8b5cf6', summary: t('Generó el PDF de la genealogía') }
     default:
       return { Icon: Edit3, color: '#94a3b8', summary: e.action.replace(/_/g, ' ') }
   }
 }
 
-function describeUpdate(changes: Record<string, { from: unknown; to: unknown }>): string {
+function describeUpdate(changes: Record<string, { from: unknown; to: unknown }>, t: (k: string) => string): string {
   const parts: string[] = []
   for (const [field, change] of Object.entries(changes)) {
     if (!change || typeof change !== 'object') continue
     const { from, to } = change
     switch (field) {
       case 'name':
-        parts.push(`renombró de "${str(from)}" a "${str(to)}"`); break
+        parts.push(`${t('renombró:')} "${str(from)}" → "${str(to)}"`); break
       case 'weight':
-        parts.push(`actualizó peso de ${str(from) || '—'} a ${str(to) || '—'} kg`); break
+        parts.push(`${t('actualizó peso:')} ${str(from) || '—'} → ${str(to) || '—'} kg`); break
       case 'height':
-        parts.push(`actualizó altura de ${str(from) || '—'} a ${str(to) || '—'} cm`); break
+        parts.push(`${t('actualizó altura:')} ${str(from) || '—'} → ${str(to) || '—'} cm`); break
       case 'is_public':
-        parts.push(to ? 'hizo el perro público' : 'hizo el perro privado'); break
+        parts.push(to ? t('hizo el perro público') : t('hizo el perro privado')); break
       case 'is_for_sale':
-        parts.push(to ? 'puso el perro en venta' : 'quitó el perro de venta'); break
+        parts.push(to ? t('puso el perro en venta') : t('quitó el perro de venta')); break
       case 'sale_price':
-        parts.push(`cambió precio de venta a ${str(to) || '—'}`); break
+        parts.push(`${t('cambió precio de venta a')} ${str(to) || '—'}`); break
       case 'registration':
-        parts.push(`actualizó registro: ${str(to) || '—'}`); break
+        parts.push(`${t('actualizó registro:')} ${str(to) || '—'}`); break
       case 'microchip':
-        parts.push(`actualizó microchip: ${str(to) || '—'}`); break
+        parts.push(`${t('actualizó microchip:')} ${str(to) || '—'}`); break
       case 'color_id':
-        parts.push('cambió el color'); break
+        parts.push(t('cambió el color')); break
       case 'birth_date':
-        parts.push(`cambió nacimiento a ${str(to) || '—'}`); break
+        parts.push(`${t('cambió nacimiento a')} ${str(to) || '—'}`); break
       case 'thumbnail_url':
-        parts.push('cambió la foto principal'); break
+        parts.push(t('cambió la foto principal')); break
       case 'father_id':
-        parts.push('cambió el padre'); break
+        parts.push(t('cambió el padre')); break
       case 'mother_id':
-        parts.push('cambió la madre'); break
+        parts.push(t('cambió la madre')); break
       default:
-        parts.push(`actualizó ${field}`)
+        parts.push(`${t('actualizó')} ${field}`)
     }
   }
-  if (parts.length === 0) return 'Editó la ficha'
+  if (parts.length === 0) return t('Editó la ficha')
   // Capitalizar primera letra
   const joined = parts.join(', ')
   return joined.charAt(0).toUpperCase() + joined.slice(1)
 }
 
-function vetRecordLabel(type: string): string {
+function vetRecordLabel(type: string, t: (k: string) => string): string {
   switch (type) {
-    case 'vaccine': return 'vacuna'
-    case 'deworming': return 'desparasitación'
-    case 'treatment': return 'tratamiento'
-    case 'test': return 'prueba'
-    case 'surgery': return 'cirugía'
-    default: return 'registro veterinario'
+    case 'vaccine': return t('vacuna')
+    case 'deworming': return t('desparasitación')
+    case 'treatment': return t('tratamiento')
+    case 'test': return t('prueba')
+    case 'surgery': return t('cirugía')
+    default: return t('registro veterinario')
   }
 }
 

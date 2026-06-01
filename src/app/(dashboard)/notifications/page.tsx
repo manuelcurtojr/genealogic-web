@@ -28,6 +28,7 @@ import {
   timeAgo,
   type NotificationCategory,
 } from '@/lib/notifications/types'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Notification {
   id: string
@@ -46,25 +47,26 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 }
 
 /** Humaniza el message si viene en JSON (imports). */
-function renderMessage(n: Notification): string {
+function renderMessage(n: Notification, t: (k: string) => string): string {
   if (n.type === 'import') {
     try {
       const p = JSON.parse(n.message)
       const count = p.createdIds?.length ?? p.count ?? 0
-      return `${count} perros importados`
+      return `${count} ${t('perros importados')}`
     } catch {
       return n.message
     }
   }
   if (n.type === 'import_draft') {
     return n.message?.includes('{')
-      ? 'Borrador de importación pendiente'
+      ? t('Borrador de importación pendiente')
       : n.message
   }
   return n.message
 }
 
 export default function NotificationsPage() {
+  const t = useT()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
@@ -136,7 +138,7 @@ export default function NotificationsPage() {
   async function clearAllRead() {
     const readIds = notifications.filter((n) => n.is_read).map((n) => n.id)
     if (readIds.length === 0) return
-    if (!confirm(`¿Borrar ${readIds.length} notificaciones leídas? No se puede deshacer.`)) return
+    if (!confirm(`${t('¿Borrar')} ${readIds.length} ${t('notificaciones leídas? No se puede deshacer.')}`)) return
     setNotifications((prev) => prev.filter((n) => !n.is_read))
     const supabase = createClient()
     await supabase.from('notifications').delete().in('id', readIds)
@@ -181,10 +183,10 @@ export default function NotificationsPage() {
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
           <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">
-            Centro
+            {t('Centro')}
           </p>
           <h1 className="mt-1.5 flex items-center gap-3 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-            Notificaciones
+            {t('Notificaciones')}
             {unread > 0 && (
               <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-full bg-ink px-2 text-[12px] font-medium text-on-primary">
                 {unread}
@@ -198,15 +200,15 @@ export default function NotificationsPage() {
             disabled={unread === 0}
             className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink disabled:opacity-40"
           >
-            <Check className="h-3.5 w-3.5" /> Marcar leídas
+            <Check className="h-3.5 w-3.5" /> {t('Marcar leídas')}
           </button>
           <button
             onClick={clearAllRead}
             disabled={notifications.every((n) => !n.is_read)}
             className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13px] font-medium text-muted transition-colors hover:border-red-300 hover:text-red-600 disabled:opacity-40"
-            title="Borrar notificaciones leídas"
+            title={t('Borrar notificaciones leídas')}
           >
-            <Trash2 className="h-3.5 w-3.5" /> Limpiar
+            <Trash2 className="h-3.5 w-3.5" /> {t('Limpiar')}
           </button>
         </div>
       </div>
@@ -221,7 +223,7 @@ export default function NotificationsPage() {
               : 'text-muted hover:text-ink'
           }`}
         >
-          Todas
+          {t('Todas')}
         </button>
         <button
           onClick={() => setFilter('unread')}
@@ -231,7 +233,7 @@ export default function NotificationsPage() {
               : 'text-muted hover:text-ink'
           }`}
         >
-          No leídas {unread > 0 && <span className="ml-1 text-muted">({unread})</span>}
+          {t('No leídas')} {unread > 0 && <span className="ml-1 text-muted">({unread})</span>}
         </button>
       </div>
 
@@ -239,7 +241,7 @@ export default function NotificationsPage() {
       {presentCategories.length > 1 && (
         <div className="flex flex-wrap gap-1.5">
           <CategoryChip
-            label="Todas"
+            label={t('Todas')}
             active={categoryFilter === 'all'}
             onClick={() => setCategoryFilter('all')}
           />
@@ -318,6 +320,7 @@ function NotifRow({
   onRead: () => void
   onDelete: () => void
 }) {
+  const t = useT()
   const meta = getNotificationMeta(notif.type)
   const Icon = ICON_MAP[meta.icon] || Bell
 
@@ -348,7 +351,7 @@ function NotifRow({
             <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-ink" />
           )}
         </div>
-        <p className="mt-0.5 text-[13px] text-muted line-clamp-2">{renderMessage(notif)}</p>
+        <p className="mt-0.5 text-[13px] text-muted line-clamp-2">{renderMessage(notif, t)}</p>
         <p className="mt-1 text-[11.5px] text-muted">{timeAgo(notif.created_at)}</p>
       </div>
       <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -358,7 +361,7 @@ function NotifRow({
               e.stopPropagation()
               onRead()
             }}
-            title="Marcar como leída"
+            title={t('Marcar como leída')}
             className="p-1.5 rounded text-muted hover:text-ink hover:bg-canvas"
           >
             <Check className="h-3.5 w-3.5" />
@@ -369,7 +372,7 @@ function NotifRow({
             e.stopPropagation()
             onDelete()
           }}
-          title="Borrar"
+          title={t('Borrar')}
           className="p-1.5 rounded text-muted hover:text-red-600 hover:bg-canvas"
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -380,20 +383,21 @@ function NotifRow({
 }
 
 function EmptyState({ filter, hasAny }: { filter: 'all' | 'unread'; hasAny: boolean }) {
+  const t = useT()
   return (
     <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
       <Bell className="mx-auto h-10 w-10 text-muted" />
       <p className="mt-3 text-[14px] font-semibold text-ink">
         {filter === 'unread'
           ? hasAny
-            ? '¡Todo al día!'
-            : 'Sin notificaciones'
-          : 'Sin notificaciones'}
+            ? t('¡Todo al día!')
+            : t('Sin notificaciones')
+          : t('Sin notificaciones')}
       </p>
       <p className="mt-1 text-[13px] text-muted max-w-md mx-auto">
         {filter === 'unread'
-          ? 'No tienes notificaciones sin leer. Te avisaremos aquí cuando haya nuevas solicitudes, mensajes o pagos.'
-          : 'Cuando alguien envíe una reserva, mensaje, firme un contrato o pague algo, lo verás aquí en tiempo real.'}
+          ? t('No tienes notificaciones sin leer. Te avisaremos aquí cuando haya nuevas solicitudes, mensajes o pagos.')
+          : t('Cuando alguien envíe una reserva, mensaje, firme un contrato o pague algo, lo verás aquí en tiempo real.')}
       </p>
     </div>
   )

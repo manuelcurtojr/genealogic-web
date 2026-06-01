@@ -14,6 +14,8 @@ import {
 } from '@/lib/payments/payments'
 import { startCheckoutAction } from './actions'
 import { CreditCard, CheckCircle2, AlertCircle } from 'lucide-react'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Pagos · Mi reserva · Genealogic' }
@@ -25,6 +27,7 @@ export default async function MyPaymentsPage({
   params: Promise<{ id: string }>
   searchParams: Promise<{ paid?: string; cancelled?: string }>
 }) {
+  const t = getTranslator(await getLocale())
   const { id } = await params
   const sp = await searchParams
   const supabase = await createClient()
@@ -61,35 +64,34 @@ export default async function MyPaymentsPage({
         href={`/mis-reservas/${reservation.id}`}
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted hover:text-ink mb-5"
       >
-        ← Mi reserva
+        ← {t('Mi reserva')}
       </Link>
 
-      <h1 className="text-3xl font-bold tracking-tight text-ink mb-1">Pagos</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-ink mb-1">{t('Pagos')}</h1>
       <p className="text-sm text-body mb-6">
-        Reserva con <strong>{reservation.kennel?.name}</strong>
+        {t('Reserva con')} <strong>{reservation.kennel?.name}</strong>
       </p>
 
       {sp.paid && (
         <div className="mb-5 rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-sm text-emerald-800 inline-flex items-center gap-2">
           <CheckCircle2 className="h-5 w-5" />
-          ✓ Pago completado. Tardamos unos segundos en reflejarlo en la lista —
-          recarga la página si no aparece todavía.
+          ✓ {t('Pago completado. Tardamos unos segundos en reflejarlo en la lista — recarga la página si no aparece todavía.')}
         </div>
       )}
       {sp.cancelled && (
         <div className="mb-5 rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
-          Has cancelado el pago. Puedes reintentarlo cuando quieras.
+          {t('Has cancelado el pago. Puedes reintentarlo cuando quieras.')}
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-3 mb-6">
         <Stat
-          label="Pagado"
+          label={t('Pagado')}
           value={formatPaymentAmount(totalPaid, currency)}
           color="text-emerald-700"
         />
         <Stat
-          label="Pendiente"
+          label={t('Pendiente')}
           value={formatPaymentAmount(totalPending, currency)}
           color="text-amber-700"
         />
@@ -98,10 +100,9 @@ export default async function MyPaymentsPage({
       {payments.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-hairline bg-canvas p-10 text-center">
           <CreditCard className="mx-auto mb-3 h-8 w-8 text-muted" />
-          <p className="text-base font-semibold text-ink">Sin pagos por ahora</p>
+          <p className="text-base font-semibold text-ink">{t('Sin pagos por ahora')}</p>
           <p className="mt-2 text-sm text-muted max-w-md mx-auto">
-            El criador aún no ha creado pagos para esta reserva. Cuando lo haga,
-            aparecerán aquí con opción a pagar online (si está conectado a Stripe).
+            {t('El criador aún no ha creado pagos para esta reserva. Cuando lo haga, aparecerán aquí con opción a pagar online (si está conectado a Stripe).')}
           </p>
         </div>
       ) : (
@@ -133,11 +134,11 @@ export default async function MyPaymentsPage({
                   )}
                   <p className="mt-1 text-[11px] text-muted">
                     {p.due_date && (
-                      <>Vence {new Date(p.due_date).toLocaleDateString('es-ES')} · </>
+                      <>{t('Vence')} {new Date(p.due_date).toLocaleDateString('es-ES')} · </>
                     )}
                     {p.paid_at && (
                       <>
-                        Pagado{' '}
+                        {t('Pagado')}{' '}
                         {new Date(p.paid_at).toLocaleDateString('es-ES')}
                         {p.paid_via && ` (${p.paid_via})`}
                       </>
@@ -156,13 +157,12 @@ export default async function MyPaymentsPage({
                       type="submit"
                       className="rounded-lg bg-ink text-on-primary px-4 py-2 text-xs font-semibold hover:opacity-90"
                     >
-                      Pagar ahora →
+                      {t('Pagar ahora')} →
                     </button>
                   </form>
                 ) : payable ? (
                   <div className="text-[11px] text-muted max-w-[180px] text-right">
-                    El criador aún no ha activado pagos online. Contacta para
-                    pagar por transferencia.
+                    {t('El criador aún no ha activado pagos online. Contacta para pagar por transferencia.')}
                   </div>
                 ) : null}
               </li>
@@ -175,9 +175,8 @@ export default async function MyPaymentsPage({
         <div className="mt-5 rounded-xl border border-hairline bg-canvas p-4 text-sm text-muted flex items-start gap-2">
           <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
           <span>
-            El criador no tiene pagos online activos todavía. Pónte en contacto con{' '}
-            <strong>{reservation.kennel?.name}</strong> para pagar por transferencia
-            bancaria o el método que prefiera.
+            {t('El criador no tiene pagos online activos todavía. Pónte en contacto con')}{' '}
+            <strong>{reservation.kennel?.name}</strong> {t('para pagar por transferencia bancaria o el método que prefiera.')}
           </span>
         </div>
       )}

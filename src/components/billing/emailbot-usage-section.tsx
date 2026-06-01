@@ -14,6 +14,8 @@ import Link from 'next/link'
 import { Bot, Beaker, Globe, FileText, AlertCircle, TrendingUp } from 'lucide-react'
 import type { QuotaStatus } from '@/lib/ai/quotas'
 import { getModel } from '@/lib/ai/models'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export type UsageRow = {
   id: string
@@ -50,13 +52,14 @@ const SCOPE_LABELS: Record<string, { label: string; icon: typeof Bot; color: str
   other:                  { label: 'Otro',                  icon: AlertCircle, color: 'text-muted' },
 }
 
-export default function EmailbotUsageSection({
+export default async function EmailbotUsageSection({
   quota, breakdown, recentRows,
 }: {
   quota: QuotaStatus
   breakdown: ScopeBreakdown
   recentRows: UsageRow[]
 }) {
+  const t = getTranslator(await getLocale())
   const isUnlimited = quota.limit < 0
   const isBlocked = !quota.allowed
   const pct = isUnlimited || quota.limit === 0
@@ -73,21 +76,21 @@ export default function EmailbotUsageSection({
       <div className="flex items-center justify-between gap-3 mb-1 flex-wrap">
         <h2 className="text-lg font-bold text-ink inline-flex items-center gap-2">
           <TrendingUp className="w-5 h-5" />
-          Uso del Emailbot este mes
+          {t('Uso del Emailbot este mes')}
         </h2>
         <Link
           href="/emailbot"
           className="text-xs font-semibold text-muted hover:text-ink"
         >
-          Ir al panel del bot →
+          {t('Ir al panel del bot →')}
         </Link>
       </div>
       <p className="text-sm text-muted mb-5">
-        Plan <strong className="text-ink">{planLabel}</strong>
-        {isUnlimited ? ' · respuestas ilimitadas' : ` · ${quota.limit.toLocaleString('es-ES')} respuestas/mes incluidas`}
+        {t('Plan')} <strong className="text-ink">{planLabel}</strong>
+        {isUnlimited ? ' · ' + t('respuestas ilimitadas') : ` · ${quota.limit.toLocaleString('es-ES')} ` + t('respuestas/mes incluidas')}
         {isBlocked && (
           <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-red-50 text-red-700 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider">
-            Cuota agotada
+            {t('Cuota agotada')}
           </span>
         )}
       </p>
@@ -95,19 +98,19 @@ export default function EmailbotUsageSection({
       {/* Big stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
         <StatBox
-          label="Respuestas del bot"
+          label={t('Respuestas del bot')}
           value={quota.used.toLocaleString('es-ES')}
-          sub={isUnlimited ? 'ilimitadas' : `de ${quota.limit.toLocaleString('es-ES')} incluidas`}
+          sub={isUnlimited ? t('ilimitadas') : `${t('de')} ${quota.limit.toLocaleString('es-ES')} ${t('incluidas')}`}
         />
         <StatBox
-          label="Tokens consumidos"
+          label={t('Tokens consumidos')}
           value={formatTokens(breakdown.total_tokens)}
-          sub="todos los scopes"
+          sub={t('todos los scopes')}
         />
         <StatBox
-          label="Coste estimado"
+          label={t('Coste estimado')}
           value={`$${breakdown.total_cost_usd.toFixed(4)}`}
-          sub="USD — incluido en tu plan"
+          sub={t('USD — incluido en tu plan')}
         />
       </div>
 
@@ -123,8 +126,8 @@ export default function EmailbotUsageSection({
           <div className="flex items-center justify-between mt-1.5">
             <p className="text-[11px] text-muted">
               {quota.remaining > 0
-                ? `${quota.remaining.toLocaleString('es-ES')} respuestas restantes`
-                : 'Sin respuestas restantes este mes'}
+                ? `${quota.remaining.toLocaleString('es-ES')} ${t('respuestas restantes')}`
+                : t('Sin respuestas restantes este mes')}
             </p>
             <p className="text-[11px] text-muted">{pct}%</p>
           </div>
@@ -136,17 +139,17 @@ export default function EmailbotUsageSection({
         <table className="w-full text-sm">
           <thead className="bg-surface-soft/50 border-b border-hairline">
             <tr>
-              <th className="text-left px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">Tipo de uso</th>
-              <th className="text-right px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">Llamadas</th>
-              <th className="text-right px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">Coste</th>
-              <th className="text-right px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted hidden sm:table-cell">Cuenta cuota</th>
+              <th className="text-left px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">{t('Tipo de uso')}</th>
+              <th className="text-right px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">{t('Llamadas')}</th>
+              <th className="text-right px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">{t('Coste')}</th>
+              <th className="text-right px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted hidden sm:table-cell">{t('Cuenta cuota')}</th>
             </tr>
           </thead>
           <tbody>
-            <ScopeRow scope="emailbot_reply" count={breakdown.bot_replies_count} cost={breakdown.bot_replies_cost_usd} countsQuota />
-            <ScopeRow scope="emailbot_test" count={breakdown.test_count} cost={breakdown.test_cost_usd} />
-            <ScopeRow scope="knowledge_import_url" count={breakdown.import_url_count} cost={breakdown.import_url_cost_usd} />
-            <ScopeRow scope="knowledge_import_file" count={breakdown.import_file_count} cost={breakdown.import_file_cost_usd} />
+            <ScopeRow scope="emailbot_reply" count={breakdown.bot_replies_count} cost={breakdown.bot_replies_cost_usd} countsQuota t={t} />
+            <ScopeRow scope="emailbot_test" count={breakdown.test_count} cost={breakdown.test_cost_usd} t={t} />
+            <ScopeRow scope="knowledge_import_url" count={breakdown.import_url_count} cost={breakdown.import_url_cost_usd} t={t} />
+            <ScopeRow scope="knowledge_import_file" count={breakdown.import_file_count} cost={breakdown.import_file_cost_usd} t={t} />
           </tbody>
         </table>
       </div>
@@ -154,22 +157,22 @@ export default function EmailbotUsageSection({
       {/* Últimas llamadas */}
       <div>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
-          Últimas {recentRows.length} llamadas
+          {t('Últimas')} {recentRows.length} {t('llamadas')}
         </h3>
         {recentRows.length === 0 ? (
           <p className="text-sm text-muted text-center py-6 border border-dashed border-hairline rounded-lg">
-            Sin actividad todavía. Cuando el bot responda emails o uses los imports, aparecerá aquí.
+            {t('Sin actividad todavía. Cuando el bot responda emails o uses los imports, aparecerá aquí.')}
           </p>
         ) : (
           <div className="rounded-xl border border-hairline overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-surface-soft/50 border-b border-hairline">
                 <tr>
-                  <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">Tipo</th>
-                  <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted hidden md:table-cell">Modelo</th>
-                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">Tokens</th>
-                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">Coste</th>
-                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">Fecha</th>
+                  <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">{t('Tipo')}</th>
+                  <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted hidden md:table-cell">{t('Modelo')}</th>
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">{t('Tokens')}</th>
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">{t('Coste')}</th>
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">{t('Fecha')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -182,7 +185,7 @@ export default function EmailbotUsageSection({
                       <td className="px-3 py-2">
                         <span className={`inline-flex items-center gap-1.5 ${meta.color}`}>
                           <Icon className="w-3.5 h-3.5" />
-                          <span className="text-xs">{meta.label}</span>
+                          <span className="text-xs">{t(meta.label)}</span>
                         </span>
                         {r.status === 'error' && (
                           <span className="ml-1 text-[10px] font-bold text-red-700 uppercase">ERROR</span>
@@ -211,8 +214,8 @@ export default function EmailbotUsageSection({
 }
 
 function ScopeRow({
-  scope, count, cost, countsQuota,
-}: { scope: string; count: number; cost: number; countsQuota?: boolean }) {
+  scope, count, cost, countsQuota, t,
+}: { scope: string; count: number; cost: number; countsQuota?: boolean; t: (k: string) => string }) {
   const meta = SCOPE_LABELS[scope] || SCOPE_LABELS.other
   const Icon = meta.icon
   return (
@@ -220,7 +223,7 @@ function ScopeRow({
       <td className="px-4 py-2.5">
         <span className={`inline-flex items-center gap-2 ${meta.color}`}>
           <Icon className="w-4 h-4" />
-          <span className="text-sm">{meta.label}</span>
+          <span className="text-sm">{t(meta.label)}</span>
         </span>
       </td>
       <td className="px-4 py-2.5 text-right text-sm tabular-nums text-ink">
@@ -231,9 +234,9 @@ function ScopeRow({
       </td>
       <td className="px-4 py-2.5 text-right text-xs hidden sm:table-cell">
         {countsQuota ? (
-          <span className="text-amber-700 font-semibold">Sí</span>
+          <span className="text-amber-700 font-semibold">{t('Sí')}</span>
         ) : (
-          <span className="text-emerald-700 font-semibold">No</span>
+          <span className="text-emerald-700 font-semibold">{t('No')}</span>
         )}
       </td>
     </tr>

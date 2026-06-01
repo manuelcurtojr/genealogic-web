@@ -16,9 +16,12 @@ import { getOwnerOnboardingStatus } from '@/lib/onboarding/checklist-owner'
 import { hasProAccess } from '@/lib/permissions'
 import { getEffectiveRoles } from '@/lib/auth/roles'
 import { allPosts } from '@/content/blog'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
@@ -148,20 +151,20 @@ export default async function DashboardPage() {
             {today}
           </p>
           <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-            Hola, {profile?.display_name || (isBreeder ? 'Criador' : 'Propietario')}
+            {t('Hola')}, {profile?.display_name || (isBreeder ? t('Criador') : t('Propietario'))}
           </h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link href="/dogs" className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90">
-            <Plus className="h-4 w-4" /> Perro
+            <Plus className="h-4 w-4" /> {t('Perro')}
           </Link>
           {isBreeder && (
             <Link href="/litters" className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft">
-              <Baby className="h-4 w-4" /> Camada
+              <Baby className="h-4 w-4" /> {t('Camada')}
             </Link>
           )}
           <Link href="/search" className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft">
-            <Search className="h-4 w-4" /> Buscar
+            <Search className="h-4 w-4" /> {t('Buscar')}
           </Link>
         </div>
       </div>
@@ -172,15 +175,15 @@ export default async function DashboardPage() {
       {/* KPIs Cal — icon arriba con label, número grande tabular */}
       {isBreeder ? (
         <section className="grid gap-4 sm:grid-cols-3">
-          <StatCard icon={Dog} label="Perros" value={dogCount} accentColor="#fb923c" sub="en tu criadero" href="/dogs" />
-          <StatCard icon={Tag} label="En venta" value={forSaleCount} accentColor="#34d399" sub="cachorros publicados" href="/dogs?for_sale=1" />
-          <StatCard icon={Baby} label="Camadas" value={littersRes.count || 0} accentColor="#8b5cf6" sub="totales registradas" href="/litters" />
+          <StatCard icon={Dog} label={t('Perros')} value={dogCount} accentColor="#fb923c" sub={t('en tu criadero')} href="/dogs" />
+          <StatCard icon={Tag} label={t('En venta')} value={forSaleCount} accentColor="#34d399" sub={t('cachorros publicados')} href="/dogs?for_sale=1" />
+          <StatCard icon={Baby} label={t('Camadas')} value={littersRes.count || 0} accentColor="#8b5cf6" sub={t('totales registradas')} href="/litters" />
         </section>
       ) : (
         <section className="grid gap-4 sm:grid-cols-3">
-          <StatCard icon={Dog} label="Mis perros" value={dogCount} accentColor="#fb923c" sub="en tu cuenta" href="/dogs" />
-          <StatCard icon={Stethoscope} label="Registros vet." value={vetRes.count || 0} accentColor="#3b82f6" sub="historiales clínicos" href="/vet" />
-          <StatCard icon={Tag} label="En venta" value={forSaleCount} accentColor="#34d399" sub="publicados" href="/dogs?for_sale=1" />
+          <StatCard icon={Dog} label={t('Mis perros')} value={dogCount} accentColor="#fb923c" sub={t('en tu cuenta')} href="/dogs" />
+          <StatCard icon={Stethoscope} label={t('Registros vet.')} value={vetRes.count || 0} accentColor="#3b82f6" sub={t('historiales clínicos')} href="/vet" />
+          <StatCard icon={Tag} label={t('En venta')} value={forSaleCount} accentColor="#34d399" sub={t('publicados')} href="/dogs?for_sale=1" />
         </section>
       )}
 
@@ -188,15 +191,15 @@ export default async function DashboardPage() {
       {isBreeder ? (
         <section>
           <div className="mb-5 flex items-end justify-between">
-            <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">Camadas activas</h2>
+            <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">{t('Camadas activas')}</h2>
             <Link href="/litters" className="text-[13px] font-medium text-body hover:text-ink">
-              Ver todas →
+              {t('Ver todas →')}
             </Link>
           </div>
           {(activeLittersRes.data || []).length === 0 ? (
             <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-12 text-center">
               <Baby className="mx-auto h-8 w-8 text-muted" />
-              <p className="mt-3 text-[14px] text-body">Sin camadas activas. Cuando planifiques o cruces, aparecerán aquí.</p>
+              <p className="mt-3 text-[14px] text-body">{t('Sin camadas activas. Cuando planifiques o cruces, aparecerán aquí.')}</p>
             </div>
           ) : (
             <div className="overflow-hidden rounded-xl border border-hairline bg-canvas">
@@ -212,7 +215,7 @@ export default async function DashboardPage() {
                           {(litter.father as any)?.name || '?'} × {(litter.mother as any)?.name || '?'}
                         </p>
                         <p className="text-[12.5px] text-muted">
-                          {litter.status === 'mated' ? 'En gestación' : 'Planificada'}
+                          {litter.status === 'mated' ? t('En gestación') : t('Planificada')}
                         </p>
                       </div>
                     </Link>
@@ -225,12 +228,12 @@ export default async function DashboardPage() {
       ) : (
         /* Owner view: feature cards Cal style con iconos pastel */
         <section>
-          <h2 className="mb-5 text-[22px] font-semibold tracking-[-0.04em] text-ink">Operativa</h2>
+          <h2 className="mb-5 text-[22px] font-semibold tracking-[-0.04em] text-ink">{t('Operativa')}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { icon: Dog, label: 'Mis perros', desc: 'Gestiona el registro de tus perros y sus genealogías.', color: '#fb923c', href: '/dogs' },
-              { icon: Search, label: 'Buscar perros', desc: 'Explora el registro público de perros con genealogía verificable.', color: '#8b5cf6', href: '/search' },
-              { icon: Stethoscope, label: 'Veterinario', desc: 'Historial clínico y recordatorios de vacunas para cada perro.', color: '#3b82f6', href: '/vet' },
+              { icon: Dog, label: t('Mis perros'), desc: t('Gestiona el registro de tus perros y sus genealogías.'), color: '#fb923c', href: '/dogs' },
+              { icon: Search, label: t('Buscar perros'), desc: t('Explora el registro público de perros con genealogía verificable.'), color: '#8b5cf6', href: '/search' },
+              { icon: Stethoscope, label: t('Veterinario'), desc: t('Historial clínico y recordatorios de vacunas para cada perro.'), color: '#3b82f6', href: '/vet' },
             ].map(item => (
               <Link
                 key={item.label}
@@ -246,15 +249,15 @@ export default async function DashboardPage() {
             ))}
           </div>
           <div className="mt-5 rounded-xl border border-hairline bg-surface-soft px-5 py-4">
-            <p className="text-[14px] font-semibold text-ink">¿Eres criador?</p>
+            <p className="text-[14px] font-semibold text-ink">{t('¿Eres criador?')}</p>
             <p className="mt-1 text-[13px] text-body">
-              Mejora tu plan para gestionar tu criadero, camadas y reservas con todas las herramientas pro.
+              {t('Mejora tu plan para gestionar tu criadero, camadas y reservas con todas las herramientas pro.')}
             </p>
             <Link
               href="/pricing"
               className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-ink hover:opacity-80"
             >
-              <Crown className="h-3.5 w-3.5" /> Ver planes →
+              <Crown className="h-3.5 w-3.5" /> {t('Ver planes →')}
             </Link>
           </div>
         </section>
@@ -265,10 +268,10 @@ export default async function DashboardPage() {
         <section>
           <div className="mb-5 flex items-end justify-between">
             <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">
-              Próximos recordatorios vet.
+              {t('Próximos recordatorios vet.')}
             </h2>
             <Link href="/vet" className="text-[13px] font-medium text-body hover:text-ink">
-              Ver todos →
+              {t('Ver todos →')}
             </Link>
           </div>
           <div className="overflow-hidden rounded-xl border border-hairline bg-canvas">
@@ -306,7 +309,7 @@ export default async function DashboardPage() {
       <section>
         <div className="mb-5 flex items-end justify-between">
           <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink flex items-center gap-2">
-            <Compass className="h-5 w-5 text-[#FE6620]" /> Explorar Genealogic
+            <Compass className="h-5 w-5 text-[#FE6620]" /> {t('Explorar')} Genealogic
           </h2>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -314,32 +317,32 @@ export default async function DashboardPage() {
             href="/razas"
             icon={Tag}
             color="#FE6620"
-            title="Razas"
-            desc="Estándares raciales con historia, foto y catálogo."
-            count={breedsCount > 0 ? `${breedsCount.toLocaleString('es-ES')} razas` : 'Ver todas'}
+            title={t('Razas')}
+            desc={t('Estándares raciales con historia, foto y catálogo.')}
+            count={breedsCount > 0 ? `${breedsCount.toLocaleString('es-ES')} razas` : t('Ver todas')}
           />
           <ExploreCard
             href="/search"
             icon={Search}
             color="#3b82f6"
-            title="Buscar perros"
-            desc="Directorio con genealogías indexables en Google."
-            count="+250.000 perros"
+            title={t('Buscar perros')}
+            desc={t('Directorio con genealogías indexables en Google.')}
+            count={t('+250.000 perros')}
           />
           <ExploreCard
             href="/kennels"
             icon={Store}
             color="#8b5cf6"
-            title="Criaderos"
-            desc="Conoce criaderos verificados de toda la red."
-            count="Comunidad"
+            title={t('Criaderos')}
+            desc={t('Conoce criaderos verificados de toda la red.')}
+            count={t('Comunidad')}
           />
           <ExploreCard
             href="/blog"
             icon={BookOpen}
             color="#10b981"
-            title="Blog"
-            desc="Guías sobre genética, cría y razas legendarias."
+            title={t('Blog')}
+            desc={t('Guías sobre genética, cría y razas legendarias.')}
             count={`${blogPostsCount} artículos`}
           />
         </div>
@@ -348,9 +351,9 @@ export default async function DashboardPage() {
       {/* Recent dogs */}
       <section>
         <div className="mb-5 flex items-end justify-between">
-          <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">Perros recientes</h2>
+          <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">{t('Perros recientes')}</h2>
           <Link href="/dogs" className="text-[13px] font-medium text-body hover:text-ink">
-            Ver todos →
+            {t('Ver todos →')}
           </Link>
         </div>
         {recentDogsRes.data && recentDogsRes.data.length > 0 ? (
@@ -381,9 +384,9 @@ export default async function DashboardPage() {
         ) : (
           <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-12 text-center">
             <PawPrint className="mx-auto h-8 w-8 text-muted" />
-            <p className="mt-3 text-[14px] text-body">No tienes perros aún.</p>
+            <p className="mt-3 text-[14px] text-body">{t('No tienes perros aún.')}</p>
             <Link href="/dogs" className="mt-3 inline-block text-[13px] font-medium text-ink hover:opacity-80">
-              Añade tu primer perro →
+              {t('Añade tu primer perro →')}
             </Link>
           </div>
         )}

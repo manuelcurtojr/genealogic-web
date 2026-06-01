@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Receipt, ExternalLink, FileText, CreditCard, Sparkles, Crown, ArrowRight, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Invoice {
   id: string
@@ -83,6 +84,7 @@ const PLAN_PRICE: Record<string, string> = {
 }
 
 export default function BillingClient({ profile, invoices, stripeReady, hasKennel }: Props) {
+  const t = useT()
   const [loadingPortal, setLoadingPortal] = useState(false)
   const [checkoutPending, startCheckout] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -93,10 +95,10 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
     try {
       const res = await fetch('/api/billing/portal', { method: 'POST' })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || data.message || 'Error abriendo portal')
+      if (!res.ok) throw new Error(data.error || data.message || t('Error abriendo portal'))
       window.location.href = data.url
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error abriendo portal')
+      setError(err instanceof Error ? err.message : t('Error abriendo portal'))
       setLoadingPortal(false)
     }
   }
@@ -111,10 +113,10 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
           body: JSON.stringify({ plan, interval }),
         })
         const data = await res.json()
-        if (!res.ok) throw new Error(data.error || data.message || 'Error iniciando el pago')
+        if (!res.ok) throw new Error(data.error || data.message || t('Error iniciando el pago'))
         if (data.url) window.location.href = data.url
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error iniciando el pago')
+        setError(err instanceof Error ? err.message : t('Error iniciando el pago'))
       }
     })
   }
@@ -136,9 +138,9 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-ink tracking-tight flex items-center gap-2">
           <Receipt className="w-6 h-6 text-muted" />
-          Facturación
+          {t('Facturación')}
         </h1>
-        <p className="text-sm text-muted mt-0.5">Tu plan, facturas y método de pago.</p>
+        <p className="text-sm text-muted mt-0.5">{t('Tu plan, facturas y método de pago.')}</p>
       </div>
 
       {error && (
@@ -152,38 +154,38 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
       <div className="rounded-2xl border border-hairline bg-canvas p-6 mb-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted mb-2">Tu plan</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted mb-2">{t('Tu plan')}</p>
             <div className="flex items-baseline gap-3">
               <span className="text-3xl font-bold text-ink tracking-tight">
                 {PLAN_LABEL[currentPlan] || currentPlan}
               </span>
-              <span className="text-sm text-muted">{PLAN_PRICE[currentPlan]}</span>
+              <span className="text-sm text-muted">{t(PLAN_PRICE[currentPlan] || '')}</span>
               {isFounder && (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
                   <Crown className="w-2.5 h-2.5" />
-                  Vitalicia
+                  {t('Vitalicia')}
                 </span>
               )}
             </div>
             {/* Status secundario */}
             <p className="text-sm text-body mt-3">
               {isFounder ? (
-                <>Cuenta vitalicia — no se cobra nunca.</>
+                <>{t('Cuenta vitalicia — no se cobra nunca.')}</>
               ) : isInTrial && trialEndsDate ? (
                 <span className="text-amber-700">
-                  Prueba gratis · Te quedan <strong>{trialDaysLeft} día{trialDaysLeft === 1 ? '' : 's'}</strong>.
-                  Primer cargo el {trialEndsDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}.
+                  {t('Prueba gratis · Te quedan')} <strong>{trialDaysLeft} {trialDaysLeft === 1 ? t('día') : t('días')}</strong>.
+                  {' '}{t('Primer cargo el')} {trialEndsDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}.
                 </span>
               ) : !hasStripe ? (
-                <>Aún sin método de pago. {hasKennel ? 'Suscríbete para desbloquear Kennel Pro o Kennel Enterprise.' : 'Crea tu criadero para acceder a planes de pago.'}</>
+                <>{t('Aún sin método de pago.')} {hasKennel ? t('Suscríbete para desbloquear Kennel Pro o Kennel Enterprise.') : t('Crea tu criadero para acceder a planes de pago.')}</>
               ) : subStatus === 'active' ? (
-                <>Suscripción activa en Stripe.</>
+                <>{t('Suscripción activa en Stripe.')}</>
               ) : subStatus === 'past_due' ? (
-                <span className="text-red-700">Pago pendiente — actualiza tu tarjeta cuanto antes.</span>
+                <span className="text-red-700">{t('Pago pendiente — actualiza tu tarjeta cuanto antes.')}</span>
               ) : subStatus === 'canceled' ? (
-                <>Suscripción cancelada. Puedes reactivarla cuando quieras.</>
+                <>{t('Suscripción cancelada. Puedes reactivarla cuando quieras.')}</>
               ) : (
-                <>{subStatus || 'Sin estado'}</>
+                <>{subStatus || t('Sin estado')}</>
               )}
             </p>
           </div>
@@ -191,7 +193,7 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
           {hasStripe && (
             <Button variant="primary" size="md" disabled={loadingPortal} onClick={openPortal}>
               <CreditCard className="w-4 h-4" />
-              {loadingPortal ? 'Abriendo…' : 'Gestionar suscripción'}
+              {loadingPortal ? t('Abriendo…') : t('Gestionar suscripción')}
               <ExternalLink className="w-3.5 h-3.5" />
             </Button>
           )}
@@ -199,7 +201,7 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
 
         {hasStripe && (
           <p className="text-xs text-muted mt-4">
-            En el portal de Stripe puedes cambiar de plan, cancelar, actualizar tarjeta y descargar facturas.
+            {t('En el portal de Stripe puedes cambiar de plan, cancelar, actualizar tarjeta y descargar facturas.')}
           </p>
         )}
       </div>
@@ -209,32 +211,33 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
         <div className="mb-6">
           <h2 className="text-sm font-semibold text-ink mb-3 flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-muted" />
-            Mejora tu plan
+            {t('Mejora tu plan')}
           </h2>
 
           {!stripeReady ? (
             <div className="rounded-xl border border-hairline bg-surface-card p-5">
               <p className="text-sm text-body">
-                Los pagos online estarán disponibles muy pronto. Si quieres activar Kennel ahora,
-                escríbenos a <a href="mailto:hola@genealogic.io" className="text-ink underline">hola@genealogic.io</a>.
+                {t('Los pagos online estarán disponibles muy pronto. Si quieres activar Kennel ahora, escríbenos a')} <a href="mailto:hola@genealogic.io" className="text-ink underline">hola@genealogic.io</a>.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <PlanCard
+                t={t}
                 name="Kennel Pro"
                 price="49 €"
-                period="/mes"
-                description="Perros ilimitados, COI completo, simulador de cruces, genotipos, Stripe Connect y soporte prioritario. 14 días gratis sin tarjeta."
+                period={t('/mes')}
+                description={t('Perros ilimitados, COI completo, simulador de cruces, genotipos, Stripe Connect y soporte prioritario. 14 días gratis sin tarjeta.')}
                 highlight
                 onSelect={() => startCheckoutFn('pro')}
                 disabled={checkoutPending}
               />
               <PlanCard
+                t={t}
                 name="Kennel Enterprise"
                 price="149 €"
-                period="/mes"
-                description="Web propia con dominio y multi-idioma, emailbot IA, newsletter, API REST, multi-usuario, white-label e integraciones. Activación manual tras hablar con soporte — no se contrata desde la web."
+                period={t('/mes')}
+                description={t('Web propia con dominio y multi-idioma, emailbot IA, newsletter, API REST, multi-usuario, white-label e integraciones. Activación manual tras hablar con soporte — no se contrata desde la web.')}
                 onSelect={() => startCheckoutFn('premium')}
                 disabled={checkoutPending}
                 comingSoon
@@ -245,15 +248,13 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
           {checkoutPending && (
             <p className="text-xs text-muted mt-3 flex items-center gap-1.5">
               <Loader2 className="w-3 h-3 animate-spin" />
-              Redirigiendo a Stripe…
+              {t('Redirigiendo a Stripe…')}
             </p>
           )}
 
           <p className="text-xs text-muted mt-3">
-            Kennel Pro: 14 días de prueba gratis · Sin tarjeta · Antes de terminar la
-            prueba te pedimos método de pago para continuar · Cancela cuando quieras
-            desde el portal.{' '}
-            <Link href="/pricing" className="text-ink underline">Ver todas las diferencias</Link>.
+            {t('Kennel Pro: 14 días de prueba gratis · Sin tarjeta · Antes de terminar la prueba te pedimos método de pago para continuar · Cancela cuando quieras desde el portal.')}{' '}
+            <Link href="/pricing" className="text-ink underline">{t('Ver todas las diferencias')}</Link>.
           </p>
         </div>
       )}
@@ -262,12 +263,12 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
       <div className="mb-6">
         <h2 className="text-sm font-semibold text-ink mb-3 flex items-center gap-1.5">
           <FileText className="w-4 h-4 text-muted" />
-          Historial de facturas
+          {t('Historial de facturas')}
         </h2>
         {invoices.length === 0 ? (
           <div className="border border-dashed border-hairline rounded-xl bg-canvas p-8 text-center">
             <p className="text-sm text-muted">
-              Aún no hay facturas. Cuando se procese tu primer pago, aparecerán aquí automáticamente.
+              {t('Aún no hay facturas. Cuando se procese tu primer pago, aparecerán aquí automáticamente.')}
             </p>
           </div>
         ) : (
@@ -275,11 +276,11 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
             <table className="w-full text-sm">
               <thead className="border-b border-hairline">
                 <tr className="text-left">
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">Fecha</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted hidden md:table-cell">Número</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">Concepto</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted text-right">Importe</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted text-right">Estado</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">{t('Fecha')}</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted hidden md:table-cell">{t('Número')}</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">{t('Concepto')}</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted text-right">{t('Importe')}</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted text-right">{t('Estado')}</th>
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted text-right">PDF</th>
                 </tr>
               </thead>
@@ -288,11 +289,11 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
                   <tr key={inv.id} className={i > 0 ? 'border-t border-hairline' : ''}>
                     <td className="px-4 py-3 text-body">{fmtDate(inv.paid_at || inv.created_at)}</td>
                     <td className="px-4 py-3 text-muted hidden md:table-cell font-mono text-[12px]">{inv.number || '—'}</td>
-                    <td className="px-4 py-3 text-body">{inv.description || 'Suscripción Genealogic'}</td>
+                    <td className="px-4 py-3 text-body">{inv.description || t('Suscripción Genealogic')}</td>
                     <td className="px-4 py-3 text-right font-semibold text-ink">{fmtMoney(inv.amount_cents, inv.currency)}</td>
                     <td className="px-4 py-3 text-right">
                       {inv.status === 'paid' ? (
-                        <span className="text-[11px] font-bold uppercase tracking-[0.06em] bg-ink text-on-primary rounded-full px-2 py-0.5">Pagada</span>
+                        <span className="text-[11px] font-bold uppercase tracking-[0.06em] bg-ink text-on-primary rounded-full px-2 py-0.5">{t('Pagada')}</span>
                       ) : (
                         <span className="text-[11px] font-bold uppercase tracking-[0.06em] bg-surface-card text-muted rounded-full px-2 py-0.5">{inv.status}</span>
                       )}
@@ -312,7 +313,7 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
 
       {/* ═════ Footer info ═════ */}
       <p className="text-xs text-muted text-center mt-8">
-        ¿Dudas con tu facturación? Escríbenos a{' '}
+        {t('¿Dudas con tu facturación? Escríbenos a')}{' '}
         <a href="mailto:hola@genealogic.io" className="text-ink underline">hola@genealogic.io</a>.
       </p>
     </div>
@@ -320,7 +321,7 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
 }
 
 function PlanCard({
-  name, price, period, description, highlight, onSelect, disabled, comingSoon,
+  name, price, period, description, highlight, onSelect, disabled, comingSoon, t,
 }: {
   name: string
   price: string
@@ -331,6 +332,7 @@ function PlanCard({
   disabled?: boolean
   /** Si true, deshabilita el CTA y muestra etiqueta "Próximamente". */
   comingSoon?: boolean
+  t: (k: string) => string
 }) {
   return (
     <div className={`rounded-xl border-2 p-5 flex flex-col ${
@@ -339,12 +341,12 @@ function PlanCard({
       <div className="flex items-center gap-2 flex-wrap mb-3">
         {highlight && (
           <div className="inline-flex items-center rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-on-primary">
-            Recomendado
+            {t('Recomendado')}
           </div>
         )}
         {comingSoon && (
           <div className="inline-flex items-center rounded-full bg-blue-100 text-blue-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
-            Próximamente
+            {t('Próximamente')}
           </div>
         )}
       </div>
@@ -360,7 +362,7 @@ function PlanCard({
           disabled
           className="mt-auto inline-flex cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-hairline bg-surface-soft px-4 py-2 text-sm font-bold text-muted"
         >
-          Próximamente
+          {t('Próximamente')}
         </button>
       ) : (
         <button
@@ -372,7 +374,7 @@ function PlanCard({
               : 'border border-hairline bg-canvas text-ink hover:border-ink/40'
           }`}
         >
-          Probar {name} 14 días gratis
+          {t('Probar')} {name} {t('14 días gratis')}
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       )}

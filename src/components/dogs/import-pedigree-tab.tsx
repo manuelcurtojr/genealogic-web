@@ -4,6 +4,7 @@ import { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2, Search, Globe, AlertTriangle, Check, X, Link2, ArrowLeftRight, Undo2 } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface ImportDog {
   name: string; sex: string; registration: string | null; breed: string | null
@@ -20,6 +21,7 @@ const CW = 190, CH = 58
 const L = 'var(--pedigree-line, rgba(255,255,255,0.12))'
 
 export default function ImportPedigreeTab({ userId, kennelId, onImported, isAdmin }: Props) {
+  const t = useT()
   const [url, setUrl] = useState('')
   const [scanning, setScanning] = useState(false)
   const [error, setError] = useState('')
@@ -235,24 +237,24 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
     if (!res.ok) {
       // Auto-retry on 529 (overloaded) — wait and try again up to 3 times
       if (res.status === 529 && _retries < 3) {
-        setScanPhase(`Servidor ocupado, reintentando en ${5 + _retries * 5}s...`)
+        setScanPhase(`${t('Servidor ocupado, reintentando en')} ${5 + _retries * 5}s...`)
         await new Promise(r => setTimeout(r, (5 + _retries * 5) * 1000))
         return callClaude(messages, maxTokens, _retries + 1)
       }
       // Auto-retry on 429 (rate limit) — esperar lo que dice el servidor
       if (res.status === 429 && _retries < 3) {
-        setScanPhase(`Rate limit, reintentando…`)
+        setScanPhase(t('Rate limit, reintentando…'))
         await new Promise(r => setTimeout(r, 6000))
         return callClaude(messages, maxTokens, _retries + 1)
       }
       let detail = ''
       try { const b = await res.json(); detail = b?.error || '' } catch {}
-      throw new Error(`Error de IA (${res.status}): ${detail || 'Intenta de nuevo'}`)
+      throw new Error(`${t('Error de IA')} (${res.status}): ${detail || t('Intenta de nuevo')}`)
     }
     const data = await res.json()
     const text = data.content?.[0]?.text || ''
     const stopReason = data.stop_reason
-    if (!text) throw new Error('La IA no devolvió respuesta')
+    if (!text) throw new Error(t('La IA no devolvió respuesta'))
 
     // If response was truncated, retry with more tokens
     if (stopReason === 'max_tokens' && maxTokens < 16000) {
@@ -273,7 +275,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       }
       console.error('Claude stop_reason:', stopReason, 'max_tokens:', maxTokens)
       console.error('Claude raw response:', text.substring(0, 500))
-      throw new Error('No se pudo interpretar la respuesta de la IA')
+      throw new Error(t('No se pudo interpretar la respuesta de la IA'))
     }
   }
 
@@ -433,11 +435,11 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
     try {
       const hostCheck = new URL(url.trim()).hostname.toLowerCase()
       if (hostCheck === 'ingrus.net' || hostCheck.endsWith('.ingrus.net')) {
-        setError('ingrus.net no autoriza acceso automatizado por inteligencia artificial. Si tienes derecho a los datos del perro, súbelos como screenshot o PDF en la sección de abajo.')
+        setError(t('ingrus.net no autoriza acceso automatizado por inteligencia artificial. Si tienes derecho a los datos del perro, súbelos como screenshot o PDF en la sección de abajo.'))
         return
       }
     } catch { /* URL inválida — handleScan seguirá y mostrará el error genérico */ }
-    setScanning(true); setError(''); setData(null); setSwaps({}); setScanPhase('Accediendo a la web...')
+    setScanning(true); setError(''); setData(null); setSwaps({}); setScanPhase(t('Accediendo a la web...'))
     try {
       // Fetch HTML via proxy
       let html: string | null = null
@@ -448,19 +450,19 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
           if (raw.length > 3000 && !raw.includes('403 Forbidden')) html = cleanHtml(raw)
         }
       } catch {}
-      if (!html) throw new Error('No se pudo acceder a la página. Intenta con otra URL o sube un screenshot.')
+      if (!html) throw new Error(t('No se pudo acceder a la página. Intenta con otra URL o sube un screenshot.'))
 
       const imgUrls = extractImageUrls(html)
 
       // Single Claude call — full extraction
-      setScanPhase('Analizando genealogía con IA...')
+      setScanPhase(t('Analizando genealogía con IA...'))
       let pedigreeData = await callClaude([{
         role: 'user',
         content: `${EXTRACTION_PROMPT}\n\n--- PAGE HTML ---\n${html}\n\n--- IMAGE URLS FOUND ---\n${imgUrls.slice(0, 15).join('\n')}`,
       }])
 
       if (!pedigreeData?.main_dog?.name) {
-        setError('No se pudo extraer datos de esta web. Prueba a subir un screenshot manual de la genealogía.')
+        setError(t('No se pudo extraer datos de esta web. Prueba a subir un screenshot manual de la genealogía.'))
         setScanning(false); setScanPhase(''); return
       }
 
@@ -468,7 +470,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       // perros que no están en el árbol), pedir a Claude que lo corrija.
       const { broken, orphanLinks } = verifyPedigree(pedigreeData)
       if (orphanLinks > 0 && orphanLinks <= 8) {
-        setScanPhase(`Corrigiendo ${orphanLinks} enlaces rotos en el árbol...`)
+        setScanPhase(`${t('Corrigiendo')} ${orphanLinks} ${t('enlaces rotos en el árbol...')}`)
         try {
           const fixed = await callClaude([{
             role: 'user',
@@ -488,7 +490,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       }
 
       // Post-processing: find existing dogs in DB and auto-link them
-      setScanPhase('Verificando perros existentes...')
+      setScanPhase(t('Verificando perros existentes...'))
       const { autoSwaps, linked } = await findExistingDogs(pedigreeData)
 
       // Save draft so it can be resumed
@@ -509,7 +511,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       setSwaps(autoSwaps)
       setLinkedAncestors(linked)
       setShowPreview(true)
-    } catch (err: any) { setError(err.message || 'Error al escanear') }
+    } catch (err: any) { setError(err.message || t('Error al escanear')) }
     setScanning(false); setScanPhase('')
   }
 
@@ -520,12 +522,12 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
     const isImage = file.type.startsWith('image/')
     if (!isPdf && !isImage) {
-      setError('Formato no soportado. Sube una imagen (JPG/PNG) o un PDF.')
+      setError(t('Formato no soportado. Sube una imagen (JPG/PNG) o un PDF.'))
       return
     }
 
     setUploadingImage(true); setError(''); setData(null); setSwaps({})
-    setScanPhase(isPdf ? 'Analizando PDF con IA...' : 'Analizando imagen con IA...')
+    setScanPhase(isPdf ? t('Analizando PDF con IA...') : t('Analizando imagen con IA...'))
     try {
       const reader = new FileReader()
       const base64 = await new Promise<string>((resolve, reject) => {
@@ -549,14 +551,14 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       }])
 
       if (!pedigreeData?.main_dog?.name) {
-        setError(isPdf ? 'No se pudo extraer datos del PDF.' : 'No se pudo extraer datos de la imagen.')
+        setError(isPdf ? t('No se pudo extraer datos del PDF.') : t('No se pudo extraer datos de la imagen.'))
         setUploadingImage(false); setScanPhase(''); return
       }
 
       // Self-verification igual que en handleScan
       const { broken, orphanLinks } = verifyPedigree(pedigreeData)
       if (orphanLinks > 0 && orphanLinks <= 8) {
-        setScanPhase(`Corrigiendo ${orphanLinks} enlaces rotos…`)
+        setScanPhase(`${t('Corrigiendo')} ${orphanLinks} ${t('enlaces rotos…')}`)
         try {
           const fixed = await callClaude([{
             role: 'user',
@@ -569,7 +571,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       }
 
       // Post-processing: find existing dogs in DB
-      setScanPhase('Verificando perros existentes...')
+      setScanPhase(t('Verificando perros existentes...'))
       const { autoSwaps, linked } = await findExistingDogs(pedigreeData)
 
       const draftId = await saveDraft(pedigreeData)
@@ -588,7 +590,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       setSwaps(autoSwaps)
       setLinkedAncestors(linked)
       setShowPreview(true)
-    } catch (err: any) { setError(err.message || 'Error al analizar la imagen') }
+    } catch (err: any) { setError(err.message || t('Error al analizar la imagen')) }
     setUploadingImage(false); setScanPhase('')
   }
 
@@ -641,7 +643,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       setImported(true)
       // Delete draft since import is confirmed
       if (currentDraftId) { await deleteDraft(currentDraftId); setCurrentDraftId(null) }
-    } catch (err: any) { setError(err.message || 'Error al importar') }
+    } catch (err: any) { setError(err.message || t('Error al importar')) }
     setImporting(false)
   }
 
@@ -675,38 +677,38 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
         <div className="flex items-center justify-between px-6 py-3 border-b border-hairline bg-surface-card flex-shrink-0">
           <div>
             <h2 className="text-lg font-bold">{editedMain.name}</h2>
-            <p className="text-xs text-muted">{totalDogs} perros · {totalDogs - swappedCount} nuevos · {swappedCount} existentes</p>
+            <p className="text-xs text-muted">{totalDogs} {t('perros')} · {totalDogs - swappedCount} {t('nuevos')} · {swappedCount} {t('existentes')}</p>
           </div>
           <div className="flex items-center gap-3">
             <select value={overrideBreed} onChange={e => setOverrideBreed(e.target.value)} className="bg-surface-card border border-hairline rounded-lg px-2 py-1.5 text-xs text-ink focus:border-ink focus:outline-none appearance-none cursor-pointer max-w-[160px]">
-              <option value="">Sin raza</option>
+              <option value="">{t('Sin raza')}</option>
               {allBreeds.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
             </select>
             <label className="flex items-center gap-1.5 text-xs text-body cursor-pointer">
-              <input type="checkbox" checked={importPhotos} onChange={e => setImportPhotos(e.target.checked)} className="w-3.5 h-3.5 rounded border-hairline bg-surface-card text-ink focus:ring-0" />Fotos
+              <input type="checkbox" checked={importPhotos} onChange={e => setImportPhotos(e.target.checked)} className="w-3.5 h-3.5 rounded border-hairline bg-surface-card text-ink focus:ring-0" />{t('Fotos')}
             </label>
             <label className="flex items-center gap-1.5 text-xs text-body cursor-pointer">
-              <input type="checkbox" checked={importAncestors} onChange={e => setImportAncestors(e.target.checked)} className="w-3.5 h-3.5 rounded border-hairline bg-surface-card text-ink focus:ring-0" />Ancestros
+              <input type="checkbox" checked={importAncestors} onChange={e => setImportAncestors(e.target.checked)} className="w-3.5 h-3.5 rounded border-hairline bg-surface-card text-ink focus:ring-0" />{t('Ancestros')}
             </label>
-            <button onClick={() => { setShowPreview(false); setSwaps({}) }} className="px-4 py-2 rounded-lg text-sm text-body hover:text-ink bg-surface-card hover:bg-surface-card transition">Volver</button>
+            <button onClick={() => { setShowPreview(false); setSwaps({}) }} className="px-4 py-2 rounded-lg text-sm text-body hover:text-ink bg-surface-card hover:bg-surface-card transition">{t('Volver')}</button>
             {imported ? (
               <div className="flex items-center gap-2">
                 <button onClick={handleUndo} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 transition">
-                  <Undo2 className="w-3.5 h-3.5" /> Deshacer
+                  <Undo2 className="w-3.5 h-3.5" /> {t('Deshacer')}
                 </button>
                 {importResult?.mainDogId && (
                   <a href={`/dogs/${importResult.mainDogId}`} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-green-500/10 text-green-400 hover:bg-green-500/20 transition">
-                    <Check className="w-3.5 h-3.5" /> Ver perro
+                    <Check className="w-3.5 h-3.5" /> {t('Ver perro')}
                   </a>
                 )}
                 <button onClick={() => { setImported(false); setImportResult(null); setShowPreview(false); setData(null); setUrl(''); setLinkedAncestors(new Map()) }} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-surface-card text-body hover:bg-surface-card transition">
-                  <Globe className="w-3.5 h-3.5" /> Importar otro
+                  <Globe className="w-3.5 h-3.5" /> {t('Importar otro')}
                 </button>
               </div>
             ) : (
               <button onClick={handleConfirm} disabled={importing} className="bg-ink text-on-primary hover:opacity-90 font-semibold px-6 py-2 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
                 {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                {importing ? 'Importando...' : 'Importar genealogía'}
+                {importing ? t('Importando...') : t('Importar genealogía')}
               </button>
             )}
           </div>
@@ -715,17 +717,17 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
         <div className="flex items-center gap-5 px-6 py-2 border-b border-hairline bg-surface-card/50 flex-shrink-0">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded border-2 border-ink bg-surface-card flex items-center justify-center"><Link2 className="w-2 h-2 text-ink" /></div>
-            <span className="text-[10px] text-muted">Registrado — ya existe, su genealogia es la de la plataforma</span>
+            <span className="text-[10px] text-muted">{t('Registrado — ya existe, su genealogia es la de la plataforma')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded border-2 border-blue-400/60 bg-blue-400/10" />
-            <span className="text-[10px] text-muted">Cambiado — sustituido manualmente por otro perro</span>
+            <span className="text-[10px] text-muted">{t('Cambiado — sustituido manualmente por otro perro')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded border border-hairline bg-surface-card" />
-            <span className="text-[10px] text-muted">Nuevo — se creara como contribucion al importar</span>
+            <span className="text-[10px] text-muted">{t('Nuevo — se creara como contribucion al importar')}</span>
           </div>
-          <span className="text-[10px] text-muted ml-auto">Haz clic en cualquier perro para cambiarlo</span>
+          <span className="text-[10px] text-muted ml-auto">{t('Haz clic en cualquier perro para cambiarlo')}</span>
         </div>
         {error && <div className="mx-6 mt-3 bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
         <div className="flex-1 overflow-auto relative" onClick={() => { setGenMenu(false); setZoomMenu(false) }}>
@@ -750,20 +752,20 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
           <div className="fixed inset-0 z-[210] bg-black/60" onClick={() => setSwapTarget(null)} />
           <div className="fixed z-[211] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] max-w-[90vw] bg-surface-card border border-hairline rounded-2xl shadow-2xl">
             <div className="flex items-center justify-between px-5 py-3 border-b border-hairline">
-              <div><h3 className="text-sm font-semibold">Cambiar perro</h3><p className="text-[10px] text-muted">{swapTarget}</p></div>
+              <div><h3 className="text-sm font-semibold">{t('Cambiar perro')}</h3><p className="text-[10px] text-muted">{swapTarget}</p></div>
               <button onClick={() => setSwapTarget(null)} className="text-muted hover:text-ink"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-5 space-y-3">
               {swaps[swapTarget] && (
                 <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full overflow-hidden bg-surface-card flex-shrink-0">{swaps[swapTarget].photo ? <img src={swaps[swapTarget].photo} alt="" className="w-full h-full object-cover" /> : null}</div>
-                  <div className="flex-1"><p className="text-xs font-semibold text-green-400">{swaps[swapTarget].name}</p><p className="text-[10px] text-muted">{swaps[swapTarget].breed || 'Existente'}</p></div>
-                  <button onClick={() => removeSwap(swapTarget)} className="text-xs text-red-400 hover:text-red-300">Quitar</button>
+                  <div className="flex-1"><p className="text-xs font-semibold text-green-400">{swaps[swapTarget].name}</p><p className="text-[10px] text-muted">{swaps[swapTarget].breed || t('Existente')}</p></div>
+                  <button onClick={() => removeSwap(swapTarget)} className="text-xs text-red-400 hover:text-red-300">{t('Quitar')}</button>
                 </div>
               )}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                <input type="text" value={swapSearch} onChange={e => { setSwapSearch(e.target.value); searchSwap(e.target.value) }} placeholder="Buscar perro existente..." autoFocus className="w-full bg-canvas border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
+                <input type="text" value={swapSearch} onChange={e => { setSwapSearch(e.target.value); searchSwap(e.target.value) }} placeholder={t('Buscar perro existente...')} autoFocus className="w-full bg-canvas border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
               </div>
               <div className="max-h-48 overflow-y-auto space-y-1">
                 {swapSearching && <div className="text-center py-3"><Loader2 className="w-4 h-4 animate-spin text-muted mx-auto" /></div>}
@@ -776,8 +778,8 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
                 ))}
               </div>
               <div className="flex gap-2 pt-2 border-t border-hairline">
-                <button onClick={() => setSwapTarget(null)} className="flex-1 px-3 py-2 rounded-lg text-xs text-body bg-surface-card hover:bg-surface-card transition">Mantener original</button>
-                {swaps[swapTarget] && <button onClick={() => setSwapTarget(null)} className="flex-1 px-3 py-2 rounded-lg text-xs text-white font-medium bg-ink hover:opacity-90 transition">Usar seleccionado</button>}
+                <button onClick={() => setSwapTarget(null)} className="flex-1 px-3 py-2 rounded-lg text-xs text-body bg-surface-card hover:bg-surface-card transition">{t('Mantener original')}</button>
+                {swaps[swapTarget] && <button onClick={() => setSwapTarget(null)} className="flex-1 px-3 py-2 rounded-lg text-xs text-white font-medium bg-ink hover:opacity-90 transition">{t('Usar seleccionado')}</button>}
               </div>
             </div>
           </div>
@@ -792,50 +794,50 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
     <div className="space-y-5">
       <div className="text-center">
         <div className="text-ink mx-auto w-14 h-14 rounded-2xl bg-surface-card flex items-center justify-center mb-3"><Globe className="w-7 h-7" /></div>
-        <h3 className="text-lg font-bold">Importar genealogía</h3>
-        <p className="text-sm text-body mt-1">Pega la URL de una genealogía online y lo escanearemos automáticamente con IA</p>
+        <h3 className="text-lg font-bold">{t('Importar genealogía')}</h3>
+        <p className="text-sm text-body mt-1">{t('Pega la URL de una genealogía online y lo escanearemos automáticamente con IA')}</p>
       </div>
       <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 flex items-start gap-2">
         <AlertTriangle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-orange-400">Compatible con cualquier web pública: presadb, pedigreedatabase, k9data, working-dog, breedarchive, hunddata, dogsfiles, clubes FCI, criaderos privados, etc. También acepta PDFs oficiales (RSCE/FCI) y screenshots. <span className="text-orange-300/80">Por respeto a su política, ingrus.net no está soportado — usa el PDF o screenshot si necesitas importar desde ahí.</span></p>
+        <p className="text-xs text-orange-400">{t('Compatible con cualquier web pública: presadb, pedigreedatabase, k9data, working-dog, breedarchive, hunddata, dogsfiles, clubes FCI, criaderos privados, etc. También acepta PDFs oficiales (RSCE/FCI) y screenshots.')} <span className="text-orange-300/80">{t('Por respeto a su política, ingrus.net no está soportado — usa el PDF o screenshot si necesitas importar desde ahí.')}</span></p>
       </div>
       {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
       <div>
-        <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">URL de la genealogía</label>
+        <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('URL de la genealogía')}</label>
         <div className="flex gap-2">
           <input type="url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://presadb.com/dogocanario/nombre-del-perro" onKeyDown={e => e.key === 'Enter' && handleScan()} className="flex-1 bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
           <button onClick={handleScan} disabled={scanning || !url.trim()} className="bg-ink text-on-primary hover:opacity-90 font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm flex-shrink-0">
             {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            {scanning ? 'Escaneando...' : 'Escanear'}
+            {scanning ? t('Escaneando...') : t('Escanear')}
           </button>
         </div>
       </div>
       {/* Divider */}
       <div className="flex items-center gap-3">
         <div className="flex-1 border-t border-hairline" />
-        <span className="text-xs text-muted">o</span>
+        <span className="text-xs text-muted">{t('o')}</span>
         <div className="flex-1 border-t border-hairline" />
       </div>
 
       {/* File upload (image or PDF) */}
       <div>
-        <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Subir screenshot o PDF de la genealogía</label>
+        <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Subir screenshot o PDF de la genealogía')}</label>
         <label className={`flex items-center justify-center gap-2 border-2 border-dashed border-hairline rounded-lg py-4 cursor-pointer hover:border-hairline hover:bg-surface-card transition ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}>
           {uploadingImage ? (
-            <><Loader2 className="w-4 h-4 animate-spin text-ink" /><span className="text-sm text-body">{scanPhase || 'Analizando con IA...'}</span></>
+            <><Loader2 className="w-4 h-4 animate-spin text-ink" /><span className="text-sm text-body">{scanPhase || t('Analizando con IA...')}</span></>
           ) : (
-            <><Globe className="w-4 h-4 text-muted" /><span className="text-sm text-muted">Imagen (JPG/PNG) o PDF — arrastra o haz clic</span></>
+            <><Globe className="w-4 h-4 text-muted" /><span className="text-sm text-muted">{t('Imagen (JPG/PNG) o PDF — arrastra o haz clic')}</span></>
           )}
           <input type="file" accept="image/*,application/pdf,.pdf" onChange={handleImageUpload} className="hidden" />
         </label>
-        <p className="text-[10px] text-muted mt-1">Para pedigrees oficiales RSCE/FCI (los documentos del club) sube el PDF directamente. Para webs que bloquean el scrapeo, sube un screenshot.</p>
+        <p className="text-[10px] text-muted mt-1">{t('Para pedigrees oficiales RSCE/FCI (los documentos del club) sube el PDF directamente. Para webs que bloquean el scrapeo, sube un screenshot.')}</p>
       </div>
 
       {(scanning || uploadingImage) && (
         <div className="text-center py-8">
           <Loader2 className="w-8 h-8 animate-spin text-ink mx-auto mb-3" />
-          <p className="text-sm text-body">{scanPhase || 'Escaneando genealogía con IA...'}</p>
-          <p className="text-xs text-muted mt-1">Esto puede tardar unos segundos</p>
+          <p className="text-sm text-body">{scanPhase || t('Escaneando genealogía con IA...')}</p>
+          <p className="text-xs text-muted mt-1">{t('Esto puede tardar unos segundos')}</p>
         </div>
       )}
     </div>
@@ -897,6 +899,7 @@ function TN({ name, byName, swaps, g, mx, isRoot, zoomScale, onSwap, onRemoveSwa
 }
 
 function Card({ dog, swaps, isRoot, onSwap, onRemoveSwap }: { dog: ImportDog; swaps: Record<string, any>; isRoot?: boolean; onSwap: (n: string) => void; onRemoveSwap: (n: string) => void }) {
+  const t = useT()
   const swap = swaps[dog.name]
   const sc = dog.sex === 'Female' ? '#e84393' : '#017DFA'
   const isLinked = swap?.linked // Existing in DB — orange border + chain icon
@@ -925,9 +928,9 @@ function Card({ dog, swaps, isRoot, onSwap, onRemoveSwap }: { dog: ImportDog; sw
           <div className="flex-1 min-w-0 px-2 py-1.5 flex flex-col justify-center">
             <p className="text-[11px] font-bold text-white leading-tight truncate">{swap ? swap.name : dog.name}</p>
             {isLinked ? (
-              <span className="text-[9px] font-bold text-ink flex items-center gap-0.5 mt-0.5"><Link2 className="w-2.5 h-2.5" /> Registrado</span>
+              <span className="text-[9px] font-bold text-ink flex items-center gap-0.5 mt-0.5"><Link2 className="w-2.5 h-2.5" /> {t('Registrado')}</span>
             ) : isSwapped ? (
-              <span className="text-[9px] font-bold text-blue-400 flex items-center gap-0.5 mt-0.5"><ArrowLeftRight className="w-2.5 h-2.5" /> Cambiado</span>
+              <span className="text-[9px] font-bold text-blue-400 flex items-center gap-0.5 mt-0.5"><ArrowLeftRight className="w-2.5 h-2.5" /> {t('Cambiado')}</span>
             ) : (
               <div className="flex flex-wrap gap-0.5 mt-0.5">
                 {dog.breed && <span className="text-[8px] bg-surface-card text-muted px-1 py-0.5 rounded">{dog.breed}</span>}
@@ -940,7 +943,7 @@ function Card({ dog, swaps, isRoot, onSwap, onRemoveSwap }: { dog: ImportDog; sw
         <button onClick={() => (isSwapped || isLinked) ? onRemoveSwap(dog.name) : onSwap(dog.name)}
           className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-black/40 flex items-center justify-center transition">
           <span className="text-[10px] font-bold text-white flex items-center gap-1">
-            {(isSwapped || isLinked) ? <><X className="w-3 h-3" /> Quitar</> : <><ArrowLeftRight className="w-3 h-3" /> Cambiar</>}
+            {(isSwapped || isLinked) ? <><X className="w-3 h-3" /> {t('Quitar')}</> : <><ArrowLeftRight className="w-3 h-3" /> {t('Cambiar')}</>}
           </span>
         </button>
       </div>

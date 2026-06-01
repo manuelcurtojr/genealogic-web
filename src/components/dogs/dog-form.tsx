@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import SearchableSelect from '@/components/ui/searchable-select'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface DogFormProps {
   initialData?: any
@@ -20,6 +21,7 @@ interface DogFormProps {
 
 export default function DogForm({ initialData, breeds, colors, kennels, maleDogs, femaleDogs, userId }: DogFormProps) {
   const router = useRouter()
+  const t = useT()
   const isEdit = !!initialData
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -74,7 +76,7 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
       const { data, error: err } = await supabase.from('dogs').insert({ ...payload, owner_id: userId }).select('id').single()
       if (err) {
         setError(err.message?.includes('DOG_LIMIT_REACHED')
-          ? 'Has alcanzado el límite de perros de tu plan. Marca uno como "en venta" o fallecido, o pásate a Kennel Pro para perros ilimitados.'
+          ? t('Has alcanzado el límite de perros de tu plan. Marca uno como "en venta" o fallecido, o pásate a Kennel Pro para perros ilimitados.')
           : err.message)
         setLoading(false); return
       }
@@ -94,7 +96,7 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
         <Link href={isEdit ? `/dogs/${initialData.id}` : '/dogs'} className="text-muted hover:text-ink transition">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-2xl font-bold">{isEdit ? 'Editar perro' : 'Añadir perro'}</h1>
+        <h1 className="text-2xl font-bold">{isEdit ? t('Editar perro') : t('Añadir perro')}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -102,11 +104,11 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
 
         {/* Basic */}
         <section>
-          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">Datos basicos</h2>
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">{t('Datos basicos')}</h2>
           <div className="space-y-4">
-            <Field label="Nombre *" value={form.name} onChange={(v) => set('name', v)} required />
+            <Field label={t('Nombre *')} value={form.name} onChange={(v) => set('name', v)} required />
             <div>
-              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-2 block">Sexo *</label>
+              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-2 block">{t('Sexo *')}</label>
               <div className="flex gap-3">
                 {(['male', 'female'] as const).map((s) => (
                   <button key={s} type="button" onClick={() => set('sex', s)}
@@ -115,59 +117,59 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
                         ? s === 'male' ? 'border-blue-400 bg-blue-400/10 text-blue-400' : 'border-pink-400 bg-pink-400/10 text-pink-400'
                         : 'border-hairline bg-surface-card text-body hover:bg-surface-card'
                     }`}>
-                    {s === 'male' ? '♂ Macho' : '♀ Hembra'}
+                    {s === 'male' ? `♂ ${t('Macho')}` : `♀ ${t('Hembra')}`}
                   </button>
                 ))}
               </div>
             </div>
-            <Field label="Fecha de nacimiento" value={form.birth_date} onChange={(v) => set('birth_date', v)} type="date" />
+            <Field label={t('Fecha de nacimiento')} value={form.birth_date} onChange={(v) => set('birth_date', v)} type="date" />
           </div>
         </section>
 
         {/* Classification */}
         <section>
-          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">Clasificacion</h2>
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">{t('Clasificacion')}</h2>
           <div className="grid grid-cols-2 gap-4">
-            <SearchableSelect label="Raza" options={breedOptions} value={form.breed_id} onChange={(v) => set('breed_id', v)} placeholder="Seleccionar raza" />
-            <SearchableSelect label="Color" options={colorOptions} value={form.color_id} onChange={(v) => set('color_id', v)} placeholder="Seleccionar color" />
+            <SearchableSelect label={t('Raza')} options={breedOptions} value={form.breed_id} onChange={(v) => set('breed_id', v)} placeholder={t('Seleccionar raza')} />
+            <SearchableSelect label={t('Color')} options={colorOptions} value={form.color_id} onChange={(v) => set('color_id', v)} placeholder={t('Seleccionar color')} />
           </div>
           <div className="mt-4">
-            <SearchableSelect label="Criadero" options={kennelOptions} value={form.kennel_id} onChange={(v) => set('kennel_id', v)} placeholder="Seleccionar criadero" />
+            <SearchableSelect label={t('Criadero')} options={kennelOptions} value={form.kennel_id} onChange={(v) => set('kennel_id', v)} placeholder={t('Seleccionar criadero')} />
           </div>
         </section>
 
         {/* Identification */}
         <section>
-          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">Identificacion</h2>
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">{t('Identificacion')}</h2>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Registro" value={form.registration} onChange={(v) => set('registration', v)} placeholder="UKC, FCI, etc." />
-            <Field label="Microchip" value={form.microchip} onChange={(v) => set('microchip', v)} />
+            <Field label={t('Registro')} value={form.registration} onChange={(v) => set('registration', v)} placeholder="UKC, FCI, etc." />
+            <Field label={t('Microchip')} value={form.microchip} onChange={(v) => set('microchip', v)} />
           </div>
         </section>
 
         {/* Measurements */}
         <section>
-          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">Medidas</h2>
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">{t('Medidas')}</h2>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Peso (kg)" value={form.weight} onChange={(v) => set('weight', v)} type="number" />
-            <Field label="Altura (cm)" value={form.height} onChange={(v) => set('height', v)} type="number" />
+            <Field label={t('Peso (kg)')} value={form.weight} onChange={(v) => set('weight', v)} type="number" />
+            <Field label={t('Altura (cm)')} value={form.height} onChange={(v) => set('height', v)} type="number" />
           </div>
         </section>
 
         {/* Parents */}
         <section>
-          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">Padres</h2>
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">{t('Padres')}</h2>
           <div className="grid grid-cols-2 gap-4">
-            <SearchableSelect label="Padre" options={fatherOptions} value={form.father_id} onChange={(v) => set('father_id', v)} placeholder="Seleccionar padre" />
-            <SearchableSelect label="Madre" options={motherOptions} value={form.mother_id} onChange={(v) => set('mother_id', v)} placeholder="Seleccionar madre" />
+            <SearchableSelect label={t('Padre')} options={fatherOptions} value={form.father_id} onChange={(v) => set('father_id', v)} placeholder={t('Seleccionar padre')} />
+            <SearchableSelect label={t('Madre')} options={motherOptions} value={form.mother_id} onChange={(v) => set('mother_id', v)} placeholder={t('Seleccionar madre')} />
           </div>
         </section>
 
         {/* Visibility */}
         <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-lg p-4">
           <div>
-            <p className="text-sm font-medium">Perfil publico</p>
-            <p className="text-xs text-muted mt-0.5">Otros usuarios podran ver este perro</p>
+            <p className="text-sm font-medium">{t('Perfil publico')}</p>
+            <p className="text-xs text-muted mt-0.5">{t('Otros usuarios podran ver este perro')}</p>
           </div>
           <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
         </div>
@@ -175,7 +177,7 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
         <button type="submit" disabled={loading || !form.name.trim()}
           className="w-full bg-ink text-on-primary hover:opacity-90 font-semibold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2">
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-          {loading ? (isEdit ? 'Guardando...' : 'Creando...') : (isEdit ? 'Guardar cambios' : 'Crear perro')}
+          {loading ? (isEdit ? t('Guardando...') : t('Creando...')) : (isEdit ? t('Guardar cambios') : t('Crear perro'))}
         </button>
       </form>
     </div>

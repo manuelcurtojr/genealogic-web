@@ -11,6 +11,7 @@ import {
   HEAT_DURATION_DAYS, CONFIRM_PREGNANCY_DAYS,
   type HeatCycleLike, type LitterLike,
 } from '@/lib/repro/cycle'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   dogId: string
@@ -24,11 +25,12 @@ interface Props {
  * gantt (con lista dinámica de montas). La lógica vive en @/lib/repro/cycle.
  */
 export default function ReproduccionTab({ dogId, userId }: Props) {
+  const t = useT()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [cycles, setCycles] = useState<HeatCycleLike[]>([])
   const [litters, setLitters] = useState<LitterLike[]>([])
-  const [dogName, setDogName] = useState<string>('Esta hembra')
+  const [dogName, setDogName] = useState<string>(t('Esta hembra'))
   const [busy, setBusy] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editCycle, setEditCycle] = useState<HeatCycleLike | null>(null)
@@ -55,7 +57,7 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
       setLitters((littersRes.data as LitterLike[]) || [])
       if (dogRes.data?.name) setDogName(dogRes.data.name)
     } catch (err: any) {
-      setError(err.message || 'Error cargando datos')
+      setError(err.message || t('Error cargando datos'))
     } finally {
       setLoading(false)
     }
@@ -103,26 +105,26 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
       {/* Estado actual + próximo celo */}
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="rounded-xl border border-hairline bg-canvas p-4">
-          <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">Estado actual</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{t('Estado actual')}</p>
           <p className={`mt-2 flex items-center gap-2 text-[14px] font-semibold ${stateColor}`}>
             {info.state !== 'idle' && <StateIcon className="h-4 w-4" />} {info.stateLabel}
           </p>
           {info.expectedBirth && (
             <p className="mt-1 text-[12px] text-muted">
-              Parto previsto: <strong className="text-ink">{birthWindowText(info)}</strong>
-              {(() => { const d = daysBetween(today, info.expectedBirth!); return d >= 0 ? ` · en ${d} día${d === 1 ? '' : 's'}` : ` · hace ${-d} día${d === -1 ? '' : 's'}` })()}
+              {t('Parto previsto:')} <strong className="text-ink">{birthWindowText(info)}</strong>
+              {(() => { const d = daysBetween(today, info.expectedBirth!); return d >= 0 ? ` · ${t('en')} ${d} ${d === 1 ? t('día') : t('días')}` : ` · ${-d} ${(-d) === 1 ? t('día') : t('días')} ${t('atrás')}` })()}
             </p>
           )}
         </div>
         <div className="rounded-xl border border-hairline bg-canvas p-4">
-          <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">Próximo celo previsto</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{t('Próximo celo previsto')}</p>
           {info.nextHeatForecast ? (
             <p className="mt-2 flex items-center gap-2 text-[14px] font-semibold text-ink">
               <Calendar className="h-4 w-4 text-muted" /> {fmtDate(info.nextHeatForecast)}
               <span className="text-[11.5px] font-normal text-muted">({info.avgIntervalDays}d)</span>
             </p>
           ) : (
-            <p className="mt-2 text-[13px] text-muted">Registra al menos 2 celos para calcular predicción.</p>
+            <p className="mt-2 text-[13px] text-muted">{t('Registra al menos 2 celos para calcular predicción.')}</p>
           )}
         </div>
       </div>
@@ -143,27 +145,27 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
       {info.state === 'mated_pending' && info.drivingCycle && (
         <div className="rounded-xl border border-amber-300 bg-amber-50/60 p-4 space-y-3">
           <p className="flex items-center gap-2 text-[13.5px] font-semibold text-amber-900">
-            <Heart className="h-4 w-4 flex-shrink-0 text-amber-600" /> Montada · pendiente de confirmar preñez
+            <Heart className="h-4 w-4 flex-shrink-0 text-amber-600" /> {t('Montada · pendiente de confirmar preñez')}
           </p>
           <p className="text-[12px] text-amber-800">
-            Monta: <strong>{info.matingDate ? fmtDate(info.matingDate) : '—'}</strong>
+            {t('Monta:')} <strong>{info.matingDate ? fmtDate(info.matingDate) : '—'}</strong>
             {info.matingEndDate && info.matingEndDate.getTime() !== info.matingDate?.getTime() && <> → {fmtDate(info.matingEndDate)}</>}
-            {' · '}Parto previsto: <strong>{birthWindowText(info)}</strong>.{' '}
-            <button onClick={() => openEdit(info.drivingCycle!)} className="font-medium underline">Editar fechas de monta</button>
+            {' · '}{t('Parto previsto:')} <strong>{birthWindowText(info)}</strong>.{' '}
+            <button onClick={() => openEdit(info.drivingCycle!)} className="font-medium underline">{t('Editar fechas de monta')}</button>
           </p>
           <p className="text-[12px] text-amber-800">
             {info.confirmDueDate && daysBetween(today, info.confirmDueDate) > 0
-              ? `Podrás confirmar por ecografía hacia el ${fmtDate(info.confirmDueDate)} (día ${CONFIRM_PREGNANCY_DAYS} desde la monta).`
-              : `Ya puedes confirmar (ecografía a partir del día ${CONFIRM_PREGNANCY_DAYS}). ¿Quedó preñada?`}
+              ? `${t('Podrás confirmar por ecografía hacia el')} ${fmtDate(info.confirmDueDate)} (${t('día')} ${CONFIRM_PREGNANCY_DAYS} ${t('desde la monta).')}`
+              : `${t('Ya puedes confirmar (ecografía a partir del día')} ${CONFIRM_PREGNANCY_DAYS}). ${t('¿Quedó preñada?')}`}
           </p>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => setPregnancyStatus(info.drivingCycle!.id, 'confirmed')} disabled={busy}
               className="inline-flex items-center gap-1.5 rounded-lg bg-pink-600 px-3 py-1.5 text-[12.5px] font-medium text-white transition hover:opacity-90 disabled:opacity-50">
-              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />} Sí, está preñada
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />} {t('Sí, está preñada')}
             </button>
             <button onClick={() => setPregnancyStatus(info.drivingCycle!.id, 'failed')} disabled={busy}
               className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[12.5px] font-medium text-body transition hover:text-ink disabled:opacity-50">
-              <XCircle className="h-3.5 w-3.5" /> No quedó preñada
+              <XCircle className="h-3.5 w-3.5" /> {t('No quedó preñada')}
             </button>
           </div>
         </div>
@@ -171,10 +173,10 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
 
       {/* Header + Add */}
       <div className="flex items-center justify-between">
-        <h3 className="text-[14px] font-semibold text-ink">Historial de celos</h3>
+        <h3 className="text-[14px] font-semibold text-ink">{t('Historial de celos')}</h3>
         <button onClick={openCreate}
           className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-on-primary transition-colors hover:opacity-90">
-          <Plus className="h-3.5 w-3.5" /> Registrar celo
+          <Plus className="h-3.5 w-3.5" /> {t('Registrar celo')}
         </button>
       </div>
 
@@ -182,8 +184,8 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
       {cycles.length === 0 ? (
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-10 text-center">
           <Heart className="mx-auto h-7 w-7 text-muted" />
-          <p className="mt-2 text-[13px] text-body">Aún no hay celos registrados.</p>
-          <p className="mt-1 text-[11.5px] text-muted">Empieza registrando el más reciente para activar la predicción.</p>
+          <p className="mt-2 text-[13px] text-body">{t('Aún no hay celos registrados.')}</p>
+          <p className="mt-1 text-[11.5px] text-muted">{t('Empieza registrando el más reciente para activar la predicción.')}</p>
         </div>
       ) : (
         <ul className="divide-y divide-hairline-soft overflow-hidden rounded-xl border border-hairline bg-canvas">
@@ -201,22 +203,22 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
                   <div className="min-w-0 flex-1">
                     <p className="text-[13.5px] font-medium text-ink">
                       {fmtDate(start)} → {fmtDate(end)}
-                      {!c.end_date && <span className="ml-1 text-[11px] text-muted">(estimado)</span>}
+                      {!c.end_date && <span className="ml-1 text-[11px] text-muted">{t('(estimado)')}</span>}
                     </p>
                     <div className="flex flex-wrap items-center gap-x-2 text-[12px] text-muted">
                       {c.was_mated && (
                         <span className="font-medium text-pink-600">
-                          {matings.length > 1 ? `${matings.length} montas` : 'Monta'}{matings[0] ? ` · ${fmtDate(parseDate(matings[0]))}` : ''}{matings.length > 1 ? ` → ${fmtDate(parseDate(matings[matings.length - 1]))}` : ''}
+                          {matings.length > 1 ? `${matings.length} ${t('montas')}` : t('Monta')}{matings[0] ? ` · ${fmtDate(parseDate(matings[0]))}` : ''}{matings.length > 1 ? ` → ${fmtDate(parseDate(matings[matings.length - 1]))}` : ''}
                         </span>
                       )}
-                      {preg === 'suspected' && <span className="text-amber-600">· pendiente confirmar</span>}
-                      {preg === 'confirmed' && <span className="text-pink-600">· preñez confirmada</span>}
-                      {preg === 'failed' && <span>· no preñada</span>}
+                      {preg === 'suspected' && <span className="text-amber-600">· {t('pendiente confirmar')}</span>}
+                      {preg === 'confirmed' && <span className="text-pink-600">· {t('preñez confirmada')}</span>}
+                      {preg === 'failed' && <span>· {t('no preñada')}</span>}
                       {c.notes && <span className="truncate">· {c.notes}</span>}
                     </div>
                   </div>
                   {c.resulted_in_litter_id ? (
-                    <Link href={`/litters/${c.resulted_in_litter_id}`} onClick={(e) => e.stopPropagation()} className="flex-shrink-0 text-[12px] font-medium text-body hover:text-ink">Ver camada →</Link>
+                    <Link href={`/litters/${c.resulted_in_litter_id}`} onClick={(e) => e.stopPropagation()} className="flex-shrink-0 text-[12px] font-medium text-body hover:text-ink">{t('Ver camada →')}</Link>
                   ) : (
                     <Pencil className="h-3.5 w-3.5 flex-shrink-0 text-muted" />
                   )}
@@ -230,7 +232,7 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
       {/* Camadas resultantes */}
       {litters.length > 0 && (
         <div className="rounded-xl border border-hairline bg-canvas p-4">
-          <h4 className="mb-2 text-[13px] font-semibold text-ink">Camadas como madre</h4>
+          <h4 className="mb-2 text-[13px] font-semibold text-ink">{t('Camadas como madre')}</h4>
           <ul className="divide-y divide-hairline-soft">
             {litters.slice(0, 5).map((l) => (
               <li key={l.id} className="flex items-center justify-between py-2">
@@ -238,14 +240,14 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
                   <Baby className="h-3.5 w-3.5 text-muted" />
                   <span className="text-[13px] text-ink">
                     {l.status === 'born' && l.birth_date
-                      ? `Nacida ${fmtDate(parseDate(l.birth_date))}`
+                      ? `${t('Nacida')} ${fmtDate(parseDate(l.birth_date))}`
                       : l.status === 'mated' && l.mating_date
-                        ? `Gestación desde ${fmtDate(parseDate(l.mating_date))}`
-                        : 'Planificada'}
+                        ? `${t('Gestación desde')} ${fmtDate(parseDate(l.mating_date))}`
+                        : t('Planificada')}
                   </span>
-                  {l.puppy_count != null && <span className="text-[11.5px] text-muted">· {l.puppy_count} cachorros</span>}
+                  {l.puppy_count != null && <span className="text-[11.5px] text-muted">· {l.puppy_count} {t('cachorros')}</span>}
                 </div>
-                <Link href={`/litters/${l.id}`} className="text-[12px] font-medium text-body hover:text-ink">Ver →</Link>
+                <Link href={`/litters/${l.id}`} className="text-[12px] font-medium text-body hover:text-ink">{t('Ver →')}</Link>
               </li>
             ))}
           </ul>
@@ -253,8 +255,8 @@ export default function ReproduccionTab({ dogId, userId }: Props) {
       )}
 
       <p className="text-[11.5px] text-muted">
-        💡 Para ver todas tus hembras en un calendario único, ve a{' '}
-        <Link href="/reproduccion" className="text-ink underline">Calendario reproductivo</Link>.
+        💡 {t('Para ver todas tus hembras en un calendario único, ve a')}{' '}
+        <Link href="/reproduccion" className="text-ink underline">{t('Calendario reproductivo')}</Link>.
       </p>
 
       <HeatCycleForm

@@ -168,8 +168,8 @@ export default function SettingsPage() {
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault()
     setPasswordError('')
-    if (newPassword.length < 6) { setPasswordError('La contraseña debe tener al menos 6 caracteres'); return }
-    if (newPassword !== confirmPassword) { setPasswordError('Las contraseñas no coinciden'); return }
+    if (newPassword.length < 6) { setPasswordError(t('La contraseña debe tener al menos 6 caracteres')); return }
+    if (newPassword !== confirmPassword) { setPasswordError(t('Las contraseñas no coinciden')); return }
     setPasswordLoading(true)
     const supabase = createClient()
     const { error } = await supabase.auth.updateUser({ password: newPassword })
@@ -196,22 +196,22 @@ export default function SettingsPage() {
     'Kennel Free'
   const userIsEnterprise = userPlan === 'kennel_pro' || userPlan === 'premium' || userPlan === 'enterprise'
   const sections: { key: Section; label: string; icon: React.ElementType }[] = [
-    { key: 'perfil',         label: 'Perfil',           icon: User },
-    { key: 'suscripcion',    label: 'Suscripción',      icon: Crown },
-    { key: 'facturacion',    label: 'Facturación',      icon: CreditCard },
-    { key: 'seguridad',      label: 'Seguridad',        icon: Lock },
-    { key: 'idioma',         label: 'Idioma y región',  icon: Globe },
-    { key: 'notificaciones', label: 'Notificaciones',   icon: Bell },
-    { key: 'privacidad',     label: 'Privacidad',       icon: Eye },
-    { key: 'datos',          label: 'Datos',            icon: Download },
+    { key: 'perfil',         label: t('Perfil'),           icon: User },
+    { key: 'suscripcion',    label: t('Suscripción'),      icon: Crown },
+    { key: 'facturacion',    label: t('Facturación'),      icon: CreditCard },
+    { key: 'seguridad',      label: t('Seguridad'),        icon: Lock },
+    { key: 'idioma',         label: t('Idioma y región'),  icon: Globe },
+    { key: 'notificaciones', label: t('Notificaciones'),   icon: Bell },
+    { key: 'privacidad',     label: t('Privacidad'),       icon: Eye },
+    { key: 'datos',          label: t('Datos'),            icon: Download },
   ]
 
   return (
     <div className="max-w-4xl space-y-6 sm:space-y-8">
       <div>
-        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Cuenta</p>
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Cuenta')}</p>
         <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-          Ajustes
+          {t('Ajustes')}
         </h1>
       </div>
 
@@ -259,30 +259,30 @@ export default function SettingsPage() {
           {/* === PERFIL === */}
           {activeSection === 'perfil' && (
             <div className="space-y-4">
-              <SectionHeader title="Perfil personal" desc="Tu información personal y avatar" />
+              <SectionHeader title={t('Perfil personal')} desc={t('Tu información personal y avatar')} />
               <div className="rounded-xl border border-hairline bg-canvas p-5">
                 <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
                   <AvatarUpload userId={profile?.id} currentUrl={profile?.avatar_url} displayName={form.display_name} onUploaded={(url) => setProfile((prev: any) => ({ ...prev, avatar_url: url }))} />
                   <div>
-                    <p className="font-semibold">{form.display_name || 'Sin nombre'}</p>
+                    <p className="font-semibold">{form.display_name || t('Sin nombre')}</p>
                     <p className="text-xs text-muted">{profile?.email}</p>
                     <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getRoleBadge(userRole).bg}`}>{getRoleLabel(userRole)}</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Field label="Nombre para mostrar" value={form.display_name} onChange={v => set('display_name', v)} />
-                  <Field label="Teléfono" value={form.phone} onChange={v => set('phone', v)} placeholder="+34 600 000 000" />
+                  <Field label={t('Nombre para mostrar')} value={form.display_name} onChange={v => set('display_name', v)} />
+                  <Field label={t('Teléfono')} value={form.phone} onChange={v => set('phone', v)} placeholder="+34 600 000 000" />
                   {/* Country selector */}
                   <div className="relative">
-                    <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">País</label>
+                    <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('País')}</label>
                     <button type="button" onClick={() => { setCountryOpen(!countryOpen); setCityOpen(false) }}
                       className={`w-full rounded-lg border bg-canvas px-3 py-2 text-[14px] flex items-center gap-2 transition-colors text-left ${countryOpen ? "border-ink" : "border-hairline"}`}>
-                      {selectedCountry ? <><span className="text-base">{selectedCountry.flag}</span><span className="truncate flex-1">{selectedCountry.name}</span></> : <span className="text-muted flex-1">Seleccionar país</span>}
+                      {selectedCountry ? <><span className="text-base">{selectedCountry.flag}</span><span className="truncate flex-1">{selectedCountry.name}</span></> : <span className="text-muted flex-1">{t('Seleccionar país')}</span>}
                     </button>
                     {countryOpen && (
                       <div className="absolute z-30 mt-1 w-full bg-surface-card border border-hairline rounded-lg shadow-xl max-h-48 flex flex-col">
                         <div className="p-2 border-b border-hairline">
-                          <input autoFocus value={countryQ} onChange={e => setCountryQ(e.target.value)} placeholder="Buscar país..."
+                          <input autoFocus value={countryQ} onChange={e => setCountryQ(e.target.value)} placeholder={t('Buscar país...')}
                             className="w-full rounded border border-hairline bg-canvas px-3 py-1.5 text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
                         </div>
                         <div className="overflow-y-auto flex-1">
@@ -298,12 +298,12 @@ export default function SettingsPage() {
                   </div>
                   {/* City selector */}
                   <div className="relative">
-                    <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Ciudad</label>
+                    <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Ciudad')}</label>
                     <input type="text" value={form.city || cityQ} readOnly={!!form.city}
                       onChange={e => { if (!form.city) handleCitySearch(e.target.value) }}
                       onClick={() => { if (form.city) { set('city', ''); setCityQ('') } }}
                       disabled={!selectedCountry}
-                      placeholder={selectedCountry ? 'Buscar ciudad...' : 'Primero selecciona país'}
+                      placeholder={selectedCountry ? t('Buscar ciudad...') : t('Primero selecciona país')}
                       className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition disabled:opacity-40" />
                     {cityOpen && cityResults.length > 0 && (
                       <div className="absolute z-30 mt-1 w-full bg-surface-card border border-hairline rounded-lg shadow-xl max-h-40 overflow-y-auto">
@@ -316,11 +316,11 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div className="mt-3">
-                  <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Biografía</label>
-                  <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={2} placeholder="Cuéntanos sobre ti..."
+                  <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Biografía')}</label>
+                  <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={2} placeholder={t('Cuéntanos sobre ti...')}
                     className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition resize-none" />
                 </div>
-                <SaveButton saving={saving} onClick={handleSave} />
+                <SaveButton saving={saving} onClick={handleSave} t={t} />
               </div>
             </div>
           )}
@@ -328,20 +328,20 @@ export default function SettingsPage() {
           {/* === SUSCRIPCIÓN === */}
           {activeSection === 'suscripcion' && (
             <div className="space-y-4">
-              <SectionHeader title="Suscripción" desc="Plan actual y opciones de upgrade" />
+              <SectionHeader title={t('Suscripción')} desc={t('Plan actual y opciones de upgrade')} />
               <div className="rounded-2xl border border-ink bg-canvas p-6 relative overflow-hidden">
                 <div className="absolute top-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-ink text-on-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
                   <Crown className="w-3 h-3" />
-                  Activa
+                  {t('Activa')}
                 </div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted mb-1">
-                  Plan actual
+                  {t('Plan actual')}
                 </p>
                 <div className="flex items-baseline gap-3 flex-wrap">
                   <h2 className="text-2xl font-bold text-ink">Genealogic {userPlanLabel}</h2>
                   {userIsFounder && (
                     <span className="inline-flex items-center rounded-full bg-surface-card border border-hairline px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-ink">
-                      Cuenta vitalicia interna
+                      {t('Cuenta vitalicia interna')}
                     </span>
                   )}
                 </div>
@@ -350,7 +350,7 @@ export default function SettingsPage() {
                     href="/cuenta/suscripcion"
                     className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-ink text-on-primary px-4 py-2 text-sm font-semibold hover:opacity-90"
                   >
-                    Ver detalle del plan
+                    {t('Ver detalle del plan')}
                     <ChevronRight className="w-4 h-4" />
                   </Link>
                   {!userIsEnterprise && (
@@ -358,13 +358,13 @@ export default function SettingsPage() {
                       href="mailto:hola@genealogic.io?subject=Activar%20Kennel%20Enterprise"
                       className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink"
                     >
-                      Hablar con soporte (Kennel Enterprise)
+                      {t('Hablar con soporte (Kennel Enterprise)')}
                     </a>
                   )}
                 </div>
               </div>
               <p className="text-xs text-muted">
-                Beneficios incluidos, comparación de planes y upgrade en{' '}
+                {t('Beneficios incluidos, comparación de planes y upgrade en')}{' '}
                 <Link href="/cuenta/suscripcion" className="font-semibold text-ink hover:underline">
                   /cuenta/suscripción
                 </Link>
@@ -376,17 +376,16 @@ export default function SettingsPage() {
           {/* === FACTURACIÓN === */}
           {activeSection === 'facturacion' && (
             <div className="space-y-4">
-              <SectionHeader title="Facturación" desc="Historial de pagos y datos fiscales" />
+              <SectionHeader title={t('Facturación')} desc={t('Historial de pagos y datos fiscales')} />
               <div className="rounded-xl border border-hairline bg-canvas p-5">
                 <div className="flex items-start gap-3 mb-4">
                   <div className="w-10 h-10 rounded-lg bg-surface-card flex items-center justify-center flex-shrink-0">
                     <CreditCard className="w-5 h-5 text-ink" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-ink">Stripe en preparación</p>
+                    <p className="text-sm font-semibold text-ink">{t('Stripe en preparación')}</p>
                     <p className="text-xs text-muted mt-0.5">
-                      Por ahora la facturación se gestiona manualmente. Próximamente verás
-                      historial de pagos, método de pago y descarga de facturas aquí.
+                      {t('Por ahora la facturación se gestiona manualmente. Próximamente verás historial de pagos, método de pago y descarga de facturas aquí.')}
                     </p>
                   </div>
                 </div>
@@ -394,12 +393,12 @@ export default function SettingsPage() {
                   href="/cuenta/facturacion"
                   className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink"
                 >
-                  Abrir facturación completa
+                  {t('Abrir facturación completa')}
                   <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
               <p className="text-xs text-muted">
-                Si necesitas factura ahora mismo, escríbeme a{' '}
+                {t('Si necesitas factura ahora mismo, escríbeme a')}{' '}
                 <a href="mailto:hola@genealogic.io" className="text-ink underline">
                   hola@genealogic.io
                 </a>
@@ -411,22 +410,22 @@ export default function SettingsPage() {
           {/* === SEGURIDAD === */}
           {activeSection === 'seguridad' && (
             <div className="space-y-4">
-              <SectionHeader title="Contraseña y seguridad" desc="Gestiona tu contraseña de acceso" />
+              <SectionHeader title={t('Contraseña y seguridad')} desc={t('Gestiona tu contraseña de acceso')} />
               <div className="rounded-xl border border-hairline bg-canvas p-5">
-                {passwordSuccess && <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm text-green-400 mb-4 flex items-center gap-2"><Check className="w-4 h-4" /> Contraseña actualizada correctamente</div>}
+                {passwordSuccess && <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm text-green-400 mb-4 flex items-center gap-2"><Check className="w-4 h-4" /> {t('Contraseña actualizada correctamente')}</div>}
                 {!showPassword ? (
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3"><Lock className="w-4 h-4 text-muted" /><div><p className="text-sm font-medium">Contraseña</p><p className="text-xs text-muted">••••••••</p></div></div>
-                    <button onClick={() => setShowPassword(true)} className="text-sm text-ink hover:opacity-80 transition font-medium">Cambiar</button>
+                    <div className="flex items-center gap-3"><Lock className="w-4 h-4 text-muted" /><div><p className="text-sm font-medium">{t('Contraseña')}</p><p className="text-xs text-muted">••••••••</p></div></div>
+                    <button onClick={() => setShowPassword(true)} className="text-sm text-ink hover:opacity-80 transition font-medium">{t('Cambiar')}</button>
                   </div>
                 ) : (
                   <form onSubmit={handleChangePassword} className="space-y-3">
                     {passwordError && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{passwordError}</div>}
-                    <Field label="Nueva contraseña" value={newPassword} onChange={v => setNewPassword(v)} type="password" placeholder="Mínimo 6 caracteres" />
-                    <Field label="Confirmar contraseña" value={confirmPassword} onChange={v => setConfirmPassword(v)} type="password" />
+                    <Field label={t('Nueva contraseña')} value={newPassword} onChange={v => setNewPassword(v)} type="password" placeholder={t('Mínimo 6 caracteres')} />
+                    <Field label={t('Confirmar contraseña')} value={confirmPassword} onChange={v => setConfirmPassword(v)} type="password" />
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <button type="submit" disabled={passwordLoading} className="bg-ink text-on-primary hover:opacity-90 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2">{passwordLoading && <Loader2 className="w-4 h-4 animate-spin" />}Cambiar contraseña</button>
-                      <button type="button" onClick={() => { setShowPassword(false); setPasswordError('') }} className="px-4 py-2 rounded-lg text-xs sm:text-sm border border-hairline bg-canvas text-body hover:bg-surface-soft transition">Cancelar</button>
+                      <button type="submit" disabled={passwordLoading} className="bg-ink text-on-primary hover:opacity-90 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2">{passwordLoading && <Loader2 className="w-4 h-4 animate-spin" />}{t('Cambiar contraseña')}</button>
+                      <button type="button" onClick={() => { setShowPassword(false); setPasswordError('') }} className="px-4 py-2 rounded-lg text-xs sm:text-sm border border-hairline bg-canvas text-body hover:bg-surface-soft transition">{t('Cancelar')}</button>
                     </div>
                   </form>
                 )}
@@ -435,21 +434,21 @@ export default function SettingsPage() {
               {/* Sessions */}
               <div className="rounded-xl border border-hairline bg-canvas p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold">Sesiones activas</h3>
+                  <h3 className="text-sm font-semibold">{t('Sesiones activas')}</h3>
                 </div>
                 <div className="rounded-lg border border-hairline bg-canvas p-3 flex items-center gap-3 mb-3">
                   <div className="w-9 h-9 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
                     <Shield className="w-4 h-4 text-green-400" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium flex items-center gap-2">Sesión actual <span className="text-[9px] bg-green-500/10 text-green-400 px-1.5 py-0.5 rounded-full">Activa</span></p>
-                    <p className="text-xs text-muted">{typeof navigator !== 'undefined' ? navigator.userAgent.split('(')[1]?.split(')')[0] || 'Navegador' : 'Navegador'}</p>
+                    <p className="text-sm font-medium flex items-center gap-2">{t('Sesión actual')} <span className="text-[9px] bg-green-500/10 text-green-400 px-1.5 py-0.5 rounded-full">{t('Activa')}</span></p>
+                    <p className="text-xs text-muted">{typeof navigator !== 'undefined' ? navigator.userAgent.split('(')[1]?.split(')')[0] || t('Navegador') : t('Navegador')}</p>
                   </div>
                 </div>
-                {sessionsSuccess && <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm text-green-400 mb-3 flex items-center gap-2"><Check className="w-4 h-4" /> Todas las sesiones han sido cerradas</div>}
+                {sessionsSuccess && <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm text-green-400 mb-3 flex items-center gap-2"><Check className="w-4 h-4" /> {t('Todas las sesiones han sido cerradas')}</div>}
                 <button
                   onClick={async () => {
-                    if (!confirm('¿Cerrar la sesión en TODOS tus dispositivos? Tendrás que volver a iniciar sesión en cada uno.')) return
+                    if (!confirm(t('¿Cerrar la sesión en TODOS tus dispositivos? Tendrás que volver a iniciar sesión en cada uno.'))) return
                     setClosingAllSessions(true)
                     const supabase = createClient()
                     await supabase.auth.signOut({ scope: 'global' })
@@ -460,9 +459,9 @@ export default function SettingsPage() {
                   disabled={closingAllSessions}
                   className="text-sm text-red-400 border border-red-500/30 px-4 py-2 rounded-lg hover:bg-red-500/10 transition disabled:opacity-50 flex items-center gap-2">
                   {closingAllSessions && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Cerrar todas las sesiones
+                  {t('Cerrar todas las sesiones')}
                 </button>
-                <p className="text-[10px] text-muted mt-2">Esto cerrará tu sesión en todos los dispositivos, incluyendo este.</p>
+                <p className="text-[10px] text-muted mt-2">{t('Esto cerrará tu sesión en todos los dispositivos, incluyendo este.')}</p>
               </div>
             </div>
           )}
@@ -470,10 +469,10 @@ export default function SettingsPage() {
           {/* === IDIOMA === */}
           {activeSection === 'idioma' && (
             <div className="space-y-4">
-              <SectionHeader title="Idioma y región" desc="Configura tu idioma, moneda y formato de fecha" />
+              <SectionHeader title={t('Idioma y región')} desc={t('Configura tu idioma, moneda y formato de fecha')} />
               <div className="rounded-xl border border-hairline bg-canvas p-5 space-y-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Idioma</label>
+                  <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Idioma')}</label>
                   <select value={form.language} onChange={e => set('language', e.target.value)}
                     className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none">
                     {LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
@@ -481,22 +480,22 @@ export default function SettingsPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Formato de fecha</label>
+                    <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Formato de fecha')}</label>
                     <select value={form.date_format} onChange={e => set('date_format', e.target.value)}
                       className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none">
                       {DATE_FORMATS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">Moneda preferida</label>
+                    <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Moneda preferida')}</label>
                     <select value={form.currency} onChange={e => set('currency', e.target.value)}
                       className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none">
                       {CURRENCIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                     </select>
                   </div>
                 </div>
-                <Field label="Zona horaria" value={form.timezone} onChange={v => set('timezone', v)} />
-                <SaveButton saving={saving} onClick={handleSave} />
+                <Field label={t('Zona horaria')} value={form.timezone} onChange={v => set('timezone', v)} />
+                <SaveButton saving={saving} onClick={handleSave} t={t} />
               </div>
             </div>
           )}
@@ -504,13 +503,13 @@ export default function SettingsPage() {
           {/* === NOTIFICACIONES === */}
           {activeSection === 'notificaciones' && (
             <div className="space-y-4">
-              <SectionHeader title="Notificaciones" desc="Elige qué notificaciones quieres recibir" />
+              <SectionHeader title={t('Notificaciones')} desc={t('Elige qué notificaciones quieres recibir')} />
               <div className="rounded-xl border border-hairline bg-canvas p-5 space-y-3">
-                <Toggle label="Notificaciones por email" desc="Recibir notificaciones importantes por correo" value={form.notif_email} onChange={v => set('notif_email', v)} />
-                <Toggle label="Nuevas solicitudes" desc="Cuando alguien rellena tu formulario de contacto" value={form.notif_submissions} onChange={v => set('notif_submissions', v)} />
-                <Toggle label="Recordatorios veterinarios" desc="Próximas citas y vacunas" value={form.notif_vet} onChange={v => set('notif_vet', v)} />
-                <Toggle label="Eventos del calendario" desc="Recordatorios de eventos próximos" value={form.notif_calendar} onChange={v => set('notif_calendar', v)} />
-                <SaveButton saving={saving} onClick={handleSave} />
+                <Toggle label={t('Notificaciones por email')} desc={t('Recibir notificaciones importantes por correo')} value={form.notif_email} onChange={v => set('notif_email', v)} />
+                <Toggle label={t('Nuevas solicitudes')} desc={t('Cuando alguien rellena tu formulario de contacto')} value={form.notif_submissions} onChange={v => set('notif_submissions', v)} />
+                <Toggle label={t('Recordatorios veterinarios')} desc={t('Próximas citas y vacunas')} value={form.notif_vet} onChange={v => set('notif_vet', v)} />
+                <Toggle label={t('Eventos del calendario')} desc={t('Recordatorios de eventos próximos')} value={form.notif_calendar} onChange={v => set('notif_calendar', v)} />
+                <SaveButton saving={saving} onClick={handleSave} t={t} />
               </div>
             </div>
           )}
@@ -518,12 +517,12 @@ export default function SettingsPage() {
           {/* === PRIVACIDAD === */}
           {activeSection === 'privacidad' && (
             <div className="space-y-4">
-              <SectionHeader title="Privacidad" desc="Controla qué información es visible para otros" />
+              <SectionHeader title={t('Privacidad')} desc={t('Controla qué información es visible para otros')} />
               <div className="rounded-xl border border-hairline bg-canvas p-5 space-y-3">
-                <Toggle label="Perfil público visible" desc="Otros usuarios pueden ver tu perfil" value={form.public_profile} onChange={v => set('public_profile', v)} />
-                <Toggle label="Mostrar email en perfil" desc="Tu email será visible en tu perfil público" value={form.show_email} onChange={v => set('show_email', v)} />
-                <Toggle label="Mostrar teléfono en perfil" desc="Tu teléfono será visible en tu perfil público" value={form.show_phone} onChange={v => set('show_phone', v)} />
-                <SaveButton saving={saving} onClick={handleSave} />
+                <Toggle label={t('Perfil público visible')} desc={t('Otros usuarios pueden ver tu perfil')} value={form.public_profile} onChange={v => set('public_profile', v)} />
+                <Toggle label={t('Mostrar email en perfil')} desc={t('Tu email será visible en tu perfil público')} value={form.show_email} onChange={v => set('show_email', v)} />
+                <Toggle label={t('Mostrar teléfono en perfil')} desc={t('Tu teléfono será visible en tu perfil público')} value={form.show_phone} onChange={v => set('show_phone', v)} />
+                <SaveButton saving={saving} onClick={handleSave} t={t} />
               </div>
             </div>
           )}
@@ -531,34 +530,34 @@ export default function SettingsPage() {
           {/* === DATOS === */}
           {activeSection === 'datos' && (
             <div className="space-y-4">
-              <SectionHeader title="Datos y exportación" desc="Exporta o elimina tu información" />
+              <SectionHeader title={t('Datos y exportación')} desc={t('Exporta o elimina tu información')} />
               <div className="rounded-xl border border-hairline bg-canvas p-5 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3"><Download className="w-5 h-5 text-blue-400 flex-shrink-0" /><div><p className="text-sm font-medium">Exportar mis datos</p><p className="text-xs text-muted">Descarga todos tus datos en formato JSON</p></div></div>
-                  <button onClick={() => window.location.href = '/api/export-data'} className="text-sm text-blue-400 hover:text-blue-300 font-medium transition">Exportar</button>
+                  <div className="flex items-center gap-3"><Download className="w-5 h-5 text-blue-400 flex-shrink-0" /><div><p className="text-sm font-medium">{t('Exportar mis datos')}</p><p className="text-xs text-muted">{t('Descarga todos tus datos en formato JSON')}</p></div></div>
+                  <button onClick={() => window.location.href = '/api/export-data'} className="text-sm text-blue-400 hover:text-blue-300 font-medium transition">{t('Exportar')}</button>
                 </div>
               </div>
               {/* Danger zone */}
               <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 sm:p-5">
-                <h3 className="text-sm font-semibold text-red-400 flex items-center gap-2 mb-3"><AlertTriangle className="w-4 h-4" /> Zona de peligro</h3>
+                <h3 className="text-sm font-semibold text-red-400 flex items-center gap-2 mb-3"><AlertTriangle className="w-4 h-4" /> {t('Zona de peligro')}</h3>
                 {!deleteConfirm ? (
                   <>
-                    <p className="text-xs text-muted mb-4">Eliminar tu cuenta es una acción permanente. Antes de proceder, ten en cuenta lo siguiente:</p>
+                    <p className="text-xs text-muted mb-4">{t('Eliminar tu cuenta es una acción permanente. Antes de proceder, ten en cuenta lo siguiente:')}</p>
                     <div className="space-y-2 mb-4 text-xs">
-                      <div className="flex items-start gap-2 text-body"><Trash2 className="w-3 h-3 mt-0.5 text-red-400 flex-shrink-0" /><span><strong className="text-ink">Se eliminará:</strong> tu perfil, contactos, notificaciones, formularios</span></div>
-                      <div className="flex items-start gap-2 text-body"><Shield className="w-3 h-3 mt-0.5 text-yellow-400 flex-shrink-0" /><span><strong className="text-ink">Se anonimizará:</strong> perros con descendientes o que aparezcan en genealogías de otros usuarios se mantendrán como &quot;Propietario eliminado&quot;</span></div>
-                      <div className="flex items-start gap-2 text-body"><Shield className="w-3 h-3 mt-0.5 text-yellow-400 flex-shrink-0" /><span><strong className="text-ink">Criadero histórico:</strong> si tu criadero tiene perros o camadas, se mantendrá como perfil público sin datos de contacto</span></div>
-                      <div className="flex items-start gap-2 text-body"><Check className="w-3 h-3 mt-0.5 text-green-400 flex-shrink-0" /><span><strong className="text-ink">Sí se eliminan:</strong> perros sin descendientes ni camadas, camadas sin cachorros, criaderos vacíos</span></div>
+                      <div className="flex items-start gap-2 text-body"><Trash2 className="w-3 h-3 mt-0.5 text-red-400 flex-shrink-0" /><span><strong className="text-ink">{t('Se eliminará:')}</strong> {t('tu perfil, contactos, notificaciones, formularios')}</span></div>
+                      <div className="flex items-start gap-2 text-body"><Shield className="w-3 h-3 mt-0.5 text-yellow-400 flex-shrink-0" /><span><strong className="text-ink">{t('Se anonimizará:')}</strong> {t('perros con descendientes o que aparezcan en genealogías de otros usuarios se mantendrán como')} &quot;{t('Propietario eliminado')}&quot;</span></div>
+                      <div className="flex items-start gap-2 text-body"><Shield className="w-3 h-3 mt-0.5 text-yellow-400 flex-shrink-0" /><span><strong className="text-ink">{t('Criadero histórico:')}</strong> {t('si tu criadero tiene perros o camadas, se mantendrá como perfil público sin datos de contacto')}</span></div>
+                      <div className="flex items-start gap-2 text-body"><Check className="w-3 h-3 mt-0.5 text-green-400 flex-shrink-0" /><span><strong className="text-ink">{t('Sí se eliminan:')}</strong> {t('perros sin descendientes ni camadas, camadas sin cachorros, criaderos vacíos')}</span></div>
                     </div>
-                    <button onClick={() => setDeleteConfirm(true)} className="text-sm text-red-400 border border-red-500/30 px-4 py-2 rounded-lg hover:bg-red-500/10 transition">Quiero eliminar mi cuenta</button>
+                    <button onClick={() => setDeleteConfirm(true)} className="text-sm text-red-400 border border-red-500/30 px-4 py-2 rounded-lg hover:bg-red-500/10 transition">{t('Quiero eliminar mi cuenta')}</button>
                   </>
                 ) : (
                   <div className="space-y-3">
-                    <p className="text-sm text-red-400 font-semibold">¿Estás completamente seguro?</p>
-                    <p className="text-xs text-muted">Esta acción no se puede deshacer. La información genealógica importante se preservará de forma anónima.</p>
+                    <p className="text-sm text-red-400 font-semibold">{t('¿Estás completamente seguro?')}</p>
+                    <p className="text-xs text-muted">{t('Esta acción no se puede deshacer. La información genealógica importante se preservará de forma anónima.')}</p>
                     <div>
                       <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">
-                        Escribe <code className="bg-red-500/15 text-red-400 px-1 rounded font-mono">ELIMINAR</code> para confirmar
+                        {t('Escribe')} <code className="bg-red-500/15 text-red-400 px-1 rounded font-mono">ELIMINAR</code> {t('para confirmar')}
                       </label>
                       <input
                         type="text"
@@ -587,14 +586,14 @@ export default function SettingsPage() {
                         className="text-xs sm:text-sm text-white bg-red-500 hover:bg-red-600 disabled:bg-red-500/30 disabled:cursor-not-allowed px-4 py-2 rounded-lg transition font-semibold flex items-center gap-2"
                       >
                         {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
-                        {deleting ? 'Eliminando…' : 'Confirmar eliminación'}
+                        {deleting ? t('Eliminando…') : t('Confirmar eliminación')}
                       </button>
                       <button
                         onClick={() => { setDeleteConfirm(false); setDeleteTypedConfirm('') }}
                         disabled={deleting}
                         className="text-xs sm:text-sm text-muted hover:text-ink transition disabled:opacity-50"
                       >
-                        Cancelar
+                        {t('Cancelar')}
                       </button>
                     </div>
                   </div>
@@ -644,7 +643,7 @@ function Toggle({ label, desc, value, onChange }: { label: string; desc: string;
   )
 }
 
-function SaveButton({ saving, onClick }: { saving: boolean; onClick: () => void }) {
+function SaveButton({ saving, onClick, t }: { saving: boolean; onClick: () => void; t: (k: string) => string }) {
   return (
     <div className="flex justify-end pt-4">
       <button
@@ -653,7 +652,7 @@ function SaveButton({ saving, onClick }: { saving: boolean; onClick: () => void 
         className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90 disabled:opacity-50"
       >
         {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-        {saving ? 'Guardando…' : 'Guardar cambios'}
+        {saving ? t('Guardando…') : t('Guardar cambios')}
       </button>
     </div>
   )

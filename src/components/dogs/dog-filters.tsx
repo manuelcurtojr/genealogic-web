@@ -1,6 +1,7 @@
 'use client'
 
 import { Search } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface DogFiltersProps {
   search: string
@@ -18,6 +19,7 @@ export default function DogFilters({
   breedFilter, onBreedChange,
   breeds,
 }: DogFiltersProps) {
+  const t = useT()
   const sexOptions = [
     { value: '', label: 'Todos' },
     { value: 'male', label: 'Machos' },
@@ -31,7 +33,7 @@ export default function DogFilters({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
         <input
           type="text"
-          placeholder="Buscar por nombre..."
+          placeholder={t('Buscar por nombre...')}
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="w-full bg-canvas border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition"
@@ -50,7 +52,7 @@ export default function DogFilters({
                 : 'bg-surface-card text-body hover:text-ink hover:bg-surface-card'
             }`}
           >
-            {opt.label}
+            {t(opt.label)}
           </button>
         ))}
       </div>
@@ -61,7 +63,7 @@ export default function DogFilters({
         onChange={(e) => onBreedChange(e.target.value)}
         className="bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition appearance-none cursor-pointer min-w-[160px]"
       >
-        <option value="">Todas las razas</option>
+        <option value="">{t('Todas las razas')}</option>
         {breeds.map((b) => (
           <option key={b.id} value={b.id}>{b.name}</option>
         ))}

@@ -5,6 +5,7 @@ import { Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface SiblingsProps {
   dogId: string
@@ -24,6 +25,7 @@ interface SiblingDog {
 export default function Siblings({ dogId, fatherId, motherId }: SiblingsProps) {
   const [siblings, setSiblings] = useState<SiblingDog[]>([])
   const [loading, setLoading] = useState(true)
+  const t = useT()
 
   useEffect(() => {
     async function fetch() {
@@ -51,14 +53,14 @@ export default function Siblings({ dogId, fatherId, motherId }: SiblingsProps) {
   }, [dogId, fatherId, motherId])
 
   if (loading) {
-    return <div className="text-muted text-sm py-8 text-center">Cargando hermanos...</div>
+    return <div className="text-muted text-sm py-8 text-center">{t('Cargando hermanos...')}</div>
   }
 
   if (!fatherId && !motherId) {
     return (
       <div className="text-center py-12 text-muted">
         <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
-        <p className="text-sm">No se pueden buscar hermanos sin padres registrados</p>
+        <p className="text-sm">{t('No se pueden buscar hermanos sin padres registrados')}</p>
       </div>
     )
   }
@@ -67,7 +69,7 @@ export default function Siblings({ dogId, fatherId, motherId }: SiblingsProps) {
     return (
       <div className="text-center py-12 text-muted">
         <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
-        <p className="text-sm">No se encontraron hermanos</p>
+        <p className="text-sm">{t('No se encontraron hermanos')}</p>
       </div>
     )
   }
@@ -75,7 +77,7 @@ export default function Siblings({ dogId, fatherId, motherId }: SiblingsProps) {
   return (
     <div>
       <h3 className="text-sm font-semibold text-muted uppercase tracking-wider mb-4">
-        {siblings.length} hermano{siblings.length !== 1 ? 's' : ''} encontrado{siblings.length !== 1 ? 's' : ''}
+        {siblings.length} {t(siblings.length !== 1 ? 'hermanos encontrados' : 'hermano encontrado')}
       </h3>
       <div className="-mx-4 lg:mx-0">
         <div className="flex gap-3 overflow-x-auto pb-2 px-4 lg:px-0">

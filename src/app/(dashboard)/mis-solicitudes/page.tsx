@@ -6,10 +6,13 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { TYPE_LABELS, STATUS_LABELS, STATUS_COLORS } from '@/lib/admin-requests/types'
 import { Inbox, ArrowRight, Plus, MessageSquare } from 'lucide-react'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
 export default async function MisSolicitudesPage() {
+  const t = getTranslator(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login?redirect=/mis-solicitudes')
@@ -31,24 +34,24 @@ export default async function MisSolicitudesPage() {
         <div className="flex items-center gap-3">
           <Inbox className="w-6 h-6 text-ink" />
           <div>
-            <h1 className="text-2xl font-bold text-ink">Mis solicitudes</h1>
-            <p className="text-sm text-muted">Soporte y reclamaciones que has enviado.</p>
+            <h1 className="text-2xl font-bold text-ink">{t('Mis solicitudes')}</h1>
+            <p className="text-sm text-muted">{t('Soporte y reclamaciones que has enviado.')}</p>
           </div>
         </div>
         <Link
           href="/soporte"
           className="inline-flex items-center gap-1.5 rounded-lg bg-ink text-on-primary px-4 py-2 text-sm font-bold hover:opacity-90"
         >
-          <Plus className="w-4 h-4" /> Abrir nueva
+          <Plus className="w-4 h-4" /> {t('Abrir nueva')}
         </Link>
       </div>
 
       {!requests || requests.length === 0 ? (
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft py-12 text-center">
           <MessageSquare className="mx-auto w-10 h-10 text-muted" />
-          <p className="mt-3 text-sm text-body">No tienes solicitudes aún.</p>
+          <p className="mt-3 text-sm text-body">{t('No tienes solicitudes aún.')}</p>
           <Link href="/soporte" className="mt-3 inline-block text-sm font-semibold text-ink hover:opacity-80">
-            Escribir a soporte →
+            {t('Escribir a soporte')} →
           </Link>
         </div>
       ) : (

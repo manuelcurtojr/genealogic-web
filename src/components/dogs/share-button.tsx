@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Share2, Copy, Check, X, Download } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   dog: { name: string; sex: string; breed_name?: string; kennel_name?: string; thumbnail_url?: string | null; birth_date?: string | null }
@@ -12,6 +13,7 @@ export default function ShareButton({ dog, dogUrl }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [copied, setCopied] = useState(false)
   const [generating, setGenerating] = useState(false)
+  const t = useT()
 
   const fullUrl = typeof window !== 'undefined' ? `${window.location.origin}${dogUrl}` : dogUrl
 
@@ -25,7 +27,7 @@ export default function ShareButton({ dog, dogUrl }: Props) {
     if (navigator.share) {
       await navigator.share({
         title: `${dog.name} | Genealogic`,
-        text: `Mira el perfil de ${dog.name}${dog.breed_name ? ` (${dog.breed_name})` : ''} en Genealogic`,
+        text: `${t('Mira el perfil de')} ${dog.name}${dog.breed_name ? ` (${dog.breed_name})` : ''} ${t('en Genealogic')}`,
         url: fullUrl,
       })
     } else {
@@ -148,7 +150,7 @@ export default function ShareButton({ dog, dogUrl }: Props) {
     <>
       <button
         onClick={shareNative}
-        title="Compartir"
+        title={t('Compartir')}
         className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-canvas/90 text-ink shadow-[0_2px_8px_rgba(0,0,0,0.15)] backdrop-blur-sm transition-colors hover:bg-canvas"
       >
         <Share2 className="h-5 w-5" />
@@ -159,7 +161,7 @@ export default function ShareButton({ dog, dogUrl }: Props) {
           <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)} />
           <div className="fixed z-[101] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] max-w-[90vw] bg-surface-card border border-hairline rounded-2xl shadow-2xl">
             <div className="flex items-center justify-between px-5 py-3 border-b border-hairline">
-              <h3 className="text-sm font-semibold">Compartir {dog.name}</h3>
+              <h3 className="text-sm font-semibold">{t('Compartir')} {dog.name}</h3>
               <button onClick={() => setShowModal(false)} className="text-muted hover:text-ink"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-5 space-y-3">
@@ -169,7 +171,7 @@ export default function ShareButton({ dog, dogUrl }: Props) {
                   className="flex-1 bg-surface-card border border-hairline rounded-lg px-3 py-2 text-xs text-body focus:outline-none" />
                 <button onClick={copyLink} className="px-3 py-2 rounded-lg text-xs font-semibold bg-surface-card text-ink hover:bg-surface-card transition flex items-center gap-1">
                   {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copied ? 'Copiado' : 'Copiar'}
+                  {copied ? t('Copiado') : t('Copiar')}
                 </button>
               </div>
 
@@ -177,14 +179,14 @@ export default function ShareButton({ dog, dogUrl }: Props) {
               <button onClick={downloadCard} disabled={generating}
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-surface-card border border-hairline text-sm text-body hover:bg-surface-card transition disabled:opacity-50">
                 <Download className="w-4 h-4" />
-                {generating ? 'Generando...' : 'Descargar tarjeta para redes sociales'}
+                {generating ? t('Generando...') : t('Descargar tarjeta para redes sociales')}
               </button>
 
               {/* Social share buttons */}
               <div className="flex gap-2">
-                <a href={`https://wa.me/?text=${encodeURIComponent(`Mira ${dog.name} en Genealogic: ${fullUrl}`)}`}
+                <a href={`https://wa.me/?text=${encodeURIComponent(`${t('Mira')} ${dog.name} ${t('en Genealogic')}: ${fullUrl}`)}`}
                   target="_blank" rel="noopener" className="flex-1 py-2 rounded-lg bg-green-500/10 text-green-400 text-xs font-semibold text-center hover:bg-green-500/20 transition">WhatsApp</a>
-                <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Mira ${dog.name} en Genealogic`)}&url=${encodeURIComponent(fullUrl)}`}
+                <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${t('Mira')} ${dog.name} ${t('en Genealogic')}`)}&url=${encodeURIComponent(fullUrl)}`}
                   target="_blank" rel="noopener" className="flex-1 py-2 rounded-lg bg-blue-500/10 text-blue-400 text-xs font-semibold text-center hover:bg-blue-500/20 transition">Twitter</a>
                 <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullUrl)}`}
                   target="_blank" rel="noopener" className="flex-1 py-2 rounded-lg bg-blue-600/10 text-blue-300 text-xs font-semibold text-center hover:bg-blue-600/20 transition">Facebook</a>

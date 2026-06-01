@@ -560,17 +560,24 @@ const translations: Record<string, Record<string, string>> = {
 import { contentTranslations } from './i18n-content'
 import { contentTranslations2 } from './i18n-content2'
 import { contentTranslations3 } from './i18n-content3'
+import { content4Dogs } from './i18n-content4-dogs'
+import { content4Pages } from './i18n-content4-pages'
+import { content4Account } from './i18n-content4-account'
 
 export function getTranslator(lang: string) {
   const dict = translations[lang] || {}
   const content = contentTranslations[lang] || {}
   const content2 = contentTranslations2[lang] || {}
   const content3 = contentTranslations3[lang] || {}
+  const c4dogs = content4Dogs[lang] || {}
+  const c4pages = content4Pages[lang] || {}
+  const c4account = content4Account[lang] || {}
   return function t(key: string): string {
     if (lang === 'es') return key // Spanish is default
-    // Cascada: base → content (Fase 1) → content2 (Fase 2-3) → content3 (Fase 3b emails).
-    // Fallback a la clave española.
-    return dict[key] || content[key] || content2[key] || content3[key] || key
+    // Cascada: base → content (Fase 1) → content2 (Fase 2-3) → content3 (Fase 3b emails)
+    //          → content4 (Fase 4 dashboard: dogs/pages/account). Fallback a la clave española.
+    return dict[key] || content[key] || content2[key] || content3[key]
+      || c4dogs[key] || c4pages[key] || c4account[key] || key
   }
 }
 

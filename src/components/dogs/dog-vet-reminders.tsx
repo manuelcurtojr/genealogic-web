@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Clock, Check, AlertTriangle, Syringe, Bug, Stethoscope, Calendar, ArrowRight } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import Link from 'next/link'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   dogId: string
@@ -21,6 +22,7 @@ const TYPE_CONFIG: Record<string, { label: string; color: string; icon: any }> =
 export default function DogVetReminders({ dogId, isOwner }: Props) {
   const [reminders, setReminders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const t = useT()
 
   useEffect(() => {
     async function fetch() {
@@ -82,17 +84,17 @@ export default function DogVetReminders({ dogId, isOwner }: Props) {
     <div className="mb-6">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-xs font-semibold text-muted uppercase tracking-wider flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5" /> Recordatorios pendientes ({pending.length})
+          <Clock className="w-3.5 h-3.5" /> {t('Recordatorios pendientes')} ({pending.length})
         </h3>
         {isOwner && (
           <Link href="/vet" className="text-[10px] text-ink hover:opacity-80 transition flex items-center gap-0.5">
-            Ver todos <ArrowRight className="w-2.5 h-2.5" />
+            {t('Ver todos')} <ArrowRight className="w-2.5 h-2.5" />
           </Link>
         )}
       </div>
 
       {pending.length === 0 ? (
-        <p className="text-xs text-muted py-3">Sin recordatorios pendientes</p>
+        <p className="text-xs text-muted py-3">{t('Sin recordatorios pendientes')}</p>
       ) : (
         <div className="space-y-1.5">
           {pending.map(r => {
@@ -112,7 +114,7 @@ export default function DogVetReminders({ dogId, isOwner }: Props) {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold truncate">{r.title}</p>
                   <p className={`text-[10px] ${isOverdue ? 'text-red-400' : isDueToday ? 'text-ink' : 'text-muted'}`}>
-                    {isOverdue ? 'Vencido · ' : isDueToday ? 'Hoy · ' : ''}
+                    {isOverdue ? `${t('Vencido')} · ` : isDueToday ? `${t('Hoy')} · ` : ''}
                     {new Date(r.due_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
                     {r.recurrence_days ? ` · ↻ ${r.recurrence_days}d` : ''}
                   </p>
@@ -120,7 +122,7 @@ export default function DogVetReminders({ dogId, isOwner }: Props) {
                 {isOwner && (
                   <button onClick={() => markCompleted(r.id)}
                     className="w-7 h-7 rounded-md bg-green-500/10 flex items-center justify-center text-green-400 hover:bg-green-500/20 transition flex-shrink-0"
-                    title="Completar">
+                    title={t('Completar')}>
                     <Check className="w-3.5 h-3.5" />
                   </button>
                 )}

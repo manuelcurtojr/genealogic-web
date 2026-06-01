@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Plus, X, Loader2, GripVertical, Star, Sparkles, Film, Play, ImagePlus } from 'lucide-react'
 import { parseVideoUrl, youtubePoster, fetchVimeoPoster, type VideoProvider } from '@/lib/video'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface GalleryTabProps { dogId: string; userId: string }
 
@@ -28,6 +29,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
   const videoFileRef = useRef<HTMLInputElement>(null)
   const posterFileRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
+  const t = useT()
 
   async function loadPhotos() {
     const [{ data: ph }, { data: dog }] = await Promise.all([
@@ -123,7 +125,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     setVideoError(null)
     const parsed = parseVideoUrl(linkInput)
     if (!parsed || parsed.provider !== videoProvider) {
-      setVideoError(`Pega un enlace válido de ${videoProvider === 'youtube' ? 'YouTube' : 'Vimeo'}.`)
+      setVideoError(`${t('Pega un enlace válido de')} ${videoProvider === 'youtube' ? 'YouTube' : 'Vimeo'}.`)
       return
     }
     setVideoBusy(true)
@@ -196,9 +198,9 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     try {
       const res = await fetch(`/api/dogs/${dogId}/upscale`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ photoId: photo.id }) })
       const data = await res.json()
-      if (!res.ok) setUpscaleMsg(data?.error || 'No se pudo mejorar la imagen.')
-      else { setUpscaleMsg(typeof data.remaining === 'number' ? `Imagen mejorada. Te quedan ${data.remaining} mejoras gratis.` : 'Imagen mejorada con IA.'); await loadPhotos() }
-    } catch { setUpscaleMsg('No se pudo mejorar la imagen. Inténtalo de nuevo.') } finally { setUpscalingId(null) }
+      if (!res.ok) setUpscaleMsg(data?.error || t('No se pudo mejorar la imagen.'))
+      else { setUpscaleMsg(typeof data.remaining === 'number' ? `${t('Imagen mejorada. Te quedan')} ${data.remaining} ${t('mejoras gratis.')}` : t('Imagen mejorada con IA.')); await loadPhotos() }
+    } catch { setUpscaleMsg(t('No se pudo mejorar la imagen. Inténtalo de nuevo.')) } finally { setUpscalingId(null) }
   }
 
   function handleDragStart(idx: number) { setDragIdx(idx) }
@@ -211,18 +213,18 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
       <input ref={videoFileRef} type="file" accept="video/*" className="hidden" onChange={e => handleUploadVideo(e.target.files?.[0] || null)} />
       <input ref={posterFileRef} type="file" accept="image/*" className="hidden" onChange={e => handleChangePoster(e.target.files?.[0] || null)} />
 
-      <p className="text-[11px] text-muted">Arrastra para reordenar. El primer elemento será la portada del perfil. Puedes añadir fotos y vídeos.</p>
+      <p className="text-[11px] text-muted">{t('Arrastra para reordenar. El primer elemento será la portada del perfil. Puedes añadir fotos y vídeos.')}</p>
 
       <div className="flex gap-2 flex-wrap">
         {/* Subir foto */}
-        <button onClick={() => fileRef.current?.click()} disabled={uploading} title="Subir fotos"
+        <button onClick={() => fileRef.current?.click()} disabled={uploading} title={t('Subir fotos')}
           className="w-[88px] h-[88px] border-2 border-dashed border-hairline rounded-lg flex flex-col items-center justify-center gap-1 hover:border-ink/40 transition cursor-pointer flex-shrink-0">
-          {uploading ? <Loader2 className="w-5 h-5 animate-spin text-muted" /> : <><Plus className="w-5 h-5 text-muted" /><span className="text-[9px] text-muted">Foto</span></>}
+          {uploading ? <Loader2 className="w-5 h-5 animate-spin text-muted" /> : <><Plus className="w-5 h-5 text-muted" /><span className="text-[9px] text-muted">{t('Foto')}</span></>}
         </button>
         {/* Añadir vídeo */}
-        <button onClick={() => { setShowVideoForm(v => !v); setVideoError(null) }} title="Añadir vídeo"
+        <button onClick={() => { setShowVideoForm(v => !v); setVideoError(null) }} title={t('Añadir vídeo')}
           className="w-[88px] h-[88px] border-2 border-dashed border-hairline rounded-lg flex flex-col items-center justify-center gap-1 hover:border-ink/40 transition cursor-pointer flex-shrink-0">
-          <Film className="w-5 h-5 text-muted" /><span className="text-[9px] text-muted">Vídeo</span>
+          <Film className="w-5 h-5 text-muted" /><span className="text-[9px] text-muted">{t('Vídeo')}</span>
         </button>
 
         {/* Media items */}
@@ -242,7 +244,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
 
             {idx === 0 && (
               <div className="absolute top-1 left-1 bg-ink rounded px-1 py-0.5 flex items-center gap-0.5">
-                <Star className="w-2.5 h-2.5 text-white" /><span className="text-[8px] text-white font-bold">PERFIL</span>
+                <Star className="w-2.5 h-2.5 text-white" /><span className="text-[8px] text-white font-bold">{t('PERFIL')}</span>
               </div>
             )}
             {isVideo && (
@@ -252,7 +254,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
             )}
             {!isVideo && photo.upscaled_at && (
               <div className="absolute bottom-1 left-1 bg-violet-600 rounded px-1 py-0.5 flex items-center gap-0.5">
-                <Sparkles className="w-2.5 h-2.5 text-white" /><span className="text-[8px] text-white font-bold">IA</span>
+                <Sparkles className="w-2.5 h-2.5 text-white" /><span className="text-[8px] text-white font-bold">{t('IA')}</span>
               </div>
             )}
             {upscalingId === photo.id && (
@@ -265,12 +267,12 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
 
             {/* Acción: cambiar portada (vídeo) o mejorar IA (foto) */}
             {isVideo ? (
-              <button onClick={() => { setPosterTargetId(photo.id); posterFileRef.current?.click() }} title="Cambiar portada"
+              <button onClick={() => { setPosterTargetId(photo.id); posterFileRef.current?.click() }} title={t('Cambiar portada')}
                 className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-ink">
                 <ImagePlus className="w-3 h-3" />
               </button>
             ) : (!photo.upscaled_at && upscalingId !== photo.id && (
-              <button onClick={() => handleUpscale(photo)} title="Mejorar con IA"
+              <button onClick={() => handleUpscale(photo)} title={t('Mejorar con IA')}
                 className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-violet-600">
                 <Sparkles className="w-3 h-3" />
               </button>
@@ -290,7 +292,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
             {(['youtube', 'vimeo', 'upload'] as VideoProvider[]).map(p => (
               <button key={p} onClick={() => { setVideoProvider(p); setVideoError(null) }}
                 className={`rounded-md px-3 py-1 text-[12px] font-medium transition ${videoProvider === p ? 'bg-ink text-on-primary' : 'text-muted hover:text-ink'}`}>
-                {p === 'youtube' ? 'YouTube' : p === 'vimeo' ? 'Vimeo' : 'Subir archivo'}
+                {p === 'youtube' ? 'YouTube' : p === 'vimeo' ? 'Vimeo' : t('Subir archivo')}
               </button>
             ))}
           </div>
@@ -300,9 +302,9 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
               <button onClick={() => videoFileRef.current?.click()} disabled={videoBusy}
                 className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition hover:opacity-90 disabled:opacity-50">
                 {videoBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Film className="h-4 w-4" />}
-                {videoBusy ? 'Subiendo y generando portada...' : 'Elegir vídeo (mp4)'}
+                {videoBusy ? t('Subiendo y generando portada...') : t('Elegir vídeo (mp4)')}
               </button>
-              <p className="mt-1.5 text-[11px] text-muted">Se genera una portada automática del primer fotograma; podrás cambiarla luego. Recomendado &lt; 100 MB; para vídeos largos usa YouTube/Vimeo.</p>
+              <p className="mt-1.5 text-[11px] text-muted">{t('Se genera una portada automática del primer fotograma; podrás cambiarla luego. Recomendado < 100 MB; para vídeos largos usa YouTube/Vimeo.')}</p>
             </div>
           ) : (
             <div className="flex gap-2">
@@ -311,7 +313,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
                 className="flex-1 rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
               <button onClick={handleAddVideoLink} disabled={videoBusy || !linkInput.trim()}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition hover:opacity-90 disabled:opacity-50">
-                {videoBusy && <Loader2 className="h-4 w-4 animate-spin" />} Añadir
+                {videoBusy && <Loader2 className="h-4 w-4 animate-spin" />} {t('Añadir')}
               </button>
             </div>
           )}
@@ -322,10 +324,10 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
       {upscaleMsg && <p className="text-xs text-body bg-surface-card border border-hairline rounded-lg px-3 py-2">{upscaleMsg}</p>}
 
       {photos.length === 0 && !uploading && (
-        <p className="text-xs text-muted text-center py-2">Añade fotos o vídeos del perro.</p>
+        <p className="text-xs text-muted text-center py-2">{t('Añade fotos o vídeos del perro.')}</p>
       )}
       <p className="text-[11px] text-muted">
-        En las fotos, pulsa <Sparkles className="w-3 h-3 inline -mt-0.5" /> para mejorarlas con IA. En los vídeos, <ImagePlus className="w-3 h-3 inline -mt-0.5" /> cambia la portada.
+        {t('En las fotos, pulsa')} <Sparkles className="w-3 h-3 inline -mt-0.5" /> {t('para mejorarlas con IA. En los vídeos,')} <ImagePlus className="w-3 h-3 inline -mt-0.5" /> {t('cambia la portada.')}
       </p>
     </div>
   )

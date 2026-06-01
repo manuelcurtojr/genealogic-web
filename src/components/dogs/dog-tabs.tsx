@@ -7,6 +7,7 @@ import DogVetReminders from './dog-vet-reminders'
 import Awards from './awards'
 import Siblings from './siblings'
 import Offspring from './offspring'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface DogTabsProps {
   dogId: string
@@ -28,6 +29,7 @@ type TabKey = typeof TABS[number]['key']
 
 export default function DogTabs({ dogId, ownerId, isOwner, fatherId, motherId, dogSex }: DogTabsProps) {
   const [active, setActive] = useState<TabKey>('offspring')
+  const t = useT()
 
   return (
     <div className="mt-8">
@@ -44,7 +46,7 @@ export default function DogTabs({ dogId, ownerId, isOwner, fatherId, motherId, d
             }`}
           >
             <Icon className="h-4 w-4" />
-            {label}
+            {t(label)}
           </button>
         ))}
       </div>

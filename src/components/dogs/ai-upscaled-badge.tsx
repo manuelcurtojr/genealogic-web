@@ -2,6 +2,7 @@
 
 import { Sparkles } from 'lucide-react'
 import { useState } from 'react'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface AiUpscaledBadgeProps {
   upscaledAt?: string | null
@@ -26,6 +27,7 @@ export default function AiUpscaledBadge({
   position = 'top-left',
 }: AiUpscaledBadgeProps) {
   const [open, setOpen] = useState(false)
+  const t = useT()
   if (!upscaledAt) return null
 
   const posClass = {
@@ -47,17 +49,16 @@ export default function AiUpscaledBadge({
         type="button"
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(v => !v) }}
         className={`inline-flex items-center rounded-full bg-canvas font-medium text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-colors hover:bg-surface-soft ${sizeClass}`}
-        title="Foto mejorada con IA"
+        title={t('Foto mejorada con IA')}
       >
         <Sparkles className={iconClass} />
-        <span>Mejorada con IA</span>
+        <span>{t('Mejorada con IA')}</span>
       </button>
 
       {open && (
         <div className="absolute left-0 top-full z-20 mt-1 w-64 rounded-md border border-hairline bg-canvas p-3 text-[11.5px] text-ink shadow-lg">
           <p>
-            Esta foto fue restaurada automáticamente con IA (Real-ESRGAN) porque
-            la original era de muy baja resolución.
+            {t('Esta foto fue restaurada automáticamente con IA (Real-ESRGAN) porque la original era de muy baja resolución.')}
           </p>
           {originalUrl && (
             <a
@@ -67,7 +68,7 @@ export default function AiUpscaledBadge({
               className="mt-2 inline-block text-[11.5px] font-medium text-ink underline underline-offset-2 hover:no-underline"
               onClick={(e) => e.stopPropagation()}
             >
-              Ver foto original →
+              {t('Ver foto original →')}
             </a>
           )}
         </div>

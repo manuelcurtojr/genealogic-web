@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface OffspringProps {
   dogId: string
@@ -25,6 +26,7 @@ interface OffspringDog {
 export default function Offspring({ dogId, dogSex }: OffspringProps) {
   const [offspring, setOffspring] = useState<OffspringDog[]>([])
   const [loading, setLoading] = useState(true)
+  const t = useT()
 
   useEffect(() => {
     async function fetch() {
@@ -44,14 +46,14 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
   }, [dogId, dogSex])
 
   if (loading) {
-    return <div className="text-muted text-sm py-8 text-center">Cargando descendientes...</div>
+    return <div className="text-muted text-sm py-8 text-center">{t('Cargando descendientes...')}</div>
   }
 
   if (offspring.length === 0) {
     return (
       <div className="text-center py-12 text-muted">
         <GitBranch className="w-10 h-10 mx-auto mb-3 opacity-30" />
-        <p className="text-sm">No se encontraron descendientes</p>
+        <p className="text-sm">{t('No se encontraron descendientes')}</p>
       </div>
     )
   }
@@ -59,7 +61,7 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
   return (
     <div>
       <h3 className="text-sm font-semibold text-muted uppercase tracking-wider mb-4">
-        {offspring.length} descendiente{offspring.length !== 1 ? 's' : ''}
+        {offspring.length} {t(offspring.length !== 1 ? 'descendientes' : 'descendiente')}
       </h3>
       <div className="-mx-4 lg:mx-0">
       <div className="flex gap-3 overflow-x-auto pb-2 px-4 lg:px-0">

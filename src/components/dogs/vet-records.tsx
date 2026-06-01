@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Syringe, Bug, Pill, FlaskConical, Scissors, FileText } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Lightbox from '@/components/ui/lightbox'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface VetRecord {
   id: string
@@ -47,6 +48,7 @@ export default function VetRecords({ dogId, ownerId, isOwner }: VetRecordsProps)
   const [lightboxStart, setLightboxStart] = useState(0)
 
   const supabase = createClient()
+  const t = useT()
 
   async function fetchRecords() {
     setLoading(true)
@@ -62,13 +64,13 @@ export default function VetRecords({ dogId, ownerId, isOwner }: VetRecordsProps)
 
   useEffect(() => { fetchRecords() }, [dogId])
 
-  if (loading) return <div className="text-muted text-sm py-8 text-center">Cargando registros veterinarios...</div>
+  if (loading) return <div className="text-muted text-sm py-8 text-center">{t('Cargando registros veterinarios...')}</div>
 
   if (records.length === 0) {
     return (
       <div className="text-center py-12 text-muted">
         <Syringe className="w-10 h-10 mx-auto mb-3 opacity-30" />
-        <p className="text-sm">No hay registros veterinarios publicos</p>
+        <p className="text-sm">{t('No hay registros veterinarios publicos')}</p>
       </div>
     )
   }
@@ -88,7 +90,7 @@ export default function VetRecords({ dogId, ownerId, isOwner }: VetRecordsProps)
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-[14px] font-medium text-ink">{record.title}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${type.bg}`}>{type.label}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${type.bg}`}>{t(type.label)}</span>
                 </div>
                 <p className="text-xs text-muted mt-0.5">{new Date(record.date).toLocaleDateString('es-ES')}</p>
                 {record.notes && <p className="text-xs text-body mt-0.5 truncate">{record.notes}</p>}

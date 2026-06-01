@@ -19,6 +19,8 @@ import PageTracker from '@/components/track/page-tracker'
 import RecordView from '@/components/track/record-view'
 import { DogJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
@@ -171,6 +173,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export default async function DogDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const t = getTranslator(await getLocale())
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -337,11 +340,11 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
             <EyeOff className="h-5 w-5 text-red-700 flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-red-900">
-                Este perro está oculto al público
+                {t('Este perro está oculto al público')}
               </p>
               <p className="text-[12px] text-red-800 mt-1">
-                Motivo: <strong>{dog.hidden_reason && HIDDEN_REASON_LABELS[dog.hidden_reason as HiddenReason]}</strong>.
-                Si crees que es un error o quieres aportar pruebas, escríbenos a{' '}
+                {t('Motivo')}: <strong>{dog.hidden_reason && HIDDEN_REASON_LABELS[dog.hidden_reason as HiddenReason]}</strong>.
+                {' '}{t('Si crees que es un error o quieres aportar pruebas, escríbenos a')}{' '}
                 <a href="mailto:hola@genealogic.io?subject=Apelaci%C3%B3n%20perro%20oculto" className="font-medium underline">
                   hola@genealogic.io
                 </a>.
@@ -360,7 +363,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
           <div className="flex items-center gap-2.5 rounded-xl border border-rose-200 bg-rose-50/60 px-4 py-2.5">
             <Heart className="w-4 h-4 text-rose-500 flex-shrink-0" />
             <p className="text-[13px] text-rose-900">
-              <strong>En memoria</strong>
+              <strong>{t('En memoria')}</strong>
               {' · '}
               {new Date(dog.deceased_at).toLocaleDateString('es-ES', { year: 'numeric' })}
               {dog.birth_date && ` · ${new Date(dog.birth_date).getFullYear()}–${new Date(dog.deceased_at).getFullYear()}`}
@@ -379,7 +382,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
                 <Link
                   href={`/razas/${breedSlug}`}
                   className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-3 py-1 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
-                  title={`Ver estándar de la raza ${breedName}`}
+                  title={`${t('Ver estándar de la raza')} ${breedName}`}
                 >
                   {breedName}
                 </Link>
@@ -403,18 +406,18 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
 
         {/* Info chips */}
         <div className="flex flex-wrap items-center gap-2">
-          <Chip icon={dog.sex === 'male' ? Mars : Venus} label="Sexo" value={dog.sex === 'male' ? 'Macho' : 'Hembra'} color={sexColor} />
-          {colorName && <Chip icon={Palette} label="Color" value={colorName} />}
-          {dog.birth_date && <Chip icon={Calendar} label="Nacimiento" value={new Date(dog.birth_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })} />}
-          {dog.weight && <Chip icon={Weight} label="Peso" value={`${dog.weight} kg`} />}
-          {dog.height && <Chip icon={Ruler} label="Altura" value={`${dog.height} cm`} />}
+          <Chip icon={dog.sex === 'male' ? Mars : Venus} label={t('Sexo')} value={dog.sex === 'male' ? t('Macho') : t('Hembra')} color={sexColor} />
+          {colorName && <Chip icon={Palette} label={t('Color')} value={colorName} />}
+          {dog.birth_date && <Chip icon={Calendar} label={t('Nacimiento')} value={new Date(dog.birth_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })} />}
+          {dog.weight && <Chip icon={Weight} label={t('Peso')} value={`${dog.weight} kg`} />}
+          {dog.height && <Chip icon={Ruler} label={t('Altura')} value={`${dog.height} cm`} />}
         </div>
 
         {/* Parents */}
         {(father || mother) && (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <ParentCard parent={father} role="Padre" />
-            <ParentCard parent={mother} role="Madre" />
+            <ParentCard parent={father} role="Padre" t={t} />
+            <ParentCard parent={mother} role="Madre" t={t} />
           </div>
         )}
 
@@ -433,7 +436,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
       {pedigree && pedigree.length > 1 && (
         <div className={`mt-4 sm:mt-8 ${user ? '' : '-mx-4 sm:-mx-[30px] lg:mx-[calc(50%-50vw)] lg:px-6'}`}>
           <h2 className={`mb-5 sm:mb-6 text-[22px] font-semibold tracking-[-0.04em] text-ink ${user ? '' : 'px-4 sm:px-[30px] lg:px-2'}`}>
-            Genealogía
+            {t('Genealogía')}
           </h2>
           <PedigreeTree data={pedigree} rootId={dog.id} breedId={dog.breed_id} />
         </div>
@@ -452,14 +455,14 @@ function Chip({ icon: Icon, label, value, color }: { icon: React.ElementType; la
   )
 }
 
-function ParentCard({ parent, role }: { parent: any; role: string }) {
+function ParentCard({ parent, role, t }: { parent: any; role: string; t: (k: string) => string }) {
   const isFather = role === 'Padre'
   const sexColor = isFather ? BRAND.male : BRAND.female
 
   if (!parent) return (
     <div className="rounded-xl border border-dashed border-hairline bg-surface-soft p-4 text-center">
-      <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{role}</p>
-      <p className="mt-1 text-[14px] text-body">Desconocido</p>
+      <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{t(role)}</p>
+      <p className="mt-1 text-[14px] text-body">{t('Desconocido')}</p>
     </div>
   )
 
@@ -477,7 +480,7 @@ function ParentCard({ parent, role }: { parent: any; role: string }) {
           : <div className="flex h-full w-full items-center justify-center"><img src="/icon.svg?v=2" alt="" className="h-5 w-5 opacity-20" /></div>}
       </div>
       <div className="min-w-0">
-        <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{role}</p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{t(role)}</p>
         <p className="text-[15px] font-medium text-ink truncate">{parent.name}</p>
       </div>
     </Link>
