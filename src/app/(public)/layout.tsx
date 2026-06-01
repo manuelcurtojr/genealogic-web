@@ -16,6 +16,7 @@ import DashboardShell from '@/components/layout/dashboard-shell'
 import MarketingHeader from '@/components/marketing/marketing-header'
 import MarketingFooter from '@/components/marketing/marketing-footer'
 import { loadShellContext } from '@/lib/auth/load-shell-context'
+import { getLocale } from '@/lib/locale'
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const ctx = await loadShellContext()
@@ -35,11 +36,12 @@ export default async function PublicLayout({ children }: { children: React.React
     )
   }
 
+  const locale = await getLocale()
   return (
     <div className="min-h-screen bg-canvas text-[var(--foreground)] flex flex-col">
-      <MarketingHeader />
+      <MarketingHeader locale={locale} />
       <main className="flex-1">{children}</main>
-      <MarketingFooter />
+      <MarketingFooter locale={locale} />
     </div>
   )
 }
