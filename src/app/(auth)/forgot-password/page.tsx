@@ -5,8 +5,10 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { Mail, CheckCircle2 } from 'lucide-react'
 import { AuthShell, Field, AuthSubmit, AuthError } from '@/components/auth/auth-shell'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function ForgotPasswordPage() {
+  const t = useT()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -34,18 +36,17 @@ export default function ForgotPasswordPage() {
   if (sent) {
     return (
       <AuthShell
-        title="Email"
-        titleTail="enviado."
-        subtitle="Revisa tu bandeja de entrada y sigue el enlace para crear una nueva contraseña."
+        title={t('Email')}
+        titleTail={t('enviado.')}
+        subtitle={t('Revisa tu bandeja de entrada y sigue el enlace para crear una nueva contraseña.')}
       >
         <div className="rounded-[12px] border border-[color:var(--success)]/30 bg-[color:var(--success)]/[0.06] p-5">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-[color:var(--success)]" />
             <div>
-              <p className="text-[14.5px] font-semibold text-ink">Te hemos enviado un email</p>
+              <p className="text-[14.5px] font-semibold text-ink">{t('Te hemos enviado un email')}</p>
               <p className="mt-1 text-[13.5px] leading-[1.5] text-body">
-                Revisa <span className="font-medium text-ink">{email}</span> y haz click en el enlace para
-                crear una nueva contraseña. Si no lo ves en unos minutos, mira la carpeta de spam.
+                {t('Revisa')} <span className="font-medium text-ink">{email}</span> {t('y haz click en el enlace para crear una nueva contraseña. Si no lo ves en unos minutos, mira la carpeta de spam.')}
               </p>
             </div>
           </div>
@@ -54,7 +55,7 @@ export default function ForgotPasswordPage() {
           href="/login"
           className="mt-6 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink"
         >
-          ← Volver al login
+          {t('← Volver al login')}
         </Link>
       </AuthShell>
     )
@@ -62,12 +63,12 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthShell
-      title="Restablece"
-      titleTail="tu acceso."
-      subtitle="Introduce el email con el que te registraste. Te mandamos un enlace para crear una contraseña nueva."
+      title={t('Restablece')}
+      titleTail={t('tu acceso.')}
+      subtitle={t('Introduce el email con el que te registraste. Te mandamos un enlace para crear una contraseña nueva.')}
       footer={{
-        question: '¿Recordaste tu contraseña?',
-        label: 'Iniciar sesión',
+        question: t('¿Recordaste tu contraseña?'),
+        label: t('Iniciar sesión'),
         href: '/login',
       }}
     >
@@ -75,7 +76,7 @@ export default function ForgotPasswordPage() {
         {error && <AuthError>{error}</AuthError>}
 
         <Field
-          label="Email"
+          label={t('Email')}
           icon={<Mail className="h-4 w-4" />}
           type="email"
           value={email}
@@ -86,8 +87,8 @@ export default function ForgotPasswordPage() {
         />
 
         <div className="pt-2">
-          <AuthSubmit loading={loading} loadingLabel="Enviando…">
-            Enviar enlace
+          <AuthSubmit loading={loading} loadingLabel={t('Enviando…')}>
+            {t('Enviar enlace')}
           </AuthSubmit>
         </div>
       </form>

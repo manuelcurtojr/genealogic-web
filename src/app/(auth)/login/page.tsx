@@ -7,8 +7,10 @@ import Link from 'next/link'
 import { Mail, Lock } from 'lucide-react'
 import { AuthShell, Field, AuthSubmit, AuthError, GoogleButton, OAuthDivider } from '@/components/auth/auth-shell'
 import { usePlatform } from '@/components/platform/platform-provider'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function LoginPage() {
+  const t = useT()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -49,7 +51,7 @@ export default function LoginPage() {
     if (error) {
       setError(
         error.message === 'Invalid login credentials'
-          ? 'Email o contraseña incorrectos'
+          ? t('Email o contraseña incorrectos')
           : error.message,
       )
       setLoading(false)
@@ -61,12 +63,12 @@ export default function LoginPage() {
 
   return (
     <AuthShell
-      title="Bienvenido"
-      titleTail="de vuelta."
-      subtitle="Accede a tu cuenta de Genealogic — el registro público de genealogías caninas."
+      title={t('Bienvenido')}
+      titleTail={t('de vuelta.')}
+      subtitle={t('Accede a tu cuenta de Genealogic — el registro público de genealogías caninas.')}
       footer={{
-        question: '¿No tienes cuenta?',
-        label: 'Crear cuenta',
+        question: t('¿No tienes cuenta?'),
+        label: t('Crear cuenta'),
         href: '/register',
       }}
       hideChrome={isIos}
@@ -82,7 +84,7 @@ export default function LoginPage() {
         {error && <AuthError>{error}</AuthError>}
 
         <Field
-          label="Email"
+          label={t('Email')}
           icon={<Mail className="h-4 w-4" />}
           type="email"
           value={email}
@@ -93,12 +95,12 @@ export default function LoginPage() {
         />
 
         <Field
-          label="Contraseña"
+          label={t('Contraseña')}
           icon={<Lock className="h-4 w-4" />}
           type="password"
           value={password}
           onChange={setPassword}
-          placeholder="Tu contraseña"
+          placeholder={t('Tu contraseña')}
           required
           autoComplete="current-password"
           rightSlot={
@@ -106,14 +108,14 @@ export default function LoginPage() {
               href="/forgot-password"
               className="text-[12px] font-medium text-muted transition-colors hover:text-ink"
             >
-              ¿Olvidaste tu contraseña?
+              {t('¿Olvidaste tu contraseña?')}
             </Link>
           }
         />
 
         <div className="pt-2">
-          <AuthSubmit loading={loading} loadingLabel="Entrando…">
-            Iniciar sesión
+          <AuthSubmit loading={loading} loadingLabel={t('Entrando…')}>
+            {t('Iniciar sesión')}
           </AuthSubmit>
         </div>
       </form>

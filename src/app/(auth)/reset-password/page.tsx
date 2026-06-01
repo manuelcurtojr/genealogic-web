@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Lock, Loader2, CheckCircle2 } from 'lucide-react'
 import { AuthShell, Field, AuthSubmit, AuthError } from '@/components/auth/auth-shell'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function ResetPasswordPage() {
+  const t = useT()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -30,11 +32,11 @@ export default function ResetPasswordPage() {
     setError('')
 
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
+      setError(t('La contraseña debe tener al menos 6 caracteres'))
       return
     }
     if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden')
+      setError(t('Las contraseñas no coinciden'))
       return
     }
 
@@ -55,9 +57,9 @@ export default function ResetPasswordPage() {
 
   if (checking) {
     return (
-      <AuthShell title="Verificando" titleTail="enlace…" subtitle="Un segundo, comprobando la sesión.">
+      <AuthShell title={t('Verificando')} titleTail={t('enlace…')} subtitle={t('Un segundo, comprobando la sesión.')}>
         <div className="flex items-center justify-center gap-2 py-4 text-[14px] text-muted">
-          <Loader2 className="h-4 w-4 animate-spin" /> Verificando…
+          <Loader2 className="h-4 w-4 animate-spin" /> {t('Verificando…')}
         </div>
       </AuthShell>
     )
@@ -66,12 +68,12 @@ export default function ResetPasswordPage() {
   if (!authorized) {
     return (
       <AuthShell
-        title="Enlace"
-        titleTail="no válido."
-        subtitle="El enlace que has usado ha expirado o no es correcto. Solicita uno nuevo."
+        title={t('Enlace')}
+        titleTail={t('no válido.')}
+        subtitle={t('El enlace que has usado ha expirado o no es correcto. Solicita uno nuevo.')}
         footer={{
-          question: '¿Quieres recordar tu contraseña actual?',
-          label: 'Iniciar sesión',
+          question: t('¿Quieres recordar tu contraseña actual?'),
+          label: t('Iniciar sesión'),
           href: '/login',
         }}
       >
@@ -79,7 +81,7 @@ export default function ResetPasswordPage() {
           href="/forgot-password"
           className="inline-flex w-full items-center justify-center rounded-lg bg-ink px-5 py-3 text-[14px] font-semibold text-on-primary transition-opacity hover:opacity-90"
         >
-          Solicitar nuevo enlace
+          {t('Solicitar nuevo enlace')}
         </Link>
       </AuthShell>
     )
@@ -88,17 +90,17 @@ export default function ResetPasswordPage() {
   if (done) {
     return (
       <AuthShell
-        title="Contraseña"
-        titleTail="actualizada."
-        subtitle="Te llevamos al dashboard en un segundo."
+        title={t('Contraseña')}
+        titleTail={t('actualizada.')}
+        subtitle={t('Te llevamos al dashboard en un segundo.')}
       >
         <div className="rounded-[12px] border border-[color:var(--success)]/30 bg-[color:var(--success)]/[0.06] p-5">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-[color:var(--success)]" />
             <div>
-              <p className="text-[14.5px] font-semibold text-ink">Todo listo</p>
+              <p className="text-[14.5px] font-semibold text-ink">{t('Todo listo')}</p>
               <p className="mt-1 text-[13.5px] leading-[1.5] text-body">
-                Tu contraseña se ha actualizado. Redirigiendo…
+                {t('Tu contraseña se ha actualizado. Redirigiendo…')}
               </p>
             </div>
           </div>
@@ -109,12 +111,12 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthShell
-      title="Cambia"
-      titleTail="tu contraseña."
-      subtitle="Elige una contraseña nueva. Mínimo 6 caracteres. Cuanto más larga, mejor."
+      title={t('Cambia')}
+      titleTail={t('tu contraseña.')}
+      subtitle={t('Elige una contraseña nueva. Mínimo 6 caracteres. Cuanto más larga, mejor.')}
       footer={{
-        question: '¿Recordaste tu contraseña?',
-        label: 'Iniciar sesión',
+        question: t('¿Recordaste tu contraseña?'),
+        label: t('Iniciar sesión'),
         href: '/login',
       }}
     >
@@ -122,32 +124,32 @@ export default function ResetPasswordPage() {
         {error && <AuthError>{error}</AuthError>}
 
         <Field
-          label="Nueva contraseña"
+          label={t('Nueva contraseña')}
           icon={<Lock className="h-4 w-4" />}
           type="password"
           value={password}
           onChange={setPassword}
-          placeholder="Mínimo 6 caracteres"
+          placeholder={t('Mínimo 6 caracteres')}
           required
           minLength={6}
           autoComplete="new-password"
         />
 
         <Field
-          label="Confirmar contraseña"
+          label={t('Confirmar contraseña')}
           icon={<Lock className="h-4 w-4" />}
           type="password"
           value={confirmPassword}
           onChange={setConfirmPassword}
-          placeholder="Repite tu contraseña"
+          placeholder={t('Repite tu contraseña')}
           required
           minLength={6}
           autoComplete="new-password"
         />
 
         <div className="pt-2">
-          <AuthSubmit loading={loading} loadingLabel="Guardando…">
-            Cambiar contraseña
+          <AuthSubmit loading={loading} loadingLabel={t('Guardando…')}>
+            {t('Cambiar contraseña')}
           </AuthSubmit>
         </div>
       </form>

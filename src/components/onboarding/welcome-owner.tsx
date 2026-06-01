@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Dog, Calendar, FileText, Stethoscope, ArrowRight, Sparkles, RefreshCw } from 'lucide-react'
 import { setOnboardingIntentAction } from '@/app/(dashboard)/dashboard/onboarding-intent-actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function WelcomeOwner({
   displayName,
@@ -22,11 +23,12 @@ export default function WelcomeOwner({
   displayName: string | null
   hasReservations: boolean
 }) {
+  const t = useT()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
 
   function switchToBreeder() {
-    if (!confirm('¿Cambiar a perfil de criador? Verás el flujo para crear un afijo.')) return
+    if (!confirm(t('¿Cambiar a perfil de criador? Verás el flujo para crear un afijo.'))) return
     startTransition(async () => {
       await setOnboardingIntentAction('breeder')
       router.refresh()
@@ -41,14 +43,13 @@ export default function WelcomeOwner({
           <Dog className="w-7 h-7 text-on-primary" />
         </div>
         <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">
-          Bienvenido a Genealogic
+          {t('Bienvenido a Genealogic')}
         </p>
         <h1 className="mt-3 text-3xl sm:text-4xl font-bold text-ink tracking-tight">
-          Hola{displayName ? `, ${displayName}` : ''}.
+          {t('Hola')}{displayName ? `, ${displayName}` : ''}.
         </h1>
         <p className="mt-3 text-body text-base max-w-xl mx-auto">
-          Genealogic guarda la genealogía y la historia de tus perros. Vincúlate con
-          los criaderos donde los compraste y centraliza papeles, vacunas y reservas.
+          {t('Genealogic guarda la genealogía y la historia de tus perros. Vincúlate con los criaderos donde los compraste y centraliza papeles, vacunas y reservas.')}
         </p>
       </div>
 
@@ -57,17 +58,16 @@ export default function WelcomeOwner({
         <div className="rounded-2xl border-2 border-ink bg-canvas p-6 mb-4">
           <div className="flex items-center gap-3 mb-3">
             <Sparkles className="w-5 h-5 text-ink" />
-            <h2 className="text-xl font-bold text-ink">Tienes reservas vinculadas</h2>
+            <h2 className="text-xl font-bold text-ink">{t('Tienes reservas vinculadas')}</h2>
           </div>
           <p className="text-sm text-body mb-5">
-            Hemos detectado reservas en criaderos con tu email. Revisa el estado,
-            mensajes y papeles desde tu panel de propietario.
+            {t('Hemos detectado reservas en criaderos con tu email. Revisa el estado, mensajes y papeles desde tu panel de propietario.')}
           </p>
           <Link
             href="/mis-reservas"
             className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink text-on-primary px-6 py-3 text-sm font-bold hover:opacity-90"
           >
-            Ver mis reservas
+            {t('Ver mis reservas')}
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -78,26 +78,25 @@ export default function WelcomeOwner({
         <div className="flex items-center gap-3 mb-3">
           <Dog className="w-5 h-5 text-ink" />
           <h2 className="text-xl font-bold text-ink">
-            {hasReservations ? 'Registra también tus perros' : 'Empieza añadiendo tu primer perro'}
+            {hasReservations ? t('Registra también tus perros') : t('Empieza añadiendo tu primer perro')}
           </h2>
         </div>
         <p className="text-sm text-body mb-5">
-          Sube fotos, datos básicos y enlaza con padres registrados en Genealogic. La
-          genealogía se completa sola para perros con genealogía conocida.
+          {t('Sube fotos, datos básicos y enlaza con padres registrados en Genealogic. La genealogía se completa sola para perros con genealogía conocida.')}
         </p>
 
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-          <BenefitItem icon={Dog} title="Ficha completa">
-            Foto, raza, color, fecha de nacimiento, microchip, registro.
+          <BenefitItem icon={Dog} title={t('Ficha completa')}>
+            {t('Foto, raza, color, fecha de nacimiento, microchip, registro.')}
           </BenefitItem>
-          <BenefitItem icon={FileText} title="Papeles del perro">
-            Cartilla sanitaria, vacunas, contrato, genealogía — todo guardado.
+          <BenefitItem icon={FileText} title={t('Papeles del perro')}>
+            {t('Cartilla sanitaria, vacunas, contrato, genealogía — todo guardado.')}
           </BenefitItem>
-          <BenefitItem icon={Calendar} title="Calendario">
-            Vacunas, desparasitaciones, citas vet. Recordatorios automáticos.
+          <BenefitItem icon={Calendar} title={t('Calendario')}>
+            {t('Vacunas, desparasitaciones, citas vet. Recordatorios automáticos.')}
           </BenefitItem>
-          <BenefitItem icon={Stethoscope} title="Historia clínica">
-            Visitas vet con notas y archivos adjuntos.
+          <BenefitItem icon={Stethoscope} title={t('Historia clínica')}>
+            {t('Visitas vet con notas y archivos adjuntos.')}
           </BenefitItem>
         </ul>
 
@@ -105,37 +104,37 @@ export default function WelcomeOwner({
           href="/dogs/new"
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink text-on-primary px-6 py-3 text-sm font-bold hover:opacity-90"
         >
-          Añadir mi primer perro
+          {t('Añadir mi primer perro')}
           <ArrowRight className="w-4 h-4" />
         </Link>
         <p className="text-[11px] text-muted text-center mt-3">
-          Gratis para siempre. Sin tarjeta, sin límite de perros.
+          {t('Gratis para siempre. Sin tarjeta, sin límite de perros.')}
         </p>
       </div>
 
       {/* Soft links */}
       <div className="flex items-center justify-center gap-6 text-xs text-muted">
         <Link href="/kennels" className="hover:text-ink">
-          Explorar criaderos →
+          {t('Explorar criaderos →')}
         </Link>
         <Link href="/search" className="hover:text-ink">
-          Buscar perros →
+          {t('Buscar perros →')}
         </Link>
         <a href="mailto:hola@genealogic.io" className="hover:text-ink">
-          Pedir ayuda →
+          {t('Pedir ayuda →')}
         </a>
       </div>
 
       {/* Cambio de rol */}
       <p className="mt-8 text-center text-[12px] text-muted">
-        ¿Me equivoqué — soy criador?{' '}
+        {t('¿Me equivoqué — soy criador?')}{' '}
         <button
           onClick={switchToBreeder}
           disabled={pending}
           className="text-ink underline hover:opacity-80 disabled:opacity-50 inline-flex items-center gap-1"
         >
           {pending && <RefreshCw className="w-3 h-3 animate-spin" />}
-          Cambiar a perfil de criador
+          {t('Cambiar a perfil de criador')}
         </button>
       </p>
     </div>

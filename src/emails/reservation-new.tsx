@@ -4,6 +4,7 @@
  * perder el lead.
  */
 import { EmailLayout, H1, P, Btn, Eyebrow, InfoCard, Divider, Small, SITE_URL, COLORS, FONT_STACK } from './_components'
+import { getTranslator } from '@/lib/i18n'
 
 export type ReservationNewProps = {
   breederName: string | null
@@ -14,43 +15,46 @@ export type ReservationNewProps = {
   reservationId: string
   preferredSex?: 'male' | 'female' | null
   preferredBreed?: string | null
+  locale?: string
 }
 
 export default function ReservationNewEmail({
   breederName, kennelName, clientName, clientEmail, clientMessage,
-  reservationId, preferredSex, preferredBreed,
+  reservationId, preferredSex, preferredBreed, locale,
 }: ReservationNewProps) {
+  const t = getTranslator(locale || 'es')
   const name = breederName?.split(' ')[0] || null
-  const sexLabel = preferredSex === 'male' ? 'Macho' : preferredSex === 'female' ? 'Hembra' : null
+  const sexLabel = preferredSex === 'male' ? t('Macho') : preferredSex === 'female' ? t('Hembra') : null
 
   return (
-    <EmailLayout preview={`Nueva reserva de ${clientName} para ${kennelName}`}>
-      <Eyebrow>Nueva reserva</Eyebrow>
-      <H1>{name ? `${name}, te ha llegado una reserva.` : 'Tienes una reserva nueva.'}</H1>
+    <EmailLayout preview={`${t('Nueva reserva de')} ${clientName} ${t('para')} ${kennelName}`}>
+      <Eyebrow>{t('Nueva reserva')}</Eyebrow>
+      <H1>{name ? `${name}${t(', te ha llegado una reserva.')}` : t('Tienes una reserva nueva.')}</H1>
       <P>
-        <strong style={{ color: COLORS.ink }}>{clientName}</strong> se ha interesado por un
-        cachorro de tu criadero <strong style={{ color: COLORS.ink }}>{kennelName}</strong>.
+        <strong style={{ color: COLORS.ink }}>{clientName}</strong>{' '}
+        {t('se ha interesado por un cachorro de tu criadero')}{' '}
+        <strong style={{ color: COLORS.ink }}>{kennelName}</strong>.
       </P>
 
       <InfoCard>
         <table cellPadding={0} cellSpacing={0} style={{ borderCollapse: 'collapse', width: '100%' }}>
           <tr>
             <td style={{ paddingBottom: '8px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted, width: '110px' }}>
-              Cliente
+              {t('Cliente')}
             </td>
             <td style={{ paddingBottom: '8px', fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.ink, fontWeight: 600 }}>
               {clientName}
             </td>
           </tr>
           <tr>
-            <td style={{ paddingBottom: '8px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>Email</td>
+            <td style={{ paddingBottom: '8px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>{t('Email')}</td>
             <td style={{ paddingBottom: '8px', fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.body }}>
               <a href={`mailto:${clientEmail}`} style={{ color: COLORS.ink }}>{clientEmail}</a>
             </td>
           </tr>
           {preferredBreed && (
             <tr>
-              <td style={{ paddingBottom: '8px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>Raza</td>
+              <td style={{ paddingBottom: '8px', fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>{t('Raza')}</td>
               <td style={{ paddingBottom: '8px', fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.body }}>
                 {preferredBreed}
               </td>
@@ -58,7 +62,7 @@ export default function ReservationNewEmail({
           )}
           {sexLabel && (
             <tr>
-              <td style={{ fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>Sexo preferido</td>
+              <td style={{ fontFamily: FONT_STACK, fontSize: '12px', color: COLORS.muted }}>{t('Sexo preferido')}</td>
               <td style={{ fontFamily: FONT_STACK, fontSize: '14px', color: COLORS.body }}>{sexLabel}</td>
             </tr>
           )}
@@ -68,7 +72,7 @@ export default function ReservationNewEmail({
       {clientMessage && (
         <>
           <P>
-            <strong style={{ color: COLORS.ink }}>Mensaje del cliente:</strong>
+            <strong style={{ color: COLORS.ink }}>{t('Mensaje del cliente:')}</strong>
           </P>
           <div
             style={{
@@ -90,13 +94,12 @@ export default function ReservationNewEmail({
         </>
       )}
 
-      <Btn href={`${SITE_URL}/reservas/${reservationId}`}>Ver reserva</Btn>
+      <Btn href={`${SITE_URL}/reservas/${reservationId}`}>{t('Ver reserva')}</Btn>
 
       <Divider />
 
       <Small>
-        Responde rápido — los criadores que contactan en menos de 1h convierten
-        3× más. Si tienes el Emailbot activo, ya está respondiendo por ti mientras lees esto.
+        {t('Responde rápido — los criadores que contactan en menos de 1h convierten 3× más. Si tienes el Emailbot activo, ya está respondiendo por ti mientras lees esto.')}
       </Small>
     </EmailLayout>
   )

@@ -14,8 +14,10 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Store, Dog, Check, Loader2, ArrowRight } from 'lucide-react'
 import { setOnboardingIntentAction } from '@/app/(dashboard)/dashboard/onboarding-intent-actions'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function RoleSelector({ displayName }: { displayName: string | null }) {
+  const t = useT()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [selecting, setSelecting] = useState<'breeder' | 'owner' | null>(null)
@@ -29,7 +31,7 @@ export default function RoleSelector({ displayName }: { displayName: string | nu
         await setOnboardingIntentAction(intent)
         router.refresh()
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Error guardando')
+        setError(e instanceof Error ? e.message : t('Error guardando'))
         setSelecting(null)
       }
     })
@@ -40,13 +42,13 @@ export default function RoleSelector({ displayName }: { displayName: string | nu
       {/* Hero */}
       <div className="text-center mb-10">
         <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">
-          Paso 1 de 2
+          {t('Paso 1 de 2')}
         </p>
         <h1 className="mt-3 text-3xl sm:text-4xl font-bold text-ink tracking-tight">
-          Hola{displayName ? `, ${displayName}` : ''}. ¿Qué te trae a Genealogic?
+          {t('Hola')}{displayName ? `, ${displayName}` : ''}. {t('¿Qué te trae a Genealogic?')}
         </h1>
         <p className="mt-3 text-body text-base max-w-xl mx-auto">
-          Personalizamos la experiencia según lo que necesites. Puedes cambiar después.
+          {t('Personalizamos la experiencia según lo que necesites. Puedes cambiar después.')}
         </p>
       </div>
 
@@ -59,13 +61,13 @@ export default function RoleSelector({ displayName }: { displayName: string | nu
         <RoleCard
           intent="breeder"
           icon={Store}
-          title="Soy criador"
-          tagline="Tengo (o quiero tener) un criadero registrado."
+          title={t('Soy criador')}
+          tagline={t('Tengo (o quiero tener) un criadero registrado.')}
           benefits={[
-            'Crea tu afijo y publica tus perros',
-            'Web pública con tu dominio',
-            'Pipeline de reservas y clientes',
-            'Emailbot que responde a leads',
+            t('Crea tu afijo y publica tus perros'),
+            t('Web pública con tu dominio'),
+            t('Pipeline de reservas y clientes'),
+            t('Emailbot que responde a leads'),
           ]}
           onClick={() => choose('breeder')}
           loading={pending && selecting === 'breeder'}
@@ -74,13 +76,13 @@ export default function RoleSelector({ displayName }: { displayName: string | nu
         <RoleCard
           intent="owner"
           icon={Dog}
-          title="Soy propietario"
-          tagline="Tengo perros o he reservado uno en un criadero."
+          title={t('Soy propietario')}
+          tagline={t('Tengo perros o he reservado uno en un criadero.')}
           benefits={[
-            'Registra tus perros con su genealogía',
-            'Ve tus reservas y papeles del cachorro',
-            'Calendario de vacunas y vet',
-            'Historial de salud completo',
+            t('Registra tus perros con su genealogía'),
+            t('Ve tus reservas y papeles del cachorro'),
+            t('Calendario de vacunas y vet'),
+            t('Historial de salud completo'),
           ]}
           onClick={() => choose('owner')}
           loading={pending && selecting === 'owner'}
@@ -90,8 +92,7 @@ export default function RoleSelector({ displayName }: { displayName: string | nu
 
       {/* Footer */}
       <p className="text-center mt-8 text-[12px] text-muted">
-        ¿Las dos cosas? Elige por la que vas a empezar. Puedes hacer las dos al mismo
-        tiempo (un criador también gestiona los perros que cría como propietario).
+        {t('¿Las dos cosas? Elige por la que vas a empezar. Puedes hacer las dos al mismo tiempo (un criador también gestiona los perros que cría como propietario).')}
       </p>
     </div>
   )
@@ -109,6 +110,7 @@ function RoleCard({
   loading: boolean
   disabled: boolean
 }) {
+  const t = useT()
   return (
     <button
       onClick={onClick}
@@ -146,11 +148,11 @@ function RoleCard({
         {loading ? (
           <>
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            Guardando...
+            {t('Guardando...')}
           </>
         ) : (
           <>
-            Continuar
+            {t('Continuar')}
             <ArrowRight className="w-3.5 h-3.5" />
           </>
         )}

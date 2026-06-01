@@ -18,6 +18,8 @@ import 'server-only'
 import { Resend } from 'resend'
 import { render } from '@react-email/render'
 import { createKennelAdminClient } from '@/lib/supabase/server'
+import { getTranslator } from '@/lib/i18n'
+import { normalizeLocale, DEFAULT_LOCALE, type Locale } from '@/lib/locale'
 
 // Templates
 import WelcomeBreederEmail, { type WelcomeBreederProps } from '@/emails/welcome-breeder'
@@ -76,23 +78,28 @@ export type EmailTemplate =
 /** Categoría → si el user puede hacer opt-out. */
 type Category = 'auth' | 'reservations' | 'messages' | 'vet_reminders' | 'weekly_digest' | 'marketing' | 'critical'
 
+// El translator se pasa a subject() para localizar el asunto según el locale
+// resuelto por usuario. Las plantillas aún sin traducir simplemente ignoran `t`.
+type Translator = (key: string) => string
+
 const TEMPLATE_META: Record<EmailTemplate['template'], {
   category: Category
-  subject: (props: any) => string // eslint-disable-line @typescript-eslint/no-explicit-any
+  subject: (props: any, t: Translator) => string // eslint-disable-line @typescript-eslint/no-explicit-any
   /** Override del reply-to por defecto (REPLY_TO). Para emails founder. */
   replyTo?: string
 }> = {
   welcome_breeder: {
     category: 'critical', // welcome no se puede desactivar (es una sola vez)
-    subject: () => '👋 Bienvenido a Genealogic',
+    subject: (_p, t) => `👋 ${t('Bienvenido a Genealogic')}`,
   },
   welcome_owner: {
     category: 'critical',
-    subject: () => '👋 Bienvenido a Genealogic',
+    subject: (_p, t) => `👋 ${t('Bienvenido a Genealogic')}`,
   },
   reservation_new: {
     category: 'reservations',
-    subject: (p: ReservationNewProps) => `Nueva reserva de ${p.clientName} para ${p.kennelName}`,
+    subject: (p: ReservationNewProps, t) =>
+      `${t('Nueva reserva de')} ${p.clientName} ${t('para')} ${p.kennelName}`,
   },
   message_new: {
     category: 'messages',
@@ -174,10 +181,10 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
   },
   re_engagement: {
     category: 'marketing',
-    subject: (p: ReEngagementProps) =>
+    subject: (p: ReEngagementProps, t) =>
       p.daysAway >= 30
-        ? '¿Seguimos contando contigo?'
-        : 'Te echamos de menos en Genealogic',
+        ? t('¿Seguimos contando contigo?')
+        : t('Te echamos de menos en Genealogic'),
   },
   // Avisos reproductivos — comparten el opt-out de recordatorios vet.
   repro_next_heat: {
@@ -196,7 +203,7 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
   owner_checkin: {
     // 'marketing' → respeta opt-out (no insistimos a quien no quiere emails).
     category: 'marketing',
-    subject: () => '¿Qué tal tus primeros días en Genealogic?',
+    subject: (_p, t) => t('¿Qué tal tus primeros días en Genealogic?'),
     replyTo: REPLY_TO_FOUNDER, // las respuestas van directas a Manuel
   },
 }
@@ -210,30 +217,42 @@ function resend(): Resend | null {
   return _resend
 }
 
-function renderTemplate(t: EmailTemplate): Promise<string> {
+/**
+ * Renderiza la plantilla a HTML inyectando `locale` como prop.
+ *
+ * El locale se mete en los props de cada plantilla. Las plantillas ya
+ * traducidas lo leen (prop `locale?: string` + getTranslator); las que aún
+ * no lo están simplemente lo ignoran. Usamos un cast a `any` al construir los
+ * props porque `locale` no figura todavía en los tipos *Props de las
+ * plantillas sin traducir, y un literal con campo extra dispararía el chequeo
+ * de excess-property de TS. El runtime ignora props desconocidos sin problema.
+ */
+function renderTemplate(t: EmailTemplate, locale: Locale): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const p = { ...(t.props as any), locale }
   switch (t.template) {
-    case 'welcome_breeder':        return render(WelcomeBreederEmail(t.props))
-    case 'welcome_owner':          return render(WelcomeOwnerEmail(t.props))
-    case 'reservation_new':        return render(ReservationNewEmail(t.props))
-    case 'message_new':            return render(MessageNewEmail(t.props))
-    case 'claim_approved':         return render(ClaimApprovedEmail(t.props))
-    case 'claim_rejected':         return render(ClaimRejectedEmail(t.props))
-    case 'support_replied':        return render(SupportRepliedEmail(t.props))
-    case 'subscription_activated': return render(SubscriptionActivatedEmail(t.props))
-    case 'subscription_cancelled': return render(SubscriptionCancelledEmail(t.props))
-    case 'payment_failed':         return render(PaymentFailedEmail(t.props))
-    case 'vet_reminder':           return render(VetReminderEmail(t.props))
-    case 'litter_new':             return render(LitterNewEmail(t.props))
-    case 'contract_signed':        return render(ContractSignedEmail(t.props))
-    case 'payment_received':       return render(PaymentReceivedEmail(t.props))
-    case 'weekly_digest_breeder':  return render(WeeklyDigestBreederEmail(t.props))
-    case 'weekly_digest_owner':    return render(WeeklyDigestOwnerEmail(t.props))
-    case 're_engagement':          return render(ReEngagementEmail(t.props))
-    case 'trial_ending_soon':      return render(TrialEndingSoonEmail(t.props))
-    case 'repro_next_heat':        return render(ReproNextHeatEmail(t.props))
-    case 'repro_confirm_pregnancy': return render(ReproConfirmPregnancyEmail(t.props))
-    case 'repro_birth_soon':       return render(ReproBirthSoonEmail(t.props))
-    case 'owner_checkin':          return render(OwnerCheckinEmail(t.props))
+    case 'welcome_breeder':        return render(WelcomeBreederEmail(p))
+    case 'welcome_owner':          return render(WelcomeOwnerEmail(p))
+    case 'reservation_new':        return render(ReservationNewEmail(p))
+    case 'message_new':            return render(MessageNewEmail(p))
+    case 'claim_approved':         return render(ClaimApprovedEmail(p))
+    case 'claim_rejected':         return render(ClaimRejectedEmail(p))
+    case 'support_replied':        return render(SupportRepliedEmail(p))
+    case 'subscription_activated': return render(SubscriptionActivatedEmail(p))
+    case 'subscription_cancelled': return render(SubscriptionCancelledEmail(p))
+    case 'payment_failed':         return render(PaymentFailedEmail(p))
+    case 'vet_reminder':           return render(VetReminderEmail(p))
+    case 'litter_new':             return render(LitterNewEmail(p))
+    case 'contract_signed':        return render(ContractSignedEmail(p))
+    case 'payment_received':       return render(PaymentReceivedEmail(p))
+    case 'weekly_digest_breeder':  return render(WeeklyDigestBreederEmail(p))
+    case 'weekly_digest_owner':    return render(WeeklyDigestOwnerEmail(p))
+    case 're_engagement':          return render(ReEngagementEmail(p))
+    case 'trial_ending_soon':      return render(TrialEndingSoonEmail(p))
+    case 'repro_next_heat':        return render(ReproNextHeatEmail(p))
+    case 'repro_confirm_pregnancy': return render(ReproConfirmPregnancyEmail(p))
+    case 'repro_birth_soon':       return render(ReproBirthSoonEmail(p))
+    case 'owner_checkin':          return render(OwnerCheckinEmail(p))
   }
 }
 
@@ -251,12 +270,34 @@ function renderTemplate(t: EmailTemplate): Promise<string> {
 export async function sendTransactionalEmail(
   to: string,
   email: EmailTemplate,
-  opts: { userId?: string; dedupeKey?: string } = {},
+  opts: { userId?: string; dedupeKey?: string; locale?: string } = {},
 ): Promise<{ ok: boolean; skipped?: 'preference' | 'duplicate' | 'no_key'; error?: string }> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createKennelAdminClient() as any
   const meta = TEMPLATE_META[email.template]
-  const subject = meta.subject(email.props)
+
+  // ── Resolución de idioma (por usuario) ──────────────────────────────────
+  // 1) locale explícito en opts (si el caller ya lo tiene resuelto)
+  // 2) profiles.language del userId
+  // 3) DEFAULT_LOCALE ('es')
+  // Una consulta de idioma fallida NUNCA debe impedir el envío: caemos al
+  // idioma por defecto.
+  let locale: Locale = normalizeLocale(opts.locale) ?? DEFAULT_LOCALE
+  if (!normalizeLocale(opts.locale) && opts.userId) {
+    try {
+      const { data: prof } = await admin
+        .from('profiles')
+        .select('language')
+        .eq('id', opts.userId)
+        .maybeSingle()
+      locale = normalizeLocale(prof?.language) ?? DEFAULT_LOCALE
+    } catch {
+      locale = DEFAULT_LOCALE
+    }
+  }
+  const t = getTranslator(locale)
+
+  const subject = meta.subject(email.props, t)
 
   try {
     // 1) Dedupe: si ya existe un log con esa key, skip
@@ -309,7 +350,7 @@ export async function sendTransactionalEmail(
     }
 
     // 4) Render + send
-    const html = await renderTemplate(email)
+    const html = await renderTemplate(email, locale)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res: any = await r.emails.send({
       from: FROM_TRANSACTIONAL,
