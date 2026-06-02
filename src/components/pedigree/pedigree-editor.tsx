@@ -7,6 +7,7 @@ import { BRAND } from '@/lib/constants'
 import { useT } from '@/components/i18n/locale-provider'
 import AdminPedigreeTree from '../admin/admin-pedigree-tree'
 import DogFormPanel from '../dogs/dog-form-panel'
+import { setDogParent } from '@/lib/dogs/set-dog-parent'
 
 interface Props {
   open: boolean
@@ -127,13 +128,12 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
   const linkExisting = async (ancestorId: string) => {
     if (!panelTarget) return
     setSaving(true)
-    const supabase = createClient()
-    const field = panelTarget.role === 'father' ? 'father_id' : 'mother_id'
-    await supabase.from('dogs').update({ [field]: ancestorId }).eq('id', panelTarget.dogId)
+    const r = await setDogParent(panelTarget.dogId, panelTarget.role, ancestorId)
     setSaving(false)
+    if (!r.ok) { alert(t('No se pudo enlazar')); return }
     setPanelOpen(false)
     flashSaved()
-    reloadPedigree()
+    await reloadPedigree()
   }
 
   const openNewAncestorForm = () => {
@@ -145,25 +145,22 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
 
   const handleNewAncestorSaved = async (newDogId?: string) => {
     if (newDogId && panelTarget) {
-      const supabase = createClient()
-      const field = panelTarget.role === 'father' ? 'father_id' : 'mother_id'
-      await supabase.from('dogs').update({ [field]: newDogId }).eq('id', panelTarget.dogId)
+      await setDogParent(panelTarget.dogId, panelTarget.role, newDogId)
     }
     setDogFormOpen(false)
     flashSaved()
-    reloadPedigree()
+    await reloadPedigree()
   }
 
   const disconnectDog = async () => {
     if (!editNodeParent) return
     setSaving(true)
-    const supabase = createClient()
-    const field = editNodeParent.role === 'father' ? 'father_id' : 'mother_id'
-    await supabase.from('dogs').update({ [field]: null }).eq('id', editNodeParent.parentId)
+    const r = await setDogParent(editNodeParent.parentId, editNodeParent.role, null)
     setSaving(false)
+    if (!r.ok) { alert(t('No se pudo desconectar')); return }
     setPanelOpen(false)
     flashSaved()
-    reloadPedigree()
+    await reloadPedigree()
   }
 
   const flashSaved = () => {

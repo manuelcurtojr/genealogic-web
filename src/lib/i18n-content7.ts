@@ -41,6 +41,8 @@ export const content7: Record<string, Record<string, string>> = {
     'Necesitas ≥50 para publicar': 'You need ≥50 to publish',
     'No en venta': 'Not for sale',
     'No se pudo borrar': 'Could not delete',
+    'No se pudo enlazar': 'Could not link',
+    'No se pudo desconectar': 'Could not disconnect',
     'No se pudo suscribir:': 'Could not subscribe:',
     'Opciones (una por línea)': 'Options (one per line)',
     'Opción 1': 'Option 1',
