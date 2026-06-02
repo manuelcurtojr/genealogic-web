@@ -10,10 +10,7 @@ import { revalidatePath } from 'next/cache'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { legacyStatusForStage, milestoneColumnForStatus } from '@/lib/pipelines/queries'
-
-export type MoveResult =
-  | { ok: true; celebrate: boolean; cloned: boolean }
-  | { ok: false; error: string; needLossReason?: boolean; reasons?: string[] }
+import type { MoveResult } from '@/lib/pipelines/types'
 
 /** Campos del lead que se copian al clonar a otro pipeline (handoff). */
 const CLONE_FIELDS = [

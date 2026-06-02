@@ -9,30 +9,8 @@ import 'server-only'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Db = any
 
-export type StageType = 'normal' | 'won' | 'lost'
-
-export type Stage = {
-  id: string
-  pipeline_id: string
-  name: string
-  position: number
-  type: StageType
-  is_entry: boolean
-  celebrate: boolean
-  loss_reasons: string[]
-  handoff_stage_id: string | null
-  color: string | null
-}
-
-export type Pipeline = {
-  id: string
-  kennel_id: string
-  name: string
-  slug: string | null
-  position: number
-  is_default: boolean
-  stages: Stage[]
-}
+import type { StageType, Stage, Pipeline } from './types'
+export type { StageType, Stage, Pipeline }
 
 /** Siembra (idempotente) los 2 pipelines por defecto si el kennel aún no los tiene. */
 export async function ensureDefaultPipelines(admin: Db, kennelId: string): Promise<void> {

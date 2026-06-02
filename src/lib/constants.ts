@@ -116,7 +116,7 @@ export const NAV_SECTIONS: NavSection[] = [
     // 3.1.3(b) Multiplatform Services — el user ya pagó por web).
     requiresKennel: true,
     items: [
-      { label: 'Reservas', href: '/reservas', icon: 'KanbanSquare', requiresKennel: true },
+      { label: 'Embudo', href: '/embudo', icon: 'KanbanSquare', requiresKennel: true },
       // Contactos (CRM) y Contratos están incluidos desde Kennel Free según
       // /pricing (marks FPE). Antes pedían Pro — incongruencia corregida.
       { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresKennel: true },
