@@ -1,9 +1,12 @@
 'use client'
 
 /** Panel lateral con el detalle completo de un lead/ficha del embudo. */
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { Mail, Phone, MapPin, Clock, ArrowUpRight, MessageSquare, Tag } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Mail, Phone, MapPin, Clock, ArrowUpRight, MessageSquare, Tag, StickyNote } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
+import { setInternalNote } from '@/lib/pipelines/actions'
 import Drawer from './drawer'
 import type { FunnelEntry, Pipeline, Stage } from '@/lib/pipelines/types'
 
@@ -111,6 +114,8 @@ export default function LeadPanel({
         </div>
       )}
 
+      <NoteEditor entryId={entry.id} initial={entry.internal_note} />
+
       {entry.lost_reason && (
         <div className="mt-4 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
           {t('Motivo')}: {t(entry.lost_reason)}
@@ -146,5 +151,47 @@ export default function LeadPanel({
         </div>
       </div>
     </Drawer>
+  )
+}
+
+/** Editor de nota interna del criador (privada, no la ve el cliente). */
+function NoteEditor({ entryId, initial }: { entryId: string; initial: string | null }) {
+  const t = useT()
+  const router = useRouter()
+  const [note, setNote] = useState(initial || '')
+  const [pending, start] = useTransition()
+  const [saved, setSaved] = useState(false)
+  const dirty = note.trim() !== (initial || '').trim()
+  return (
+    <div className="mt-4">
+      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted mb-1.5">
+        <StickyNote className="w-3.5 h-3.5" /> {t('Nota interna')}
+      </div>
+      <textarea
+        value={note}
+        onChange={(e) => {
+          setNote(e.target.value)
+          setSaved(false)
+        }}
+        rows={2}
+        placeholder={t('Nota privada sobre este lead…')}
+        className="w-full rounded-lg border border-hairline bg-amber-50/40 px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ink/10"
+      />
+      <div className="flex justify-end mt-1.5">
+        <button
+          onClick={() =>
+            start(async () => {
+              await setInternalNote(entryId, note)
+              setSaved(true)
+              router.refresh()
+            })
+          }
+          disabled={pending || !dirty}
+          className="text-xs font-semibold text-ink hover:opacity-80 disabled:opacity-40"
+        >
+          {saved && !dirty ? t('Guardada') : t('Guardar nota')}
+        </button>
+      </div>
+    </div>
   )
 }

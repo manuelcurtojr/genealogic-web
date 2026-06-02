@@ -50,6 +50,7 @@ export type FunnelEntry = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   applicant_extra_data: Record<string, any> | null
   source: string | null
+  internal_note: string | null
 }
 
 export type MoveResult =

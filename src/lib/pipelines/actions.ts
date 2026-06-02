@@ -141,6 +141,33 @@ export async function moveEntryToStage(
   }
 }
 
+/** Guarda/edita la nota interna del criador sobre un lead. */
+export async function setInternalNote(entryId: string, note: string): Promise<{ ok: boolean }> {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createKennelAdminClient() as any
+    const { data: entry } = await admin
+      .from('puppy_reservations')
+      .select('id, kennel:kennels(owner_id)')
+      .eq('id', entryId)
+      .maybeSingle()
+    if (!entry || entry.kennel?.owner_id !== user.id) return { ok: false }
+    await admin
+      .from('puppy_reservations')
+      .update({ internal_note: note.trim() || null })
+      .eq('id', entryId)
+    revalidatePath('/embudo')
+    return { ok: true }
+  } catch {
+    return { ok: false }
+  }
+}
+
 /** Marca una solicitud como vista por el criador (quita el distintivo "nueva"). */
 export async function markEntrySeen(entryId: string): Promise<{ ok: boolean }> {
   try {

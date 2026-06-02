@@ -49,7 +49,7 @@ export default async function EmbudoPage() {
   const { data: entries } = await supabase
     .from('puppy_reservations')
     .select(
-      'id, applicant_name, applicant_email, applicant_phone, applicant_message, preference_sex, created_at, status, pipeline_id, stage_id, seen_by_breeder_at, lost_reason, client_user_id, origin_entry_id, applicant_purpose, applicant_country, applicant_city, applicant_address, applicant_postal_code, applicant_extra_data, source',
+      'id, applicant_name, applicant_email, applicant_phone, applicant_message, preference_sex, created_at, status, pipeline_id, stage_id, seen_by_breeder_at, lost_reason, client_user_id, origin_entry_id, applicant_purpose, applicant_country, applicant_city, applicant_address, applicant_postal_code, applicant_extra_data, source, internal_note',
     )
     .eq('kennel_id', kennel.id)
     .order('created_at', { ascending: false })
