@@ -99,8 +99,6 @@ export function milestoneColumnForStatus(status: string | null): string | null {
       return 'contract_signed_at'
     case 'delivered':
       return 'delivered_at'
-    case 'cancelled':
-      return 'cancelled_at'
     default:
       return null
   }

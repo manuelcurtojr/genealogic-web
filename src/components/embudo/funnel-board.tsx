@@ -72,6 +72,22 @@ export default function FunnelBoard({
     return m
   }, [entries])
 
+  const stats = useMemo(() => {
+    const typeOf = new Map<string, string>(pipeline ? pipeline.stages.map((s) => [s.id, s.type]) : [])
+    let won = 0,
+      lost = 0,
+      active = 0
+    for (const e of entries) {
+      if (e.pipeline_id !== pipeline?.id || !e.stage_id) continue
+      const ty = typeOf.get(e.stage_id)
+      if (ty === 'won') won++
+      else if (ty === 'lost') lost++
+      else active++
+    }
+    const closed = won + lost
+    return { won, lost, active, rate: closed > 0 ? Math.round((won / closed) * 100) : null }
+  }, [entries, pipeline])
+
   function selectPipeline(p: Pipeline) {
     setPipelineId(p.id)
     const entry = p.stages.find((s) => s.is_entry) ?? p.stages[0]
@@ -151,6 +167,18 @@ export default function FunnelBoard({
             </button>
           )
         })}
+      </div>
+
+      {/* ─── Resumen de conversión ─── */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4 text-xs">
+        <span className="text-emerald-600 font-semibold">🏆 {stats.won} {t('Ganadas')}</span>
+        <span className="text-rose-600 font-semibold">✕ {stats.lost} {t('Perdidas')}</span>
+        <span className="text-muted">{stats.active} {t('En curso')}</span>
+        {stats.rate !== null && (
+          <span className="ml-auto font-bold text-ink">
+            {stats.rate}% {t('Conversión')}
+          </span>
+        )}
       </div>
 
       {/* ─── Pestañas de paso ─── */}

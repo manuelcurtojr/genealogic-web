@@ -25,7 +25,6 @@ const CLONE_FIELDS = [
   'applicant_city',
   'applicant_extra_data',
   'preference_sex',
-  'preference_breed_id',
   'litter_id',
   'dog_id',
   'puppy_dog_id',

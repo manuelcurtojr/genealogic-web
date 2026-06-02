@@ -82,5 +82,11 @@ export const content6Funnel: Record<string, Record<string, string>> = {
     'No puedes borrar un paso con fichas dentro.': 'You cannot delete a stage with entries in it.',
     'Indica el motivo': 'Please indicate the reason',
     'Paso no encontrado': 'Stage not found',
+
+    // ── estadísticas ──
+    Ganadas: 'Won',
+    Perdidas: 'Lost',
+    'En curso': 'In progress',
+    'Conversión': 'Conversion',
   },
 }

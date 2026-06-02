@@ -42,7 +42,7 @@ export async function notifyWaitlistOfNewLitter(litterId: string): Promise<void>
   const { data: reservations } = await admin
     .from('puppy_reservations')
     .select(`
-      id, applicant_name, applicant_email, client_user_id, preference_breed_id
+      id, applicant_name, applicant_email, client_user_id
     `)
     .eq('kennel_id', kennel.id)
     .in('status', ['interested', 'waitlisted'])
@@ -52,7 +52,8 @@ export async function notifyWaitlistOfNewLitter(litterId: string): Promise<void>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const breed: any = litter.breed
   const breedName: string | null = breed?.name || null
-  const breedId: string | null = litter.breed_id || breed?.id || null
+  // (filtro por preference_breed_id retirado: no era una columna real; el form
+  //  guarda la raza preferida en applicant_extra_data. Se avisa a toda la lista.)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const father: any = litter.father
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,8 +69,6 @@ export async function notifyWaitlistOfNewLitter(litterId: string): Promise<void>
     preference_breed_id: string | null
   }>) {
     if (!r.applicant_email) continue
-    // Si el reservista pidió raza específica y no coincide, skip
-    if (r.preference_breed_id && breedId && r.preference_breed_id !== breedId) continue
 
     await sendTransactionalEmail(
       r.applicant_email,
