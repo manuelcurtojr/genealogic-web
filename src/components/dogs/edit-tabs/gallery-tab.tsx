@@ -54,6 +54,13 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
         return
       }
     }
+    // Auto-reparación: si el perro tiene fotos pero thumbnail_url está vacío
+    // (subidas antiguas, import masivo, o un sync que falló), fijar la 1ª foto
+    // como portada para que el recuadro de /dogs muestre la imagen.
+    if (!thumbnailUrl && photos.length > 0 && photos[0]?.url) {
+      await supabase.from('dogs').update({ thumbnail_url: photos[0].url }).eq('id', dogId)
+      setDogThumb(photos[0].url)
+    }
     setPhotos(photos)
   }
   useEffect(() => { loadPhotos() }, [dogId])
