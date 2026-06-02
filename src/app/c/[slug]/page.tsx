@@ -6,6 +6,8 @@ import { runWithKennel } from '@/lib/kennel-context'
 import { PageRenderer } from '@/components/site/sections/PageRenderer'
 import PageTracker from '@/components/track/page-tracker'
 import { FloatingContactButton } from '@/components/site/floating-contact-button'
+import { getKennelReproductiveBreedNames } from '@/lib/kennel/breeds'
+import { createClient } from '@/lib/supabase/server'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
@@ -50,6 +52,11 @@ export default async function KennelHomePage({ params }: { params: Promise<{ slu
   // Si retornamos <PageRenderer/> como JSX, React lo evalúa fuera del scope
   // ALS y getCurrentKennel() lanza "No kennel in context".
   const rendered = await runWithKennel(kennel, () => PageRenderer({ slug: 'home' }))
+
+  // Razas de los reproductores para el selector "Raza de interés" del modal
+  // de contacto (FloatingContactButton).
+  const supabase = await createClient()
+  const reproBreedNames = await getKennelReproductiveBreedNames(supabase, kennel.id)
   return (
     <>
       <PageTracker kennelId={kennel.id} />
@@ -63,6 +70,7 @@ export default async function KennelHomePage({ params }: { params: Promise<{ slu
           kennelName={kennel.name}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           config={(kennel as any).contact_form_config || null}
+          reproBreedNames={reproBreedNames}
         />
       </div>
 

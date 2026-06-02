@@ -29,8 +29,8 @@
 import { useEffect, useState } from 'react'
 import { useT } from '@/components/i18n/locale-provider'
 import {
-  getEffectiveConfig,
   validateForm,
+  withBreedField,
   type ContactFormConfig,
   type FormField,
 } from '@/lib/kennel/contact-form'
@@ -66,7 +66,9 @@ export default function ContactFormInner({
       .then(d => {
         if (d.kennel?.id) {
           setKennelId(d.kennel.id)
-          setConfig(getEffectiveConfig(d.kennel.contact_form_config))
+          // withBreedField inyecta el selector "Raza de interés" si el
+          // endpoint devolvió >=2 razas de reproductores.
+          setConfig(withBreedField(d.kennel.contact_form_config, d.reproBreedNames || []))
         }
       })
       .catch(() => {})
@@ -201,7 +203,7 @@ function FieldRenderer({
   return (
     <div>
       <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-        {field.label}
+        {t(field.label)}
         {field.required && <span className="text-[color:var(--error)]"> *</span>}
       </label>
 
@@ -222,7 +224,7 @@ function FieldRenderer({
           style={inputStyle}
         >
           <option value="">{t('— Seleccionar —')}</option>
-          {(field.options || []).map((o) => <option key={o} value={o}>{o}</option>)}
+          {(field.options || []).map((o) => <option key={o} value={o}>{t(o)}</option>)}
         </select>
       ) : field.type === 'radio' ? (
         <div className="mt-1 space-y-1.5">

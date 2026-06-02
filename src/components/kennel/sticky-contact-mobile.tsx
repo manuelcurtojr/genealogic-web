@@ -21,9 +21,10 @@ interface Props {
   kennelName: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   contactFormConfig: any
+  reproBreedNames?: string[]
 }
 
-export default function StickyContactMobile({ kennelId, kennelName, contactFormConfig }: Props) {
+export default function StickyContactMobile({ kennelId, kennelName, contactFormConfig, reproBreedNames }: Props) {
   const [visible, setVisible] = useState(false)
   // Portal target — sin esto el `fixed` se vuelve relativo a algún ancestro
   // con transform/filter/backdrop-filter en el layout dashboard, dejando
@@ -58,6 +59,7 @@ export default function StickyContactMobile({ kennelId, kennelName, contactFormC
           kennelId={kennelId}
           kennelName={kennelName}
           config={contactFormConfig || null}
+          reproBreedNames={reproBreedNames}
           variant="sticky-mobile"
         />
       </div>

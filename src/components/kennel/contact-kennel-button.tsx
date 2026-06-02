@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { Send, X, Loader2, Check } from 'lucide-react'
-import { getEffectiveConfig, validateForm, type ContactFormConfig, type FormField } from '@/lib/kennel/contact-form'
+import { validateForm, withBreedField, type ContactFormConfig, type FormField } from '@/lib/kennel/contact-form'
 import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
@@ -11,6 +11,10 @@ interface Props {
   kennelName: string
   /** Config del form publicado del kennel. Si null, usa TEMPLATE_GENERIC. */
   config?: ContactFormConfig | null
+  /** Razas de los reproductores del kennel. Si hay >=2, se inyecta el
+   *  selector "Raza de interés" para que el criador sepa por qué raza
+   *  preguntan los leads. */
+  reproBreedNames?: string[]
   /** Estilo del botón trigger. Por defecto: 'primary' (negro). 'light' usa fondo claro para webs custom. */
   variant?: 'primary' | 'light' | 'sticky-mobile'
 }
@@ -20,9 +24,9 @@ interface Props {
  * Renderiza dinámicamente los campos definidos en kennels.contact_form_config.
  * Mismo componente en /kennels/[slug] (perfil) y /c/[slug] (web custom).
  */
-export default function ContactKennelButton({ kennelId, kennelName, config: rawConfig, variant = 'primary' }: Props) {
+export default function ContactKennelButton({ kennelId, kennelName, config: rawConfig, reproBreedNames, variant = 'primary' }: Props) {
   const t = useT()
-  const config = getEffectiveConfig(rawConfig)
+  const config = withBreedField(rawConfig, reproBreedNames || [])
 
   const [open, setOpen] = useState(false)
   const [values, setValues] = useState<Record<string, any>>({})
@@ -221,7 +225,7 @@ function FieldRenderer({
   return (
     <div>
       <label className="mb-1 block text-[11.5px] font-medium uppercase tracking-[0.06em] text-muted">
-        {field.label}
+        {t(field.label)}
         {field.required && <span className="text-rose-600"> *</span>}
       </label>
 
@@ -240,7 +244,7 @@ function FieldRenderer({
           className={inputCls}
         >
           <option value="">{t('— Seleccionar —')}</option>
-          {(field.options || []).map((o) => <option key={o} value={o}>{o}</option>)}
+          {(field.options || []).map((o) => <option key={o} value={o}>{t(o)}</option>)}
         </select>
       ) : field.type === 'radio' ? (
         <div className="mt-1 space-y-1.5">

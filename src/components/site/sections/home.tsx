@@ -8,6 +8,8 @@ import { getAvailablePuppiesByKennel, getUpcomingLittersByKennel } from '@/lib/k
 import { SectionHeader } from '@/components/site/section-primitives'
 import { HeroCtaButton } from '@/components/site/hero-cta-button'
 import { isContactPageEnabled, resolveContactHref } from '@/lib/kennel/pages'
+import { getKennelReproductiveBreedNames } from '@/lib/kennel/breeds'
+import { createClient } from '@/lib/supabase/server'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
@@ -44,6 +46,8 @@ export async function HeroSection(props: {
   // /contacto se reescriben a #contacto → el modal popup se abrirá en su
   // lugar (evita 404).
   const contactPageEnabled = await isContactPageEnabled(kennel.id)
+  // Razas de los reproductores para el selector "Raza de interés" del modal.
+  const reproBreedNames = await getKennelReproductiveBreedNames(await createClient(), kennel.id)
   return (
     <section className={`relative ${height} flex items-end overflow-hidden bg-[#0a0a0a]`}>
       {background_image_url && (
@@ -89,6 +93,7 @@ export async function HeroSection(props: {
                 kennelId={kennel.id}
                 kennelName={kennel.name}
                 contactFormConfig={contactFormConfig}
+                reproBreedNames={reproBreedNames}
               />
             ))}
           </div>

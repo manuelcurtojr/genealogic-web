@@ -17,6 +17,7 @@ import { EyeOff } from 'lucide-react'
 import { sortDogsByPhotoQuality } from '@/lib/dogs/sort-quality'
 import { KennelJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
+import { getKennelReproductiveBreedNames } from '@/lib/kennel/breeds'
 import { getKennelHomeData } from '@/lib/kennel/kennel-home-cache'
 import type { Metadata } from 'next'
 import { getTranslator } from '@/lib/i18n'
@@ -130,6 +131,10 @@ export default async function KennelDetailPage({
   const ownerPlan = homeData.ownerPlan
   const recentPosts = homeData.recentPosts
   const clientUserIds = new Set(homeData.clientUserIds)
+
+  // Razas de los reproductores para el selector del formulario de contacto
+  // (si hay >=2, el criador sabrá por qué raza preguntan los leads).
+  const reproBreedNames = await getKennelReproductiveBreedNames(supabase, kennel.id)
 
   const reviews = reviewsRaw.map(r => ({
     id: r.id,
@@ -438,6 +443,7 @@ export default async function KennelDetailPage({
           reviews={reviews}
           recentPosts={recentPosts}
           breedNames={breedNames}
+          reproBreedNames={reproBreedNames}
           stats={stats}
           teasers={teasers}
           availability={availability}
@@ -524,7 +530,7 @@ export default async function KennelDetailPage({
 
             <div className="flex flex-wrap gap-2 pt-1">
               {hasOwner && (
-                <ContactKennelButton kennelId={kennel.id} kennelName={kennel.name} config={kennel.contact_form_config || null} />
+                <ContactKennelButton kennelId={kennel.id} kennelName={kennel.name} config={kennel.contact_form_config || null} reproBreedNames={reproBreedNames} />
               )}
               <Link
                 href="#perros"
@@ -598,7 +604,7 @@ export default async function KennelDetailPage({
               <p className="mt-2 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-prose">{t('Escríbenos por el formulario y te respondemos en breve. Sin compromiso.')}</p>
             </div>
             <div className="flex sm:justify-end">
-              <ContactKennelButton kennelId={kennel.id} kennelName={kennel.name} config={kennel.contact_form_config || null} />
+              <ContactKennelButton kennelId={kennel.id} kennelName={kennel.name} config={kennel.contact_form_config || null} reproBreedNames={reproBreedNames} />
             </div>
           </div>
         </section>

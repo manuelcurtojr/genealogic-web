@@ -12,11 +12,12 @@ import { ContactDialog } from './contact-dialog'
 import type { ContactFormConfig } from '@/lib/kennel/contact-form'
 
 export function FloatingContactButton({
-  kennelId, kennelName, config,
+  kennelId, kennelName, config, reproBreedNames,
 }: {
   kennelId: string
   kennelName: string
   config: ContactFormConfig | null
+  reproBreedNames?: string[]
 }) {
   const t = useT()
   const [open, setOpen] = useState(false)
@@ -38,6 +39,7 @@ export function FloatingContactButton({
         kennelId={kennelId}
         kennelName={kennelName}
         config={config}
+        reproBreedNames={reproBreedNames}
         themed
       />
     </>
@@ -49,11 +51,12 @@ export function FloatingContactButton({
  * footer como un botón normal full-width.
  */
 export function FloatingContactButtonFooter({
-  kennelId, kennelName, config,
+  kennelId, kennelName, config, reproBreedNames,
 }: {
   kennelId: string
   kennelName: string
   config: ContactFormConfig | null
+  reproBreedNames?: string[]
 }) {
   const t = useT()
   const [open, setOpen] = useState(false)
@@ -73,6 +76,7 @@ export function FloatingContactButtonFooter({
         kennelId={kennelId}
         kennelName={kennelName}
         config={config}
+        reproBreedNames={reproBreedNames}
         themed
       />
     </>

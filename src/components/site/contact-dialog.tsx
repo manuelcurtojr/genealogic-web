@@ -11,7 +11,7 @@
  */
 import { useEffect, useState } from 'react'
 import { useT } from '@/components/i18n/locale-provider'
-import { getEffectiveConfig, validateForm, type ContactFormConfig, type FormField } from '@/lib/kennel/contact-form'
+import { validateForm, withBreedField, type ContactFormConfig, type FormField } from '@/lib/kennel/contact-form'
 
 type Props = {
   open: boolean
@@ -19,13 +19,16 @@ type Props = {
   kennelId: string
   kennelName: string
   config?: ContactFormConfig | null
+  /** Razas de los reproductores del kennel → si hay >=2 inyecta el selector
+   *  "Raza de interés". */
+  reproBreedNames?: string[]
   /** Si true, viste el modal en estilo "web custom" (BMW M look: accent stripe + font display + btn-brand). */
   themed?: boolean
 }
 
-export function ContactDialog({ open, onClose, kennelId, kennelName, config: rawConfig, themed = true }: Props) {
+export function ContactDialog({ open, onClose, kennelId, kennelName, config: rawConfig, reproBreedNames, themed = true }: Props) {
   const t = useT()
-  const config = getEffectiveConfig(rawConfig)
+  const config = withBreedField(rawConfig, reproBreedNames || [])
   const [values, setValues] = useState<Record<string, unknown>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
@@ -217,7 +220,7 @@ function FieldRenderer({
   return (
     <div>
       <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-        {field.label}
+        {t(field.label)}
         {field.required && <span className="text-[color:var(--error)]"> *</span>}
       </label>
 
@@ -238,7 +241,7 @@ function FieldRenderer({
           style={inputStyle}
         >
           <option value="">{t('— Seleccionar —')}</option>
-          {(field.options || []).map((o) => <option key={o} value={o}>{o}</option>)}
+          {(field.options || []).map((o) => <option key={o} value={o}>{t(o)}</option>)}
         </select>
       ) : field.type === 'radio' ? (
         <div className="mt-1 space-y-1.5">

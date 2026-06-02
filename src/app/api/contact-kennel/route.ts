@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createKennelAdminClient } from '@/lib/supabase/server'
-import { getEffectiveConfig, validateForm, splitFormValues } from '@/lib/kennel/contact-form'
+import { validateForm, splitFormValues, withBreedField } from '@/lib/kennel/contact-form'
+import { getKennelReproductiveBreedNames } from '@/lib/kennel/breeds'
 import { sendTransactionalEmail } from '@/lib/email/send'
 import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rate-limit'
 
@@ -64,7 +65,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Criadero no encontrado' }, { status: 404 })
   }
 
-  const config = getEffectiveConfig(kennel.contact_form_config)
+  // Reconstruimos la MISMA config que vio el visitante: si el kennel tiene
+  // >=2 razas de reproductores, el formulario público inyectó el selector
+  // "Raza de interés" (sin map_to). splitFormValues itera config.fields para
+  // decidir canónico vs extra, así que el endpoint también necesita conocer
+  // ese campo o el valor enviado se descartaría. Cae en applicant_extra_data.
+  const reproBreedNames = await getKennelReproductiveBreedNames(admin, kennel.id)
+  const config = withBreedField(kennel.contact_form_config, reproBreedNames)
 
   // Soporte legacy: si llegan campos planos en body en vez de { values }, mapearlos
   const values: Record<string, any> = rawValues && typeof rawValues === 'object'

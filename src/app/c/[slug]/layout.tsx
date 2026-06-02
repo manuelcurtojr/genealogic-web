@@ -9,6 +9,7 @@ import { getTheme, applyOverrides } from '@/lib/kennel/themes'
 import { ThemeInjector, AccentStripe } from '@/components/site/theme-injector'
 import { FloatingContactButtonFooter } from '@/components/site/floating-contact-button'
 import { MobileNav } from '@/components/site/mobile-nav'
+import { getKennelReproductiveBreedNames } from '@/lib/kennel/breeds'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
@@ -32,6 +33,10 @@ export default async function KennelSiteLayout({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const isOwner = user?.id === kennel.owner_id
+
+  // Razas de los reproductores para el selector "Raza de interés" del modal
+  // de contacto (FloatingContactButtonFooter, mobile).
+  const reproBreedNames = await getKennelReproductiveBreedNames(supabase, kennel.id)
 
   // Detecta el host actual para construir URLs correctas. En custom domain
   // los hrefs deben ser cortos (/perros) — si usásemos /c/<slug>/perros el
@@ -143,6 +148,7 @@ export default async function KennelSiteLayout({
               kennelName={kennel.name}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               config={(kennel as any).contact_form_config || null}
+              reproBreedNames={reproBreedNames}
             />
             <a
               href={`https://genealogic.io/kennels/${kennel.slug}`}

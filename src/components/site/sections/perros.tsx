@@ -12,6 +12,8 @@ import {
 import { SectionHeader } from '@/components/site/section-primitives'
 import { isContactPageEnabled, resolveContactHref } from '@/lib/kennel/pages'
 import { HeroCtaButton } from '@/components/site/hero-cta-button'
+import { getKennelReproductiveBreedNames } from '@/lib/kennel/breeds'
+import { createClient } from '@/lib/supabase/server'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
@@ -197,7 +199,7 @@ export async function DogsTabsSection(props: {
 /** Botón del WaitlistCta que respeta el modal de contacto si la página de
  *  contacto está desactivada (delega en HeroCtaButton). */
 function WaitlistCtaButton({
-  href, label, kennelId, kennelName, contactFormConfig,
+  href, label, kennelId, kennelName, contactFormConfig, reproBreedNames,
 }: {
   href: string
   label: string
@@ -205,6 +207,7 @@ function WaitlistCtaButton({
   kennelName: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   contactFormConfig: any
+  reproBreedNames?: string[]
 }) {
   return (
     <div className="inline-block">
@@ -215,6 +218,7 @@ function WaitlistCtaButton({
         kennelId={kennelId}
         kennelName={kennelName}
         contactFormConfig={contactFormConfig}
+        reproBreedNames={reproBreedNames}
       />
     </div>
   )
@@ -226,6 +230,8 @@ export async function WaitlistCtaSection(props: { title?: string; subtitle?: str
   const contactPageEnabled = await isContactPageEnabled(kennel.id)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const config = ((kennel as any).contact_form_config ?? null)
+  // Razas de los reproductores para el selector "Raza de interés" del modal.
+  const reproBreedNames = await getKennelReproductiveBreedNames(await createClient(), kennel.id)
   const resolvedHref = resolveContactHref({
     href: props.href || './contacto',
     contactPageEnabled,
@@ -248,6 +254,7 @@ export async function WaitlistCtaSection(props: { title?: string; subtitle?: str
           kennelId={kennel.id}
           kennelName={kennel.name}
           contactFormConfig={config}
+          reproBreedNames={reproBreedNames}
         />
       </div>
     </section>

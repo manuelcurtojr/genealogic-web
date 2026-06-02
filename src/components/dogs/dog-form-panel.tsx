@@ -544,7 +544,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                 const active = activeTab === tab.key
                 return (
                   <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-                    className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium whitespace-nowrap transition ${active ? 'bg-ink text-on-primary' : 'bg-surface-card text-body hover:text-ink'}`}>
+                    className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium whitespace-nowrap transition ${active ? 'bg-ink text-on-primary' : 'bg-surface-card text-body hover:text-ink'}`}>
                     <Icon className="w-3.5 h-3.5" /> {t(tab.label)}
                   </button>
                 )

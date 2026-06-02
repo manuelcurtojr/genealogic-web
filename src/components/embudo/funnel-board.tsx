@@ -127,43 +127,47 @@ export default function FunnelBoard({
     <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
       <h1 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight mb-5">{t('Embudo')}</h1>
 
-      {/* ─── Pestañas de pipeline + crear/configurar ─── */}
-      <div className="flex items-center gap-1 border-b border-hairline mb-5 overflow-x-auto">
-        {pipelines.map((p) => {
-          const active = p.id === pipeline.id
-          const unseen = p.stages.reduce((n, s) => n + (unseenByStage.get(s.id) || 0), 0)
-          return (
-            <button
-              key={p.id}
-              onClick={() => selectPipeline(p)}
-              className={
-                'relative px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 -mb-px transition-colors ' +
-                (active ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-ink')
-              }
-            >
-              {t(p.name)}
-              {unseen > 0 && (
-                <span className="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-amber-400 text-amber-950 text-[10px] font-bold align-middle">
-                  {unseen}
-                </span>
-              )}
-            </button>
-          )
-        })}
-        <button
-          onClick={() => setConfig({ mode: 'edit', pipelineId: pipeline.id })}
-          title={t('Configurar este embudo')}
-          className="ml-1 p-2 text-muted hover:text-ink"
-        >
-          <Settings className="w-4 h-4" />
-        </button>
-        <button
-          onClick={() => setConfig({ mode: 'create' })}
-          title={t('Nuevo embudo')}
-          className="p-2 text-muted hover:text-ink"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
+      {/* ─── Pestañas de pipeline (scroll) + crear/configurar (fijos) ─── */}
+      <div className="flex items-stretch border-b border-hairline mb-5">
+        <div className="flex items-center gap-1 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {pipelines.map((p) => {
+            const active = p.id === pipeline.id
+            const unseen = p.stages.reduce((n, s) => n + (unseenByStage.get(s.id) || 0), 0)
+            return (
+              <button
+                key={p.id}
+                onClick={() => selectPipeline(p)}
+                className={
+                  'relative shrink-0 px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 -mb-px transition-colors ' +
+                  (active ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-ink')
+                }
+              >
+                {t(p.name)}
+                {unseen > 0 && (
+                  <span className="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-amber-400 text-amber-950 text-[10px] font-bold align-middle">
+                    {unseen}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+        <div className="flex items-center shrink-0 pl-1">
+          <button
+            onClick={() => setConfig({ mode: 'edit', pipelineId: pipeline.id })}
+            title={t('Configurar este embudo')}
+            className="p-2 text-muted hover:text-ink"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setConfig({ mode: 'create' })}
+            title={t('Nuevo embudo')}
+            className="p-2 text-muted hover:text-ink"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* ─── Pestañas de paso ─── */}

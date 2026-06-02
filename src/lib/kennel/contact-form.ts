@@ -111,6 +111,51 @@ export function getEffectiveConfig(raw: unknown): ContactFormConfig {
 }
 
 /**
+ * Inyecta un selector de "Raza de interés" en el formulario, poblado con las
+ * razas que el criador tiene marcadas como reproductor. Así el criador sabe
+ * por qué raza preguntan los leads.
+ *
+ * Reglas:
+ *  - Solo añade el campo si hay >= 2 razas (con 1 sola el selector no aporta).
+ *  - El campo NO lleva `map_to` → su valor cae en applicant_extra_data como
+ *    { preference_breed: { label, value } } sin tocar endpoint ni esquema.
+ *  - Se coloca tras el primer campo (normalmente "Nombre") para que quede
+ *    natural arriba del form.
+ *  - Idempotente: si ya existe un campo con id 'preference_breed' (porque el
+ *    criador lo añadió a mano, o por doble aplicación), devuelve la config
+ *    sin duplicar.
+ *
+ * Devuelve siempre una config "efectiva" (pasa por getEffectiveConfig).
+ */
+export function withBreedField(
+  rawConfig: unknown,
+  breedNames: string[],
+): ContactFormConfig {
+  const config = getEffectiveConfig(rawConfig)
+  if (
+    breedNames.length < 2 ||
+    config.fields.some((f) => f.id === 'preference_breed')
+  ) {
+    return config
+  }
+
+  const breedField: FormField = {
+    id: 'preference_breed',
+    type: 'select',
+    label: 'Raza de interés',
+    required: false,
+    options: [...breedNames, 'Todas las razas'],
+  }
+
+  // Insertar tras el primer campo (o al principio si está vacío).
+  const fields = [...config.fields]
+  const insertAt = fields.length > 0 ? 1 : 0
+  fields.splice(insertAt, 0, breedField)
+
+  return { ...config, fields }
+}
+
+/**
  * Separa los valores del form en: campos canónicos (mapeados a columnas)
  * y resto (irán a applicant_extra_data JSONB).
  */

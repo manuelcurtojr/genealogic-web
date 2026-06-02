@@ -9,7 +9,7 @@
  * que aún no hemos redactado contenido marketing (sin él, la ficha
  * individual no tiene nada que enseñar).
  */
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 export type KennelBreedSummary = {
   id: string
@@ -69,6 +69,52 @@ export async function getKennelReproductiveBreeds(
     image_url: b.image_url,
     tagline: (b.promotional_content as { tagline?: string } | null)?.tagline || null,
   }))
+}
+
+/**
+ * Devuelve los NOMBRES de las razas distintas que el kennel cría activamente
+ * (reproductores públicos), ordenados alfabéticamente. A diferencia de
+ * getKennelReproductiveBreeds NO filtra por promotional_content — aquí
+ * queremos TODAS las razas de los reproductores para poblar el selector del
+ * formulario de contacto público (así el criador sabe por qué raza preguntan
+ * los leads).
+ *
+ * Acepta el cliente supabase por parámetro para reusar el que ya tenga el
+ * server component que llama (createClient de @/lib/supabase/server).
+ *
+ * Filtra por:
+ *   - dogs.kennel_id = X
+ *   - dogs.is_reproductive = true
+ *   - dogs.is_public = true
+ *   - dogs.breed_id NOT NULL
+ */
+export async function getKennelReproductiveBreedNames(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: SupabaseClient<any, any, any>,
+  kennelId: string,
+): Promise<string[]> {
+  // 1. breed_id distintos de los reproductores públicos.
+  const { data: dogs } = await supabase
+    .from('dogs')
+    .select('breed_id')
+    .eq('kennel_id', kennelId)
+    .eq('is_reproductive', true)
+    .eq('is_public', true)
+    .not('breed_id', 'is', null)
+
+  const breedIds = Array.from(new Set((dogs || []).map((d) => d.breed_id))) as string[]
+  if (breedIds.length === 0) return []
+
+  // 2. Nombres de esas razas (SIN filtro de promotional_content), ordenados.
+  const { data: breeds } = await supabase
+    .from('breeds')
+    .select('name')
+    .in('id', breedIds)
+    .order('name', { ascending: true })
+
+  return (breeds || [])
+    .map((b) => b.name as string | null)
+    .filter((n): n is string => !!n)
 }
 
 /**

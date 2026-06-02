@@ -90,6 +90,9 @@ interface Props {
     reading_time_minutes: number | null
   }>
   breedNames: string[]
+  /** Razas de los reproductores para el selector "Raza de interés" del
+   *  formulario de contacto (si hay >=2 razas). */
+  reproBreedNames: string[]
   /** Métricas de la card "El criadero en números". El que tiene
    *  `highlight: true` se renderiza grande arriba; los demás van en
    *  un grid debajo con iconos + sublabel opcional. */
@@ -152,7 +155,7 @@ function truncateAtWord(text: string, maxChars: number): string {
 
 export default async function KennelProHome({
   kennel, featuredDogs, faqEntries, reviews, recentPosts = [],
-  breedNames, stats, teasers, availability,
+  breedNames, reproBreedNames, stats, teasers, availability,
 }: Props) {
   const t = getTranslator(await getLocale())
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
@@ -174,6 +177,7 @@ export default async function KennelProHome({
           kennelId={kennel.id}
           kennelName={kennel.name}
           contactFormConfig={kennel.contact_form_config}
+          reproBreedNames={reproBreedNames}
         />
       )}
 
@@ -290,6 +294,7 @@ export default async function KennelProHome({
                   kennelId={kennel.id}
                   kennelName={kennel.name}
                   config={kennel.contact_form_config || null}
+                  reproBreedNames={reproBreedNames}
                 />
               )}
               <Link
@@ -397,6 +402,7 @@ export default async function KennelProHome({
           kennelId={kennel.id}
           kennelName={kennel.name}
           contactFormConfig={kennel.contact_form_config}
+          reproBreedNames={reproBreedNames}
           hasOwner={hasOwner}
         />
       )}
@@ -597,7 +603,7 @@ export default async function KennelProHome({
  *  - Si ambos: dos sub-cards
  */
 async function AvailabilitySection({
-  availability, kennelSlug, kennelId, kennelName, contactFormConfig, hasOwner,
+  availability, kennelSlug, kennelId, kennelName, contactFormConfig, reproBreedNames, hasOwner,
 }: {
   availability: NonNullable<Props['availability']>
   kennelSlug: string
@@ -605,6 +611,7 @@ async function AvailabilitySection({
   kennelName: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   contactFormConfig: any
+  reproBreedNames: string[]
   hasOwner: boolean
 }) {
   const t = getTranslator(await getLocale())
@@ -682,6 +689,7 @@ async function AvailabilitySection({
                     kennelId={kennelId}
                     kennelName={kennelName}
                     config={contactFormConfig || null}
+                    reproBreedNames={reproBreedNames}
                   />
                 )}
               </div>

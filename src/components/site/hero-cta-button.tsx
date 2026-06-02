@@ -19,7 +19,7 @@ import type { ContactFormConfig } from '@/lib/kennel/contact-form'
 type Variant = 'primary' | 'outline' | 'ghost'
 
 export function HeroCtaButton({
-  href, label, variant = 'primary', kennelId, kennelName, contactFormConfig,
+  href, label, variant = 'primary', kennelId, kennelName, contactFormConfig, reproBreedNames,
 }: {
   href: string
   label: string
@@ -27,6 +27,7 @@ export function HeroCtaButton({
   kennelId?: string
   kennelName?: string
   contactFormConfig?: ContactFormConfig | null
+  reproBreedNames?: string[]
 }) {
   const [open, setOpen] = useState(false)
   const isContactModal = /^#(contact|contacto|form)/i.test(href.trim())
@@ -52,6 +53,7 @@ export function HeroCtaButton({
           kennelId={kennelId}
           kennelName={kennelName}
           config={contactFormConfig ?? null}
+          reproBreedNames={reproBreedNames}
           themed
         />
       </>
