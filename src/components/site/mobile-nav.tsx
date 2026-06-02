@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 /**
  * Burger nav para mobile. Tematizado: usa CSS vars del theme activo
@@ -15,6 +16,7 @@ export function MobileNav({
   items: { href: string; label: string }[]
   kennelName: string
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -44,7 +46,7 @@ export function MobileNav({
         >
           <button
             type="button"
-            aria-label="Cerrar"
+            aria-label={t('Cerrar')}
             onClick={() => setOpen(false)}
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
           />
@@ -61,7 +63,7 @@ export function MobileNav({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                aria-label="Cerrar"
+                aria-label={t('Cerrar')}
                 className="h-9 w-9 inline-flex items-center justify-center text-muted hover:text-theme-accent border border-hairline hover:border-theme-accent transition-colors"
                 style={{ borderRadius: 'var(--button-radius, 8px)' }}
               >
@@ -92,7 +94,7 @@ export function MobileNav({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Abrir menú"
+        aria-label={t('Abrir menú')}
         className="inline-flex items-center justify-center h-10 w-10 border border-hairline hover:border-theme-accent text-ink transition-colors"
         style={{ borderRadius: 'var(--button-radius, 8px)' }}
       >

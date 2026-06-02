@@ -12,8 +12,12 @@ import {
 import { SectionHeader } from '@/components/site/section-primitives'
 import { isContactPageEnabled, resolveContactHref } from '@/lib/kennel/pages'
 import { HeroCtaButton } from '@/components/site/hero-cta-button'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
-function DogCard({ d }: { d: SiteDog }) {
+type Tr = (key: string) => string
+
+function DogCard({ d, t }: { d: SiteDog; t: Tr }) {
   return (
     <Link
       href={`https://genealogic.io/dogs/${d.slug || d.id}`}
@@ -37,7 +41,7 @@ function DogCard({ d }: { d: SiteDog }) {
         {d.is_for_sale && (
           <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 bg-canvas/95 backdrop-blur px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink shadow-sm" style={{ borderRadius: 'var(--button-radius, 999px)' }}>
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            Disponible
+            {t('Disponible')}
           </span>
         )}
       </div>
@@ -49,7 +53,7 @@ function DogCard({ d }: { d: SiteDog }) {
           {d.name}
         </p>
         <p className="text-[11px] text-muted mt-1 uppercase tracking-[0.08em]">
-          {d.sex === 'male' ? '♂ Macho' : '♀ Hembra'}
+          {d.sex === 'male' ? `♂ ${t('Macho')}` : `♀ ${t('Hembra')}`}
           {d.breed?.name ? ` · ${d.breed.name}` : ''}
           {d.color?.name ? ` · ${d.color.name}` : ''}
         </p>
@@ -63,22 +67,23 @@ function DogCard({ d }: { d: SiteDog }) {
   )
 }
 
-function DogGrid({ dogs, empty }: { dogs: SiteDog[]; empty?: string }) {
+function DogGrid({ dogs, empty, t }: { dogs: SiteDog[]; empty?: string; t: Tr }) {
   if (!dogs.length) {
     return (
       <div className="border border-dashed border-hairline bg-canvas p-12 text-center" style={{ borderRadius: 'var(--button-radius, 12px)' }}>
-        <p className="text-sm text-muted">{empty || 'Sin perros en esta categoría ahora mismo.'}</p>
+        <p className="text-sm text-muted">{empty || t('Sin perros en esta categoría ahora mismo.')}</p>
       </div>
     )
   }
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
-      {dogs.map(d => <DogCard key={d.id} d={d} />)}
+      {dogs.map(d => <DogCard key={d.id} d={d} t={t} />)}
     </div>
   )
 }
 
 export async function AvailablePuppiesGridSection(props: { title?: string; subtitle?: string; empty_text?: string }) {
+  const t = getTranslator(await getLocale())
   const kennel = await getCurrentKennel()
   const dogs = await getAvailablePuppiesByKennel(kennel.id)
   return (
@@ -90,13 +95,14 @@ export async function AvailablePuppiesGridSection(props: { title?: string; subti
             {props.subtitle && <p className="text-body mt-2 max-w-2xl">{props.subtitle}</p>}
           </div>
         )}
-        <DogGrid dogs={dogs} empty={props.empty_text || 'No hay cachorros disponibles ahora mismo. Apúntate a la lista de espera para la próxima camada.'} />
+        <DogGrid dogs={dogs} t={t} empty={props.empty_text || t('No hay cachorros disponibles ahora mismo. Apúntate a la lista de espera para la próxima camada.')} />
       </div>
     </section>
   )
 }
 
 export async function BreedingDogsGridSection(props: { title?: string; subtitle?: string; sex?: 'male' | 'female' | 'all' }) {
+  const t = getTranslator(await getLocale())
   const kennel = await getCurrentKennel()
   let dogs = await getReproductiveDogsByKennel(kennel.id)
   if (props.sex === 'male') dogs = dogs.filter(d => d.sex === 'male')
@@ -110,7 +116,7 @@ export async function BreedingDogsGridSection(props: { title?: string; subtitle?
             {props.subtitle && <p className="text-body mt-2 max-w-2xl">{props.subtitle}</p>}
           </div>
         )}
-        <DogGrid dogs={dogs} />
+        <DogGrid dogs={dogs} t={t} />
       </div>
     </section>
   )
@@ -122,6 +128,7 @@ export async function DogsTabsSection(props: {
   eyebrow?: string
   searchParams?: Record<string, string | string[] | undefined>
 }) {
+  const t = getTranslator(await getLocale())
   const kennel = await getCurrentKennel()
   const tab = (props.searchParams?.tab as string) || 'available'
   const all = await getDogsByKennel(kennel.id)
@@ -137,15 +144,15 @@ export async function DogsTabsSection(props: {
   // Auto-hide tabs vacíos. Si TODO está vacío, mostramos solo el primero con
   // mensaje de empty state.
   const allTabs = [
-    { key: 'available', label: 'Disponibles', dogs: available, empty: 'No hay cachorros disponibles ahora mismo. Apúntate a la lista de espera.' },
-    { key: 'males', label: 'Sementales', dogs: males, empty: 'Aún no hay sementales publicados.' },
-    { key: 'females', label: 'Hembras de cría', dogs: females, empty: 'Aún no hay hembras de cría publicadas.' },
-    { key: 'bred', label: 'Criados por nosotros', dogs: bredByUs, empty: 'Aún no hay perros criados publicados.' },
+    { key: 'available', label: t('Disponibles'), dogs: available, empty: t('No hay cachorros disponibles ahora mismo. Apúntate a la lista de espera.') },
+    { key: 'males', label: t('Sementales'), dogs: males, empty: t('Aún no hay sementales publicados.') },
+    { key: 'females', label: t('Hembras de cría'), dogs: females, empty: t('Aún no hay hembras de cría publicadas.') },
+    { key: 'bred', label: t('Criados por nosotros'), dogs: bredByUs, empty: t('Aún no hay perros criados publicados.') },
   ]
-  const tabs = allTabs.filter(t => t.dogs.length > 0)
+  const tabs = allTabs.filter(tb => tb.dogs.length > 0)
   // Si NADA tiene perros, mantenemos el primero como vacío para que la sección no quede mocha
   const visibleTabs = tabs.length > 0 ? tabs : [allTabs[0]]
-  const active = visibleTabs.find(t => t.key === tab) || visibleTabs[0]
+  const active = visibleTabs.find(tb => tb.key === tab) || visibleTabs[0]
 
   return (
     <section className="py-16 lg:py-24">
@@ -153,7 +160,7 @@ export async function DogsTabsSection(props: {
         {(props.title || props.eyebrow) && (
           <SectionHeader
             number="01"
-            eyebrow={props.eyebrow ?? 'Cachorros'}
+            eyebrow={props.eyebrow ?? t('Cachorros')}
             title={props.title}
             subtitle={props.subtitle}
             align="left"
@@ -161,27 +168,27 @@ export async function DogsTabsSection(props: {
         )}
         {/* Tabs estilo BMW M: uppercase tracking, active con border-bottom accent */}
         <div className="flex items-center gap-0 mb-10 overflow-x-auto border-b border-hairline">
-          {visibleTabs.map(t => {
-            const isActive = t.key === active.key
+          {visibleTabs.map(tb => {
+            const isActive = tb.key === active.key
             return (
               <Link
-                key={t.key}
-                href={`?tab=${t.key}`}
+                key={tb.key}
+                href={`?tab=${tb.key}`}
                 className={`text-[12px] font-semibold uppercase tracking-[0.14em] px-5 py-4 whitespace-nowrap transition-all relative -mb-px border-b-2 ${
                   isActive
                     ? 'border-theme-accent text-ink'
                     : 'border-transparent text-muted hover:text-ink'
                 }`}
               >
-                {t.label}
+                {tb.label}
                 <span className={`ml-2 text-[10px] font-mono ${isActive ? 'text-theme-accent' : 'text-muted'}`}>
-                  {String(t.dogs.length).padStart(2, '0')}
+                  {String(tb.dogs.length).padStart(2, '0')}
                 </span>
               </Link>
             )
           })}
         </div>
-        <DogGrid dogs={active.dogs} empty={active.empty} />
+        <DogGrid dogs={active.dogs} empty={active.empty} t={t} />
       </div>
     </section>
   )
@@ -214,6 +221,7 @@ function WaitlistCtaButton({
 }
 
 export async function WaitlistCtaSection(props: { title?: string; subtitle?: string; href?: string; cta_label?: string }) {
+  const t = getTranslator(await getLocale())
   const kennel = await getCurrentKennel()
   const contactPageEnabled = await isContactPageEnabled(kennel.id)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -229,14 +237,14 @@ export async function WaitlistCtaSection(props: { title?: string; subtitle?: str
           className="text-3xl md:text-4xl lg:text-5xl font-bold text-ink mb-4 tracking-[-0.02em]"
           style={{ fontFamily: 'var(--font-display, inherit)' }}
         >
-          {props.title || '¿Te interesa una próxima camada?'}
+          {props.title || t('¿Te interesa una próxima camada?')}
         </h2>
         <p className="text-body mb-8 leading-relaxed max-w-xl mx-auto">
-          {props.subtitle || 'Vendemos por reservas, no por disponibilidad. Apúntate a la lista de espera y te avisamos cuando haya cachorros.'}
+          {props.subtitle || t('Vendemos por reservas, no por disponibilidad. Apúntate a la lista de espera y te avisamos cuando haya cachorros.')}
         </p>
         <WaitlistCtaButton
           href={resolvedHref}
-          label={props.cta_label || 'Apuntarme a la lista de espera'}
+          label={props.cta_label || t('Apuntarme a la lista de espera')}
           kennelId={kennel.id}
           kennelName={kennel.name}
           contactFormConfig={config}

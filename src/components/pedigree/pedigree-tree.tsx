@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect, useCallback, createContext, useContext } from 'react'
 import Link from 'next/link'
 import { Search, ArrowLeftRight, GitBranch, ChevronLeft, ChevronRight, Dna, CheckCircle, Plus } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 const PedigreeCtx = createContext<{ onClickDog?: (id: string) => void; onClickEmpty?: (parentId: string, role: 'father' | 'mother') => void }>({})
 import { calculateCOI, getCOILevel, getCOIInterpretation } from './coi-calculator'
@@ -18,6 +19,7 @@ const CW=200,CH=64,PH=56
 const L='var(--pedigree-line, rgba(17, 17, 17, 0.14))'
 
 export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpty}:Props){
+  const t=useT()
   const[isNative,setIsNative]=useState(false)
   useEffect(()=>{if((window as any).Capacitor?.isNativePlatform?.())setIsNative(true)},[])
   const[maxGen,setMaxGen]=useState(4)
@@ -33,7 +35,7 @@ export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpt
   const nm=useMemo(()=>{const m=new Map<string,PN>();data.forEach(n=>m.set(n.id,n));return m},[data])
   const root=nm.get(rootId);if(!root)return null
   const coi=useMemo(()=>calculateCOI(rootId,data,10),[rootId,data])
-  const coiLvl=getCOILevel(coi),coiTxt=getCOIInterpretation(coi)
+  const coiLvl=getCOILevel(coi),coiTxt=t(getCOIInterpretation(coi))
   // Al abrir el panel COI, cargamos la media de la raza (cacheada en server).
   useEffect(()=>{
     if(!coiPanel||!breedId||breedAvg||breedAvgLoading)return
@@ -107,7 +109,7 @@ export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpt
         <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
           <div className="flex items-center gap-2">
             <Dna className="h-4 w-4 text-ink"/>
-            <h3 className="text-[14px] font-semibold text-ink">Salud genética</h3>
+            <h3 className="text-[14px] font-semibold text-ink">{t('Salud genética')}</h3>
           </div>
           <button onClick={()=>setCoiPanel(false)} className="text-muted transition-colors hover:text-ink">
             <ChevronRight className="h-4 w-4"/>
@@ -116,7 +118,7 @@ export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpt
         <div className="flex-1 space-y-5 overflow-y-auto p-5">
           <div className="text-center">
             <p className={`text-[40px] font-semibold tabular-nums tracking-[-0.04em] ${cc[coiLvl].text}`}>{coi}%</p>
-            <p className="mt-1 text-[12px] text-muted">Coeficiente de consanguinidad</p>
+            <p className="mt-1 text-[12px] text-muted">{t('Coeficiente de consanguinidad')}</p>
           </div>
           <div>
             <div className="flex h-3 overflow-hidden rounded-full">
@@ -140,34 +142,35 @@ export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpt
           {/* Comparativa vs media de la raza */}
           {breedId && (
             <div className="rounded-lg border border-hairline p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Comparativa con la raza</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">{t('Comparativa con la raza')}</p>
               {breedAvgLoading ? (
-                <p className="mt-2 text-[12px] text-muted">Calculando media de la raza…</p>
+                <p className="mt-2 text-[12px] text-muted">{t('Calculando media de la raza…')}</p>
               ) : breedAvg?.avgCoi != null ? (
                 <>
                   <div className="mt-2 flex items-baseline justify-between">
-                    <span className="text-[12.5px] text-body">Este perro</span>
+                    <span className="text-[12.5px] text-body">{t('Este perro')}</span>
                     <span className={`text-[14px] font-semibold tabular-nums ${cc[coiLvl].text}`}>{coi}%</span>
                   </div>
                   <div className="mt-1 flex items-baseline justify-between">
-                    <span className="text-[12.5px] text-body">Media de la raza</span>
+                    <span className="text-[12.5px] text-body">{t('Media de la raza')}</span>
                     <span className="text-[14px] font-semibold tabular-nums text-ink">{breedAvg.avgCoi}%</span>
                   </div>
                   <p className="mt-2 text-[11.5px] leading-[1.5] text-muted">
                     {coi < breedAvg.avgCoi
-                      ? `Por debajo de la media de la raza (más diversidad genética que el promedio). Muestra de ${breedAvg.sampleSize} perros.`
+                      ? t('Por debajo de la media de la raza (más diversidad genética que el promedio).')
                       : coi > breedAvg.avgCoi
-                        ? `Por encima de la media de la raza. Considera abrir la línea en futuros cruces. Muestra de ${breedAvg.sampleSize} perros.`
-                        : `En la media de la raza. Muestra de ${breedAvg.sampleSize} perros.`}
+                        ? t('Por encima de la media de la raza. Considera abrir la línea en futuros cruces.')
+                        : t('En la media de la raza.')}
+                    {' '}{t('Muestra de')} {breedAvg.sampleSize} {t('perros.')}
                   </p>
                 </>
               ) : (
-                <p className="mt-2 text-[12px] text-muted">Aún no hay datos suficientes de la raza para comparar.</p>
+                <p className="mt-2 text-[12px] text-muted">{t('Aún no hay datos suficientes de la raza para comparar.')}</p>
               )}
             </div>
           )}
 
-          <p className="text-center text-[10.5px] text-muted">Calculado con 10 generaciones.</p>
+          <p className="text-center text-[10.5px] text-muted">{t('Calculado con 10 generaciones.')}</p>
         </div>
       </div>
       {/* Floating buttons — outside transform context so fixed works.
@@ -210,7 +213,7 @@ export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpt
         <div className="relative">
           <button
             onClick={e=>{e.stopPropagation();setGenMenu(!genMenu);setZoomMenu(false)}}
-            title="Generaciones"
+            title={t('Generaciones')}
             className="flex h-11 w-11 items-center justify-center rounded-full border border-hairline bg-canvas text-[12px] font-semibold text-body shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-colors hover:bg-surface-soft hover:text-ink"
           >
             ×{maxGen}
@@ -242,7 +245,7 @@ export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpt
         </button>
         <button
           onClick={toggleIB}
-          title="Salud genética"
+          title={t('Salud genética')}
           className={`flex h-11 w-11 items-center justify-center rounded-full border shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-colors ${
             showIB
               ? 'border-ink bg-ink text-on-primary'
@@ -257,6 +260,7 @@ export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpt
 }
 
 function Card({n,isRoot,si,rc}:{n:PN;isRoot?:boolean;si:boolean;rc:Map<string,number>}){
+  const t=useT()
   const{onClickDog}=useContext(PedigreeCtx)
   const sc=n.sex==='male'?'#017DFA':'#e84393'
   const reps=rc.get(n.id)||0
@@ -270,8 +274,8 @@ function Card({n,isRoot,si,rc}:{n:PN;isRoot?:boolean;si:boolean;rc:Map<string,nu
       <div
         className="group flex items-stretch overflow-hidden rounded-xl border border-dashed border-hairline bg-surface-soft/60 relative cursor-default"
         style={{width:CW,height:CH,flexShrink:0}}
-        title="Perro oculto a petición del titular o por moderación"
-        aria-label="Perro oculto"
+        title={t('Perro oculto a petición del titular o por moderación')}
+        aria-label={t('Perro oculto')}
       >
         <div className="relative flex-shrink-0 bg-surface-card flex items-center justify-center" style={{width:PH}}>
           {/* Lock icon — usamos SVG inline para evitar import nuevo de lucide */}
@@ -283,10 +287,10 @@ function Card({n,isRoot,si,rc}:{n:PN;isRoot?:boolean;si:boolean;rc:Map<string,nu
         </div>
         <div className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden px-2.5 py-1.5">
           <p className="truncate text-[12px] font-medium leading-tight text-muted">
-            Perro oculto
+            {t('Perro oculto')}
           </p>
           <p className="mt-0.5 truncate text-[10.5px] text-muted/70">
-            Retirado a petición
+            {t('Retirado a petición')}
           </p>
         </div>
       </div>
@@ -437,6 +441,7 @@ function VN({n,nm,g,mx,isRoot,si,rc}:{n:PN;nm:Map<string,PN>;g:number;mx:number;
 }
 
 function Empty({sex,parentDogId}:{sex:string;parentDogId?:string}){
+  const t=useT()
   const{onClickEmpty}=useContext(PedigreeCtx)
   const role=sex==='male'?'father' as const:'mother' as const
   const clickable=!!onClickEmpty&&!!parentDogId
@@ -450,7 +455,7 @@ function Empty({sex,parentDogId}:{sex:string;parentDogId?:string}){
     >
       {clickable
         ? <Plus className="h-4 w-4"/>
-        : <span className="text-[11px] font-medium">{sex==='male'?'♂':'♀'} desconocido</span>
+        : <span className="text-[11px] font-medium">{sex==='male'?'♂':'♀'} {t('desconocido')}</span>
       }
     </div>
   )

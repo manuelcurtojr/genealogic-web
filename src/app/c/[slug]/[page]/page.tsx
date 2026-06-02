@@ -5,6 +5,8 @@ import { getPage } from '@/lib/kennel/pages'
 import { runWithKennel } from '@/lib/kennel-context'
 import { PageRenderer } from '@/components/site/sections/PageRenderer'
 import PageTracker from '@/components/track/page-tracker'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,9 +19,10 @@ function resolveDbSlug(urlPage: string): string {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string; page: string }> }): Promise<Metadata> {
   const { slug, page: pageParam } = await params
   const kennel = await getKennelBySlug(slug)
-  if (!kennel) return { title: 'No encontrado' }
+  const t = getTranslator(await getLocale())
+  if (!kennel) return { title: t('No encontrado') }
   const page = await getPage(kennel.id, resolveDbSlug(pageParam))
-  if (!page) return { title: 'Página no encontrada' }
+  if (!page) return { title: t('Página no encontrada') }
   return {
     title: page.meta_title || `${pageParam.charAt(0).toUpperCase() + pageParam.slice(1)} · ${kennel.name}`,
     description: page.meta_description || kennel.description || undefined,

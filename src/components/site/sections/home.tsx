@@ -8,6 +8,8 @@ import { getAvailablePuppiesByKennel, getUpcomingLittersByKennel } from '@/lib/k
 import { SectionHeader } from '@/components/site/section-primitives'
 import { HeroCtaButton } from '@/components/site/hero-cta-button'
 import { isContactPageEnabled, resolveContactHref } from '@/lib/kennel/pages'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 type Cta = { label: string; href: string; variant?: 'primary' | 'outline' | 'ghost' }
 
@@ -114,6 +116,7 @@ export async function ThreePillarsSection(props: {
   pillars?: { icon?: string; title: string; body: string }[]
 }) {
   const { title, subtitle, pillars = [] } = props
+  const t = getTranslator(await getLocale())
   return (
     <section className="relative py-24 lg:py-36 overflow-hidden">
       <div
@@ -124,7 +127,7 @@ export async function ThreePillarsSection(props: {
         }}
       />
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-10">
-        <SectionHeader number="01" eyebrow="La casa" title={title} subtitle={subtitle} align="center" />
+        <SectionHeader number="01" eyebrow={t('La casa')} title={title} subtitle={subtitle} align="center" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-hairline rounded-none overflow-hidden border-y border-hairline">
           {pillars.map((p, i) => {
             const m = p.title.match(/^([\d.,]+\s*\S*?)\s+(.+)$/)
@@ -175,7 +178,9 @@ export async function AvailablePuppiesStripSection(props: {
   cta_href?: string
   editMode?: boolean
 }) {
-  const { title = 'Disponibles', subtitle, cta_href = './perros', editMode } = props
+  const { subtitle, cta_href = './perros', editMode } = props
+  const t = getTranslator(await getLocale())
+  const title = props.title ?? t('Disponibles')
   const kennel = await getCurrentKennel()
   const [puppies, litters] = await Promise.all([
     getAvailablePuppiesByKennel(kennel.id),
@@ -194,7 +199,7 @@ export async function AvailablePuppiesStripSection(props: {
               <span className="inline-block h-px w-8 bg-theme-accent opacity-60" />
               <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted inline-flex items-center gap-2">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Datos en vivo
+                {t('Datos en vivo')}
               </span>
             </div>
             <h2
@@ -209,7 +214,7 @@ export async function AvailablePuppiesStripSection(props: {
             href={cta_href}
             className="group inline-flex items-center gap-2 text-[13px] font-semibold text-ink hover:text-theme-accent hover:gap-3 transition-all uppercase tracking-[0.12em]"
           >
-            Ver todos
+            {t('Ver todos')}
             <span className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
           </Link>
         </div>
@@ -228,13 +233,13 @@ export async function AvailablePuppiesStripSection(props: {
                 )}
                 <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wider text-ink shadow-sm">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Disponible
+                  {t('Disponible')}
                 </span>
               </div>
               <div className="p-4">
                 <p className="text-[15px] font-bold text-ink truncate tracking-[-0.01em]">{d.name}</p>
                 <p className="text-[11.5px] text-muted mt-0.5 uppercase tracking-wider">
-                  {d.sex === 'male' ? '♂ Macho' : '♀ Hembra'}
+                  {d.sex === 'male' ? `♂ ${t('Macho')}` : `♀ ${t('Hembra')}`}
                   {d.breed?.name ? ` · ${d.breed.name}` : ''}
                 </p>
               </div>
@@ -243,9 +248,9 @@ export async function AvailablePuppiesStripSection(props: {
           {puppies.length === 0 && litters.length > 0 && (
             <div className="col-span-full rounded-2xl border border-dashed border-hairline bg-canvas p-10 text-center">
               <p className="text-base text-body">
-                Sin cachorros disponibles ahora mismo, pero tenemos{' '}
-                <strong className="text-ink">{litters.length} camada{litters.length === 1 ? '' : 's'}</strong>{' '}
-                en camino.
+                {t('Sin cachorros disponibles ahora mismo, pero tenemos')}{' '}
+                <strong className="text-ink">{litters.length} {litters.length === 1 ? t('camada') : t('camadas')}</strong>{' '}
+                {t('en camino.')}
               </p>
             </div>
           )}

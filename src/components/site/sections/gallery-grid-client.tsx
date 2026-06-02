@@ -18,6 +18,7 @@
  */
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { useT } from '@/components/i18n/locale-provider'
 
 type Img = { url: string; alt?: string; width?: number; height?: number }
 
@@ -32,6 +33,7 @@ export function GalleryGridLightbox({
   subtitle?: string
   cta?: { label: string; href: string }
 }) {
+  const t = useT()
   const [openIdx, setOpenIdx] = useState<number | null>(null)
   const close = useCallback(() => setOpenIdx(null), [])
   const next = useCallback(
@@ -116,7 +118,7 @@ export function GalleryGridLightbox({
           {/* Backdrop usa el canvas del tema con opacidad (no blanco hardcoded) */}
           <button
             type="button"
-            aria-label="Cerrar"
+            aria-label={t('Cerrar')}
             onClick={close}
             className="absolute inset-0 cursor-zoom-out backdrop-blur-md"
             style={{ background: 'color-mix(in srgb, var(--surface) 90%, black)' }}
@@ -126,7 +128,7 @@ export function GalleryGridLightbox({
           <button
             type="button"
             onClick={close}
-            aria-label="Cerrar"
+            aria-label={t('Cerrar')}
             className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 h-11 w-11 inline-flex items-center justify-center text-ink/80 hover:text-theme-accent border border-hairline hover:border-theme-accent bg-canvas/70 backdrop-blur transition-colors"
             style={{ borderRadius: 'var(--button-radius, 9999px)' }}
           >
@@ -142,7 +144,7 @@ export function GalleryGridLightbox({
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); prev() }}
-                aria-label="Anterior"
+                aria-label={t('Anterior')}
                 className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-10 h-12 w-12 inline-flex items-center justify-center text-ink/80 hover:text-theme-accent border border-hairline hover:border-theme-accent bg-canvas/70 backdrop-blur transition-colors"
                 style={{ borderRadius: 'var(--button-radius, 9999px)' }}
               >
@@ -153,7 +155,7 @@ export function GalleryGridLightbox({
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); next() }}
-                aria-label="Siguiente"
+                aria-label={t('Siguiente')}
                 className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-10 h-12 w-12 inline-flex items-center justify-center text-ink/80 hover:text-theme-accent border border-hairline hover:border-theme-accent bg-canvas/70 backdrop-blur transition-colors"
                 style={{ borderRadius: 'var(--button-radius, 9999px)' }}
               >

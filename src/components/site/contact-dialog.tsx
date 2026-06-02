@@ -10,6 +10,7 @@
  * Tematizado para que herede el theme activo del kennel (CSS vars).
  */
 import { useEffect, useState } from 'react'
+import { useT } from '@/components/i18n/locale-provider'
 import { getEffectiveConfig, validateForm, type ContactFormConfig, type FormField } from '@/lib/kennel/contact-form'
 
 type Props = {
@@ -23,6 +24,7 @@ type Props = {
 }
 
 export function ContactDialog({ open, onClose, kennelId, kennelName, config: rawConfig, themed = true }: Props) {
+  const t = useT()
   const config = getEffectiveConfig(rawConfig)
   const [values, setValues] = useState<Record<string, unknown>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -33,10 +35,10 @@ export function ContactDialog({ open, onClose, kennelId, kennelName, config: raw
   // Reset al cerrar
   useEffect(() => {
     if (!open) {
-      const t = setTimeout(() => {
+      const timer = setTimeout(() => {
         setValues({}); setErrors({}); setServerError(null); setDone(false); setSubmitting(false)
       }, 220)
-      return () => clearTimeout(t)
+      return () => clearTimeout(timer)
     }
   }, [open])
 
@@ -71,13 +73,13 @@ export function ContactDialog({ open, onClose, kennelId, kennelName, config: raw
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        setServerError(data?.error || 'No se pudo enviar')
+        setServerError(data?.error || t('No se pudo enviar'))
         setSubmitting(false)
         return
       }
       setDone(true); setSubmitting(false)
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : 'Error de red')
+      setServerError(err instanceof Error ? err.message : t('Error de red'))
       setSubmitting(false)
     }
   }
@@ -92,7 +94,7 @@ export function ContactDialog({ open, onClose, kennelId, kennelName, config: raw
     >
       <button
         type="button"
-        aria-label="Cerrar"
+        aria-label={t('Cerrar')}
         onClick={onClose}
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
       />
@@ -107,7 +109,7 @@ export function ContactDialog({ open, onClose, kennelId, kennelName, config: raw
                 <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted mb-3">
                   <span className="text-theme-accent font-mono">01</span>
                   <span className="inline-block h-px w-8 bg-theme-accent opacity-60" />
-                  Contacto directo
+                  {t('Contacto directo')}
                 </p>
               )}
               <h2
@@ -123,7 +125,7 @@ export function ContactDialog({ open, onClose, kennelId, kennelName, config: raw
             <button
               type="button"
               onClick={onClose}
-              aria-label="Cerrar"
+              aria-label={t('Cerrar')}
               className="shrink-0 h-9 w-9 inline-flex items-center justify-center text-muted hover:text-theme-accent border border-hairline hover:border-theme-accent transition-colors"
               style={{ borderRadius: 'var(--button-radius, 8px)' }}
             >
@@ -144,7 +146,7 @@ export function ContactDialog({ open, onClose, kennelId, kennelName, config: raw
               className="text-xl md:text-2xl font-bold text-ink mb-2"
               style={themed ? { fontFamily: 'var(--font-display, inherit)' } : undefined}
             >
-              ¡Recibido!
+              {t('¡Recibido!')}
             </h3>
             <p className="text-[14px] text-body leading-relaxed max-w-xs mx-auto">
               {config.success_message || `${kennelName} la verá en su bandeja y te responderá pronto.`}
@@ -155,7 +157,7 @@ export function ContactDialog({ open, onClose, kennelId, kennelName, config: raw
               className="mt-6 inline-flex items-center gap-1.5 border border-hairline bg-canvas px-5 py-2.5 text-[12px] font-semibold text-body hover:border-theme-accent hover:text-theme-accent uppercase tracking-[0.1em] transition-colors"
               style={{ borderRadius: 'var(--button-radius, 8px)' }}
             >
-              Cerrar
+              {t('Cerrar')}
             </button>
           </div>
         ) : (
@@ -181,7 +183,7 @@ export function ContactDialog({ open, onClose, kennelId, kennelName, config: raw
               disabled={submitting}
               className="btn-brand w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 text-[13px] font-semibold uppercase tracking-[0.1em] disabled:opacity-50 mt-2"
             >
-              {submitting ? 'Enviando…' : (config.submit_label || 'Enviar')}
+              {submitting ? t('Enviando…') : (config.submit_label || t('Enviar'))}
               {!submitting && <span aria-hidden="true">→</span>}
             </button>
           </form>
@@ -206,6 +208,7 @@ function FieldRenderer({
   error?: string
   onChange: (v: unknown) => void
 }) {
+  const t = useT()
   const inputClass = `w-full px-4 py-3 text-[14px] border bg-canvas text-ink placeholder-muted/70 focus:outline-none transition-colors ${
     error ? 'border-[color:var(--error)]' : 'border-hairline focus:border-theme-accent'
   }`
@@ -234,7 +237,7 @@ function FieldRenderer({
           className={inputClass}
           style={inputStyle}
         >
-          <option value="">— Seleccionar —</option>
+          <option value="">{t('— Seleccionar —')}</option>
           {(field.options || []).map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
       ) : field.type === 'radio' ? (

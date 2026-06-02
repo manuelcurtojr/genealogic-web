@@ -9,6 +9,8 @@ import { getTheme, applyOverrides } from '@/lib/kennel/themes'
 import { ThemeInjector, AccentStripe } from '@/components/site/theme-injector'
 import { FloatingContactButtonFooter } from '@/components/site/floating-contact-button'
 import { MobileNav } from '@/components/site/mobile-nav'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 // Sin cache estática: el nav refleja al instante los cambios de páginas
 // (activar/desactivar) hechos en /web. Combina bien con revalidatePath()
@@ -24,6 +26,7 @@ export default async function KennelSiteLayout({
   const { slug } = await params
   const kennel = await getKennelBySlug(slug)
   if (!kennel) notFound()
+  const t = getTranslator(await getLocale())
 
   // Si el visitante logueado es el owner del kennel, mostrar mini-nav flotante
   const supabase = await createClient()
@@ -149,14 +152,14 @@ export default async function KennelSiteLayout({
               style={{ borderRadius: 'var(--button-radius, 8px)' }}
             >
               <span aria-hidden="true">🐾</span>
-              Ver en Genealogic
+              {t('Ver en Genealogic')}
             </a>
           </div>
 
           <div className="mt-10 pt-6 border-t border-hairline flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-[11px] text-muted">
-            <p>© {new Date().getFullYear()} {kennel.name}. Todos los derechos reservados.</p>
+            <p>© {new Date().getFullYear()} {kennel.name}. {t('Todos los derechos reservados.')}</p>
             <p>
-              Sitio creado con{' '}
+              {t('Sitio creado con')}{' '}
               <Link href="https://genealogic.io" className="font-semibold text-body hover:text-theme-accent transition-colors uppercase tracking-[0.12em]">
                 Genealogic
               </Link>

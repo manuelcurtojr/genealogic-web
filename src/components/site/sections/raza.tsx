@@ -1,6 +1,8 @@
 /**
  * Secciones de "Sobre la raza" — bloques estáticos editables por el criador.
  */
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export async function BreedHeroSection(props: {
   breed_name?: string
@@ -13,10 +15,11 @@ export async function BreedHeroSection(props: {
 }) {
   // Acepta tanto los nombres específicos (breed_name, tagline) como los
   // aliases del schema genérico de hero (title, subtitle, bg_image_url).
+  const t = getTranslator(await getLocale())
   const bg = props.background_image_url || props.bg_image_url
-  const title = props.title || props.breed_name || 'Nuestra raza'
+  const title = props.title || props.breed_name || t('Nuestra raza')
   const subtitle = props.subtitle || props.tagline
-  const eyebrow = props.eyebrow || 'Sobre la raza'
+  const eyebrow = props.eyebrow || t('Sobre la raza')
   return (
     <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-[#0a0a0a]">
       {bg && (
@@ -70,17 +73,18 @@ export async function BreedTemperamentSection(props: {
   title?: string
   traits?: { label: string; description?: string }[]
 }) {
+  const t = getTranslator(await getLocale())
   return (
     <section className="py-12 lg:py-16 bg-surface-card">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <h2 className="text-2xl md:text-3xl font-bold text-ink mb-8 text-center tracking-tight">
-          {props.title || 'Temperamento'}
+          {props.title || t('Temperamento')}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {(props.traits || []).map((t, i) => (
+          {(props.traits || []).map((tr, i) => (
             <div key={i} className="rounded-xl border border-hairline bg-canvas p-5">
-              <p className="text-sm font-bold text-ink mb-1">{t.label}</p>
-              {t.description && <p className="text-sm text-body leading-relaxed">{t.description}</p>}
+              <p className="text-sm font-bold text-ink mb-1">{tr.label}</p>
+              {tr.description && <p className="text-sm text-body leading-relaxed">{tr.description}</p>}
             </div>
           ))}
         </div>
@@ -93,11 +97,12 @@ export async function BreedColorsSection(props: {
   title?: string
   colors?: { name: string; hex?: string; description?: string; image_url?: string }[]
 }) {
+  const t = getTranslator(await getLocale())
   return (
     <section className="py-12 lg:py-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <h2 className="text-2xl md:text-3xl font-bold text-ink mb-8 text-center tracking-tight">
-          {props.title || 'Colores aceptados'}
+          {props.title || t('Colores aceptados')}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {(props.colors || []).map((c, i) => (
@@ -126,11 +131,12 @@ export async function BreedTraitsSection(props: {
   title?: string
   stats?: { label: string; value: string }[]
 }) {
+  const t = getTranslator(await getLocale())
   return (
     <section className="py-12 lg:py-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <h2 className="text-2xl md:text-3xl font-bold text-ink mb-8 text-center tracking-tight">
-          {props.title || 'Características'}
+          {props.title || t('Características')}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {(props.stats || []).map((s, i) => (

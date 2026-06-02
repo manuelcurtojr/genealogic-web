@@ -6,13 +6,15 @@ import { runWithKennel } from '@/lib/kennel-context'
 import { PageRenderer } from '@/components/site/sections/PageRenderer'
 import PageTracker from '@/components/track/page-tracker'
 import { FloatingContactButton } from '@/components/site/floating-contact-button'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const kennel = await getKennelBySlug(slug)
-  if (!kennel) return { title: 'No encontrado' }
+  if (!kennel) return { title: getTranslator(await getLocale())('No encontrado') }
   const page = await getPage(kennel.id, 'home')
   // Canonical apunta a la URL principal /kennels/[slug] — esto evita el
   // SEO duplicado entre las dos rutas que conviven (legacy /c y la
@@ -29,6 +31,7 @@ export default async function KennelHomePage({ params }: { params: Promise<{ slu
   const { slug } = await params
   const kennel = await getKennelBySlug(slug)
   if (!kennel) notFound()
+  const t = getTranslator(await getLocale())
   const page = await getPage(kennel.id, 'home')
   if (!page) {
     return (
@@ -36,8 +39,8 @@ export default async function KennelHomePage({ params }: { params: Promise<{ slu
         <h1 className="text-3xl font-bold text-ink mb-3">{kennel.name}</h1>
         {kennel.description && <p className="text-body mb-6">{kennel.description}</p>}
         <p className="text-sm text-muted">
-          La web pública aún no se ha publicado. Ver{' '}
-          <a href={`/kennels/${kennel.slug}`} className="text-ink underline">perfil en Genealogic</a>.
+          {t('La web pública aún no se ha publicado.')}{' '}
+          <a href={`/kennels/${kennel.slug}`} className="text-ink underline">{t('Ver perfil en Genealogic')}</a>
         </p>
       </div>
     )
@@ -74,7 +77,7 @@ export default async function KennelHomePage({ params }: { params: Promise<{ slu
         className="hidden md:inline-flex fixed bottom-4 right-4 z-40 items-center gap-1.5 rounded-full bg-black/75 backdrop-blur-sm px-3.5 py-1.5 text-[11.5px] font-medium text-white shadow-lg transition-opacity hover:bg-black"
       >
         <span aria-hidden="true">🐾</span>
-        <span>Ver en Genealogic</span>
+        <span>{t('Ver en Genealogic')}</span>
       </a>
     </>
   )

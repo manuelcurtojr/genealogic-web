@@ -14,6 +14,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { CATEGORIES } from './data'
 import { ChevronDown } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   /** Slug actualmente visible (scroll-spy). Si null, ningún item resaltado. */
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export default function FeaturesSidebar({ activeSlug }: Props) {
+  const t = useT()
   // En mobile: collapsible dropdown
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -63,7 +65,7 @@ export default function FeaturesSidebar({ activeSlug }: Props) {
           className="w-full flex items-center justify-between py-3 text-left"
         >
           <span className="text-[13px] font-semibold text-ink">
-            Explorar features
+            {t('Explorar features')}
           </span>
           <ChevronDown className={`h-4 w-4 text-muted transition-transform ${mobileOpen ? 'rotate-180' : ''}`} />
         </button>
@@ -142,15 +144,15 @@ export default function FeaturesSidebar({ activeSlug }: Props) {
         </nav>
         {/* CTA al final del sidebar */}
         <div className="mt-8 rounded-xl border border-hairline bg-gradient-to-br from-orange-50/60 to-blue-50/40 p-4">
-          <p className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[#FE6620]">¿Listo?</p>
+          <p className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[#FE6620]">{t('¿Listo?')}</p>
           <p className="mt-1.5 text-[13px] font-semibold text-ink leading-snug">
-            Empieza gratis. Kennel Pro 7 días de prueba sin tarjeta.
+            {t('Empieza gratis. Kennel Pro 7 días de prueba sin tarjeta.')}
           </p>
           <Link
             href="/register?intent=breeder"
             className="mt-3 inline-flex items-center justify-center w-full rounded-lg bg-ink text-on-primary px-3 py-2 text-[12.5px] font-bold hover:opacity-90 transition"
           >
-            Crear cuenta
+            {t('Crear cuenta')}
           </Link>
         </div>
       </aside>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { isNativeApp } from '@/lib/is-native'
+import { useT } from '@/components/i18n/locale-provider'
 import {
   BarChart3, Dog, Baby, Trophy, Stethoscope,
   Tag
@@ -35,6 +36,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, vetCount, awardsCount, profile, userId }: Props) {
+  const t = useT()
   const [activeSection, setActiveSection] = useState('resumen')
   const [native, setNative] = useState(false)
   useEffect(() => { setNative(isNativeApp()) }, [])
@@ -42,7 +44,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
   const stats = useMemo(() => {
     // Breed distribution for pie
     const byBreed: Record<string, number> = {}
-    dogs.forEach((d: any) => { const b = d.breed?.name || 'Sin raza'; byBreed[b] = (byBreed[b] || 0) + 1 })
+    dogs.forEach((d: any) => { const b = d.breed?.name || t('Sin raza'); byBreed[b] = (byBreed[b] || 0) + 1 })
     const breedPie = Object.entries(byBreed).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({ name, value }))
 
     // Sex
@@ -90,9 +92,9 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
   }, [dogs, kennelDogs, litters, userId, profile, vetCount, awardsCount])
 
   const sections = [
-    { key: 'resumen', label: 'Resumen', icon: BarChart3 },
-    { key: 'reproduccion', label: 'Reproducción', icon: Baby },
-    { key: 'criadero', label: 'Criadero', icon: Dog },
+    { key: 'resumen', label: t('Resumen'), icon: BarChart3 },
+    { key: 'reproduccion', label: t('Reproducción'), icon: Baby },
+    { key: 'criadero', label: t('Criadero'), icon: Dog },
   ]
 
   function Card({ icon: Icon, label, value, color }: any) {
@@ -112,9 +114,9 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
   return (
     <div className="space-y-6 sm:space-y-8">
       <div>
-        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">Métricas</p>
+        <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Métricas')}</p>
         <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
-          Analíticas
+          {t('Analíticas')}
         </h1>
       </div>
 
@@ -139,16 +141,16 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
       {activeSection === 'resumen' && (
         <div className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
-            <Card icon={Dog} label="Perros" value={stats.totalDogs} color="#fb923c" />
-            <Card icon={Baby} label="Camadas" value={stats.totalLitters} color="#8b5cf6" />
-            <Card icon={Tag} label="En venta" value={stats.forSale} color="#34d399" />
-            <Card icon={Stethoscope} label="Registros vet." value={stats.vetCount} color="#3b82f6" />
-            <Card icon={Trophy} label="Logros" value={stats.awardsCount} color="#f59e0b" />
+            <Card icon={Dog} label={t('Perros')} value={stats.totalDogs} color="#fb923c" />
+            <Card icon={Baby} label={t('Camadas')} value={stats.totalLitters} color="#8b5cf6" />
+            <Card icon={Tag} label={t('En venta')} value={stats.forSale} color="#34d399" />
+            <Card icon={Stethoscope} label={t('Registros vet.')} value={stats.vetCount} color="#3b82f6" />
+            <Card icon={Trophy} label={t('Logros')} value={stats.awardsCount} color="#f59e0b" />
           </div>
 
           {stats.breedPie.length > 0 && (
             <div className="rounded-xl border border-hairline bg-canvas p-5">
-              <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-ink mb-4">Distribución por raza</h3>
+              <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-ink mb-4">{t('Distribución por raza')}</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
                   <Pie data={stats.breedPie} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={(e: any) => e.name}>
@@ -165,15 +167,15 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
       {activeSection === 'reproduccion' && (
         <div className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-            <Card icon={Baby} label="Camadas totales" value={stats.totalLitters} color="#8b5cf6" />
-            <Card icon={Dog} label="Cachorros" value={stats.totalPuppies} color="#34d399" />
-            <Card icon={BarChart3} label="Promedio cachorros" value={stats.avgPuppies} color="#3b82f6" />
-            <Card icon={Dog} label="Reproductores" value={stats.reproductors} color="#fb923c" />
+            <Card icon={Baby} label={t('Camadas totales')} value={stats.totalLitters} color="#8b5cf6" />
+            <Card icon={Dog} label={t('Cachorros')} value={stats.totalPuppies} color="#34d399" />
+            <Card icon={BarChart3} label={t('Promedio cachorros')} value={stats.avgPuppies} color="#3b82f6" />
+            <Card icon={Dog} label={t('Reproductores')} value={stats.reproductors} color="#fb923c" />
           </div>
 
           {stats.littersChart.length > 0 && (
             <div className="rounded-xl border border-hairline bg-canvas p-5">
-              <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-ink mb-4">Camadas por año</h3>
+              <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-ink mb-4">{t('Camadas por año')}</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={stats.littersChart}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -188,7 +190,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
 
           {stats.topReproducers.length > 0 && (
             <div className="rounded-xl border border-hairline bg-canvas p-5">
-              <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-ink mb-4">Top reproductores</h3>
+              <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-ink mb-4">{t('Top reproductores')}</h3>
               <div className="space-y-2">
                 {stats.topReproducers.map((r: any) => (
                   <div key={r.name} className="flex items-center gap-3">
@@ -197,7 +199,7 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
                     </div>
                     <div className="flex-1">
                       <p className="text-[14px] font-medium text-ink">{r.name}</p>
-                      <p className="text-[10px] text-muted">{r.count} camadas</p>
+                      <p className="text-[10px] text-muted">{r.count} {t('camadas')}</p>
                     </div>
                   </div>
                 ))}
@@ -210,16 +212,16 @@ export default function AnalyticsDashboard({ dogs, kennelDogs, litters, kennel, 
       {activeSection === 'criadero' && (
         <div className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-            <Card icon={Dog} label="Total perros" value={stats.totalKennelDogs} color="#fb923c" />
-            <Card icon={Dog} label="Retenidos" value={stats.retained} color="#34d399" />
-            <Card icon={Dog} label="Transferidos" value={stats.transferred} color="#f59e0b" />
-            <Card icon={Dog} label="Con genealogía" value={stats.withPedigree} color="#8b5cf6" />
+            <Card icon={Dog} label={t('Total perros')} value={stats.totalKennelDogs} color="#fb923c" />
+            <Card icon={Dog} label={t('Retenidos')} value={stats.retained} color="#34d399" />
+            <Card icon={Dog} label={t('Transferidos')} value={stats.transferred} color="#f59e0b" />
+            <Card icon={Dog} label={t('Con genealogía')} value={stats.withPedigree} color="#8b5cf6" />
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-            <Card icon={Dog} label="Machos" value={stats.males} color="#017DFA" />
-            <Card icon={Dog} label="Hembras" value={stats.females} color="#e84393" />
-            <Card icon={BarChart3} label="Edad promedio" value={`${stats.avgAge} años`} color="#3b82f6" />
+            <Card icon={Dog} label={t('Machos')} value={stats.males} color="#017DFA" />
+            <Card icon={Dog} label={t('Hembras')} value={stats.females} color="#e84393" />
+            <Card icon={BarChart3} label={t('Edad promedio')} value={`${stats.avgAge} ${t('años')}`} color="#3b82f6" />
           </div>
         </div>
       )}

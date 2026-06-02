@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import type { AnalyticsRange } from '@/lib/analytics'
+import { useT } from '@/components/i18n/locale-provider'
 
 const OPTIONS: { id: AnalyticsRange; label: string }[] = [
   { id: 'today', label: 'Hoy' },
@@ -12,6 +13,7 @@ const OPTIONS: { id: AnalyticsRange; label: string }[] = [
 ]
 
 export function RangeChips({ active }: { active: AnalyticsRange }) {
+  const t = useT()
   const pathname = usePathname()
   const sp = useSearchParams()
   return (
@@ -28,7 +30,7 @@ export function RangeChips({ active }: { active: AnalyticsRange }) {
               isActive ? 'bg-ink text-on-primary' : 'text-body hover:text-ink'
             }`}
           >
-            {opt.label}
+            {t(opt.label)}
           </Link>
         )
       })}

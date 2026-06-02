@@ -16,6 +16,7 @@ import { pastelByName } from '@/lib/avatars'
 import InfiniteScrollSentinel from '@/components/ui/infinite-scroll-sentinel'
 import { SkeletonGrid } from '@/components/ui/skeletons'
 import DirectoryTabs from '@/components/search/directory-tabs'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Kennel {
   id: string
@@ -41,6 +42,7 @@ export default function KennelsClient({
   initialPage: number
   pageSize: number
 }) {
+  const t = useT()
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
 
@@ -53,8 +55,8 @@ export default function KennelsClient({
 
   // Debounce de la búsqueda (300ms)
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search.trim()), 300)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300)
+    return () => clearTimeout(timer)
   }, [search])
 
   const buildUrl = useCallback((p: number) => {
@@ -118,13 +120,13 @@ export default function KennelsClient({
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar criadero..."
+          placeholder={t('Buscar criadero...')}
           className="w-full bg-canvas border border-hairline rounded-lg pl-10 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:outline-none focus:border-ink transition"
         />
       </div>
 
       <p className="text-xs text-muted mb-3">
-        {total.toLocaleString('es-ES')} {total === 1 ? 'criadero' : 'criaderos'}
+        {total.toLocaleString('es-ES')} {total === 1 ? t('criadero') : t('criaderos')}
         {debouncedSearch && ` · "${debouncedSearch}"`}
       </p>
 
@@ -135,7 +137,7 @@ export default function KennelsClient({
       ) : items.length === 0 ? (
         <div className="text-center py-20 text-muted">
           <Home className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p>No se encontraron criaderos</p>
+          <p>{t('No se encontraron criaderos')}</p>
         </div>
       ) : (
         <>
@@ -162,7 +164,7 @@ export default function KennelsClient({
                     <p className="font-medium text-ink transition-colors truncate">{kennel.name}</p>
                     {kennel.foundation_date && (
                       <p className="text-xs text-muted mt-0.5">
-                        Fundado en {new Date(kennel.foundation_date).getFullYear()}
+                        {t('Fundado en')} {new Date(kennel.foundation_date).getFullYear()}
                       </p>
                     )}
                     {kennel.description && (
@@ -189,7 +191,7 @@ export default function KennelsClient({
 
           {!hasMore && items.length === total && total > pageSize && (
             <p className="text-center text-[12px] text-muted pt-6">
-              Has visto los {total.toLocaleString('es-ES')} criaderos
+              {t('Has visto los')} {total.toLocaleString('es-ES')} {t('criaderos')}
             </p>
           )}
         </>

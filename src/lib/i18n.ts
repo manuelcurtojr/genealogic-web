@@ -571,6 +571,9 @@ import { content4Crm } from './i18n-content4-crm'
 import { content4Emailbot } from './i18n-content4-emailbot'
 import { content4Newsletter } from './i18n-content4-newsletter'
 import { content4Shell } from './i18n-content4-shell'
+import { content4Site } from './i18n-content4-site'
+import { content4PublicMisc } from './i18n-content4-publicmisc'
+import { content4DashMisc } from './i18n-content4-dashmisc'
 
 export function getTranslator(lang: string) {
   const dict = translations[lang] || {}
@@ -588,6 +591,9 @@ export function getTranslator(lang: string) {
   const c4emailbot = content4Emailbot[lang] || {}
   const c4newsletter = content4Newsletter[lang] || {}
   const c4shell = content4Shell[lang] || {}
+  const c4site = content4Site[lang] || {}
+  const c4publicmisc = content4PublicMisc[lang] || {}
+  const c4dashmisc = content4DashMisc[lang] || {}
   return function t(key: string): string {
     if (lang === 'es') return key // Spanish is default
     // Cascada: base → content (Fase 1) → content2 (Fase 2-3) → content3 (Fase 3b emails)
@@ -595,7 +601,8 @@ export function getTranslator(lang: string) {
     return dict[key] || content[key] || content2[key] || content3[key]
       || c4dogs[key] || c4pages[key] || c4account[key]
       || c4kennel[key] || c4kennelpages[key] || c4reservas[key] || c4repro[key] || c4crm[key]
-      || c4emailbot[key] || c4newsletter[key] || c4shell[key] || key
+      || c4emailbot[key] || c4newsletter[key] || c4shell[key]
+      || c4site[key] || c4publicmisc[key] || c4dashmisc[key] || key
   }
 }
 

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BarChart3, TrendingUp, Globe } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 /**
  * Subnav compartido entre /analytics (Negocio), /estadisticas (Operativa)
@@ -13,27 +14,28 @@ import { BarChart3, TrendingUp, Globe } from 'lucide-react'
  * lógica de cada página.
  */
 export default function AnalyticsSubnav() {
+  const t = useT()
   const pathname = usePathname()
 
   const tabs = [
     {
       href: '/analytics',
-      label: 'Negocio',
-      hint: 'Perros, camadas, palmarés, salud — analítica del criadero',
+      label: t('Negocio'),
+      hint: t('Perros, camadas, palmarés, salud — analítica del criadero'),
       icon: BarChart3,
       active: pathname === '/analytics' || pathname.startsWith('/analytics/'),
     },
     {
       href: '/estadisticas',
-      label: 'Operativa',
-      hint: 'Reservas, clientes, biblioteca, newsletter — resumen ejecutivo',
+      label: t('Operativa'),
+      hint: t('Reservas, clientes, biblioteca, newsletter — resumen ejecutivo'),
       icon: TrendingUp,
       active: pathname === '/estadisticas' || pathname.startsWith('/estadisticas/'),
     },
     {
       href: '/visitas',
-      label: 'Estadísticas web',
-      hint: 'Tráfico de tu web pública — visitantes, fuentes, países, dispositivos',
+      label: t('Estadísticas web'),
+      hint: t('Tráfico de tu web pública — visitantes, fuentes, países, dispositivos'),
       icon: Globe,
       active: pathname === '/visitas' || pathname.startsWith('/visitas/'),
     },

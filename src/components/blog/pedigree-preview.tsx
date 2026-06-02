@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 /**
  * Mini árbol genealógico para los posts del blog de perros legendarios.
@@ -23,11 +25,11 @@ type Node = {
   birthYear?: string | number
 } | undefined
 
-function NodeCard({ node, dim = false }: { node: Node; dim?: boolean }) {
+function NodeCard({ node, dim = false, t }: { node: Node; dim?: boolean; t: (key: string) => string }) {
   if (!node) {
     return (
       <div className="flex h-[42px] items-center justify-center rounded-[8px] border border-dashed border-hairline bg-surface-card/30 px-2">
-        <span className="text-[11px] uppercase tracking-wider text-muted/60">Desconocido</span>
+        <span className="text-[11px] uppercase tracking-wider text-muted/60">{t('Desconocido')}</span>
       </div>
     )
   }
@@ -63,7 +65,7 @@ export type PedigreePreviewProps = {
   motherMother?: Node
 }
 
-export function PedigreePreview({
+export async function PedigreePreview({
   dog,
   father,
   mother,
@@ -72,14 +74,15 @@ export function PedigreePreview({
   motherFather,
   motherMother,
 }: PedigreePreviewProps) {
+  const t = getTranslator(await getLocale())
   return (
     <section className="my-10 rounded-[14px] border border-hairline bg-surface-card/40 p-6 sm:p-8">
       <div className="mb-5 flex items-baseline justify-between gap-4">
         <h3 className="text-[16px] font-semibold uppercase tracking-[0.08em] text-ink">
-          Genealogía
+          {t('Genealogía')}
         </h3>
         <span className="text-[12px] uppercase tracking-[0.1em] text-muted">
-          3 generaciones
+          {t('3 generaciones')}
         </span>
       </div>
 
@@ -87,40 +90,40 @@ export function PedigreePreview({
         {/* Gen 0: el perro */}
         <div className="col-span-1 flex items-center">
           <div className="w-full">
-            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">El perro</div>
-            <NodeCard node={{ name: dog.name, slug: dog.slug, birthYear: dog.birthYear }} />
+            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">{t('El perro')}</div>
+            <NodeCard node={{ name: dog.name, slug: dog.slug, birthYear: dog.birthYear }} t={t} />
           </div>
         </div>
 
         {/* Gen 1: padres */}
         <div className="col-span-1 flex flex-col justify-around gap-3">
           <div>
-            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">Padre ♂</div>
-            <NodeCard node={father} />
+            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">{t('Padre')} ♂</div>
+            <NodeCard node={father} t={t} />
           </div>
           <div>
-            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">Madre ♀</div>
-            <NodeCard node={mother} />
+            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">{t('Madre')} ♀</div>
+            <NodeCard node={mother} t={t} />
           </div>
         </div>
 
         {/* Gen 2: abuelos */}
         <div className="col-span-1 flex flex-col justify-around gap-3">
           <div>
-            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">Abuelo paterno</div>
-            <NodeCard node={fatherFather} dim />
+            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">{t('Abuelo paterno')}</div>
+            <NodeCard node={fatherFather} dim t={t} />
           </div>
           <div>
-            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">Abuela paterna</div>
-            <NodeCard node={fatherMother} dim />
+            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">{t('Abuela paterna')}</div>
+            <NodeCard node={fatherMother} dim t={t} />
           </div>
           <div>
-            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">Abuelo materno</div>
-            <NodeCard node={motherFather} dim />
+            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">{t('Abuelo materno')}</div>
+            <NodeCard node={motherFather} dim t={t} />
           </div>
           <div>
-            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">Abuela materna</div>
-            <NodeCard node={motherMother} dim />
+            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">{t('Abuela materna')}</div>
+            <NodeCard node={motherMother} dim t={t} />
           </div>
         </div>
       </div>
@@ -130,7 +133,7 @@ export function PedigreePreview({
           href={`/dogs/${dog.slug}`}
           className="inline-flex items-center gap-2 text-[15px] font-medium text-[color:var(--brand)] underline decoration-[color:var(--brand)]/40 underline-offset-4 transition hover:decoration-[color:var(--brand)]"
         >
-          Ver la genealogía completa de {dog.name}
+          {t('Ver la genealogía completa de')} {dog.name}
           <span aria-hidden>→</span>
         </Link>
       </div>

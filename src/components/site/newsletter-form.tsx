@@ -1,19 +1,22 @@
 'use client'
 
 import { useState } from 'react'
+import { useT } from '@/components/i18n/locale-provider'
 
 export function NewsletterForm({
   kennelId,
   placeholder = 'tu@email.com',
   placeholderEmail,
-  ctaLabel = 'Suscribirme',
+  ctaLabel,
 }: {
   kennelId?: string
   placeholder?: string
   placeholderEmail?: string
   ctaLabel?: string
 }) {
+  const t = useT()
   const ph = placeholderEmail || placeholder
+  const cta = ctaLabel || t('Suscribirme')
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'ok' | 'err'>('idle')
   const [msg, setMsg] = useState<string | null>(null)
@@ -29,8 +32,8 @@ export function NewsletterForm({
         body: JSON.stringify({ kennel_id: kennelId, email: email.trim(), source: 'web_form' }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Error')
-      setStatus('ok'); setMsg('¡Suscrito! Te avisaremos en próximas camadas.')
+      if (!res.ok) throw new Error(data.error || t('Error'))
+      setStatus('ok'); setMsg(t('¡Suscrito! Te avisaremos en próximas camadas.'))
       setEmail('')
     } catch (err: any) {
       setStatus('err'); setMsg(err.message)
@@ -46,7 +49,7 @@ export function NewsletterForm({
       />
       <button type="submit" disabled={status === 'loading'}
         className="px-5 py-3 text-sm font-semibold bg-ink text-on-primary rounded-lg hover:opacity-90 transition disabled:opacity-50">
-        {status === 'loading' ? 'Enviando…' : ctaLabel}
+        {status === 'loading' ? t('Enviando…') : cta}
       </button>
       {msg && (
         <p className={`text-xs ${status === 'ok' ? 'text-ink' : 'text-red-700'} mt-1`}>{msg}</p>

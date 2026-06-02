@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Plus, Search, BookOpen, Eye, EyeOff, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useT } from '@/components/i18n/locale-provider'
 import KnowledgeFormPanel from './knowledge-form-panel'
 import KnowledgeImporter from './knowledge-importer'
 
@@ -38,6 +39,7 @@ const CATEGORY_LABEL: Record<string, string> = Object.fromEntries(
 )
 
 export default function KnowledgePageClient({ kennelId, kennelName, initialEntries }: Props) {
+  const t = useT()
   const [entries, setEntries] = useState<Entry[]>(initialEntries)
   const [query, setQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState<string>('all')
@@ -95,22 +97,22 @@ export default function KnowledgePageClient({ kennelId, kennelName, initialEntri
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-ink tracking-tight">Biblioteca</h1>
+          <h1 className="text-2xl font-bold text-ink tracking-tight">{t('Biblioteca')}</h1>
           <p className="text-sm text-muted mt-0.5">
-            {kennelName} · {entries.length} entrada{entries.length === 1 ? '' : 's'}
+            {kennelName} · {entries.length} {t(entries.length === 1 ? 'entrada' : 'entradas')}
             {entries.length > activeEntries && (
-              <span className="text-muted"> · {activeEntries} activa{activeEntries === 1 ? '' : 's'}</span>
+              <span className="text-muted"> · {activeEntries} {t(activeEntries === 1 ? 'activa' : 'activas')}</span>
             )}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={() => setImporterOpen(true)} size="md" variant="secondary">
             <Sparkles className="w-4 h-4" />
-            Importar con IA
+            {t('Importar con IA')}
           </Button>
           <Button onClick={() => { setEditing(null); setPanelOpen(true) }} size="md" variant="primary">
             <Plus className="w-4 h-4" />
-            Nueva entrada
+            {t('Nueva entrada')}
           </Button>
         </div>
       </div>
@@ -125,10 +127,8 @@ export default function KnowledgePageClient({ kennelId, kennelName, initialEntri
         <BookOpen className="w-5 h-5 text-muted flex-shrink-0 mt-0.5" />
         <div className="text-sm text-body leading-relaxed">
           <p>
-            Las entradas de la Biblioteca son lo que el <strong>Emailbot</strong> usa como
-            contexto para responder. Estructura tu información como entradas independientes
-            (precio del cachorro, política de reserva, qué incluye la entrega…) — el bot
-            elegirá las más relevantes para cada consulta.
+            {t('Las entradas de la Biblioteca son lo que el')} <strong>Emailbot</strong>{' '}
+            {t('usa como contexto para responder. Estructura tu información como entradas independientes (precio del cachorro, política de reserva, qué incluye la entrega…) — el bot elegirá las más relevantes para cada consulta.')}
           </p>
         </div>
       </div>
@@ -143,7 +143,7 @@ export default function KnowledgePageClient({ kennelId, kennelName, initialEntri
               : 'border border-hairline text-body hover:text-ink hover:bg-surface-soft'
           }`}
         >
-          Todas ({entries.length})
+          {t('Todas')} ({entries.length})
         </button>
         {CATEGORIES.map(c => {
           const count = countByCategory[c.key] || 0
@@ -158,7 +158,7 @@ export default function KnowledgePageClient({ kennelId, kennelName, initialEntri
                   : 'border border-hairline text-body hover:text-ink hover:bg-surface-soft'
               }`}
             >
-              {c.label} ({count})
+              {t(c.label)} ({count})
             </button>
           )
         })}
@@ -171,7 +171,7 @@ export default function KnowledgePageClient({ kennelId, kennelName, initialEntri
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Buscar en título o contenido…"
+          placeholder={t('Buscar en título o contenido…')}
           className="w-full pl-9 pr-3 py-2 text-sm border border-hairline rounded-lg bg-canvas text-ink placeholder:text-muted focus:outline-none focus:border-ink transition"
         />
       </div>
@@ -181,12 +181,12 @@ export default function KnowledgePageClient({ kennelId, kennelName, initialEntri
         <div className="text-center py-16 border border-dashed border-hairline rounded-xl bg-canvas">
           <p className="text-sm text-muted mb-3">
             {entries.length === 0
-              ? 'Aún no tienes entradas. Empieza añadiendo precio, política de reserva y filosofía.'
-              : 'Ninguna entrada coincide con el filtro.'}
+              ? t('Aún no tienes entradas. Empieza añadiendo precio, política de reserva y filosofía.')
+              : t('Ninguna entrada coincide con el filtro.')}
           </p>
           {entries.length === 0 && (
             <Button onClick={() => { setEditing(null); setPanelOpen(true) }} variant="secondary" size="sm">
-              Crear primera entrada
+              {t('Crear primera entrada')}
             </Button>
           )}
         </div>
@@ -202,11 +202,11 @@ export default function KnowledgePageClient({ kennelId, kennelName, initialEntri
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted bg-surface-card rounded-full px-2 py-0.5">
-                      {CATEGORY_LABEL[e.category] || e.category}
+                      {t(CATEGORY_LABEL[e.category] || e.category)}
                     </span>
                     {!e.is_active && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted">
-                        <EyeOff className="w-3 h-3" /> Inactiva
+                        <EyeOff className="w-3 h-3" /> {t('Inactiva')}
                       </span>
                     )}
                   </div>

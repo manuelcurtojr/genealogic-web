@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { X, Plus, Link2, Unlink, Search, Loader2, GitBranch, Check } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
+import { useT } from '@/components/i18n/locale-provider'
 import AdminPedigreeTree from '../admin/admin-pedigree-tree'
 import DogFormPanel from '../dogs/dog-form-panel'
 
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) {
+  const t = useT()
   const [pedigreeData, setPedigreeData] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [dogName, setDogName] = useState('')
@@ -162,17 +164,17 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-hairline flex-shrink-0 bg-surface-card">
           <div className="flex items-center gap-2">
             <GitBranch className="w-4 h-4 text-ink" />
-            <h2 className="text-sm sm:text-base font-semibold">Genealogía de {dogName}</h2>
+            <h2 className="text-sm sm:text-base font-semibold">{t('Genealogía de')} {dogName}</h2>
           </div>
           <div className="flex items-center gap-2">
             {/* Saved indicator */}
             {showSaved && (
               <span className="flex items-center gap-1 text-xs text-green-400 bg-green-500/10 px-2.5 py-1.5 rounded-lg">
-                <Check className="w-3.5 h-3.5" /> Guardado
+                <Check className="w-3.5 h-3.5" /> {t('Guardado')}
               </span>
             )}
             <button onClick={onClose} className="bg-ink text-on-primary hover:opacity-90 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1.5">
-              <Check className="w-4 h-4" /> Listo
+              <Check className="w-4 h-4" /> {t('Listo')}
             </button>
           </div>
         </div>
@@ -187,7 +189,7 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
             <div className="flex items-center justify-center h-full text-muted">
               <div className="text-center">
                 <GitBranch className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">Sin datos de genealogía</p>
+                <p className="text-sm">{t('Sin datos de genealogía')}</p>
               </div>
             </div>
           )}
@@ -207,14 +209,14 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
               <>
                 <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
                   <div>
-                    <p className="text-sm font-semibold">Añadir {panelTarget.role === 'father' ? 'padre' : 'madre'}</p>
-                    <p className="text-[10px] text-muted">a {panelTarget.dogName}</p>
+                    <p className="text-sm font-semibold">{t('Añadir')} {t(panelTarget.role === 'father' ? 'padre' : 'madre')}</p>
+                    <p className="text-[10px] text-muted">{t('a')} {panelTarget.dogName}</p>
                   </div>
                   <button onClick={() => setPanelOpen(false)} className="text-muted hover:text-ink"><X className="w-5 h-5" /></button>
                 </div>
 
                 <div className={`px-4 sm:px-5 py-2 text-xs font-medium flex items-center gap-1.5 flex-shrink-0 ${panelTarget.role === 'father' ? 'bg-blue-500/5 text-blue-400' : 'bg-pink-500/5 text-pink-400'}`}>
-                  {panelTarget.role === 'father' ? '♂ Se buscará/creará como macho' : '♀ Se buscará/creará como hembra'}
+                  {panelTarget.role === 'father' ? '♂ ' + t('Se buscará/creará como macho') : '♀ ' + t('Se buscará/creará como hembra')}
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 sm:p-5">
@@ -222,7 +224,7 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
                   <div className="relative mb-3">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
                     <input type="text" value={ancestorSearch} onChange={e => setAncestorSearch(e.target.value)}
-                      placeholder={`Buscar ${panelTarget.role === 'father' ? 'macho' : 'hembra'} existente...`} autoFocus
+                      placeholder={t(panelTarget.role === 'father' ? 'Buscar macho existente...' : 'Buscar hembra existente...')} autoFocus
                       className="w-full bg-canvas border border-hairline rounded-lg pl-9 pr-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
                   </div>
                   <div className="space-y-1">
@@ -236,7 +238,7 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
                         {d.breed?.name && <span className="text-[10px] text-muted">{d.breed.name}</span>}
                       </button>
                     ))}
-                    {ancestorCandidates.length === 0 && ancestorSearch && <p className="text-xs text-muted text-center py-4">Sin resultados</p>}
+                    {ancestorCandidates.length === 0 && ancestorSearch && <p className="text-xs text-muted text-center py-4">{t('Sin resultados')}</p>}
                   </div>
                 </div>
 
@@ -244,7 +246,7 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
                 <div className="px-4 sm:px-5 py-3 sm:py-4 border-t border-hairline flex-shrink-0">
                   <button onClick={openNewAncestorForm}
                     className="w-full bg-ink text-on-primary hover:opacity-90 px-4 py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-1.5">
-                    <Plus className="w-4 h-4" /> Crear nuevo {panelTarget.role === 'father' ? 'perro' : 'perra'}
+                    <Plus className="w-4 h-4" /> {t('Crear nuevo')} {t(panelTarget.role === 'father' ? 'perro' : 'perra')}
                   </button>
                 </div>
               </>
@@ -265,44 +267,44 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
                     </div>
                     <div>
                       <p className="font-bold">{editNodeData.name}</p>
-                      <p className="text-xs text-muted">{editNodeData.sex === 'male' ? '♂ Macho' : '♀ Hembra'}{editNodeData.breed_name && ` · ${editNodeData.breed_name}`}</p>
+                      <p className="text-xs text-muted">{editNodeData.sex === 'male' ? '♂ ' + t('Macho') : '♀ ' + t('Hembra')}{editNodeData.breed_name && ` · ${editNodeData.breed_name}`}</p>
                       {editNodeData.registration && <p className="text-[10px] text-muted font-mono mt-0.5">{editNodeData.registration}</p>}
                     </div>
                   </div>
 
                   {editNodeParent && (
                     <p className="text-xs text-muted">
-                      Vinculado como <strong className={editNodeParent.role === 'father' ? 'text-blue-400' : 'text-pink-400'}>{editNodeParent.role === 'father' ? 'padre' : 'madre'}</strong> de {pedigreeData.find(n => n.id === editNodeParent.parentId)?.name || '?'}
+                      {t('Vinculado como')} <strong className={editNodeParent.role === 'father' ? 'text-blue-400' : 'text-pink-400'}>{t(editNodeParent.role === 'father' ? 'padre' : 'madre')}</strong> {t('de')} {pedigreeData.find(n => n.id === editNodeParent.parentId)?.name || '?'}
                     </p>
                   )}
 
                   <a href={`/dogs/${(editNodeData as any).slug || editNodeData.id}`} target="_blank"
                     className="w-full flex items-center justify-center gap-1.5 bg-surface-card border border-hairline text-body px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-surface-card transition">
-                    Ver perfil completo ↗
+                    {t('Ver perfil completo')} ↗
                   </a>
 
                   {editNodeParent && (
                     <button onClick={disconnectDog} disabled={saving}
                       className="w-full flex items-center justify-center gap-1.5 bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-red-500/20 transition disabled:opacity-50">
                       {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlink className="w-4 h-4" />}
-                      {saving ? 'Desconectando...' : 'Desconectar de este nodo'}
+                      {saving ? t('Desconectando...') : t('Desconectar de este nodo')}
                     </button>
                   )}
 
                   {(!editNodeData.father_id || !editNodeData.mother_id) && (
                     <div className="border-t border-hairline pt-4">
-                      <p className="text-xs text-muted mb-2">Ancestros faltantes:</p>
+                      <p className="text-xs text-muted mb-2">{t('Ancestros faltantes:')}</p>
                       <div className="space-y-2">
                         {!editNodeData.father_id && (
                           <button onClick={() => { setPanelOpen(false); setTimeout(() => handleClickEmpty(editNodeData.id, 'father'), 150) }}
                             className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-blue-400/30 text-blue-400 text-xs font-medium hover:bg-blue-500/5 transition">
-                            <Plus className="w-3.5 h-3.5" /> Añadir padre
+                            <Plus className="w-3.5 h-3.5" /> {t('Añadir padre')}
                           </button>
                         )}
                         {!editNodeData.mother_id && (
                           <button onClick={() => { setPanelOpen(false); setTimeout(() => handleClickEmpty(editNodeData.id, 'mother'), 150) }}
                             className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-pink-400/30 text-pink-400 text-xs font-medium hover:bg-pink-500/5 transition">
-                            <Plus className="w-3.5 h-3.5" /> Añadir madre
+                            <Plus className="w-3.5 h-3.5" /> {t('Añadir madre')}
                           </button>
                         )}
                       </div>

@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { Info, Lightbulb, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 /**
  * Tipografía estilo Cal.com para el blog. Inter, tight tracking en headlines,
@@ -172,24 +174,25 @@ export function TD({ children }: { children: React.ReactNode }) {
 }
 
 /** Cierre de post estándar con CTA de registro. */
-export function PostCta({ variant = 'register' }: { variant?: 'register' | 'pro' | 'import' }) {
+export async function PostCta({ variant = 'register' }: { variant?: 'register' | 'pro' | 'import' }) {
+  const t = getTranslator(await getLocale())
   const config = {
     register: {
-      title: 'Empieza gratis en Genealogic',
-      body: 'El registro público mundial de perros con genealogía. Crea cuenta, importa tus perros y publica tu árbol verificable en minutos.',
-      cta: 'Crear cuenta gratis',
+      title: t('Empieza gratis en Genealogic'),
+      body: t('El registro público mundial de perros con genealogía. Crea cuenta, importa tus perros y publica tu árbol verificable en minutos.'),
+      cta: t('Crear cuenta gratis'),
       href: '/register',
     },
     pro: {
-      title: '¿Listo para profesionalizar tu criadero?',
-      body: 'Pipeline de reservas, CRM de clientes, web pública con dominio propio y emailbot. Precio Founder por vida si te subes ahora.',
-      cta: 'Ver tier Pro',
+      title: t('¿Listo para profesionalizar tu criadero?'),
+      body: t('Pipeline de reservas, CRM de clientes, web pública con dominio propio y emailbot. Precio Founder por vida si te subes ahora.'),
+      cta: t('Ver tier Pro'),
       href: '/#precios',
     },
     import: {
-      title: 'Importa tu genealogía con IA',
-      body: 'Sube una foto de una genealogía existente y obtén el árbol completo en segundos. Funciona con cualquier formato: FCI, RSCE, AKC, manuscrito.',
-      cta: 'Probar la importación',
+      title: t('Importa tu genealogía con IA'),
+      body: t('Sube una foto de una genealogía existente y obtén el árbol completo en segundos. Funciona con cualquier formato: FCI, RSCE, AKC, manuscrito.'),
+      cta: t('Probar la importación'),
       href: '/register',
     },
   }[variant]

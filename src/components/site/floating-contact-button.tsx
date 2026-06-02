@@ -7,6 +7,7 @@
  */
 import { useState } from 'react'
 import { Send } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 import { ContactDialog } from './contact-dialog'
 import type { ContactFormConfig } from '@/lib/kennel/contact-form'
 
@@ -17,6 +18,7 @@ export function FloatingContactButton({
   kennelName: string
   config: ContactFormConfig | null
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   return (
     <>
@@ -24,11 +26,11 @@ export function FloatingContactButton({
         type="button"
         onClick={() => setOpen(true)}
         className="btn-brand fixed bottom-4 left-4 z-40 inline-flex items-center gap-2 px-4 py-2.5 text-[12px] font-semibold uppercase tracking-[0.1em] shadow-2xl"
-        title="Enviar solicitud"
-        aria-label="Abrir formulario de solicitud"
+        title={t('Enviar solicitud')}
+        aria-label={t('Abrir formulario de solicitud')}
       >
         <Send className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">Solicitudes</span>
+        <span className="hidden sm:inline">{t('Solicitudes')}</span>
       </button>
       <ContactDialog
         open={open}
@@ -53,6 +55,7 @@ export function FloatingContactButtonFooter({
   kennelName: string
   config: ContactFormConfig | null
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   return (
     <>
@@ -62,7 +65,7 @@ export function FloatingContactButtonFooter({
         className="btn-brand inline-flex items-center justify-center gap-2 px-5 py-3 text-[12px] font-semibold uppercase tracking-[0.12em] w-full sm:w-auto"
       >
         <Send className="h-3.5 w-3.5" />
-        Enviar solicitud
+        {t('Enviar solicitud')}
       </button>
       <ContactDialog
         open={open}

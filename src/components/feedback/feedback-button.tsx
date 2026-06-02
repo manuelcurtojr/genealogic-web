@@ -21,6 +21,7 @@ import { useState, useRef, useEffect } from 'react'
 import { MessageCircleWarning, X, Send, Sparkles, Loader2, CheckCircle2, Bot, User as UserIcon } from 'lucide-react'
 import { createFeedbackAction } from '@/lib/admin-requests/actions'
 import type { FeedbackScope } from '@/lib/admin-requests/types'
+import { useT } from '@/components/i18n/locale-provider'
 
 type Msg = { role: 'user' | 'assistant'; content: string; pending?: boolean }
 
@@ -37,6 +38,7 @@ interface Props {
 export default function FeedbackButton({
   scope, pageLabel, variant = 'fixed', label = '¿Algo ha salido mal?',
 }: Props) {
+  const t = useT()
   const [open, setOpen] = useState(false)
 
   return (
@@ -46,10 +48,10 @@ export default function FeedbackButton({
           type="button"
           onClick={() => setOpen(true)}
           className="fixed bottom-4 right-4 z-40 inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-3.5 py-2 text-[12.5px] font-semibold text-body shadow-[0_4px_16px_rgba(0,0,0,0.08)] backdrop-blur hover:border-ink/30 hover:text-ink hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] transition-all"
-          aria-label={label}
+          aria-label={t(label)}
         >
           <MessageCircleWarning className="h-3.5 w-3.5 text-amber-600" />
-          <span className="hidden sm:inline">{label}</span>
+          <span className="hidden sm:inline">{t(label)}</span>
         </button>
       ) : (
         <button
@@ -58,7 +60,7 @@ export default function FeedbackButton({
           className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-soft px-3 py-1.5 text-[12.5px] font-semibold text-body hover:border-ink/30 hover:text-ink transition"
         >
           <MessageCircleWarning className="h-3.5 w-3.5 text-amber-600" />
-          {label}
+          {t(label)}
         </button>
       )}
 
@@ -82,6 +84,7 @@ function FeedbackModal({
   pageLabel: string
   onClose: () => void
 }) {
+  const t = useT()
   const [aiMessages, setAiMessages] = useState<Msg[]>([])
   const [aiInput, setAiInput] = useState('')
   const [aiPending, setAiPending] = useState(false)
@@ -133,7 +136,7 @@ function FeedbackModal({
         }),
       })
       const data = await res.json()
-      const reply: string = data.reply || 'No he podido procesar tu pregunta. Mándalo abajo como feedback.'
+      const reply: string = data.reply || t('No he podido procesar tu pregunta. Mándalo abajo como feedback.')
 
       setAiMessages(prev => {
         const copy = [...prev]
@@ -153,7 +156,7 @@ function FeedbackModal({
         if (copy[lastIdx]?.pending) {
           copy[lastIdx] = {
             role: 'assistant',
-            content: 'No he podido conectar. Escribe el problema abajo y lo revisamos en menos de 24h.',
+            content: t('No he podido conectar. Escribe el problema abajo y lo revisamos en menos de 24h.'),
           }
         }
         return copy
@@ -166,7 +169,7 @@ function FeedbackModal({
   async function sendTicket() {
     const msg = ticketMessage.trim()
     if (!msg || msg.length < 5) {
-      setError('Escribe al menos unos detalles sobre lo que ha pasado.')
+      setError(t('Escribe al menos unos detalles sobre lo que ha pasado.'))
       ticketRef.current?.focus()
       return
     }
@@ -200,7 +203,7 @@ function FeedbackModal({
       })
       setSent({ id: result.id })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo enviar el feedback. Inténtalo de nuevo.')
+      setError(err instanceof Error ? err.message : t('No se pudo enviar el feedback. Inténtalo de nuevo.'))
     } finally {
       setSending(false)
     }
@@ -214,18 +217,17 @@ function FeedbackModal({
           <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50">
             <CheckCircle2 className="h-6 w-6 text-emerald-700" strokeWidth={2.5} />
           </div>
-          <h2 className="text-lg font-semibold text-ink">¡Recibido!</h2>
+          <h2 className="text-lg font-semibold text-ink">{t('¡Recibido!')}</h2>
           <p className="mt-2 text-[14px] text-body max-w-sm mx-auto">
-            Tu feedback acaba de llegar al equipo. Lo revisamos a menudo (suele ser
-            en menos de 24h) y si necesitamos más detalle te escribimos al email.
+            {t('Tu feedback acaba de llegar al equipo. Lo revisamos a menudo (suele ser en menos de 24h) y si necesitamos más detalle te escribimos al email.')}
           </p>
-          <p className="mt-3 text-[11px] text-muted font-mono">Ticket: {sent.id.slice(0, 8)}</p>
+          <p className="mt-3 text-[11px] text-muted font-mono">{t('Ticket:')} {sent.id.slice(0, 8)}</p>
           <button
             type="button"
             onClick={onClose}
             className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-ink px-5 py-2.5 text-sm font-semibold text-on-primary hover:opacity-90 transition"
           >
-            Cerrar
+            {t('Cerrar')}
           </button>
         </div>
       </ModalShell>
@@ -240,10 +242,10 @@ function FeedbackModal({
           <div>
             <h2 className="text-[15px] font-semibold text-ink flex items-center gap-2">
               <MessageCircleWarning className="h-4 w-4 text-amber-600" />
-              Cuéntanos qué ha pasado
+              {t('Cuéntanos qué ha pasado')}
             </h2>
             <p className="mt-0.5 text-[12.5px] text-muted">
-              Zona: <span className="font-medium text-body">{pageLabel}</span>
+              {t('Zona:')} <span className="font-medium text-body">{pageLabel}</span>
             </p>
           </div>
           <button
@@ -251,7 +253,7 @@ function FeedbackModal({
             onClick={onClose}
             disabled={sending}
             className="rounded-md p-1 text-muted hover:bg-surface-soft hover:text-ink disabled:opacity-50"
-            aria-label="Cerrar"
+            aria-label={t('Cerrar')}
           >
             <X className="h-4 w-4" />
           </button>
@@ -268,16 +270,15 @@ function FeedbackModal({
           >
             <span className="flex items-center gap-2 text-ink">
               <Sparkles className="h-3.5 w-3.5 text-[color:var(--brand,#FE6620)]" />
-              ¿Preguntar primero a la IA? <span className="text-muted font-normal">(opcional)</span>
+              {t('¿Preguntar primero a la IA?')} <span className="text-muted font-normal">{t('(opcional)')}</span>
             </span>
-            <span className="text-[11px] text-muted">{aiOpen ? 'Ocultar' : 'Probar'}</span>
+            <span className="text-[11px] text-muted">{aiOpen ? t('Ocultar') : t('Probar')}</span>
           </button>
 
           {aiOpen && (
             <div className="px-5 pb-4 space-y-2">
               <p className="text-[11.5px] text-muted leading-snug">
-                Si tu problema es común te lo resolvemos al instante. Si no, manda el
-                ticket abajo y lo miramos nosotros.
+                {t('Si tu problema es común te lo resolvemos al instante. Si no, manda el ticket abajo y lo miramos nosotros.')}
               </p>
 
               {aiMessages.length > 0 && (
@@ -296,7 +297,7 @@ function FeedbackModal({
                         {m.pending ? (
                           <span className="inline-flex items-center gap-1.5 text-muted">
                             <Loader2 className="h-3 w-3 animate-spin" />
-                            Pensando...
+                            {t('Pensando...')}
                           </span>
                         ) : (
                           m.content
@@ -319,7 +320,7 @@ function FeedbackModal({
                     }
                   }}
                   disabled={aiPending}
-                  placeholder="Ej: el importador no detecta este perro"
+                  placeholder={t('Ej: el importador no detecta este perro')}
                   className="flex-1 rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition disabled:opacity-60"
                 />
                 <button
@@ -327,7 +328,7 @@ function FeedbackModal({
                   onClick={askAI}
                   disabled={!aiInput.trim() || aiPending}
                   className="inline-flex items-center justify-center rounded-lg bg-ink px-3 py-2 text-on-primary disabled:opacity-40 hover:opacity-90 transition"
-                  aria-label="Preguntar"
+                  aria-label={t('Preguntar')}
                 >
                   {aiPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </button>
@@ -339,9 +340,9 @@ function FeedbackModal({
         {/* Ticket — siempre visible */}
         <div className="px-5 py-4 space-y-3">
           <label className="block">
-            <span className="text-[13px] font-semibold text-ink">Describe el problema</span>
+            <span className="text-[13px] font-semibold text-ink">{t('Describe el problema')}</span>
             <span className="block text-[11.5px] text-muted mt-0.5">
-              Qué intentabas hacer, qué pasó y qué esperabas. Cuanto más concreto, antes lo arreglamos.
+              {t('Qué intentabas hacer, qué pasó y qué esperabas. Cuanto más concreto, antes lo arreglamos.')}
             </span>
             <textarea
               ref={ticketRef}
@@ -349,14 +350,13 @@ function FeedbackModal({
               onChange={e => setTicketMessage(e.target.value)}
               rows={5}
               disabled={sending}
-              placeholder="Estaba subiendo una foto al perro Rocky y me sale 'error al guardar'. La foto pesa 2MB y es JPG. Ya lo intenté 3 veces."
+              placeholder={t("Estaba subiendo una foto al perro Rocky y me sale 'error al guardar'. La foto pesa 2MB y es JPG. Ya lo intenté 3 veces.")}
               className="mt-1.5 w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-[13.5px] text-ink placeholder:text-muted/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition disabled:opacity-60 resize-none"
             />
           </label>
 
           <p className="text-[11px] text-muted leading-snug">
-            Capturamos automáticamente la página y el navegador. No subimos contraseñas
-            ni datos de tarjeta — esto solo lo ve el equipo de Genealogic.
+            {t('Capturamos automáticamente la página y el navegador. No subimos contraseñas ni datos de tarjeta — esto solo lo ve el equipo de Genealogic.')}
           </p>
 
           {error && (
@@ -375,7 +375,7 @@ function FeedbackModal({
           disabled={sending}
           className="rounded-lg px-3 py-2 text-[13px] font-semibold text-body hover:text-ink disabled:opacity-50"
         >
-          Cancelar
+          {t('Cancelar')}
         </button>
         <button
           type="button"
@@ -386,12 +386,12 @@ function FeedbackModal({
           {sending ? (
             <>
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Enviando…
+              {t('Enviando…')}
             </>
           ) : (
             <>
               <Send className="h-3.5 w-3.5" />
-              Enviar feedback
+              {t('Enviar feedback')}
             </>
           )}
         </button>
@@ -403,13 +403,14 @@ function FeedbackModal({
 // ─── Shell común del modal (backdrop + centrado + animation) ───────────────
 
 function ModalShell({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  const t = useT()
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
       <button
         type="button"
         onClick={onClose}
-        aria-label="Cerrar modal"
+        aria-label={t('Cerrar modal')}
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
       />
       {/* Sheet (mobile bottom) / Modal centrado (desktop) */}

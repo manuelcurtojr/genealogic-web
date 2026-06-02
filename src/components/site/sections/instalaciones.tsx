@@ -4,6 +4,8 @@
 import Link from 'next/link'
 import { SectionHeader } from '@/components/site/section-primitives'
 import { GalleryGridLightbox } from './gallery-grid-client'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export function FacilitiesHeroSection({
   eyebrow, title, subtitle, body, background_image_url, bg_image_url,
@@ -84,7 +86,7 @@ export function FacilityFeaturesSection({
   )
 }
 
-export function GalleryGridSection({
+export async function GalleryGridSection({
   title, subtitle, eyebrow, images = [], columns = 3, layout = 'masonry',
 }: {
   title?: string
@@ -95,11 +97,12 @@ export function GalleryGridSection({
   columns?: 2 | 3 | 4
   cta?: { label: string; href: string }
 }) {
+  const t = getTranslator(await getLocale())
   if (!images.length) {
     return (
       <section className="border-t border-hairline">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-20 text-center">
-          <p className="text-muted italic text-sm">Galería próximamente — estamos preparando las fotos.</p>
+          <p className="text-muted italic text-sm">{t('Galería próximamente — estamos preparando las fotos.')}</p>
         </div>
       </section>
     )
@@ -110,7 +113,7 @@ export function GalleryGridSection({
   return (
     <section className="py-20 lg:py-28 relative overflow-hidden">
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-10">
-        <SectionHeader number="05" eyebrow={eyebrow ?? 'Comunidad'} title={title} subtitle={subtitle} align="left" />
+        <SectionHeader number="05" eyebrow={eyebrow ?? t('Comunidad')} title={title} subtitle={subtitle} align="left" />
         <GalleryGridLightbox images={images} columns={columns} layout={layout} />
       </div>
     </section>

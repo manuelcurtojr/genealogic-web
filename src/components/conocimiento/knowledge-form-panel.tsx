@@ -5,6 +5,7 @@ import SlidePanel from '@/components/ui/slide-panel'
 import { Button } from '@/components/ui/button'
 import { Trash2 } from 'lucide-react'
 import { CATEGORIES } from './knowledge-page-client'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Entry {
   id: string
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export default function KnowledgeFormPanel({ open, onClose, onSaved, onDeleted, editing, kennelId }: Props) {
+  const t = useT()
   const [category, setCategory] = useState('general')
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -50,7 +52,7 @@ export default function KnowledgeFormPanel({ open, onClose, onSaved, onDeleted, 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!title.trim() || !content.trim()) {
-      alert('Título y contenido son obligatorios')
+      alert(t('Título y contenido son obligatorios'))
       return
     }
     setSaving(true)
@@ -68,7 +70,7 @@ export default function KnowledgeFormPanel({ open, onClose, onSaved, onDeleted, 
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Error al guardar')
+        throw new Error(err.error || t('Error al guardar'))
       }
       const data = await res.json()
       onSaved(data.entry)
@@ -81,13 +83,13 @@ export default function KnowledgeFormPanel({ open, onClose, onSaved, onDeleted, 
 
   async function handleDelete() {
     if (!editing) return
-    if (!confirm('¿Eliminar esta entrada? El Emailbot dejará de usarla como contexto.')) return
+    if (!confirm(t('¿Eliminar esta entrada? El Emailbot dejará de usarla como contexto.'))) return
     setDeleting(true)
     try {
       const res = await fetch(`/api/knowledge/${editing.id}`, { method: 'DELETE' })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Error al eliminar')
+        throw new Error(err.error || t('Error al eliminar'))
       }
       onDeleted(editing.id)
     } catch (err: any) {
@@ -98,33 +100,33 @@ export default function KnowledgeFormPanel({ open, onClose, onSaved, onDeleted, 
   }
 
   return (
-    <SlidePanel open={open} onClose={onClose} title={editing ? 'Editar entrada' : 'Nueva entrada'}>
+    <SlidePanel open={open} onClose={onClose} title={editing ? t('Editar entrada') : t('Nueva entrada')}>
       <form onSubmit={handleSubmit} className="space-y-5">
-        <Field label="Categoría">
+        <Field label={t('Categoría')}>
           <select value={category} onChange={e => setCategory(e.target.value)} className="input">
-            {CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+            {CATEGORIES.map(c => <option key={c.key} value={c.key}>{t(c.label)}</option>)}
           </select>
         </Field>
 
-        <Field label="Título *">
+        <Field label={t('Título *')}>
           <input
             type="text" required value={title} onChange={e => setTitle(e.target.value)}
-            className="input" placeholder="Precio del cachorro · Política de reserva · ¿Qué incluye la entrega?"
+            className="input" placeholder={t('Precio del cachorro · Política de reserva · ¿Qué incluye la entrega?')}
           />
         </Field>
 
-        <Field label="Contenido *">
+        <Field label={t('Contenido *')}>
           <textarea
             required value={content} onChange={e => setContent(e.target.value)}
-            className="input min-h-[200px]" placeholder="Cuenta aquí todo lo que el Emailbot necesita saber sobre este tema. Sé natural, en tu tono. Puedes usar varias líneas."
+            className="input min-h-[200px]" placeholder={t('Cuenta aquí todo lo que el Emailbot necesita saber sobre este tema. Sé natural, en tu tono. Puedes usar varias líneas.')}
           />
-          <span className="block text-[11px] text-muted mt-1">{content.length} caracteres</span>
+          <span className="block text-[11px] text-muted mt-1">{content.length} {t('caracteres')}</span>
         </Field>
 
         <label className="flex items-center gap-2.5 cursor-pointer">
           <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} className="w-4 h-4" />
           <span className="text-sm text-body">
-            Activa — el Emailbot la usa como contexto
+            {t('Activa — el Emailbot la usa como contexto')}
           </span>
         </label>
 
@@ -135,13 +137,13 @@ export default function KnowledgeFormPanel({ open, onClose, onSaved, onDeleted, 
               className="text-sm text-muted hover:text-[color:var(--error)] transition inline-flex items-center gap-1.5 disabled:opacity-50"
             >
               <Trash2 className="w-4 h-4" />
-              {deleting ? 'Eliminando…' : 'Eliminar'}
+              {deleting ? t('Eliminando…') : t('Eliminar')}
             </button>
           ) : <div />}
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={onClose}>Cancelar</Button>
+            <Button variant="ghost" size="sm" onClick={onClose}>{t('Cancelar')}</Button>
             <Button variant="primary" size="sm" type="submit" disabled={saving}>
-              {saving ? 'Guardando…' : (editing ? 'Guardar' : 'Crear')}
+              {saving ? t('Guardando…') : (editing ? t('Guardar') : t('Crear'))}
             </Button>
           </div>
         </div>

@@ -3,8 +3,10 @@
  */
 import ContactFormInner from './contact-form-inner'
 import { SectionHeader } from '@/components/site/section-primitives'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
-export function ContactFormSection({
+export async function ContactFormSection({
   title, subtitle, eyebrow, headline, topics, success_message,
 }: {
   title?: string
@@ -14,11 +16,12 @@ export function ContactFormSection({
   topics?: string[]
   success_message?: string
 }) {
-  const t = title || headline || 'Cuéntanos'
+  const t = getTranslator(await getLocale())
+  const heading = title || headline || t('Cuéntanos')
   return (
     <section className="py-16 lg:py-24">
       <div className="max-w-xl mx-auto px-4 sm:px-6">
-        <SectionHeader number="01" eyebrow={eyebrow ?? 'Contacto'} title={t} subtitle={subtitle} align="left" />
+        <SectionHeader number="01" eyebrow={eyebrow ?? t('Contacto')} title={heading} subtitle={subtitle} align="left" />
         <ContactFormInner topics={topics} success_message={success_message} />
       </div>
     </section>
@@ -54,7 +57,7 @@ export function ContactInfoSection({
   )
 }
 
-export function MapEmbedSection({
+export async function MapEmbedSection({
   title, embed_url, address,
 }: {
   title?: string
@@ -62,6 +65,7 @@ export function MapEmbedSection({
   address?: string
 }) {
   if (!embed_url) return null
+  const t = getTranslator(await getLocale())
   return (
     <section className="py-12 lg:py-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
@@ -74,7 +78,7 @@ export function MapEmbedSection({
             className="w-full h-full"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            title={address || 'Mapa'}
+            title={address || t('Mapa')}
           />
         </div>
         {address && (

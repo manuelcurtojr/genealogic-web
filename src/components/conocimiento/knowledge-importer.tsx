@@ -12,6 +12,7 @@
 
 import { useState, useRef } from 'react'
 import { X, Globe, Upload, Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 type Mode = 'url' | 'file'
 
@@ -37,6 +38,7 @@ export default function KnowledgeImporter({
   onClose: () => void
   kennelId: string
 }) {
+  const t = useT()
   const [mode, setMode] = useState<Mode>('url')
   const [url, setUrl] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -58,7 +60,7 @@ export default function KnowledgeImporter({
       const json = await res.json()
       setResult({ ...json, ok: res.ok })
     } catch (err) {
-      setResult({ ok: false, entries_created: 0, error: err instanceof Error ? err.message : 'Error de red' })
+      setResult({ ok: false, entries_created: 0, error: err instanceof Error ? err.message : t('Error de red') })
     } finally {
       setSubmitting(false)
     }
@@ -80,7 +82,7 @@ export default function KnowledgeImporter({
       const json = await res.json()
       setResult({ ...json, ok: res.ok })
     } catch (err) {
-      setResult({ ok: false, entries_created: 0, error: err instanceof Error ? err.message : 'Error de red' })
+      setResult({ ok: false, entries_created: 0, error: err instanceof Error ? err.message : t('Error de red') })
     } finally {
       setSubmitting(false)
     }
@@ -103,7 +105,7 @@ export default function KnowledgeImporter({
         <div className="flex items-center justify-between px-6 py-4 border-b border-hairline">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-ink" />
-            <h2 className="text-lg font-bold text-ink">Importar con IA</h2>
+            <h2 className="text-lg font-bold text-ink">{t('Importar con IA')}</h2>
           </div>
           <button onClick={onClose} className="text-muted hover:text-ink">
             <X className="w-5 h-5" />
@@ -114,10 +116,10 @@ export default function KnowledgeImporter({
         {!result && (
           <div className="flex border-b border-hairline px-6">
             <TabButton active={mode === 'url'} onClick={() => setMode('url')} icon={Globe}>
-              Desde URL
+              {t('Desde URL')}
             </TabButton>
             <TabButton active={mode === 'file'} onClick={() => setMode('file')} icon={Upload}>
-              Desde archivo
+              {t('Desde archivo')}
             </TabButton>
           </div>
         )}
@@ -130,12 +132,10 @@ export default function KnowledgeImporter({
             <form onSubmit={submitUrl} className="space-y-4">
               <div>
                 <p className="text-sm text-body mb-3">
-                  Pega la URL de tu web (página de inicio, condiciones, FAQ…). La IA
-                  extraerá la información relevante y la añadirá a la biblioteca como
-                  entradas categorizadas.
+                  {t('Pega la URL de tu web (página de inicio, condiciones, FAQ…). La IA extraerá la información relevante y la añadirá a la biblioteca como entradas categorizadas.')}
                 </p>
                 <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted mb-1">
-                  URL
+                  {t('URL')}
                 </label>
                 <input
                   type="text"
@@ -147,22 +147,20 @@ export default function KnowledgeImporter({
                 />
               </div>
               <p className="text-[11px] text-muted">
-                Coste estimado: ~0,01-0,05 USD por página. Se carga a tu cuenta de Genealogic
-                (no necesitas tu propia API de IA).
+                {t('Coste estimado: ~0,01-0,05 USD por página. Se carga a tu cuenta de Genealogic (no necesitas tu propia API de IA).')}
               </p>
               <SubmitBtn submitting={submitting} disabled={!url.trim()}>
-                Importar página
+                {t('Importar página')}
               </SubmitBtn>
             </form>
           ) : (
             <form onSubmit={submitFile} className="space-y-4">
               <div>
                 <p className="text-sm text-body mb-3">
-                  Sube un PDF, Word (.docx) o texto plano (.txt/.md) con información
-                  del criadero (condiciones, contrato, FAQ, manual de bienvenida…).
+                  {t('Sube un PDF, Word (.docx) o texto plano (.txt/.md) con información del criadero (condiciones, contrato, FAQ, manual de bienvenida…).')}
                 </p>
                 <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted mb-1">
-                  Archivo (max 20 MB)
+                  {t('Archivo (max 20 MB)')}
                 </label>
                 <input
                   ref={fileRef}
@@ -173,11 +171,10 @@ export default function KnowledgeImporter({
                 />
               </div>
               <p className="text-[11px] text-muted">
-                PDFs escaneados sin OCR no funcionan (la IA necesita el texto). Coste
-                estimado: ~0,01-0,10 USD según número de páginas.
+                {t('PDFs escaneados sin OCR no funcionan (la IA necesita el texto). Coste estimado: ~0,01-0,10 USD según número de páginas.')}
               </p>
               <SubmitBtn submitting={submitting} disabled={false}>
-                Importar archivo
+                {t('Importar archivo')}
               </SubmitBtn>
             </form>
           )}
@@ -211,6 +208,7 @@ function TabButton({
 function SubmitBtn({
   submitting, disabled, children,
 }: { submitting: boolean; disabled: boolean; children: React.ReactNode }) {
+  const t = useT()
   return (
     <button
       type="submit"
@@ -220,7 +218,7 @@ function SubmitBtn({
       {submitting ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin" />
-          Procesando con IA...
+          {t('Procesando con IA...')}
         </>
       ) : (
         <>
@@ -233,21 +231,22 @@ function SubmitBtn({
 }
 
 function ResultView({ result, onContinue }: { result: ImportResult; onContinue: () => void }) {
+  const t = useT()
   if (!result.ok) {
     return (
       <div>
         <div className="rounded-lg bg-red-50 border border-red-200 p-4 flex items-start gap-3 mb-4">
           <AlertCircle className="w-5 h-5 text-red-700 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-red-900">Error al importar</p>
-            <p className="text-sm text-red-800 mt-1">{result.error || 'Error desconocido'}</p>
+            <p className="text-sm font-semibold text-red-900">{t('Error al importar')}</p>
+            <p className="text-sm text-red-800 mt-1">{result.error || t('Error desconocido')}</p>
           </div>
         </div>
         <button
           onClick={onContinue}
           className="w-full rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:bg-surface-soft"
         >
-          Cerrar
+          {t('Cerrar')}
         </button>
       </div>
     )
@@ -259,22 +258,22 @@ function ResultView({ result, onContinue }: { result: ImportResult; onContinue: 
         <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 flex items-start gap-3 mb-4">
           <AlertCircle className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-amber-900">Sin información útil</p>
+            <p className="text-sm font-semibold text-amber-900">{t('Sin información útil')}</p>
             <p className="text-sm text-amber-800 mt-1">
-              {result.message || 'La IA no encontró nada estructurado para añadir.'}
+              {result.message || t('La IA no encontró nada estructurado para añadir.')}
             </p>
           </div>
         </div>
         {result.cost_usd != null && (
           <p className="text-[11px] text-muted mb-3">
-            Coste de la consulta: ${result.cost_usd.toFixed(4)} USD ({result.model_used})
+            {t('Coste de la consulta:')} ${result.cost_usd.toFixed(4)} USD ({result.model_used})
           </p>
         )}
         <button
           onClick={onContinue}
           className="w-full rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:bg-surface-soft"
         >
-          Cerrar
+          {t('Cerrar')}
         </button>
       </div>
     )
@@ -286,11 +285,11 @@ function ResultView({ result, onContinue }: { result: ImportResult; onContinue: 
         <CheckCircle2 className="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-semibold text-emerald-900">
-            ✓ {result.entries_created} entrada{result.entries_created === 1 ? '' : 's'} añadida{result.entries_created === 1 ? '' : 's'}
+            ✓ {result.entries_created} {t(result.entries_created === 1 ? 'entrada' : 'entradas')} {t(result.entries_created === 1 ? 'añadida' : 'añadidas')}
           </p>
           <p className="text-sm text-emerald-800 mt-0.5">
             {result.page_title || result.filename}
-            {result.pages ? ` · ${result.pages} págs` : ''}
+            {result.pages ? ` · ${result.pages} ${t('págs')}` : ''}
             {result.cost_usd != null && ` · $${result.cost_usd.toFixed(4)} USD`}
           </p>
         </div>
@@ -299,7 +298,7 @@ function ResultView({ result, onContinue }: { result: ImportResult; onContinue: 
       {result.preview && result.preview.length > 0 && (
         <div className="mb-4">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-2">
-            Vista previa (primeras 3)
+            {t('Vista previa (primeras 3)')}
           </p>
           <ul className="space-y-2">
             {result.preview.map((p, i) => (
@@ -317,7 +316,7 @@ function ResultView({ result, onContinue }: { result: ImportResult; onContinue: 
         onClick={onContinue}
         className="w-full rounded-lg bg-ink text-on-primary px-4 py-2.5 text-sm font-semibold hover:opacity-90"
       >
-        Ver biblioteca actualizada
+        {t('Ver biblioteca actualizada')}
       </button>
     </div>
   )

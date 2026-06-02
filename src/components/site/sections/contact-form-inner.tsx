@@ -27,6 +27,7 @@
  * mantiene la firma del componente para no romper imports.
  */
 import { useEffect, useState } from 'react'
+import { useT } from '@/components/i18n/locale-provider'
 import {
   getEffectiveConfig,
   validateForm,
@@ -40,6 +41,7 @@ export default function ContactFormInner({
   topics?: string[]              // legacy, ignorado (la config del kennel manda)
   success_message?: string        // legacy fallback si la config no tiene success_message
 }) {
+  const t = useT()
   const [kennelId, setKennelId] = useState<string | null>(null)
   const [config, setConfig] = useState<ContactFormConfig | null>(null)
   const [values, setValues] = useState<Record<string, unknown>>({})
@@ -84,7 +86,7 @@ export default function ContactFormInner({
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!kennelId || !config) {
-      setServerError('Cargando criadero…')
+      setServerError(t('Cargando criadero…'))
       return
     }
     // Validación local — misma función que el backend para evitar
@@ -104,13 +106,13 @@ export default function ContactFormInner({
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        setServerError(data?.error || 'No se pudo enviar')
+        setServerError(data?.error || t('No se pudo enviar'))
         if (data?.fields) setErrors(data.fields)
         return
       }
       setSent(true)
     } catch (e: unknown) {
-      setServerError(e instanceof Error ? e.message : 'Error de red')
+      setServerError(e instanceof Error ? e.message : t('Error de red'))
     } finally {
       setLoading(false)
     }
@@ -130,12 +132,12 @@ export default function ContactFormInner({
           className="text-2xl md:text-3xl font-bold text-ink mb-3 tracking-tight"
           style={{ fontFamily: 'var(--font-display, inherit)' }}
         >
-          ¡Recibido!
+          {t('¡Recibido!')}
         </h2>
         <p className="text-body leading-relaxed">
           {config?.success_message
             || legacySuccessMessage
-            || 'Tu mensaje ha llegado al criador. Te responderá personalmente lo antes posible.'}
+            || t('Tu mensaje ha llegado al criador. Te responderá personalmente lo antes posible.')}
         </p>
       </div>
     )
@@ -144,7 +146,7 @@ export default function ContactFormInner({
   // Loading inicial — mientras carga la config
   if (!config) {
     return (
-      <div className="text-center py-10 text-muted text-sm">Cargando formulario…</div>
+      <div className="text-center py-10 text-muted text-sm">{t('Cargando formulario…')}</div>
     )
   }
 
@@ -169,7 +171,7 @@ export default function ContactFormInner({
         disabled={loading}
         className="btn-brand w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 text-[13px] font-semibold uppercase tracking-[0.1em] disabled:opacity-50"
       >
-        {loading ? 'Enviando…' : (config.submit_label || 'Enviar mensaje')}
+        {loading ? t('Enviando…') : (config.submit_label || t('Enviar mensaje'))}
         {!loading && <span aria-hidden="true">→</span>}
       </button>
     </form>
@@ -190,6 +192,7 @@ function FieldRenderer({
   error?: string
   onChange: (v: unknown) => void
 }) {
+  const t = useT()
   const inputClass = `w-full px-4 py-3 text-sm border bg-canvas text-ink placeholder-muted/70 focus:outline-none transition-colors ${
     error ? 'border-[color:var(--error)]' : 'border-hairline focus:border-theme-accent'
   }`
@@ -218,7 +221,7 @@ function FieldRenderer({
           className={inputClass}
           style={inputStyle}
         >
-          <option value="">— Seleccionar —</option>
+          <option value="">{t('— Seleccionar —')}</option>
           {(field.options || []).map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
       ) : field.type === 'radio' ? (

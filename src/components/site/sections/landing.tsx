@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import { getCurrentKennel } from '@/lib/kennel-context'
 import { SectionHeader } from '@/components/site/section-primitives'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export function TwoColumnBlockSection({
   title, body, image_url, image_alt, image_position = 'right', cta,
@@ -193,17 +195,18 @@ export function ProcessStepsSection({
   )
 }
 
-export function FaqSection({
+export async function FaqSection({
   title, eyebrow, items = [],
 }: {
   title?: string
   eyebrow?: string
   items?: { question: string; answer: string }[]
 }) {
+  const t = getTranslator(await getLocale())
   return (
     <section className="py-24 lg:py-32 relative overflow-hidden">
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-10">
-        <SectionHeader number="04" eyebrow={eyebrow ?? 'Preguntas'} title={title} align="left" />
+        <SectionHeader number="04" eyebrow={eyebrow ?? t('Preguntas')} title={title} align="left" />
         <div className="border-t border-hairline">
           {items.map((it, i) => (
             <details key={i} className="group border-b border-hairline">
@@ -227,6 +230,7 @@ export function FaqSection({
 }
 
 export async function LatestPostsSection({ limit = 3 }: { limit?: number }) {
+  const t = getTranslator(await getLocale())
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createKennelAdminClient() as any
   const kennel = await getCurrentKennel()
@@ -242,8 +246,8 @@ export async function LatestPostsSection({ limit = 3 }: { limit?: number }) {
     <section className="py-12 lg:py-16 border-t border-hairline">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-end justify-between mb-6 flex-wrap gap-3">
-          <h2 className="text-2xl md:text-3xl font-bold text-ink tracking-tight">Últimos artículos</h2>
-          <Link href="./blog" className="text-sm text-body hover:text-ink underline">Ver blog →</Link>
+          <h2 className="text-2xl md:text-3xl font-bold text-ink tracking-tight">{t('Últimos artículos')}</h2>
+          <Link href="./blog" className="text-sm text-body hover:text-ink underline">{t('Ver blog')} →</Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {posts.map((p: any) => (
@@ -271,21 +275,22 @@ export async function LatestPostsSection({ limit = 3 }: { limit?: number }) {
   )
 }
 
-export function ChatPromoSection({
-  title, subtitle, cta_label = 'Hablar con el criador', cta_href = './contacto',
+export async function ChatPromoSection({
+  title, subtitle, cta_label, cta_href = './contacto',
 }: {
   title?: string
   subtitle?: string
   cta_label?: string
   cta_href?: string
 }) {
+  const t = getTranslator(await getLocale())
   return (
     <section className="py-12 lg:py-16">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
         {title && <h2 className="text-2xl md:text-3xl font-bold text-ink mb-3 tracking-tight">{title}</h2>}
         {subtitle && <p className="text-body mb-6 leading-relaxed">{subtitle}</p>}
         <Link href={cta_href} className="inline-flex items-center justify-center rounded-lg bg-ink text-on-primary px-6 py-3 text-sm font-semibold hover:opacity-90 transition">
-          {cta_label}
+          {cta_label || t('Hablar con el criador')}
         </Link>
       </div>
     </section>

@@ -6,8 +6,12 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getKennelBySlug } from '@/lib/kennel-site'
 import { getPostBySlug, getPublishedPostsByKennel } from '@/lib/kennel/data'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
+
+type Tr = (key: string) => string
 
 type Params = { slug: string; postSlug: string }
 
@@ -27,7 +31,7 @@ function fmtDate(d: string | null | undefined): string {
  *   - { type: "doc", content: [...] } ← TipTap JSON
  *   - string HTML directo
  */
-function PostBody({ body, fallback_text }: { body: unknown; fallback_text?: string | null }) {
+function PostBody({ body, fallback_text, t }: { body: unknown; fallback_text?: string | null; t: Tr }) {
   // Caso 1: body con html string
   if (body && typeof body === 'object' && 'html' in body && typeof (body as { html: string }).html === 'string') {
     return (
@@ -46,7 +50,7 @@ function PostBody({ body, fallback_text }: { body: unknown; fallback_text?: stri
     return <div className="prose-post whitespace-pre-line">{fallback_text}</div>
   }
   return (
-    <p className="text-muted italic">Este post no tiene contenido todavía.</p>
+    <p className="text-muted italic">{t('Este post no tiene contenido todavía.')}</p>
   )
 }
 
@@ -54,6 +58,7 @@ export default async function BlogPostPage({ params }: { params: Promise<Params>
   const { slug, postSlug } = await params
   const kennel = await getKennelBySlug(slug)
   if (!kennel) notFound()
+  const t = getTranslator(await getLocale())
 
   const post = await getPostBySlug(kennel.id, postSlug)
   if (!post) notFound()
@@ -80,7 +85,7 @@ export default async function BlogPostPage({ params }: { params: Promise<Params>
               href={`/c/${slug}/blog`}
               className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 hover:text-white mb-5"
             >
-              ← Volver al blog
+              ← {t('Volver al blog')}
             </Link>
             {post.category_slug && (
               <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90 mb-4">
@@ -99,7 +104,7 @@ export default async function BlogPostPage({ params }: { params: Promise<Params>
               {post.reading_time_minutes && (
                 <>
                   <span className="text-white/40">·</span>
-                  {post.reading_time_minutes} min de lectura
+                  {post.reading_time_minutes} {t('min de lectura')}
                 </>
               )}
               {post.author_name && (
@@ -118,7 +123,7 @@ export default async function BlogPostPage({ params }: { params: Promise<Params>
               href={`/c/${slug}/blog`}
               className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted hover:text-ink mb-5"
             >
-              ← Volver al blog
+              ← {t('Volver al blog')}
             </Link>
             {post.category_slug && (
               <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted mb-4">
@@ -138,7 +143,7 @@ export default async function BlogPostPage({ params }: { params: Promise<Params>
               {post.reading_time_minutes && (
                 <>
                   <span className="text-muted/50">·</span>
-                  {post.reading_time_minutes} min de lectura
+                  {post.reading_time_minutes} {t('min de lectura')}
                 </>
               )}
             </p>
@@ -153,7 +158,7 @@ export default async function BlogPostPage({ params }: { params: Promise<Params>
             {post.excerpt}
           </p>
         )}
-        <PostBody body={post.body} fallback_text={post.body_text} />
+        <PostBody body={post.body} fallback_text={post.body_text} t={t} />
       </div>
 
       {/* Related posts */}
@@ -164,7 +169,7 @@ export default async function BlogPostPage({ params }: { params: Promise<Params>
               <span className="text-theme-accent font-mono text-[11px] tracking-[0.2em]">06</span>
               <span className="inline-block h-px w-8 bg-theme-accent opacity-60" />
               <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted">
-                Sigue leyendo
+                {t('Sigue leyendo')}
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

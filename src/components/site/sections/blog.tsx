@@ -4,6 +4,8 @@
 import Link from 'next/link'
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import { getCurrentKennel } from '@/lib/kennel-context'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 type Post = {
   slug: string
@@ -85,6 +87,7 @@ export async function FeaturedPostSection({ mode = 'latest' }: { mode?: 'latest'
 }
 
 export async function PostsGridSection({ limit = 9, title, eyebrow }: { limit?: number; title?: string; eyebrow?: string }) {
+  const t = getTranslator(await getLocale())
   const kennel = await getCurrentKennel()
   const posts = await getPublishedPosts(kennel.id, limit)
   return (
@@ -100,7 +103,7 @@ export async function PostsGridSection({ limit = 9, title, eyebrow }: { limit?: 
         )}
         {posts.length === 0 ? (
           <div className="rounded-xl border border-dashed border-hairline bg-canvas p-12 text-center">
-            <p className="text-sm text-muted">Aún no hay artículos publicados. Vuelve pronto.</p>
+            <p className="text-sm text-muted">{t('Aún no hay artículos publicados. Vuelve pronto.')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

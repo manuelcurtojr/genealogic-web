@@ -14,8 +14,11 @@
 import { Check } from 'lucide-react'
 import { CATEGORIES } from './data'
 import Mockup from './mockups'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
-export default function FeaturesContent() {
+export default async function FeaturesContent() {
+  const t = getTranslator(await getLocale())
   return (
     <div className="space-y-24 sm:space-y-32 pb-24">
       {CATEGORIES.map((cat, catIndex) => (
@@ -63,7 +66,7 @@ export default function FeaturesContent() {
                         )}
                       </div>
                       <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-rose-700 bg-rose-50 inline-block px-2 py-0.5 rounded">
-                        Problema
+                        {t('Problema')}
                       </p>
                       <p className="mt-1.5 text-[14px] text-body italic leading-snug">
                         {feature.problem}
@@ -93,7 +96,7 @@ export default function FeaturesContent() {
           {cat.featurettes.length > 0 && (
             <div className="mt-16 sm:mt-20">
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted mb-4">
-                Y además
+                {t('Y además')}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 {cat.featurettes.map((f, i) => {
