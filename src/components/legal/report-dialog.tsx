@@ -24,6 +24,7 @@
 import { useState } from 'react'
 import { Flag, Loader2, Check } from 'lucide-react'
 import Modal from '@/components/ui/modal'
+import { useT } from '@/components/i18n/locale-provider'
 
 export type ReportTargetType =
   | 'dog' | 'photo' | 'kennel' | 'user' | 'comment'
@@ -65,6 +66,7 @@ export default function ReportButton({
   trigger = 'icon',
   className,
 }: Props) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [reason, setReason] = useState<ReportReason | ''>('')
   const [description, setDescription] = useState('')
@@ -143,8 +145,8 @@ export default function ReportButton({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          aria-label="Reportar contenido"
-          title="Reportar contenido"
+          aria-label={t('Reportar contenido')}
+          title={t('Reportar contenido')}
           className={
             className ||
             'inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/60'
@@ -163,7 +165,7 @@ export default function ReportButton({
           }
         >
           <Flag className="h-3 w-3" />
-          Reportar
+          {t('Reportar')}
         </button>
       )}
       {trigger === 'menu-item' && (
@@ -176,22 +178,20 @@ export default function ReportButton({
           }
         >
           <Flag className="h-4 w-4" />
-          Reportar contenido
+          {t('Reportar contenido')}
         </button>
       )}
 
-      <Modal open={open} onClose={handleClose} title={submitted ? 'Reporte enviado' : 'Reportar contenido'}>
+      <Modal open={open} onClose={handleClose} title={submitted ? t('Reporte enviado') : t('Reportar contenido')}>
         {submitted ? (
           <div className="space-y-4 text-center py-4">
             <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-700">
               <Check className="h-6 w-6" />
             </div>
             <div>
-              <p className="font-medium text-ink">Hemos recibido tu reporte</p>
+              <p className="font-medium text-ink">{t('Hemos recibido tu reporte')}</p>
               <p className="mt-2 text-sm text-body">
-                Lo revisaremos en un plazo máximo de <strong>72 horas</strong> conforme al
-                art. 17 LSSI y, si procede, retiraremos o anonimizaremos el contenido.
-                Si dejaste tu email, te contactaremos al resolverlo.
+                {t('Lo revisaremos en un plazo máximo de')} <strong>{t('72 horas')}</strong> {t('conforme al art. 17 LSSI y, si procede, retiraremos o anonimizaremos el contenido. Si dejaste tu email, te contactaremos al resolverlo.')}
               </p>
             </div>
             <button
@@ -199,20 +199,20 @@ export default function ReportButton({
               onClick={handleClose}
               className="rounded-lg bg-ink px-5 py-2.5 text-sm font-medium text-on-primary hover:opacity-90"
             >
-              Cerrar
+              {t('Cerrar')}
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             {targetLabel && (
               <div className="rounded-lg bg-surface-soft px-3 py-2 text-[13px] text-body">
-                Reportando: <strong className="text-ink">{targetLabel}</strong>
+                {t('Reportando:')} <strong className="text-ink">{targetLabel}</strong>
               </div>
             )}
 
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">
-                Motivo del reporte
+                {t('Motivo del reporte')}
               </label>
               <div className="space-y-1.5">
                 {REASONS.map((r) => (
@@ -233,8 +233,8 @@ export default function ReportButton({
                       className="mt-0.5 h-4 w-4 accent-ink"
                     />
                     <div className="flex-1">
-                      <div className="text-sm font-medium text-ink">{r.label}</div>
-                      <div className="text-[12px] text-muted">{r.hint}</div>
+                      <div className="text-sm font-medium text-ink">{t(r.label)}</div>
+                      <div className="text-[12px] text-muted">{t(r.hint)}</div>
                     </div>
                   </label>
                 ))}
@@ -252,7 +252,7 @@ export default function ReportButton({
                     className="mt-0.5 h-4 w-4 accent-ink"
                   />
                   <span className="text-[13px] text-body">
-                    Soy el <strong>titular de los derechos</strong> de la obra (o represento al titular).
+                    {t('Soy el')} <strong>{t('titular de los derechos')}</strong> {t('de la obra (o represento al titular).')}
                   </span>
                 </label>
 
@@ -266,23 +266,19 @@ export default function ReportButton({
                         className="mt-0.5 h-4 w-4 accent-ink"
                       />
                       <span className="text-[12px] text-body">
-                        <strong>Declaración bajo responsabilidad</strong> (art. 17 LPI): declaro de
-                        buena fe que el uso del contenido reportado no está autorizado por el
-                        titular de los derechos, su representante o la ley, y que la información
-                        proporcionada es exacta. Soy consciente de que una declaración falsa puede
-                        conllevar responsabilidad civil o penal.
+                        <strong>{t('Declaración bajo responsabilidad')}</strong> {t('(art. 17 LPI): declaro de buena fe que el uso del contenido reportado no está autorizado por el titular de los derechos, su representante o la ley, y que la información proporcionada es exacta. Soy consciente de que una declaración falsa puede conllevar responsabilidad civil o penal.')}
                       </span>
                     </label>
 
                     <div>
                       <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-body">
-                        Contacto del titular (opcional)
+                        {t('Contacto del titular (opcional)')}
                       </label>
                       <input
                         type="text"
                         value={contactInfo}
                         onChange={(e) => setContactInfo(e.target.value)}
-                        placeholder="Email/teléfono adicional del titular o representante"
+                        placeholder={t('Email/teléfono adicional del titular o representante')}
                         className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none"
                       />
                     </div>
@@ -293,19 +289,19 @@ export default function ReportButton({
 
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">
-                Descripción de los hechos <span className="text-red-500">*</span>
+                {t('Descripción de los hechos')} <span className="text-red-500">*</span>
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Explica el problema con detalle. Si reportas copyright, indica la obra original. Si reportas datos personales, indica qué dato te identifica."
+                placeholder={t('Explica el problema con detalle. Si reportas copyright, indica la obra original. Si reportas datos personales, indica qué dato te identifica.')}
                 rows={4}
                 maxLength={5000}
                 required
                 className="w-full resize-y rounded-lg border border-hairline bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none"
               />
               <p className="mt-1 text-[11px] text-muted">
-                Mínimo 10 caracteres · {description.length} / 5000
+                {t('Mínimo 10 caracteres')} · {description.length} / 5000
               </p>
             </div>
 
@@ -313,7 +309,7 @@ export default function ReportButton({
               <>
                 <div>
                   <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">
-                    Tu email <span className="text-red-500">*</span>
+                    {t('Tu email')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -324,19 +320,19 @@ export default function ReportButton({
                     className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none"
                   />
                   <p className="mt-1 text-[11px] text-muted">
-                    Lo usamos exclusivamente para contactarte sobre este reporte.
+                    {t('Lo usamos exclusivamente para contactarte sobre este reporte.')}
                   </p>
                 </div>
 
                 <div>
                   <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">
-                    Tu nombre (opcional)
+                    {t('Tu nombre (opcional)')}
                   </label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Nombre y apellidos o nombre del estudio/criadero"
+                    placeholder={t('Nombre y apellidos o nombre del estudio/criadero')}
                     className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none"
                   />
                 </div>
@@ -344,13 +340,11 @@ export default function ReportButton({
             )}
 
             <p className="text-[11px] leading-relaxed text-muted">
-              Al enviar este reporte aceptas que tratemos los datos proporcionados con la
-              única finalidad de gestionar la solicitud, conforme a nuestra{' '}
+              {t('Al enviar este reporte aceptas que tratemos los datos proporcionados con la única finalidad de gestionar la solicitud, conforme a nuestra')}{' '}
               <a href="/privacy" className="underline" target="_blank" rel="noopener">
-                política de privacidad
+                {t('política de privacidad')}
               </a>
-              . Los reportes maliciosos o reiteradamente injustificados pueden conllevar la
-              suspensión de la cuenta.
+              . {t('Los reportes maliciosos o reiteradamente injustificados pueden conllevar la suspensión de la cuenta.')}
             </p>
 
             {error && (
@@ -366,7 +360,7 @@ export default function ReportButton({
                 disabled={submitting}
                 className="flex-1 rounded-lg border border-hairline bg-canvas px-4 py-2.5 text-sm font-medium text-ink hover:bg-surface-soft disabled:opacity-50"
               >
-                Cancelar
+                {t('Cancelar')}
               </button>
               <button
                 type="submit"
@@ -374,7 +368,7 @@ export default function ReportButton({
                 className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-ink px-4 py-2.5 text-sm font-medium text-on-primary hover:opacity-90 disabled:opacity-50"
               >
                 {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                {submitting ? 'Enviando...' : 'Enviar reporte'}
+                {submitting ? t('Enviando...') : t('Enviar reporte')}
               </button>
             </div>
           </form>

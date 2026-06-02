@@ -45,7 +45,7 @@ export default function MarketingHeader({ locale = 'es' }: { locale?: string }) 
         <div className="lg:hidden flex items-center gap-3 px-4 h-14">
           <button
             onClick={() => setDrawerOpen(true)}
-            aria-label="Abrir menú"
+            aria-label={t('Abrir menú')}
             className="w-10 h-10 -ml-1 flex items-center justify-center text-ink hover:bg-surface-card rounded-lg transition shrink-0"
           >
             <Menu className="w-5 h-5" />
@@ -70,7 +70,7 @@ export default function MarketingHeader({ locale = 'es' }: { locale?: string }) 
         <div className="hidden lg:flex items-center gap-5 px-6 py-3 max-w-[1280px] mx-auto">
           <button
             onClick={() => setDrawerOpen(true)}
-            aria-label="Abrir menú"
+            aria-label={t('Abrir menú')}
             className="w-10 h-10 -ml-1 flex items-center justify-center text-ink hover:bg-surface-card rounded-lg transition shrink-0"
           >
             <Menu className="w-5 h-5" />
@@ -126,7 +126,7 @@ export default function MarketingHeader({ locale = 'es' }: { locale?: string }) 
               <Wordmark size="text-lg" asLink={false} />
               <button
                 onClick={() => setDrawerOpen(false)}
-                aria-label="Cerrar menú"
+                aria-label={t('Cerrar menú')}
                 className="w-9 h-9 rounded-lg flex items-center justify-center text-muted hover:text-ink hover:bg-surface-card transition"
               >
                 <X className="w-5 h-5" />

@@ -16,6 +16,8 @@ import { DogImage } from '@/components/ui/dog-image'
 import BreedStandardSidebar from '@/components/breeds/breed-standard-sidebar'
 import RecordView from '@/components/track/record-view'
 import { BREED_SECTIONS } from '@/components/breeds/sections'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 import type { Metadata } from 'next'
 
 export const revalidate = 3600
@@ -156,6 +158,7 @@ function renderContent(text: string) {
 export default async function BreedPage(
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const t = getTranslator(await getLocale())
   const { slug } = await params
   const breed = await getBreed(slug)
   if (!breed) notFound()
@@ -252,7 +255,7 @@ export default async function BreedPage(
           <ol className="flex items-center gap-2 text-[12.5px] text-muted">
             <li>
               <Link href="/razas" className="hover:text-ink">
-                Razas
+                {t('Razas')}
               </Link>
             </li>
             <li aria-hidden>›</li>
@@ -264,7 +267,7 @@ export default async function BreedPage(
       <main className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 sm:py-12">
         {/* Hero */}
         <header>
-          <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">Raza canina</p>
+          <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">{t('Raza canina')}</p>
           <h1
             className="mt-3 font-semibold text-ink"
             style={{ fontSize: 'clamp(36px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.035em' }}
@@ -273,23 +276,23 @@ export default async function BreedPage(
           </h1>
           <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-muted">
             {std.origin && (
-              <span>Origen: <strong className="font-semibold text-ink">{std.origin}</strong></span>
+              <span>{t('Origen:')} <strong className="font-semibold text-ink">{std.origin}</strong></span>
             )}
             {std.fci_number && (
               <>
                 <span aria-hidden>·</span>
-                <span>FCI nº <strong className="font-semibold text-ink">{std.fci_number}</strong></span>
+                <span>{t('FCI nº')} <strong className="font-semibold text-ink">{std.fci_number}</strong></span>
               </>
             )}
             <span aria-hidden>·</span>
             <span>
               <strong className="font-semibold text-ink">{totalDogs.toLocaleString('es-ES')}</strong>{' '}
-              ejemplares en Genealogic
+              {t('ejemplares en Genealogic')}
             </span>
           </div>
           {synonyms.length > 0 && (
             <p className="mt-3 text-[13px] text-muted">
-              También: <span className="text-body">{synonyms.join(' · ')}</span>
+              {t('También:')} <span className="text-body">{synonyms.join(' · ')}</span>
             </p>
           )}
           {breed.description && (
@@ -303,7 +306,7 @@ export default async function BreedPage(
         {!hasStandard && (
           <section className="mt-12 rounded-2xl border border-hairline bg-surface-soft/40 p-8 text-center">
             <p className="text-[14.5px] text-muted">
-              El estándar canónico de Genealogic para esta raza está en preparación.
+              {t('El estándar canónico de Genealogic para esta raza está en preparación.')}
             </p>
             {std.standards && std.standards.length > 0 && (
               <div className="mt-6 grid gap-3 sm:grid-cols-2 text-left">
@@ -354,7 +357,7 @@ export default async function BreedPage(
                 {/* Colores admitidos (entre Manto y Faltas si quieres, lo dejamos al final del bloque) */}
                 {colors.length > 0 && (
                   <section className="mb-10">
-                    <h3 className="text-[15px] font-semibold text-ink mb-3">Colores en Genealogic</h3>
+                    <h3 className="text-[15px] font-semibold text-ink mb-3">{t('Colores en Genealogic')}</h3>
                     <ul className="flex flex-wrap gap-2">
                       {colors.map((c: any) => (
                         <li key={c.id} className="rounded-full border border-hairline bg-canvas px-3 py-1.5 text-[13px] text-ink">
@@ -368,21 +371,16 @@ export default async function BreedPage(
                 {/* Disclaimer + reinterpretación */}
                 <section id="reinterpretacion" className="scroll-mt-20 mb-10">
                   <h2 className="text-[20px] font-semibold tracking-[-0.02em] text-ink pb-2 border-b border-hairline-soft">
-                    Sobre este estándar
+                    {t('Sobre este estándar')}
                   </h2>
                   <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/60 p-4 flex gap-3">
                     <AlertCircle className="h-4 w-4 flex-shrink-0 text-amber-700 mt-0.5" />
                     <div className="min-w-0">
                       <p className="text-[13.5px] leading-[1.7] text-amber-900">
-                        Este estándar es una <strong>reinterpretación de Genealogic</strong> de las
-                        fuentes oficiales (FCI, RSCE, AKC, KC, ENCI…) reorganizada en una estructura
-                        común a todas las razas para facilitar la comparación entre criadores y
-                        propietarios. <strong>No sustituye al estándar oficial</strong>.
+                        {t('Este estándar es una')} <strong>{t('reinterpretación de Genealogic')}</strong> {t('de las fuentes oficiales (FCI, RSCE, AKC, KC, ENCI…) reorganizada en una estructura común a todas las razas para facilitar la comparación entre criadores y propietarios.')} <strong>{t('No sustituye al estándar oficial')}</strong>.
                       </p>
                       <p className="mt-2 text-[13px] leading-[1.7] text-amber-900">
-                        Para uso oficial — jueces, expositores, criadores que registran cachorros —
-                        consulta siempre los documentos originales de cada entidad que enlazamos
-                        debajo.
+                        {t('Para uso oficial — jueces, expositores, criadores que registran cachorros — consulta siempre los documentos originales de cada entidad que enlazamos debajo.')}
                       </p>
                     </div>
                   </div>
@@ -390,7 +388,7 @@ export default async function BreedPage(
                   {/* Fuentes oficiales */}
                   {std.standards && std.standards.length > 0 && (
                     <div className="mt-6">
-                      <h3 className="text-[14px] font-semibold text-ink mb-3">Fuentes oficiales consultadas</h3>
+                      <h3 className="text-[14px] font-semibold text-ink mb-3">{t('Fuentes oficiales consultadas')}</h3>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {std.standards.map((s, i) => (
                           <a
@@ -405,7 +403,7 @@ export default async function BreedPage(
                                 <p className="font-semibold text-ink text-[13.5px]">{s.entity}</p>
                                 {s.official && (
                                   <span className="rounded-full bg-emerald-50 px-1.5 py-px text-[9.5px] font-medium text-emerald-700">
-                                    Oficial
+                                    {t('Oficial')}
                                   </span>
                                 )}
                               </div>
@@ -430,11 +428,10 @@ export default async function BreedPage(
                 {diffs.differences && diffs.differences.length > 0 && (
                   <section id="diferencias-clubes" className="scroll-mt-20">
                     <h2 className="text-[20px] font-semibold tracking-[-0.02em] text-ink pb-2 border-b border-hairline-soft">
-                      Diferencias entre clubes
+                      {t('Diferencias entre clubes')}
                     </h2>
                     <p className="mt-4 max-w-[600px] text-[14px] leading-[1.7] text-body">
-                      Distintas entidades cinológicas mantienen criterios ligeramente diferentes
-                      sobre la misma raza. Estas son las divergencias principales.
+                      {t('Distintas entidades cinológicas mantienen criterios ligeramente diferentes sobre la misma raza. Estas son las divergencias principales.')}
                     </p>
 
                     <div className="mt-6 space-y-6">
@@ -470,10 +467,10 @@ export default async function BreedPage(
                   className="font-semibold text-ink"
                   style={{ fontSize: 'clamp(22px, 2.5vw, 28px)', lineHeight: 1.15, letterSpacing: '-0.025em' }}
                 >
-                  Ejemplares en Genealogic
+                  {t('Ejemplares en Genealogic')}
                 </h2>
                 <p className="mt-2 text-[14px] text-muted">
-                  Algunos perros de la raza con su genealogía registrada.
+                  {t('Algunos perros de la raza con su genealogía registrada.')}
                 </p>
               </div>
               {totalDogs > sampleDogs.length && (
@@ -481,7 +478,7 @@ export default async function BreedPage(
                   href={`/dogs?breed=${breed.id}`}
                   className="text-[13.5px] font-medium text-ink underline underline-offset-4 hover:no-underline"
                 >
-                  Ver los {totalDogs.toLocaleString('es-ES')} →
+                  {t('Ver los')} {totalDogs.toLocaleString('es-ES')} →
                 </Link>
               )}
             </div>

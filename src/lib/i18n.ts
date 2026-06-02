@@ -577,6 +577,8 @@ import { content4DashMisc } from './i18n-content4-dashmisc'
 import { content4Misc2 } from './i18n-content4-misc2'
 import { content6Funnel } from './i18n-content6-funnel'
 import { content7 } from './i18n-content7'
+import { content8aPublic } from './i18n-content8a'
+import { content8bDash } from './i18n-content8b'
 
 export function getTranslator(lang: string) {
   const dict = translations[lang] || {}
@@ -600,6 +602,8 @@ export function getTranslator(lang: string) {
   const c4misc2 = content4Misc2[lang] || {}
   const c6funnel = content6Funnel[lang] || {}
   const c7 = content7[lang] || {}
+  const c8a = content8aPublic[lang] || {}
+  const c8b = content8bDash[lang] || {}
   return function t(key: string): string {
     if (lang === 'es') return key // Spanish is default
     // Cascada: base → content (Fase 1) → content2 (Fase 2-3) → content3 (Fase 3b emails)
@@ -608,7 +612,7 @@ export function getTranslator(lang: string) {
       || c4dogs[key] || c4pages[key] || c4account[key]
       || c4kennel[key] || c4kennelpages[key] || c4reservas[key] || c4repro[key] || c4crm[key]
       || c4emailbot[key] || c4newsletter[key] || c4shell[key]
-      || c4site[key] || c4publicmisc[key] || c4dashmisc[key] || c4misc2[key] || c6funnel[key] || c7[key] || key
+      || c4site[key] || c4publicmisc[key] || c4dashmisc[key] || c4misc2[key] || c6funnel[key] || c7[key] || c8a[key] || c8b[key] || key
   }
 }
 

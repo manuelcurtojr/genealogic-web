@@ -220,7 +220,7 @@ export default function KennelLegalEditor({
                   <p className="text-[11.5px] text-muted">
                     {t('Placeholders:')} <code>{'{{kennel_legal_name}}'}</code>, <code>{'{{kennel_legal_id}}'}</code>,
                     {' '}<code>{'{{kennel_legal_address}}'}</code>, <code>{'{{kennel_legal_email}}'}</code>,
-                    {' '}<code>{'{{kennel_name}}'}</code>, <code>{'{{date}}'}</code>. {t('Markdown:')} <code>## Título</code>, <code>**negrita**</code>, {t('listas con')} <code>-</code>.
+                    {' '}<code>{'{{kennel_name}}'}</code>, <code>{'{{date}}'}</code>. {t('Markdown:')} <code>## {t('Título')}</code>, <code>**{t('negrita')}**</code>, {t('listas con')} <code>-</code>.
                   </p>
                   <div className="flex items-center gap-2">
                     <button

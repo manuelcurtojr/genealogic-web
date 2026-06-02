@@ -15,6 +15,7 @@ import { usePathname } from 'next/navigation'
 import {
   ScrollText, FileText, ShieldCheck, Cookie, Copyright, Flag, Mail,
 } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 export const LEGAL_PAGES = [
   {
@@ -50,20 +51,21 @@ export const LEGAL_PAGES = [
 ] as const
 
 export default function LegalSidebar() {
+  const t = useT()
   const pathname = usePathname() || ''
 
   return (
-    <nav aria-label="Documentación legal" className="lg:sticky lg:top-8 space-y-6">
+    <nav aria-label={t('Documentación legal')} className="lg:sticky lg:top-8 space-y-6">
       {/* Encabezado del menú */}
       <div className="px-3">
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
-          Documentación
+          {t('Documentación')}
         </p>
         <h2 className="mt-1 text-[18px] font-semibold tracking-[-0.02em] text-ink">
-          Legal &amp; Privacidad
+          {t('Legal y privacidad')}
         </h2>
         <p className="mt-1 text-[12px] leading-snug text-muted">
-          Toda la información jurídica de Genealogic en un solo sitio.
+          {t('Toda la información jurídica de Genealogic en un solo sitio.')}
         </p>
       </div>
 
@@ -101,14 +103,14 @@ export default function LegalSidebar() {
                       active ? 'text-on-primary' : 'text-ink'
                     }`}
                   >
-                    {p.label}
+                    {t(p.label)}
                   </p>
                   <p
                     className={`mt-0.5 text-[11px] leading-tight ${
                       active ? 'text-on-primary/75' : 'text-muted'
                     }`}
                   >
-                    {p.desc}
+                    {t(p.desc)}
                   </p>
                 </div>
               </Link>
@@ -122,12 +124,11 @@ export default function LegalSidebar() {
         <div className="flex items-center gap-2">
           <Mail className="h-3.5 w-3.5 text-muted" />
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-            ¿Algo que reportar?
+            {t('¿Algo que reportar?')}
           </p>
         </div>
         <p className="mt-2 text-[12px] leading-snug text-body">
-          Si has detectado contenido infractor o quieres ejercer un derecho RGPD,
-          escríbenos. Respondemos en menos de 72&nbsp;horas.
+          {t('Si has detectado contenido infractor o quieres ejercer un derecho RGPD, escríbenos. Respondemos en menos de 72 horas.')}
         </p>
         <a
           href="mailto:hola@genealogic.io?subject=Reporte%20de%20contenido"

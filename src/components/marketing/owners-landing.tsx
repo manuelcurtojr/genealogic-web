@@ -19,8 +19,10 @@ import {
   ArrowRight, Dog, Camera, GitBranch, Calendar, Stethoscope,
   ShieldCheck, Heart, FileText, Search, CheckCircle2, Smartphone,
 } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function OwnersLanding() {
+  const t = useT()
   return (
     <main className="bg-canvas">
       {/* ═════ HERO ═════ */}
@@ -30,26 +32,26 @@ export default function OwnersLanding() {
             <div>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-blue-900">
                 <Dog className="w-3 h-3" />
-                Para propietarios
+                {t('Para propietarios')}
               </span>
               <h1
                 className="mt-4 sm:mt-5 max-w-[20ch] sm:max-w-[15ch] font-semibold text-ink"
                 style={{ fontSize: 'clamp(28px, 6vw, 64px)', lineHeight: 1.04, letterSpacing: '-0.04em' }}
               >
-                Tu perro merece su historia bien contada.
+                {t('Tu perro merece su historia bien contada.')}
               </h1>
               <p
                 className="mt-4 sm:mt-5 max-w-[480px] text-body"
                 style={{ fontSize: 'clamp(15px, 1.5vw, 19px)', lineHeight: 1.55 }}
               >
-                Genealogic guarda la genealogía, los papeles, las vacunas y la galería de tu perro en un solo sitio. Privado por defecto. Gratis para siempre.
+                {t('Genealogic guarda la genealogía, los papeles, las vacunas y la galería de tu perro en un solo sitio. Privado por defecto. Gratis para siempre.')}
               </p>
               <div className="mt-6 sm:mt-7 flex flex-col sm:flex-row gap-2.5">
                 <Link
                   href="/register?intent=owner"
                   className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 sm:px-6 py-3 text-sm font-bold hover:opacity-90 transition"
                 >
-                  Crear mi cuenta gratis
+                  {t('Crear mi cuenta gratis')}
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
@@ -57,11 +59,11 @@ export default function OwnersLanding() {
                   className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-hairline bg-canvas px-5 sm:px-6 py-3 text-sm font-bold text-body hover:text-ink hover:border-ink/30 transition"
                 >
                   <Search className="w-4 h-4" />
-                  Buscar a mi perro
+                  {t('Buscar a mi perro')}
                 </Link>
               </div>
               <p className="mt-3 text-[11px] uppercase tracking-wider font-bold text-emerald-700">
-                Sin tarjeta · Sin límites de perros
+                {t('Sin tarjeta · Sin límites de perros')}
               </p>
             </div>
 
@@ -105,45 +107,45 @@ export default function OwnersLanding() {
       <section className="border-b border-hairline bg-surface-soft/40">
         <div className="mx-auto max-w-[1200px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20">
           <div className="max-w-2xl mb-8 sm:mb-10">
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-muted">Qué te ofrecemos</p>
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-muted">{t('Qué te ofrecemos')}</p>
             <h2 className="mt-2 font-semibold tracking-[-0.04em] text-ink" style={{ fontSize: 'clamp(22px, 4vw, 36px)', lineHeight: 1.05 }}>
-              Todo sobre tu perro, en un solo sitio que sí es tuyo.
+              {t('Todo sobre tu perro, en un solo sitio que sí es tuyo.')}
             </h2>
             <p className="mt-3 sm:mt-4 text-body text-[14px] sm:text-[16px]">
-              Sin anuncios, sin vender tus datos. Tu información es tuya — puedes exportarla o borrarla cuando quieras.
+              {t('Sin anuncios, sin vender tus datos. Tu información es tuya — puedes exportarla o borrarla cuando quieras.')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <Feature
               icon={Camera}
-              title="Ficha completa con galería"
-              desc="Fotos, datos físicos, microchip, color, peso, altura. La cartilla de identidad digital de tu perro."
+              title={t('Ficha completa con galería')}
+              desc={t('Fotos, datos físicos, microchip, color, peso, altura. La cartilla de identidad digital de tu perro.')}
             />
             <Feature
               icon={GitBranch}
-              title="Genealogía y árbol genealógico"
-              desc="Genealogía completa sin límite de generaciones, ancestros con foto y enlace al criadero original. Investiga la sangre real de tu perro."
+              title={t('Genealogía y árbol genealógico')}
+              desc={t('Genealogía completa sin límite de generaciones, ancestros con foto y enlace al criadero original. Investiga la sangre real de tu perro.')}
             />
             <Feature
               icon={FileText}
-              title="Papeles digitalizados"
-              desc="Cartilla sanitaria, contrato de venta, certificado de genealogía, microchip. Todo escaneado y a mano."
+              title={t('Papeles digitalizados')}
+              desc={t('Cartilla sanitaria, contrato de venta, certificado de genealogía, microchip. Todo escaneado y a mano.')}
             />
             <Feature
               icon={Calendar}
-              title="Calendario veterinario"
-              desc="Recordatorios automáticos de vacunas, desparasitaciones y revisiones. Te avisamos antes de que se te pase."
+              title={t('Calendario veterinario')}
+              desc={t('Recordatorios automáticos de vacunas, desparasitaciones y revisiones. Te avisamos antes de que se te pase.')}
             />
             <Feature
               icon={Stethoscope}
-              title="Historial clínico"
-              desc="Cada visita al vet, cada tratamiento, cada análisis registrado y buscable. Para ti y para futuros vets."
+              title={t('Historial clínico')}
+              desc={t('Cada visita al vet, cada tratamiento, cada análisis registrado y buscable. Para ti y para futuros vets.')}
             />
             <Feature
               icon={Heart}
-              title="Vincula a tu criador"
-              desc="Si compraste a tu perro en un criadero de Genealogic, la genealogía se actualiza automáticamente."
+              title={t('Vincula a tu criador')}
+              desc={t('Si compraste a tu perro en un criadero de Genealogic, la genealogía se actualiza automáticamente.')}
             />
           </div>
         </div>
@@ -155,7 +157,7 @@ export default function OwnersLanding() {
           <div className="grid lg:grid-cols-[1fr_1.1fr] gap-8 lg:gap-12 items-center">
             <div className="rounded-2xl sm:rounded-3xl border-2 border-hairline bg-surface-soft p-6 sm:p-8 lg:p-10">
               <ShieldCheck className="w-9 h-9 sm:w-10 sm:h-10 text-ink mb-4" />
-              <p className="text-[14px] font-semibold text-ink mb-3">¿Es tuyo este perro?</p>
+              <p className="text-[14px] font-semibold text-ink mb-3">{t('¿Es tuyo este perro?')}</p>
               <div className="rounded-xl border-2 border-dashed border-ink/20 bg-canvas px-3 sm:px-4 py-3.5 flex items-center gap-2.5 sm:gap-3">
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-ink/10 flex items-center justify-center flex-shrink-0">
                   <Dog className="w-5 h-5 text-ink" />
@@ -172,24 +174,24 @@ export default function OwnersLanding() {
             </div>
 
             <div>
-              <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-muted">Catálogo público</p>
+              <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-muted">{t('Catálogo público')}</p>
               <h2 className="mt-2 font-semibold tracking-[-0.04em] text-ink" style={{ fontSize: 'clamp(22px, 4vw, 36px)', lineHeight: 1.05 }}>
-                ¿Tu perro ya está aquí?
+                {t('¿Tu perro ya está aquí?')}
               </h2>
               <p className="mt-3 sm:mt-4 text-body text-[14px] sm:text-[16px] leading-[1.55]">
-                Genealogic tiene importados miles de perros de genealogías, clubes de raza y federaciones. Es posible que el tuyo ya tenga un perfil esperando dueño.
+                {t('Genealogic tiene importados miles de perros de genealogías, clubes de raza y federaciones. Es posible que el tuyo ya tenga un perfil esperando dueño.')}
               </p>
               <ul className="mt-5 sm:mt-6 space-y-2.5 text-[13.5px] sm:text-[14.5px]">
-                <Check>Búscalo por nombre, microchip o afijo.</Check>
-                <Check>Pulsa "Reclamar" y sube tus papeles (genealogía, cartilla, contrato).</Check>
-                <Check>Un humano revisa en menos de 72h y te transfiere la titularidad.</Check>
+                <Check>{t('Búscalo por nombre, microchip o afijo.')}</Check>
+                <Check>{t('Pulsa "Reclamar" y sube tus papeles (genealogía, cartilla, contrato).')}</Check>
+                <Check>{t('Un humano revisa en menos de 72h y te transfiere la titularidad.')}</Check>
               </ul>
               <Link
                 href="/search"
                 className="mt-6 sm:mt-7 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 sm:px-6 py-3 text-sm font-bold hover:opacity-90 transition"
               >
                 <Search className="w-4 h-4" />
-                Buscar a mi perro
+                {t('Buscar a mi perro')}
               </Link>
             </div>
           </div>
@@ -201,10 +203,10 @@ export default function OwnersLanding() {
         <div className="mx-auto max-w-3xl px-5 sm:px-6 lg:px-12 py-12 sm:py-20 text-center">
           <Smartphone className="w-7 h-7 sm:w-8 sm:h-8 mx-auto mb-4 text-ink" />
           <h2 className="font-semibold tracking-[-0.04em] text-ink mx-auto" style={{ fontSize: 'clamp(22px, 4vw, 36px)', lineHeight: 1.05, maxWidth: '20ch' }}>
-            Tu perro contigo siempre.
+            {t('Tu perro contigo siempre.')}
           </h2>
           <p className="mt-3 sm:mt-4 text-body text-[14px] sm:text-[16px] leading-[1.55] max-w-xl mx-auto">
-            Próximamente en iOS y Android. La cartilla sanitaria de tu perro disponible offline cuando el vet la pida.
+            {t('Próximamente en iOS y Android. La cartilla sanitaria de tu perro disponible offline cuando el vet la pida.')}
           </p>
         </div>
       </section>
@@ -213,16 +215,16 @@ export default function OwnersLanding() {
       <section className="bg-ink text-on-primary">
         <div className="mx-auto max-w-[1200px] px-5 sm:px-6 lg:px-12 py-14 sm:py-24 text-center">
           <h2 className="font-semibold tracking-[-0.04em] max-w-[18ch] mx-auto leading-[1.1]" style={{ fontSize: 'clamp(26px, 5vw, 44px)' }}>
-            Tu perro empieza a tener historia desde hoy.
+            {t('Tu perro empieza a tener historia desde hoy.')}
           </h2>
           <p className="mt-3 sm:mt-4 text-[14px] sm:text-[16px] text-white/70 max-w-md mx-auto">
-            Crea tu cuenta en 30 segundos. Gratis para siempre.
+            {t('Crea tu cuenta en 30 segundos. Gratis para siempre.')}
           </p>
           <Link
             href="/register?intent=owner"
             className="mt-7 sm:mt-8 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#FE6620] text-white px-5 sm:px-6 py-3 text-sm font-bold hover:opacity-90 transition"
           >
-            Crear mi cuenta
+            {t('Crear mi cuenta')}
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

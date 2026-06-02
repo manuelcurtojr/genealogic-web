@@ -24,6 +24,7 @@ import {
   Check, ChevronDown, ChevronUp, X, PartyPopper, ArrowRight,
 } from 'lucide-react'
 import type { OnboardingStatus, OnboardingStep } from '@/lib/onboarding/types'
+import { useT } from '@/components/i18n/locale-provider'
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Sparkles, Dog, Image: ImageIcon, Globe, Inbox, BookOpen, Mail,
@@ -36,6 +37,7 @@ export default function OnboardingCard({
   kennelId: string
   status: OnboardingStatus
 }) {
+  const t = useT()
   const dismissKey = `onboarding-${kennelId}-dismissed`
   const collapseKey = `onboarding-${kennelId}-collapsed`
 
@@ -71,17 +73,16 @@ export default function OnboardingCard({
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 flex items-center gap-4">
         <PartyPopper className="w-6 h-6 text-emerald-700 flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-emerald-900">¡Tu criadero está listo!</p>
+          <p className="text-sm font-bold text-emerald-900">{t('¡Tu criadero está listo!')}</p>
           <p className="text-xs text-emerald-800 mt-0.5">
-            Completaste los {status.totalCount} pasos del onboarding. Genealogic está
-            optimizado para que vendas más con menos esfuerzo.
+            {t('Completaste los')} {status.totalCount} {t('pasos del onboarding. Genealogic está optimizado para que vendas más con menos esfuerzo.')}
           </p>
         </div>
         <button
           onClick={handleDismiss}
           className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 px-3 py-1.5 rounded-lg hover:bg-emerald-100"
         >
-          Cerrar
+          {t('Cerrar')}
         </button>
       </div>
     )
@@ -95,7 +96,7 @@ export default function OnboardingCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-4 h-4 text-ink" />
-            <p className="text-sm font-bold text-ink">Pon tu criadero a funcionar</p>
+            <p className="text-sm font-bold text-ink">{t('Pon tu criadero a funcionar')}</p>
             <span className="text-[11px] font-bold uppercase tracking-wider bg-ink text-on-primary rounded-full px-2 py-0.5 tabular-nums">
               {status.completedCount}/{status.totalCount}
             </span>
@@ -112,14 +113,14 @@ export default function OnboardingCard({
           <button
             onClick={toggleCollapsed}
             className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-surface-soft"
-            title={collapsed ? 'Expandir' : 'Colapsar'}
+            title={collapsed ? t('Expandir') : t('Colapsar')}
           >
             {collapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           </button>
           <button
             onClick={handleDismiss}
             className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-surface-soft"
-            title="Ocultar (no volver a mostrar)"
+            title={t('Ocultar (no volver a mostrar)')}
           >
             <X className="w-4 h-4" />
           </button>
@@ -139,8 +140,8 @@ export default function OnboardingCard({
       {collapsed && (
         <p className="px-5 py-3 text-[11px] text-muted text-center">
           {status.completedCount === 0
-            ? 'Pulsa la flecha de arriba para ver los pasos pendientes.'
-            : `${status.totalCount - status.completedCount} pasos pendientes — pulsa la flecha para verlos.`}
+            ? t('Pulsa la flecha de arriba para ver los pasos pendientes.')
+            : `${status.totalCount - status.completedCount} ${t('pasos pendientes — pulsa la flecha para verlos.')}`}
         </p>
       )}
     </div>
@@ -148,6 +149,7 @@ export default function OnboardingCard({
 }
 
 function StepRow({ step }: { step: OnboardingStep }) {
+  const t = useT()
   const Icon = ICON_MAP[step.icon] || Sparkles
 
   return (
@@ -180,12 +182,12 @@ function StepRow({ step }: { step: OnboardingStep }) {
           </p>
           {step.importance === 'recommended' && !step.done && (
             <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">
-              Recomendado
+              {t('Recomendado')}
             </span>
           )}
           {step.importance === 'optional' && !step.done && (
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted bg-surface-card px-1.5 py-0.5 rounded">
-              Opcional
+              {t('Opcional')}
             </span>
           )}
         </div>

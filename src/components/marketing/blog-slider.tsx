@@ -14,6 +14,7 @@
 import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, ArrowRight, Clock } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 type BlogCard = {
   slug: string
@@ -27,6 +28,7 @@ type BlogCard = {
 }
 
 export default function BlogSlider({ posts }: { posts: BlogCard[] }) {
+  const t = useT()
   const trackRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
@@ -69,16 +71,16 @@ export default function BlogSlider({ posts }: { posts: BlogCard[] }) {
       <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
         <div className="mb-6 sm:mb-8 flex items-end justify-between gap-4">
           <div>
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">Aprende</p>
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Aprende')}</p>
             <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-              Guías y artículos del blog
+              {t('Guías y artículos del blog')}
             </h2>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => scrollBy('left')}
               disabled={!canScrollLeft}
-              aria-label="Anterior"
+              aria-label={t('Anterior')}
               className="hidden sm:inline-flex w-9 h-9 rounded-full border border-hairline bg-canvas items-center justify-center text-ink hover:border-ink/40 disabled:opacity-30 disabled:cursor-not-allowed transition"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -86,13 +88,13 @@ export default function BlogSlider({ posts }: { posts: BlogCard[] }) {
             <button
               onClick={() => scrollBy('right')}
               disabled={!canScrollRight}
-              aria-label="Siguiente"
+              aria-label={t('Siguiente')}
               className="hidden sm:inline-flex w-9 h-9 rounded-full border border-hairline bg-canvas items-center justify-center text-ink hover:border-ink/40 disabled:opacity-30 disabled:cursor-not-allowed transition"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
             <Link href="/blog" className="ml-2 text-sm font-semibold text-ink hover:opacity-80 inline-flex items-center gap-1">
-              Ver blog <ArrowRight className="w-3.5 h-3.5" />
+              {t('Ver blog')} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>

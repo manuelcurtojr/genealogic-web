@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, ArrowDownUp } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 export type SortOption = 'updated' | 'created' | 'alpha'
 
@@ -56,6 +57,7 @@ export function sortItems<T>(items: T[], sort: SortOption, nameKey: string = 'na
 }
 
 export default function SortSelect({ value, onChange }: SortSelectProps) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -74,7 +76,7 @@ export default function SortSelect({ value, onChange }: SortSelectProps) {
         className="flex items-center gap-1.5 bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-body hover:text-ink hover:bg-surface-card transition cursor-pointer whitespace-nowrap"
       >
         <ArrowDownUp className="w-3.5 h-3.5 flex-shrink-0" />
-        <span className="hidden sm:inline">{SORT_LABELS[value]}</span>
+        <span className="hidden sm:inline">{t(SORT_LABELS[value])}</span>
         <ChevronDown className={`w-3 h-3 transition ${open ? 'rotate-180' : ''}`} />
       </button>
 
@@ -90,7 +92,7 @@ export default function SortSelect({ value, onChange }: SortSelectProps) {
                   : 'text-body hover:bg-surface-card hover:text-ink'
               }`}
             >
-              {label}
+              {t(label)}
             </button>
           ))}
         </div>

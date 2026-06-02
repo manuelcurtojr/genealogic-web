@@ -26,6 +26,7 @@ import {
   OPEN_STATUSES,
 } from '@/lib/content-reports/types'
 import type { HiddenReason } from '@/lib/moderation/types'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   report: {
@@ -48,6 +49,7 @@ function reasonToHidden(reason: ReportReason): HiddenReason {
 }
 
 export default function ReportAdminActions({ report }: Props) {
+  const t = useT()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState('')
@@ -159,7 +161,7 @@ export default function ReportAdminActions({ report }: Props) {
           body: JSON.stringify({
             status: cfg.status,
             resolutionNotes: notes.trim(),
-            resolutionAction: action.trim() || cfg.defaultAction,
+            resolutionAction: action.trim() || t(cfg.defaultAction),
           }),
         })
         if (!res.ok) {
@@ -181,12 +183,12 @@ export default function ReportAdminActions({ report }: Props) {
   return (
     <div className="rounded-xl border border-hairline bg-canvas p-4">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-3">
-        Acciones
+        {t('Acciones')}
       </p>
 
       {/* Estado actual */}
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-[11px] text-muted">Estado actual</span>
+        <span className="text-[11px] text-muted">{t('Estado actual')}</span>
         <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded border ${REPORT_STATUS_COLORS[report.status]}`}>
           {REPORT_STATUS_LABELS[report.status]}
         </span>
@@ -201,7 +203,7 @@ export default function ReportAdminActions({ report }: Props) {
           className="w-full mb-3 inline-flex items-center justify-center gap-2 rounded-lg border border-hairline bg-canvas px-3 py-2 text-sm font-medium text-ink hover:bg-surface-soft disabled:opacity-50"
         >
           {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-          Marcar en revisión
+          {t('Marcar en revisión')}
         </button>
       )}
 
@@ -211,7 +213,7 @@ export default function ReportAdminActions({ report }: Props) {
           {!resolveMode && (
             <div className="space-y-2">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted mt-2">
-                Resolver
+                {t('Resolver')}
               </p>
               {(Object.entries(RESOLVE_OPTIONS) as [keyof typeof RESOLVE_OPTIONS, typeof RESOLVE_OPTIONS[keyof typeof RESOLVE_OPTIONS]][]).map(([key, cfg]) => {
                 const Icon = cfg.icon
@@ -221,14 +223,14 @@ export default function ReportAdminActions({ report }: Props) {
                     type="button"
                     onClick={() => {
                       setResolveMode(key)
-                      setAction(cfg.defaultAction)
+                      setAction(t(cfg.defaultAction))
                     }}
                     className={`w-full flex items-start gap-2.5 rounded-lg border px-3 py-2.5 text-left transition hover:opacity-90 ${cfg.color}`}
                   >
                     <Icon className="h-4 w-4 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
-                      <p className="text-sm font-semibold">{cfg.title}</p>
-                      <p className="text-[11px] opacity-80">{cfg.desc}</p>
+                      <p className="text-sm font-semibold">{t(cfg.title)}</p>
+                      <p className="text-[11px] opacity-80">{t(cfg.desc)}</p>
                     </div>
                   </button>
                 )
@@ -240,7 +242,7 @@ export default function ReportAdminActions({ report }: Props) {
             <div className="space-y-3 rounded-lg border border-hairline bg-surface-soft p-3 mt-2">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-ink">
-                  {RESOLVE_OPTIONS[resolveMode].title}
+                  {t(RESOLVE_OPTIONS[resolveMode].title)}
                 </p>
                 <button
                   type="button"
@@ -253,13 +255,13 @@ export default function ReportAdminActions({ report }: Props) {
 
               <div>
                 <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-body">
-                  Acción tomada
+                  {t('Acción tomada')}
                 </label>
                 <input
                   type="text"
                   value={action}
                   onChange={(e) => setAction(e.target.value)}
-                  placeholder="P. ej., Foto retirada / Criador anonimizado / Perfil oculto"
+                  placeholder={t('P. ej., Foto retirada / Criador anonimizado / Perfil oculto')}
                   maxLength={200}
                   className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none"
                 />
@@ -267,12 +269,12 @@ export default function ReportAdminActions({ report }: Props) {
 
               <div>
                 <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-body">
-                  Notas de resolución <span className="text-red-500">*</span>
+                  {t('Notas de resolución')} <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Argumentación de la decisión (visible internamente, no se manda al reportante por defecto)"
+                  placeholder={t('Argumentación de la decisión (visible internamente, no se manda al reportante por defecto)')}
                   rows={4}
                   maxLength={5000}
                   className="w-full resize-y rounded-lg border border-hairline bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none"
@@ -292,11 +294,10 @@ export default function ReportAdminActions({ report }: Props) {
                   <span className="text-[12px] text-amber-900 leading-snug">
                     <strong className="flex items-center gap-1.5">
                       <EyeOff className="h-3 w-3" />
-                      Ocultar el {report.target_type === 'dog' ? 'perro' : 'criadero'} automáticamente
+                      {t('Ocultar el')} {report.target_type === 'dog' ? t('perro') : t('criadero')} {t('automáticamente')}
                     </strong>
                     <span className="block mt-0.5">
-                      Soft-hide reversible: el perfil se retira del público pero queda
-                      como placeholder en la genealogía. Restaurable en cualquier momento.
+                      {t('Soft-hide reversible: el perfil se retira del público pero queda como placeholder en la genealogía. Restaurable en cualquier momento.')}
                     </span>
                   </span>
                 </label>
@@ -307,8 +308,7 @@ export default function ReportAdminActions({ report }: Props) {
                 <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[12px] text-emerald-900 flex items-start gap-2">
                   <Check className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
                   <span>
-                    Este {report.target_type === 'dog' ? 'perro' : 'criadero'} ya está oculto.
-                    No hace falta repetir la acción.
+                    {t('Este')} {report.target_type === 'dog' ? t('perro') : t('criadero')} {t('ya está oculto. No hace falta repetir la acción.')}
                   </span>
                 </div>
               )}
@@ -328,7 +328,7 @@ export default function ReportAdminActions({ report }: Props) {
               >
                 {pending && <Loader2 className="h-4 w-4 animate-spin" />}
                 <Check className="h-4 w-4" />
-                Confirmar resolución
+                {t('Confirmar resolución')}
               </button>
             </div>
           )}
@@ -341,7 +341,7 @@ export default function ReportAdminActions({ report }: Props) {
           {report.resolution_action && (
             <div className="rounded-lg bg-surface-soft px-3 py-2">
               <p className="text-[10px] uppercase tracking-wider font-semibold text-muted mb-1">
-                Acción tomada
+                {t('Acción tomada')}
               </p>
               <p className="text-sm text-ink">{report.resolution_action}</p>
             </div>
@@ -349,7 +349,7 @@ export default function ReportAdminActions({ report }: Props) {
           {report.resolution_notes && (
             <div className="rounded-lg bg-surface-soft px-3 py-2">
               <p className="text-[10px] uppercase tracking-wider font-semibold text-muted mb-1">
-                Notas internas
+                {t('Notas internas')}
               </p>
               <p className="text-sm text-body whitespace-pre-wrap">{report.resolution_notes}</p>
             </div>
@@ -361,7 +361,7 @@ export default function ReportAdminActions({ report }: Props) {
             className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-hairline bg-canvas px-3 py-2 text-xs font-medium text-body hover:text-ink hover:bg-surface-soft disabled:opacity-50"
           >
             {pending && <Loader2 className="h-3 w-3 animate-spin" />}
-            Reabrir reporte
+            {t('Reabrir reporte')}
           </button>
           {error && (
             <div className="text-xs text-red-700">{error}</div>

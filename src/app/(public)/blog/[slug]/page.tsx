@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { allPosts, getPostBySlug, getRelatedPosts } from '@/content/blog'
 import { Prose } from '@/components/blog/prose'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 import type { Metadata } from 'next'
 
 export function generateStaticParams() {
@@ -51,6 +53,7 @@ function formatDate(iso: string) {
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const t = getTranslator(await getLocale())
   const { slug } = await params
   const post = getPostBySlug(slug)
   if (!post) notFound()
@@ -83,7 +86,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           href="/blog"
           className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted transition-colors hover:text-ink"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> Volver al blog
+          <ArrowLeft className="h-3.5 w-3.5" /> {t('Volver al blog')}
         </Link>
       </div>
 
@@ -92,7 +95,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <header className="mx-auto max-w-[760px] px-6 pt-8 pb-10 lg:px-0 lg:pt-12 lg:pb-14">
           <div className="flex items-center gap-3 text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
             <span className="rounded-full bg-surface-card px-2.5 py-1">{meta.category}</span>
-            <span>{meta.readMinutes} min lectura</span>
+            <span>{meta.readMinutes} {t('min lectura')}</span>
           </div>
           <h1
             className="mt-5 font-semibold text-ink"
@@ -133,13 +136,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <section className="border-t border-hairline bg-surface-soft">
           <div className="mx-auto max-w-[1100px] px-6 py-14 lg:px-12 lg:py-20">
             <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-              Sigue leyendo
+              {t('Sigue leyendo')}
             </p>
             <h2
               className="mt-3 font-semibold text-ink"
               style={{ fontSize: 'clamp(24px, 3vw, 36px)', lineHeight: 1.15, letterSpacing: '-0.025em' }}
             >
-              Artículos relacionados
+              {t('Artículos relacionados')}
             </h2>
 
             <div className="mt-10 grid gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
@@ -157,7 +160,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   <div className="mt-4 flex items-center gap-2 text-[11.5px] font-medium uppercase tracking-[0.12em] text-muted">
                     <span>{rm.category}</span>
                     <span>·</span>
-                    <span>{rm.readMinutes} min</span>
+                    <span>{rm.readMinutes} {t('min')}</span>
                   </div>
                   <h3
                     className="mt-2 font-semibold text-ink transition-colors group-hover:text-ink/80"
@@ -174,7 +177,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               href="/blog"
               className="mt-12 inline-flex items-center gap-1.5 text-[14px] font-medium text-ink transition-colors hover:opacity-70"
             >
-              Ver todos los artículos <ArrowRight className="h-3.5 w-3.5" />
+              {t('Ver todos los artículos')} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </section>

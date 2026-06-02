@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function CookieBanner() {
+  const t = useT()
   const [show, setShow] = useState(false)
   // Link a la política de cookies según el host: en la plataforma → /cookies
   // (la global); bajo un dominio propio de criadero → /legal/cookies (la del
@@ -43,15 +45,15 @@ export default function CookieBanner() {
     <div className="fixed bottom-0 left-0 right-0 z-[300] bg-surface-card border-t border-hairline px-4 py-4 sm:px-6">
       <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <p className="text-sm text-body flex-1">
-          Usamos cookies esenciales para el funcionamiento de la plataforma. No usamos cookies de seguimiento ni publicidad.{' '}
-          <Link href={cookiesHref} className="text-ink hover:underline">Más información</Link>
+          {t('Usamos cookies esenciales para el funcionamiento de la plataforma. No usamos cookies de seguimiento ni publicidad.')}{' '}
+          <Link href={cookiesHref} className="text-ink hover:underline">{t('Más información')}</Link>
         </p>
         <div className="flex items-center gap-2 flex-shrink-0">
           <button onClick={reject} className="text-xs text-muted hover:text-ink px-3 py-2 transition">
-            Rechazar
+            {t('Rechazar')}
           </button>
           <button onClick={accept} className="text-xs bg-ink text-on-primary hover:opacity-90 font-semibold px-4 py-2 rounded-lg transition">
-            Aceptar
+            {t('Aceptar')}
           </button>
         </div>
       </div>

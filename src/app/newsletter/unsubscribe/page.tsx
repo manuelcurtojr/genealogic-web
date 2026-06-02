@@ -6,6 +6,8 @@
  * confirmación al usuario. Si el token es inválido, mensaje claro.
  */
 import { unsubscribeByToken } from '@/lib/newsletter/send'
+import { getTranslator } from '@/lib/i18n'
+import { getLocale } from '@/lib/locale'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -16,14 +18,14 @@ export default async function UnsubscribePage({
 }: { searchParams: Promise<{ token?: string; campaign?: string }> }) {
   const sp = await searchParams
   const token = sp.token?.trim()
+  const t = getTranslator(await getLocale())
 
   if (!token) {
     return (
       <PageShell>
-        <h1 className="text-2xl font-bold text-ink mb-2">Enlace incompleto</h1>
+        <h1 className="text-2xl font-bold text-ink mb-2">{t('Enlace incompleto')}</h1>
         <p className="text-body">
-          El enlace de baja debe incluir un token válido. Comprueba que copiaste
-          la URL completa desde el email.
+          {t('El enlace de baja debe incluir un token válido. Comprueba que copiaste la URL completa desde el email.')}
         </p>
       </PageShell>
     )
@@ -34,10 +36,10 @@ export default async function UnsubscribePage({
   if ('error' in res) {
     return (
       <PageShell>
-        <h1 className="text-2xl font-bold text-ink mb-2">No se pudo procesar</h1>
+        <h1 className="text-2xl font-bold text-ink mb-2">{t('No se pudo procesar')}</h1>
         <p className="text-body">{res.error}</p>
         <p className="text-sm text-muted mt-4">
-          Si el problema persiste, escríbenos a{' '}
+          {t('Si el problema persiste, escríbenos a')}{' '}
           <a href="mailto:hola@genealogic.io" className="underline text-ink">
             hola@genealogic.io
           </a>
@@ -54,17 +56,17 @@ export default async function UnsubscribePage({
           <polyline points="20 6 9 17 4 12" />
         </svg>
       </div>
-      <h1 className="text-2xl font-bold text-ink mb-2">Te has dado de baja</h1>
+      <h1 className="text-2xl font-bold text-ink mb-2">{t('Te has dado de baja')}</h1>
       <p className="text-body">
-        <strong>{res.email}</strong> ya no recibirá emails del newsletter de
+        <strong>{res.email}</strong> {t('ya no recibirá emails del newsletter de')}
         <strong> {res.kennelName}</strong>.
       </p>
       <p className="text-sm text-muted mt-4">
-        Si fue por error o quieres volver a suscribirte, escríbenos a{' '}
+        {t('Si fue por error o quieres volver a suscribirte, escríbenos a')}{' '}
         <a href="mailto:hola@genealogic.io" className="underline text-ink">
           hola@genealogic.io
         </a>{' '}
-        o vuelve a registrarte en la web del criadero.
+        {t('o vuelve a registrarte en la web del criadero.')}
       </p>
     </PageShell>
   )

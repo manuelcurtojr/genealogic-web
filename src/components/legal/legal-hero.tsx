@@ -15,15 +15,17 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LEGAL_PAGES } from './legal-sidebar'
 import { ChevronRight } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function LegalHero() {
+  const t = useT()
   const pathname = usePathname() || ''
   const current = LEGAL_PAGES.find((p) => p.href === pathname)
 
-  const title = current?.label || 'Documentación legal'
-  const desc =
-    current?.desc ||
-    'Genealogic — política de uso, privacidad, cookies y propiedad intelectual.'
+  const title = current ? t(current.label) : t('Documentación legal')
+  const desc = current
+    ? t(current.desc)
+    : t('Genealogic — política de uso, privacidad, cookies y propiedad intelectual.')
   const Icon = current?.icon
 
   return (
@@ -41,18 +43,18 @@ export default function LegalHero() {
       <div className="relative px-6 py-7 sm:px-9 sm:py-9">
         {/* Breadcrumb */}
         <nav
-          aria-label="Migas de pan"
+          aria-label={t('Migas de pan')}
           className="flex items-center gap-1.5 text-[12px] text-muted"
         >
           <Link href="/" className="hover:text-ink transition-colors">
-            Inicio
+            {t('Inicio')}
           </Link>
           <ChevronRight className="h-3 w-3 opacity-60" />
-          <span className="text-body">Legal</span>
+          <span className="text-body">{t('Legal')}</span>
           {current && (
             <>
               <ChevronRight className="h-3 w-3 opacity-60" />
-              <span className="text-ink font-medium">{current.label}</span>
+              <span className="text-ink font-medium">{t(current.label)}</span>
             </>
           )}
         </nav>
@@ -73,7 +75,7 @@ export default function LegalHero() {
             <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px] text-muted">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-soft px-2.5 py-1 font-medium">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                Vigente
+                {t('Vigente')}
               </span>
               <span>·</span>
               <span>Manuel Curtó SL · B56932098</span>

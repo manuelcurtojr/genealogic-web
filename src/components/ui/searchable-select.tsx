@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, X, Search } from 'lucide-react'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Option {
   value: string
@@ -19,7 +20,9 @@ interface SearchableSelectProps {
   disabled?: boolean
 }
 
-export default function SearchableSelect({ options, value, onChange, placeholder = 'Seleccionar...', label, disabled }: SearchableSelectProps) {
+export default function SearchableSelect({ options, value, onChange, placeholder, label, disabled }: SearchableSelectProps) {
+  const t = useT()
+  const placeholderText = placeholder ?? t('Seleccionar...')
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const ref = useRef<HTMLDivElement>(null)
@@ -59,7 +62,7 @@ export default function SearchableSelect({ options, value, onChange, placeholder
             <span className="flex-1 truncate text-ink">{selected.label}</span>
           </>
         ) : (
-          <span className="text-muted flex-1">{placeholder}</span>
+          <span className="text-muted flex-1">{placeholderText}</span>
         )}
         <div className="flex items-center gap-1 flex-shrink-0">
           {value && !disabled && (
@@ -84,14 +87,14 @@ export default function SearchableSelect({ options, value, onChange, placeholder
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar..."
+                placeholder={t('Buscar...')}
                 className="w-full rounded border border-hairline bg-canvas py-1.5 pl-8 pr-3 text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink"
               />
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
             {filtered.length === 0 ? (
-              <p className="p-3 text-center text-[13px] text-muted">Sin resultados</p>
+              <p className="p-3 text-center text-[13px] text-muted">{t('Sin resultados')}</p>
             ) : (
               filtered.map((opt) => (
                 <button

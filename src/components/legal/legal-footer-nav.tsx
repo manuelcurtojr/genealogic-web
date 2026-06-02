@@ -9,8 +9,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Mail } from 'lucide-react'
 import { LEGAL_PAGES } from './legal-sidebar'
+import { useT } from '@/components/i18n/locale-provider'
 
 export default function LegalFooterNav() {
+  const t = useT()
   const pathname = usePathname() || ''
   const idx = LEGAL_PAGES.findIndex((p) => p.href === pathname)
 
@@ -32,10 +34,10 @@ export default function LegalFooterNav() {
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted">
-                  Anterior
+                  {t('Anterior')}
                 </p>
                 <p className="mt-0.5 text-[13.5px] font-medium text-ink truncate">
-                  {prev.label}
+                  {t(prev.label)}
                 </p>
               </div>
             </Link>
@@ -50,10 +52,10 @@ export default function LegalFooterNav() {
             >
               <div className="min-w-0 flex-1 text-right">
                 <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted">
-                  Siguiente
+                  {t('Siguiente')}
                 </p>
                 <p className="mt-0.5 text-[13.5px] font-medium text-ink truncate">
-                  {next.label}
+                  {t(next.label)}
                 </p>
               </div>
               <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-surface-soft text-muted transition-colors group-hover:text-ink">
@@ -69,14 +71,14 @@ export default function LegalFooterNav() {
         <div className="flex items-start gap-2.5">
           <Mail className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted" />
           <p>
-            ¿Necesitas aclarar algo o ejercer un derecho RGPD? Escríbenos a{' '}
+            {t('¿Necesitas aclarar algo o ejercer un derecho RGPD? Escríbenos a')}{' '}
             <a
               href="mailto:hola@genealogic.io"
               className="font-medium text-ink underline underline-offset-4"
             >
               hola@genealogic.io
             </a>
-            . Respondemos en menos de 72&nbsp;horas.
+            . {t('Respondemos en menos de 72 horas.')}
           </p>
         </div>
       </div>

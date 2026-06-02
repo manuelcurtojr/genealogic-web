@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { X, ChevronLeft, ChevronRight, FileText, Download } from 'lucide-react'
 import ReportButton, { type ReportTargetType } from '@/components/legal/report-dialog'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface LightboxProps {
   files: string[]
@@ -23,6 +24,7 @@ function isImage(url: string) { return /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(u
 function isPdf(url: string) { return /\.pdf(\?|$)/i.test(url) }
 
 export default function Lightbox({ files, startIndex, onClose, reportTarget }: LightboxProps) {
+  const t = useT()
   const [current, setCurrent] = useState(startIndex)
   const hasMultiple = files.length > 1
 
@@ -54,15 +56,15 @@ export default function Lightbox({ files, startIndex, onClose, reportTarget }: L
               targetUrl={url}
               targetLabel={
                 reportTarget.parentLabel
-                  ? `Foto ${current + 1} de ${reportTarget.parentLabel}`
-                  : `Foto ${current + 1}`
+                  ? `${t('Foto')} ${current + 1} ${t('de')} ${reportTarget.parentLabel}`
+                  : `${t('Foto')} ${current + 1}`
               }
               currentUserEmail={reportTarget.currentUserEmail}
               trigger="icon"
               className="w-9 h-9 rounded-full bg-surface-card flex items-center justify-center text-body hover:text-ink transition"
             />
           )}
-          <a href={url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-surface-card flex items-center justify-center text-body hover:text-ink transition" title="Descargar">
+          <a href={url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-surface-card flex items-center justify-center text-body hover:text-ink transition" title={t('Descargar')}>
             <Download className="w-4 h-4" />
           </a>
           <button onClick={onClose} className="w-9 h-9 rounded-full bg-surface-card flex items-center justify-center text-body hover:text-ink transition">
@@ -80,9 +82,9 @@ export default function Lightbox({ files, startIndex, onClose, reportTarget }: L
         ) : (
           <div className="flex flex-col items-center gap-4">
             <FileText className="w-16 h-16 text-muted" />
-            <p className="text-body text-sm">Vista previa no disponible</p>
+            <p className="text-body text-sm">{t('Vista previa no disponible')}</p>
             <a href={url} target="_blank" rel="noopener noreferrer" className="bg-ink text-on-primary hover:opacity-90 px-6 py-2.5 rounded-lg text-sm font-semibold transition flex items-center gap-2">
-              <Download className="w-4 h-4" /> Descargar archivo
+              <Download className="w-4 h-4" /> {t('Descargar archivo')}
             </a>
           </div>
         )}
