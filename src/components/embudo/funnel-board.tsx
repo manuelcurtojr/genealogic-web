@@ -1,24 +1,29 @@
 'use client'
 
 /**
- * Tablero del Embudo. NO es kanban de arrastrar (insufrible con muchos
- * mensajes): pipelines como pestañas → pasos como pestañas → lista de fichas.
- *  - Solicitud nueva (seen_by_breeder_at null) → resaltada con borde + pill.
- *  - Mover a un paso GANADO → confeti + popup de celebración.
- *  - Mover a un paso PERDIDO → encuesta de motivo (configurable por paso).
+ * Tablero del Embudo. NO es kanban de arrastrar: pipelines como pestañas →
+ * pasos como pestañas → lista de fichas. Al pinchar una ficha se abre el
+ * detalle completo en un panel lateral derecho. El "+" y el engranaje abren
+ * el panel de configuración del funnel.
+ *  - Solicitud nueva → resaltada (borde + pill), se quita al abrir.
+ *  - Mover a paso GANADO → confeti + popup.  Mover a paso PERDIDO → encuesta.
  */
-import { useMemo, useState, useTransition, useCallback } from 'react'
+import { useMemo, useState, useCallback, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import confetti from 'canvas-confetti'
-import { Sparkles, ArrowRight, Mail, Phone, Clock, X, ChevronRight } from 'lucide-react'
+import { Sparkles, X, Plus, Settings, Mail, Phone, Clock } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import { moveEntryToStage, markEntrySeen } from '@/lib/pipelines/actions'
 import type { Pipeline, Stage, FunnelEntry } from '@/lib/pipelines/types'
+import LeadPanel from './lead-panel'
+import ConfigPanel from './config-panel'
+
+type ConfigState = { mode: 'create' } | { mode: 'edit'; pipelineId: string }
 
 function fireConfetti() {
   const end = Date.now() + 900
   const colors = ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d']
-  confetti({ particleCount: 140, spread: 90, startVelocity: 45, origin: { y: 0.55 }, colors })
+  confetti({ particleCount: 150, spread: 95, startVelocity: 45, origin: { y: 0.5 }, colors })
   ;(function frame() {
     confetti({ particleCount: 4, angle: 60, spread: 60, origin: { x: 0 }, colors })
     confetti({ particleCount: 4, angle: 120, spread: 60, origin: { x: 1 }, colors })
@@ -41,15 +46,12 @@ export default function FunnelBoard({
 
   const [pipelineId, setPipelineId] = useState<string>(pipelines[0]?.id ?? '')
   const pipeline = useMemo(() => pipelines.find((p) => p.id === pipelineId) ?? pipelines[0], [pipelines, pipelineId])
-  const entryStage = useMemo(
-    () => pipeline?.stages.find((s) => s.is_entry) ?? pipeline?.stages[0],
-    [pipeline],
-  )
+  const entryStage = useMemo(() => pipeline?.stages.find((s) => s.is_entry) ?? pipeline?.stages[0], [pipeline])
   const [stageId, setStageId] = useState<string>(entryStage?.id ?? '')
 
-  // Modal de motivo de pérdida
+  const [selected, setSelected] = useState<FunnelEntry | null>(null)
+  const [config, setConfig] = useState<ConfigState | null>(null)
   const [loss, setLoss] = useState<{ entryId: string; stageId: string; reasons: string[] } | null>(null)
-  // Overlay de celebración
   const [party, setParty] = useState<{ title: string; subtitle: string } | null>(null)
 
   const byStage = useMemo(() => {
@@ -72,22 +74,6 @@ export default function FunnelBoard({
     return m
   }, [entries])
 
-  const stats = useMemo(() => {
-    const typeOf = new Map<string, string>(pipeline ? pipeline.stages.map((s) => [s.id, s.type]) : [])
-    let won = 0,
-      lost = 0,
-      active = 0
-    for (const e of entries) {
-      if (e.pipeline_id !== pipeline?.id || !e.stage_id) continue
-      const ty = typeOf.get(e.stage_id)
-      if (ty === 'won') won++
-      else if (ty === 'lost') lost++
-      else active++
-    }
-    const closed = won + lost
-    return { won, lost, active, rate: closed > 0 ? Math.round((won / closed) * 100) : null }
-  }, [entries, pipeline])
-
   function selectPipeline(p: Pipeline) {
     setPipelineId(p.id)
     const entry = p.stages.find((s) => s.is_entry) ?? p.stages[0]
@@ -107,13 +93,12 @@ export default function FunnelBoard({
           return
         }
         setLoss(null)
+        setSelected(null)
         if (res.celebrate) {
           fireConfetti()
           setParty({
             title: `🎉 ${t(target.name)}`,
-            subtitle: entry.applicant_name
-              ? `${entry.applicant_name} · ${kennelName}`
-              : kennelName,
+            subtitle: entry.applicant_name ? `${entry.applicant_name} · ${kennelName}` : kennelName,
           })
         }
         router.refresh()
@@ -122,30 +107,28 @@ export default function FunnelBoard({
     [router, t, kennelName],
   )
 
-  function openEntry(entry: FunnelEntry) {
-    startTransition(async () => {
-      if (!entry.seen_by_breeder_at) await markEntrySeen(entry.id)
-      router.push(`/reservas/${entry.id}`)
-    })
+  function openLead(entry: FunnelEntry) {
+    if (!entry.seen_by_breeder_at) {
+      startTransition(async () => {
+        await markEntrySeen(entry.id)
+        router.refresh()
+      })
+    }
+    setSelected(entry)
   }
 
   if (!pipeline) {
-    return <div className="max-w-2xl mx-auto py-10 text-body">{t('No hay pipelines configurados.')}</div>
+    return <div className="w-full px-6 py-10 text-body">{t('No hay pipelines configurados.')}</div>
   }
 
   const stageEntries = byStage.get(stageId) || []
 
   return (
-    <div className="max-w-5xl mx-auto py-6 px-1">
-      <div className="flex items-center justify-between mb-5">
-        <h1 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight">{t('Embudo')}</h1>
-        <a href="/embudo/configuracion" className="text-xs font-medium text-muted hover:text-ink inline-flex items-center gap-1">
-          {t('Configurar embudo')} <ChevronRight className="w-3.5 h-3.5" />
-        </a>
-      </div>
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+      <h1 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight mb-5">{t('Embudo')}</h1>
 
-      {/* ─── Pestañas de pipeline ─── */}
-      <div className="flex gap-2 border-b border-hairline mb-4 overflow-x-auto">
+      {/* ─── Pestañas de pipeline + crear/configurar ─── */}
+      <div className="flex items-center gap-1 border-b border-hairline mb-5 overflow-x-auto">
         {pipelines.map((p) => {
           const active = p.id === pipeline.id
           const unseen = p.stages.reduce((n, s) => n + (unseenByStage.get(s.id) || 0), 0)
@@ -154,31 +137,33 @@ export default function FunnelBoard({
               key={p.id}
               onClick={() => selectPipeline(p)}
               className={
-                'relative px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors border-b-2 -mb-px ' +
+                'relative px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 -mb-px transition-colors ' +
                 (active ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-ink')
               }
             >
               {t(p.name)}
               {unseen > 0 && (
-                <span className="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-ink text-on-primary text-[10px] font-bold align-middle">
+                <span className="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-amber-400 text-amber-950 text-[10px] font-bold align-middle">
                   {unseen}
                 </span>
               )}
             </button>
           )
         })}
-      </div>
-
-      {/* ─── Resumen de conversión ─── */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4 text-xs">
-        <span className="text-emerald-600 font-semibold">🏆 {stats.won} {t('Ganadas')}</span>
-        <span className="text-rose-600 font-semibold">✕ {stats.lost} {t('Perdidas')}</span>
-        <span className="text-muted">{stats.active} {t('En curso')}</span>
-        {stats.rate !== null && (
-          <span className="ml-auto font-bold text-ink">
-            {stats.rate}% {t('Conversión')}
-          </span>
-        )}
+        <button
+          onClick={() => setConfig({ mode: 'edit', pipelineId: pipeline.id })}
+          title={t('Configurar este embudo')}
+          className="ml-1 p-2 text-muted hover:text-ink"
+        >
+          <Settings className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => setConfig({ mode: 'create' })}
+          title={t('Nuevo embudo')}
+          className="p-2 text-muted hover:text-ink"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
       </div>
 
       {/* ─── Pestañas de paso ─── */}
@@ -187,8 +172,7 @@ export default function FunnelBoard({
           const active = s.id === stageId
           const count = (byStage.get(s.id) || []).length
           const unseen = unseenByStage.get(s.id) || 0
-          const tone =
-            s.type === 'won' ? 'emerald' : s.type === 'lost' ? 'rose' : 'ink'
+          const tone = s.type === 'won' ? 'emerald' : s.type === 'lost' ? 'rose' : 'ink'
           return (
             <button
               key={s.id}
@@ -212,85 +196,81 @@ export default function FunnelBoard({
         })}
       </div>
 
-      {/* ─── Lista de fichas del paso ─── */}
+      {/* ─── Lista de fichas ─── */}
       {stageEntries.length === 0 ? (
-        <div className="rounded-2xl border border-hairline bg-surface-soft/30 px-4 py-16 text-center">
+        <div className="rounded-2xl border border-hairline bg-surface-soft/30 px-4 py-20 text-center">
           <p className="text-sm text-muted">{t('No hay fichas en este paso.')}</p>
         </div>
       ) : (
-        <ul className="space-y-2.5">
+        <ul className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
           {stageEntries.map((e) => {
             const isNew = !e.seen_by_breeder_at
             return (
-              <li
-                key={e.id}
-                className={
-                  'rounded-xl border bg-canvas p-3.5 transition-shadow ' +
-                  (isNew ? 'border-amber-400 ring-2 ring-amber-300/50 shadow-sm' : 'border-hairline')
-                }
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <button onClick={() => openEntry(e)} className="text-left min-w-0 flex-1 group">
-                    <div className="flex items-center gap-2">
-                      {isNew && (
-                        <span className="inline-flex items-center rounded-full bg-amber-400 text-amber-950 text-[10px] font-bold px-1.5 py-0.5 uppercase tracking-wide">
-                          {t('Nueva')}
-                        </span>
-                      )}
-                      <span className="font-semibold text-ink truncate group-hover:underline">
-                        {e.applicant_name || t('Sin nombre')}
+              <li key={e.id}>
+                <button
+                  onClick={() => openLead(e)}
+                  className={
+                    'w-full text-left rounded-xl border bg-canvas p-4 transition-all hover:shadow-md hover:border-ink/20 ' +
+                    (isNew ? 'border-amber-400 ring-2 ring-amber-300/40' : 'border-hairline')
+                  }
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    {isNew && (
+                      <span className="inline-flex items-center rounded-full bg-amber-400 text-amber-950 text-[10px] font-bold px-1.5 py-0.5 uppercase tracking-wide">
+                        {t('Nueva')}
                       </span>
-                      {e.preference_sex && (
-                        <span className="text-xs text-muted">
-                          {e.preference_sex === 'male' ? t('Macho') : t('Hembra')}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted">
-                      {e.applicant_email && (
-                        <span className="inline-flex items-center gap-1 truncate">
-                          <Mail className="w-3 h-3" /> {e.applicant_email}
-                        </span>
-                      )}
-                      {e.applicant_phone && (
-                        <span className="inline-flex items-center gap-1">
-                          <Phone className="w-3 h-3" /> {e.applicant_phone}
-                        </span>
-                      )}
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {new Date(e.created_at).toLocaleDateString()}
+                    )}
+                    <span className="font-semibold text-ink truncate">{e.applicant_name || t('Sin nombre')}</span>
+                    {e.preference_sex && (
+                      <span className="text-xs text-muted">
+                        {e.preference_sex === 'male' ? t('Macho') : t('Hembra')}
                       </span>
-                    </div>
-                    {e.applicant_message && (
-                      <p className="mt-1.5 text-[13px] text-body line-clamp-2">{e.applicant_message}</p>
                     )}
-                    {e.lost_reason && (
-                      <p className="mt-1.5 text-[12px] text-rose-600">
-                        {t('Motivo')}: {t(e.lost_reason)}
-                      </p>
-                    )}
-                  </button>
-
-                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                    <MoveControl
-                      pipeline={pipeline}
-                      currentStageId={e.stage_id}
-                      disabled={pending}
-                      onMove={(target) => doMove(e, target)}
-                      moveLabel={t('Mover a…')}
-                    />
-                    <button
-                      onClick={() => openEntry(e)}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-ink hover:opacity-80"
-                    >
-                      {t('Abrir')} <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-muted">
+                      <Clock className="w-3 h-3" /> {new Date(e.created_at).toLocaleDateString()}
+                    </span>
                   </div>
-                </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted">
+                    {e.applicant_email && (
+                      <span className="inline-flex items-center gap-1 truncate">
+                        <Mail className="w-3 h-3" /> {e.applicant_email}
+                      </span>
+                    )}
+                    {e.applicant_phone && (
+                      <span className="inline-flex items-center gap-1">
+                        <Phone className="w-3 h-3" /> {e.applicant_phone}
+                      </span>
+                    )}
+                  </div>
+                  {e.applicant_message && (
+                    <p className="mt-1.5 text-[13px] text-body line-clamp-2">{e.applicant_message}</p>
+                  )}
+                  {e.lost_reason && (
+                    <p className="mt-1.5 text-[12px] text-rose-600">
+                      {t('Motivo')}: {t(e.lost_reason)}
+                    </p>
+                  )}
+                </button>
               </li>
             )
           })}
         </ul>
+      )}
+
+      {/* ─── Panel lateral: detalle del lead ─── */}
+      {selected && (
+        <LeadPanel
+          entry={selected}
+          pipeline={pipeline}
+          pending={pending}
+          onMove={(target) => doMove(selected, target)}
+          onClose={() => setSelected(null)}
+        />
+      )}
+
+      {/* ─── Panel lateral: configurar funnel ─── */}
+      {config && (
+        <ConfigPanel pipelines={pipelines} state={config} onState={setConfig} onClose={() => setConfig(null)} />
       )}
 
       {/* ─── Modal: motivo de pérdida ─── */}
@@ -310,7 +290,7 @@ export default function FunnelBoard({
       {/* ─── Overlay: celebración ─── */}
       {party && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/30 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/30 backdrop-blur-sm"
           onClick={() => setParty(null)}
         >
           <div className="rounded-3xl bg-canvas border border-hairline shadow-2xl px-10 py-8 text-center max-w-sm mx-4">
@@ -330,47 +310,6 @@ export default function FunnelBoard({
   )
 }
 
-/** Selector "Mover a…" con los pasos del pipeline (menos el actual). */
-function MoveControl({
-  pipeline,
-  currentStageId,
-  disabled,
-  onMove,
-  moveLabel,
-}: {
-  pipeline: Pipeline
-  currentStageId: string | null
-  disabled: boolean
-  onMove: (target: Stage) => void
-  moveLabel: string
-}) {
-  const t = useT()
-  return (
-    <select
-      value=""
-      disabled={disabled}
-      onChange={(ev) => {
-        const target = pipeline.stages.find((s) => s.id === ev.target.value)
-        if (target) onMove(target)
-        ev.currentTarget.value = ''
-      }}
-      className="text-xs rounded-lg border border-hairline bg-canvas px-2.5 h-8 text-ink focus:outline-none focus:ring-2 focus:ring-ink/10 disabled:opacity-50"
-    >
-      <option value="" disabled>
-        {moveLabel}
-      </option>
-      {pipeline.stages
-        .filter((s) => s.id !== currentStageId)
-        .map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.type === 'won' ? '🏆 ' : s.type === 'lost' ? '✕ ' : ''}
-            {t(s.name)}
-          </option>
-        ))}
-    </select>
-  )
-}
-
 /** Encuesta de motivo al mover a un paso perdido. */
 function LossSurvey({
   reasons,
@@ -387,7 +326,7 @@ function LossSurvey({
   const [reason, setReason] = useState(reasons[0] || '')
   const [detail, setDetail] = useState('')
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-sm p-4" onClick={onCancel}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/40 backdrop-blur-sm p-4" onClick={onCancel}>
       <div className="w-full max-w-md rounded-2xl bg-canvas border border-hairline shadow-2xl p-6" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-ink">{t('¿Por qué se perdió?')}</h3>

@@ -64,7 +64,9 @@ const INVARIANT = (t: (s: string) => string) =>
   t('Cada pipeline necesita al menos 1 paso normal, 1 ganado y 1 perdido.')
 
 // ───────────────────────── pipelines ─────────────────────────
-export async function createPipeline(name: string): Promise<Res> {
+export async function createPipeline(
+  name: string,
+): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
   const t = getTranslator(await getLocale())
   const c = await ctx()
   if (!c) return { ok: false, error: t('Sin permiso') }
@@ -92,7 +94,7 @@ export async function createPipeline(name: string): Promise<Res> {
   ])
   revalidatePath('/embudo/configuracion')
   revalidatePath('/embudo')
-  return { ok: true }
+  return { ok: true, id: p.id }
 }
 
 export async function renamePipeline(id: string, name: string): Promise<Res> {

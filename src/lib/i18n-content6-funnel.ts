@@ -88,5 +88,27 @@ export const content6Funnel: Record<string, Record<string, string>> = {
     Perdidas: 'Lost',
     'En curso': 'In progress',
     'Conversión': 'Conversion',
+
+    // ── panel lateral del lead ──
+    'Abrir ficha completa': 'Open full record',
+    Mensaje: 'Message',
+    'Otros datos': 'Other details',
+    Preferencia: 'Preference',
+    'Mover a otro paso': 'Move to another stage',
+    'Formulario web': 'Web form',
+    'Alta manual': 'Manual entry',
+    Emailbot: 'Emailbot',
+    API: 'API',
+
+    // ── panel de configuración ──
+    'Nuevo embudo': 'New funnel',
+    'Nombre del embudo': 'Funnel name',
+    'Ej. Lista de espera': 'E.g. Waiting list',
+    'Se crea con un paso normal, uno ganado y uno perdido. Luego los configuras.':
+      'It starts with one normal, one won and one lost stage. Then you configure them.',
+    'Crear embudo': 'Create funnel',
+    'Cargando…': 'Loading…',
+    'Configura los pasos del embudo': 'Configure the funnel stages',
+    'Configurar este embudo': 'Configure this funnel',
   },
 }

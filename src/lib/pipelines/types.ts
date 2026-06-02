@@ -42,6 +42,14 @@ export type FunnelEntry = {
   lost_reason: string | null
   client_user_id: string | null
   origin_entry_id: string | null
+  applicant_purpose: string | null
+  applicant_country: string | null
+  applicant_city: string | null
+  applicant_address: string | null
+  applicant_postal_code: string | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  applicant_extra_data: Record<string, any> | null
+  source: string | null
 }
 
 export type MoveResult =
