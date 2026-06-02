@@ -101,10 +101,40 @@ export async function POST(request: NextRequest) {
     canonical.applicant_email = String(canonical.applicant_email).trim().toLowerCase()
   }
 
+  // Embudo: asegurar los pipelines por defecto del kennel (siembra lazy) y
+  // resolver el paso de entrada (Ventas → Interesados), donde caen los leads.
+  let entryPipelineId: string | null = null
+  let entryStageId: string | null = null
+  try {
+    await admin.rpc('ensure_default_pipelines', { p_kennel_id: kennel.id })
+    const { data: ventas } = await admin
+      .from('pipelines')
+      .select('id')
+      .eq('kennel_id', kennel.id)
+      .eq('slug', 'ventas')
+      .maybeSingle()
+    if (ventas) {
+      entryPipelineId = ventas.id
+      const { data: st } = await admin
+        .from('pipeline_stages')
+        .select('id')
+        .eq('pipeline_id', ventas.id)
+        .eq('is_entry', true)
+        .order('position', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+      entryStageId = st?.id ?? null
+    }
+  } catch (e) {
+    console.error('contact-kennel: ensure_default_pipelines failed', e)
+  }
+
   const insertPayload: Record<string, any> = {
     kennel_id: kennel.id,
     status: 'interested',
     source: 'public_form',
+    pipeline_id: entryPipelineId,
+    stage_id: entryStageId,
     ...canonical,
     applicant_extra_data: Object.keys(extra).length > 0 ? extra : null,
   }

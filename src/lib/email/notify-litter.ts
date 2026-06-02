@@ -45,7 +45,7 @@ export async function notifyWaitlistOfNewLitter(litterId: string): Promise<void>
       id, applicant_name, applicant_email, client_user_id, preference_breed_id
     `)
     .eq('kennel_id', kennel.id)
-    .in('status', ['interested', 'in_waitlist'])
+    .in('status', ['interested', 'waitlisted'])
 
   if (!reservations || reservations.length === 0) return
 
