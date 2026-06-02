@@ -45,8 +45,8 @@ export default function StageRow({
 
   return (
     <li className="rounded-xl border border-hairline bg-canvas p-3">
-      <div className="flex items-center gap-2">
-        <div className="flex flex-col">
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex flex-col flex-shrink-0">
           <button
             onClick={() => onReorder('up')}
             disabled={pending || index === 0}
@@ -67,7 +67,7 @@ export default function StageRow({
           value={name}
           onChange={(e) => setName(e.target.value)}
           onBlur={() => name.trim() && name !== stage.name && onUpdate({ name: name.trim() })}
-          className="flex-1 min-w-0 rounded-lg border border-hairline bg-canvas px-3 h-9 text-sm font-medium text-ink focus:outline-none focus:ring-2 focus:ring-ink/10"
+          className="flex-1 min-w-0 rounded-lg border border-hairline bg-canvas px-3 h-9 text-base sm:text-sm font-medium text-ink focus:outline-none focus:ring-2 focus:ring-ink/10"
         />
 
         <select
@@ -75,7 +75,7 @@ export default function StageRow({
           onChange={(e) => onUpdate({ type: e.target.value as StageType })}
           disabled={pending}
           className={
-            'rounded-lg border px-2.5 h-9 text-xs font-semibold ' +
+            'flex-shrink-0 rounded-lg border px-2 sm:px-2.5 h-9 text-xs font-semibold ' +
             (tone === 'emerald'
               ? 'border-emerald-300 text-emerald-700 bg-emerald-50'
               : tone === 'rose'
@@ -91,12 +91,12 @@ export default function StageRow({
         <button
           onClick={onSetEntry}
           title={t('Paso de entrada (donde caen las solicitudes nuevas)')}
-          className={'p-1.5 rounded-lg ' + (stage.is_entry ? 'text-amber-500' : 'text-muted hover:text-ink')}
+          className={'flex-shrink-0 p-1.5 rounded-lg ' + (stage.is_entry ? 'text-amber-500' : 'text-muted hover:text-ink')}
         >
           <Star className="w-4 h-4" fill={stage.is_entry ? 'currentColor' : 'none'} />
         </button>
 
-        <button onClick={onDelete} disabled={pending} className="p-1.5 text-rose-500 hover:text-rose-700 disabled:opacity-50">
+        <button onClick={onDelete} disabled={pending} className="flex-shrink-0 p-1.5 text-rose-500 hover:text-rose-700 disabled:opacity-50">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
@@ -115,12 +115,12 @@ export default function StageRow({
               })
             }
             rows={3}
-            className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-ink/10"
+            className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-base sm:text-xs text-ink focus:outline-none focus:ring-2 focus:ring-ink/10"
           />
         </div>
       )}
       {stage.type === 'won' && (
-        <div className="mt-2.5 pl-8 flex flex-wrap items-center gap-4">
+        <div className="mt-2.5 pl-8 flex flex-wrap items-center gap-3 sm:gap-4">
           <label className="inline-flex items-center gap-2 text-xs text-body">
             <input
               type="checkbox"

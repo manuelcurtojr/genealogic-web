@@ -65,7 +65,7 @@ export default function ConfigPanel({
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && create()}
           placeholder={t('Ej. Lista de espera')}
-          className="w-full rounded-lg border border-hairline bg-canvas px-3 h-10 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ink/10"
+          className="w-full rounded-lg border border-hairline bg-canvas px-3 h-10 text-base sm:text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ink/10"
         />
         <p className="mt-2 text-[11px] text-muted">
           {t('Se crea con un paso normal, uno ganado y uno perdido. Luego los configuras.')}
@@ -164,13 +164,13 @@ export default function ConfigPanel({
           value={newStageName}
           onChange={(e) => setNewStageName(e.target.value)}
           placeholder={t('Nombre del paso')}
-          className="w-full rounded-lg border border-hairline bg-canvas px-3 h-9 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ink/10"
+          className="w-full rounded-lg border border-hairline bg-canvas px-3 h-9 text-base sm:text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ink/10"
         />
         <div className="flex gap-2">
           <select
             value={newStageType}
             onChange={(e) => setNewStageType(e.target.value as StageType)}
-            className="rounded-lg border border-hairline bg-canvas px-2.5 h-9 text-sm text-ink"
+            className="flex-shrink-0 rounded-lg border border-hairline bg-canvas px-2.5 h-9 text-base sm:text-sm text-ink"
           >
             <option value="normal">{typeLabel.normal}</option>
             <option value="won">{typeLabel.won}</option>

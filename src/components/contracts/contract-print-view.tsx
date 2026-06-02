@@ -11,6 +11,7 @@ type Sig = { name: string | null; date: string | null; ip: string | null }
 
 const PRINT_CSS = `
 .cp-doc { max-width: 720px; margin: 0 auto; padding: 48px 40px 80px; color: #1a1a1a;
+  overflow-wrap: anywhere; word-break: break-word;
   font: 15px/1.65 ui-serif, Georgia, 'Times New Roman', serif; }
 .cp-doc h1 { font-size: 22px; text-align: center; margin: 0 0 4px; letter-spacing: .2px; }
 .cp-doc h2 { font-size: 16px; margin: 26px 0 6px; border-bottom: 1px solid #ddd; padding-bottom: 3px; }
@@ -27,6 +28,17 @@ const PRINT_CSS = `
 .cp-sign-meta { font-size: 11px; color: #888; margin-top: 2px; }
 .cp-stamp { margin-top: 28px; font-size: 11px; color: #2a8a4a; text-align: center;
   border: 1px solid #cfe9d6; background: #f3fbf5; border-radius: 6px; padding: 8px; }
+/* Móvil (WebView iOS): menos padding y firmas apiladas para que no desborde. */
+@media (max-width: 640px) {
+  .cp-doc { padding: 24px 18px 48px; font-size: 14px; }
+  .cp-doc h1 { font-size: 19px; }
+  .cp-doc h2 { font-size: 15px; }
+  .cp-doc p { text-align: left; }
+  .cp-sign { gap: 20px; margin-top: 36px; }
+}
+@media (max-width: 480px) {
+  .cp-sign { flex-direction: column; gap: 24px; }
+}
 @page { size: A4; margin: 18mm; }
 @media print { .cp-doc { padding: 0; } }
 `

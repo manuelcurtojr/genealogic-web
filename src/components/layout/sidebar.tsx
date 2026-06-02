@@ -8,7 +8,7 @@ import {
   Stethoscope, Shield, Inbox, Lock, Key, Bell,
   KanbanSquare, UsersRound, Mail, BookOpen, MessageSquare, Beaker,
   Globe, TrendingUp, Send, Sparkles, Receipt, Link2,
-  Dna, CreditCard, Tag, Upload, FileText, ShieldAlert, LifeBuoy,
+  Dna, CreditCard, Tag, Upload, FileText, ShieldAlert, LifeBuoy, PawPrint,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -23,7 +23,7 @@ const iconMap: Record<string, React.ElementType> = {
   Stethoscope, Inbox, Key, Bell, Shield,
   KanbanSquare, UsersRound, Mail, BookOpen, MessageSquare, Beaker,
   Globe, TrendingUp, Send, Sparkles, Receipt, Link2,
-  Dna, CreditCard, Tag, Upload, FileText, ShieldAlert, LifeBuoy,
+  Dna, CreditCard, Tag, Upload, FileText, ShieldAlert, LifeBuoy, PawPrint,
 }
 
 interface SidebarProps {

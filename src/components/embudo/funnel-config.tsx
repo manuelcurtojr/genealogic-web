@@ -150,12 +150,12 @@ export default function FunnelConfig({ pipelines }: { pipelines: Pipeline[] }) {
           value={newStageName}
           onChange={(e) => setNewStageName(e.target.value)}
           placeholder={t('Nombre del paso')}
-          className="flex-1 min-w-[140px] rounded-lg border border-hairline bg-canvas px-3 h-9 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ink/10"
+          className="flex-1 min-w-[140px] rounded-lg border border-hairline bg-canvas px-3 h-9 text-base sm:text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ink/10"
         />
         <select
           value={newStageType}
           onChange={(e) => setNewStageType(e.target.value as StageType)}
-          className="rounded-lg border border-hairline bg-canvas px-2.5 h-9 text-sm text-ink"
+          className="rounded-lg border border-hairline bg-canvas px-2.5 h-9 text-base sm:text-sm text-ink"
         >
           <option value="normal">{typeLabel.normal}</option>
           <option value="won">{typeLabel.won}</option>
@@ -218,8 +218,8 @@ function StageRow({
 
   return (
     <li className="rounded-xl border border-hairline bg-canvas p-3">
-      <div className="flex items-center gap-2">
-        <div className="flex flex-col">
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex flex-col flex-shrink-0">
           <button
             onClick={() => onReorder('up')}
             disabled={pending || index === 0}
@@ -240,7 +240,7 @@ function StageRow({
           value={name}
           onChange={(e) => setName(e.target.value)}
           onBlur={() => name.trim() && name !== stage.name && onUpdate({ name: name.trim() })}
-          className="flex-1 min-w-0 rounded-lg border border-hairline bg-canvas px-3 h-9 text-sm font-medium text-ink focus:outline-none focus:ring-2 focus:ring-ink/10"
+          className="flex-1 min-w-0 rounded-lg border border-hairline bg-canvas px-3 h-9 text-base sm:text-sm font-medium text-ink focus:outline-none focus:ring-2 focus:ring-ink/10"
         />
 
         <select
@@ -248,7 +248,7 @@ function StageRow({
           onChange={(e) => onUpdate({ type: e.target.value as StageType })}
           disabled={pending}
           className={
-            'rounded-lg border px-2.5 h-9 text-xs font-semibold ' +
+            'rounded-lg border px-2.5 h-9 text-base sm:text-xs font-semibold flex-shrink-0 ' +
             (tone === 'emerald'
               ? 'border-emerald-300 text-emerald-700 bg-emerald-50'
               : tone === 'rose'
@@ -264,12 +264,12 @@ function StageRow({
         <button
           onClick={onSetEntry}
           title={t('Paso de entrada (donde caen las solicitudes nuevas)')}
-          className={'p-1.5 rounded-lg ' + (stage.is_entry ? 'text-amber-500' : 'text-muted hover:text-ink')}
+          className={'p-1.5 rounded-lg flex-shrink-0 ' + (stage.is_entry ? 'text-amber-500' : 'text-muted hover:text-ink')}
         >
           <Star className="w-4 h-4" fill={stage.is_entry ? 'currentColor' : 'none'} />
         </button>
 
-        <button onClick={onDelete} disabled={pending} className="p-1.5 text-rose-500 hover:text-rose-700 disabled:opacity-50">
+        <button onClick={onDelete} disabled={pending} className="p-1.5 flex-shrink-0 text-rose-500 hover:text-rose-700 disabled:opacity-50">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
@@ -289,7 +289,7 @@ function StageRow({
               })
             }
             rows={3}
-            className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-ink/10"
+            className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-base sm:text-xs text-ink focus:outline-none focus:ring-2 focus:ring-ink/10"
           />
         </div>
       )}
@@ -309,7 +309,7 @@ function StageRow({
             <select
               defaultValue={stage.handoff_stage_id ?? ''}
               onChange={(e) => onUpdate({ handoff_stage_id: e.target.value || null })}
-              className="rounded-lg border border-hairline bg-canvas px-2 h-8 text-xs text-ink"
+              className="rounded-lg border border-hairline bg-canvas px-2 h-8 text-base sm:text-xs text-ink"
             >
               <option value="">{t('Nada')}</option>
               {handoffOptions.map((o) => (

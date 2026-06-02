@@ -213,7 +213,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
 
       {/* Slide panel — mismo patrón que dog-form-panel / genos-panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+        className={`fixed top-0 right-0 h-dvh w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
         style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
       >
         {/* Fixed header */}
@@ -227,7 +227,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
             <Loader2 className="w-6 h-6 animate-spin text-muted" />
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+          <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-5">
             {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
             {/* Completed banner */}
@@ -242,7 +242,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
             <div>
               <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Perro *')}</label>
               <select value={form.dog_id} onChange={e => set('dog_id', e.target.value)} disabled={isCompleted}
-                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition appearance-none disabled:opacity-50">
+                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition appearance-none disabled:opacity-50">
                 <option value="">{t('Seleccionar perro...')}</option>
                 {dogs.map(d => <option key={d.id} value={d.id}>{d.name} {d.sex === 'male' ? '♂' : '♀'}</option>)}
               </select>
@@ -252,7 +252,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
             <div>
               <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Plantilla (opcional)')}</label>
               <select value={form.template_id} onChange={e => selectTemplate(e.target.value)} disabled={isCompleted}
-                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition appearance-none disabled:opacity-50">
+                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition appearance-none disabled:opacity-50">
                 <option value="">{t('Personalizado')}</option>
                 <optgroup label={t('Vacunas')}>
                   {templates.filter(tpl => tpl.type === 'vaccine').map(tpl => <option key={tpl.id} value={tpl.id}>{tpl.name}</option>)}
@@ -271,7 +271,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
               <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Título *')}</label>
               <input type="text" value={form.title} onChange={e => set('title', e.target.value)} disabled={isCompleted}
                 placeholder={t('Ej: Vacuna anual polivalente')}
-                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition disabled:opacity-50" />
+                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition disabled:opacity-50" />
             </div>
 
             {/* Type + Date */}
@@ -279,7 +279,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
               <div>
                 <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Tipo')}</label>
                 <select value={form.type} onChange={e => set('type', e.target.value)} disabled={isCompleted}
-                  className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition appearance-none disabled:opacity-50">
+                  className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition appearance-none disabled:opacity-50">
                   <option value="vaccine">🩺 {t('Vacuna')}</option>
                   <option value="deworming">🪱 {t('Desparasitación')}</option>
                   <option value="checkup">🔍 {t('Revisión')}</option>
@@ -289,7 +289,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
               <div>
                 <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Fecha *')}</label>
                 <input type="date" value={form.due_date} onChange={e => set('due_date', e.target.value)} disabled={isCompleted}
-                  className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition disabled:opacity-50" />
+                  className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition disabled:opacity-50" />
               </div>
             </div>
 
@@ -298,7 +298,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
               <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Repetir cada (días)')}</label>
               <input type="number" min="0" value={form.recurrence_days} onChange={e => set('recurrence_days', e.target.value)} disabled={isCompleted}
                 placeholder={t('0 = sin repetición')}
-                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition disabled:opacity-50" />
+                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition disabled:opacity-50" />
               <p className="text-[10px] text-muted mt-1">{t('Al completar un recordatorio recurrente, se creará el siguiente automáticamente')}</p>
             </div>
 
@@ -307,7 +307,7 @@ export default function VetReminderForm({ open, onClose, onSaved, initialData, d
               <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Notas')}</label>
               <textarea value={form.notes} onChange={e => set('notes', e.target.value)} disabled={isCompleted}
                 rows={3} placeholder={t('Notas adicionales...')}
-                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition resize-none disabled:opacity-50" />
+                className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition resize-none disabled:opacity-50" />
             </div>
           </div>
         )}

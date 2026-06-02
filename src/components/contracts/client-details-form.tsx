@@ -69,7 +69,7 @@ export default function ClientDetailsForm({
           value={idDoc}
           onChange={(e) => setIdDoc(e.target.value)}
           required
-          className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink placeholder:text-muted"
+          className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted"
         />
       </label>
 
@@ -82,7 +82,7 @@ export default function ClientDetailsForm({
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           required
-          className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink placeholder:text-muted"
+          className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted"
         />
       </label>
 
@@ -95,7 +95,7 @@ export default function ClientDetailsForm({
             type="text"
             value={postalCode}
             onChange={(e) => setPostalCode(e.target.value)}
-            className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink placeholder:text-muted"
+            className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted"
           />
         </label>
         <label className="block">
@@ -106,7 +106,7 @@ export default function ClientDetailsForm({
             type="text"
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink placeholder:text-muted"
+            className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted"
           />
         </label>
       </div>

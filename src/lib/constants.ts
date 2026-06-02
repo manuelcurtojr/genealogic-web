@@ -85,6 +85,12 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Buscar', href: '/search', icon: 'Search' },
       { label: 'Blog', href: '/blog', icon: 'BookOpen' },
       { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
+      // Reservas (lado COMPRADOR) — visible para TODO usuario logueado, no solo
+      // clientes con reserva: la página /mis-reservas tiene empty state propio
+      // ("Explorar criaderos") para quien aún no tiene ninguna. Antes vivía en
+      // la sección "Propietario" con requiresClient; se subió aquí para que sea
+      // un destino descubrible por cualquier futuro comprador.
+      { label: 'Reservas', href: '/mis-reservas', icon: 'PawPrint' },
     ],
   },
 
@@ -157,21 +163,10 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
 
-  // ── Propietario — solo si tiene reservas/perros como cliente ────────
-  // Un user puede ser criador Y cliente simultáneamente (criador
-  // comprando a otro). Aparece si hay reserva con client_user_id=me o
-  // dog.owner_id=me (delivered_from_reservation_id NOT NULL).
-  {
-    id: 'client',
-    label: 'Propietario',
-    requiresClient: true,
-    items: [
-      // "Mis perros" se fusionó con "Perros" (/dogs ya muestra los perros que
-      // posees como propietario, no solo los que crías). Aquí solo dejamos
-      // las reservas, que son específicas del rol cliente.
-      { label: 'Reservas', href: '/mis-reservas', icon: 'KanbanSquare', requiresClient: true },
-    ],
-  },
+  // ── (La sección "Propietario" se eliminó: su único item, "Reservas", se
+  //     movió a la sección Principal y ahora es visible para todo usuario
+  //     logueado, no solo clientes. El rol cliente sigue calculándose en
+  //     auth/roles.ts por si se necesita en otro sitio.) ────────────────────
 
   // ── Soporte — accesible para TODO usuario logueado (free incluido).
   // Antes /mis-solicitudes y /soporte vivían sin entrada en sidebar y el

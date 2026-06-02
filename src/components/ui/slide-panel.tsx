@@ -31,7 +31,7 @@ export default function SlidePanel({ open, onClose, title, children }: SlidePane
           respeta safe-area top/bottom para no quedar bajo el notch ni la
           home bar (en web ambas vars son 0px, sin efecto). */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+        className={`fixed top-0 right-0 h-dvh w-full max-w-md z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
         style={{
           paddingTop: 'var(--safe-area-top)',
           paddingBottom: 'var(--safe-area-bottom)',
@@ -43,7 +43,7 @@ export default function SlidePanel({ open, onClose, title, children }: SlidePane
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-4">
           {children}
         </div>
       </div>

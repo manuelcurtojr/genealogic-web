@@ -220,29 +220,29 @@ export default function FunnelBoard({
                 >
                   <div className="flex items-center gap-2 mb-1">
                     {isNew && (
-                      <span className="inline-flex items-center rounded-full bg-amber-400 text-amber-950 text-[10px] font-bold px-1.5 py-0.5 uppercase tracking-wide">
+                      <span className="flex-shrink-0 inline-flex items-center rounded-full bg-amber-400 text-amber-950 text-[10px] font-bold px-1.5 py-0.5 uppercase tracking-wide">
                         {t('Nueva')}
                       </span>
                     )}
-                    <span className="font-semibold text-ink truncate">{e.applicant_name || t('Sin nombre')}</span>
+                    <span className="font-semibold text-ink truncate min-w-0">{e.applicant_name || t('Sin nombre')}</span>
                     {e.preference_sex && (
-                      <span className="text-xs text-muted">
+                      <span className="flex-shrink-0 text-xs text-muted">
                         {e.preference_sex === 'male' ? t('Macho') : t('Hembra')}
                       </span>
                     )}
-                    <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-muted">
+                    <span className="ml-auto flex-shrink-0 inline-flex items-center gap-1 text-[11px] text-muted">
                       <Clock className="w-3 h-3" /> {new Date(e.created_at).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted">
                     {e.applicant_email && (
-                      <span className="inline-flex items-center gap-1 truncate">
-                        <Mail className="w-3 h-3" /> {e.applicant_email}
+                      <span className="inline-flex items-center gap-1 min-w-0 max-w-full truncate">
+                        <Mail className="w-3 h-3 flex-shrink-0" /> <span className="truncate">{e.applicant_email}</span>
                       </span>
                     )}
                     {e.applicant_phone && (
-                      <span className="inline-flex items-center gap-1">
-                        <Phone className="w-3 h-3" /> {e.applicant_phone}
+                      <span className="inline-flex items-center gap-1 flex-shrink-0">
+                        <Phone className="w-3 h-3 flex-shrink-0" /> {e.applicant_phone}
                       </span>
                     )}
                   </div>
@@ -294,13 +294,14 @@ export default function FunnelBoard({
       {/* ─── Overlay: celebración ─── */}
       {party && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/30 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-ink/30 backdrop-blur-sm p-4"
+          style={{ paddingTop: 'max(1rem, var(--safe-area-top))', paddingBottom: 'max(1rem, var(--safe-area-bottom))' }}
           onClick={() => setParty(null)}
         >
-          <div className="rounded-3xl bg-canvas border border-hairline shadow-2xl px-10 py-8 text-center max-w-sm mx-4">
+          <div className="w-full max-w-sm rounded-3xl bg-canvas border border-hairline shadow-2xl px-6 py-8 sm:px-10 text-center">
             <Sparkles className="w-10 h-10 text-amber-400 mx-auto mb-3" />
-            <h2 className="text-2xl font-bold text-ink">{party.title}</h2>
-            <p className="mt-1 text-sm text-body">{party.subtitle}</p>
+            <h2 className="text-2xl font-bold text-ink break-words">{party.title}</h2>
+            <p className="mt-1 text-sm text-body break-words">{party.subtitle}</p>
             <button
               onClick={() => setParty(null)}
               className="mt-5 inline-flex items-center justify-center rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-bold hover:opacity-90"
@@ -330,8 +331,15 @@ function LossSurvey({
   const [reason, setReason] = useState(reasons[0] || '')
   const [detail, setDetail] = useState('')
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/40 backdrop-blur-sm p-4" onClick={onCancel}>
-      <div className="w-full max-w-md rounded-2xl bg-canvas border border-hairline shadow-2xl p-6" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-ink/40 backdrop-blur-sm p-4"
+      style={{ paddingTop: 'max(1rem, var(--safe-area-top))', paddingBottom: 'max(1rem, var(--safe-area-bottom))' }}
+      onClick={onCancel}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl bg-canvas border border-hairline shadow-2xl p-5 sm:p-6 max-h-full overflow-y-auto overscroll-contain"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-ink">{t('¿Por qué se perdió?')}</h3>
           <button onClick={onCancel} className="text-muted hover:text-ink">
@@ -357,7 +365,7 @@ function LossSurvey({
           onChange={(e) => setDetail(e.target.value)}
           placeholder={t('Detalle (opcional)')}
           rows={2}
-          className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ink/10 mb-4"
+          className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ink/10 mb-4"
         />
         <div className="flex justify-end gap-2">
           <button onClick={onCancel} className="rounded-lg px-4 py-2 text-sm font-medium text-body hover:bg-surface-soft">

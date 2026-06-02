@@ -93,7 +93,7 @@ export function ContactDialog({ open, onClose, kennelId, kennelName, config: raw
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-[modalFade_180ms_ease-out]"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-[modalFade_180ms_ease-out]"
     >
       <button
         type="button"
@@ -102,10 +102,9 @@ export function ContactDialog({ open, onClose, kennelId, kennelName, config: raw
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
       />
       <div
-        className="relative w-full max-w-md bg-canvas border border-hairline shadow-2xl overflow-hidden animate-[modalSlide_220ms_ease-out] max-h-[90vh] flex flex-col"
-        style={{ borderRadius: 'var(--button-radius, 12px)' }}
+        className="relative w-full sm:max-w-md bg-canvas border border-hairline shadow-2xl overflow-hidden animate-[modalSlide_220ms_ease-out] max-h-[90dvh] sm:max-h-[85vh] flex flex-col rounded-t-2xl rounded-b-none sm:rounded-b-[var(--button-radius,12px)] sm:rounded-t-[var(--button-radius,12px)]"
       >
-        <div className="px-6 lg:px-8 py-6 border-b border-hairline">
+        <div className="sticky top-0 z-10 flex-shrink-0 bg-canvas px-5 sm:px-6 lg:px-8 py-5 sm:py-6 border-b border-hairline">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               {themed && (
@@ -116,20 +115,20 @@ export function ContactDialog({ open, onClose, kennelId, kennelName, config: raw
                 </p>
               )}
               <h2
-                className="text-xl md:text-2xl font-bold text-ink tracking-[-0.02em] truncate"
+                className="text-lg sm:text-xl md:text-2xl font-bold text-ink tracking-[-0.02em] break-words [overflow-wrap:anywhere] line-clamp-2 sm:truncate leading-snug sm:leading-tight"
                 style={themed ? { fontFamily: 'var(--font-display, inherit)' } : undefined}
               >
                 {config.title || `Contactar con ${kennelName}`}
               </h2>
               {config.subtitle && (
-                <p className="mt-1.5 text-[13px] text-body leading-relaxed">{config.subtitle}</p>
+                <p className="mt-1.5 text-[13px] text-body leading-relaxed line-clamp-2 sm:line-clamp-none">{config.subtitle}</p>
               )}
             </div>
             <button
               type="button"
               onClick={onClose}
               aria-label={t('Cerrar')}
-              className="shrink-0 h-9 w-9 inline-flex items-center justify-center text-muted hover:text-theme-accent border border-hairline hover:border-theme-accent transition-colors"
+              className="shrink-0 h-11 w-11 sm:h-9 sm:w-9 inline-flex items-center justify-center text-lg sm:text-base text-muted hover:text-theme-accent border border-hairline hover:border-theme-accent transition-colors -mr-1 sm:mr-0"
               style={{ borderRadius: 'var(--button-radius, 8px)' }}
             >
               ✕
@@ -138,7 +137,10 @@ export function ContactDialog({ open, onClose, kennelId, kennelName, config: raw
         </div>
 
         {done ? (
-          <div className="px-6 lg:px-8 py-12 text-center">
+          <div
+            className="px-5 sm:px-6 lg:px-8 py-12 text-center overflow-y-auto overscroll-contain"
+            style={{ paddingBottom: 'max(var(--safe-area-bottom), 2rem)' }}
+          >
             <div
               className="mx-auto mb-5 inline-flex h-14 w-14 items-center justify-center text-2xl text-theme-accent"
               style={{ borderRadius: 'var(--button-radius, 9999px)', background: 'var(--brand-soft)' }}
@@ -164,7 +166,11 @@ export function ContactDialog({ open, onClose, kennelId, kennelName, config: raw
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-3 px-6 lg:px-8 py-5 overflow-y-auto">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-3 px-5 sm:px-6 lg:px-8 py-5 overflow-y-auto overscroll-contain"
+            style={{ paddingBottom: 'max(var(--safe-area-bottom), 1.25rem)' }}
+          >
             {config.fields.map((field) => (
               <FieldRenderer
                 key={field.id}
@@ -212,14 +218,16 @@ function FieldRenderer({
   onChange: (v: unknown) => void
 }) {
   const t = useT()
-  const inputClass = `w-full px-4 py-3 text-[14px] border bg-canvas text-ink placeholder-muted/70 focus:outline-none transition-colors ${
+  // text-base (16px) en móvil evita el zoom automático de iOS al enfocar;
+  // sm:text-sm recupera el tamaño compacto en desktop.
+  const inputClass = `w-full max-w-full px-4 py-3 text-base sm:text-[14px] border bg-canvas text-ink placeholder-muted/70 focus:outline-none transition-colors ${
     error ? 'border-[color:var(--error)]' : 'border-hairline focus:border-theme-accent'
   }`
   const inputStyle = { borderRadius: 'var(--button-radius, 8px)' as const }
 
   return (
-    <div>
-      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+    <div className="min-w-0">
+      <label className="mb-1.5 block text-[12px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
         {t(field.label)}
         {field.required && <span className="text-[color:var(--error)]"> *</span>}
       </label>
@@ -244,33 +252,33 @@ function FieldRenderer({
           {(field.options || []).map((o) => <option key={o} value={o}>{t(o)}</option>)}
         </select>
       ) : field.type === 'radio' ? (
-        <div className="mt-1 space-y-1.5">
+        <div className="mt-1 space-y-1">
           {(field.options || []).map((o) => (
-            <label key={o} className="flex items-center gap-2 text-[13.5px] text-ink cursor-pointer">
+            <label key={o} className="flex min-h-[40px] items-center gap-2.5 text-[15px] sm:text-[13.5px] text-ink cursor-pointer">
               <input
                 type="radio"
                 name={field.id}
                 value={o}
                 checked={value === o}
                 onChange={() => onChange(o)}
-                className="h-4 w-4 accent-[color:var(--theme-accent)]"
+                className="h-4 w-4 shrink-0 accent-[color:var(--theme-accent)]"
               />
               {o}
             </label>
           ))}
         </div>
       ) : field.type === 'checkbox' ? (
-        <div className="mt-1 space-y-1.5">
+        <div className="mt-1 space-y-1">
           {(field.options || []).map((o) => {
             const arr = Array.isArray(value) ? (value as string[]) : []
             const checked = arr.includes(o)
             return (
-              <label key={o} className="flex items-center gap-2 text-[13.5px] text-ink cursor-pointer">
+              <label key={o} className="flex min-h-[40px] items-center gap-2.5 text-[15px] sm:text-[13.5px] text-ink cursor-pointer">
                 <input
                   type="checkbox"
                   checked={checked}
                   onChange={() => onChange(checked ? arr.filter((x) => x !== o) : [...arr, o])}
-                  className="h-4 w-4 accent-[color:var(--theme-accent)]"
+                  className="h-4 w-4 shrink-0 accent-[color:var(--theme-accent)]"
                 />
                 {o}
               </label>

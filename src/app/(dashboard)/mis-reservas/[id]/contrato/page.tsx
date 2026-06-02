@@ -145,9 +145,9 @@ function ContractBlock({
         <Icon className="h-5 w-5 text-ink" />
         <h2 className="text-lg font-bold text-ink">{contractTitle(contract.kind, t)}</h2>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 sm:gap-6">
         <article
-          className="contract-preview rounded-2xl border border-hairline bg-canvas p-8"
+          className="contract-preview min-w-0 overflow-x-hidden break-words rounded-2xl border border-hairline bg-canvas p-5 sm:p-8"
           dangerouslySetInnerHTML={{ __html: renderContractMarkdown(contract.body_html) }}
         />
         <aside className="space-y-4">

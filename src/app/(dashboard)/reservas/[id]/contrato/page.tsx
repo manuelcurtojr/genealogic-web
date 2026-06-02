@@ -313,9 +313,9 @@ function CreateContractCard({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function SentOrSignedView({ reservation, contract, t }: { reservation: any; contract: ReservationContract; t: T }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 sm:gap-6">
       <article
-        className="contract-preview rounded-2xl border border-hairline bg-canvas p-8"
+        className="contract-preview min-w-0 overflow-x-hidden break-words rounded-2xl border border-hairline bg-canvas p-5 sm:p-8"
         dangerouslySetInnerHTML={{ __html: renderContractMarkdown(contract.body_html) }}
       />
       <aside className="space-y-4">
@@ -386,11 +386,11 @@ function SignAsBreederForm({
         name="name"
         required
         placeholder={t('Tu nombre completo')}
-        className="w-full rounded-md border border-hairline bg-surface-card px-2.5 py-1.5 text-xs text-ink"
+        className="w-full rounded-md border border-hairline bg-surface-card px-2.5 py-2 text-base sm:text-xs text-ink"
       />
       <button
         type="submit"
-        className="w-full rounded-md bg-ink text-on-primary px-3 py-1.5 text-xs font-semibold hover:opacity-90"
+        className="w-full rounded-md bg-ink text-on-primary px-3 py-2 sm:py-1.5 text-sm sm:text-xs font-semibold hover:opacity-90"
       >
         {t('Firmar como criador')}
       </button>
@@ -428,9 +428,9 @@ function ContractActionsPanel({ reservation, contract, t }: { reservation: any; 
           </button>
         </form>
       )}
-      <p className="mt-3 text-[11px] text-muted leading-relaxed">
+      <p className="mt-3 text-[11px] text-muted leading-relaxed break-words">
         {t('El contrato es visible para el cliente desde su panel')}{' '}
-        <code>/mis-reservas/{reservation.id.slice(0, 6)}…/contrato</code>. {t('Cancelar lo devuelve a borrador y borra ambas firmas.')}
+        <code className="break-all">/mis-reservas/{reservation.id.slice(0, 6)}…/contrato</code>. {t('Cancelar lo devuelve a borrador y borra ambas firmas.')}
       </p>
     </section>
   )

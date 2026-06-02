@@ -53,6 +53,9 @@ export default function ContractEditor({
   const [pending, startTransition] = useTransition()
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // En móvil mostramos una sola columna a la vez (Editar / Vista). En lg el
+  // split de 2 columnas se muestra completo y este estado es irrelevante.
+  const [mobileTab, setMobileTab] = useState<'edit' | 'preview'>('edit')
   const taRef = useRef<HTMLTextAreaElement>(null)
 
   // Cmd+S
@@ -122,7 +125,7 @@ export default function ContractEditor({
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={t('Título del contrato')}
-        className="w-full text-2xl font-bold tracking-tight text-ink bg-transparent border-0 border-b border-hairline focus:outline-none focus:border-ink/30 pb-2 mb-4"
+        className="w-full text-xl sm:text-2xl font-bold tracking-tight text-ink bg-transparent border-0 border-b border-hairline focus:outline-none focus:border-ink/30 pb-2 mb-4"
       />
 
       {/* Toolbar */}
@@ -162,7 +165,7 @@ export default function ContractEditor({
             type="button"
             onClick={save}
             disabled={pending}
-            className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-canvas px-3 py-1.5 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-canvas px-3 py-2 sm:py-1.5 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink disabled:opacity-50"
           >
             {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
             {t('Guardar')}
@@ -172,7 +175,7 @@ export default function ContractEditor({
               type="button"
               onClick={send}
               disabled={pending}
-              className="inline-flex items-center gap-1.5 rounded-md bg-ink text-on-primary px-3 py-1.5 text-xs font-semibold hover:opacity-90 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-md bg-ink text-on-primary px-3 py-2 sm:py-1.5 text-xs font-semibold hover:opacity-90 disabled:opacity-50"
             >
               <Send className="h-3.5 w-3.5" />
               {t('Enviar al cliente')}
@@ -185,10 +188,35 @@ export default function ContractEditor({
         <p className="text-xs text-red-600 mb-2">{error}</p>
       )}
 
-      {/* Split: editor + preview */}
+      {/* Conmutador Editar / Vista — solo en móvil (en lg se ve el split). */}
+      <div className="mb-2 inline-flex rounded-lg border border-hairline bg-surface-card p-0.5 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileTab('edit')}
+          aria-pressed={mobileTab === 'edit'}
+          className={`rounded-md px-4 py-1.5 text-xs font-semibold ${
+            mobileTab === 'edit' ? 'bg-ink text-on-primary' : 'text-muted'
+          }`}
+        >
+          {t('Editar')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileTab('preview')}
+          aria-pressed={mobileTab === 'preview'}
+          className={`rounded-md px-4 py-1.5 text-xs font-semibold ${
+            mobileTab === 'preview' ? 'bg-ink text-on-primary' : 'text-muted'
+          }`}
+        >
+          {t('Vista previa')}
+        </button>
+      </div>
+
+      {/* Split: editor + preview. En móvil se apila y solo se muestra la
+          pestaña activa; en lg ambas columnas a la vez. */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">
+        <div className={mobileTab === 'edit' ? 'block' : 'hidden lg:block'}>
+          <p className="hidden lg:block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">
             Markdown
           </p>
           <textarea
@@ -196,15 +224,15 @@ export default function ContractEditor({
             value={body}
             onChange={(e) => setBody(e.target.value)}
             spellCheck={false}
-            className="w-full h-[600px] resize-none rounded-lg border border-hairline bg-canvas p-4 text-sm font-mono text-ink focus:outline-none focus:border-ink/30"
+            className="w-full h-[60vh] lg:h-[600px] resize-none rounded-lg border border-hairline bg-canvas p-4 text-base sm:text-sm font-mono text-ink focus:outline-none focus:border-ink/30"
           />
         </div>
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">
+        <div className={mobileTab === 'preview' ? 'block' : 'hidden lg:block'}>
+          <p className="hidden lg:block text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">
             {t('Vista previa')}
           </p>
           <div
-            className="contract-preview h-[600px] overflow-y-auto rounded-lg border border-hairline bg-canvas p-6 text-sm text-ink"
+            className="contract-preview min-w-0 overflow-x-hidden break-words h-[60vh] lg:h-[600px] overflow-y-auto rounded-lg border border-hairline bg-canvas p-4 sm:p-6 text-sm text-ink"
             dangerouslySetInnerHTML={{ __html: renderContractMarkdown(body) }}
           />
         </div>
@@ -227,7 +255,7 @@ function ToolbarBtn({
       type="button"
       onClick={onClick}
       title={title}
-      className="inline-flex items-center justify-center rounded p-1.5 text-muted hover:bg-canvas hover:text-ink"
+      className="inline-flex items-center justify-center rounded p-2 sm:p-1.5 text-muted hover:bg-canvas hover:text-ink"
     >
       {children}
     </button>

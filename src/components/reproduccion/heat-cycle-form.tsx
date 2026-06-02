@@ -138,7 +138,7 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
           onClick={onClose}
         />
         <div
-          className={`fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-canvas border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+          className={`fixed top-0 right-0 h-dvh w-full sm:max-w-md z-[70] bg-canvas border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
           style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
         >
           {/* Header */}
@@ -161,7 +161,7 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
 
           {/* Scrollable form */}
           <form onSubmit={handleSubmit} className="flex flex-1 flex-col min-h-0">
-            <div className="flex-1 space-y-5 overflow-y-auto px-4 sm:px-6 py-5">
+            <div className="flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 sm:px-6 py-5">
               {error && (
                 <div className="rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-[12.5px] text-red-500">{error}</div>
               )}
@@ -173,7 +173,7 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
                   value={dogId}
                   onChange={(e) => setDogId(e.target.value)}
                   disabled={isEdit}
-                  className="w-full appearance-none rounded-xl border border-hairline bg-canvas px-3 py-2.5 text-[14px] text-ink focus:border-ink focus:outline-none disabled:opacity-60"
+                  className="w-full appearance-none rounded-xl border border-hairline bg-canvas px-3 py-2.5 text-base sm:text-[14px] text-ink focus:border-ink focus:outline-none disabled:opacity-60"
                 >
                   {females.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
                 </select>
@@ -188,12 +188,12 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
                   <div>
                     <label className="mb-1 block text-[10.5px] font-medium uppercase tracking-[0.06em] text-muted">{t('Inicio *')}</label>
                     <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required
-                      className="w-full rounded-xl border border-hairline bg-canvas px-3 py-2.5 text-[14px] text-ink focus:border-ink focus:outline-none" />
+                      className="w-full rounded-xl border border-hairline bg-canvas px-3 py-2.5 text-base sm:text-[14px] text-ink focus:border-ink focus:outline-none" />
                   </div>
                   <div>
                     <label className="mb-1 block text-[10.5px] font-medium uppercase tracking-[0.06em] text-muted">{t('Fin (opcional)')}</label>
                     <input type="date" value={endDate} min={startDate || undefined} onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full rounded-xl border border-hairline bg-canvas px-3 py-2.5 text-[14px] text-ink focus:border-ink focus:outline-none" />
+                      className="w-full rounded-xl border border-hairline bg-canvas px-3 py-2.5 text-base sm:text-[14px] text-ink focus:border-ink focus:outline-none" />
                   </div>
                 </div>
                 <p className="mt-1.5 text-[11px] text-muted">{t('Si dejas el fin en blanco, se estima 21 días tras el inicio.')}</p>
@@ -231,7 +231,7 @@ export default function HeatCycleForm({ open, females, defaultFemaleId, editCycl
                 <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-muted">{t('Notas')}</label>
                 <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3}
                   placeholder={t('Semental, progesterona, observaciones...')}
-                  className="w-full resize-none rounded-xl border border-hairline bg-canvas px-3 py-2.5 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
+                  className="w-full resize-none rounded-xl border border-hairline bg-canvas px-3 py-2.5 text-base sm:text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
               </div>
             </div>
 

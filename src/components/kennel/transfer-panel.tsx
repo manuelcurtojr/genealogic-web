@@ -114,27 +114,27 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
       <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
       <div
-        className={`fixed top-0 right-0 h-full w-full sm:max-w-md z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+        className={`fixed top-0 right-0 h-dvh w-full sm:max-w-md z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
         style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <ArrowRightLeft className="w-4 h-4 text-ink" />
-            <h2 className="text-base sm:text-lg font-semibold">{t('Transferir perro')}</h2>
+        <div className="flex items-center justify-between gap-2 px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <ArrowRightLeft className="w-4 h-4 text-ink flex-shrink-0" />
+            <h2 className="truncate text-base sm:text-lg font-semibold">{t('Transferir perro')}</h2>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <FeedbackButton
               scope="transfer"
               pageLabel={dog?.name ? `${t('Transferir perro')}: ${dog.name}` : t('Transferir perro')}
               variant="inline"
               label={t('¿Algo falla?')}
             />
-            <button onClick={onClose} className="text-muted hover:text-ink transition"><X className="w-5 h-5" /></button>
+            <button onClick={onClose} className="text-muted hover:text-ink transition p-1 flex-shrink-0"><X className="w-5 h-5" /></button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-5">
           {/* Dog info */}
           <div className="flex items-center gap-3 bg-surface-card border border-hairline rounded-xl p-3">
             <div className="w-14 h-14 rounded-lg overflow-hidden bg-surface-card flex-shrink-0">
@@ -144,9 +144,9 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
                 <div className="w-full h-full flex items-center justify-center"><Dog className="w-6 h-6 text-muted" /></div>
               )}
             </div>
-            <div>
-              <p className="text-sm font-semibold">{dog.name}</p>
-              {dog.breed_name && <p className="text-xs text-muted">{dog.breed_name}</p>}
+            <div className="min-w-0">
+              <p className="text-sm font-semibold truncate">{dog.name}</p>
+              {dog.breed_name && <p className="text-xs text-muted truncate">{dog.breed_name}</p>}
             </div>
           </div>
 
@@ -165,13 +165,13 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
                 value={email}
                 onChange={e => { setEmail(e.target.value); setFoundUser(null); setNotFound(false) }}
                 placeholder="cliente@email.com"
-                className="flex-1 bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition"
+                className="min-w-0 flex-1 bg-surface-card border border-hairline rounded-lg px-3 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition"
                 onKeyDown={e => e.key === 'Enter' && handleSearch()}
               />
               <button
                 onClick={handleSearch}
                 disabled={searching || !email.trim()}
-                className="px-4 py-2 bg-surface-card border border-hairline rounded-lg text-sm text-body hover:bg-surface-card transition disabled:opacity-30 flex items-center gap-1.5"
+                className="flex-shrink-0 px-4 py-2 bg-surface-card border border-hairline rounded-lg text-sm text-body hover:bg-surface-card transition disabled:opacity-30 flex items-center gap-1.5"
               >
                 {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                 {t('Buscar')}
@@ -182,14 +182,14 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
           {/* Found user */}
           {foundUser && (
             <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-sm font-bold">
+              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-sm font-bold flex-shrink-0">
                 {(foundUser.display_name || foundUser.email)[0].toUpperCase()}
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-green-400">{foundUser.display_name || t('Usuario')}</p>
-                <p className="text-xs text-muted">{foundUser.email}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-green-400 truncate">{foundUser.display_name || t('Usuario')}</p>
+                <p className="text-xs text-muted truncate">{foundUser.email}</p>
               </div>
-              <Check className="w-5 h-5 text-green-400" />
+              <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
             </div>
           )}
 

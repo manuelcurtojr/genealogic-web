@@ -516,7 +516,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
       <div
-        className={`fixed top-0 right-0 h-full w-full z-[70] bg-canvas border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${isEdit ? 'sm:max-w-3xl' : 'sm:max-w-xl'} ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+        className={`fixed top-0 right-0 h-dvh w-full z-[70] bg-canvas border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${isEdit ? 'sm:max-w-3xl' : 'sm:max-w-xl'} ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
         style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
       >
         {/* Header */}
@@ -779,7 +779,7 @@ function SearchList({ items, value, onChange, placeholder, sexColor }: { items: 
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
           <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)} placeholder={placeholder || t('Buscar...')}
-            className="w-full bg-surface-card border border-hairline rounded-lg pl-8 pr-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
+            className="w-full bg-surface-card border border-hairline rounded-lg pl-8 pr-3 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
         </div>
       </div>
       <div className="overflow-y-auto max-h-44">

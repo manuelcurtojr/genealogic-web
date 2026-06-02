@@ -152,7 +152,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
 
       <div
-        className={`fixed top-0 right-0 h-full w-full sm:max-w-lg z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+        className={`fixed top-0 right-0 h-dvh w-full sm:max-w-lg z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
         style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
       >
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
@@ -163,7 +163,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
         {dataLoading ? (
           <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-muted" /></div>
         ) : (
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+          <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-5">
             {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
             {/* Breed — searchable like header */}
@@ -238,7 +238,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                           <div>
                             <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Fecha del cruce')}</label>
                             <input type="date" value={form.mating_date} onChange={e => set('mating_date', e.target.value)}
-                              className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition" />
+                              className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition" />
                           </div>
                         </div>
                       )}
@@ -249,18 +249,18 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                           <div>
                             <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Fecha del cruce')}</label>
                             <input type="date" value={form.mating_date} onChange={e => set('mating_date', e.target.value)}
-                              className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition" />
+                              className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition" />
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Nacimiento')}</label>
                               <input type="date" value={form.birth_date} onChange={e => set('birth_date', e.target.value)}
-                                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition" />
+                                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition" />
                             </div>
                             <div>
                               <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Cachorros')}</label>
                               <input type="number" min="0" value={form.puppy_count} onChange={e => set('puppy_count', e.target.value)}
-                                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition" />
+                                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition" />
                             </div>
                           </div>
                         </div>
@@ -384,7 +384,7 @@ function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder={t('Buscar...')}
-                className="w-full rounded border border-hairline bg-canvas py-1.5 pl-8 pr-3 text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink"
+                className="w-full rounded border border-hairline bg-canvas py-1.5 pl-8 pr-3 text-base sm:text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink"
               />
             </div>
           </div>

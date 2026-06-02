@@ -119,7 +119,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
       <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
       <div
-        className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+        className={`fixed top-0 right-0 h-dvh w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
         style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
       >
         {/* Header */}
@@ -134,7 +134,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
         {fetching ? (
           <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-muted" /></div>
         ) : (
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+          <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-5">
             {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
             {/* Dog info */}
@@ -142,9 +142,9 @@ export default function SalePanel({ open, onClose, dog }: Props) {
               <div className="w-14 h-14 rounded-lg overflow-hidden bg-surface-card flex-shrink-0">
                 {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-6 h-6 text-muted" /></div>}
               </div>
-              <div>
-                <p className="text-sm font-semibold">{dog.name}</p>
-                {dog.breed_name && <p className="text-xs text-muted">{dog.breed_name}</p>}
+              <div className="min-w-0">
+                <p className="text-sm font-semibold truncate">{dog.name}</p>
+                {dog.breed_name && <p className="text-xs text-muted truncate">{dog.breed_name}</p>}
               </div>
             </div>
 
@@ -166,7 +166,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
                     <div>
                       <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Divisa')}</label>
                       <select value={form.sale_currency} onChange={e => set('sale_currency', e.target.value)}
-                        className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none transition appearance-none">
+                        className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition appearance-none">
                         {CURRENCIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                       </select>
                     </div>
@@ -174,13 +174,13 @@ export default function SalePanel({ open, onClose, dog }: Props) {
                       <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Precio total')}</label>
                       <input type="number" step="0.01" value={form.sale_price} onChange={e => set('sale_price', e.target.value)}
                         placeholder="0.00"
-                        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
+                        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
                     </div>
                     <div>
                       <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Reserva')}</label>
                       <input type="number" step="0.01" value={form.sale_reservation_price} onChange={e => set('sale_reservation_price', e.target.value)}
                         placeholder="0.00"
-                        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
+                        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
                     </div>
                   </div>
                 </div>
@@ -194,13 +194,13 @@ export default function SalePanel({ open, onClose, dog }: Props) {
                       <input type="text" value={form.sale_zipcode} onChange={e => set('sale_zipcode', e.target.value)}
                         onBlur={lookupZipcode}
                         placeholder="28001"
-                        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
+                        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
                     </div>
                     <div>
                       <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Ciudad, Pais')}</label>
                       <input type="text" value={form.sale_location} onChange={e => set('sale_location', e.target.value)}
                         placeholder="Madrid, Spain"
-                        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
+                        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
                     </div>
                   </div>
                   <p className="text-[10px] text-muted">{t('Introduce el código postal para autocompletar la ubicacion')}</p>
@@ -211,7 +211,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
                   <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Descripcion del anuncio')}</label>
                   <textarea value={form.sale_description} onChange={e => set('sale_description', e.target.value)} rows={4}
                     placeholder={t('Describe el caracter, morfologia, vacunas incluidas, por que es especial...')}
-                    className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition resize-none" />
+                    className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition resize-none" />
                 </div>
               </>
             )}

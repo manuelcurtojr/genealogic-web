@@ -67,7 +67,7 @@ export default function ClientSignForm({
           required
           minLength={3}
           placeholder={t('Nombre y apellidos')}
-          className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2 text-sm text-ink placeholder:text-muted"
+          className="w-full rounded-lg border border-hairline bg-surface-card px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted"
         />
       </label>
 

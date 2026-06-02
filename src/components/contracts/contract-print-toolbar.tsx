@@ -39,10 +39,12 @@ export function ContractPrintToolbar({ saveLabel }: { saveLabel: string }) {
             color: '#fff',
             border: 'none',
             borderRadius: 8,
-            padding: '8px 16px',
-            fontSize: 14,
+            padding: '12px 20px',
+            minHeight: 44,
+            fontSize: 15,
             fontWeight: 600,
             cursor: 'pointer',
+            WebkitTapHighlightColor: 'transparent',
           }}
         >
           {saveLabel}

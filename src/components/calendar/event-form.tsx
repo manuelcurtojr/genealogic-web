@@ -132,7 +132,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
 
       {/* Slide panel — mismo patrón que dog-form-panel / genos-panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+        className={`fixed top-0 right-0 h-dvh w-full sm:max-w-xl z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
         style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
       >
         {/* Fixed header */}
@@ -144,7 +144,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5">
           {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
 
           {/* Title */}
@@ -152,7 +152,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
             <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Titulo *')}</label>
             <input
               type="text" value={form.title} onChange={(e) => set('title', e.target.value)} autoFocus
-              className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition"
+              className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition"
               placeholder={t('Ej: Visita al veterinario')}
             />
           </div>
@@ -182,7 +182,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
               <input
                 type={form.all_day ? 'date' : 'datetime-local'} value={form.all_day ? form.start_date?.slice(0, 10) : form.start_date}
                 onChange={(e) => set('start_date', e.target.value)}
-                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition"
+                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition"
               />
             </div>
             <div>
@@ -190,7 +190,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
               <input
                 type={form.all_day ? 'date' : 'datetime-local'} value={form.all_day ? form.end_date?.slice(0, 10) : form.end_date}
                 onChange={(e) => set('end_date', e.target.value)}
-                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none transition"
+                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition"
               />
             </div>
           </div>
@@ -219,7 +219,7 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
             <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Notas')}</label>
             <textarea
               value={form.notes} onChange={(e) => set('notes', e.target.value)} rows={3}
-              className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition resize-none"
+              className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition resize-none"
               placeholder={t('Notas adicionales...')}
             />
           </div>

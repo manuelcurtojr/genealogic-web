@@ -62,23 +62,23 @@ export default function LeadPanel({
       <div className="space-y-2 text-sm">
         {entry.applicant_email && (
           <a href={`mailto:${entry.applicant_email}`} className="flex items-center gap-2 text-ink hover:underline">
-            <Mail className="w-4 h-4 text-muted flex-shrink-0" /> {entry.applicant_email}
+            <Mail className="w-4 h-4 text-muted flex-shrink-0" /> <span className="min-w-0 truncate">{entry.applicant_email}</span>
           </a>
         )}
         {entry.applicant_phone && (
           <a href={`tel:${entry.applicant_phone}`} className="flex items-center gap-2 text-ink hover:underline">
-            <Phone className="w-4 h-4 text-muted flex-shrink-0" /> {entry.applicant_phone}
+            <Phone className="w-4 h-4 text-muted flex-shrink-0" /> <span className="min-w-0 truncate">{entry.applicant_phone}</span>
           </a>
         )}
         {location && (
           <div className="flex items-center gap-2 text-body">
-            <MapPin className="w-4 h-4 text-muted flex-shrink-0" /> {location}
+            <MapPin className="w-4 h-4 text-muted flex-shrink-0" /> <span className="min-w-0 break-words">{location}</span>
           </div>
         )}
-        <div className="flex items-center gap-2 text-muted">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-muted">
           <Clock className="w-4 h-4 flex-shrink-0" /> {new Date(entry.created_at).toLocaleString()}
           {entry.source && SOURCE_LABEL[entry.source] && (
-            <span className="ml-1 inline-flex items-center gap-1">
+            <span className="inline-flex items-center gap-1">
               · <Tag className="w-3 h-3" /> {t(SOURCE_LABEL[entry.source])}
             </span>
           )}
@@ -105,9 +105,9 @@ export default function LeadPanel({
           </div>
           <dl className="rounded-xl border border-hairline divide-y divide-hairline text-sm overflow-hidden">
             {formAnswers.map((a, i) => (
-              <div key={i} className="flex gap-3 px-3 py-2">
-                <dt className="text-muted capitalize min-w-[120px] flex-shrink-0">{a.label}</dt>
-                <dd className="text-ink break-words">{a.value}</dd>
+              <div key={i} className="flex flex-col sm:flex-row gap-0.5 sm:gap-3 px-3 py-2">
+                <dt className="text-muted capitalize sm:min-w-[120px] sm:flex-shrink-0 break-words">{a.label}</dt>
+                <dd className="text-ink break-words min-w-0">{a.value}</dd>
               </div>
             ))}
           </dl>
@@ -179,7 +179,7 @@ function NoteEditor({ entryId, initial }: { entryId: string; initial: string | n
         }}
         rows={2}
         placeholder={t('Nota privada sobre este lead…')}
-        className="w-full rounded-lg border border-hairline bg-amber-50/40 px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ink/10"
+        className="w-full rounded-lg border border-hairline bg-amber-50/40 px-3 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ink/10"
       />
       <div className="flex justify-end mt-1.5">
         <button
