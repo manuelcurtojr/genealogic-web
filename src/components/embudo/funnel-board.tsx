@@ -202,7 +202,7 @@ export default function FunnelBoard({
           <p className="text-sm text-muted">{t('No hay fichas en este paso.')}</p>
         </div>
       ) : (
-        <ul className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+        <ul className="space-y-2">
           {stageEntries.map((e) => {
             const isNew = !e.seen_by_breeder_at
             return (

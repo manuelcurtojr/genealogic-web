@@ -17,6 +17,7 @@
  * depender de localStorage (que no existe en el server).
  */
 import 'server-only'
+import { cache } from 'react'
 
 export const LOCALE_COOKIE = 'genealogic-lang'
 export const DEFAULT_LOCALE = 'es'
@@ -62,10 +63,37 @@ export function localeFromAcceptLanguage(header: string | null | undefined): Loc
  * @param userLanguage  valor de profiles.language si ya lo tienes cargado
  *                      (evita una query extra). Opcional.
  */
+/**
+ * Idioma de profiles.language del usuario logueado. Cacheado por request
+ * (react cache) para no repetir el auth+query en cada getLocale() del render.
+ */
+const getLoggedInUserLanguage = cache(async (): Promise<string | null> => {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return null
+    const { data } = await supabase.from('profiles').select('language').eq('id', user.id).maybeSingle()
+    return (data?.language as string | null) ?? null
+  } catch {
+    return null
+  }
+})
+
 export async function getLocale(userLanguage?: string | null): Promise<Locale> {
-  // 1. Preferencia del usuario logueado (la más definitiva)
+  // 1. Preferencia pasada explícitamente por el caller (evita la query extra)
   const fromUser = normalizeLocale(userLanguage)
   if (fromUser) return fromUser
+
+  // 1b. Usuario logueado: profiles.language es AUTORITATIVO y gana sobre la
+  //     cookie (si el caller no pasó idioma). Evita que una cookie obsoleta
+  //     —p.ej. de haber probado otro idioma— muestre la UI en otro idioma.
+  if (userLanguage === undefined) {
+    const fromProfile = normalizeLocale(await getLoggedInUserLanguage())
+    if (fromProfile) return fromProfile
+  }
 
   // 2. Cookie (preferencia anónima + semilla del middleware)
   const { cookies, headers } = await import('next/headers')

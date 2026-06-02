@@ -33,6 +33,13 @@ export default function LeadPanel({
   const extra = entry.applicant_extra_data && typeof entry.applicant_extra_data === 'object'
     ? Object.entries(entry.applicant_extra_data).filter(([, v]) => v != null && v !== '')
     : []
+  const formAnswers: { label: string; value: string }[] = [
+    ...(entry.applicant_purpose ? [{ label: t('Propósito'), value: String(entry.applicant_purpose) }] : []),
+    ...(entry.preference_sex
+      ? [{ label: t('Preferencia de sexo'), value: entry.preference_sex === 'male' ? t('Macho') : t('Hembra') }]
+      : []),
+    ...extra.map(([k, v]) => ({ label: k.replace(/_/g, ' '), value: String(v) })),
+  ]
 
   return (
     <Drawer
@@ -73,11 +80,6 @@ export default function LeadPanel({
             </span>
           )}
         </div>
-        {entry.preference_sex && (
-          <div className="text-muted text-xs">
-            {t('Preferencia')}: {entry.preference_sex === 'male' ? t('Macho') : t('Hembra')}
-          </div>
-        )}
       </div>
 
       {/* Mensaje completo */}
@@ -92,17 +94,17 @@ export default function LeadPanel({
         </div>
       )}
 
-      {/* Datos extra del formulario */}
-      {extra.length > 0 && (
+      {/* Respuestas / opciones del formulario */}
+      {formAnswers.length > 0 && (
         <div className="mt-4">
           <div className="text-[11px] font-semibold uppercase tracking-wide text-muted mb-1.5">
-            {t('Otros datos')}
+            {t('Respuestas del formulario')}
           </div>
-          <dl className="rounded-xl border border-hairline divide-y divide-hairline text-sm">
-            {extra.map(([k, v]) => (
-              <div key={k} className="flex gap-3 px-3 py-2">
-                <dt className="text-muted capitalize min-w-[120px]">{k.replace(/_/g, ' ')}</dt>
-                <dd className="text-ink break-words">{String(v)}</dd>
+          <dl className="rounded-xl border border-hairline divide-y divide-hairline text-sm overflow-hidden">
+            {formAnswers.map((a, i) => (
+              <div key={i} className="flex gap-3 px-3 py-2">
+                <dt className="text-muted capitalize min-w-[120px] flex-shrink-0">{a.label}</dt>
+                <dd className="text-ink break-words">{a.value}</dd>
               </div>
             ))}
           </dl>
