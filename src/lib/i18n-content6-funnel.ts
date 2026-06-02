@@ -101,6 +101,8 @@ export const content6Funnel: Record<string, Record<string, string>> = {
     'Nota privada sobre este lead…': 'Private note about this lead…',
     'Guardar nota': 'Save note',
     Guardada: 'Saved',
+    'Eliminar lead': 'Delete lead',
+    '¿Eliminar este lead? No se puede deshacer.': 'Delete this lead? This cannot be undone.',
     'Mover a otro paso': 'Move to another stage',
     'Formulario web': 'Web form',
     'Alta manual': 'Manual entry',

@@ -168,6 +168,32 @@ export async function setInternalNote(entryId: string, note: string): Promise<{ 
   }
 }
 
+/** Elimina un lead/ficha (acción del criador desde su panel, p.ej. duplicados o spam). */
+export async function deleteEntry(entryId: string): Promise<{ ok: boolean; error?: string }> {
+  const t = getTranslator(await getLocale())
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: t('Sesión no válida') }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createKennelAdminClient() as any
+    const { data: entry } = await admin
+      .from('puppy_reservations')
+      .select('id, kennel:kennels(owner_id)')
+      .eq('id', entryId)
+      .maybeSingle()
+    if (!entry || entry.kennel?.owner_id !== user.id) return { ok: false, error: t('Sin permiso') }
+    const { error } = await admin.from('puppy_reservations').delete().eq('id', entryId)
+    if (error) return { ok: false, error: error.message }
+    revalidatePath('/embudo')
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'unknown' }
+  }
+}
+
 /** Marca una solicitud como vista por el criador (quita el distintivo "nueva"). */
 export async function markEntrySeen(entryId: string): Promise<{ ok: boolean }> {
   try {

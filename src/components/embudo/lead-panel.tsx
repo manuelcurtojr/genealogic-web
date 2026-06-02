@@ -4,9 +4,9 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Mail, Phone, MapPin, Clock, ArrowUpRight, MessageSquare, Tag, StickyNote } from 'lucide-react'
+import { Mail, Phone, MapPin, Clock, ArrowUpRight, MessageSquare, Tag, StickyNote, Trash2 } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
-import { setInternalNote } from '@/lib/pipelines/actions'
+import { setInternalNote, deleteEntry } from '@/lib/pipelines/actions'
 import Drawer from './drawer'
 import type { FunnelEntry, Pipeline, Stage } from '@/lib/pipelines/types'
 
@@ -116,6 +116,10 @@ export default function LeadPanel({
 
       <NoteEditor entryId={entry.id} initial={entry.internal_note} />
 
+      <div className="mt-6 pt-4 border-t border-hairline">
+        <DeleteButton entryId={entry.id} onDeleted={onClose} />
+      </div>
+
       {entry.lost_reason && (
         <div className="mt-4 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
           {t('Motivo')}: {t(entry.lost_reason)}
@@ -193,5 +197,32 @@ function NoteEditor({ entryId, initial }: { entryId: string; initial: string | n
         </button>
       </div>
     </div>
+  )
+}
+
+/** Botón para eliminar un lead (confirmación + acción del criador). */
+function DeleteButton({ entryId, onDeleted }: { entryId: string; onDeleted: () => void }) {
+  const t = useT()
+  const router = useRouter()
+  const [pending, start] = useTransition()
+  return (
+    <button
+      onClick={() => {
+        if (!window.confirm(t('¿Eliminar este lead? No se puede deshacer.'))) return
+        start(async () => {
+          const r = await deleteEntry(entryId)
+          if (!r.ok) {
+            alert(r.error)
+            return
+          }
+          onDeleted()
+          router.refresh()
+        })
+      }}
+      disabled={pending}
+      className="inline-flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 disabled:opacity-50"
+    >
+      <Trash2 className="w-3.5 h-3.5" /> {t('Eliminar lead')}
+    </button>
   )
 }
