@@ -15,6 +15,7 @@ export default function ComingSoon({
   description,
   backHref,
   backLabel,
+  t = (s) => s,
 }: {
   featureId: EarlyAccessFeatureId
   /** Descripción más larga para la página. Si no, se omite. */
@@ -22,6 +23,13 @@ export default function ComingSoon({
   /** Botón de vuelta al sitio anterior. Default: /dashboard. */
   backHref?: string
   backLabel?: string
+  /**
+   * Traductor opcional. Este componente es un leaf SÍNCRONO compartido entre
+   * server pages y client components, así que no puede usar useT() ni
+   * getTranslator(await getLocale()) por sí mismo. El caller (que ya resuelve
+   * el locale) puede pasar su `t`; si no, cae a identidad (español base).
+   */
+  t?: (key: string) => string
 }) {
   const feature = EARLY_ACCESS_FEATURES[featureId]
   return (
@@ -32,24 +40,24 @@ export default function ComingSoon({
         </div>
         <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 text-amber-800 px-3 py-1 text-[11px] font-bold uppercase tracking-wider mb-3">
           <Lock className="w-3 h-3" />
-          Próximamente
+          {t('Próximamente')}
         </div>
         <h1 className="text-2xl font-bold text-ink tracking-tight">{feature.label}</h1>
         <p className="mt-3 text-body max-w-md mx-auto">
-          {description || `Esta función estará disponible para todos los criaderos en las ${feature.eta}.`}
+          {description || `${t('Esta función estará disponible para todos los criaderos en las')} ${feature.eta}.`}
         </p>
         <p className="mt-2 text-xs text-muted">
-          ETA: <strong className="text-ink">{feature.eta}</strong>
+          {t('ETA:')} <strong className="text-ink">{feature.eta}</strong>
         </p>
         <Link
           href={backHref || '/dashboard'}
           className="mt-6 inline-flex items-center justify-center rounded-lg border border-hairline bg-canvas px-5 py-2.5 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink"
         >
-          {backLabel || '← Volver al escritorio'}
+          {backLabel || t('← Volver al escritorio')}
         </Link>
       </div>
       <p className="mt-4 text-center text-[11px] text-muted">
-        ¿Quieres ser cobaya y probarlo antes? Escríbenos a{' '}
+        {t('¿Quieres ser cobaya y probarlo antes? Escríbenos a')}{' '}
         <a href="mailto:hola@genealogic.io" className="underline text-ink">
           hola@genealogic.io
         </a>
@@ -59,15 +67,22 @@ export default function ComingSoon({
 }
 
 /** Versión "inline" (chip / botón disabled). Para usar dentro de UIs existentes. */
-export function ComingSoonChip({ featureId }: { featureId: EarlyAccessFeatureId }) {
+export function ComingSoonChip({
+  featureId,
+  t = (s) => s,
+}: {
+  featureId: EarlyAccessFeatureId
+  /** Traductor opcional (ver nota en ComingSoon). Default: identidad (ES base). */
+  t?: (key: string) => string
+}) {
   const feature = EARLY_ACCESS_FEATURES[featureId]
   return (
     <span
-      title={`${feature.label} — disponible para todos en ${feature.eta}`}
+      title={`${feature.label} — ${t('disponible para todos en')} ${feature.eta}`}
       className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
     >
       <Lock className="w-2.5 h-2.5" />
-      Próximamente
+      {t('Próximamente')}
     </span>
   )
 }

@@ -1,6 +1,9 @@
+'use client'
+
 import Link from 'next/link'
 import { ArrowLeft, GitBranch, Sparkles, ShieldCheck } from 'lucide-react'
 import { Wordmark } from '@/components/ui/wordmark'
+import { useT } from '@/components/i18n/locale-provider'
 import LiveStatsLine from './live-stats-line'
 
 interface AuthShellProps {
@@ -30,6 +33,7 @@ interface AuthShellProps {
  * On mobile both stack and right panel is hidden.
  */
 export function AuthShell({ title, titleTail, subtitle, children, footer, hideChrome = false }: AuthShellProps) {
+  const t = useT()
   // En iOS WebView (hideChrome=true): altura exacta de pantalla, sin scroll,
   // contenido centrado verticalmente. Se siente como una pantalla nativa.
   // En web normal: min-h-screen + scroll natural cuando el form es largo.
@@ -64,7 +68,7 @@ export function AuthShell({ title, titleTail, subtitle, children, footer, hideCh
                 href="/"
                 className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium text-muted transition-colors hover:bg-surface-soft hover:text-ink"
               >
-                <ArrowLeft className="h-3.5 w-3.5" /> Volver
+                <ArrowLeft className="h-3.5 w-3.5" /> {t('Volver')}
               </Link>
             )}
           </div>
@@ -105,7 +109,7 @@ export function AuthShell({ title, titleTail, subtitle, children, footer, hideCh
           {/* Bottom legal — oculto en WebView iOS para layout limpio */}
           {!hideChrome && (
             <p className="text-[12px] text-muted">
-              © {new Date().getFullYear()} Genealogic · El registro público mundial de perros con genealogía
+              © {new Date().getFullYear()} Genealogic · {t('El registro público mundial de perros con genealogía')}
             </p>
           )}
         </div>
@@ -118,6 +122,7 @@ export function AuthShell({ title, titleTail, subtitle, children, footer, hideCh
 }
 
 function BrandPanel() {
+  const t = useT()
   return (
     <aside className="relative hidden overflow-hidden bg-surface-dark text-on-dark lg:block">
       {/* Decorative gradient blobs */}
@@ -137,7 +142,7 @@ function BrandPanel() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[color:var(--brand)] opacity-60" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-[color:var(--brand)]" />
           </span>
-          Founder pricing · plazas limitadas
+          {t('Founder pricing · plazas limitadas')}
         </div>
 
         {/* Middle: pitch + features */}
@@ -146,28 +151,27 @@ function BrandPanel() {
             className="max-w-[16ch] font-semibold text-white"
             style={{ fontSize: 'clamp(34px, 3.4vw, 48px)', lineHeight: 1.05, letterSpacing: '-0.035em' }}
           >
-            La genealogía de tu perro, donde tiene que estar.
+            {t('La genealogía de tu perro, donde tiene que estar.')}
           </h2>
           <p className="mt-5 max-w-[420px] text-[15.5px] leading-[1.6] text-on-dark-soft">
-            El registro público de genealogías caninas. Para criadores que documentan su
-            trabajo y propietarios que quieren tenerlo todo a mano.
+            {t('El registro público de genealogías caninas. Para criadores que documentan su trabajo y propietarios que quieren tenerlo todo a mano.')}
           </p>
 
           <div className="mt-10 space-y-4">
             <FeatureRow
               icon={<GitBranch className="h-4 w-4" />}
-              title="Árbol genealógico verificable"
-              desc="Genealogía completa sin límite de generaciones, COI automático."
+              title={t('Árbol genealógico verificable')}
+              desc={t('Genealogía completa sin límite de generaciones, COI automático.')}
             />
             <FeatureRow
               icon={<Sparkles className="h-4 w-4" />}
-              title="Importa genealogías con IA"
-              desc="De una foto al árbol completo en 12 segundos."
+              title={t('Importa genealogías con IA')}
+              desc={t('De una foto al árbol completo en 12 segundos.')}
             />
             <FeatureRow
               icon={<ShieldCheck className="h-4 w-4" />}
-              title="Indexable y trazable"
-              desc="Cada perro, perfil público y permanente en Google."
+              title={t('Indexable y trazable')}
+              desc={t('Cada perro, perfil público y permanente en Google.')}
             />
           </div>
         </div>
@@ -175,7 +179,7 @@ function BrandPanel() {
         {/* Bottom: stats */}
         <blockquote className="border-l-2 border-[color:var(--brand)] pl-4">
           <p className="text-[14.5px] leading-[1.55] text-on-dark">
-            Genealogía verificable. Para siempre.
+            {t('Genealogía verificable. Para siempre.')}
           </p>
           <LiveStatsLine className="mt-2 text-[12px] uppercase tracking-[0.1em] text-on-dark-soft tabular-nums" />
         </blockquote>
@@ -274,6 +278,7 @@ export function AuthSubmit({
   children: React.ReactNode
   disabled?: boolean
 }) {
+  const t = useT()
   return (
     <button
       type="submit"
@@ -281,7 +286,7 @@ export function AuthSubmit({
       className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-2.75 px-5 text-[14px] font-semibold text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       style={{ paddingTop: 11, paddingBottom: 11 }}
     >
-      {loading ? loadingLabel || 'Cargando…' : children}
+      {loading ? loadingLabel || t('Cargando…') : children}
     </button>
   )
 }
@@ -311,12 +316,13 @@ export function AuthError({ children }: { children: React.ReactNode }) {
 export function GoogleButton({
   onClick,
   loading,
-  label = 'Continuar con Google',
+  label,
 }: {
   onClick: () => void | Promise<void>
   loading?: boolean
   label?: string
 }) {
+  const t = useT()
   return (
     <button
       type="button"
@@ -344,17 +350,18 @@ export function GoogleButton({
           d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
         />
       </svg>
-      {loading ? 'Conectando…' : label}
+      {loading ? t('Conectando…') : (label ?? t('Continuar con Google'))}
     </button>
   )
 }
 
 /** Divider 'o continúa con email' — hairline a ambos lados, texto centrado */
-export function OAuthDivider({ label = 'o continúa con email' }: { label?: string }) {
+export function OAuthDivider({ label }: { label?: string }) {
+  const t = useT()
   return (
     <div className="my-5 flex items-center gap-3">
       <span className="h-px flex-1 bg-hairline" />
-      <span className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{label}</span>
+      <span className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{label ?? t('o continúa con email')}</span>
       <span className="h-px flex-1 bg-hairline" />
     </div>
   )

@@ -12,6 +12,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { BREED_SECTIONS } from './sections'
+import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
   breedName: string
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default function BreedStandardSidebar({ breedName, origin, fciNumber }: Props) {
+  const t = useT()
   const [activeId, setActiveId] = useState<string>('info-general')
 
   // Scroll-spy: marca la sección visible más arriba en el viewport
@@ -43,11 +45,11 @@ export default function BreedStandardSidebar({ breedName, origin, fciNumber }: P
   }, [])
 
   return (
-    <nav aria-label="Secciones del estándar de raza" className="lg:sticky lg:top-8 space-y-6">
+    <nav aria-label={t('Secciones del estándar de raza')} className="lg:sticky lg:top-8 space-y-6">
       {/* Encabezado del menú */}
       <div className="px-3">
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
-          Estándar Genealogic
+          {t('Estándar Genealogic')}
         </p>
         <h2 className="mt-1 text-[18px] font-semibold tracking-[-0.02em] text-ink">
           {breedName}
@@ -91,7 +93,7 @@ export default function BreedStandardSidebar({ breedName, origin, fciNumber }: P
                     active ? 'text-on-primary' : 'text-ink'
                   }`}
                 >
-                  {s.label}
+                  {t(s.label)}
                 </span>
               </Link>
             </li>
@@ -102,11 +104,10 @@ export default function BreedStandardSidebar({ breedName, origin, fciNumber }: P
       {/* Disclaimer compacto */}
       <div className="mx-3 rounded-xl border border-hairline bg-surface-soft/60 p-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-          ¿Estándar oficial?
+          {t('¿Estándar oficial?')}
         </p>
         <p className="mt-2 text-[12px] leading-snug text-body">
-          Este texto es una reinterpretación de las fuentes oficiales. Para uso
-          oficial (jueces, expositores) consulta el PDF de la FCI o tu club nacional.
+          {t('Este texto es una reinterpretación de las fuentes oficiales. Para uso oficial (jueces, expositores) consulta el PDF de la FCI o tu club nacional.')}
         </p>
       </div>
     </nav>

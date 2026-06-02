@@ -9,10 +9,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useT } from '@/components/i18n/locale-provider'
 
 type Stats = { dogs: number; kennels: number; breeds: number }
 
 export default function LiveStatsLine({ className }: { className?: string }) {
+  const t = useT()
   const [stats, setStats] = useState<Stats | null>(null)
 
   useEffect(() => {
@@ -35,8 +37,8 @@ export default function LiveStatsLine({ className }: { className?: string }) {
   return (
     <p className={className}>
       {stats
-        ? `${fmt(stats.dogs)} perros · ${fmt(stats.kennels)} criaderos · ${fmt(stats.breeds)} razas`
-        : '… perros · … criaderos · … razas'}
+        ? `${fmt(stats.dogs)} ${t('perros')} · ${fmt(stats.kennels)} ${t('criaderos')} · ${fmt(stats.breeds)} ${t('razas')}`
+        : `… ${t('perros')} · … ${t('criaderos')} · … ${t('razas')}`}
     </p>
   )
 }
