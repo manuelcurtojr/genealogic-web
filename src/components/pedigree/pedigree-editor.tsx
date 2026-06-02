@@ -30,6 +30,8 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
   const [editNodeParent, setEditNodeParent] = useState<{ parentId: string; role: 'father' | 'mother' } | null>(null)
 
   const [ancestorSearch, setAncestorSearch] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searching, setSearching] = useState(false)
   const [saving, setSaving] = useState(false)
 
   // DogFormPanel for creating new ancestor
@@ -49,7 +51,7 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
     async function load() {
       const [pedigreeRes, dogsRes, dogRes] = await Promise.all([
         supabase.rpc('get_pedigree', { dog_uuid: dogId, max_gen: 10 }),
-        supabase.from('dogs').select('id, name, sex, thumbnail_url, breed:breeds(name)').order('name').limit(1000),
+        supabase.from('dogs').select('id, name, sex, thumbnail_url, breed:breeds(name)').eq('owner_id', userId).order('name').limit(1000),
         supabase.from('dogs').select('name').eq('id', dogId).single(),
       ])
       setPedigreeData(pedigreeRes.data || [])
@@ -67,11 +69,35 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
     return () => document.removeEventListener('keydown', h)
   }, [open, panelOpen, dogFormOpen, onClose])
 
+  // Búsqueda del ancestro EN SERVIDOR (ilike por nombre + sexo). No se limita a
+  // los perros precargados: la BD tiene 70k+ perros y el padre/madre que buscas
+  // casi nunca está en los primeros 1000 por nombre.
+  useEffect(() => {
+    if (!panelOpen || !panelTarget) return
+    const term = ancestorSearch.trim()
+    if (term.length < 2) { setSearchResults([]); setSearching(false); return }
+    const sex = panelTarget.role === 'father' ? 'male' : 'female'
+    setSearching(true)
+    const supabase = createClient()
+    const handle = setTimeout(async () => {
+      const { data } = await supabase
+        .from('dogs')
+        .select('id, name, sex, thumbnail_url, breed:breeds(name)')
+        .eq('sex', sex)
+        .ilike('name', `%${term}%`)
+        .order('name')
+        .limit(40)
+      setSearchResults(data || [])
+      setSearching(false)
+    }, 250)
+    return () => clearTimeout(handle)
+  }, [ancestorSearch, panelOpen, panelTarget])
+
   const reloadPedigree = useCallback(async () => {
     const supabase = createClient()
     const [pedigreeRes, dogsRes] = await Promise.all([
       supabase.rpc('get_pedigree', { dog_uuid: dogId, max_gen: 10 }),
-      supabase.from('dogs').select('id, name, sex, thumbnail_url, breed:breeds(name)').order('name').limit(1000),
+      supabase.from('dogs').select('id, name, sex, thumbnail_url, breed:breeds(name)').eq('owner_id', userId).order('name').limit(1000),
     ])
     setPedigreeData(pedigreeRes.data || [])
     setAllDogs(dogsRes.data || [])
@@ -146,13 +172,15 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
   }
 
   const expectedSex = panelTarget?.role === 'father' ? 'male' : 'female'
-  const ancestorCandidates = allDogs.filter(d => {
+  // Con término (>=2): resultados del servidor (toda la BD). Sin término: tus
+  // propios perros como sugerencia.
+  const ancestorSource = ancestorSearch.trim().length >= 2 ? searchResults : allDogs
+  const ancestorCandidates = ancestorSource.filter(d => {
     if (!panelTarget) return false
     if (d.sex !== expectedSex) return false
     if (d.id === panelTarget.dogId) return false
-    if (!ancestorSearch) return true
-    return d.name.toLowerCase().includes(ancestorSearch.toLowerCase())
-  }).slice(0, 30)
+    return true
+  }).slice(0, 40)
 
   if (!open) return null
 
@@ -238,7 +266,8 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
                         {d.breed?.name && <span className="text-[10px] text-muted">{d.breed.name}</span>}
                       </button>
                     ))}
-                    {ancestorCandidates.length === 0 && ancestorSearch && <p className="text-xs text-muted text-center py-4">{t('Sin resultados')}</p>}
+                    {searching && <p className="text-xs text-muted text-center py-4">{t('Buscando...')}</p>}
+                    {!searching && ancestorCandidates.length === 0 && ancestorSearch.trim().length >= 2 && <p className="text-xs text-muted text-center py-4">{t('Sin resultados')}</p>}
                   </div>
                 </div>
 
