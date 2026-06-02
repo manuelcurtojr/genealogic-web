@@ -53,5 +53,34 @@ export const content6Funnel: Record<string, Record<string, string>> = {
     'No puede tenerlo': 'Can no longer have it',
     'No responde pasado el plazo': 'No response after the deadline',
     'Ha muerto': 'Passed away',
+
+    // ── editor de configuración ──
+    'Nombre del nuevo pipeline': 'Name of the new pipeline',
+    'Nuevo nombre': 'New name',
+    '¿Borrar este pipeline?': 'Delete this pipeline?',
+    '¿Borrar este paso?': 'Delete this stage?',
+    Normal: 'Normal',
+    Ganado: 'Won',
+    Perdido: 'Lost',
+    Pipeline: 'Pipeline',
+    Renombrar: 'Rename',
+    'Borrar pipeline': 'Delete pipeline',
+    'Nombre del paso': 'Stage name',
+    'Añadir paso': 'Add stage',
+    'Cada pipeline necesita al menos 1 paso normal, 1 ganado y 1 perdido.':
+      'Every pipeline needs at least 1 normal, 1 won and 1 lost stage.',
+    'Motivos de pérdida (uno por línea)': 'Loss reasons (one per line)',
+    'Celebrar con confeti': 'Celebrate with confetti',
+    'Al ganar, clonar a:': 'On win, clone to:',
+    Nada: 'None',
+    'Paso de entrada (donde caen las solicitudes nuevas)': 'Entry stage (where new requests land)',
+
+    // ── errores de server actions ──
+    'El nombre no puede estar vacío': 'The name cannot be empty',
+    'Debe quedar al menos un pipeline.': 'At least one pipeline must remain.',
+    'No puedes borrar un pipeline con fichas dentro.': 'You cannot delete a pipeline with entries in it.',
+    'No puedes borrar un paso con fichas dentro.': 'You cannot delete a stage with entries in it.',
+    'Indica el motivo': 'Please indicate the reason',
+    'Paso no encontrado': 'Stage not found',
   },
 }
