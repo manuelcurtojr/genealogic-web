@@ -35,6 +35,7 @@ import PaymentFailedEmail, { type PaymentFailedProps } from '@/emails/payment-fa
 import VetReminderEmail, { type VetReminderProps } from '@/emails/vet-reminder'
 import LitterNewEmail, { type LitterNewProps } from '@/emails/litter-new'
 import ContractSignedEmail, { type ContractSignedProps } from '@/emails/contract-signed'
+import ContractSentEmail, { type ContractSentProps } from '@/emails/contract-sent'
 import PaymentReceivedEmail, { type PaymentReceivedProps } from '@/emails/payment-received'
 import WeeklyDigestBreederEmail, { type WeeklyDigestBreederProps } from '@/emails/weekly-digest-breeder'
 import WeeklyDigestOwnerEmail, { type WeeklyDigestOwnerProps } from '@/emails/weekly-digest-owner'
@@ -65,6 +66,7 @@ export type EmailTemplate =
   | { template: 'vet_reminder';           props: VetReminderProps }
   | { template: 'litter_new';             props: LitterNewProps }
   | { template: 'contract_signed';        props: ContractSignedProps }
+  | { template: 'contract_sent';          props: ContractSentProps }
   | { template: 'payment_received';       props: PaymentReceivedProps }
   | { template: 'weekly_digest_breeder';  props: WeeklyDigestBreederProps }
   | { template: 'weekly_digest_owner';    props: WeeklyDigestOwnerProps }
@@ -165,6 +167,10 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
         ? `${p.otherPartyName} ${t('ha firmado el contrato')}`
         : `${t('Contrato firmado con')} ${p.kennelName}`,
   },
+  contract_sent: {
+    category: 'critical',
+    subject: (p: ContractSentProps, t) => `${p.kennelName}: ${t('contrato para firmar')}`,
+  },
   payment_received: {
     category: 'critical',
     subject: (p: PaymentReceivedProps, t) =>
@@ -244,6 +250,7 @@ function renderTemplate(t: EmailTemplate, locale: Locale): Promise<string> {
     case 'vet_reminder':           return render(VetReminderEmail(p))
     case 'litter_new':             return render(LitterNewEmail(p))
     case 'contract_signed':        return render(ContractSignedEmail(p))
+    case 'contract_sent':          return render(ContractSentEmail(p))
     case 'payment_received':       return render(PaymentReceivedEmail(p))
     case 'weekly_digest_breeder':  return render(WeeklyDigestBreederEmail(p))
     case 'weekly_digest_owner':    return render(WeeklyDigestOwnerEmail(p))

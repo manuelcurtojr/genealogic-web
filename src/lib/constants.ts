@@ -169,7 +169,7 @@ export const NAV_SECTIONS: NavSection[] = [
       // "Mis perros" se fusionó con "Perros" (/dogs ya muestra los perros que
       // posees como propietario, no solo los que crías). Aquí solo dejamos
       // las reservas, que son específicas del rol cliente.
-      { label: 'Mis reservas', href: '/mis-reservas', icon: 'KanbanSquare', requiresClient: true },
+      { label: 'Reservas', href: '/mis-reservas', icon: 'KanbanSquare', requiresClient: true },
     ],
   },
 

@@ -24,7 +24,7 @@ export default async function KennelLegalContentPage() {
 
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, name, legal_name, legal_id, legal_address, legal_email, custom_domain')
+    .select('id, slug, name, legal_name, legal_id, legal_address, legal_email, legal_representative, legal_representative_id, sign_city, jurisdiction, custom_domain')
     .eq('owner_id', user.id)
     .maybeSingle()
   if (!kennel) redirect('/kennel/new')
@@ -57,6 +57,10 @@ export default async function KennelLegalContentPage() {
         legal_id: kennel.legal_id,
         legal_address: kennel.legal_address,
         legal_email: kennel.legal_email,
+        legal_representative: kennel.legal_representative,
+        legal_representative_id: kennel.legal_representative_id,
+        sign_city: kennel.sign_city,
+        jurisdiction: kennel.jurisdiction,
       }}
       docs={docs}
     />

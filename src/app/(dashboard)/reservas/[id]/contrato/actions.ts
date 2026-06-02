@@ -1,10 +1,9 @@
 /**
- * Server actions del criador para el contrato de una reserva.
- *  - createOrInitContract: si no existe, lo crea con plantilla pre-popular
- *  - saveContractDraft: guarda cambios en draft
- *  - sendContract: marca como 'sent' → visible al cliente
- *  - signContractAsBreeder: criador firma (debe estar en sent o signed_partial)
- *  - cancelContract: vuelve a draft y reset firmas
+ * Server actions del criador para los contratos de una reserva (reserva + entrega).
+ *  - createOrInitContract(kind): crea el contrato de ese tipo desde plantilla base
+ *  - createFromUserTemplate(kind): crea desde plantilla propia del criador
+ *  - saveContractDraft / sendContract / signContractAsBreeder / cancelContract
+ * Al enviar (sent) se manda email al cliente para registrarse/entrar y firmar.
  */
 'use server'
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
@@ -16,11 +15,8 @@ import {
   setContractStatus,
   getContractByReservation,
 } from '@/lib/contracts/contracts'
-import {
-  CONTRACT_TEMPLATES,
-  type ContractTemplateId,
-  type ContractTemplateVars,
-} from '@/lib/contracts/templates'
+import { CONTRACT_TEMPLATES, type ContractKind } from '@/lib/contracts/templates'
+import { generateContractBody } from '@/lib/contracts/render'
 import { getContractTemplate } from '@/lib/contracts/templates-actions'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -31,7 +27,7 @@ async function getClientIp(): Promise<string | null> {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function assertBreeder(reservationId: string): Promise<{ userId: string; reservation: any }> {
+export async function assertBreeder(reservationId: string): Promise<{ userId: string; reservation: any }> {
   const supabase = await createClient()
   const {
     data: { user },
@@ -42,8 +38,10 @@ async function assertBreeder(reservationId: string): Promise<{ userId: string; r
   const { data: reservation } = await admin
     .from('puppy_reservations')
     .select(
-      `*, kennel:kennels(id, name, city, country, owner_id),
-       dog:dogs!dog_id(id, name, slug, microchip, registration, birth_date, breed:breeds(name))`,
+      `*,
+       kennel:kennels(id, name, city, country, owner_id, legal_name, legal_id, legal_address, legal_representative, legal_representative_id, sign_city, jurisdiction),
+       puppy:dogs!puppy_dog_id(id, name, sex, microchip, registration, birth_date, breed:breeds(name), color:colors(name)),
+       dog:dogs!dog_id(id, name, sex, microchip, registration, birth_date, breed:breeds(name), color:colors(name))`,
     )
     .eq('id', reservationId)
     .maybeSingle()
@@ -52,54 +50,24 @@ async function assertBreeder(reservationId: string): Promise<{ userId: string; r
   return { userId: user.id, reservation }
 }
 
-function buildVars(reservation: Record<string, unknown>): ContractTemplateVars {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const r = reservation as any
-  const fmtPrice = (cents: number | null | undefined, currency = 'EUR') =>
-    cents != null ? `${(cents / 100).toFixed(2)} ${currency}` : ''
-  return {
-    kennelName: r.kennel?.name || '',
-    kennelAddress: [r.kennel?.city, r.kennel?.country].filter(Boolean).join(', ') || undefined,
-    clientName: r.applicant_name || '',
-    clientEmail: r.applicant_email || '',
-    clientId: r.applicant_id_doc_number || undefined,
-    clientAddress: [r.applicant_address, r.applicant_postal_code, r.applicant_city]
-      .filter(Boolean)
-      .join(', ') || undefined,
-    dogName: r.dog?.name,
-    breed: r.dog?.breed?.name,
-    birthDate: r.dog?.birth_date
-      ? new Date(r.dog.birth_date).toLocaleDateString('es-ES')
-      : undefined,
-    microchip: r.dog?.microchip,
-    registration: r.dog?.registration,
-    totalPrice: fmtPrice(r.total_price_cents, r.currency || 'EUR') || undefined,
-    depositAmount: fmtPrice(r.deposit_amount_cents, r.currency || 'EUR') || undefined,
-    todayDate: new Date().toLocaleDateString('es-ES', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }),
-  }
-}
-
 export async function createOrInitContractAction(
   reservationId: string,
-  templateId: ContractTemplateId,
+  kind: ContractKind,
 ): Promise<{ ok: true; contractId: string } | { ok: false; error: string }> {
   try {
     const { userId, reservation } = await assertBreeder(reservationId)
-    const existing = await getContractByReservation(reservationId)
+    const existing = await getContractByReservation(reservationId, kind)
     if (existing) return { ok: true, contractId: existing.id }
 
-    const tpl = CONTRACT_TEMPLATES.find((ct) => ct.id === templateId) ?? CONTRACT_TEMPLATES[0]
-    const body = tpl.body(buildVars(reservation))
+    const tpl = CONTRACT_TEMPLATES.find((ct) => ct.kind === kind) ?? CONTRACT_TEMPLATES[0]
     const created = await createContract({
       reservationId,
       kennelId: reservation.kennel.id,
       createdBy: userId,
+      kind,
+      sourceTemplateId: null,
       title: tpl.label,
-      bodyMarkdown: body,
+      bodyMarkdown: generateContractBody(reservation, kind),
     })
     revalidatePath(`/reservas/${reservationId}/contrato`)
     return { ok: true, contractId: created.id }
@@ -108,27 +76,14 @@ export async function createOrInitContractAction(
   }
 }
 
-/** Sustituye `{{var}}` en el body de la plantilla con los valores de la
- *  reserva. Si la variable no existe o es vacía, queda en blanco (sin
- *  romper el layout). Sintaxis simple — sin condicionales ni lógica. */
-function interpolateUserTemplate(body: string, vars: Record<string, string | undefined>): string {
-  return body.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, key: string) => {
-    const v = vars[key]
-    return v == null ? '' : String(v)
-  })
-}
-
-/** Crea el contrato de una reserva a partir de una plantilla del propio
- *  criador (contract_templates) en lugar de los templates hardcoded.
- *  Se llama desde el dropdown "Empezar desde plantilla" en
- *  /reservas/[id]/contrato cuando aún no existe el contrato. */
 export async function createFromUserTemplateAction(
   reservationId: string,
   userTemplateId: string,
+  kind: ContractKind,
 ): Promise<{ ok: true; contractId: string } | { ok: false; error: string }> {
   try {
     const { userId, reservation } = await assertBreeder(reservationId)
-    const existing = await getContractByReservation(reservationId)
+    const existing = await getContractByReservation(reservationId, kind)
     if (existing) return { ok: true, contractId: existing.id }
 
     const tpl = await getContractTemplate(userTemplateId)
@@ -137,15 +92,14 @@ export async function createFromUserTemplateAction(
     if (tpl.kennel_id !== reservation.kennel.id) {
       return { ok: false, error: t('Plantilla no pertenece a este criadero') }
     }
-
-    const vars = buildVars(reservation) as unknown as Record<string, string | undefined>
-    const body = interpolateUserTemplate(tpl.body_md, vars)
     const created = await createContract({
       reservationId,
       kennelId: reservation.kennel.id,
       createdBy: userId,
+      kind,
+      sourceTemplateId: tpl.id,
       title: tpl.name,
-      bodyMarkdown: body,
+      bodyMarkdown: generateContractBody(reservation, kind, tpl.body_md),
     })
     revalidatePath(`/reservas/${reservationId}/contrato`)
     return { ok: true, contractId: created.id }
@@ -175,11 +129,44 @@ export async function sendContractAction(
   contractId: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   try {
-    await assertBreeder(reservationId)
+    const { reservation } = await assertBreeder(reservationId)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createKennelAdminClient() as any
+    const { data: contract } = await admin
+      .from('reservation_contracts')
+      .select('kind')
+      .eq('id', contractId)
+      .maybeSingle()
     await setContractStatus(contractId, 'sent', {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       sent_at: new Date().toISOString() as any,
     })
+
+    // Email al cliente: regístrate/entra para ver y firmar el contrato.
+    if (reservation.applicant_email) {
+      try {
+        const { sendTransactionalEmail } = await import('@/lib/email/send')
+        await sendTransactionalEmail(
+          reservation.applicant_email,
+          {
+            template: 'contract_sent',
+            props: {
+              clientName: reservation.applicant_name || null,
+              kennelName: reservation.kennel?.name || '',
+              contractKind: (contract?.kind === 'delivery' ? 'delivery' : 'reservation') as
+                | 'reservation'
+                | 'delivery',
+              reservationId,
+              hasAccount: !!reservation.client_user_id,
+            },
+          },
+          { userId: reservation.client_user_id || undefined },
+        )
+      } catch (err) {
+        console.error('[email] contract_sent failed', err)
+      }
+    }
+
     revalidatePath(`/reservas/${reservationId}/contrato`)
     revalidatePath(`/mis-reservas/${reservationId}/contrato`)
     return { ok: true }

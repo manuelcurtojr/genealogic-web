@@ -16,6 +16,8 @@ import {
   formatPrice,
 } from '@/lib/owner/reservations'
 import { listReservationMessages, markThreadRead } from '@/lib/reservations/messages'
+import { listDogDocumentsForOwner } from '@/lib/dogs/documents'
+import { labelForType } from '@/lib/dogs/documents-shared'
 import ReservationThread from '@/components/reservations/reservation-thread'
 import { sendClientMessageAction } from './actions'
 import { getTranslator } from '@/lib/i18n'
@@ -48,6 +50,11 @@ export default async function MyReservationDetailPage({
   const messages = await listReservationMessages(reservation.id)
   // Marcar como leídos los mensajes del criador (no bloqueante)
   markThreadRead(reservation.id, 'client').catch(() => {})
+
+  // Documentos del cachorro asignado (solo los visibles al propietario)
+  const documents = reservation.dog
+    ? await listDogDocumentsForOwner(reservation.dog.id)
+    : []
 
   return (
     <div>
@@ -174,6 +181,35 @@ export default async function MyReservationDetailPage({
               </div>
             </section>
           )}
+
+          {/* Documentos del cachorro asignado */}
+          <section className="rounded-2xl border border-hairline bg-canvas p-5">
+            <h2 className="text-base font-bold text-ink mb-4">{t('Documentos')}</h2>
+            {documents.length > 0 ? (
+              <ul className="divide-y divide-hairline">
+                {documents.map((doc) => (
+                  <li key={doc.id} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-ink truncate">{doc.title}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted mt-0.5">
+                        {labelForType(doc.type)}
+                      </p>
+                    </div>
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-hairline px-3 py-1.5 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
+                    >
+                      {t('Descargar')} →
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-muted italic">{t('Aún no hay documentos')}</p>
+            )}
+          </section>
 
           {/* Timeline */}
           <section className="rounded-2xl border border-hairline bg-canvas p-5">

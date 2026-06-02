@@ -1,19 +1,27 @@
 /**
- * Contrato de una reserva — lado criador.
+ * Contratos de una reserva — lado criador.
  *
- * Estados:
- *  - Sin contrato: muestra picker de plantilla → "Crear contrato"
+ * Gestiona DOS contratos por reserva, cada uno con su propio flujo:
+ *  - kind 'reservation' → Contrato de reserva
+ *  - kind 'delivery'    → Contrato de compraventa y entrega
+ *
+ * Por cada bloque (kind):
+ *  - Sin contrato: picker de plantilla → "Crear contrato de reserva/entrega"
  *  - draft: editor activo + botón "Enviar al cliente"
  *  - sent: vista preview + "Firmar como criador" + "Cancelar"
  *  - signed_partial: ídem + estado de firma de la otra parte
  *  - signed_full: lectura + descarga PDF (TODO)
+ *
+ * El orden de los bloques se adapta a la etapa del embudo: si la reserva está
+ * en una etapa de entrega ('Pendiente de entrega' / 'Entregado') el bloque de
+ * entrega sale primero y abierto; si no, manda el de reserva.
  */
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { getContractByReservation } from '@/lib/contracts/contracts'
+import { getContractsByReservation, type ReservationContract } from '@/lib/contracts/contracts'
 import { renderContractMarkdown } from '@/lib/contracts/markdown'
-import { CONTRACT_TEMPLATES } from '@/lib/contracts/templates'
+import { CONTRACT_TEMPLATES, type ContractKind } from '@/lib/contracts/templates'
 import ContractEditor from '@/components/contracts/contract-editor'
 import {
   createOrInitContractAction,
@@ -23,7 +31,7 @@ import {
   signContractAsBreederAction,
   cancelContractAction,
 } from './actions'
-import { listContractTemplatesForUser } from '@/lib/contracts/templates-actions'
+import { listContractTemplatesForUser, type ContractTemplate } from '@/lib/contracts/templates-actions'
 import { CheckCircle2, FileText, AlertCircle } from 'lucide-react'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -31,7 +39,10 @@ import { getLocale } from '@/lib/locale'
 type T = (k: string) => string
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Contrato · Genealogic' }
+export const metadata = { title: 'Contratos · Genealogic' }
+
+// Etapas del embudo que indican que la reserva ya está en fase de entrega.
+const DELIVERY_STAGES = new Set(['Pendiente de entrega', 'Entregado'])
 
 export default async function BreederContractPage({
   params,
@@ -47,7 +58,7 @@ export default async function BreederContractPage({
   const admin = createKennelAdminClient() as any
   const { data: reservation } = await admin
     .from('puppy_reservations')
-    .select('id, kennel_id, applicant_name, kennel:kennels(owner_id, name)')
+    .select('id, kennel_id, applicant_name, stage_id, kennel:kennels(owner_id, name), stage:pipeline_stages(name)')
     .eq('id', id)
     .maybeSingle()
   if (!reservation) notFound()
@@ -56,8 +67,40 @@ export default async function BreederContractPage({
   // Contratos + firma electrónica básica están incluidos desde Kennel Free
   // (marca FPE en /pricing). El acceso se restringe por propiedad de la
   // reserva (check de arriba), no por plan.
-  const contract = await getContractByReservation(reservation.id)
+  const contracts = await getContractsByReservation(reservation.id)
+  const userTemplates = await listContractTemplatesForUser()
   const t = getTranslator(await getLocale())
+
+  const reservationContract = contracts.find((c) => c.kind === 'reservation') ?? null
+  const deliveryContract = contracts.find((c) => c.kind === 'delivery') ?? null
+
+  // Sugerencia por etapa del embudo: si la reserva ya está en una etapa de
+  // entrega, resaltamos/expandimos el bloque de entrega y lo subimos arriba.
+  const stageName: string | null = reservation.stage?.name ?? null
+  const deliveryPhase = stageName != null && DELIVERY_STAGES.has(stageName)
+
+  const reservationBlock = (
+    <ContractBlock
+      key="reservation"
+      kind="reservation"
+      reservation={reservation}
+      contract={reservationContract}
+      userTemplates={userTemplates}
+      highlighted={!deliveryPhase}
+      t={t}
+    />
+  )
+  const deliveryBlock = (
+    <ContractBlock
+      key="delivery"
+      kind="delivery"
+      reservation={reservation}
+      contract={deliveryContract}
+      userTemplates={userTemplates}
+      highlighted={deliveryPhase}
+      t={t}
+    />
+  )
 
   return (
     <div>
@@ -68,15 +111,73 @@ export default async function BreederContractPage({
         ← {reservation.applicant_name}
       </Link>
 
-      <div className="flex items-baseline justify-between gap-3 flex-wrap mb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-ink">{t('Contrato')}</h1>
-        {contract && <StatusBadge status={contract.status} t={t} />}
+      <div className="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+        <h1 className="text-3xl font-bold tracking-tight text-ink">{t('Contratos')}</h1>
       </div>
+      <p className="text-sm text-body mb-8 max-w-2xl">
+        {t('Cada reserva tiene dos contratos: la reserva inicial (con señal) y la compraventa definitiva en el momento de la entrega. Gestiona cada uno por separado.')}
+      </p>
+
+      <div className="space-y-10">
+        {deliveryPhase ? (
+          <>
+            {deliveryBlock}
+            {reservationBlock}
+          </>
+        ) : (
+          <>
+            {reservationBlock}
+            {deliveryBlock}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Un bloque por tipo de contrato. Encapsula todo el flujo (crear / editar /
+ * preview+firma) scoped a un `kind` concreto.
+ */
+function ContractBlock({
+  kind,
+  reservation,
+  contract,
+  userTemplates,
+  highlighted,
+  t,
+}: {
+  kind: ContractKind
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  reservation: any
+  contract: ReservationContract | null
+  userTemplates: ContractTemplate[]
+  highlighted: boolean
+  t: T
+}) {
+  const blockTitle = kind === 'delivery'
+    ? t('Contrato de compraventa y entrega')
+    : t('Contrato de reserva')
+
+  return (
+    <section
+      className={`rounded-2xl border p-5 sm:p-6 ${
+        highlighted ? 'border-ink/25 bg-surface-soft' : 'border-hairline bg-transparent'
+      }`}
+    >
+      <header className="flex items-baseline justify-between gap-3 flex-wrap mb-5">
+        <div className="flex items-center gap-2.5">
+          <FileText className="h-5 w-5 text-ink" />
+          <h2 className="text-xl font-bold tracking-tight text-ink">{blockTitle}</h2>
+        </div>
+        {contract && <StatusBadge status={contract.status} t={t} />}
+      </header>
 
       {!contract ? (
         <CreateContractCard
           reservationId={reservation.id}
-          userTemplates={await listContractTemplatesForUser()}
+          kind={kind}
+          userTemplates={userTemplates}
           t={t}
         />
       ) : contract.status === 'draft' ? (
@@ -92,7 +193,7 @@ export default async function BreederContractPage({
       ) : (
         <SentOrSignedView reservation={reservation} contract={contract} t={t} />
       )}
-    </div>
+    </section>
   )
 }
 
@@ -116,59 +217,76 @@ function StatusBadge({ status, t }: { status: string; t: T }) {
 
 function CreateContractCard({
   reservationId,
+  kind,
   userTemplates,
   t,
 }: {
   reservationId: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  userTemplates: any[]
+  kind: ContractKind
+  userTemplates: ContractTemplate[]
   t: T
 }) {
+  // Plantilla base correspondiente a este tipo de contrato.
+  const baseTpl = CONTRACT_TEMPLATES.find((ct) => ct.kind === kind) ?? CONTRACT_TEMPLATES[0]
+  const createLabel = kind === 'delivery'
+    ? t('Crear contrato de entrega')
+    : t('Crear contrato de reserva')
+
   // Plantilla por defecto del kennel (si la marcó como default en /contratos)
-  // sale destacada como CTA principal.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const defaultTpl = userTemplates.find((tp: any) => tp.is_default) || null
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const otherUserTpls = userTemplates.filter((tp: any) => !tp.is_default)
+  // sale destacada como alternativa.
+  const defaultTpl = userTemplates.find((tp) => tp.is_default) || null
+  const otherUserTpls = userTemplates.filter((tp) => !tp.is_default)
+
   return (
-    <div className="rounded-2xl border border-dashed border-hairline bg-canvas p-8">
-      <div className="flex items-center gap-3 mb-3">
-        <FileText className="h-6 w-6 text-ink" />
-        <p className="text-lg font-bold text-ink">{t('Crea el contrato')}</p>
-      </div>
+    <div className="rounded-2xl border border-dashed border-hairline bg-canvas p-6 sm:p-8">
       <p className="text-sm text-body mb-6 max-w-2xl">
-        {t('Elige una plantilla. Se pre-rellena con los datos de la reserva (cliente, cachorro, precio). Después la editas con markdown ligero (negrita, listas, separadores) y la envías al cliente para firma.')}
+        {t('Se pre-rellena con los datos de la reserva (cliente, cachorro, precio). Después la editas con markdown ligero (negrita, listas, separadores) y la envías al cliente para firma.')}
       </p>
+
+      {/* CTA principal: crear desde el modelo base de este tipo */}
+      <form
+        action={async () => {
+          'use server'
+          await createOrInitContractAction(reservationId, kind)
+        }}
+      >
+        <button
+          type="submit"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90"
+        >
+          <FileText className="h-4 w-4" />
+          {createLabel}
+        </button>
+      </form>
 
       {/* Plantillas del propio criador (contract_templates) */}
       {userTemplates.length > 0 && (
-        <div className="mb-6 space-y-3">
+        <div className="mt-6 space-y-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-            {t('Tus plantillas')}
+            {t('O empieza desde una de tus plantillas')}
           </p>
           <div className="flex flex-wrap gap-2">
             {defaultTpl && (
               <form
                 action={async () => {
                   'use server'
-                  await createFromUserTemplateAction(reservationId, defaultTpl.id)
+                  await createFromUserTemplateAction(reservationId, defaultTpl.id, kind)
                 }}
               >
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas text-ink px-4 py-2 text-sm font-semibold hover:border-ink/30 transition"
                 >
                   ★ {defaultTpl.name} <span className="text-[10px] opacity-75">{t('(por defecto)')}</span>
                 </button>
               </form>
             )}
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {otherUserTpls.map((tpl: any) => (
+            {otherUserTpls.map((tpl) => (
               <form
                 key={tpl.id}
                 action={async () => {
                   'use server'
-                  await createFromUserTemplateAction(reservationId, tpl.id)
+                  await createFromUserTemplateAction(reservationId, tpl.id, kind)
                 }}
               >
                 <button
@@ -183,41 +301,17 @@ function CreateContractCard({
         </div>
       )}
 
-      {/* Plantillas base (hardcoded) — fallback siempre disponible */}
-      <div className="space-y-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-          {userTemplates.length > 0 ? t('O empieza desde modelo base') : t('Modelos base')}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {CONTRACT_TEMPLATES.map((tpl) => (
-            <form
-              key={tpl.id}
-              action={async () => {
-                'use server'
-                await createOrInitContractAction(reservationId, tpl.id)
-              }}
-            >
-              <button
-                type="submit"
-                className="rounded-lg border border-hairline bg-canvas text-ink px-4 py-2 text-sm font-semibold hover:border-ink/30 transition"
-              >
-                {t('Usar:')} {t(tpl.label)}
-              </button>
-            </form>
-          ))}
-        </div>
-      </div>
-
       <p className="mt-6 text-[12px] text-muted">
         {t('¿Quieres crear tu propia plantilla? Ve a')}{' '}
         <a href="/contratos" className="text-ink underline">{t('Contratos')}</a> {t('y guarda tus modelos para reusarlos en cada reserva.')}
+        {' '}{t('Modelo base usado:')} <span className="text-ink">{t(baseTpl.label)}</span>.
       </p>
     </div>
   )
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function SentOrSignedView({ reservation, contract, t }: { reservation: any; contract: any; t: T }) {
+function SentOrSignedView({ reservation, contract, t }: { reservation: any; contract: ReservationContract; t: T }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
       <article
@@ -233,7 +327,7 @@ function SentOrSignedView({ reservation, contract, t }: { reservation: any; cont
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function SignaturePanel({ reservation, contract, t }: { reservation: any; contract: any; t: T }) {
+function SignaturePanel({ reservation, contract, t }: { reservation: any; contract: ReservationContract; t: T }) {
   return (
     <section className="rounded-2xl border border-hairline bg-canvas p-5">
       <h3 className="text-xs font-bold uppercase tracking-wider text-ink mb-3">{t('Firmas')}</h3>
@@ -305,10 +399,19 @@ function SignAsBreederForm({
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ContractActionsPanel({ reservation, contract, t }: { reservation: any; contract: any; t: T }) {
+function ContractActionsPanel({ reservation, contract, t }: { reservation: any; contract: ReservationContract; t: T }) {
   return (
     <section className="rounded-2xl border border-hairline bg-canvas p-5">
       <h3 className="text-xs font-bold uppercase tracking-wider text-ink mb-3">{t('Acciones')}</h3>
+      <a
+        href={`/contrato-print/${contract.id}`}
+        target="_blank"
+        rel="noreferrer"
+        className="mb-2 w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-hairline bg-canvas px-3 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
+      >
+        <FileText className="h-3.5 w-3.5" />
+        {t('Imprimir / Guardar PDF')}
+      </a>
       {contract.status !== 'signed_full' && (
         <form
           action={async () => {

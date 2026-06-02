@@ -4,13 +4,17 @@
 import 'server-only'
 import { cache } from 'react'
 import { createKennelAdminClient } from '@/lib/supabase/server'
+import type { ContractKind } from '@/lib/contracts/templates'
 
+export type { ContractKind }
 export type ContractStatus = 'draft' | 'sent' | 'signed_partial' | 'signed_full' | 'cancelled'
 
 export type ReservationContract = {
   id: string
   reservation_id: string
   kennel_id: string
+  kind: ContractKind
+  source_template_id: string | null
   title: string
   body_html: string
   body_json: unknown | null
@@ -29,24 +33,36 @@ export type ReservationContract = {
   updated_at: string
 }
 
-/** Devuelve el contrato 1:1 de la reserva, o null. */
-export const getContractByReservation = cache(
-  async (reservationId: string): Promise<ReservationContract | null> => {
+/** Devuelve los contratos de la reserva (reserva y/o entrega), ordenados. */
+export const getContractsByReservation = cache(
+  async (reservationId: string): Promise<ReservationContract[]> => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = createKennelAdminClient() as any
     const { data } = await admin
       .from('reservation_contracts')
       .select('*')
       .eq('reservation_id', reservationId)
-      .maybeSingle()
-    return (data as ReservationContract | null) ?? null
+      .order('kind', { ascending: true })
+    return (data as ReservationContract[] | null) ?? []
   },
 )
+
+/** Devuelve el contrato de un tipo concreto. Sin kind → el primero (compat). */
+export async function getContractByReservation(
+  reservationId: string,
+  kind?: ContractKind,
+): Promise<ReservationContract | null> {
+  const list = await getContractsByReservation(reservationId)
+  if (kind) return list.find((c) => c.kind === kind) ?? null
+  return list[0] ?? null
+}
 
 export async function createContract(args: {
   reservationId: string
   kennelId: string
   createdBy: string
+  kind: ContractKind
+  sourceTemplateId?: string | null
   title?: string
   bodyMarkdown?: string
 }): Promise<ReservationContract> {
@@ -58,7 +74,9 @@ export async function createContract(args: {
       reservation_id: args.reservationId,
       kennel_id: args.kennelId,
       created_by: args.createdBy,
-      title: args.title || 'Contrato de compraventa',
+      kind: args.kind,
+      source_template_id: args.sourceTemplateId ?? null,
+      title: args.title || 'Contrato',
       body_html: args.bodyMarkdown || '',
       status: 'draft',
     })

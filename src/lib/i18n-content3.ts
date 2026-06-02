@@ -173,6 +173,19 @@ export const contentTranslations3: Record<string, Record<string, string>> = {
 
   // ── contract-signed ──
   'ha firmado el contrato': 'has signed the contract',
+  'contrato para firmar': 'contract to sign',
+  'Contrato para firmar': 'Contract to sign',
+  'te ha enviado un contrato': 'has sent you a contract',
+  'te ha enviado un': 'has sent you a',
+  'contrato de reserva': 'reservation contract',
+  'contrato de compraventa y entrega': 'sale and delivery contract',
+  'para que lo revises y lo firmes en Genealogic.': 'to review and sign on Genealogic.',
+  'Para verlo y firmarlo necesitas una cuenta de Genealogic. Créala con este mismo email y tu reserva aparecerá automáticamente.':
+    'To view and sign it you need a Genealogic account. Create it with this same email and your reservation will appear automatically.',
+  'Ver y firmar el contrato': 'View and sign the contract',
+  'Crear cuenta y firmar': 'Create account and sign',
+  'Si no esperabas este contrato, puedes ignorar este email o escribir a hola@genealogic.io.':
+    'If you were not expecting this contract, you can ignore this email or write to hola@genealogic.io.',
   'Contrato firmado con': 'Contract signed with',
   'acaba de firmar electrónicamente el contrato de reserva. Tienes el PDF firmado disponible en tu panel.': 'has just electronically signed the reservation contract. The signed PDF is available in your dashboard.',
   'Acabas de firmar el contrato de reserva con': 'You have just signed the reservation contract with',

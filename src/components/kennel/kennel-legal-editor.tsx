@@ -24,6 +24,10 @@ interface LegalData {
   legal_id: string | null
   legal_address: string | null
   legal_email: string | null
+  legal_representative: string | null
+  legal_representative_id: string | null
+  sign_city: string | null
+  jurisdiction: string | null
 }
 
 export default function KennelLegalEditor({
@@ -41,6 +45,10 @@ export default function KennelLegalEditor({
     legal_id: legal.legal_id || '',
     legal_address: legal.legal_address || '',
     legal_email: legal.legal_email || '',
+    legal_representative: legal.legal_representative || '',
+    legal_representative_id: legal.legal_representative_id || '',
+    sign_city: legal.sign_city || '',
+    jurisdiction: legal.jurisdiction || '',
   })
   const [savingData, setSavingData] = useState(false)
   const [savedData, setSavedData] = useState(false)
@@ -56,6 +64,10 @@ export default function KennelLegalEditor({
         legal_id: form.legal_id.trim() || null,
         legal_address: form.legal_address.trim() || null,
         legal_email: form.legal_email.trim() || null,
+        legal_representative: form.legal_representative.trim() || null,
+        legal_representative_id: form.legal_representative_id.trim() || null,
+        sign_city: form.sign_city.trim() || null,
+        jurisdiction: form.jurisdiction.trim() || null,
       })
       .eq('id', kennelId)
     setSavingData(false)
@@ -139,6 +151,10 @@ export default function KennelLegalEditor({
           {field('legal_id', t('NIF / CIF / DNI'), t('Ej: B12345678'))}
           {field('legal_email', t('Email de contacto legal'), t('Ej: info@tucriadero.com'), t('Para ejercer derechos RGPD.'))}
           {field('legal_address', t('Domicilio'), t('Calle, código postal, localidad'))}
+          {field('legal_representative', t('Representante legal'), t('Ej: D. Manuel Curtó'), t('Persona física que firma los contratos en nombre del criadero.'))}
+          {field('legal_representative_id', t('DNI del representante'), t('Ej: 12345678Z'))}
+          {field('sign_city', t('Ciudad de firma'), t('Ej: La Laguna'), t('Localidad donde se firman los contratos.'))}
+          {field('jurisdiction', t('Jurisdicción (tribunales)'), t('Ej: Santa Cruz de Tenerife'), t('Juzgados y tribunales competentes en caso de controversia.'))}
         </div>
 
         {dataErr && (
