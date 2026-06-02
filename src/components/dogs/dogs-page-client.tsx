@@ -79,9 +79,13 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
   // Toggle handlers (optimistic update + rollback en error)
   const toggleDogField = async (dogId: string, field: 'is_reproductive' | 'show_in_kennel', newValue: boolean) => {
     const before = dogs
-    setDogs((prev) => prev.map((d) => (d.id === dogId ? { ...d, [field]: newValue } : d)))
+    // Al MARCAR reproductor, publicar el perro (is_public + show_in_kennel) para
+    // que aparezca en la web pública del criadero y en el selector de razas:
+    // esas vistas exigen visibilidad, no solo is_reproductive.
+    const extra = field === 'is_reproductive' && newValue ? { is_public: true, show_in_kennel: true } : {}
+    setDogs((prev) => prev.map((d) => (d.id === dogId ? { ...d, [field]: newValue, ...extra } : d)))
     const supabase = createClient()
-    const { error } = await supabase.from('dogs').update({ [field]: newValue }).eq('id', dogId)
+    const { error } = await supabase.from('dogs').update({ [field]: newValue, ...extra }).eq('id', dogId)
     if (error) {
       // Rollback en error
       setDogs(before)

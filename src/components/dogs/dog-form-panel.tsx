@@ -20,6 +20,7 @@ import HistoricoTab from './edit-tabs/historico-tab'
 import PedigreeEditor from '@/components/pedigree/pedigree-editor'
 import TransferPanel from '@/components/kennel/transfer-panel'
 import { useT } from '@/components/i18n/locale-provider'
+import { getDogParents } from '@/lib/dogs/get-dog-parents'
 
 interface DogFormPanelProps {
   open: boolean
@@ -140,6 +141,29 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           setShowInKennel(dog.show_in_kennel ?? true)
           setIsReproductive(dog.is_reproductive ?? false)
           if (dog.breed_id) filterByBreed(dog.breed_id, cRes.data || [], mRes.data || [], fRes.data || [])
+
+          // Asegurar que padre/madre ACTUALES estén en las listas: la carga
+          // limit(500) sobre 70k+ perros casi nunca los incluye, así que el
+          // padre asignado salía vacío. Se resuelven server-side (admin) para
+          // incluir ancestros importados/privados.
+          try {
+            const parents = await getDogParents(editDogId)
+            if (parents.length) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const merge = (arr: any[], add: any[]) => {
+                const seen = new Set(arr.map((x) => x.id))
+                return [...arr, ...add.filter((x) => !seen.has(x.id))]
+              }
+              const mp = parents.filter((p) => p.sex === 'male')
+              const fp = parents.filter((p) => p.sex === 'female')
+              setAllMaleDogs((prev) => merge(prev, mp))
+              setMaleDogs((prev) => merge(prev, mp))
+              setAllFemaleDogs((prev) => merge(prev, fp))
+              setFemaleDogs((prev) => merge(prev, fp))
+            }
+          } catch {
+            /* noop */
+          }
 
           if (dog.owner_id && dog.owner_id !== userId) {
             const { data: ownerProfile } = await supabase
