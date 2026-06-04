@@ -886,7 +886,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
   if (showPreview && editedMain) {
     return createPortal(
       <div className="fixed inset-0 z-[200] bg-canvas flex flex-col">
-        <div className="flex items-center justify-between px-6 py-3 border-b border-hairline bg-surface-card flex-shrink-0">
+        <div className="flex flex-col gap-2.5 px-4 sm:px-6 py-3 border-b border-hairline bg-surface-card flex-shrink-0 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             {/* Nombre EDITABLE: el usuario puede ajustarlo antes de importar —
                 p.ej. añadir su afijo ("Rebeca de La Esperanza"). Se guarda tal cual
@@ -900,7 +900,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
             />
             <p className="text-xs text-muted">{totalDogs} {t('perros')} · {totalDogs - swappedCount} {t('nuevos')} · {swappedCount} {t('existentes')} · <span className="text-muted/70">{t('puedes editar el nombre (añade tu afijo)')}</span></p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <select value={overrideBreed} onChange={e => setOverrideBreed(e.target.value)} className="bg-surface-card border border-hairline rounded-lg px-2 py-1.5 text-xs text-ink focus:border-ink focus:outline-none appearance-none cursor-pointer max-w-[160px]">
               <option value="">{t('Sin raza')}</option>
               {allBreeds.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
@@ -935,7 +935,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
           </div>
         </div>
         {/* Legend */}
-        <div className="flex items-center gap-5 px-6 py-2 border-b border-hairline bg-surface-card/50 flex-shrink-0">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 sm:px-6 py-2 border-b border-hairline bg-surface-card/50 flex-shrink-0">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded border-2 border-ink bg-surface-card flex items-center justify-center"><Link2 className="w-2 h-2 text-ink" /></div>
             <span className="text-[10px] text-muted">{t('Registrado — ya existe, su genealogia es la de la plataforma')}</span>
@@ -948,9 +948,9 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
             <div className="w-3 h-3 rounded border border-hairline bg-surface-card" />
             <span className="text-[10px] text-muted">{t('Nuevo — se creara como contribucion al importar')}</span>
           </div>
-          <span className="text-[10px] text-muted ml-auto">{t('Haz clic en cualquier perro para cambiarlo')}</span>
+          <span className="text-[10px] text-muted w-full sm:w-auto sm:ml-auto">{t('Toca cualquier perro para cambiarlo')}</span>
         </div>
-        {error && <div className="mx-6 mt-3 bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
+        {error && <div className="mx-4 sm:mx-6 mt-3 bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
         <div className="flex-1 overflow-auto relative" onClick={() => { setGenMenu(false); setZoomMenu(false) }}>
           <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}>
             <div className="min-w-max min-h-max py-6 px-4 pb-24">
