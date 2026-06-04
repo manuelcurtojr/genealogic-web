@@ -350,8 +350,13 @@ function HN({n,nm,g,mx,isRoot,si,rc}:{n:PN;nm:Map<string,PN>;g:number;mx:number;
     const fMidY=fr.top-wr.top+fr.height/2
     // Mother midpoint
     const mMidY=mr.top-wr.top+mr.height/2
-    // Card center Y
-    const cardMidY=(fMidY+mMidY)/2
+    // Centro REAL del card. El card está en top:50% del wrapper (centro del
+    // wrapper), NO en el punto medio de los hijos. Con subárboles de alturas
+    // distintas (un padre con muchos ancestros y una madre sin ninguno) el punto
+    // medio de los hijos ≠ centro del wrapper → la horizontal salía descolgada del
+    // card. Además el padre de este nodo apunta al centro del wrapper, así que ese
+    // es el punto de anclaje correcto. La vertical sigue cubriendo fMidY..mMidY.
+    const cardMidY=wr.height/2
 
     const next=[
       // Horizontal from card to fork
