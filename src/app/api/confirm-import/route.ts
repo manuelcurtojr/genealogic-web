@@ -1,4 +1,5 @@
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
+import { parseAffix, normalizeAffix } from '@/lib/affix'
 import { NextRequest, NextResponse } from 'next/server'
 
 interface ImportDog {
@@ -116,6 +117,43 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ── Reconocimiento de AFIJOS de criadero ──────────────────────────────
+    // Por cada perro detectamos el afijo en su nombre (parseAffix), buscamos un
+    // criadero EXISTENTE (nombre normalizado + solapamiento de raza para desempatar)
+    // y, si no hay, creamos uno "fantasma" sin dueño (service-role; RLS no deja
+    // crear kennels al cliente normal). Así el perro queda asignado a su criador de
+    // origen. Cache por afijo normalizado para no repetir trabajo ni duplicar.
+    const affixToKennel = new Map<string, string | null>()
+    let kennelsForMatch: { id: string; name: string; breed_ids: string[] | null }[] | null = null
+    const slugify = (s: string) => (normalizeAffix(s).replace(/\s+/g, '-').slice(0, 40) || 'criadero') + '-' + Math.random().toString(36).slice(2, 8)
+    const resolveKennelForDog = async (dogName: string, dogBreedId: string | null): Promise<string | null> => {
+      const { affix, format } = parseAffix(dogName)
+      if (!affix) return null
+      const key = normalizeAffix(affix)
+      if (!key) return null
+      if (affixToKennel.has(key)) return affixToKennel.get(key) ?? null
+      if (!kennelsForMatch) {
+        const { data } = await admin.from('kennels').select('id, name, breed_ids').limit(10000)
+        kennelsForMatch = (data as { id: string; name: string; breed_ids: string[] | null }[]) || []
+      }
+      const sameName = kennelsForMatch.filter((k) => normalizeAffix(k.name) === key)
+      let match = sameName[0] || null
+      if (sameName.length > 1 && dogBreedId) {
+        match = sameName.find((k) => Array.isArray(k.breed_ids) && k.breed_ids.includes(dogBreedId)) || sameName[0]
+      }
+      let kid: string | null = match?.id || null
+      if (!kid) {
+        const { data: ck } = await admin.from('kennels').insert({
+          name: affix, owner_id: null, affix_format: format || 'suffix_de',
+          breed_ids: dogBreedId ? [dogBreedId] : [], slug: slugify(affix),
+        }).select('id').single()
+        kid = ck?.id || null
+        if (kid) kennelsForMatch.push({ id: kid, name: affix, breed_ids: dogBreedId ? [dogBreedId] : [] })
+      }
+      affixToKennel.set(key, kid)
+      return kid
+    }
+
     // Create bottom-up (createdIds declarado al inicio de POST para limpiar en catch)
     for (const dog of allDogs) {
       if (nameToId.has(dog.name)) continue
@@ -131,6 +169,9 @@ export async function POST(request: NextRequest) {
       const breedId = isMainDog
         ? (findBreed(overrideBreed) || findBreed(dog.breed) || findBreed(mainDog.breed))
         : (findBreed(dog.breed) || findBreed(overrideBreed) || findBreed(mainDog.breed))
+      // Criadero de ORIGEN por afijo del nombre (reconoce/crea y asigna). Sin afijo,
+      // el principal cae al kennel que pasó el cliente; los ancestros van sin criadero.
+      const affixKennel = await resolveKennelForDog(dog.name, breedId)
       // NOTA: ya NO insertamos contributor_id — esa columna se eliminó (migración
       // 20260430, sistema de contribuciones retirado) y al mandarla PostgREST
       // rechazaba el INSERT de CADA ancestro → se importaba solo el perro
@@ -140,7 +181,7 @@ export async function POST(request: NextRequest) {
         name: formatName(dog.name), sex: dog.sex === 'Female' ? 'female' : 'male',
         registration: dog.registration || null, breed_id: breedId, color_id: findColor(dog.color),
         birth_date: parsedDate, father_id: fatherId, mother_id: motherId,
-        kennel_id: (isMainDog && !isAdmin) ? (kennelId || null) : null,
+        kennel_id: affixKennel || ((isMainDog && !isAdmin) ? (kennelId || null) : null),
         owner_id: (isMainDog && !isAdmin) ? safeUserId : null,
         is_public: true,
         thumbnail_url: importPhotos !== false ? (dog.photo_url || null) : null,
@@ -155,15 +196,18 @@ export async function POST(request: NextRequest) {
     for (const dog of allDogs) {
       const dogId = nameToId.get(dog.name)
       if (!dogId || createdIds.includes(dogId)) continue
-      const { data: existing } = await admin.from('dogs').select('father_id, mother_id, registration, breed_id, color_id, birth_date').eq('id', dogId).single()
+      const { data: existing } = await admin.from('dogs').select('father_id, mother_id, registration, breed_id, color_id, birth_date, kennel_id').eq('id', dogId).single()
       if (!existing) continue
       const updates: any = {}
       if (!existing.father_id && dog.father_name && nameToId.has(dog.father_name)) updates.father_id = nameToId.get(dog.father_name)
       if (!existing.mother_id && dog.mother_name && nameToId.has(dog.mother_name)) updates.mother_id = nameToId.get(dog.mother_name)
       if (!existing.registration && dog.registration) updates.registration = dog.registration
-      if (!existing.breed_id) {
-        const bid = findBreed(dog.breed) || findBreed(overrideBreed) || findBreed(mainDog.breed)
-        if (bid) updates.breed_id = bid
+      const enrichBreedId = findBreed(dog.breed) || findBreed(overrideBreed) || findBreed(mainDog.breed)
+      if (!existing.breed_id && enrichBreedId) updates.breed_id = enrichBreedId
+      // Rellena el criadero de origen (por afijo) si el perro existente no tenía.
+      if (!existing.kennel_id) {
+        const k = await resolveKennelForDog(dog.name, enrichBreedId)
+        if (k) updates.kennel_id = k
       }
       if (!existing.color_id && dog.color) updates.color_id = findColor(dog.color)
       if (!existing.birth_date) {

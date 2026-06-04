@@ -4,6 +4,7 @@ export const AFFIX_FORMATS = [
   { value: 'suffix_von', label: 'Nombre von Criadero', example: 'Pablo von Demo Kennels', preposition: 'von' },
   { value: 'suffix_du', label: 'Nombre du Criadero', example: 'Pablo du Demo Kennels', preposition: 'du' },
   { value: 'suffix_del', label: 'Nombre del Criadero', example: 'Pablo del Demo Kennels', preposition: 'del' },
+  { value: 'suffix_di', label: 'Nombre di Criadero', example: 'Pablo di Demo Kennels', preposition: 'di' },
   { value: 'suffix_vom', label: 'Nombre vom Criadero', example: 'Pablo vom Demo Kennels', preposition: 'vom' },
   { value: 'prefix_possessive', label: "Criadero's Nombre", example: "Demo Kennels's Pablo", preposition: "'s" },
   { value: 'prefix_direct', label: 'Criadero Nombre', example: 'Demo Kennels Pablo', preposition: '' },
@@ -20,6 +21,7 @@ export function formatDogName(puppyName: string, kennelName: string, format: Aff
     case 'suffix_von': return `${puppyName} von ${kennelName}`
     case 'suffix_du':  return `${puppyName} du ${kennelName}`
     case 'suffix_del': return `${puppyName} del ${kennelName}`
+    case 'suffix_di':  return `${puppyName} di ${kennelName}`
     case 'suffix_vom': return `${puppyName} vom ${kennelName}`
     case 'prefix_possessive': return `${kennelName}'s ${puppyName}`
     case 'prefix_direct': return `${kennelName} ${puppyName}`
@@ -59,4 +61,47 @@ export function extractPersonalName(fullName: string, kennelName?: string): stri
   }
 
   return name
+}
+
+// Conectores de sufijo reconocidos al PARSEAR (orden: variantes largas primero).
+// No se "limpia" el artículo (la/der/los) — se deja en el afijo para que al
+// re-aplicar con formatDogName el nombre vuelva idéntico ("de la Esperanza").
+const PARSE_PREPS: { re: RegExp; format: AffixFormat }[] = [
+  { re: /^(.+?)\s+(?:della|delle|degli|dei|del)\s+(.+)$/i, format: 'suffix_del' },
+  { re: /^(.+?)\s+vom\s+(.+)$/i, format: 'suffix_vom' },
+  { re: /^(.+?)\s+von\s+(.+)$/i, format: 'suffix_von' },
+  { re: /^(.+?)\s+du\s+(.+)$/i, format: 'suffix_du' },
+  { re: /^(.+?)\s+di\s+(.+)$/i, format: 'suffix_di' },
+  { re: /^(.+?)\s+de\s+(.+)$/i, format: 'suffix_de' },
+  { re: /^(.+?)\s+of\s+(.+)$/i, format: 'suffix_of' },
+]
+
+/**
+ * Separa el nombre de un perro en {base, affix, format} detectando el afijo del
+ * criadero. "Rebeca de Irema Curtó" → { base:'Rebeca', affix:'Irema Curtó',
+ * format:'suffix_de' }. "Nora d'Hen Tankos" → afijo "Hen Tankos". Si no hay
+ * afijo reconocible → { base:name, affix:null, format:null } (no se inventa nada).
+ * El `format` re-aplica idéntico con formatDogName (no se limpian artículos).
+ */
+export function parseAffix(fullName: string): { base: string; affix: string | null; format: AffixFormat | null } {
+  const name = (fullName || '').trim()
+  if (!name) return { base: name, affix: null, format: null }
+  // Conectores normales PRIMERO: así "Sirio de l'Argenteria" parte por "de"
+  // (afijo "l'Argenteria") y no por el "l'" del artículo.
+  for (const { re, format } of PARSE_PREPS) {
+    const m = name.match(re)
+    if (m && m[1].trim() && m[2].trim()) return { base: m[1].trim(), affix: m[2].trim(), format }
+  }
+  // Apóstrofo como conector: "X d'Hen Tankos", "X dell'Alta Tuscia".
+  const apos = name.match(/^(.+?)\s+(?:d|dell|l|all|degl|nell)['’]\s*(.+)$/i)
+  if (apos && apos[1].trim() && apos[2].trim()) return { base: apos[1].trim(), affix: apos[2].trim(), format: 'suffix_de' }
+  // Prefijo posesivo: "Kennel's Name".
+  const poss = name.match(/^(.+?)['’]s\s+(.+)$/i)
+  if (poss && poss[1].trim() && poss[2].trim()) return { base: poss[2].trim(), affix: poss[1].trim(), format: 'prefix_possessive' }
+  return { base: name, affix: null, format: null }
+}
+
+/** Normaliza un nombre de criadero/afijo para comparar (sin acentos ni signos). */
+export function normalizeAffix(s: string): string {
+  return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim()
 }
