@@ -61,8 +61,27 @@ export default async function DashboardPage() {
 
     const roles = await getEffectiveRoles(user.id)
 
-    // Rama owner: welcome + checklist propio
-    if (intent === 'owner') {
+    // Rama breeder (sin kennel todavía): CTA crear criadero
+    if (intent !== 'owner') {
+      return (
+        <WelcomeNoKennel
+          displayName={profile?.display_name || null}
+          isClient={roles.isClient}
+        />
+      )
+    }
+
+    // Rama owner. Si TODAVÍA no tiene perros (ni registrados por él ni
+    // transferidos por un criador tras una entrega), mostramos el welcome +
+    // checklist de onboarding. Pero si YA tiene al menos un perro, saltamos el
+    // onboarding y cae directo al escritorio normal de abajo, que ya tiene su
+    // variante de propietario ("Mis perros", "Operativa", etc.).
+    const { count: ownerDogCount } = await supabase
+      .from('dogs')
+      .select('id', { count: 'exact', head: true })
+      .eq('owner_id', user.id)
+
+    if (!ownerDogCount) {
       const ownerStatus = await getOwnerOnboardingStatus({
         userId: user.id,
         hasReservations: roles.isClient,
@@ -79,25 +98,22 @@ export default async function DashboardPage() {
         </div>
       )
     }
-
-    // Rama breeder (sin kennel todavía): CTA crear criadero
-    return (
-      <WelcomeNoKennel
-        displayName={profile?.display_name || null}
-        isClient={roles.isClient}
-      />
-    )
+    // owner CON perros → sin return: continúa al escritorio normal de abajo.
   }
 
   // CON KENNEL: cargar estado de onboarding en paralelo al resto
   const userPlan = (profile as { plan?: string })?.plan || 'free'
   const isPro = hasProAccess(userPlan)
-  const onboardingStatus = await getOnboardingStatus({
-    kennelId: kennel.id,
-    userId: user.id,
-    isPro,
-    isIos,
-  })
+  // El checklist de onboarding de CRIADOR solo aplica si hay kennel. Un owner
+  // con perros que cae aquí (sin kennel) no tiene checklist de criador.
+  const onboardingStatus = kennel
+    ? await getOnboardingStatus({
+        kennelId: kennel.id,
+        userId: user.id,
+        isPro,
+        isIos,
+      })
+    : null
 
   // Fecha máxima para vet reminders: 14 días desde hoy. Como esto es un
   // async Server Component con `force-dynamic`, Date.now() se evalúa una
@@ -140,7 +156,7 @@ export default async function DashboardPage() {
       {/* Onboarding checklist — solo si faltan pasos required y user no la
        *  ha dismisseado. La card decide visibilidad sola; aquí siempre la
        *  pasamos para que se hidrate con el localStorage. */}
-      {!onboardingStatus.requiredComplete && (
+      {kennel && onboardingStatus && !onboardingStatus.requiredComplete && (
         <OnboardingCard kennelId={kennel.id} status={onboardingStatus} />
       )}
 
