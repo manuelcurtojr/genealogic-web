@@ -170,31 +170,52 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Error guardando la solicitud' }, { status: 500 })
   }
 
-  // Emails best-effort, async — NO bloquean la respuesta al cliente. Se
-  // mandan DOS: uno al criador (notificación de lead) y otro al solicitante
-  // (confirmación de envío con su mensaje y reply-to directo al criador).
-  ;(async () => {
-    try {
-      const { data: ownerProfile } = await (admin as ReturnType<typeof createKennelAdminClient>)
-        .from('profiles')
-        .select('id, display_name, email')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .eq('id', (await (admin as any).from('kennels').select('owner_id').eq('id', kennel_id).single()).data?.owner_id || '')
-        .maybeSingle()
+  // ─── Emails (al criador + al solicitante) ──────────────────────────────
+  //
+  // IMPORTANTE: AWAITeados antes del return. La versión anterior usaba un
+  // IIFE `;(async () => {...})()` "fire-and-forget" para no bloquear la
+  // respuesta. Eso NO funciona en Vercel serverless: cuando la función
+  // devuelve la respuesta, el runtime mata el contexto y las promises
+  // pendientes se cancelan a media ejecución. Resultado: emails fantasma
+  // que aparecían en logs como "iniciados" pero nunca llegaban.
+  //
+  // Coste: +1-2s al submit del formulario. Aceptable y muy preferible a
+  // perder leads. Si en algún momento queremos volver a fire-and-forget,
+  // hay que usar `waitUntil()` de @vercel/functions o `after()` de Next 15.
+  //
+  // Cada envío va en su propio try/catch — un fallo en uno NO debe
+  // impedir que el otro salga, y NINGÚN fallo de email rompe el response.
+  try {
+    // Owner profile (para email al criador + reply-to del de confirmación)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: ownerRow } = await (admin as any)
+      .from('kennels')
+      .select('owner_id')
+      .eq('id', kennel_id)
+      .single()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: ownerProfile } = ownerRow?.owner_id
+      ? await (admin as any)
+          .from('profiles')
+          .select('id, display_name, email')
+          .eq('id', ownerRow.owner_id)
+          .maybeSingle()
+      : { data: null }
 
-      // Resolver nombre de raza si vino preference_breed_id en el form
-      // (no es campo canónico tipado — viene como string libre del form).
+    // Resolver nombre de raza si vino preference_breed_id en el form
+    // (no es campo canónico tipado — viene como string libre del form).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const breedId = (canonical as any).preference_breed_id || values?.preference_breed_id
+    let preferredBreed: string | null = null
+    if (breedId) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const breedId = (canonical as any).preference_breed_id || values?.preference_breed_id
-      let preferredBreed: string | null = null
-      if (breedId) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: b } = await (admin as any).from('breeds').select('name').eq('id', breedId).single()
-        preferredBreed = b?.name || null
-      }
+      const { data: b } = await (admin as any).from('breeds').select('name').eq('id', breedId).single()
+      preferredBreed = b?.name || null
+    }
 
-      // ─── Email 1: al criador (notificación de reserva nueva) ────────────
-      if (ownerProfile?.email) {
+    // ─── Email 1: al criador (notificación de solicitud nueva) ───────────
+    if (ownerProfile?.email) {
+      try {
         await sendTransactionalEmail(
           ownerProfile.email,
           {
@@ -215,15 +236,19 @@ export async function POST(request: NextRequest) {
             dedupeKey: `reservation_new:${insertedRes!.id}`,
           },
         )
+      } catch (err) {
+        console.error('[email] reservation_new failed', err)
       }
+    }
 
-      // ─── Email 2: al solicitante (confirmación) ─────────────────────────
-      // Reply-to = email del criador → si el solicitante responde, va directo
-      // a su bandeja, no a hola@genealogic.io. Conversación 1-a-1.
-      const applicantEmail = canonical.applicant_email
-        ? String(canonical.applicant_email).trim().toLowerCase()
-        : null
-      if (applicantEmail) {
+    // ─── Email 2: al solicitante (confirmación de envío) ─────────────────
+    // Reply-to = email del criador → si el solicitante responde, va directo
+    // a su bandeja, no a hola@genealogic.io. Conversación 1-a-1.
+    const applicantEmail = canonical.applicant_email
+      ? String(canonical.applicant_email).trim().toLowerCase()
+      : null
+    if (applicantEmail) {
+      try {
         await sendTransactionalEmail(
           applicantEmail,
           {
@@ -244,11 +269,15 @@ export async function POST(request: NextRequest) {
             replyTo: ownerProfile?.email || undefined,
           },
         )
+      } catch (err) {
+        console.error('[email] inquiry_received failed', err)
       }
-    } catch (err) {
-      console.error('[email] contact-kennel emails failed', err)
     }
-  })()
+  } catch (err) {
+    // Fallo en el lookup del owner — emails no salen pero la reserva ya
+    // está guardada. NO rompemos el response al cliente.
+    console.error('[email] contact-kennel owner lookup failed', err)
+  }
 
   return NextResponse.json({ ok: true, id: insertedRes?.id })
 }
