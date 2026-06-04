@@ -10,6 +10,7 @@ import {
   type SiteDog,
 } from '@/lib/kennel/data'
 import { SectionHeader } from '@/components/site/section-primitives'
+import { resizedThumb } from '@/lib/storage-image'
 import { isContactPageEnabled, resolveContactHref } from '@/lib/kennel/pages'
 import { HeroCtaButton } from '@/components/site/hero-cta-button'
 import { getKennelReproductiveBreedNames } from '@/lib/kennel/breeds'
@@ -31,8 +32,10 @@ function DogCard({ d, t }: { d: SiteDog; t: Tr }) {
         {d.thumbnail_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={d.thumbnail_url}
+            src={resizedThumb(d.thumbnail_url, 400)}
             alt={d.name}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-700"
           />
         ) : (

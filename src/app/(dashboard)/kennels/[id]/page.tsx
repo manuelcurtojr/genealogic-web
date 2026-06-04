@@ -157,8 +157,22 @@ export default async function KennelDetailPage({
   const dogs = sortDogsByPhotoQuality(allDogs as any[], homeData.photoCount)
   const litters = allLitters
   const forSale = dogs.filter((d: { is_for_sale: boolean | null }) => d.is_for_sale)
-  const reproductores = dogs.filter((d: { is_reproductive: boolean | null; is_for_sale: boolean | null }) => d.is_reproductive && !d.is_for_sale)
-  const criados = dogs.filter((d: { is_reproductive: boolean | null; is_for_sale: boolean | null }) => !d.is_reproductive && !d.is_for_sale)
+  // Reproductor DE ESTE criadero = lo POSEE (owner_id), o lo crió y nadie lo posee.
+  // `is_reproductive` es un flag GLOBAL del perro (lo marca su dueño actual), así
+  // que un macho criado aquí pero vendido a otro criadero (que lo usa de semental)
+  // NO es nuestro reproductor: para nosotros es "producido por". Caso real: Sirio
+  // de l'Argenteria sale como reproductor en El Nieto (lo posee) y como producido
+  // en L'argenteria (lo crió, ya no lo posee).
+  const ownerId = kennel.owner_id || null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const isReproOfThisKennel = (d: any) =>
+    !!d.is_reproductive && !d.is_for_sale && (d.owner_id === ownerId || (d.owner_id == null && d.kennel_id === kennel.id))
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const reproductores = dogs.filter((d: any) => isReproOfThisKennel(d))
+  // "Producidos/Criados por el criadero" = el resto de su catálogo no en venta
+  // (incluye los que crió y vendió, aunque otro criadero los use de reproductor).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const criados = dogs.filter((d: any) => !d.is_for_sale && !isReproOfThisKennel(d))
 
   const currencySymbol: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', MXN: '$', COP: '$', ARS: '$', CLP: '$' }
   const canonicalUrl = `https://genealogic.io/kennels/${kennel.slug || id}`

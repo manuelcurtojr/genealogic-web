@@ -63,9 +63,14 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
   const [dogsRes, littersRes] = await Promise.all([
     supabase
       .from('dogs')
-      .select('id, slug, name, sex, thumbnail_url, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, breed:breeds(name)')
-      .eq('kennel_id', kennel.id)
-      .or('show_in_kennel.is.null,show_in_kennel.eq.true')
+      .select('id, slug, name, sex, thumbnail_url, owner_id, kennel_id, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, breed:breeds(name)')
+      // (1) perros nacidos aquí visibles, o (2) reproductores que el dueño posee
+      // (semental comprado a otro criadero). Sin (2) no salían los externos.
+      .or(
+        kennel.owner_id
+          ? `and(kennel_id.eq.${kennel.id},or(show_in_kennel.is.null,show_in_kennel.eq.true)),and(owner_id.eq.${kennel.owner_id},is_reproductive.eq.true,show_in_kennel.eq.true)`
+          : `and(kennel_id.eq.${kennel.id},or(show_in_kennel.is.null,show_in_kennel.eq.true))`,
+      )
       .is('deceased_at', null)  // ocultar fallecidos del escaparate público
       .order('name'),
     supabase
@@ -118,10 +123,17 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const forSale = dogs.filter((d: any) => d.is_for_sale)
+  // Reproductor DE ESTE criadero = lo POSEE (o lo crió y nadie lo posee).
+  // is_reproductive es global: un macho criado aquí y vendido a otro criadero que
+  // lo usa de semental NO es nuestro reproductor → para nosotros es "producido".
+  const ownerId = kennel.owner_id || null
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const reproductores = dogs.filter((d: any) => d.is_reproductive && !d.is_for_sale)
+  const isReproOfThisKennel = (d: any) =>
+    !!d.is_reproductive && !d.is_for_sale && (d.owner_id === ownerId || (d.owner_id == null && d.kennel_id === kennel.id))
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const criados = dogs.filter((d: any) => !d.is_reproductive && !d.is_for_sale)
+  const reproductores = dogs.filter((d: any) => isReproOfThisKennel(d))
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const criados = dogs.filter((d: any) => !d.is_for_sale && !isReproOfThisKennel(d))
   const currencySymbol: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', MXN: '$', COP: '$', ARS: '$', CLP: '$' }
 
   // Bajo el dominio propio del criadero (web dinámica, p.ej. iremacurto.com),

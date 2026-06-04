@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Dog, Heart, Tag, Baby } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
+import { resizedThumb } from '@/lib/storage-image'
 import { useT } from '@/components/i18n/locale-provider'
 
 type TabKey = 'reproductores' | 'venta' | 'camadas' | 'criados'
@@ -157,14 +158,14 @@ function LitterGrid({ litters, emptyLabel }: { litters: any[]; emptyLabel: strin
             <div className="flex h-24 bg-surface-card">
               <div className="relative flex-1 overflow-hidden">
                 {father?.thumbnail_url
-                  ? <img src={father.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                  ? <img src={resizedThumb(father.thumbnail_url, 240)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   : <div className="flex h-full w-full items-center justify-center text-lg text-muted">♂</div>
                 }
               </div>
               <div className="w-px bg-hairline" />
               <div className="relative flex-1 overflow-hidden">
                 {mother?.thumbnail_url
-                  ? <img src={mother.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                  ? <img src={resizedThumb(mother.thumbnail_url, 240)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   : <div className="flex h-full w-full items-center justify-center text-lg text-muted">♀</div>
                 }
               </div>
@@ -207,7 +208,7 @@ function SaleDogCard({ dog, currencySymbol }: { dog: any; currencySymbol: Record
       </span>
       <div className="relative aspect-square overflow-hidden bg-surface-card">
         {dog.thumbnail_url
-          ? <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover" />
+          ? <img src={resizedThumb(dog.thumbnail_url, 400)} alt={dog.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
           : <div className="flex h-full w-full items-center justify-center"><Dog className="h-10 w-10 text-muted" /></div>
         }
         {dog.breed?.name && (
@@ -243,7 +244,7 @@ function PublicDogCard({ dog }: { dog: any }) {
     >
       <div className="relative aspect-square overflow-hidden bg-surface-card">
         {dog.thumbnail_url
-          ? <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover" />
+          ? <img src={resizedThumb(dog.thumbnail_url, 400)} alt={dog.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
           : <div className="flex h-full w-full items-center justify-center"><Dog className="h-10 w-10 text-muted" /></div>
         }
         {dog.breed?.name && (

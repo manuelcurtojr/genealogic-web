@@ -14,6 +14,7 @@ import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { Search, Filter, X, Tag, ChevronDown, Dog, Heart, Baby } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
+import { resizedThumb } from '@/lib/storage-image'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 import { useT } from '@/components/i18n/locale-provider'
 
@@ -400,7 +401,7 @@ function LitterGrid({ litters, emptyLabel }: { litters: LitterRow[]; emptyLabel:
               <div className="relative flex-1 overflow-hidden">
                 {father?.thumbnail_url
                   ? /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={father.thumbnail_url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    <img src={resizedThumb(father.thumbnail_url, 240)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   : <div className="flex h-full w-full items-center justify-center text-lg text-muted">♂</div>
                 }
               </div>
@@ -408,7 +409,7 @@ function LitterGrid({ litters, emptyLabel }: { litters: LitterRow[]; emptyLabel:
               <div className="relative flex-1 overflow-hidden">
                 {mother?.thumbnail_url
                   ? /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={mother.thumbnail_url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    <img src={resizedThumb(mother.thumbnail_url, 240)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   : <div className="flex h-full w-full items-center justify-center text-lg text-muted">♀</div>
                 }
               </div>
@@ -451,7 +452,7 @@ function SaleDogCard({ dog, currencySymbol, dogsToGenealogic }: { dog: DogRow; c
       <div className="relative aspect-square overflow-hidden bg-surface-card">
         {dog.thumbnail_url
           ? /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={dog.thumbnail_url} alt={dog.name} loading="lazy" className="h-full w-full object-cover" />
+            <img src={resizedThumb(dog.thumbnail_url, 400)} alt={dog.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
           : <div className="flex h-full w-full items-center justify-center"><Dog className="h-10 w-10 text-muted" /></div>
         }
         {dog.breed?.name && (
@@ -490,7 +491,7 @@ function PublicDogCard({ dog, dogsToGenealogic }: { dog: DogRow; dogsToGenealogi
       <div className="relative aspect-square overflow-hidden bg-surface-card">
         {dog.thumbnail_url
           ? /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={dog.thumbnail_url} alt={dog.name} loading="lazy" className="h-full w-full object-cover" />
+            <img src={resizedThumb(dog.thumbnail_url, 400)} alt={dog.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
           : <div className="flex h-full w-full items-center justify-center"><Dog className="h-10 w-10 text-muted" /></div>
         }
         {dog.breed?.name && (

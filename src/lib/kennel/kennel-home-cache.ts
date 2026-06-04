@@ -83,10 +83,18 @@ async function fetchKennelHomeData(
     ] = await Promise.all([
       supabase
         .from('dogs')
-        // Quitado dog_photos count — sort usa thumbnail_url binary check
-        .select('id, slug, name, sex, thumbnail_url, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, featured_in_home, breed:breeds(name)')
-        .eq('kennel_id', kennelId)
-        .or('show_in_kennel.is.null,show_in_kennel.eq.true')
+        // Quitado dog_photos count — sort usa thumbnail_url binary check.
+        // Incluimos DOS grupos: (1) perros NACIDOS aquí (kennel_id) visibles en la
+        // web, y (2) perros que el DUEÑO posee y ha marcado como reproductores
+        // (semental/hembra comprado a otro criadero). Sin el grupo (2), un
+        // reproductor externo (kennel_id = criadero de origen) no salía en la web
+        // pública —solo en /c—. Caso real: "Sirio de l'Argenteria" en El Nieto.
+        .select('id, slug, name, sex, thumbnail_url, owner_id, kennel_id, is_reproductive, is_for_sale, sale_price, sale_currency, sale_location, featured_in_home, breed:breeds(name)')
+        .or(
+          ownerId
+            ? `and(kennel_id.eq.${kennelId},or(show_in_kennel.is.null,show_in_kennel.eq.true)),and(owner_id.eq.${ownerId},is_reproductive.eq.true,show_in_kennel.eq.true)`
+            : `and(kennel_id.eq.${kennelId},or(show_in_kennel.is.null,show_in_kennel.eq.true))`,
+        )
         .order('name'),
       ownerId
         ? supabase

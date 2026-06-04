@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { getCurrentKennel } from '@/lib/kennel-context'
 import { getAvailablePuppiesByKennel, getUpcomingLittersByKennel } from '@/lib/kennel/data'
 import { SectionHeader } from '@/components/site/section-primitives'
+import { resizedThumb } from '@/lib/storage-image'
 import { HeroCtaButton } from '@/components/site/hero-cta-button'
 import { isContactPageEnabled, resolveContactHref } from '@/lib/kennel/pages'
 import { getKennelReproductiveBreedNames } from '@/lib/kennel/breeds'
@@ -234,7 +235,7 @@ export async function AvailablePuppiesStripSection(props: {
               <div className="relative aspect-square bg-surface-card overflow-hidden">
                 {d.thumbnail_url && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={d.thumbnail_url} alt={d.name} className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700" />
+                  <img src={resizedThumb(d.thumbnail_url, 400)} alt={d.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700" />
                 )}
                 <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wider text-ink shadow-sm">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
