@@ -106,7 +106,7 @@ export default function BlogSlider({ posts }: { posts: BlogCard[] }) {
         <div className="relative -mx-5 sm:-mx-6 lg:-mx-12">
           <div
             ref={trackRef}
-            className="flex gap-4 overflow-x-auto pl-[30px] pr-5 sm:px-6 lg:px-12 pb-2 snap-x snap-mandatory scroll-smooth scrollbar-hide"
+            className="flex gap-4 overflow-x-auto pl-[30px] pr-5 sm:px-6 lg:px-12 pb-2 snap-x snap-mandatory scroll-pl-[30px] sm:scroll-pl-0 scroll-smooth scrollbar-hide"
             style={{ scrollbarWidth: 'none' }}
           >
             {posts.map((p) => (

@@ -28,7 +28,7 @@ export default function MarketingFooter({ locale = 'es' }: { locale?: string }) 
           <div className="flex flex-col items-center gap-10 lg:flex-row lg:items-center lg:justify-center lg:gap-[50px]">
             {/* iPhone real con la CAPTURA real del login — IZQUIERDA en desktop,
                 con un destello/nebulosa naranja detrás. */}
-            <div className="relative flex flex-shrink-0 justify-center lg:order-1">
+            <div className="relative flex flex-shrink-0 justify-center order-2 lg:order-1">
               <div className="pointer-events-none absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FE6620]/35 blur-[90px]" />
               <div className="relative w-[200px] sm:w-[220px] rounded-[2.7rem] border-[8px] border-[#1c1c1e] bg-[#1c1c1e] shadow-[0_24px_60px_rgba(0,0,0,0.6)]">
                 {/* botones laterales */}
@@ -53,7 +53,7 @@ export default function MarketingFooter({ locale = 'es' }: { locale?: string }) 
             </div>
 
             {/* Texto + badge — DERECHA en desktop */}
-            <div className="flex max-w-[440px] flex-col items-center text-center lg:order-2 lg:items-start lg:text-left">
+            <div className="flex max-w-[440px] flex-col items-center text-center order-1 lg:order-2 lg:items-start lg:text-left">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
                 <Dog className="h-3 w-3" />
                 {t('App iOS')}

@@ -140,8 +140,8 @@ export default function DiscoveryHome({
                 className="mt-5 sm:mt-7 font-semibold text-ink"
                 style={{ fontSize: 'clamp(34px, 5.4vw, 64px)', lineHeight: 1.05, letterSpacing: '-0.045em' }}
               >
-                {t('La base de datos de perros más grande del mundo.')}{' '}
-                <span style={{ color: '#FE6620' }} className="font-medium">{t('La construyes tú.')}</span>
+                {t('La base de datos de perros más grande del mundo,')}{' '}
+                <span style={{ color: '#FE6620' }} className="font-medium">{t('la construyes tú.')}</span>
               </h1>
               <p className="mt-5 sm:mt-7 max-w-[580px] text-body" style={{ fontSize: 'clamp(15px, 1.4vw, 19px)', lineHeight: 1.5 }}>
                 {t('Mantén el perfil de tu perro al día —genealogía, vacunas, salud, premios— y a cambio tienes gratis las mejores herramientas para gestionarlo. Cada perro cuenta: así preservamos las razas.')}
@@ -293,7 +293,7 @@ export default function DiscoveryHome({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 relative">
+          <div className="flex flex-col gap-0 md:grid md:grid-cols-3 md:gap-6 relative">
             {/* Línea decorativa entre pasos en desktop */}
             <div className="hidden md:block absolute top-[44px] left-[15%] right-[15%] h-[2px] bg-gradient-to-r from-[#FE6620]/0 via-[#FE6620]/40 to-[#FE6620]/0 z-0" />
 
@@ -304,13 +304,20 @@ export default function DiscoveryHome({
               desc={t('Email + contraseña. Sin tarjeta, sin formularios largos. Empieza gratis y listo.')}
               cta={t('Gratis')}
             />
+            {/* Conector vertical entre pasos (solo móvil) */}
+            <div className="md:hidden flex pl-[45px] py-1.5" aria-hidden>
+              <div className="w-[2px] h-7 rounded-full bg-gradient-to-b from-[#FE6620]/45 to-[#FE6620]/15" />
+            </div>
             <StepCard
               n={2}
               icon={Upload}
               title={t('Añade a tu perro')}
-              desc={t('Manual, reclamándolo del catálogo o pegando la URL de Dogsfiles/K9data — nuestro importador con IA extrae toda la genealogía en 30 segundos.')}
+              desc={t('Manual, reclamándolo del catálogo o pegando la URL de otras plataformas — nuestro importador con IA extrae toda la genealogía en 30 segundos.')}
               cta={t('30s')}
             />
+            <div className="md:hidden flex pl-[45px] py-1.5" aria-hidden>
+              <div className="w-[2px] h-7 rounded-full bg-gradient-to-b from-[#FE6620]/45 to-[#FE6620]/15" />
+            </div>
             <StepCard
               n={3}
               icon={Rocket}
@@ -355,7 +362,7 @@ export default function DiscoveryHome({
                 {t('El árbol genealógico de tu perro, sin límite de generaciones.')}
               </h2>
               <p className="mt-4 text-[15px] sm:text-[16px] text-body leading-relaxed max-w-xl">
-                {t('Cada ancestro con su foto y un enlace al criadero de origen. Constrúyelo a mano, pega la URL de Dogsfiles, K9data o el club, o saca una foto a su pedigrí de papel: nuestro importador con IA extrae toda la línea en 30 segundos.')}
+                {t('Cada ancestro con su foto y un enlace al criadero de origen. Constrúyelo a mano, pega la URL de otras plataformas de genealogías, o saca una foto a su genealogía en papel: nuestro importador con IA extrae toda la línea en 30 segundos.')}
               </p>
               <ul className="mt-6 space-y-2.5 text-[14px] sm:text-[15px] text-body">
                 <li className="flex items-start gap-2.5">
@@ -372,7 +379,7 @@ export default function DiscoveryHome({
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Zap className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
-                  <span>{t('Importa la genealogía desde Dogsfiles, K9data y más con IA.')}</span>
+                  <span>{t('Importa la genealogía desde otras plataformas pegando una URL, con IA.')}</span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Search className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
@@ -427,7 +434,7 @@ export default function DiscoveryHome({
             <BentoCard href="/features#papeles" icon={ShieldCheck} title={t('Papeles siempre a mano')} desc={t('Cartilla, contrato y microchip digitalizados — incluso sin cobertura en el vet.')} color="#0ea5e9" />
             <BentoCard href="/features#reclamar" icon={Database} title={t('Reclama tu perro')} desc={t('¿Ya está importado de un club? Búscalo y reclámalo como tuyo.')} color="#06b6d4" />
             <BentoCard href="/features#compartir" icon={Globe} title={t('Su ficha es pública')} desc={t('Su ficha y su genealogía son públicas: enséñalas con un link y entran en el catálogo de Genealogic. Esa es la gracia.')} color="#3b82f6" />
-            <BentoCard href="/features#privacidad" icon={Heart} title={t('Tú lo gestionas')} desc={t('Controlas y editas todos sus datos. Lo sensible (cartilla, papeles) se queda contigo. Perros ilimitados, gratis.')} color="#10b981" />
+            <BentoCard href="/features#privacidad" className="col-span-2 lg:col-span-4" icon={Heart} title={t('Tú lo gestionas')} desc={t('Controlas y editas todos sus datos. Lo sensible (cartilla, papeles) se queda contigo. Perros ilimitados, gratis.')} color="#10b981" />
           </div>
         </div>
       </section>
@@ -560,7 +567,7 @@ export default function DiscoveryHome({
               </Link>
             </div>
 
-            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-5 pl-[30px] pr-5 sm:mx-0 sm:pl-0 sm:pr-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-pl-[30px] sm:scroll-pl-0 pb-2 -mx-5 pl-[30px] pr-5 sm:mx-0 sm:pl-0 sm:pr-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {featuredKennels.slice(0, 3).map((k) => (
                 <Link key={k.id} href={`/kennels/${k.slug || k.id}`} className="group relative overflow-hidden rounded-2xl border border-hairline bg-canvas hover:border-ink/30 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all snap-start shrink-0 w-[82%] sm:w-[46%] lg:w-[calc((100%-2rem)/3)]">
                   {/* Hero del perro estrella como cover */}
@@ -772,7 +779,13 @@ function BentoCard({
   const isLarge = size === 'large'
   const inner = (
     <>
-      <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity" style={{ background: color }} />
+      {/* Capa de recorte propia para el glow: overflow-hidden ESTÁTICO (sin
+          transform/transition) que sí recorta en iOS Safari, donde el
+          overflow-hidden de la card (compositada por transition-all) a veces
+          deja escapar el blur por fuera del borde redondeado. */}
+      <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+        <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity" style={{ background: color }} />
+      </div>
       <div className="relative flex flex-col h-full">
         <div className={`inline-flex items-center justify-center rounded-xl ${isLarge ? 'w-11 h-11 sm:w-12 sm:h-12' : 'w-9 h-9 sm:w-10 sm:h-10'}`} style={{ background: `${color}15`, color }}>
           <Icon className={isLarge ? 'w-5 h-5 sm:w-6 sm:h-6' : 'w-4 h-4 sm:w-5 sm:h-5'} />
