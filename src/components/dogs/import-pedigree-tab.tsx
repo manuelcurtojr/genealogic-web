@@ -126,6 +126,39 @@ async function makeThumbBlock(file: File): Promise<ImageBlock | null> {
   }
 }
 
+/** Normaliza un nombre de raza para comparar (minúsculas, sin acentos ni signos). */
+function normalizeBreed(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim()
+}
+
+/** Devuelve el NOMBRE EXACTO de la raza de BD que mejor casa con `detected`
+ *  (exacto normalizado → contiene), o '' si ninguna. Así el <select> la
+ *  pre-selecciona aunque la IA devuelva el nombre con otra grafía/acentos. */
+function matchBreed(detected: string | null | undefined, breeds: { name: string }[]): string {
+  if (!detected) return ''
+  const nd = normalizeBreed(detected)
+  if (!nd) return ''
+  const exact = breeds.find((b) => normalizeBreed(b.name) === nd)
+  if (exact) return exact.name
+  const partial = breeds.find((b) => { const nb = normalizeBreed(b.name); return nb.includes(nd) || nd.includes(nb) })
+  return partial ? partial.name : ''
+}
+
+/** Elige la raza del pedigrí: la del perro principal y, si no casa, la raza más
+ *  frecuente entre los ancestros (un pedigrí es casi siempre monorraza). */
+function pickBreed(mainBreed: string | null | undefined, ancestors: ImportDog[], breeds: { name: string }[]): string {
+  const main = matchBreed(mainBreed, breeds)
+  if (main) return main
+  const counts = new Map<string, number>()
+  for (const a of ancestors || []) {
+    const m = matchBreed(a.breed, breeds)
+    if (m) counts.set(m, (counts.get(m) || 0) + 1)
+  }
+  let best = '', bestN = 0
+  for (const [name, n] of counts) if (n > bestN) { best = name; bestN = n }
+  return best
+}
+
 export default function ImportPedigreeTab({ userId, kennelId, onImported, isAdmin }: Props) {
   const t = useT()
   const [url, setUrl] = useState('')
@@ -651,12 +684,17 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       setCurrentDraftId(draftId)
 
       // Load breeds for selector if not loaded
+      // Carga las razas (si no están) y PRE-SELECCIONA la raza detectada por la IA
+      // casándola con la BD (normalizado, sin acentos). Así no queda "Sin raza"; y
+      // si no hay match, el botón de importar se bloquea hasta que el usuario elija.
+      let breedsList = allBreeds
       if (!breedsLoaded) {
         const supabase2 = createClient()
         const { data: br } = await supabase2.from('breeds').select('id, name').order('name')
-        setAllBreeds(br || []); setBreedsLoaded(true)
+        breedsList = br || []
+        setAllBreeds(breedsList); setBreedsLoaded(true)
       }
-      setOverrideBreed(pedigreeData.main_dog.breed || '')
+      setOverrideBreed(pickBreed(pedigreeData.main_dog.breed, pedigreeData.ancestors || [], breedsList))
 
       setData(pedigreeData)
       setEditedMain(pedigreeData.main_dog)
@@ -789,12 +827,17 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       const draftId = await saveDraft(pedigreeData)
       setCurrentDraftId(draftId)
 
+      // Carga las razas (si no están) y PRE-SELECCIONA la raza detectada por la IA
+      // casándola con la BD (normalizado, sin acentos). Así no queda "Sin raza"; y
+      // si no hay match, el botón de importar se bloquea hasta que el usuario elija.
+      let breedsList = allBreeds
       if (!breedsLoaded) {
         const supabase2 = createClient()
         const { data: br } = await supabase2.from('breeds').select('id, name').order('name')
-        setAllBreeds(br || []); setBreedsLoaded(true)
+        breedsList = br || []
+        setAllBreeds(breedsList); setBreedsLoaded(true)
       }
-      setOverrideBreed(pedigreeData.main_dog.breed || '')
+      setOverrideBreed(pickBreed(pedigreeData.main_dog.breed, pedigreeData.ancestors || [], breedsList))
 
       setData(pedigreeData)
       setEditedMain(pedigreeData.main_dog)
@@ -901,8 +944,8 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
             <p className="text-xs text-muted">{totalDogs} {t('perros')} · {totalDogs - swappedCount} {t('nuevos')} · {swappedCount} {t('existentes')} · <span className="text-muted/70">{t('puedes editar el nombre (añade tu afijo)')}</span></p>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <select value={overrideBreed} onChange={e => setOverrideBreed(e.target.value)} className="bg-surface-card border border-hairline rounded-lg px-2 py-1.5 text-xs text-ink focus:border-ink focus:outline-none appearance-none cursor-pointer max-w-[160px]">
-              <option value="">{t('Sin raza')}</option>
+            <select value={overrideBreed} onChange={e => setOverrideBreed(e.target.value)} title={t('Raza del perro')} className={`bg-surface-card border rounded-lg px-2 py-1.5 text-xs text-ink focus:outline-none appearance-none cursor-pointer max-w-[160px] ${overrideBreed ? 'border-hairline focus:border-ink' : 'border-orange-400 ring-1 ring-orange-400/40'}`}>
+              <option value="">{t('Elige la raza…')}</option>
               {allBreeds.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
             </select>
             <label className="flex items-center gap-1.5 text-xs text-body cursor-pointer">
@@ -927,7 +970,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
                 </button>
               </div>
             ) : (
-              <button onClick={handleConfirm} disabled={importing} className="bg-ink text-on-primary hover:opacity-90 font-semibold px-6 py-2 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+              <button onClick={handleConfirm} disabled={importing || !overrideBreed} title={!overrideBreed ? t('Elige la raza para poder importar') : undefined} className="bg-ink text-on-primary hover:opacity-90 font-semibold px-6 py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm">
                 {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 {importing ? t('Importando...') : t('Importar genealogía')}
               </button>
@@ -951,6 +994,12 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
           <span className="text-[10px] text-muted w-full sm:w-auto sm:ml-auto">{t('Toca cualquier perro para cambiarlo')}</span>
         </div>
         {error && <div className="mx-4 sm:mx-6 mt-3 bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
+        {!overrideBreed && !imported && (
+          <div className="mx-4 sm:mx-6 mt-3 flex items-center gap-2 rounded-lg border border-orange-500/30 bg-orange-500/10 p-2.5 text-xs text-orange-500">
+            <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+            {t('Selecciona la raza (arriba) para poder importar — así ningún perro queda sin raza.')}
+          </div>
+        )}
         <div className="flex-1 overflow-auto relative" onClick={() => { setGenMenu(false); setZoomMenu(false) }}>
           <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}>
             <div className="min-w-max min-h-max py-6 px-4 pb-24">

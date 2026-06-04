@@ -64,7 +64,17 @@ export async function POST(request: NextRequest) {
     ])
     const breeds = breedsRes.data || []
     const colors = colorsRes.data || []
-    const findBreed = (name: string | null) => { if (!name) return null; return breeds.find(b => b.name.toLowerCase() === name.toLowerCase())?.id || null }
+    // Match de raza tolerante a acentos/grafía (NFD + strip) con fallback "contiene".
+    const normB = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim()
+    const findBreed = (name: string | null | undefined): string | null => {
+      if (!name) return null
+      const n = normB(name)
+      if (!n) return null
+      const exact = breeds.find(b => normB(b.name) === n)
+      if (exact) return exact.id
+      const partial = breeds.find(b => { const nb = normB(b.name); return nb.includes(n) || n.includes(nb) })
+      return partial?.id || null
+    }
     const findColor = (name: string | null) => { if (!name) return null; return colors.find(c => c.name.toLowerCase() === name.toLowerCase())?.id || null }
 
     const lowerWords = new Set(['de', 'del', 'of', 'von', 'du', 'vom', 'y', 'the', 'and', 'las', 'los', 'la', 'el'])
@@ -114,10 +124,13 @@ export async function POST(request: NextRequest) {
       const parsedDate = toPgDate(dog.birth_date)
 
       const isMainDog = dog.generation === 0
-      // El override del usuario MANDA para el perro principal (lo eligió a mano
-      // para corregir la raza); el resto usa su propia raza y, si no tiene,
-      // hereda el override o la raza del principal.
-      const breedName = (isMainDog && overrideBreed) ? overrideBreed : (dog.breed || overrideBreed || mainDog.breed)
+      // breed_id ROBUSTO: prueba varias candidatas y usa la PRIMERA que casa con la
+      // BD. Para el principal manda el override del usuario; para los ancestros, su
+      // propia raza y, si no casa, hereda el override / la del principal. Con
+      // override válido (obligatorio en el cliente) ningún perro queda sin raza.
+      const breedId = isMainDog
+        ? (findBreed(overrideBreed) || findBreed(dog.breed) || findBreed(mainDog.breed))
+        : (findBreed(dog.breed) || findBreed(overrideBreed) || findBreed(mainDog.breed))
       // NOTA: ya NO insertamos contributor_id — esa columna se eliminó (migración
       // 20260430, sistema de contribuciones retirado) y al mandarla PostgREST
       // rechazaba el INSERT de CADA ancestro → se importaba solo el perro
@@ -125,7 +138,7 @@ export async function POST(request: NextRequest) {
       // públicos sin dueño (owner_id null, is_public true).
       const { data: created, error: createErr } = await admin.from('dogs').insert({
         name: formatName(dog.name), sex: dog.sex === 'Female' ? 'female' : 'male',
-        registration: dog.registration || null, breed_id: findBreed(breedName), color_id: findColor(dog.color),
+        registration: dog.registration || null, breed_id: breedId, color_id: findColor(dog.color),
         birth_date: parsedDate, father_id: fatherId, mother_id: motherId,
         kennel_id: (isMainDog && !isAdmin) ? (kennelId || null) : null,
         owner_id: (isMainDog && !isAdmin) ? safeUserId : null,
@@ -148,7 +161,10 @@ export async function POST(request: NextRequest) {
       if (!existing.father_id && dog.father_name && nameToId.has(dog.father_name)) updates.father_id = nameToId.get(dog.father_name)
       if (!existing.mother_id && dog.mother_name && nameToId.has(dog.mother_name)) updates.mother_id = nameToId.get(dog.mother_name)
       if (!existing.registration && dog.registration) updates.registration = dog.registration
-      if (!existing.breed_id && dog.breed) updates.breed_id = findBreed(dog.breed)
+      if (!existing.breed_id) {
+        const bid = findBreed(dog.breed) || findBreed(overrideBreed) || findBreed(mainDog.breed)
+        if (bid) updates.breed_id = bid
+      }
       if (!existing.color_id && dog.color) updates.color_id = findColor(dog.color)
       if (!existing.birth_date) {
         const pd = toPgDate(dog.birth_date)
