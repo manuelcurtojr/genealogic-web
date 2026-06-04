@@ -15,11 +15,15 @@ import {
   intentToOnboardingIntent,
   type SignupIntentData,
 } from '@/lib/signup-intent'
+import { safeInternalPath } from '@/lib/safe-redirect'
 
 function RegisterInner() {
   const t = useT()
   const searchParams = useSearchParams()
   const intentData: SignupIntentData | null = parseIntentFromQuery(searchParams)
+  // ?redirect= interno (p.ej. desde el email de contrato → el contrato a firmar)
+  // tiene prioridad sobre el destino por intent. Validado contra open-redirect.
+  const redirectParam = safeInternalPath(searchParams.get('redirect'))
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -37,8 +41,8 @@ function RegisterInner() {
     if (intentData) saveIntentClient(intentData)
   }, [intentData])
 
-  // Destino post-signup (memoizable — depende de intent)
-  const destination = destinationForIntent(intentData)
+  // Destino post-signup: ?redirect= interno si vino, si no el destino por intent.
+  const destination = redirectParam || destinationForIntent(intentData)
 
   const handleGoogle = async () => {
     if (!acceptTerms) {
@@ -114,6 +118,11 @@ function RegisterInner() {
 
   // Branding contextual según intent — el header del shell cambia
   const shellProps = intentBranding(intentData, t)
+  // Link a "Iniciar sesión" conservando intent/plan/redirect (no perder destino).
+  const loginQuery = new URLSearchParams()
+  if (intentData) { loginQuery.set('intent', intentData.intent); loginQuery.set('plan', intentData.plan) }
+  if (redirectParam) loginQuery.set('redirect', redirectParam)
+  const loginHref = loginQuery.toString() ? `/login?${loginQuery.toString()}` : '/login'
 
   return (
     <AuthShell
@@ -123,7 +132,7 @@ function RegisterInner() {
       footer={{
         question: t('¿Ya tienes cuenta?'),
         label: t('Iniciar sesión'),
-        href: intentData ? `/login?intent=${intentData.intent}&plan=${intentData.plan}` : '/login',
+        href: loginHref,
       }}
       hideChrome={isIos}
     >

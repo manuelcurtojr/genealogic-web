@@ -1,16 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock } from 'lucide-react'
 import { AuthShell, Field, AuthSubmit, AuthError, GoogleButton, OAuthDivider } from '@/components/auth/auth-shell'
 import { usePlatform } from '@/components/platform/platform-provider'
 import { useT } from '@/components/i18n/locale-provider'
+import { safeInternalPath } from '@/lib/safe-redirect'
 
-export default function LoginPage() {
+function LoginInner() {
   const t = useT()
+  const searchParams = useSearchParams()
+  // ?redirect= interno (p.ej. desde el email de contrato) → destino post-login.
+  // Validado contra open-redirect; si no es seguro/no viene → /dashboard.
+  const redirectParam = safeInternalPath(searchParams.get('redirect'))
+  const destination = redirectParam || '/dashboard'
+  const intent = searchParams.get('intent')
+  const plan = searchParams.get('plan')
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -20,8 +29,7 @@ export default function LoginPage() {
   const { isIos } = usePlatform()
   // Google OAuth no funciona dentro de WKWebView (Google bloquea su
   // "disallowed_useragent"). Ocultamos el botón en iOS y dejamos solo
-  // email/password. La opción nativa (Sign in with Apple o Google Sign-In
-  // SDK) se implementará en una iteración posterior.
+  // email/password.
 
   const handleGoogle = async () => {
     setError('')
@@ -30,14 +38,13 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(destination)}`,
       },
     })
     if (error) {
       setError(error.message)
       setOauthLoading(false)
     }
-    // Si va bien, Supabase redirige al provider — no llegamos a la siguiente línea
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -58,8 +65,15 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/dashboard')
+    router.push(destination)
   }
+
+  // Link a "Crear cuenta" conservando intent/plan/redirect (no perder destino).
+  const registerQuery = new URLSearchParams()
+  if (intent) registerQuery.set('intent', intent)
+  if (plan) registerQuery.set('plan', plan)
+  if (redirectParam) registerQuery.set('redirect', redirectParam)
+  const registerHref = registerQuery.toString() ? `/register?${registerQuery.toString()}` : '/register'
 
   return (
     <AuthShell
@@ -69,7 +83,7 @@ export default function LoginPage() {
       footer={{
         question: t('¿No tienes cuenta?'),
         label: t('Crear cuenta'),
-        href: '/register',
+        href: registerHref,
       }}
       hideChrome={isIos}
     >
@@ -120,5 +134,14 @@ export default function LoginPage() {
         </div>
       </form>
     </AuthShell>
+  )
+}
+
+export default function LoginPage() {
+  // Suspense porque useSearchParams() es async-aware
+  return (
+    <Suspense fallback={null}>
+      <LoginInner />
+    </Suspense>
   )
 }

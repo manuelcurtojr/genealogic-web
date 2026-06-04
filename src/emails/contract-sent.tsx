@@ -27,9 +27,12 @@ export default function ContractSentEmail({
   const name = clientName?.split(' ')[0] || null
   const tipo = contractKind === 'delivery' ? t('contrato de compraventa y entrega') : t('contrato de reserva')
   const dest = `/mis-reservas/${reservationId}/contrato`
+  // intent=owner → el cliente que se registra para firmar entra con onboarding
+  // 100% de PROPIETARIO (salta el RoleSelector "¿eres criador o propietario?").
+  // redirect → tras autenticarse aterriza directo en el contrato.
   const url = hasAccount
-    ? `${SITE_URL}/login?redirect=${encodeURIComponent(dest)}`
-    : `${SITE_URL}/register?redirect=${encodeURIComponent(dest)}`
+    ? `${SITE_URL}/login?intent=owner&redirect=${encodeURIComponent(dest)}`
+    : `${SITE_URL}/register?intent=owner&redirect=${encodeURIComponent(dest)}`
   return (
     <EmailLayout preview={`${kennelName}: ${t('contrato para firmar')}`} locale={locale}>
       <Eyebrow>{t('Contrato para firmar')}</Eyebrow>
