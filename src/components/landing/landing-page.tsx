@@ -275,10 +275,10 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
               className="mt-5 sm:mt-7 max-w-[16ch] font-semibold text-ink"
               style={{ fontSize: 'clamp(32px, 6vw, 68px)', lineHeight: 1.02, letterSpacing: '-0.04em' }}
             >
-              {t('Tu criadero entero, en un solo sitio.')}
+              {t('Gestiona tu criadero. Vende más cachorros.')}
             </h1>
             <p className="mt-5 sm:mt-6 max-w-[520px] text-[16px] leading-[1.55] text-body sm:text-[18px]">
-              {t('Genealogías verificables, reservas, clientes, web propia y emailbot. Todo lo que necesita un criadero serio. Gratis para empezar.')}
+              {t('El panel donde llevas tus perros, camadas, genealogías, reservas y clientes de cabo a rabo. Se acabaron los Excels: más orden, mejor control de la cría y un escaparate que vende. Gratis para empezar.')}
             </p>
 
             {/* CTAs */}
@@ -286,8 +286,8 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
               <Button href="/register?intent=breeder&plan=free" variant="primary" size="lg">
                 {t('Empieza gratis')} <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button href="#producto" variant="secondary" size="lg">
-                {t('Cómo funciona')}
+              <Button href="/features" variant="secondary" size="lg">
+                {t('Explora el producto al detalle')} <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
             <p className="mt-4 text-[13px] text-muted">
@@ -399,17 +399,17 @@ function PedigreeShowcase({ cockerPhotos }: { cockerPhotos: string[] }) {
     <section id="producto" className="border-b border-hairline bg-surface-soft">
       <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-          {t('01 · Para todos')}
+          {t('01 · Profesionalidad')}
         </p>
         <div className="mt-3 grid gap-6 sm:gap-12 lg:grid-cols-[1fr_1fr] lg:items-end">
           <h2
             className="max-w-[20ch] font-semibold text-ink"
             style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
           >
-            {t('El registro público de perros con genealogía verificable.')}
+            {t('Genealogías que generan confianza, no dudas.')}
           </h2>
           <p className="max-w-[460px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
-            {t('Cada perro con árbol genealógico ilimitado, datos sanitarios, registro y trazabilidad. Importa genealogías existentes en segundos con IA. Comparte tu trabajo con un link público.')}
+            {t('Cada perro con árbol genealógico ilimitado, datos sanitarios, registro y trazabilidad real: verificada, no autodeclarada. Tus compradores ven el trabajo serio que hay detrás. Importa genealogías existentes en segundos con IA y compártelas con un link.')}
           </p>
         </div>
 
@@ -435,8 +435,8 @@ function PedigreeShowcase({ cockerPhotos }: { cockerPhotos: string[] }) {
           />
           <MiniFeature
             icon={<Globe className="h-5 w-5" />}
-            title={t('Indexable')}
-            desc={t('Tus perros aparecen en Google. Cada criadero con perfil público.')}
+            title={t('Te encuentran en Google')}
+            desc={t('Tus perros y tu criadero posicionan en Google. Más visibilidad, más consultas, sin pagar anuncios.')}
             color="emerald"
           />
         </div>
@@ -643,57 +643,67 @@ function FeaturesGrid() {
     <section id="criadores" className="border-b border-hairline">
       <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-          {t('02 · Tier Pro')}
+          {t('02 · Orden, control y ventas')}
         </p>
         <div className="mt-3 grid gap-6 sm:gap-12 lg:grid-cols-[1fr_1fr] lg:items-end">
           <h2
             className="max-w-[20ch] font-semibold text-ink"
             style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
           >
-            {t('Todo lo que un criadero serio necesita en un sitio.')}
+            {t('Tu criadero entero bajo control, en un panel.')}
           </h2>
           <p className="max-w-[460px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
-            {t('Pipeline de reservas con vistas Ventas/Clientes, hub de contactos, web pública con dominio propio, emailbot que responde a tus consultas con tu tono y tu biblioteca, newsletter, estadísticas. Y la genealogía verificada encima.')}
+            {t('Planifica cruces sin consanguinidad, no pierdas un solo lead, cobra señas y entregas, y deja que un emailbot responda por ti. Las herramientas que hacen tu criadero más profesional y te ahorran horas cada semana.')}
           </p>
         </div>
 
         <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <FeatureCard
             icon={<KanbanSquare className="h-5 w-5" />}
-            title={t('Pipeline de reservas')}
-            desc={t('Pipeline con vistas Ventas y Clientes, filtros por estado y panel de detalle con conversación, contacto y acciones. No más Excel.')}
+            title={t('Más ventas, cero leads perdidos')}
+            desc={t('Pipeline de reservas con vistas Ventas y Clientes. Cada interesado avanza de estado con un click, con su conversación y sus acciones. No más Excel.')}
             color="brand"
           />
           <FeatureCard
+            icon={<GitBranch className="h-5 w-5" />}
+            title={t('Control total de la cría')}
+            desc={t('COI calculado para planificar cruces sin consanguinidad, genotipos, simulador con predicción de color y calendario de celos y partos.')}
+            color="emerald"
+          />
+          <FeatureCard
             icon={<Heart className="h-5 w-5" />}
-            title={t('Hub de Contactos')}
-            desc={t('3 tabs: suscriptores newsletter, leads sin cerrar y clientes con reserva. Cada contacto con su historial completo.')}
+            title={t('Todos tus clientes en orden')}
+            desc={t('Hub de contactos: suscriptores, leads sin cerrar y clientes con reserva, cada uno con su historial completo. Contratos y pagos integrados.')}
             color="pink"
           />
           <FeatureCard
             icon={<Globe className="h-5 w-5" />}
-            title={t('Web pública con dominio propio')}
-            desc={t('Editor visual + 3 temas (Clásico, BMW M, Lamborghini). Conecta tu dominio en 5 minutos.')}
+            title={t('Tu escaparate que vende')}
+            desc={t('Web pública con tu propio dominio. Editor visual + 3 temas. Un escaparate serio que posiciona en Google y vende por ti.')}
             color="blue"
           />
           <FeatureCard
             icon={<Mail className="h-5 w-5" />}
-            title={t('Emailbot multi-modelo')}
-            desc={t('Elige tu modelo (Claude Sonnet, GPT-4o, Gemini, etc). Carga tu biblioteca con IA desde tu web o un PDF. Responde con tu tono.')}
+            title={t('Emailbot que responde 24/7')}
+            desc={t('Lee tu biblioteca y responde a tus leads con tu tono, de día y de noche. Tú revisas y envías, o lo dejas en auto-piloto.')}
             color="violet"
           />
           <FeatureCard
             icon={<Calendar className="h-5 w-5" />}
-            title={t('Newsletter segmentada')}
-            desc={t('4 audiencias auto-calculadas: todos, clientes, leads, los que recibieron cachorro. Editor con preview live.')}
+            title={t('Newsletter que fideliza')}
+            desc={t('4 audiencias auto-calculadas: todos, clientes, leads y los que recibieron cachorro. Mantén tu lista caliente sin esfuerzo.')}
             color="orange"
           />
-          <FeatureCard
-            icon={<TrendingUp className="h-5 w-5" />}
-            title={t('Analíticas first-party')}
-            desc={t('Visitas a tu web, países, dispositivos, perros más vistos. Sin Google Analytics, sin cookies, GDPR-safe.')}
-            color="emerald"
-          />
+        </div>
+
+        {/* CTA a la página de features completa */}
+        <div className="mt-10 sm:mt-14 flex flex-wrap items-center gap-4">
+          <Button href="/features" variant="primary" size="lg">
+            {t('Ver todo lo que incluye')} <ArrowRight className="h-4 w-4" />
+          </Button>
+          <p className="text-[14px] text-muted">
+            {t('Más de 30 herramientas para gestionar tu criadero de cabo a rabo.')}
+          </p>
         </div>
       </div>
     </section>
@@ -805,7 +815,7 @@ function PipelineShowcase() {
     <section className="border-b border-hairline bg-surface-soft">
       <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-          {t('03 · Pipeline')}
+          {t('03 · Más ventas')}
         </p>
         <h2
           className="mt-3 max-w-[24ch] font-semibold text-ink"
@@ -814,7 +824,7 @@ function PipelineShowcase() {
           {t('Tu próxima camada se reserva sola.')}
         </h2>
         <p className="mt-5 sm:mt-6 max-w-[600px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
-          {t('Cada lead con su estado (interesado, seña, asignado, contrato, entregado). Cambias estado con un click. Vistas separadas')}{' '}
+          {t('Un CRM hecho para criadores: ningún interesado se queda en visto. Cada lead con su estado (interesado, seña, asignado, contrato, entregado). Cambias estado con un click. Vistas separadas')}{' '}
           <strong>{t('Ventas')}</strong>{' '}
           {t('(leads abiertos) y')} <strong>{t('Clientes')}</strong> {t('(reservas cerradas). Panel lateral con detalle, conversación y acciones.')}
         </p>
@@ -1017,7 +1027,7 @@ function BotConversation() {
         <div className="grid gap-8 sm:gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
           <div>
             <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-              {t('04 · Emailbot')}
+              {t('04 · Atención 24/7')}
             </p>
             <h2
               className="mt-3 font-semibold text-ink"
@@ -1102,7 +1112,7 @@ function OnboardingSteps() {
     <section className="border-b border-hairline bg-surface-soft">
       <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-          {t('05 · Empezar')}
+          {t('05 · Ahorra tiempo')}
         </p>
         <h2
           className="mt-3 max-w-[18ch] font-semibold text-ink"
@@ -1160,9 +1170,9 @@ function Step({
 }
 
 // ─── Pricing ─────────────────────────────────────────────────────────────
-// Refleja la página /pricing. 4 planes: Owner / Kennel Free / Kennel Pro /
-// Kennel Enterprise. Modelo cerrado 2026-05-28
-// (memory/genealogic_pricing_model.md).
+// Landing de CRIADOR: solo planes de criadero (Kennel Free / Kennel Pro /
+// Kennel Enterprise). El plan Owner (propietario particular) vive en /pricing,
+// no aquí. Modelo cerrado 2026-05-28 (memory/genealogic_pricing_model.md).
 function Pricing() {
   const t = useT()
   return (
@@ -1178,35 +1188,17 @@ function Pricing() {
           {t('Empieza gratis. Sube cuando crezcas.')}
         </h2>
         <p className="mt-5 sm:mt-6 max-w-[560px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
-          {t('La genealogía es siempre completa, sin límite de generaciones, en todos los planes. Owner y Kennel Free son gratis para siempre, sin tarjeta. Kennel Pro y Kennel Enterprise añaden las herramientas profesionales.')}
+          {t('La genealogía es siempre completa, sin límite de generaciones, en todos los planes. La diferencia son las herramientas: Kennel Free es gratis para siempre y sin tarjeta; Kennel Pro y Kennel Enterprise añaden el control de la cría, las ventas y el escaparate profesional.')}
         </p>
 
-        <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Owner */}
-          <div className="rounded-[16px] border border-hairline bg-gradient-to-br from-blue-50 via-canvas to-sky-50 p-6 flex flex-col">
-            <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-blue-600">Owner</p>
-            <p className="mt-3 text-[32px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
-              0 € <span className="text-[13px] font-normal text-muted">/ {t('siempre')}</span>
-            </p>
-            <p className="mt-1 text-[13px] text-body">{t('3 perros · Documenta tu mascota')}</p>
-            <ul className="mt-5 space-y-2 text-[13.5px] flex-1">
-              <PricingRow>{t('Genealogía 10 generaciones')}</PricingRow>
-              <PricingRow>{t('Cartilla veterinaria + vacunas')}</PricingRow>
-              <PricingRow>{t('Galería ilimitada')}</PricingRow>
-              <PricingRow>{t('Importador IA')}</PricingRow>
-            </ul>
-            <Button href="/register?intent=owner" variant="secondary" className="mt-6 w-full">
-              {t('Empezar gratis')}
-            </Button>
-          </div>
-
+        <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {/* Kennel Free */}
           <div className="rounded-[16px] border border-hairline bg-gradient-to-br from-emerald-50 via-canvas to-green-50 p-6 flex flex-col">
             <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-emerald-600">Kennel Free</p>
             <p className="mt-3 text-[32px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
               0 € <span className="text-[13px] font-normal text-muted">/ {t('siempre')}</span>
             </p>
-            <p className="mt-1 text-[13px] text-body">{t('5 perros · Criador casero')}</p>
+            <p className="mt-1 text-[13px] text-body">{t('Perros ilimitados · Criador casero')}</p>
             <ul className="mt-5 space-y-2 text-[13.5px] flex-1">
               <PricingRow>{t('Camadas + calendario')}</PricingRow>
               <PricingRow>{t('Pipeline reservas')}</PricingRow>
@@ -1299,19 +1291,15 @@ function FAQ() {
     },
     {
       q: t('¿Owner vs Kennel Free — cuál elijo?'),
-      a: t('Owner es para propietarios particulares con hasta 3 perros (tu mascota o las que has tenido a lo largo de la vida — los fallecidos no cuentan en el límite). Kennel Free es para el criador casero o aficionado con hasta 5 perros, que ya maneja camadas, reservas, contratos y CRM de clientes. Ambos son gratis para siempre.'),
+      a: t('Owner es para propietarios particulares que documentan a sus perros (su mascota o las que han tenido a lo largo de la vida). Kennel Free es para el criador casero o aficionado que ya maneja camadas, reservas, contratos y CRM de clientes. Ambos son gratis para siempre y con perros ilimitados — la diferencia son las herramientas de criadero.'),
     },
     {
       q: t('¿Qué incluye Kennel Pro a 49€/mes?'),
-      a: t('Todo Kennel Free + perros ilimitados, COI Wright explicado (lista de ancestros duplicados, comparativa con la raza), simulador de cruces con COI proyectado y predicción de color por genotipos, pagos integrados con Stripe Connect (cobras señas y entregas), registro de visitas al criadero y soporte prioritario en menos de 24 horas.'),
+      a: t('Todo Kennel Free + COI Wright explicado (lista de ancestros duplicados, comparativa con la raza), simulador de cruces con COI proyectado y predicción de color por genotipos, pagos integrados con Stripe Connect (cobras señas y entregas), registro de visitas al criadero y soporte prioritario en menos de 24 horas.'),
     },
     {
       q: t('¿Y Kennel Enterprise a 149€/mes?'),
       a: t('Todo Kennel Pro + web pública del criadero con dominio propio, blog SEO, multi-idioma (ES/EN/IT/FR), emailbot con IA que responde a leads 24/7, newsletter integrada, multi-usuario para equipo, white-label, API REST e integraciones (Zapier). De momento se activa manualmente tras hablar con soporte (hola@genealogic.io) mientras testeamos el chatbot y la web — pasaremos a auto-servicio en próximas semanas.'),
-    },
-    {
-      q: t('¿Qué pasa con los cachorros y el límite de perros?'),
-      a: t('Los cachorros NO cuentan en el límite mientras son lactantes (menos de 90 días). Pasados los 90 días, si los marcas como "Disponible" o "Reservado" siguen sin contar. Solo cuentan cuando los decides quedarte como parte de tu plantilla (reproductor / cría / retirado). Si los transfieres a sus dueños, dejan de contarte. Los perros fallecidos tampoco cuentan — sigue en la ficha como In Memoriam.'),
     },
     {
       q: t('¿Qué pasa si paso de plan?'),

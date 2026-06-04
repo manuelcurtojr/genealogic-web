@@ -100,5 +100,89 @@ export const contentOwner: Record<string, Record<string, string>> = {
       "Their profile and family tree are kept; it's hidden from the public directory.",
     'aparecerá como «En memoria». Su ficha, genealogía, fotos y palmarés se conservan, pero se oculta del directorio público.':
       'will appear as "In memoriam." Their profile, family tree, photos and awards are kept, but it\'s hidden from the public directory.',
+
+    // ── Footer: banda descarga app iOS ───────────────────────────────
+    'La app de Genealogic, ya en iOS': 'The Genealogic app, now on iOS',
+    'La ficha y la cartilla veterinaria de tu perro en el bolsillo. La genealogía y los recordatorios, contigo siempre — y la cartilla disponible offline cuando el vet la pida.':
+      "Your dog's profile and vet record in your pocket. Their family tree and reminders, with you always — and the vet record available offline whenever the vet asks for it.",
+    'Descargar en la App Store': 'Download on the App Store',
+    'Descárgalo en la': 'Download on the',
+    'Vacunas al día': 'Vaccines up to date',
+    'Genealogía 5 gen': '5-gen family tree',
+
+    // ── Home: ÁRBOL GENEALÓGICO (sección destacada owner) ─────────────
+    'Su linaje': 'Their lineage',
+    'El árbol genealógico de tu perro, sin límite de generaciones.':
+      "Your dog's family tree, with no generation limit.",
+    'Cada ancestro con su foto y un enlace al criadero de origen. Constrúyelo a mano o pega la URL de Dogsfiles, K9data o el club: nuestro importador con IA extrae toda la línea en 30 segundos.':
+      'Every ancestor with their photo and a link to the kennel of origin. Build it by hand or paste a Dogsfiles, K9data or club URL: our AI importer pulls the whole line in 30 seconds.',
+    'Generaciones ilimitadas, navegables y exportables.':
+      'Unlimited generations, navigable and exportable.',
+    'Ancestros con foto y enlace a su criadero de origen.':
+      'Ancestors with a photo and a link to their kennel of origin.',
+    'Importa la genealogía desde Dogsfiles, K9data y más con IA.':
+      'Import the family tree from Dogsfiles, K9data and more with AI.',
+
+    // ── Home: PILARES DEL PROPIETARIO (bento) ────────────────────────
+    'Todo en un sitio': 'All in one place',
+    'Todo lo que tu perro necesita, en su ficha.':
+      "Everything your dog needs, on their profile.",
+    'Su ficha con galería': 'Their profile with a gallery',
+    'Fotos y vídeos, microchip, color, peso y alzada. Toda la identidad de tu perro en un perfil cuidado, tan completo como tú quieras.':
+      "Photos and videos, microchip, color, weight and height. Your dog's whole identity in a polished profile, as complete as you want it.",
+    'Salud con recordatorios': 'Health with reminders',
+    'Cartilla, vacunas, desparasitaciones y visitas — con avisos automáticos.':
+      'Health record, vaccines, deworming and visits — with automatic alerts.',
+    'Calendario del perro': "The dog's calendar",
+    'Sus citas y avisos, para que no se te pase ni una.':
+      "Their appointments and alerts, so you never miss one.",
+    'Sigue el estado, firma el contrato, paga y recibe sus documentos.':
+      'Track the status, sign the contract, pay, and receive their documents.',
+    'Papeles siempre a mano': 'Papers always on hand',
+    'Cartilla, contrato y microchip digitalizados — incluso sin cobertura en el vet.':
+      'Health record, contract and microchip digitized — even with no signal at the vet.',
+    '¿Ya está importado de un club? Búscalo y reclámalo como tuyo.':
+      'Already imported from a club? Find it and claim it as yours.',
+    'Compártelo con un link': 'Share it with a link',
+    'Un perfil público opcional para enseñar a tu perro. Privado por defecto.':
+      'An optional public profile to show off your dog. Private by default.',
+    'Tuyo y privado': 'Yours and private',
+    'Privado por defecto, exportable y borrable. Perros ilimitados, gratis.':
+      'Private by default, exportable and deletable. Unlimited dogs, free.',
+    'Ver todas las funciones': 'See all features',
+
+    // ── Home: TESTIMONIOS (propietario) ──────────────────────────────
+    'Lo dice gente real': 'Real people say it',
+    'Propietaria': 'Owner',
+    '«Tengo la cartilla de mi perro siempre en el móvil y los recordatorios de vacunas me avisan solos. En el vet ya no busco papeles.»':
+      '"I keep my dog\'s health record on my phone at all times, and the vaccine reminders alert me on their own. At the vet I no longer dig for papers."',
+    '«Pegué la URL de la genealogía que me pasó mi criador y se montó el árbol entero con fotos. Ahora comparto la ficha de mi perra con un link.»':
+      '"I pasted the genealogy URL my breeder gave me and the whole tree was built with photos. Now I share my dog\'s profile with a link."',
+
+    // ── Home: FAQ (propietario) ──────────────────────────────────────
+    '¿Mis datos son míos? ¿Es privado?': 'Is my data mine? Is it private?',
+    'Sí. Tu perro es privado por defecto: solo lo ves tú salvo que actives su perfil público. Servidores en la UE, RGPD por defecto e histórico completo de cambios. Exportas su ficha y genealogía a PDF en un click y, si te vas, te llevas tus datos o los borras.':
+      "Yes. Your dog is private by default: only you see it unless you turn on its public profile. Servers in the EU, GDPR by default, and a full change history. You export its profile and family tree to PDF in one click and, if you leave, you take your data with you or delete it.",
+    '¿Puedo tener varios perros?': 'Can I have several dogs?',
+    'Sí. Perros ilimitados, gratis para siempre. Documenta a todos los que tengas —y también a los que ya no están, con In Memoriam, que conserva su ficha y su genealogía intactas.':
+      'Yes. Unlimited dogs, free forever. Document all the ones you have —and the ones who are no longer here too, with In Memoriam, which keeps their profile and family tree intact.',
+    '¿Y los papeles de mi perro?': "And my dog's papers?",
+    'Digitalizas la cartilla, el contrato, el certificado y el microchip una vez y los tienes siempre a mano —incluso sin cobertura en el veterinario. Se acabó buscar carpetas.':
+      'You digitize the health record, the contract, the certificate and the microchip once and keep them on hand forever —even with no signal at the vet. No more digging through folders.',
+    '¿Tengo que montar la genealogía de mi perro yo mismo?':
+      "Do I have to build my dog's family tree myself?",
+    'No. Si está en Dogsfiles, Presadb, K9data, Working-dog o Breedarchive, pegas la URL y nuestro importador con IA extrae la genealogía completa en 30 segundos. También aceptamos PDFs y capturas de pantalla.':
+      'No. If it\'s on Dogsfiles, Presadb, K9data, Working-dog or Breedarchive, paste the URL and our AI importer pulls the full family tree in 30 seconds. We also accept PDFs and screenshots.',
+
+    // ── Home: mockup ficha (sin SEO) ─────────────────────────────────
+    'Ficha del perro': "Dog's profile",
+    'Comparte su ficha con un link': 'Share their profile with a link',
+
+    // ── /criadores: coherencia perros ilimitados ─────────────────────
+    'Perros ilimitados · Criador casero': 'Unlimited dogs · Hobby breeder',
+    'Owner es para propietarios particulares que documentan a sus perros (su mascota o las que han tenido a lo largo de la vida). Kennel Free es para el criador casero o aficionado que ya maneja camadas, reservas, contratos y CRM de clientes. Ambos son gratis para siempre y con perros ilimitados — la diferencia son las herramientas de criadero.':
+      "Owner is for individual owners documenting their dogs (their pet or the ones they've had over a lifetime). Kennel Free is for the hobby or amateur breeder who already handles litters, bookings, contracts and a client CRM. Both are free forever and with unlimited dogs — the difference is the kennel tools.",
+    'Todo Kennel Free + COI Wright explicado (lista de ancestros duplicados, comparativa con la raza), simulador de cruces con COI proyectado y predicción de color por genotipos, pagos integrados con Stripe Connect (cobras señas y entregas), registro de visitas al criadero y soporte prioritario en menos de 24 horas.':
+      'Everything in Kennel Free + explained Wright COI (list of duplicated ancestors, breed comparison), a mating simulator with projected COI and color prediction from genotypes, integrated payments with Stripe Connect (collect deposits and final payments), kennel visit tracking, and priority support in under 24 hours.',
   },
 }

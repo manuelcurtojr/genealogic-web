@@ -1,19 +1,23 @@
 /**
  * DiscoveryHome — home master de Genealogic.
  *
+ * Pensada OWNER-FIRST: todo lo que un propietario quiere y Genealogic ofrece.
+ * Lo de criador (COI, web/SEO) vive en la card de "dos caminos" como puerta a
+ * /criadores, no en las secciones owner-facing.
+ *
  * Estructura:
  *   1) Hero cinematográfico con mosaico + search + counters
- *   2) Dos caminos — criador vs propietario con CTAs simétricos y micro-prueba
+ *   2) Dos caminos — propietario (primario) vs criador (puerta a /criadores)
  *   3) Cómo funciona en 3 pasos
  *   4) Producto en acción — composición de 3 mockups vivos
- *   5) Bento de features con links a /features
- *   6) Catálogo de perros con filtros rápidos por raza
- *   7) Razas representadas (mosaico con counts reales)
- *   8) Criaderos destacados con perro estrella
- *   9) Testimonios reales
- *  10) Genealogic vs alternativas (comparativa)
- *  11) Pricing teaser
- *  12) FAQ corta
+ *   5) Árbol genealógico del perro (mockup destacado, generaciones ilimitadas)
+ *   6) Pilares del propietario (ficha+galería, salud, papeles, reservas…)
+ *   7) Catálogo de perros con filtros rápidos por raza
+ *   8) Razas representadas (mosaico con counts reales)
+ *   9) Criaderos destacados con perro estrella
+ *  10) Testimonios reales
+ *  11) Pricing teaser (gratis para propietario)
+ *  12) FAQ corta (orientada a propietario)
  *  13) Blog slider
  *  14) CTA final oscuro
  *
@@ -27,8 +31,8 @@ import Link from 'next/link'
 import {
   ArrowRight, Search, Store, Dog, GitBranch, ShieldCheck,
   Sparkles, Camera, Calendar, Globe, Mail, KanbanSquare,
-  Stethoscope, Heart, Zap, Database, Activity, Upload,
-  UserPlus, Rocket, CheckCircle2, X, ChevronDown,
+  Stethoscope, Heart, Zap, Database, Upload,
+  UserPlus, Rocket, CheckCircle2, ChevronDown,
   Quote, Star, Baby, Mars, Venus, Clock, Plus,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
@@ -36,6 +40,7 @@ import { useT } from '@/components/i18n/locale-provider'
 import LiveCounter from './live-counter'
 import BlogSlider from './blog-slider'
 import HeroMosaic from './hero-mosaic'
+import PedigreeTreeMockup from '@/components/marketing/pedigree-tree-mockup'
 
 type Dog = {
   id: string
@@ -325,42 +330,83 @@ export default function DiscoveryHome({
         </div>
       </section>
 
-      {/* ═════ BENTO MEJORADO ═════
-           Cada card ahora linkea a su slug en /features. Sustituidas las
-           cards genéricas por las 3 features killer: directorio 250k, COI
-           explicado, importador IA. */}
+      {/* ═════ ÁRBOL GENEALÓGICO ═════
+           Sección destacada owner-first: el árbol de generaciones ilimitadas,
+           con ancestros con foto y enlace al criadero de origen. Reusa el
+           mockup compartido con /criadores (PedigreeTreeMockup). Si hay fotos
+           reales de perros recientes, las pasa; si no, relleno determinista. */}
+      <section className="border-b border-hairline bg-surface-soft/40">
+        <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 lg:gap-14 items-center">
+            <div>
+              <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Su linaje')}</p>
+              <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
+                {t('El árbol genealógico de tu perro, sin límite de generaciones.')}
+              </h2>
+              <p className="mt-4 text-[15px] sm:text-[16px] text-body leading-relaxed max-w-xl">
+                {t('Cada ancestro con su foto y un enlace al criadero de origen. Constrúyelo a mano o pega la URL de Dogsfiles, K9data o el club: nuestro importador con IA extrae toda la línea en 30 segundos.')}
+              </p>
+              <ul className="mt-6 space-y-2.5 text-[14px] sm:text-[15px] text-body">
+                <li className="flex items-start gap-2.5">
+                  <GitBranch className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
+                  <span>{t('Generaciones ilimitadas, navegables y exportables.')}</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <Camera className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
+                  <span>{t('Ancestros con foto y enlace a su criadero de origen.')}</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <Zap className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
+                  <span>{t('Importa la genealogía desde Dogsfiles, K9data y más con IA.')}</span>
+                </li>
+              </ul>
+              <Link href="/register?intent=owner" className="mt-7 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[14px] font-bold hover:opacity-90 transition">
+                <Dog className="w-4 h-4" /> {t('Crear mi cuenta gratis')} <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <div>
+              <PedigreeTreeMockup photos={featuredDogs.slice(0, 7).map((d) => d.thumbnail_url).filter(Boolean) as string[]} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═════ PILARES DEL PROPIETARIO ═════
+           Rejilla de todo lo que un propietario tiene en Genealogic: ficha +
+           galería, salud con recordatorios, papeles offline, reservas con su
+           criador, reclamar su perro, compartir/privado, calendario,
+           In Memoriam y app móvil. Sin COI ni SEO — eso es de criador. */}
       <section className="border-b border-hairline bg-surface-soft/40">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="mb-8 sm:mb-10 max-w-3xl flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Una sola plataforma')}</p>
+              <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Todo en un sitio')}</p>
               <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-                {t('Todo lo que tu perro o criadero necesita.')}
+                {t('Todo lo que tu perro necesita, en su ficha.')}
               </h2>
             </div>
             <Link href="/features" className="inline-flex items-center gap-1.5 text-sm font-bold text-ink hover:opacity-80 whitespace-nowrap">
-              {t('Ver todo el catálogo')} <ArrowRight className="w-3.5 h-3.5" />
+              {t('Ver todas las funciones')} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 auto-rows-[160px] sm:auto-rows-[200px]">
             <BentoCard
-              href="/features#directorio"
+              href="/features#ficha"
               className="col-span-2 sm:row-span-2"
-              icon={Database}
-              title={`${counts.dogs.toLocaleString('es-ES')} ${t('perros indexados')}`}
-              desc={t('La mayor red internacional de genealogías caninas. Cuando subes un perro, se conecta automáticamente a su línea existente y aparece en Google.')}
+              icon={Camera}
+              title={t('Su ficha con galería')}
+              desc={t('Fotos y vídeos, microchip, color, peso y alzada. Toda la identidad de tu perro en un perfil cuidado, tan completo como tú quieras.')}
               color="#FE6620"
               size="large"
             />
-            <BentoCard href="/features#coi" icon={Activity} title={t('COI explicado')} desc={t('No solo el número. Te enseñamos qué ancestros lo causan y cómo se compara con la raza.')} color="#10b981" />
-            <BentoCard href="/features#importer" icon={Zap} title={t('Importador IA')} desc={t('URL de Dogsfiles o K9data → árbol completo en 30s.')} color="#a855f7" />
-            <BentoCard href="/features#pedigree" icon={GitBranch} title={t('Árbol interactivo')} desc={t('Sin límite de generaciones · navegable · exportable.')} color="#3b82f6" />
-            <BentoCard href="/features#reservas" icon={KanbanSquare} title={t('Pipeline de reservas')} desc={t('Tabla densa con tabs por estado.')} color="#8b5cf6" />
-            <BentoCard href="/features#emailbot" icon={Mail} title={t('Emailbot 24/7')} desc={t('Responde por ti con tu tono y aprende de tus FAQs.')} color="#06b6d4" />
-            <BentoCard href="/features#pages" icon={Globe} title={t('Web pública')} desc={t('Dominio propio, SEO técnico, sin tocar código.')} color="#0ea5e9" />
-            <BentoCard href="/features#cartilla" icon={Stethoscope} title={t('Cartilla veterinaria')} desc={t('Vacunas, displasia, DNA — con recordatorios.')} color="#34d399" />
-            <BentoCard href="/features#reproduccion" icon={Calendar} title={t('Calendario reproductivo')} desc={t('Celos, montas, partos en un gantt anual.')} color="#f59e0b" />
+            <BentoCard href="/features#cartilla" icon={Stethoscope} title={t('Salud con recordatorios')} desc={t('Cartilla, vacunas, desparasitaciones y visitas — con avisos automáticos.')} color="#34d399" />
+            <BentoCard href="/features#calendario" icon={Calendar} title={t('Calendario del perro')} desc={t('Sus citas y avisos, para que no se te pase ni una.')} color="#f59e0b" />
+            <BentoCard href="/features#reservas" icon={KanbanSquare} title={t('Reservas con tu criador')} desc={t('Sigue el estado, firma el contrato, paga y recibe sus documentos.')} color="#8b5cf6" />
+            <BentoCard href="/features#papeles" icon={ShieldCheck} title={t('Papeles siempre a mano')} desc={t('Cartilla, contrato y microchip digitalizados — incluso sin cobertura en el vet.')} color="#0ea5e9" />
+            <BentoCard href="/features#reclamar" icon={Database} title={t('Reclama tu perro')} desc={t('¿Ya está importado de un club? Búscalo y reclámalo como tuyo.')} color="#06b6d4" />
+            <BentoCard href="/features#compartir" icon={Globe} title={t('Compártelo con un link')} desc={t('Un perfil público opcional para enseñar a tu perro. Privado por defecto.')} color="#3b82f6" />
+            <BentoCard href="/features#privacidad" icon={Heart} title={t('Tuyo y privado')} desc={t('Privado por defecto, exportable y borrable. Perros ilimitados, gratis.')} color="#10b981" />
           </div>
         </div>
       </section>
@@ -546,7 +592,7 @@ export default function DiscoveryHome({
       <section className="border-b border-hairline bg-surface-soft/40">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="mb-10 max-w-2xl">
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Lo dicen criadores reales')}</p>
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Lo dice gente real')}</p>
             <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
               {t('Quien lo usa, lo recomienda.')}
             </h2>
@@ -577,45 +623,31 @@ export default function DiscoveryHome({
               <article className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 flex flex-col justify-between">
                 <Quote className="w-6 h-6 text-[#FE6620]/30" />
                 <p className="text-[14px] text-body leading-snug mt-3">
-                  {t('«Las reservas se gestionan solas desde que pasé del Excel al pipeline. La newsletter de cada camada me ahorra horas.»')}
+                  {t('«Tengo la cartilla de mi perro siempre en el móvil y los recordatorios de vacunas me avisan solos. En el vet ya no busco papeles.»')}
                 </p>
                 <div className="mt-4 flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[11px] font-bold">CR</div>
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[11px] font-bold">PR</div>
                   <div>
-                    <p className="text-[12px] font-bold text-ink">{t('Criadero Pro')}</p>
-                    <p className="text-[10.5px] text-muted">Spitz Alemán</p>
+                    <p className="text-[12px] font-bold text-ink">{t('Propietario')}</p>
+                    <p className="text-[10.5px] text-muted">Pastor Alemán</p>
                   </div>
                 </div>
               </article>
               <article className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 flex flex-col justify-between">
                 <Quote className="w-6 h-6 text-[#FE6620]/30" />
                 <p className="text-[14px] text-body leading-snug mt-3">
-                  {t('«Importé 200 genealogías de Dogsfiles en una tarde con la URL. El COI por camada me ha hecho replantear varios cruces.»')}
+                  {t('«Pegué la URL de la genealogía que me pasó mi criador y se montó el árbol entero con fotos. Ahora comparto la ficha de mi perra con un link.»')}
                 </p>
                 <div className="mt-4 flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-[11px] font-bold">PR</div>
                   <div>
-                    <p className="text-[12px] font-bold text-ink">{t('Criadero Pro')}</p>
+                    <p className="text-[12px] font-bold text-ink">{t('Propietaria')}</p>
                     <p className="text-[10.5px] text-muted">Galgo Italiano</p>
                   </div>
                 </div>
               </article>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ═════ COMPARATIVA vs ALTERNATIVAS ═════ */}
-      <section className="border-b border-hairline">
-        <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
-          <div className="mb-10 max-w-2xl">
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('¿Por qué Genealogic?')}</p>
-            <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-              {t('Lo que ya usas vs lo que podrías usar.')}
-            </h2>
-          </div>
-
-          <ComparisonTable />
         </div>
       </section>
 
@@ -667,20 +699,23 @@ export default function DiscoveryHome({
               <FaqItem q={t('¿Es realmente gratis?')}>
                 {t('Sí. Si eres propietario, Genealogic es gratis para siempre y sin límite de perros: ficha con galería, genealogía, cartilla veterinaria con recordatorios y reservas con tu criador. No pedimos tarjeta. Solo los criaderos que quieren el panel profesional (camadas, pipeline, web propia) pasan a un plan de pago en Genealogic Breeders.')}
               </FaqItem>
-              <FaqItem q={t('¿Mis datos son míos? ¿Puedo exportarlos?')}>
-                {t('Sí. Cualquier perro, contrato o cliente lo exportas a PDF/CSV en un click. Servidores en EU, RGPD por defecto, histórico completo de cambios por perro. Si te vas, te llevas tus datos.')}
+              <FaqItem q={t('¿Mis datos son míos? ¿Es privado?')}>
+                {t('Sí. Tu perro es privado por defecto: solo lo ves tú salvo que actives su perfil público. Servidores en la UE, RGPD por defecto e histórico completo de cambios. Exportas su ficha y genealogía a PDF en un click y, si te vas, te llevas tus datos o los borras.')}
+              </FaqItem>
+              <FaqItem q={t('¿Puedo tener varios perros?')}>
+                {t('Sí. Perros ilimitados, gratis para siempre. Documenta a todos los que tengas —y también a los que ya no están, con In Memoriam, que conserva su ficha y su genealogía intactas.')}
+              </FaqItem>
+              <FaqItem q={t('¿Y los papeles de mi perro?')}>
+                {t('Digitalizas la cartilla, el contrato, el certificado y el microchip una vez y los tienes siempre a mano —incluso sin cobertura en el veterinario. Se acabó buscar carpetas.')}
               </FaqItem>
               <FaqItem q={t('¿Funciona en móvil? ¿Hay app iOS?')}>
                 {t('Sí en ambos. La web está optimizada para móvil y hay app iOS en proceso. Todo lo que puedes hacer en el ordenador lo puedes hacer en el teléfono.')}
               </FaqItem>
-              <FaqItem q={t('¿Tengo que migrar todos mis perros yo mismo?')}>
-                {t('No. Si están en Dogsfiles, Presadb, K9data, Working-dog o Breedarchive, pegas la URL y nuestro importador con IA extrae la genealogía completa en 30 segundos. También aceptamos PDFs y capturas de pantalla.')}
+              <FaqItem q={t('¿Tengo que montar la genealogía de mi perro yo mismo?')}>
+                {t('No. Si está en Dogsfiles, Presadb, K9data, Working-dog o Breedarchive, pegas la URL y nuestro importador con IA extrae la genealogía completa en 30 segundos. También aceptamos PDFs y capturas de pantalla.')}
               </FaqItem>
               <FaqItem q={t('¿Puedo reclamar un perro que ya está en el catálogo?')}>
                 {t('Sí. Hemos importado miles de perros de clubes y federaciones. Búscalo por nombre, microchip o afijo, pulsa «Reclamar» y sube tus papeles. Un humano lo revisa en menos de 72h y te transfiere la titularidad.')}
-              </FaqItem>
-              <FaqItem q={t('¿Cuántas generaciones soporta el árbol?')}>
-                {t('Sin límite de generaciones por perro. El COI (coeficiente de consanguinidad) se calcula sobre toda la profundidad disponible, no las 4-5 típicas de los certificados de los clubs.')}
               </FaqItem>
             </div>
           </div>
@@ -856,7 +891,7 @@ function ProductShowcase({ featuredDogs, showcaseDog }: { featuredDogs: Dog[]; s
  *
  * Usa Nestor de Irema Curtó (showcaseDog) como perro insignia: galería
  * rotatoria con cross-fade entre sus fotos reales, chips de identidad,
- * padres reales (Leon × Quina), badge COI y badge sexo en overlay.
+ * padres reales (Leon × Quina), badge de salud y badge sexo en overlay.
  * Si showcaseDog viene null, fallback al primer perro con foto.
  *
  * El cross-fade es un detalle pequeño pero importante: comunica que el
@@ -924,9 +959,9 @@ function DogProfileMockup({ showcaseDog, fallbackDog }: { showcaseDog: ShowcaseD
         ) : (
           <div className="w-full h-full flex items-center justify-center"><Dog className="w-14 h-14 text-muted/30" /></div>
         )}
-        {/* Badge COI en overlay */}
+        {/* Badge salud en overlay */}
         <span className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full bg-canvas/95 backdrop-blur-md px-2 py-0.5 text-[9px] font-bold text-emerald-700 shadow-sm z-10">
-          <Activity className="w-2.5 h-2.5" /> COI 4.2%
+          <Stethoscope className="w-2.5 h-2.5" /> {t('Vacunas al día')}
         </span>
         {/* Badge sexo en overlay bottom-left */}
         <span className={`absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full ${isMale ? 'bg-blue-500' : 'bg-pink-500'} text-white px-2 py-0.5 text-[9px] font-bold z-10`}>
@@ -1003,8 +1038,8 @@ function DogProfileMockup({ showcaseDog, fallbackDog }: { showcaseDog: ShowcaseD
       )}
 
       <div className="mt-auto px-3 pb-3 pt-1 border-t border-hairline bg-surface-soft/40">
-        <p className="text-[11px] font-semibold text-ink">{t('Ficha pública del perro')}</p>
-        <p className="text-[10px] text-muted">{t('URL compartible · indexable en Google')}</p>
+        <p className="text-[11px] font-semibold text-ink">{t('Ficha del perro')}</p>
+        <p className="text-[10px] text-muted">{t('Comparte su ficha con un link')}</p>
       </div>
     </div>
   )
@@ -1017,62 +1052,6 @@ function ProfileChip({ icon: Icon, label }: { icon?: React.ElementType; label: s
       {label}
     </span>
   )
-}
-
-/**
- * ComparisonTable — Excel · Facebook · Genealogic. Comparativa honesta
- * de qué resuelve cada herramienta. Las filas son las "objeciones" típicas
- * de un criador que aún usa hojas de cálculo.
- */
-function ComparisonTable() {
-  const t = useT()
-  type CellValue = boolean | 'partial'
-  const rows: Array<{ feature: string; excel: CellValue; facebook: CellValue; genealogic: CellValue }> = [
-    { feature: t('Genealogía interactiva con COI'), excel: false, facebook: false, genealogic: true },
-    { feature: t('Búsqueda por línea / ancestro común'), excel: false, facebook: false, genealogic: true },
-    { feature: t('Pipeline de reservas'), excel: 'partial', facebook: false, genealogic: true },
-    { feature: t('Web pública con dominio propio'), excel: false, facebook: 'partial', genealogic: true },
-    { feature: t('Contratos y pagos integrados'), excel: false, facebook: false, genealogic: true },
-    { feature: t('Cartilla veterinaria con recordatorios'), excel: 'partial', facebook: false, genealogic: true },
-    { feature: t('SEO en Google (perros indexables)'), excel: false, facebook: false, genealogic: true },
-    { feature: t('Acceso desde móvil'), excel: 'partial', facebook: true, genealogic: true },
-    { feature: t('Tus datos son tuyos (exportables)'), excel: true, facebook: false, genealogic: true },
-  ]
-  return (
-    <div className="overflow-x-auto rounded-2xl border border-hairline bg-canvas">
-      <table className="w-full min-w-[640px] text-[13px]">
-        <thead>
-          <tr className="border-b border-hairline bg-surface-soft/50">
-            <th className="text-left px-4 py-4 font-semibold text-muted text-[11px] uppercase tracking-wider">{t('Lo que necesitas')}</th>
-            <th className="text-center px-4 py-4 font-semibold text-muted text-[11px] uppercase tracking-wider">{t('Excel / WhatsApp')}</th>
-            <th className="text-center px-4 py-4 font-semibold text-muted text-[11px] uppercase tracking-wider">{t('Grupo Facebook')}</th>
-            <th className="text-center px-4 py-4 font-bold text-ink text-[12px] uppercase tracking-wider bg-[#FE6620]/5">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#FE6620]" /> Genealogic
-              </span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={i} className="border-b border-hairline last:border-0 hover:bg-surface-soft/30">
-              <td className="px-4 py-3 text-ink font-medium">{r.feature}</td>
-              <td className="px-4 py-3 text-center"><CompareCell value={r.excel} /></td>
-              <td className="px-4 py-3 text-center"><CompareCell value={r.facebook} /></td>
-              <td className="px-4 py-3 text-center bg-[#FE6620]/5"><CompareCell value={r.genealogic} /></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-function CompareCell({ value }: { value: boolean | 'partial' }) {
-  const t = useT()
-  if (value === true) return <CheckCircle2 className="w-5 h-5 text-emerald-600 inline" />
-  if (value === 'partial') return <span className="text-[11px] text-amber-700 font-semibold">{t('A medias')}</span>
-  return <X className="w-4 h-4 text-rose-400 inline" />
 }
 
 function FaqItem({ q, children }: { q: string; children: React.ReactNode }) {
