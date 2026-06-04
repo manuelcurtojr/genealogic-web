@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 interface ImportDog {
@@ -47,6 +47,11 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    // Las escrituras van con SERVICE-ROLE: la importación crea ancestros PÚBLICOS
+    // sin dueño (owner_id null) y RLS solo deja a un usuario crear/borrar perros
+    // con owner_id = él mismo. La auth ya está verificada arriba y todo se sigue
+    // scopeando a `user.id` (safeUserId), así que es seguro.
+    const admin = createKennelAdminClient()
 
     const { mainDog, ancestors, userId, kennelId, swaps, importPhotos, isAdmin, overrideBreed } = await request.json()
     if (!mainDog) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
@@ -54,8 +59,8 @@ export async function POST(request: NextRequest) {
     // Ensure userId matches authenticated user
     const safeUserId = user.id
     const [breedsRes, colorsRes] = await Promise.all([
-      supabase.from('breeds').select('id, name'),
-      supabase.from('colors').select('id, name'),
+      admin.from('breeds').select('id, name'),
+      admin.from('colors').select('id, name'),
     ])
     const breeds = breedsRes.data || []
     const colors = colorsRes.data || []
@@ -91,10 +96,12 @@ export async function POST(request: NextRequest) {
     // el sistema de contribuciones —migración 20260430— y rompía esta query.)
     for (const dog of allDogs) {
       if (nameToId.has(dog.name)) continue
-      const { data: owned } = await supabase.from('dogs').select('id').eq('owner_id', safeUserId).ilike('name', dog.name).limit(1)
+      const { data: owned } = await admin.from('dogs').select('id').eq('owner_id', safeUserId).ilike('name', dog.name).limit(1)
       if (owned?.length) { nameToId.set(dog.name, owned[0].id); continue }
       if (dog.registration) {
-        const { data: regMatch } = await supabase.from('dogs').select('id').eq('registration', dog.registration).limit(1)
+        // Solo enlaza con perros PÚBLICOS por registro (admin ve todos; no queremos
+        // enlazar con un perro privado de otro usuario que coincida en nº de registro).
+        const { data: regMatch } = await admin.from('dogs').select('id').eq('registration', dog.registration).eq('is_public', true).limit(1)
         if (regMatch?.length) nameToId.set(dog.name, regMatch[0].id)
       }
     }
@@ -116,7 +123,7 @@ export async function POST(request: NextRequest) {
       // rechazaba el INSERT de CADA ancestro → se importaba solo el perro
       // principal y se perdía toda la genealogía. Los ancestros quedan como perros
       // públicos sin dueño (owner_id null, is_public true).
-      const { data: created, error: createErr } = await supabase.from('dogs').insert({
+      const { data: created, error: createErr } = await admin.from('dogs').insert({
         name: formatName(dog.name), sex: dog.sex === 'Female' ? 'female' : 'male',
         registration: dog.registration || null, breed_id: findBreed(breedName), color_id: findColor(dog.color),
         birth_date: parsedDate, father_id: fatherId, mother_id: motherId,
@@ -135,7 +142,7 @@ export async function POST(request: NextRequest) {
     for (const dog of allDogs) {
       const dogId = nameToId.get(dog.name)
       if (!dogId || createdIds.includes(dogId)) continue
-      const { data: existing } = await supabase.from('dogs').select('father_id, mother_id, registration, breed_id, color_id, birth_date').eq('id', dogId).single()
+      const { data: existing } = await admin.from('dogs').select('father_id, mother_id, registration, breed_id, color_id, birth_date').eq('id', dogId).single()
       if (!existing) continue
       const updates: any = {}
       if (!existing.father_id && dog.father_name && nameToId.has(dog.father_name)) updates.father_id = nameToId.get(dog.father_name)
@@ -147,7 +154,7 @@ export async function POST(request: NextRequest) {
         const pd = toPgDate(dog.birth_date)
         if (pd) updates.birth_date = pd
       }
-      if (Object.keys(updates).length > 0) await supabase.from('dogs').update(updates).eq('id', dogId)
+      if (Object.keys(updates).length > 0) await admin.from('dogs').update(updates).eq('id', dogId)
     }
 
     const mainDogId = nameToId.get(mainDog.name)
@@ -155,7 +162,7 @@ export async function POST(request: NextRequest) {
     // constraint…), limpiamos los ancestros ya creados para no dejar huérfanos
     // y avisamos, en vez de devolver un "éxito" sin perro principal.
     if (!mainDogId) {
-      if (createdIds.length) { try { await supabase.from('dogs').delete().in('id', createdIds) } catch {} }
+      if (createdIds.length) { try { await admin.from('dogs').delete().in('id', createdIds) } catch {} }
       return NextResponse.json({ error: 'No se pudo crear el perro principal. Revisa que los datos sean válidos e inténtalo de nuevo.' }, { status: 500 })
     }
     const importId = `import_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
@@ -164,7 +171,7 @@ export async function POST(request: NextRequest) {
     // el import sigue siendo válido (solo se pierde la red de "deshacer"/aviso).
     try {
       const notifTitle = `Genealogía importada: ${mainDog.name}`
-      await supabase.from('notifications').insert({
+      await admin.from('notifications').insert({
         user_id: safeUserId, type: 'import',
         title: notifTitle,
         message: JSON.stringify({ importId, createdIds, mainDogId }),
@@ -181,7 +188,7 @@ export async function POST(request: NextRequest) {
     // Limpieza: si algo lanzó a mitad de la creación, borra los perros ya creados
     // para no dejar huérfanos sin registro de import (no se podrían deshacer).
     if (createdIds.length) {
-      try { const sb = await createClient(); await sb.from('dogs').delete().in('id', createdIds) } catch {}
+      try { await createKennelAdminClient().from('dogs').delete().in('id', createdIds) } catch {}
     }
     return NextResponse.json({ error: err.message || 'Error al importar' }, { status: 500 })
   }
@@ -193,12 +200,16 @@ export async function DELETE(request: NextRequest) {
     const supabase = await createClient()
     const { data: { user: authUser } } = await supabase.auth.getUser()
     if (!authUser) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    // Service-role para borrar: los ancestros importados son públicos sin dueño y
+    // RLS solo deja borrar perros con owner_id = el usuario. Todo se sigue
+    // validando contra safeUserId + las comprobaciones de seguridad de abajo.
+    const admin = createKennelAdminClient()
 
     const { importId } = await request.json()
     if (!importId) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
 
     const safeUserId = authUser.id
-    const { data: notifs } = await supabase.from('notifications').select('id, message, created_at').eq('user_id', safeUserId).eq('type', 'import').order('created_at', { ascending: false }).limit(50)
+    const { data: notifs } = await admin.from('notifications').select('id, message, created_at').eq('user_id', safeUserId).eq('type', 'import').order('created_at', { ascending: false }).limit(50)
 
     let createdIds: string[] = []
     let notifId: string | null = null
@@ -233,17 +244,17 @@ export async function DELETE(request: NextRequest) {
     // Safety: check each dog for external references before deleting
     for (const id of createdIds) {
       let blocked = false
-      const { data: dog } = await supabase.from('dogs').select('name').eq('id', id).single()
+      const { data: dog } = await admin.from('dogs').select('name').eq('id', id).single()
       const dogName = dog?.name || id
 
       // Check if other users' dogs reference this as parent
-      const { count: extFather } = await supabase.from('dogs').select('id', { count: 'exact', head: true })
+      const { count: extFather } = await admin.from('dogs').select('id', { count: 'exact', head: true })
         .eq('father_id', id).not('owner_id', 'eq', safeUserId)
         .not('id', 'in', `(${createdIds.join(',')})`)
       if (extFather && extFather > 0) blocked = true
 
       if (!blocked) {
-        const { count: extMother } = await supabase.from('dogs').select('id', { count: 'exact', head: true })
+        const { count: extMother } = await admin.from('dogs').select('id', { count: 'exact', head: true })
           .eq('mother_id', id).not('owner_id', 'eq', safeUserId)
           .not('id', 'in', `(${createdIds.join(',')})`)
         if (extMother && extMother > 0) blocked = true
@@ -251,7 +262,7 @@ export async function DELETE(request: NextRequest) {
 
       // Check litter references
       if (!blocked) {
-        const { count: litterRef } = await supabase.from('litters').select('id', { count: 'exact', head: true })
+        const { count: litterRef } = await admin.from('litters').select('id', { count: 'exact', head: true })
           .or(`father_id.eq.${id},mother_id.eq.${id}`)
         if (litterRef && litterRef > 0) blocked = true
       }
@@ -262,25 +273,25 @@ export async function DELETE(request: NextRequest) {
 
     // Unlink parent refs within this import batch for deletable dogs
     for (const id of deletable) {
-      await supabase.from('dogs').update({ father_id: null }).eq('father_id', id).not('id', 'in', `(${deletable.join(',')})`)
-      await supabase.from('dogs').update({ mother_id: null }).eq('mother_id', id).not('id', 'in', `(${deletable.join(',')})`)
+      await admin.from('dogs').update({ father_id: null }).eq('father_id', id).not('id', 'in', `(${deletable.join(',')})`)
+      await admin.from('dogs').update({ mother_id: null }).eq('mother_id', id).not('id', 'in', `(${deletable.join(',')})`)
     }
 
     // Delete related data and dogs
     for (const id of deletable) {
-      await supabase.from('dog_photos').delete().eq('dog_id', id)
-      await supabase.from('vet_records').delete().eq('dog_id', id)
-      await supabase.from('awards').delete().eq('dog_id', id)
-      await supabase.from('dogs').delete().eq('id', id)
+      await admin.from('dog_photos').delete().eq('dog_id', id)
+      await admin.from('vet_records').delete().eq('dog_id', id)
+      await admin.from('awards').delete().eq('dog_id', id)
+      await admin.from('dogs').delete().eq('id', id)
     }
 
     // Update or delete notification
     if (skippedNames.length === 0 && notifId) {
-      await supabase.from('notifications').delete().eq('id', notifId)
+      await admin.from('notifications').delete().eq('id', notifId)
     } else if (notifId) {
       // Update notification to reflect remaining dogs
       const remaining = createdIds.filter(id => !deletable.includes(id))
-      await supabase.from('notifications').update({
+      await admin.from('notifications').update({
         message: JSON.stringify({ importId, createdIds: remaining, mainDogId: remaining[0] || null }),
       }).eq('id', notifId)
     }
