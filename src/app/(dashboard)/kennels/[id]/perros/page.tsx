@@ -143,7 +143,10 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
   const dogsToGenealogic = isDynamicSiteHost((await headers()).get('host'))
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    // pt para separar el hero "Nuestros perros" del header del kennel. Va en la
+    // página (no en el layout) porque la home tiene hero full-bleed que SÍ debe
+    // ir pegado al header — el layout no mete pt arriba a propósito.
+    <div className="space-y-6 sm:space-y-8 pt-8 sm:pt-12">
       <header>
         <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('Catálogo')}</p>
         <h1 className="mt-1 text-[28px] sm:text-[36px] font-semibold leading-[1.08] tracking-[-0.03em] text-ink">
