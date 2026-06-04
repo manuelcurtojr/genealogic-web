@@ -33,6 +33,11 @@ AS $$
     WHERE d.thumbnail_url IS NOT NULL
       AND d.is_public = true
       AND d.breed_id IS NOT NULL
+      -- Actualizado 2026-06-04: SOLO fotos subidas a nuestro Storage (fotos
+      -- reales de usuarios), no scrapes externos (grabados, watermarks, baja
+      -- calidad). El hero queda con fotos de perros de alta calidad.
+      AND d.thumbnail_url LIKE '%/storage/v1/%'
+      AND d.deceased_at IS NULL
     ORDER BY d.breed_id, random()
   )
   SELECT id, thumbnail_url, breed_name

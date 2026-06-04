@@ -52,15 +52,15 @@ function AppWindow({ url, children }: { url?: string; children: React.ReactNode 
 function PedigreeTree({ photos }: { photos: string[] }) {
   const t = useT()
   const dogs: Array<{ name: string; sex: 'male' | 'female'; reg?: string }> = [
-    { name: 'Lord Byron de Aldenham', sex: 'male', reg: 'LOE 2189437' }, // root
-    { name: 'Ch. Whiskey de Aldenham', sex: 'male' },
-    { name: 'Hazel de Aldenham', sex: 'female' },
-    { name: 'Reginald del Támesis', sex: 'male' },
-    { name: 'Penny de Surrey', sex: 'female' },
-    { name: 'Bandit du Lac', sex: 'male' },
-    { name: 'Honey de Vendée', sex: 'female' },
+    { name: 'Furio del Colle', sex: 'male', reg: 'LOI 23/118402' }, // root
+    { name: 'Ch. Tiberio della Valle', sex: 'male' },
+    { name: 'Nuvola del Colle', sex: 'female' },
+    { name: 'Apollo di Roma', sex: 'male' },
+    { name: 'Stella del Tevere', sex: 'female' },
+    { name: 'Romeo dei Sette Colli', sex: 'male' },
+    { name: 'Bianca di Firenze', sex: 'female' },
   ]
-  const breed = t('Cocker Spaniel Inglés')
+  const breed = t('Galgo Italiano')
 
   const W = 220, H = 64
   const positions = [

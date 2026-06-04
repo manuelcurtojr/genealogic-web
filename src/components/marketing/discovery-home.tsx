@@ -246,42 +246,40 @@ export default function DiscoveryHome({
               </div>
             </Link>
 
-            {/* Criador — puerta a Genealogic Breeders */}
-            <Link href="/criadores" className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-hairline bg-gradient-to-br from-orange-50 via-canvas to-amber-50 p-6 sm:p-8 lg:p-10 hover:shadow-[0_12px_48px_rgba(254,102,32,0.15)] transition-all hover:-translate-y-1 duration-300">
-              <Store className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 w-32 h-32 sm:w-48 sm:h-48 text-[#FE6620]/10 group-hover:text-[#FE6620]/20 transition-colors" strokeWidth={1} />
+            {/* Misión — el porqué de Genealogic (no es una card de producto de criador) */}
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-hairline bg-ink text-on-primary p-6 sm:p-8 lg:p-10">
+              <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-[#FE6620]/25 blur-[90px] pointer-events-none" />
+              <Database className="absolute -bottom-5 -right-5 w-32 h-32 sm:w-44 sm:h-44 text-white/[0.04]" strokeWidth={1} />
               <div className="relative">
                 <div className="inline-flex w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#FE6620] items-center justify-center shadow-[0_8px_24px_rgba(254,102,32,0.3)]">
-                  <Store className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  <Database className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div className="mt-4 sm:mt-5 flex items-center gap-2 flex-wrap">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#FE6620]">{t('Para criadores')}</p>
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{t('Genealogic Breeders')}</span>
-                </div>
-                <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 32px)' }}>
-                  {t('Tu criadero, gestionado de cabo a rabo.')}
+                <p className="mt-4 sm:mt-5 text-[11px] font-bold uppercase tracking-wider text-[#FE6620]">{t('Nuestra misión')}</p>
+                <h3 className="mt-1 font-semibold tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 32px)' }}>
+                  {t('La base de datos de perros más grande, completa y fiable del mundo.')}
                 </h3>
-                <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-md">
-                  {t('Genealogías con COI, calendario de celos y partos, camadas con un click, pipeline de reservas que no se pierde un lead, contratos y pagos integrados. Todo desde un único panel.')}
+                <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-white/70 leading-[1.55] max-w-md">
+                  {t('Cada perro que documentas se suma a nuestro motor de búsqueda, junto a todas las demás genealogías. Así ayudamos a preservar las razas y construimos el registro canino más fiable que existe — porque cada perro importa.')}
                 </p>
-                <ul className="mt-5 sm:mt-6 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px] sm:text-[13px] text-body">
-                  <MiniFeature icon={GitBranch}>{t('Genealogías COI')}</MiniFeature>
-                  <MiniFeature icon={Heart}>{t('Calendario celos')}</MiniFeature>
-                  <MiniFeature icon={Baby}>{t('Camadas y cachorros')}</MiniFeature>
-                  <MiniFeature icon={KanbanSquare}>{t('Pipeline reservas')}</MiniFeature>
-                  <MiniFeature icon={Globe}>{t('Web con tu dominio')}</MiniFeature>
-                  <MiniFeature icon={Mail}>{t('Emailbot 24/7')}</MiniFeature>
-                </ul>
-                <div className="mt-6 flex items-center gap-2 text-[12px] text-muted">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
-                  <span><strong className="text-ink tabular-nums">{counts.kennels.toLocaleString('es-ES')}</strong> {t('criaderos ya dentro')}</span>
+                <div className="mt-6 grid grid-cols-3 gap-3">
+                  <div>
+                    <p className="text-[20px] sm:text-[22px] font-bold tabular-nums leading-none">{counts.dogs.toLocaleString('es-ES')}</p>
+                    <p className="mt-1 text-[11px] text-white/50">{t('perros')}</p>
+                  </div>
+                  <div>
+                    <p className="text-[20px] sm:text-[22px] font-bold tabular-nums leading-none">{counts.breeds.toLocaleString('es-ES')}</p>
+                    <p className="mt-1 text-[11px] text-white/50">{t('razas')}</p>
+                  </div>
+                  <div>
+                    <p className="text-[20px] sm:text-[22px] font-bold tabular-nums leading-none">{counts.kennels.toLocaleString('es-ES')}</p>
+                    <p className="mt-1 text-[11px] text-white/50">{t('criaderos')}</p>
+                  </div>
                 </div>
-                <div className="mt-4">
-                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
-                    {t('Ver Genealogic Breeders →')}
-                  </span>
-                </div>
+                <Link href="/criadores" className="mt-7 inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/70 hover:text-white transition-colors">
+                  {t('¿Eres criador? Conoce Genealogic Breeders')} <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
-            </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -377,6 +375,10 @@ export default function DiscoveryHome({
                   <Zap className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
                   <span>{t('Importa la genealogía desde Dogsfiles, K9data y más con IA.')}</span>
                 </li>
+                <li className="flex items-start gap-2.5">
+                  <Search className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
+                  <span>{t('Su ficha y genealogía se suman a nuestro motor de búsqueda, junto a todas las demás.')}</span>
+                </li>
               </ul>
               <Link href="/register?intent=owner" className="mt-7 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[14px] font-bold hover:opacity-90 transition">
                 <Dog className="w-4 h-4" /> {t('Crear mi cuenta gratis')} <ArrowRight className="w-4 h-4" />
@@ -408,7 +410,7 @@ export default function DiscoveryHome({
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 auto-rows-[160px] sm:auto-rows-[200px]">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 auto-rows-[minmax(170px,auto)] sm:auto-rows-[200px]">
             <BentoCard
               href="/features#ficha"
               className="col-span-2 sm:row-span-2"
@@ -554,7 +556,7 @@ export default function DiscoveryHome({
               </Link>
             </div>
 
-            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-5 px-5 sm:mx-0 sm:px-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-5 pl-[30px] pr-5 sm:mx-0 sm:pl-0 sm:pr-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {featuredKennels.slice(0, 3).map((k) => (
                 <Link key={k.id} href={`/kennels/${k.slug || k.id}`} className="group relative overflow-hidden rounded-2xl border border-hairline bg-canvas hover:border-ink/30 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all snap-start shrink-0 w-[82%] sm:w-[46%] lg:w-[calc((100%-2rem)/3)]">
                   {/* Hero del perro estrella como cover */}
@@ -618,9 +620,9 @@ export default function DiscoveryHome({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
             {([
-              { initials: 'LM', avatar: 'bg-blue-100 text-blue-700', quote: t('«Tengo la cartilla de mi perro siempre en el móvil y los recordatorios de vacunas me avisan solos. En el vet ya no busco papeles.»'), role: t('Propietario'), breed: 'Pastor Alemán' },
-              { initials: 'CR', avatar: 'bg-emerald-100 text-emerald-700', quote: t('«Pegué la URL de la genealogía que me pasó mi criador y se montó el árbol entero con fotos. Ahora comparto la ficha de mi perra con un link.»'), role: t('Propietaria'), breed: 'Galgo Italiano' },
-              { initials: 'JT', avatar: 'bg-violet-100 text-violet-700', quote: t('«Reservé mi cachorro y desde Genealogic seguí el estado, firmé el contrato y vi sus papeles. Sin perseguir al criador por WhatsApp.»'), role: t('Propietario'), breed: 'Presa Canario' },
+              { initials: 'LM', avatar: 'bg-blue-100 text-blue-700', quote: t('«Tengo la cartilla de mi perro siempre en el móvil y los recordatorios de vacunas me avisan solos. En el vet ya no busco papeles.»'), role: 'Laura Méndez', breed: t('Propietaria · Pastor Alemán') },
+              { initials: 'CR', avatar: 'bg-emerald-100 text-emerald-700', quote: t('«Pegué la URL de la genealogía que me pasó mi criador y se montó el árbol entero con fotos. Ahora comparto la ficha de mi perra con un link.»'), role: 'Carla Ruiz', breed: t('Propietaria · Galgo Italiano') },
+              { initials: 'JT', avatar: 'bg-violet-100 text-violet-700', quote: t('«Reservé mi cachorro y desde Genealogic seguí el estado, firmé el contrato y vi sus papeles. Sin perseguir al criador por WhatsApp.»'), role: 'Javier Torres', breed: t('Propietario · Presa Canario') },
             ]).map((r, i) => (
               <article key={i} className="rounded-2xl border border-hairline bg-canvas p-6 sm:p-7 flex flex-col">
                 <Quote className="w-7 h-7 text-[#FE6620]/25" />
@@ -698,8 +700,8 @@ export default function DiscoveryHome({
               <FaqItem q={t('¿Y los papeles de mi perro?')}>
                 {t('Digitalizas la cartilla, el contrato, el certificado y el microchip una vez y los tienes siempre a mano —incluso sin cobertura en el veterinario. Se acabó buscar carpetas.')}
               </FaqItem>
-              <FaqItem q={t('¿Funciona en móvil? ¿Hay app iOS?')}>
-                {t('Sí en ambos. La web está optimizada para móvil y hay app iOS en proceso. Todo lo que puedes hacer en el ordenador lo puedes hacer en el teléfono.')}
+              <FaqItem q={t('¿Hay app de iOS?')}>
+                {t('Sí, ya está disponible en la App Store. La ficha, la genealogía, la cartilla veterinaria y los recordatorios de tu perro en el bolsillo — y la cartilla offline cuando el vet la pida. La web sigue optimizada para móvil para todo lo demás.')}
               </FaqItem>
               <FaqItem q={t('¿Tengo que montar la genealogía de mi perro yo mismo?')}>
                 {t('No. Si está en Dogsfiles, Presadb, K9data, Working-dog o Breedarchive, pegas la URL y nuestro importador con IA extrae la genealogía completa en 30 segundos. También aceptamos PDFs y capturas de pantalla.')}

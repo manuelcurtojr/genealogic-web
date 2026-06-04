@@ -24,37 +24,12 @@ export default function MarketingFooter({ locale = 'es' }: { locale?: string }) 
     <footer className="bg-surface-dark text-on-dark">
       <div className="mx-auto max-w-[1200px] px-6 py-16 lg:px-12">
         {/* ═════ BANDA DESCARGA APP iOS ═════ */}
-        <div className="mb-12 rounded-2xl bg-surface-dark-elevated border border-white/10 px-6 py-8 sm:px-10 sm:py-10">
-          <div className="grid items-center gap-8 lg:grid-cols-[1.2fr_1fr] lg:gap-12">
-            {/* Texto + badge */}
-            <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
-                <Dog className="h-3 w-3" />
-                {t('App iOS')}
-              </span>
-              <h2 className="mt-4 max-w-[16ch] text-2xl font-semibold leading-[1.1] tracking-[-0.03em] text-white sm:text-3xl">
-                {t('La app de Genealogic, ya en iOS')}
-              </h2>
-              <p className="mt-3 max-w-[440px] text-[14px] leading-[1.55] text-on-dark-soft">
-                {t('La ficha y la cartilla veterinaria de tu perro en el bolsillo. La genealogía y los recordatorios, contigo siempre — y la cartilla disponible offline cuando el vet la pida.')}
-              </p>
-              <a
-                href={APP_STORE_URL}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={t('Descargar en la App Store')}
-                className="mt-6 inline-flex items-center gap-2.5 rounded-xl bg-white px-4 py-2.5 text-black transition hover:opacity-90"
-              >
-                <AppleLogo className="h-7 w-7" />
-                <span className="flex flex-col leading-none text-left">
-                  <span className="text-[10px] font-medium">{t('Descárgalo en la')}</span>
-                  <span className="text-[19px] font-semibold leading-tight tracking-[-0.01em]">App Store</span>
-                </span>
-              </a>
-            </div>
-
-            {/* iPhone real con CAPTURA real de la pantalla de login */}
-            <div className="flex justify-center lg:justify-end">
+        <div className="relative mb-12 overflow-hidden rounded-2xl bg-surface-dark-elevated border border-white/10 px-6 py-10 sm:px-10 sm:py-12">
+          <div className="flex flex-col items-center gap-10 lg:flex-row lg:items-center lg:justify-center lg:gap-[30px]">
+            {/* iPhone real con la CAPTURA real del login — IZQUIERDA en desktop,
+                con un destello/nebulosa naranja detrás. */}
+            <div className="relative flex flex-shrink-0 justify-center lg:order-1">
+              <div className="pointer-events-none absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FE6620]/35 blur-[90px]" />
               <div className="relative w-[200px] sm:w-[220px] rounded-[2.7rem] border-[8px] border-[#1c1c1e] bg-[#1c1c1e] shadow-[0_24px_60px_rgba(0,0,0,0.6)]">
                 {/* botones laterales */}
                 <div className="absolute -left-[10px] top-[110px] h-12 w-[3px] rounded-l bg-[#0e0e0f]" />
@@ -75,6 +50,33 @@ export default function MarketingFooter({ locale = 'es' }: { locale?: string }) 
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Texto + badge — DERECHA en desktop */}
+            <div className="flex max-w-[440px] flex-col items-center text-center lg:order-2 lg:items-start lg:text-left">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
+                <Dog className="h-3 w-3" />
+                {t('App iOS')}
+              </span>
+              <h2 className="mt-4 max-w-[16ch] text-2xl font-semibold leading-[1.1] tracking-[-0.03em] text-white sm:text-3xl">
+                {t('La app de Genealogic, ya en iOS')}
+              </h2>
+              <p className="mt-3 text-[14px] leading-[1.55] text-on-dark-soft">
+                {t('La ficha y la cartilla veterinaria de tu perro en el bolsillo. La genealogía y los recordatorios, contigo siempre — y la cartilla disponible offline cuando el vet la pida.')}
+              </p>
+              <a
+                href={APP_STORE_URL}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={t('Descargar en la App Store')}
+                className="mt-6 inline-flex items-center gap-2.5 rounded-xl bg-white px-4 py-2.5 text-black transition hover:opacity-90"
+              >
+                <AppleLogo className="h-7 w-7" />
+                <span className="flex flex-col leading-none text-left">
+                  <span className="text-[10px] font-medium">{t('Descárgalo en la')}</span>
+                  <span className="text-[19px] font-semibold leading-tight tracking-[-0.01em]">App Store</span>
+                </span>
+              </a>
             </div>
           </div>
         </div>
