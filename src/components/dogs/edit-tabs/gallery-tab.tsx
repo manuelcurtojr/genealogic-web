@@ -31,6 +31,16 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
   const supabase = createClient()
   const t = useT()
 
+  // La portada vive en dogs.thumbnail_url y RLS solo deja actualizarla al dueño →
+  // para perros sin dueño (ancestros importados, p.ej. "Bora de Irema Curto") el
+  // cambio de portada al reordenar/borrar fallaba en silencio. Va por service-role.
+  async function setThumbnail(url: string | null) {
+    await fetch('/api/update-dog', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dogId, updates: { thumbnail_url: url } }),
+    }).catch(() => {})
+  }
+
   async function loadPhotos() {
     const [{ data: ph }, { data: dog }] = await Promise.all([
       supabase.from('dog_photos').select('*').eq('dog_id', dogId).order('position'),
@@ -58,7 +68,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     // (subidas antiguas, import masivo, o un sync que falló), fijar la 1ª foto
     // como portada para que el recuadro de /dogs muestre la imagen.
     if (!thumbnailUrl && photos.length > 0 && photos[0]?.url) {
-      await supabase.from('dogs').update({ thumbnail_url: photos[0].url }).eq('id', dogId)
+      await setThumbnail(photos[0].url)
       setDogThumb(photos[0].url)
     }
     setPhotos(photos)
@@ -77,7 +87,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
       const { data: { publicUrl } } = supabase.storage.from('dog-photos').getPublicUrl(path)
       const newPos = photos.length + i
       await supabase.from('dog_photos').insert({ dog_id: dogId, url: publicUrl, storage_path: path, position: newPos })
-      if (newPos === 0) await supabase.from('dogs').update({ thumbnail_url: publicUrl }).eq('id', dogId)
+      if (newPos === 0) await setThumbnail(publicUrl)
     }
     setUploading(false)
     loadPhotos()
@@ -186,7 +196,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     for (let i = 0; i < list.length; i++) {
       if (list[i].position !== i) await supabase.from('dog_photos').update({ position: i }).eq('id', list[i].id)
     }
-    await supabase.from('dogs').update({ thumbnail_url: list[0]?.url || null }).eq('id', dogId)
+    await setThumbnail(list[0]?.url || null)
     setPhotos(list)
   }
 
@@ -197,7 +207,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     reordered.splice(toIdx, 0, moved)
     setPhotos(reordered)
     for (let i = 0; i < reordered.length; i++) await supabase.from('dog_photos').update({ position: i }).eq('id', reordered[i].id)
-    await supabase.from('dogs').update({ thumbnail_url: reordered[0]?.url || null }).eq('id', dogId)
+    await setThumbnail(reordered[0]?.url || null)
   }
 
   async function handleUpscale(photo: any) {
