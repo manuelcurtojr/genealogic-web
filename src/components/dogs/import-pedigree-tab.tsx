@@ -30,32 +30,67 @@ function fileToBase64(file: File): Promise<string> {
   })
 }
 
+type ImageBlock = { type: 'image'; source: { type: 'base64'; media_type: string; data: string } }
+
 /**
- * Optimiza una imagen para el OCR de la IA: corrige la orientación EXIF (las
- * fotos de móvil llegan giradas 90°), reescala el lado largo a 1568px (el
- * máximo que Claude aprovecha — más allá la reescala la API y suele dejar el
- * texto denso ilegible) y exporta JPEG nítido. Devuelve null si el navegador no
- * sabe decodificar el formato (p.ej. HEIC en Chrome) para caer al envío crudo.
+ * Convierte una imagen en bloques para Claude, corrigiendo la orientación EXIF
+ * (las fotos de móvil llegan giradas 90°).
+ *
+ * Devuelve SIEMPRE un "plano completo" reescalado a 1568px (el máximo que la API
+ * aprovecha → da estructura y orientación del árbol) y, si la foto es grande,
+ * además varios RECORTES (tiles 2×2 con solape) cada uno reescalado a 1568px.
+ * Los recortes dan resolución EFECTIVA mayor que un solo envío → el texto denso
+ * de una hoja A4 (15+ cajas) se vuelve legible. Sin esto, una sola imagen a
+ * 1568px deja ilegible un pedigrí de 3 generaciones y el modelo (correctamente)
+ * responde "unreadable".
+ *
+ * Devuelve null si el navegador no decodifica el formato (HEIC en Chrome) para
+ * caer al envío crudo.
  */
-async function optimizeImageForOCR(file: File): Promise<{ base64: string; mediaType: string } | null> {
+async function buildImageBlocks(file: File): Promise<ImageBlock[] | null> {
   try {
     const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
+    const bw = bitmap.width, bh = bitmap.height
     const MAX = 1568
-    const scale = Math.min(1, MAX / Math.max(bitmap.width, bitmap.height))
-    const w = Math.max(1, Math.round(bitmap.width * scale))
-    const h = Math.max(1, Math.round(bitmap.height * scale))
-    const canvas = document.createElement('canvas')
-    canvas.width = w; canvas.height = h
-    const ctx = canvas.getContext('2d')
-    if (!ctx) { bitmap.close?.(); return null }
-    ctx.imageSmoothingEnabled = true
-    ctx.imageSmoothingQuality = 'high'
-    ctx.drawImage(bitmap, 0, 0, w, h)
+
+    const crop = (sx: number, sy: number, sw: number, sh: number): ImageBlock | null => {
+      const scale = Math.min(1, MAX / Math.max(sw, sh))
+      const w = Math.max(1, Math.round(sw * scale))
+      const h = Math.max(1, Math.round(sh * scale))
+      const canvas = document.createElement('canvas')
+      canvas.width = w; canvas.height = h
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return null
+      ctx.imageSmoothingEnabled = true
+      ctx.imageSmoothingQuality = 'high'
+      ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, w, h)
+      const data = canvas.toDataURL('image/jpeg', 0.92).split(',')[1]
+      return data ? { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data } } : null
+    }
+
+    const blocks: ImageBlock[] = []
+    // 1) Plano completo (estructura del árbol + orientación)
+    const overview = crop(0, 0, bw, bh)
+    if (overview) blocks.push(overview)
+
+    // 2) Recortes en alta resolución (solo si la foto es lo bastante grande para
+    //    aportar detalle real). 2×2 con 12% de solape para no cortar cajas.
+    if (Math.max(bw, bh) > 1800) {
+      const ov = 0.12, cols = 2, rows = 2
+      const tw = bw / cols, th = bh / rows
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const sx = Math.max(0, Math.round(c * tw - tw * ov))
+          const sy = Math.max(0, Math.round(r * th - th * ov))
+          const ex = Math.min(bw, Math.round((c + 1) * tw + tw * ov))
+          const ey = Math.min(bh, Math.round((r + 1) * th + th * ov))
+          const tile = crop(sx, sy, ex - sx, ey - sy)
+          if (tile) blocks.push(tile)
+        }
+      }
+    }
     bitmap.close?.()
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.92)
-    const base64 = dataUrl.split(',')[1]
-    if (!base64) return null
-    return { base64, mediaType: 'image/jpeg' }
+    return blocks.length ? blocks : null
   } catch {
     return null
   }
@@ -98,6 +133,8 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported, isAdmi
 LEGIBILITY GATE — read this FIRST. If the source is an image that is blank, blurry, too low-resolution to read the dog names, photographed too far away, or is not actually a dog pedigree — OR if for any reason you cannot read the actual text with confidence — return EXACTLY this JSON and nothing else:
 {"unreadable": true, "reason": "<short reason in Spanish>"}
 Do NOT invent, guess, autocomplete, or fill in plausible-sounding dog names / breeds / registration numbers to complete a tree. A truthful "unreadable" is the CORRECT answer; a fabricated pedigree is a critical error. A photographed sheet may be rotated 90°/180° or skewed — mentally re-orient and read it anyway, but if you still cannot read the names after re-orienting, return unreadable.
+
+MULTIPLE IMAGES OF THE SAME SHEET: for photos you may receive the SAME pedigree as several images — first a full OVERVIEW (use it for the tree's overall structure: who descends from whom, and orientation), then several higher-resolution overlapping TILES/crops (use these to actually READ the small text: names, registration numbers, dates). Tiles overlap, so the same dog can appear in the overview and in one or more tiles — it is still ONE dog, list it once. Cross-reference all the images and merge them into ONE coherent pedigree; trust the tiles for exact spelling and numbers.
 
 When the source IS legible, be exhaustive — include every dog whose name you can ACTUALLY READ, no matter how deep in the tree.
 
@@ -577,33 +614,30 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
     setScanPhase(isPdf ? t('Analizando PDF con IA...') : t('Analizando imagen con IA...'))
     try {
       // PDFs van tal cual (Claude los lee nativo, multipágina). Las imágenes se
-      // PRE-PROCESAN: orientación EXIF + reescalado a 1568px + JPEG nítido. Sin
-      // esto, una foto de móvil rotada y a resolución llena llega ilegible tras
-      // el reescalado de la API y el modelo se inventa el árbol.
-      const sourceType = isPdf ? 'document' : 'image'
-      let base64: string
-      let mediaType: string
+      // trocean: plano completo + recortes en alta resolución (buildImageBlocks)
+      // para que el texto denso de una hoja A4 sea legible y no se invente nada.
+      let content: any[]
       if (isPdf) {
-        base64 = await fileToBase64(file)
-        mediaType = 'application/pdf'
+        const base64 = await fileToBase64(file)
+        content = [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
+          { type: 'text', text: EXTRACTION_PROMPT },
+        ]
       } else {
-        const opt = await optimizeImageForOCR(file)
-        if (opt) {
-          base64 = opt.base64; mediaType = opt.mediaType
+        const blocks = await buildImageBlocks(file)
+        if (blocks && blocks.length) {
+          content = [...blocks, { type: 'text', text: EXTRACTION_PROMPT }]
         } else {
-          // Formato que el navegador no decodifica (HEIC en Chrome…) → envío crudo.
-          base64 = await fileToBase64(file)
-          mediaType = file.type || 'image/jpeg'
+          // Fallback: formato no decodificable (HEIC en Chrome…) → envío crudo.
+          const base64 = await fileToBase64(file)
+          content = [
+            { type: 'image', source: { type: 'base64', media_type: file.type || 'image/jpeg', data: base64 } },
+            { type: 'text', text: EXTRACTION_PROMPT },
+          ]
         }
       }
 
-      let pedigreeData = await callClaude([{
-        role: 'user',
-        content: [
-          { type: sourceType, source: { type: 'base64', media_type: mediaType, data: base64 } },
-          { type: 'text', text: EXTRACTION_PROMPT },
-        ],
-      }])
+      let pedigreeData = await callClaude([{ role: 'user', content }])
 
       // Guardarraíl anti-alucinación: si la IA no pudo leer la imagen, NO mostramos
       // un árbol inventado — pedimos una foto mejor.
