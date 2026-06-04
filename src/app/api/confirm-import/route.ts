@@ -86,13 +86,13 @@ export async function POST(request: NextRequest) {
     const nameToId = new Map<string, string>()
     for (const [name, id] of swapMap) nameToId.set(name, id)
 
-    // Duplicate detection (check both owned and contributed dogs)
+    // Dedup: enlaza con perros que el usuario ya posee (mismo nombre) o por nº de
+    // registro. (Había un check por contributor_id pero esa columna se eliminó con
+    // el sistema de contribuciones —migración 20260430— y rompía esta query.)
     for (const dog of allDogs) {
       if (nameToId.has(dog.name)) continue
       const { data: owned } = await supabase.from('dogs').select('id').eq('owner_id', safeUserId).ilike('name', dog.name).limit(1)
       if (owned?.length) { nameToId.set(dog.name, owned[0].id); continue }
-      const { data: contributed } = await supabase.from('dogs').select('id').eq('contributor_id', safeUserId).ilike('name', dog.name).limit(1)
-      if (contributed?.length) { nameToId.set(dog.name, contributed[0].id); continue }
       if (dog.registration) {
         const { data: regMatch } = await supabase.from('dogs').select('id').eq('registration', dog.registration).limit(1)
         if (regMatch?.length) nameToId.set(dog.name, regMatch[0].id)
@@ -111,16 +111,22 @@ export async function POST(request: NextRequest) {
       // para corregir la raza); el resto usa su propia raza y, si no tiene,
       // hereda el override o la raza del principal.
       const breedName = (isMainDog && overrideBreed) ? overrideBreed : (dog.breed || overrideBreed || mainDog.breed)
-      const { data: created } = await supabase.from('dogs').insert({
+      // NOTA: ya NO insertamos contributor_id — esa columna se eliminó (migración
+      // 20260430, sistema de contribuciones retirado) y al mandarla PostgREST
+      // rechazaba el INSERT de CADA ancestro → se importaba solo el perro
+      // principal y se perdía toda la genealogía. Los ancestros quedan como perros
+      // públicos sin dueño (owner_id null, is_public true).
+      const { data: created, error: createErr } = await supabase.from('dogs').insert({
         name: formatName(dog.name), sex: dog.sex === 'Female' ? 'female' : 'male',
         registration: dog.registration || null, breed_id: findBreed(breedName), color_id: findColor(dog.color),
         birth_date: parsedDate, father_id: fatherId, mother_id: motherId,
         kennel_id: (isMainDog && !isAdmin) ? (kennelId || null) : null,
         owner_id: (isMainDog && !isAdmin) ? safeUserId : null,
-        contributor_id: (isMainDog && !isAdmin) ? undefined : safeUserId,
         is_public: true,
         thumbnail_url: importPhotos !== false ? (dog.photo_url || null) : null,
       }).select('id').single()
+      // Log si un INSERT falla (antes era silencioso → perros perdidos sin rastro).
+      if (createErr) console.error('[confirm-import] no se pudo crear el perro', dog.name, '—', createErr.message)
 
       if (created) { nameToId.set(dog.name, created.id); createdIds.push(created.id) }
     }
@@ -232,13 +238,13 @@ export async function DELETE(request: NextRequest) {
 
       // Check if other users' dogs reference this as parent
       const { count: extFather } = await supabase.from('dogs').select('id', { count: 'exact', head: true })
-        .eq('father_id', id).not('owner_id', 'eq', safeUserId).not('contributor_id', 'eq', safeUserId)
+        .eq('father_id', id).not('owner_id', 'eq', safeUserId)
         .not('id', 'in', `(${createdIds.join(',')})`)
       if (extFather && extFather > 0) blocked = true
 
       if (!blocked) {
         const { count: extMother } = await supabase.from('dogs').select('id', { count: 'exact', head: true })
-          .eq('mother_id', id).not('owner_id', 'eq', safeUserId).not('contributor_id', 'eq', safeUserId)
+          .eq('mother_id', id).not('owner_id', 'eq', safeUserId)
           .not('id', 'in', `(${createdIds.join(',')})`)
         if (extMother && extMother > 0) blocked = true
       }

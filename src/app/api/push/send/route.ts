@@ -64,10 +64,11 @@ async function callerCanPushTo(admin: any, callerId: string, recipientId: string
   const kennelIds = (kennels || []).map((k: any) => k.id)
   if (kennelIds.length === 0) return false
 
-  // ¿Destinatario es dueño/contributor de un perro en alguno de esos kennels?
+  // ¿Destinatario es dueño de un perro en alguno de esos kennels?
+  // (contributor_id se eliminó —migración 20260430— y rompía esta query con .or.)
   const { data: dogRel } = await admin
     .from('dogs').select('id').in('kennel_id', kennelIds)
-    .or(`owner_id.eq.${recipientId},contributor_id.eq.${recipientId}`)
+    .eq('owner_id', recipientId)
     .limit(1)
   if (dogRel && dogRel.length > 0) return true
 
