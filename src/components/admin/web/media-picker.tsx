@@ -8,6 +8,7 @@ import {
   listDogPhotosAction,
   type DogPhoto,
 } from '@/app/(dashboard)/web/media-actions';
+import { Img } from '@/components/ui/img';
 
 type MediaItem = {
   name: string;
@@ -73,7 +74,8 @@ export function MediaPicker({
       {value ? (
         <div className="relative mb-2 overflow-hidden rounded-lg border border-hairline bg-surface-soft">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Img
+            w={480}
             src={value}
             alt="preview"
             className="h-32 w-full object-cover"
@@ -314,7 +316,7 @@ function MediaLibraryDrawer({
                   >
                     <button type="button" onClick={() => onPick(it.url)} className="block w-full">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={it.url} alt={it.name} className="aspect-square w-full object-cover" loading="lazy" />
+                      <Img w={240} src={it.url} alt={it.name} className="aspect-square w-full object-cover" loading="lazy" />
                     </button>
                     <button
                       type="button"
@@ -358,7 +360,7 @@ function MediaLibraryDrawer({
                   >
                     <button type="button" onClick={() => onPick(p.url)} className="block w-full text-left">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.url} alt={p.name} className="aspect-square w-full object-cover" loading="lazy" />
+                      <Img w={240} src={p.url} alt={p.name} className="aspect-square w-full object-cover" loading="lazy" />
                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2.5 py-2">
                         <p className="text-[11px] font-semibold text-white truncate">{p.name}</p>
                         {p.meta && <p className="text-[10px] text-white/80 truncate">{p.meta}</p>}

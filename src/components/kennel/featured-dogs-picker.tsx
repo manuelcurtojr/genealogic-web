@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Check, Dog as DogIcon, Star } from 'lucide-react'
 import { toggleDogFeaturedInHomeAction } from '@/lib/kennel/content-actions'
+import { Img } from '@/components/ui/img'
 import { useT } from '@/components/i18n/locale-provider'
 
 type DogRow = {
@@ -74,8 +75,7 @@ export default function FeaturedDogsPicker({ dogs }: { dogs: DogRow[] }) {
               >
                 <div className="relative aspect-square overflow-hidden bg-surface-card">
                   {d.thumbnail_url ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={d.thumbnail_url} alt={d.name} loading="lazy" className="h-full w-full object-cover" />
+                    <Img w={200} src={d.thumbnail_url} alt={d.name} loading="lazy" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted">
                       <DogIcon className="h-10 w-10" />

@@ -2,6 +2,7 @@
  * Bloques landing reutilizables — light theme.
  */
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import { getCurrentKennel } from '@/lib/kennel-context'
 import { SectionHeader } from '@/components/site/section-primitives'
@@ -35,8 +36,7 @@ export function TwoColumnBlockSection({
           </div>
           {image_url && (
             <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-hairline bg-surface-card">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={image_url} alt={image_alt || title || ''} className="w-full h-full object-cover" />
+              <Img w={480} src={image_url} alt={image_alt || title || ''} className="w-full h-full object-cover" />
             </div>
           )}
         </div>
@@ -69,8 +69,7 @@ export async function ReviewsSection({
               {r.author && (
                 <div className="flex items-center gap-2">
                   {r.avatar_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={r.avatar_url} alt={r.author} className="w-8 h-8 rounded-full object-cover" />
+                    <Img w={96} src={r.avatar_url} alt={r.author} className="w-8 h-8 rounded-full object-cover" />
                   )}
                   <p className="text-[11px] font-semibold text-ink">{r.author}</p>
                 </div>
@@ -121,8 +120,7 @@ export function PressLogosSection({
           {logos.map((l, i) => (
             <div key={i} className="text-sm text-body font-medium">
               {l.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={l.image_url} alt={l.label} className="h-8 w-auto object-contain" />
+                <Img w={120} src={l.image_url} alt={l.label} className="h-8 w-auto object-contain" />
               ) : (
                 l.label
               )}
@@ -255,8 +253,7 @@ export async function LatestPostsSection({ limit = 3 }: { limit?: number }) {
               <article className="rounded-xl border border-hairline bg-canvas overflow-hidden hover:border-ink/30 transition h-full flex flex-col">
                 {p.cover_image_url && (
                   <div className="aspect-[16/9] bg-surface-card overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.cover_image_url} alt={p.title} loading="lazy" className="w-full h-full object-cover" />
+                    <Img w={480} src={p.cover_image_url} alt={p.title} loading="lazy" className="w-full h-full object-cover" />
                   </div>
                 )}
                 <div className="p-4 flex-1 flex flex-col">

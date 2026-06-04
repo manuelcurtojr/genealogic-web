@@ -5,6 +5,7 @@ import { Syringe, Bug, Pill, FlaskConical, Scissors, FileText } from 'lucide-rea
 import { createClient } from '@/lib/supabase/client'
 import Lightbox from '@/components/ui/lightbox'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 interface VetRecord {
   id: string
@@ -101,7 +102,7 @@ export default function VetRecords({ dogId, ownerId, isOwner }: VetRecordsProps)
                     <button key={i} onClick={() => { setLightboxFiles(files); setLightboxStart(i) }}
                       className="w-10 h-10 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition">
                       {isImage(url) ? (
-                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <Img w={200} src={url} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full bg-surface-card flex items-center justify-center"><FileText className="w-4 h-4 text-ink" /></div>
                       )}

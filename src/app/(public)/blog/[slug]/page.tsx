@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { Img } from '@/components/ui/img'
 import { allPosts, getPostBySlug, getRelatedPosts } from '@/content/blog'
 import { Prose } from '@/components/blog/prose'
 import { getTranslator } from '@/lib/i18n'
@@ -113,7 +114,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         {/* Hero image — full width container, bounded by reading width */}
         <div className="mx-auto max-w-[1100px] px-6 lg:px-12">
           <div className="relative aspect-[16/9] overflow-hidden rounded-[14px] border border-hairline bg-surface-card">
-            <img
+            <Img
+              w={1000}
               src={meta.heroImage}
               alt={meta.heroAlt}
               className="h-full w-full object-cover"
@@ -149,7 +151,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               {related.map(({ meta: rm }) => (
                 <Link key={rm.slug} href={`/blog/${rm.slug}`} className="group block">
                   <div className="relative aspect-[16/10] overflow-hidden rounded-[12px] border border-hairline bg-surface-card">
-                    <img
+                    <Img
+                      w={680}
                       src={rm.heroImage}
                       alt={rm.heroAlt}
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"

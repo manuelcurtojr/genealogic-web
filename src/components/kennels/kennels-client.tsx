@@ -12,6 +12,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Search, Home } from 'lucide-react'
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import { pastelByName } from '@/lib/avatars'
 import InfiniteScrollSentinel from '@/components/ui/infinite-scroll-sentinel'
 import { SkeletonGrid } from '@/components/ui/skeletons'
@@ -155,7 +156,7 @@ export default function KennelsClient({
                   >
                     {kennel.logo_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={kennel.logo_url} alt="" className="w-full h-full object-cover" />
+                      <Img src={kennel.logo_url} w={200} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-xl font-bold text-white">{kennel.name[0]?.toUpperCase()}</span>
                     )}

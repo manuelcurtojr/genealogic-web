@@ -2,6 +2,7 @@
  * Secciones comunes reutilizables — light theme Cal.com.
  */
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import { NewsletterForm } from '@/components/site/newsletter-form'
 import { getCurrentKennel } from '@/lib/kennel-context'
 
@@ -93,8 +94,7 @@ export function TrustStripSection({
           {logos.map((l, i) => (
             <div key={i} className="text-sm text-body font-medium">
               {l.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={l.image_url} alt={l.label} className="h-8 w-auto object-contain" />
+                <Img w={120} src={l.image_url} alt={l.label} className="h-8 w-auto object-contain" />
               ) : (
                 l.label
               )}
@@ -121,8 +121,8 @@ export function CtaBannerSection({
       {/* Background image opcional con ken-burns */}
       {background_image_url && (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Img
+            w={1000}
             src={background_image_url}
             alt=""
             className="absolute inset-0 w-full h-full object-cover scale-105 opacity-60 motion-safe:animate-[ctaZoom_30s_ease-out_infinite_alternate]"

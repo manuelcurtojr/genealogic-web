@@ -21,6 +21,7 @@ import { DogJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
+import { Img } from '@/components/ui/img'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
@@ -397,7 +398,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
                 href={`/kennels/${kennel.slug || kennel.id}`}
                 className="inline-flex items-center gap-2 rounded-full border border-hairline bg-canvas px-3 py-1 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
               >
-                {kennel.logo_url && <img src={kennel.logo_url} alt="" className="h-4 w-4 rounded-full object-cover" />}
+                {kennel.logo_url && <Img w={96} src={kennel.logo_url} alt="" className="h-4 w-4 rounded-full object-cover" />}
                 {kennel.name}
               </Link>
             )}
@@ -476,7 +477,7 @@ function ParentCard({ parent, role, t }: { parent: any; role: string; t: (k: str
         style={{ borderColor: sexColor }}
       >
         {parent.thumbnail_url
-          ? <img src={parent.thumbnail_url} alt="" className="h-full w-full object-cover" />
+          ? <Img w={200} src={parent.thumbnail_url} alt="" className="h-full w-full object-cover" />
           : <div className="flex h-full w-full items-center justify-center"><img src="/icon.svg?v=2" alt="" className="h-5 w-5 opacity-20" /></div>}
       </div>
       <div className="min-w-0">

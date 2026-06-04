@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import { ArrowLeft, Globe, Calendar, MapPin, ExternalLink, Sparkles, BadgeCheck } from 'lucide-react'
 import { isUUID } from '@/lib/slug'
 import { pastelByName } from '@/lib/avatars'
@@ -498,8 +499,7 @@ export default async function KennelDetailPage({
             <div className="flex items-start gap-4 sm:gap-5">
               <div className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
                 {kennel.logo_url ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={kennel.logo_url} alt={kennel.name} className="h-full w-full object-cover" />
+                  <Img w={200} src={kennel.logo_url} alt={kennel.name} className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: pastelByName(kennel.name) }}>
                     <span className="text-3xl sm:text-4xl font-semibold text-white">{kennel.name[0]?.toUpperCase()}</span>

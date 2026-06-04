@@ -11,6 +11,7 @@
  * El componente NO se renderiza si el owner no tiene al menos display_name
  * — esa gate la hace la página padre.
  */
+import { Img } from '@/components/ui/img'
 import { pastelByName } from '@/lib/avatars'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -44,8 +45,8 @@ export default async function AboutTeam({ owner, kennelName }: Props) {
       <article className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-7 flex flex-col sm:flex-row items-start gap-5 sm:gap-7">
         {/* Avatar */}
         {owner.avatar_url ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
+          <Img
+            w={480}
             src={owner.avatar_url}
             alt={name}
             className="h-20 w-20 sm:h-28 sm:w-28 rounded-2xl object-cover border border-hairline flex-shrink-0"

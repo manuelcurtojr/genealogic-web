@@ -7,6 +7,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createKennelAdminClient } from '@/lib/supabase/server'
+import { Img } from '@/components/ui/img'
 import {
   type ContentReport,
   REPORT_REASON_LABELS,
@@ -218,7 +219,8 @@ export default async function AdminReportDetailPage({
               <div className="flex items-start gap-4">
                 {targetData.thumbnail && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Img
+                    w={200}
                     src={targetData.thumbnail}
                     alt=""
                     className="w-20 h-20 rounded-lg object-cover border border-hairline flex-shrink-0"

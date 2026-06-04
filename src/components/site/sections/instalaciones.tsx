@@ -2,6 +2,7 @@
  * Secciones "Instalaciones" — light theme.
  */
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import { SectionHeader } from '@/components/site/section-primitives'
 import { GalleryGridLightbox } from './gallery-grid-client'
 import { getTranslator } from '@/lib/i18n'
@@ -23,8 +24,8 @@ export function FacilitiesHeroSection({
     <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-[#0a0a0a]">
       {bg && (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Img
+            w={1000}
             src={bg}
             alt=""
             className="absolute inset-0 w-full h-full object-cover scale-105 motion-safe:animate-[heroZoom_30s_ease-out_infinite_alternate]"

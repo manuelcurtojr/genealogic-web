@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { Img } from '@/components/ui/img'
 import { Search, Plus, Heart, Baby, ArrowLeft, Dna, CalendarRange, X } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import ReproduccionTab from '@/components/dogs/edit-tabs/reproduccion-tab'
@@ -128,7 +129,7 @@ export default function ReproWorkspace({ females, cycles, litters, userId }: Pro
                   className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition ${isSel ? 'bg-surface-card' : 'hover:bg-surface-soft'}`}>
                   <div className="relative flex-shrink-0">
                     {f.thumbnail_url
-                      ? <img src={f.thumbnail_url} alt="" className="h-9 w-9 rounded-full object-cover" />
+                      ? <Img w={200} src={f.thumbnail_url} alt="" className="h-9 w-9 rounded-full object-cover" />
                       : <div className="flex h-9 w-9 items-center justify-center rounded-full bg-pink-100"><Heart className="h-4 w-4 text-pink-500" /></div>}
                     <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-canvas ${STATE_DOT[info.state]}`} />
                   </div>
@@ -170,7 +171,7 @@ export default function ReproWorkspace({ females, cycles, litters, userId }: Pro
             <div className="flex items-center gap-3">
               <button onClick={() => setSelectedId(null)} className="lg:hidden rounded-lg p-1.5 text-muted hover:bg-surface-card hover:text-ink"><ArrowLeft className="h-5 w-5" /></button>
               {selected.thumbnail_url
-                ? <img src={selected.thumbnail_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+                ? <Img w={200} src={selected.thumbnail_url} alt="" className="h-10 w-10 rounded-full object-cover" />
                 : <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-100"><Heart className="h-4.5 w-4.5 text-pink-500" /></div>}
               <div className="min-w-0 flex-1">
                 <h2 className="truncate text-[18px] font-semibold tracking-[-0.01em] text-ink">{selected.name}</h2>

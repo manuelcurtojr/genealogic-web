@@ -18,6 +18,7 @@
  */
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { Img as ResizedImg } from '@/components/ui/img'
 import { useT } from '@/components/i18n/locale-provider'
 
 type Img = { url: string; alt?: string; width?: number; height?: number }
@@ -168,8 +169,8 @@ export function GalleryGridLightbox({
 
           {/* Imagen centrada */}
           <div className="relative z-[1] max-w-[92vw] max-h-[80vh] flex items-center justify-center animate-[lbZoom_220ms_ease-out]" onClick={(e) => e.stopPropagation()}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <ResizedImg
+              w={1000}
               src={images[openIdx].url}
               alt={images[openIdx].alt || ''}
               className="max-w-[92vw] max-h-[80vh] object-contain shadow-2xl"
@@ -215,8 +216,8 @@ function PhotoTile({
       className={`group relative ${masonry ? 'break-inside-avoid' : 'aspect-[4/3]'} overflow-hidden bg-surface-card ring-1 ring-hairline hover:ring-2 hover:ring-theme-accent transition-all duration-500 shadow-sm hover:shadow-2xl cursor-zoom-in w-full block`}
       style={{ borderRadius: 'var(--button-radius, 12px)' }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <ResizedImg
+        w={480}
         src={img.url}
         alt={img.alt || ''}
         loading="lazy"

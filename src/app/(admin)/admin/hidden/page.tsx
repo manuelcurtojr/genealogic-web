@@ -10,6 +10,7 @@
  */
 import Link from 'next/link'
 import { createKennelAdminClient } from '@/lib/supabase/server'
+import { Img } from '@/components/ui/img'
 import {
   HIDDEN_REASON_LABELS,
   HIDDEN_REASON_BADGE_COLORS,
@@ -241,7 +242,8 @@ export default async function AdminHiddenPage({
                       <Link href={url} className="flex items-center gap-2.5 group">
                         {row.thumbnail ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <Img
+                            w={120}
                             src={row.thumbnail}
                             alt=""
                             className="w-9 h-9 rounded-md object-cover border border-hairline grayscale opacity-60"

@@ -10,6 +10,7 @@ import {
   deletePostAction,
   uploadPostCoverAction,
 } from '@/lib/kennel/content-actions'
+import { Img } from '@/components/ui/img'
 import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
@@ -129,8 +130,7 @@ export default function PostEditor({ kennelId, initialPost }: Props) {
           <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted">{t('Imagen de portada')}</span>
           {coverUrl ? (
             <div className="mt-1.5 relative rounded-lg overflow-hidden border border-hairline aspect-[16/9] bg-surface-card">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+              <Img w={680} src={coverUrl} alt="" className="h-full w-full object-cover" />
               <button
                 type="button"
                 onClick={() => setCoverUrl(null)}

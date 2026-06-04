@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react'
+import { Img } from '@/components/ui/img'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2, Search, Globe, AlertTriangle, Check, X, Link2, ArrowLeftRight, Undo2, Sparkles, UploadCloud } from 'lucide-react'
@@ -1028,7 +1029,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
             <div className="p-5 space-y-3">
               {swaps[swapTarget] && (
                 <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full overflow-hidden bg-surface-card flex-shrink-0">{swaps[swapTarget].photo ? <img src={swaps[swapTarget].photo} alt="" className="w-full h-full object-cover" /> : null}</div>
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-surface-card flex-shrink-0">{swaps[swapTarget].photo ? <Img w={96} src={swaps[swapTarget].photo} alt="" className="w-full h-full object-cover" /> : null}</div>
                   <div className="flex-1"><p className="text-xs font-semibold text-green-400">{swaps[swapTarget].name}</p><p className="text-[10px] text-muted">{swaps[swapTarget].breed || t('Existente')}</p></div>
                   <button onClick={() => removeSwap(swapTarget)} className="text-xs text-red-400 hover:text-red-300">{t('Quitar')}</button>
                 </div>
@@ -1041,7 +1042,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
                 {swapSearching && <div className="text-center py-3"><Loader2 className="w-4 h-4 animate-spin text-muted mx-auto" /></div>}
                 {swapResults.map(d => (
                   <button key={d.id} onClick={() => applySwap(swapTarget, d)} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-body hover:bg-surface-card transition text-left">
-                    <div className="w-7 h-7 rounded-full overflow-hidden bg-surface-card border flex-shrink-0" style={{ borderColor: d.sex === 'male' ? '#017DFA' : '#e84393' }}>{d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}</div>
+                    <div className="w-7 h-7 rounded-full overflow-hidden bg-surface-card border flex-shrink-0" style={{ borderColor: d.sex === 'male' ? '#017DFA' : '#e84393' }}>{d.thumbnail_url ? <Img w={96} src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}</div>
                     <span className="truncate flex-1 font-medium">{d.name}</span>
                     <span className="text-[10px] text-muted">{(d.breed as any)?.name}</span>
                   </button>
@@ -1264,7 +1265,7 @@ function Card({ dog, swaps, isRoot, onSwap, onRemoveSwap }: { dog: ImportDog; sw
       <div className={`relative group rounded-xl overflow-hidden transition ${borderClass}`} style={{ minHeight: CH }}>
         <div className="flex items-stretch" style={{ minHeight: CH }}>
           <div className="flex-shrink-0 bg-surface-card relative" style={{ width: 48 }}>
-            {swap?.photo ? <img src={swap.photo} alt="" className="w-full h-full object-cover" /> : dog.photo_url ? <img src={dog.photo_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted text-sm">{dog.sex === 'Female' ? '♀' : '♂'}</div>}
+            {swap?.photo ? <Img w={200} src={swap.photo} alt="" className="w-full h-full object-cover" /> : dog.photo_url ? <Img w={200} src={dog.photo_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted text-sm">{dog.sex === 'Female' ? '♀' : '♂'}</div>}
             <div className="absolute top-0 right-0 bottom-0 w-[3px]" style={{ backgroundColor: sc }} />
           </div>
           <div className="flex-1 min-w-0 px-2 py-1.5 flex flex-col justify-center">

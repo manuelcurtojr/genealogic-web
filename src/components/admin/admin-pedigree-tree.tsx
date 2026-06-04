@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { Search, ArrowLeftRight, Plus, GitBranch } from 'lucide-react'
+import { Img } from '@/components/ui/img'
 
 interface PN {
   id: string; name: string; sex: string; registration: string | null
@@ -86,7 +87,7 @@ function Card({ n, isRoot, onClickDog }: { n: PN; isRoot?: boolean; onClickDog: 
       className={`flex items-stretch bg-surface-card border ${isRoot ? 'border-ink' : 'border-hairline'} rounded-xl overflow-hidden hover:bg-surface-card hover:border-hairline transition relative text-left`}
       style={{ width: CW, height: CH, flexShrink: 0 }}>
       <div className="flex-shrink-0 bg-surface-card relative" style={{ width: PH }}>
-        {n.photo_url ? <img src={n.photo_url} alt="" className="w-full h-full object-cover" /> :
+        {n.photo_url ? <Img w={120} src={n.photo_url} alt="" className="w-full h-full object-cover" /> :
           <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg?v=2" alt="" className="w-5 h-5 opacity-20" /></div>}
         <div className="absolute top-0 right-0 bottom-0 w-[3px]" style={{ backgroundColor: sc }} />
       </div>

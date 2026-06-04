@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
+import { Img } from '@/components/ui/img'
 import { getKennelBySlug } from '@/lib/kennel-site'
 import { getEnabledPages, DEFAULT_NAV_LABELS, pageHrefForHost } from '@/lib/kennel/pages'
 import { createClient } from '@/lib/supabase/server'
@@ -74,8 +75,7 @@ export default async function KennelSiteLayout({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 h-[64px] lg:h-[72px] flex items-center gap-3">
           <Link href={homeHref} className="flex items-center gap-2.5 min-w-0 group">
             {kennel.logo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={kennel.logo_url} alt={kennel.name} className="w-9 h-9 rounded-full object-cover border border-hairline group-hover:border-theme-accent transition-colors" />
+              <Img w={120} src={kennel.logo_url} alt={kennel.name} className="w-9 h-9 rounded-full object-cover border border-hairline group-hover:border-theme-accent transition-colors" />
             ) : (
               <div className="w-9 h-9 rounded-full bg-ink text-on-primary flex items-center justify-center text-sm font-bold group-hover:bg-theme-accent transition-colors">
                 {kennel.name[0]?.toUpperCase()}

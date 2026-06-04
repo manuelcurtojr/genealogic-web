@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
 import LitterFormPanel from './litter-form-panel'
 import DogFormPanel from '@/components/dogs/dog-form-panel'
+import { Img } from '@/components/ui/img'
 
 interface Litter {
   id: string
@@ -187,7 +188,7 @@ export default function LittersPageClient({
                 <div className="relative flex h-32 bg-surface-card">
                   <div className="relative flex-1 overflow-hidden">
                     {father?.thumbnail_url
-                      ? <img src={father.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                      ? <Img w={480} src={father.thumbnail_url} alt="" className="h-full w-full object-cover" />
                       : <div className="flex h-full w-full items-center justify-center text-2xl text-muted">♂</div>
                     }
                     <div className="absolute bottom-1.5 left-1.5 rounded bg-canvas px-1.5 py-0.5 text-[10.5px] font-medium text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
@@ -197,7 +198,7 @@ export default function LittersPageClient({
                   <div className="w-px bg-hairline" />
                   <div className="relative flex-1 overflow-hidden">
                     {mother?.thumbnail_url
-                      ? <img src={mother.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                      ? <Img w={480} src={mother.thumbnail_url} alt="" className="h-full w-full object-cover" />
                       : <div className="flex h-full w-full items-center justify-center text-2xl text-muted">♀</div>
                     }
                     <div className="absolute bottom-1.5 right-1.5 rounded bg-canvas px-1.5 py-0.5 text-[10.5px] font-medium text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
@@ -299,11 +300,11 @@ export default function LittersPageClient({
               >
                 <div className="flex flex-shrink-0 items-center gap-1.5">
                   <div className="h-10 w-10 overflow-hidden rounded-full border-2 bg-surface-card" style={{ borderColor: BRAND.male }}>
-                    {father?.thumbnail_url ? <img src={father.thumbnail_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-xs text-muted">♂</div>}
+                    {father?.thumbnail_url ? <Img w={120} src={father.thumbnail_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-xs text-muted">♂</div>}
                   </div>
                   <span className="text-[12px] text-muted">×</span>
                   <div className="h-10 w-10 overflow-hidden rounded-full border-2 bg-surface-card" style={{ borderColor: BRAND.female }}>
-                    {mother?.thumbnail_url ? <img src={mother.thumbnail_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-xs text-muted">♀</div>}
+                    {mother?.thumbnail_url ? <Img w={120} src={mother.thumbnail_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-xs text-muted">♀</div>}
                   </div>
                 </div>
                 <div className="min-w-0 flex-1">

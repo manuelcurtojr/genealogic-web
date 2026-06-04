@@ -21,6 +21,7 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, Filter, X } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 export interface DogPickerDog {
   id: string
@@ -194,7 +195,8 @@ export default function DogPicker({
                 >
                   {dog.thumbnail_url ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
+                    <Img
+                      w={200}
                       src={dog.thumbnail_url}
                       alt=""
                       loading="lazy"

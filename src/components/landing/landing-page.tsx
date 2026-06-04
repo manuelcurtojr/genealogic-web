@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import {
   ArrowRight,
   GitBranch,
@@ -327,7 +328,7 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
                           title={dog.name}
                         >
                           {dog.thumbnail_url && (
-                            <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover" />
+                            <Img src={dog.thumbnail_url} w={120} alt={dog.name} className="h-full w-full object-cover" />
                           )}
                         </Link>
                       ))}

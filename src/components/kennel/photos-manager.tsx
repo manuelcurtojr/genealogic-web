@@ -10,6 +10,7 @@ import {
   deleteKennelPhotoAction,
   updatePhotoCaptionAction,
 } from '@/lib/kennel/content-actions'
+import { Img } from '@/components/ui/img'
 import { useT } from '@/components/i18n/locale-provider'
 
 type Photo = {
@@ -175,8 +176,8 @@ function PhotoCard({ photo, kennelId }: { photo: Photo; kennelId: string }) {
   return (
     <figure className="group relative overflow-hidden rounded-xl border border-hairline bg-canvas">
       <div className="aspect-square overflow-hidden bg-surface-card">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Img
+          w={480}
           src={photo.url}
           alt={photo.caption || ''}
           loading="lazy"

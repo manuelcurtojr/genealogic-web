@@ -6,6 +6,7 @@
  *         nombre (deterministic — el mismo nombre siempre tiene el mismo
  *         color).
  */
+import { Img } from '@/components/ui/img'
 import { pastelByName } from '@/lib/avatars'
 
 interface Props {
@@ -24,8 +25,7 @@ export default function ReviewAvatar({ name, avatarUrl, size = 40 }: Props) {
         className="overflow-hidden rounded-full border border-hairline flex-shrink-0"
         style={{ width: sz, height: sz }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
+        <Img w={120} src={avatarUrl} alt={name} className="h-full w-full object-cover" />
       </div>
     )
   }

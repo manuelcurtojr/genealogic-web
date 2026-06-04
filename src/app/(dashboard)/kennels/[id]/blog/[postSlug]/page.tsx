@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import { Img } from '@/components/ui/img'
 import { createClient } from '@/lib/supabase/server'
 import { isUUID } from '@/lib/slug'
 import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
@@ -64,8 +65,7 @@ export default async function KennelBlogPostPage({
 
       {post.cover_image_url && (
         <div className="aspect-[16/9] overflow-hidden rounded-2xl border border-hairline bg-surface-card">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={post.cover_image_url} alt={post.cover_image_alt || ''} className="h-full w-full object-cover" />
+          <Img w={1000} src={post.cover_image_url} alt={post.cover_image_alt || ''} className="h-full w-full object-cover" />
         </div>
       )}
 

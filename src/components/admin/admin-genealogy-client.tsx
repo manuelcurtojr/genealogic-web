@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Search, GitBranch, AlertTriangle, Loader2, PanelLeftClose, PanelLeftOpen, X, Plus, Link2, Unlink } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
+import { Img } from '@/components/ui/img'
 import AdminPedigreeTree from './admin-pedigree-tree'
 
 interface Props {
@@ -202,7 +203,7 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
                       isSelected ? 'bg-surface-card' : 'hover:bg-surface-card'
                     }`}>
                     <div className="w-6 h-6 rounded-full overflow-hidden bg-surface-card border flex-shrink-0" style={{ borderColor: sexColor }}>
-                      {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> :
+                      {d.thumbnail_url ? <Img w={96} src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> :
                         <div className="w-full h-full flex items-center justify-center text-muted text-[8px]">{d.sex === 'male' ? '♂' : '♀'}</div>}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -296,7 +297,7 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
                       <button key={d.id} onClick={() => linkExisting(d.id)} disabled={saving}
                         className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs text-body hover:bg-surface-card transition text-left disabled:opacity-50">
                         <div className="w-7 h-7 rounded-full overflow-hidden bg-surface-card border flex-shrink-0" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
-                          {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
+                          {d.thumbnail_url ? <Img w={96} src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
                         </div>
                         <span className="truncate flex-1 font-medium">{d.name}</span>
                         {(d.breed as any)?.name && <span className="text-[10px] text-muted">{(d.breed as any).name}</span>}
@@ -351,7 +352,7 @@ export default function AdminGenealogyClient({ dogs, allDogs, breeds, colors, us
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               <div className="flex items-center gap-3 bg-surface-card border border-hairline rounded-xl p-4">
                 <div className="w-14 h-14 rounded-lg overflow-hidden bg-surface-card border-2 flex-shrink-0" style={{ borderColor: editNodeData.sex === 'male' ? BRAND.male : BRAND.female }}>
-                  {editNodeData.photo_url ? <img src={editNodeData.photo_url} alt="" className="w-full h-full object-cover" /> :
+                  {editNodeData.photo_url ? <Img w={120} src={editNodeData.photo_url} alt="" className="w-full h-full object-cover" /> :
                     <div className="w-full h-full flex items-center justify-center text-muted text-2xl">{editNodeData.sex === 'male' ? '♂' : '♀'}</div>}
                 </div>
                 <div>

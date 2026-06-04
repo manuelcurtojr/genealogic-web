@@ -14,6 +14,7 @@
  */
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
+import { Img } from '@/components/ui/img'
 import NewsletterSubscribe from './newsletter-subscribe'
 import { LEGAL_DOCS } from '@/lib/kennel/legal'
 import { getTranslator } from '@/lib/i18n'
@@ -66,8 +67,8 @@ export default async function KennelProFooter({
           <div className="order-2 lg:order-1">
             <div className="flex items-center gap-3">
               {kennelLogoUrl ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
+                <Img
+                  w={120}
                   src={kennelLogoUrl}
                   alt={kennelName}
                   className="h-12 w-12 rounded-2xl object-cover border border-hairline"

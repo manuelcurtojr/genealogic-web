@@ -17,6 +17,7 @@ import {
   Globe, Calendar, FileText,
 } from 'lucide-react'
 import { pastelByName } from '@/lib/avatars'
+import { Img } from '@/components/ui/img'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Usuario 360 · Admin · Genealogic' }
@@ -80,7 +81,8 @@ export default async function AdminUser360Page({
       <div className="flex items-start gap-4">
         {profile.avatar_url ? (
           /* eslint-disable-next-line @next/next/no-img-element */
-          <img
+          <Img
+            w={160}
             src={profile.avatar_url}
             alt=""
             className="h-16 w-16 rounded-2xl object-cover border border-hairline"

@@ -15,6 +15,7 @@ import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, ArrowRight, Clock } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 type BlogCard = {
   slug: string
@@ -117,7 +118,8 @@ export default function BlogSlider({ posts }: { posts: BlogCard[] }) {
                 className="group flex-shrink-0 w-[280px] sm:w-[320px] lg:w-[340px] snap-start rounded-2xl border border-hairline bg-canvas overflow-hidden hover:border-ink/30 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition"
               >
                 <div className="aspect-[16/10] overflow-hidden bg-surface-card relative">
-                  <img
+                  <Img
+                    w={680}
                     src={p.heroImage}
                     alt={p.heroAlt}
                     loading="lazy"

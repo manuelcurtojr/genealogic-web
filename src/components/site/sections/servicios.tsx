@@ -2,6 +2,7 @@
  * Sección "Servicios" — grid de servicios ofrecidos. Light theme.
  */
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 
 export function ServicesGridSection({
   title, subtitle, eyebrow, services = [], columns = 3,
@@ -30,8 +31,7 @@ export function ServicesGridSection({
             const Inner = (
               <div className="h-full rounded-2xl border border-hairline bg-canvas p-6 hover:border-ink/30 hover:shadow-sm transition">
                 {s.image_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={s.image_url} alt={s.title} className="w-full aspect-[16/9] object-cover rounded-lg mb-4" />
+                  <Img w={480} src={s.image_url} alt={s.title} className="w-full aspect-[16/9] object-cover rounded-lg mb-4" />
                 )}
                 {s.icon && !s.image_url && <div className="text-2xl mb-3">{s.icon}</div>}
                 <h3 className="text-lg font-bold text-ink mb-2">{s.title}</h3>

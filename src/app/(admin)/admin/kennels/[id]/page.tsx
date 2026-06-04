@@ -16,6 +16,7 @@ import {
   Globe, MapPin, ExternalLink, User as UserIcon,
 } from 'lucide-react'
 import { pastelByName } from '@/lib/avatars'
+import { Img } from '@/components/ui/img'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Criadero 360 · Admin · Genealogic' }
@@ -74,7 +75,8 @@ export default async function AdminKennel360Page({
       <div className="flex items-start gap-4">
         {kennel.logo_url ? (
           /* eslint-disable-next-line @next/next/no-img-element */
-          <img
+          <Img
+            w={200}
             src={kennel.logo_url}
             alt=""
             className="h-16 w-16 rounded-2xl object-cover border border-hairline"
@@ -125,7 +127,7 @@ export default async function AdminKennel360Page({
           >
             {owner.avatar_url ? (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={owner.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+              <Img w={96} src={owner.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
             ) : (
               <div
                 className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white"
@@ -209,7 +211,7 @@ export default async function AdminKennel360Page({
               >
                 {d.thumbnail_url ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={d.thumbnail_url} alt="" className="h-9 w-9 rounded-full object-cover" />
+                  <Img w={96} src={d.thumbnail_url} alt="" className="h-9 w-9 rounded-full object-cover" />
                 ) : (
                   <div className="h-9 w-9 rounded-full bg-surface-card flex items-center justify-center text-[10px] text-muted">
                     {d.sex === 'male' ? '♂' : d.sex === 'female' ? '♀' : '?'}

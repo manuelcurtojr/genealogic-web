@@ -1,6 +1,7 @@
 /**
  * Sección "Nuestra historia" — light theme.
  */
+import { Img } from '@/components/ui/img'
 
 export function StoryHeroSection({
   eyebrow, title, subtitle, background_image_url, bg_image_url,
@@ -17,8 +18,8 @@ export function StoryHeroSection({
     <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-[#0a0a0a]">
       {bg && (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Img
+            w={1000}
             src={bg}
             alt=""
             className="absolute inset-0 w-full h-full object-cover scale-105 motion-safe:animate-[heroZoom_30s_ease-out_infinite_alternate]"
@@ -73,8 +74,7 @@ export function TimelineSection({
                 <p className="text-sm text-body leading-relaxed">{it.body}</p>
               )}
               {it.image_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={it.image_url} alt={it.title} className="mt-4 rounded-xl border border-hairline w-full max-w-md" />
+                <Img w={480} src={it.image_url} alt={it.title} className="mt-4 rounded-xl border border-hairline w-full max-w-md" />
               )}
             </li>
           ))}
@@ -100,8 +100,7 @@ export function TeamSection({
           {members.map((m, i) => (
             <div key={i} className="rounded-xl border border-hairline bg-canvas p-5 text-center">
               {m.photo_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={m.photo_url} alt={m.name} className="w-24 h-24 rounded-full mx-auto object-cover mb-3" />
+                <Img w={200} src={m.photo_url} alt={m.name} className="w-24 h-24 rounded-full mx-auto object-cover mb-3" />
               )}
               <p className="text-base font-bold text-ink">{m.name}</p>
               {m.role && <p className="text-xs text-muted">{m.role}</p>}

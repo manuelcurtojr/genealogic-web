@@ -9,6 +9,7 @@ import {
   ExternalLink, AlertCircle, Trash2, Bot, MessageSquare, Send,
 } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 // ─── Tipos compartidos ───────────────────────────────────────────────
 
@@ -457,7 +458,7 @@ function AccionesTab({
           >
             <div className="flex items-center gap-3">
               {assignedDog.thumbnail_url ? (
-                <img src={assignedDog.thumbnail_url} alt="" className="h-10 w-10 flex-shrink-0 rounded-full object-cover" />
+                <Img w={120} src={assignedDog.thumbnail_url} alt="" className="h-10 w-10 flex-shrink-0 rounded-full object-cover" />
               ) : (
                 <div className="h-10 w-10 flex-shrink-0 rounded-full bg-surface-card" />
               )}
@@ -800,7 +801,7 @@ function AssignDogDialog({
                         }`}
                       >
                         {d.thumbnail_url ? (
-                          <img src={d.thumbnail_url} alt="" className="h-8 w-8 flex-shrink-0 rounded-full object-cover" />
+                          <Img w={96} src={d.thumbnail_url} alt="" className="h-8 w-8 flex-shrink-0 rounded-full object-cover" />
                         ) : (
                           <div className="h-8 w-8 flex-shrink-0 rounded-full bg-surface-card" />
                         )}

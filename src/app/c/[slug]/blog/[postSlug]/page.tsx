@@ -4,6 +4,7 @@
  */
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Img } from '@/components/ui/img'
 import { getKennelBySlug } from '@/lib/kennel-site'
 import { getPostBySlug, getPublishedPostsByKennel } from '@/lib/kennel/data'
 import { getTranslator } from '@/lib/i18n'
@@ -72,8 +73,9 @@ export default async function BlogPostPage({ params }: { params: Promise<Params>
       {/* Hero del post — con cover (si la tiene) o sin */}
       {post.cover_image_url ? (
         <header className="relative min-h-[50vh] flex items-end overflow-hidden bg-[#0a0a0a]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Img
+            w={1000}
+            loading="eager"
             src={post.cover_image_url}
             alt={post.cover_image_alt ?? ''}
             className="absolute inset-0 w-full h-full object-cover scale-105 motion-safe:animate-[heroZoom_30s_ease-out_infinite_alternate]"
@@ -182,8 +184,7 @@ export default async function BlogPostPage({ params }: { params: Promise<Params>
                 >
                   {p.cover_image_url && (
                     <div className="aspect-[16/9] bg-surface-card overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.cover_image_url} alt={p.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700" />
+                      <Img w={680} src={p.cover_image_url} alt={p.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700" />
                     </div>
                   )}
                   <div className="p-5">

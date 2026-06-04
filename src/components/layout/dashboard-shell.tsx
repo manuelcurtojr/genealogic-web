@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { Img } from '@/components/ui/img'
 import { Menu, Bell, LayoutDashboard, Dog, Calendar, Settings, Sparkles } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
@@ -282,7 +283,7 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
           </button>
           <Link href="/settings" className={`w-9 h-9 rounded-full overflow-hidden border-2 ${avatarBg} cursor-pointer block`}>
             {user?.avatar_url ? (
-              <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+              <Img src={user.avatar_url} w={120} alt="" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-surface-card flex items-center justify-center text-ink text-xs font-bold">
                 {(user?.display_name || '?')[0].toUpperCase()}

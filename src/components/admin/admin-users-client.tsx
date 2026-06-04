@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Search } from 'lucide-react'
 import AdminUserPanel from './admin-user-panel'
 import { pastelByName } from '@/lib/avatars'
+import { Img } from '@/components/ui/img'
 
 interface Props { initialUsers: any[] }
 
@@ -94,7 +95,7 @@ export default function AdminUsersClient({ initialUsers }: Props) {
                         className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
                         style={u.avatar_url ? undefined : { backgroundColor: pastelByName(u.display_name || u.email) }}
                       >
-                        {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-full h-full object-cover" /> :
+                        {u.avatar_url ? <Img w={120} src={u.avatar_url} alt="" className="w-full h-full object-cover" /> :
                           <span className="text-white text-xs font-bold">{(u.display_name || u.email || '?')[0].toUpperCase()}</span>}
                       </div>
                       <div className="min-w-0">

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Search, ArrowRightLeft, Dog, Check, AlertTriangle } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
+import { Img } from '@/components/ui/img'
 import FeedbackButton from '@/components/feedback/feedback-button'
 import { useT } from '@/components/i18n/locale-provider'
 
@@ -139,7 +140,7 @@ export default function TransferPanel({ open, onClose, dog, kennelName }: Props)
           <div className="flex items-center gap-3 bg-surface-card border border-hairline rounded-xl p-3">
             <div className="w-14 h-14 rounded-lg overflow-hidden bg-surface-card flex-shrink-0">
               {dog.thumbnail_url ? (
-                <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                <Img w={200} src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center"><Dog className="w-6 h-6 text-muted" /></div>
               )}

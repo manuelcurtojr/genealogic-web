@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { Img } from '@/components/ui/img'
 import { createClient } from '@/lib/supabase/client'
 import { Stethoscope, Plus, Check, Clock, AlertTriangle, Syringe, Bug, Search as SearchIcon, Filter, Dog, X, Loader2, Sparkles, Calendar } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
@@ -266,7 +267,7 @@ export default function VetRemindersClient({ initialReminders, dogs, templates, 
                       className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full border-2 bg-surface-card"
                       style={{ borderColor: sexColor }}
                     >
-                      {dog?.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="h-full w-full object-cover" /> : null}
+                      {dog?.thumbnail_url ? <Img w={200} src={dog.thumbnail_url} alt="" className="h-full w-full object-cover" /> : null}
                     </div>
                     <span className="truncate text-[13px] font-medium text-ink">{dog?.name || '?'}</span>
                   </div>
@@ -410,7 +411,7 @@ function DogSearchFilter({ dogs, value, onChange, placeholder }: {
                   d.id === value ? 'bg-surface-card text-ink' : 'text-body hover:bg-surface-card'
                 }`}>
                 <div className="w-5 h-5 rounded-full overflow-hidden bg-surface-card flex-shrink-0 border" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
-                  {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
+                  {d.thumbnail_url ? <Img w={200} src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
                 </div>
                 <span className="truncate">{d.name}</span>
               </button>
@@ -466,7 +467,7 @@ function AutoGenerateButton({ dogs, generatingFor, onGenerate }: {
                 disabled={generatingFor === d.id}
                 className="w-full flex items-center gap-2 px-3 py-2 text-xs text-body hover:bg-surface-card transition text-left disabled:opacity-50">
                 <div className="w-5 h-5 rounded-full overflow-hidden bg-surface-card flex-shrink-0 border" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
-                  {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
+                  {d.thumbnail_url ? <Img w={200} src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
                 </div>
                 <span className="truncate flex-1">{d.name}</span>
                 {generatingFor === d.id && <Loader2 className="w-3 h-3 animate-spin" />}

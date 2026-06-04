@@ -11,6 +11,7 @@ import { BRAND } from '@/lib/constants'
 import SortSelect, { useSortPreference, sortItems } from '@/components/ui/sort-select'
 import { createClient } from '@/lib/supabase/client'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 interface Dog {
   id: string
@@ -431,7 +432,7 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
                   style={{ borderColor: sexColor }}
                 >
                   {dog.thumbnail_url
-                    ? <img src={dog.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                    ? <Img w={200} src={dog.thumbnail_url} alt="" className="h-full w-full object-cover" />
                     : <div className="flex h-full w-full items-center justify-center text-[14px] text-muted">{dog.sex === 'male' ? '♂' : '♀'}</div>
                   }
                 </div>

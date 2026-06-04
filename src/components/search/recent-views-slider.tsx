@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Clock, Dog, Home, Tag, X } from 'lucide-react'
 import { getRecentViews, clearRecentViews, hrefForRecent, type RecentItem, type RecentType } from '@/lib/recent-views'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 const ICON: Record<RecentType, typeof Dog> = { dog: Dog, kennel: Home, breed: Tag }
 const TYPE_LABEL: Record<RecentType, string> = { dog: 'Perro', kennel: 'Criadero', breed: 'Raza' }
@@ -50,7 +51,7 @@ export default function RecentViewsSlider() {
               <div className="relative aspect-[4/3] overflow-hidden bg-surface-card">
                 {it.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={it.image} alt="" className="h-full w-full object-cover" />
+                  <Img w={240} src={it.image} alt="" className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">
                     <Icon className="h-7 w-7 text-muted/40" />

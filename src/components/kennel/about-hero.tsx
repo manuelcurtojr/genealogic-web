@@ -10,6 +10,7 @@
  * Cualquier chip que no tenga dato se omite sin dejar hueco.
  */
 import { Calendar, MapPin, Medal, Milestone } from 'lucide-react'
+import { Img } from '@/components/ui/img'
 import { pastelByName } from '@/lib/avatars'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -62,8 +63,8 @@ export default async function AboutHero({
       <div className="flex items-center gap-5 sm:gap-6">
         {/* Logo / avatar grande */}
         {logoUrl ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
+          <Img
+            w={1000}
             src={logoUrl}
             alt={kennelName}
             className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl object-cover border border-hairline shadow-[0_4px_20px_rgba(0,0,0,0.06)] flex-shrink-0"

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { Img } from '@/components/ui/img'
 import { X, Plus, Link2, Unlink, Search, Loader2, GitBranch, Check } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { useT } from '@/components/i18n/locale-provider'
@@ -257,7 +258,7 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
                       <button key={d.id} onClick={() => linkExisting(d.id)} disabled={saving}
                         className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-body hover:bg-surface-card transition text-left disabled:opacity-50">
                         <div className="w-8 h-8 rounded-full overflow-hidden bg-surface-card border-2 flex-shrink-0" style={{ borderColor: d.sex === 'male' ? BRAND.male : BRAND.female }}>
-                          {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : null}
+                          {d.thumbnail_url ? <Img src={d.thumbnail_url} w={96} alt="" className="w-full h-full object-cover" /> : null}
                         </div>
                         <span className="truncate flex-1 font-medium">{d.name}</span>
                         {d.breed?.name && <span className="text-[10px] text-muted">{d.breed.name}</span>}
@@ -288,7 +289,7 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
                 <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
                   <div className="flex items-center gap-3 bg-surface-card border border-hairline rounded-xl p-4">
                     <div className="w-14 h-14 rounded-lg overflow-hidden bg-surface-card border-2 flex-shrink-0" style={{ borderColor: editNodeData.sex === 'male' ? BRAND.male : BRAND.female }}>
-                      {editNodeData.photo_url ? <img src={editNodeData.photo_url} alt="" className="w-full h-full object-cover" /> :
+                      {editNodeData.photo_url ? <Img src={editNodeData.photo_url} w={200} alt="" className="w-full h-full object-cover" /> :
                         <div className="w-full h-full flex items-center justify-center text-muted text-2xl">{editNodeData.sex === 'male' ? '♂' : '♀'}</div>}
                     </div>
                     <div>

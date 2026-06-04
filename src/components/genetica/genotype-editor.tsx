@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Img } from '@/components/ui/img'
 import { createClient } from '@/lib/supabase/client'
 import { Dna, Save, Loader2, Check, Palette, Microscope } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
@@ -69,7 +70,7 @@ export default function GenotypeEditor({ dog, initialGenotypes, breedColors, all
       <div className="flex items-center justify-between rounded-xl border border-hairline bg-canvas px-5 py-4">
         <div className="flex items-center gap-3">
           {dog.thumbnail_url ? (
-            <img src={dog.thumbnail_url} alt={dog.name} className="h-12 w-12 rounded-full object-cover" />
+            <Img w={120} src={dog.thumbnail_url} alt={dog.name} className="h-12 w-12 rounded-full object-cover" />
           ) : (
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-card">
               <Dna className="h-5 w-5 text-muted" />

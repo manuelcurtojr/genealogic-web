@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Search, Store, Dog, ExternalLink, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import AdminKennelPanel from './admin-kennel-panel'
+import { Img } from '@/components/ui/img'
 
 interface Props { kennels: any[] }
 
@@ -72,7 +73,7 @@ export default function AdminKennelsClient({ kennels: initKennels }: Props) {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div className={`w-8 h-8 rounded-lg overflow-hidden bg-surface-card border border-hairline flex-shrink-0 flex items-center justify-center ${k.hidden_at ? 'grayscale opacity-50' : ''}`}>
-                        {k.logo_url ? <img src={k.logo_url} alt="" className="w-full h-full object-cover" /> : <Store className="w-4 h-4 text-muted" />}
+                        {k.logo_url ? <Img w={120} src={k.logo_url} alt="" className="w-full h-full object-cover" /> : <Store className="w-4 h-4 text-muted" />}
                       </div>
                       <span className="text-sm font-medium">{k.name}</span>
                       {k.hidden_at && (

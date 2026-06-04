@@ -19,6 +19,7 @@
  */
 import Link from 'next/link'
 import { Globe } from 'lucide-react'
+import { Img } from '@/components/ui/img'
 import { pastelByName } from '@/lib/avatars'
 import type { ExtraPageId } from '@/lib/kennel/pro-web'
 import KennelChromeNav from './kennel-chrome-nav'
@@ -76,8 +77,7 @@ export default function KennelChrome({
           {/* Identidad — un poco más grande para emparejar el peso del nav */}
           <Link href={`/kennels/${kennelSlug}`} className="flex items-center gap-2.5 min-w-0 group">
             {logoUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={logoUrl} alt={kennelName} className="h-7 w-7 rounded-full object-cover border border-hairline flex-shrink-0" />
+              <Img w={120} src={logoUrl} alt={kennelName} className="h-7 w-7 rounded-full object-cover border border-hairline flex-shrink-0" />
             ) : (
               <div
                 className="h-7 w-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
@@ -112,8 +112,8 @@ export default function KennelChrome({
         <div className="w-full px-4 sm:px-6 lg:px-10 h-16 sm:h-[72px] flex items-center gap-3">
           <Link href={homeHref} className="flex items-center gap-2.5 min-w-0 group">
             {logoUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
+              <Img
+                w={120}
                 src={logoUrl}
                 alt={kennelName}
                 className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover border border-hairline flex-shrink-0 group-hover:border-[#FE6620] transition-colors"

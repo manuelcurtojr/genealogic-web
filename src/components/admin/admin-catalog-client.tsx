@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Search, Plus, Trash2, Pencil, Check, X, Dog, Palette, Image, Loader2 } from 'lucide-react'
+import { Img } from '@/components/ui/img'
 
 interface Props {
   breeds: any[]
@@ -153,7 +154,7 @@ export default function AdminCatalogClient({ breeds: initBreeds, colors: initCol
             {/* Color thumbnail */}
             {tab === 'colors' && (
               <div className="w-8 h-8 rounded-lg overflow-hidden bg-surface-card border border-hairline flex-shrink-0">
-                {item.thumbnail_url ? <img src={item.thumbnail_url} alt="" className="w-full h-full object-cover" /> :
+                {item.thumbnail_url ? <Img w={96} src={item.thumbnail_url} alt="" className="w-full h-full object-cover" /> :
                   <div className="w-full h-full flex items-center justify-center"><Palette className="w-3 h-3 text-muted" /></div>}
               </div>
             )}
@@ -210,7 +211,7 @@ export default function AdminCatalogClient({ breeds: initBreeds, colors: initCol
                       {isLinked && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <div className="w-7 h-7 rounded-md overflow-hidden bg-surface-card border border-hairline flex-shrink-0">
-                      {c.thumbnail_url ? <img src={c.thumbnail_url} alt="" className="w-full h-full object-cover" /> :
+                      {c.thumbnail_url ? <Img w={96} src={c.thumbnail_url} alt="" className="w-full h-full object-cover" /> :
                         <div className="w-full h-full flex items-center justify-center"><Palette className="w-3 h-3 text-muted" /></div>}
                     </div>
                     <span className="text-xs font-medium flex-1">{c.name}</span>
@@ -235,7 +236,7 @@ export default function AdminCatalogClient({ breeds: initBreeds, colors: initCol
               {/* Preview */}
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-xl overflow-hidden bg-surface-card border border-hairline flex-shrink-0">
-                  {colorForm.thumbnail_url ? <img src={colorForm.thumbnail_url} alt="" className="w-full h-full object-cover" /> :
+                  {colorForm.thumbnail_url ? <Img w={200} src={colorForm.thumbnail_url} alt="" className="w-full h-full object-cover" /> :
                     <div className="w-full h-full flex items-center justify-center"><Image className="w-6 h-6 text-muted" /></div>}
                 </div>
                 <div className="flex-1">

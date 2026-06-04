@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Tag, MapPin, DollarSign, Dog } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
+import { Img } from '@/components/ui/img'
 import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
@@ -140,7 +141,7 @@ export default function SalePanel({ open, onClose, dog }: Props) {
             {/* Dog info */}
             <div className="flex items-center gap-3 bg-surface-card border border-hairline rounded-xl p-3">
               <div className="w-14 h-14 rounded-lg overflow-hidden bg-surface-card flex-shrink-0">
-                {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-6 h-6 text-muted" /></div>}
+                {dog.thumbnail_url ? <Img w={200} src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-6 h-6 text-muted" /></div>}
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold truncate">{dog.name}</p>

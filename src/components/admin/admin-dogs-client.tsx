@@ -7,6 +7,7 @@ import Link from 'next/link'
 import DogFormPanel from '@/components/dogs/dog-form-panel'
 import PedigreeEditor from '@/components/pedigree/pedigree-editor'
 import { BRAND } from '@/lib/constants'
+import { Img } from '@/components/ui/img'
 
 interface Props {
   userId: string
@@ -177,7 +178,7 @@ export default function AdminDogsClient({ userId, breeds, kennels }: Props) {
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-3">
                       <div className={`w-9 h-9 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card ${dog.hidden_at ? 'grayscale opacity-50' : ''}`} style={{ borderColor: sexColor }}>
-                        {dog.thumbnail_url ? <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted text-xs">{dog.sex === 'male' ? '♂' : '♀'}</div>}
+                        {dog.thumbnail_url ? <Img w={200} src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted text-xs">{dog.sex === 'male' ? '♂' : '♀'}</div>}
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">

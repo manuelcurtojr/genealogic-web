@@ -9,6 +9,7 @@
  */
 import { GitBranch, Lock, ShieldCheck } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 export default function PedigreeTreeMockup({
   photos = [],
@@ -155,7 +156,7 @@ function PedCard({
       <div className="relative flex-shrink-0 overflow-hidden" style={{ width: 56, background: fallbackBg }}>
         {photo && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+          <Img w={120} src={photo} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
         )}
         <div className="absolute bottom-0 right-0 top-0 w-[3px]" style={{ backgroundColor: stripe }} />
       </div>

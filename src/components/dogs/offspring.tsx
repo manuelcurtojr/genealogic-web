@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 import { sortDogsPhotoFirst } from '@/lib/dogs/sort'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 interface OffspringProps {
   dogId: string
@@ -75,7 +76,7 @@ export default function Offspring({ dogId, dogSex }: OffspringProps) {
             >
               <div className="relative w-[140px] h-[140px] bg-surface-card">
                 {dog.thumbnail_url ? (
-                  <img src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
+                  <Img w={200} src={dog.thumbnail_url} alt={dog.name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted text-3xl">
                     {dog.sex === 'male' ? '♂' : '♀'}

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import KennelEditPanel from './kennel-edit-panel'
 import ContactFormBuilder from './contact-form-builder'
+import { Img } from '@/components/ui/img'
 import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
@@ -145,8 +146,7 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
       <section className="flex flex-col gap-4 rounded-2xl border border-hairline bg-canvas p-5 sm:flex-row sm:items-center">
         <div className="relative h-16 w-16 flex-shrink-0">
           {kennel.logo_url ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={kennel.logo_url} alt={kennel.name} className="h-full w-full rounded-2xl object-cover" />
+            <Img w={200} src={kennel.logo_url} alt={kennel.name} className="h-full w-full rounded-2xl object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center rounded-2xl bg-surface-card text-muted text-xl font-semibold">
               {kennel.name?.[0]?.toUpperCase() || '?'}

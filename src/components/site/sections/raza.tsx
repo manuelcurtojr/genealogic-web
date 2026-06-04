@@ -1,6 +1,7 @@
 /**
  * Secciones de "Sobre la raza" — bloques estáticos editables por el criador.
  */
+import { Img } from '@/components/ui/img'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
@@ -24,8 +25,8 @@ export async function BreedHeroSection(props: {
     <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-[#0a0a0a]">
       {bg && (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Img
+            w={1000}
             src={bg}
             alt=""
             className="absolute inset-0 w-full h-full object-cover scale-105 motion-safe:animate-[heroZoom_30s_ease-out_infinite_alternate]"
@@ -109,8 +110,7 @@ export async function BreedColorsSection(props: {
             <div key={i} className="rounded-xl border border-hairline bg-canvas overflow-hidden">
               {c.image_url ? (
                 <div className="aspect-square bg-surface-card overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={c.image_url} alt={c.name} loading="lazy" className="w-full h-full object-cover" />
+                  <Img w={480} src={c.image_url} alt={c.name} loading="lazy" className="w-full h-full object-cover" />
                 </div>
               ) : c.hex ? (
                 <div className="aspect-square" style={{ background: c.hex }} />

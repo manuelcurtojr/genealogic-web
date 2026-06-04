@@ -9,6 +9,7 @@ import { useT } from '@/components/i18n/locale-provider'
 import { Portal } from '@/components/ui/portal'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
+import { Img } from '@/components/ui/img'
 
 interface LitterFormPanelProps {
   open: boolean
@@ -294,7 +295,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                         <Link key={pup.id} href={`/dogs/${pup.slug || pup.id}`}
                           className="flex items-center gap-2.5 bg-surface-card border border-hairline rounded-lg px-3 py-2 hover:border-white/15 transition">
                           <div className="w-8 h-8 rounded-lg overflow-hidden bg-surface-card flex-shrink-0 border" style={{ borderColor: sexColor }}>
-                            {pup.thumbnail_url ? <img src={pup.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-4 h-4 text-muted" /></div>}
+                            {pup.thumbnail_url ? <Img w={200} src={pup.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-4 h-4 text-muted" /></div>}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold truncate">{pup.name}</p>
@@ -361,7 +362,7 @@ function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
           <>
             {selected.image && (
               <div className="w-6 h-6 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor || BRAND.primary }}>
-                <img src={selected.image} alt="" className="w-full h-full object-cover" />
+                <Img w={96} src={selected.image} alt="" className="w-full h-full object-cover" />
               </div>
             )}
             <span className="flex-1 truncate text-ink">{selected.name}</span>
@@ -407,7 +408,7 @@ function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
                       style={{ borderColor: sexColor || BRAND.primary }}
                     >
                       {item.image
-                        ? <img src={item.image} alt="" className="h-full w-full object-cover" />
+                        ? <Img w={96} src={item.image} alt="" className="h-full w-full object-cover" />
                         : <div className="flex h-full w-full items-center justify-center"><img src="/icon.svg?v=2" alt="" className="h-3.5 w-3.5 opacity-30" /></div>
                       }
                     </div>
@@ -435,7 +436,7 @@ function LockedField({ label, dogs, value, sex }: { label: string; dogs: any[]; 
           <>
             <div className="h-6 w-6 flex-shrink-0 overflow-hidden rounded-full border-2 bg-surface-card" style={{ borderColor: sexColor }}>
               {dog.thumbnail_url
-                ? <img src={dog.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                ? <Img w={96} src={dog.thumbnail_url} alt="" className="h-full w-full object-cover" />
                 : <div className="flex h-full w-full items-center justify-center text-[10px] text-muted">{sex === 'male' ? '♂' : '♀'}</div>
               }
             </div>

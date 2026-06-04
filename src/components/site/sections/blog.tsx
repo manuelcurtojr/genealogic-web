@@ -2,6 +2,7 @@
  * Secciones de Blog — leen de kennel_posts. Light theme.
  */
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import { getCurrentKennel } from '@/lib/kennel-context'
 import { getTranslator } from '@/lib/i18n'
@@ -64,8 +65,7 @@ export async function FeaturedPostSection({ mode = 'latest' }: { mode?: 'latest'
           <article className="rounded-2xl border border-hairline bg-canvas overflow-hidden hover:border-ink/30 hover:shadow-sm transition">
             {p.cover_image_url && (
               <div className="aspect-[21/9] bg-surface-card overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.cover_image_url} alt={p.title} className="w-full h-full object-cover" />
+                <Img w={1000} src={p.cover_image_url} alt={p.title} className="w-full h-full object-cover" />
               </div>
             )}
             <div className="p-6 lg:p-8">
@@ -112,8 +112,7 @@ export async function PostsGridSection({ limit = 9, title, eyebrow }: { limit?: 
                 <article className="rounded-xl border border-hairline bg-canvas overflow-hidden hover:border-ink/30 hover:shadow-sm transition h-full flex flex-col">
                   {p.cover_image_url && (
                     <div className="aspect-[16/9] bg-surface-card overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.cover_image_url} alt={p.title} loading="lazy" className="w-full h-full object-cover" />
+                      <Img w={480} src={p.cover_image_url} alt={p.title} loading="lazy" className="w-full h-full object-cover" />
                     </div>
                   )}
                   <div className="p-5 flex-1 flex flex-col">

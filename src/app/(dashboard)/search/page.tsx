@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Search, Dog, Home, Tag, ChevronRight } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { DogImage } from '@/components/ui/dog-image'
+import { Img } from '@/components/ui/img'
 import DirectoryTabs from '@/components/search/directory-tabs'
 import RecentViewsSlider from '@/components/search/recent-views-slider'
 import { useT } from '@/components/i18n/locale-provider'
@@ -138,7 +139,7 @@ export default function SearchPage() {
                 {kennels.map((k) => (
                   <Link key={k.id} href={`/kennels/${k.slug || k.id}`} className="group flex items-center gap-3 rounded-xl border border-hairline bg-canvas p-3.5 transition-colors hover:bg-surface-soft">
                     <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface-card">
-                      {k.logo_url ? <img src={k.logo_url} alt="" className="h-full w-full object-cover" /> : <Home className="h-5 w-5 text-muted" />}
+                      {k.logo_url ? <Img w={120} src={k.logo_url} alt="" className="h-full w-full object-cover" /> : <Home className="h-5 w-5 text-muted" />}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[14px] font-medium text-ink">{k.name}</p>
@@ -157,7 +158,7 @@ export default function SearchPage() {
                 {breeds.map((b) => (
                   <Link key={b.id} href={b.slug ? `/razas/${b.slug}` : '/razas'} className="group flex items-center gap-3 rounded-xl border border-hairline bg-canvas p-3.5 transition-colors hover:bg-surface-soft">
                     <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface-card">
-                      {b.sample_thumbnail ? <img src={b.sample_thumbnail} alt="" className="h-full w-full object-cover" /> : <Tag className="h-5 w-5 text-muted" />}
+                      {b.sample_thumbnail ? <Img w={120} src={b.sample_thumbnail} alt="" className="h-full w-full object-cover" /> : <Tag className="h-5 w-5 text-muted" />}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[14px] font-medium text-ink">{b.name}</p>

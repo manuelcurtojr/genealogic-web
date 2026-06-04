@@ -22,6 +22,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { useT } from '@/components/i18n/locale-provider'
 import OwnerFormPanel from '@/components/clientes/owner-form-panel'
+import { Img } from '@/components/ui/img'
 
 export type Subscriber = {
   id: string
@@ -541,7 +542,8 @@ function ClientsTable({
                     >
                       {c.last_dog.thumbnail_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Img
+                          w={120}
                           src={c.last_dog.thumbnail_url}
                           alt={c.last_dog.name}
                           className="w-7 h-7 rounded object-cover border border-hairline"

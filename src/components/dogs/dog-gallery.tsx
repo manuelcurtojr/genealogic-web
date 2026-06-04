@@ -7,6 +7,7 @@ import Lightbox from '@/components/ui/lightbox'
 import AiUpscaledBadge from '@/components/dogs/ai-upscaled-badge'
 import { videoEmbedUrl, type VideoProvider } from '@/lib/video'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 export interface MediaItem {
   /** Foto, o PORTADA del vídeo. */
@@ -61,7 +62,7 @@ export default function DogGallery({ media, name, sex, upscaledPhotoUrl, upscale
     <div className="relative h-full w-full cursor-pointer" onClick={() => openItem(i)}>
       {m.type === 'video' ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={m.url} alt={`${name} ${t('vídeo')}`} className="h-full w-full object-cover" />
+        <Img w={480} src={m.url} alt={`${name} ${t('vídeo')}`} className="h-full w-full object-cover" />
       ) : (
         <Image src={m.url} alt={`${name} ${i + 1}`} fill sizes={sizes} priority={priority} className="object-cover transition-opacity hover:opacity-90" />
       )}

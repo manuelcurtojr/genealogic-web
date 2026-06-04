@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import { usePathname } from 'next/navigation'
 import {
   Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings, LogOut, X,
@@ -224,7 +225,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
           <div className="border-t border-hairline p-2 flex justify-center flex-shrink-0">
             <div className="w-9 h-9 rounded-full overflow-hidden border border-hairline">
               {user.avatar_url ? (
-                <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                <Img src={user.avatar_url} w={120} alt="" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-surface-card flex items-center justify-center text-ink text-xs font-semibold">
                   {user.display_name?.[0]?.toUpperCase() || '?'}

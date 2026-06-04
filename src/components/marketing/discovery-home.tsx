@@ -28,6 +28,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import {
   ArrowRight, Search, Store, Dog, GitBranch, ShieldCheck,
   Sparkles, Camera, Calendar, Globe, Mail, KanbanSquare,
@@ -475,7 +476,7 @@ export default function DiscoveryHome({
               {featuredDogs.slice(0, 6).map((dog) => (
                 <Link key={dog.id} href={`/dogs/${dog.slug || dog.id}`} className="group relative block overflow-hidden rounded-2xl bg-surface-card aspect-square">
                   {dog.thumbnail_url ? (
-                    <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
+                    <Img src={dog.thumbnail_url} w={480} alt={dog.name} className="h-full w-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted"><Dog className="w-10 h-10 opacity-20" /></div>
                   )}
@@ -531,7 +532,7 @@ export default function DiscoveryHome({
                 <Link key={breed.id} href={`/search?breed_id=${breed.id}`} className="group relative overflow-hidden rounded-2xl border border-hairline bg-canvas hover:border-ink/30 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all">
                   <div className="aspect-[16/10] overflow-hidden bg-surface-card">
                     {(breed.image_url || breed.sample_thumbnail) ? (
-                      <img src={breed.image_url || breed.sample_thumbnail || ''} alt={breed.name} className="h-full w-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
+                      <Img src={breed.image_url || breed.sample_thumbnail || ''} w={480} alt={breed.name} className="h-full w-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center"><Dog className="w-10 h-10 text-muted/30" /></div>
                     )}
@@ -588,7 +589,7 @@ export default function DiscoveryHome({
                   <div className="p-4 flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl overflow-hidden bg-surface-card ring-2 ring-canvas flex-shrink-0">
                       {k.logo_url ? (
-                        <img src={k.logo_url} alt="" className="h-full w-full object-cover" />
+                        <Img src={k.logo_url} w={120} alt="" className="h-full w-full object-cover" />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center"><Store className="w-5 h-5 text-muted opacity-30" /></div>
                       )}
@@ -834,7 +835,7 @@ function ProductShowcase({ featuredDogs, galgoDogs, showcaseDog }: { featuredDog
               <div key={d.id} className="overflow-hidden rounded-lg border border-hairline bg-canvas">
                 <div className="relative aspect-[4/3] bg-surface-card overflow-hidden">
                   {d.thumbnail_url ? (
-                    <img src={d.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                    <Img src={d.thumbnail_url} w={320} alt="" className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center"><Dog className="w-6 h-6 text-muted/30" /></div>
                   )}

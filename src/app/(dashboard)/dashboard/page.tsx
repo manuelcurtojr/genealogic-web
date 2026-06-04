@@ -18,6 +18,7 @@ import { getEffectiveRoles } from '@/lib/auth/roles'
 import { allPosts } from '@/content/blog'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
+import { Img } from '@/components/ui/img'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -384,7 +385,7 @@ export default async function DashboardPage() {
                 >
                   <div className="aspect-square bg-surface-card relative">
                     {dog.thumbnail_url
-                      ? <img src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover" />
+                      ? <Img w={480} src={dog.thumbnail_url} alt={dog.name} className="h-full w-full object-cover" />
                       : <div className="flex h-full w-full items-center justify-center text-muted"><PawPrint className="h-10 w-10" /></div>
                     }
                     <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: sexColor }} />

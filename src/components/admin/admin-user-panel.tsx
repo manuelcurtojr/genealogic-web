@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { X, Loader2, User, Shield, Calendar, Globe, Bell, FileText, AlertTriangle, Check, Eye, Trash2, ExternalLink, Key, Mail } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
+import { Img } from '@/components/ui/img'
 
 interface Props {
   open: boolean
@@ -181,7 +182,7 @@ export default function AdminUserPanel({ open, onClose, onSaved, userId }: Props
             {/* Header with avatar */}
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full overflow-hidden bg-surface-card border-2 border-hairline flex-shrink-0">
-                {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> :
+                {profile?.avatar_url ? <Img w={120} src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> :
                   <div className="w-full h-full flex items-center justify-center text-ink text-xl font-bold">{(form.display_name || '?')[0].toUpperCase()}</div>}
               </div>
               <div>

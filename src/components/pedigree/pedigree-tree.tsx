@@ -4,6 +4,7 @@ import { useState, useMemo, useRef, useEffect, useCallback, createContext, useCo
 import Link from 'next/link'
 import { Search, ArrowLeftRight, GitBranch, ChevronLeft, ChevronRight, Dna, CheckCircle, Plus } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 const PedigreeCtx = createContext<{ onClickDog?: (id: string) => void; onClickEmpty?: (parentId: string, role: 'father' | 'mother') => void }>({})
 import { calculateCOI, getCOILevel, getCOIInterpretation } from './coi-calculator'
@@ -301,7 +302,7 @@ function Card({n,isRoot,si,rc}:{n:PN;isRoot?:boolean;si:boolean;rc:Map<string,nu
   const inner=<>
     <div className="relative flex-shrink-0 bg-surface-card" style={{width:PH}}>
       {n.photo_url
-        ? <img src={n.photo_url} alt="" className="h-full w-full object-cover"/>
+        ? <Img src={n.photo_url} w={120} alt="" className="h-full w-full object-cover"/>
         : <div className="flex h-full w-full items-center justify-center"><img src="/icon.svg?v=2" alt="" className="h-5 w-5 opacity-20"/></div>
       }
       <div className="absolute right-0 top-0 bottom-0 w-[3px]" style={{backgroundColor:sc}}/>

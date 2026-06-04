@@ -3,6 +3,7 @@
  * de Genealogic (no la API HTTP de Pawdoq tenant-breeder).
  */
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import { getCurrentKennel } from '@/lib/kennel-context'
 import { getAvailablePuppiesByKennel, getUpcomingLittersByKennel } from '@/lib/kennel/data'
 import { SectionHeader } from '@/components/site/section-primitives'
@@ -53,8 +54,8 @@ export async function HeroSection(props: {
     <section className={`relative ${height} flex items-end overflow-hidden bg-[#0a0a0a]`}>
       {background_image_url && (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Img
+            w={1000}
             src={background_image_url}
             alt=""
             className="absolute inset-0 w-full h-full object-cover scale-105 motion-safe:animate-[heroZoom_30s_ease-out_infinite_alternate]"

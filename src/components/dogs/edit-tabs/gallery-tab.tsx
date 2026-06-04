@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Plus, X, Loader2, GripVertical, Star, Sparkles, Film, Play, ImagePlus } from 'lucide-react'
 import { parseVideoUrl, youtubePoster, fetchVimeoPoster, type VideoProvider } from '@/lib/video'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 interface GalleryTabProps { dogId: string; userId: string }
 
@@ -251,7 +252,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
           <div key={photo.id}
             draggable onDragStart={() => handleDragStart(idx)} onDragOver={handleDragOver} onDrop={() => handleDrop(idx)}
             className={`relative w-[88px] h-[88px] rounded-lg overflow-hidden group cursor-grab active:cursor-grabbing flex-shrink-0 ${dragIdx === idx ? 'opacity-40 ring-2 ring-ink' : ''} ${idx === 0 ? 'ring-2 ring-ink/50' : ''}`}>
-            <img src={photo.url} alt="" className="w-full h-full object-cover" />
+            <Img src={photo.url} w={180} alt="" className="w-full h-full object-cover" />
 
             {isVideo && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15">

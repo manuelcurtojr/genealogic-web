@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, X, Search } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 interface Option {
   value: string
@@ -56,7 +57,7 @@ export default function SearchableSelect({ options, value, onChange, placeholder
           <>
             {selected.image && (
               <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 bg-surface-card border border-hairline">
-                <img src={selected.image} alt="" className="w-full h-full object-cover" />
+                <Img w={96} src={selected.image} alt="" className="w-full h-full object-cover" />
               </div>
             )}
             <span className="flex-1 truncate text-ink">{selected.label}</span>
@@ -110,7 +111,7 @@ export default function SearchableSelect({ options, value, onChange, placeholder
                   {opt.image !== undefined && (
                     <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 bg-surface-card border border-hairline">
                       {opt.image ? (
-                        <img src={opt.image} alt="" className="w-full h-full object-cover" />
+                        <Img w={96} src={opt.image} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <img src="/icon.svg?v=2" alt="" className="w-3.5 h-3.5 opacity-30" />

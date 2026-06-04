@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Plus, BookOpen, Pencil } from 'lucide-react'
@@ -75,8 +76,7 @@ export default async function KennelBlogListPage() {
               <li key={post.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
                 <div className="h-14 w-14 sm:h-16 sm:w-16 flex-shrink-0 overflow-hidden rounded-lg bg-surface-card">
                   {post.cover_image_url ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={post.cover_image_url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    <Img w={680} src={post.cover_image_url} alt="" loading="lazy" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted">
                       <BookOpen className="h-5 w-5" />

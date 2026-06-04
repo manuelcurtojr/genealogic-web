@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import { allPosts } from '@/content/blog'
 import type { Metadata } from 'next'
 import { getTranslator } from '@/lib/i18n'
@@ -62,7 +63,8 @@ export default async function BlogIndexPage() {
           <Link href={`/blog/${featured.meta.slug}`} className="group block">
             <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
               <div className="relative aspect-[16/10] overflow-hidden rounded-[14px] border border-hairline bg-surface-card">
-                <img
+                <Img
+                  w={1000}
                   src={featured.meta.heroImage}
                   alt={featured.meta.heroAlt}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
@@ -103,7 +105,8 @@ export default async function BlogIndexPage() {
             {rest.map(({ meta }) => (
               <Link key={meta.slug} href={`/blog/${meta.slug}`} className="group block">
                 <div className="relative aspect-[16/10] overflow-hidden rounded-[12px] border border-hairline bg-surface-card">
-                  <img
+                  <Img
+                    w={680}
                     src={meta.heroImage}
                     alt={meta.heroAlt}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"

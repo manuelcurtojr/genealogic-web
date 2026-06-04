@@ -17,6 +17,7 @@ import { sendBreederMessageAction } from './actions'
 import FeedbackButton from '@/components/feedback/feedback-button'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
+import { Img } from '@/components/ui/img'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Reserva · Genealogic' }
@@ -126,7 +127,8 @@ export default async function BreederReservationDetailPage({
                 <div className="flex items-center gap-3">
                   {reservation.dog.thumbnail_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Img
+                      w={200}
                       src={reservation.dog.thumbnail_url}
                       alt={reservation.dog.name}
                       className="w-12 h-12 rounded-lg object-cover border border-hairline"

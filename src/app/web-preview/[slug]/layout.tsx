@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import { getMyKennel } from '@/lib/kennel-site'
 import { getEnabledPages, DEFAULT_NAV_LABELS } from '@/lib/kennel/pages'
 
@@ -19,8 +20,7 @@ export default async function PreviewLayout({ children }: { children: React.Reac
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-4">
           <div className="flex items-center gap-2 min-w-0">
             {kennel.logo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={kennel.logo_url} alt={kennel.name} className="w-7 h-7 rounded-full object-cover border border-hairline" />
+              <Img w={96} src={kennel.logo_url} alt={kennel.name} className="w-7 h-7 rounded-full object-cover border border-hairline" />
             ) : (
               <div className="w-7 h-7 rounded-full bg-ink text-on-primary flex items-center justify-center text-xs font-bold">
                 {kennel.name[0]?.toUpperCase()}

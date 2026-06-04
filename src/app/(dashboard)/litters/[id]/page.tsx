@@ -6,6 +6,7 @@ import WhatsAppIcon from '@/components/ui/whatsapp-icon'
 import { BRAND } from '@/lib/constants'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import LitterEditButton from '@/components/litters/litter-edit-button'
+import { Img } from '@/components/ui/img'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
@@ -114,7 +115,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
                   href={`/kennels/${kennel.id}`}
                   className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-3 py-0.5 text-[12px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
                 >
-                  {kennel.logo_url && <img src={kennel.logo_url} alt="" className="h-4 w-4 rounded-full object-cover" />}
+                  {kennel.logo_url && <Img w={96} src={kennel.logo_url} alt="" className="h-4 w-4 rounded-full object-cover" />}
                   {kennel.name}
                 </Link>
               )}
@@ -218,7 +219,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
                 >
                   <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-full border-2 bg-surface-card" style={{ borderColor: sc }}>
                     {pup.thumbnail_url
-                      ? <img src={pup.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                      ? <Img w={200} src={pup.thumbnail_url} alt="" className="h-full w-full object-cover" />
                       : <div className="flex h-full w-full items-center justify-center text-[12px] text-muted">{pup.sex === 'male' ? '♂' : '♀'}</div>
                     }
                   </div>
@@ -260,7 +261,7 @@ function CompactParent({ parent, role, t }: { parent: any; role: string; t: (k: 
       style={{ borderColor: sc }}
     >
       {parent.thumbnail_url
-        ? <img src={parent.thumbnail_url} alt="" className="h-full w-full object-cover" />
+        ? <Img w={480} src={parent.thumbnail_url} alt="" className="h-full w-full object-cover" />
         : <div className="flex h-full w-full items-center justify-center bg-surface-card text-3xl" style={{ color: sc + '60' }}>{isFather ? '♂' : '♀'}</div>
       }
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-2 pb-2 pt-6">

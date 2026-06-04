@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Camera, Loader2, X, ZoomIn, ZoomOut } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 interface Props {
   userId: string
@@ -134,7 +135,7 @@ export default function AvatarUpload({ userId, currentUrl, displayName, onUpload
         className="relative w-16 h-16 rounded-full overflow-hidden bg-surface-card flex items-center justify-center group"
       >
         {currentUrl ? (
-          <img src={currentUrl} alt="" className="w-full h-full object-cover" />
+          <Img w={200} src={currentUrl} alt="" className="w-full h-full object-cover" />
         ) : (
           <span className="text-ink text-xl font-bold">
             {(displayName || '?')[0].toUpperCase()}

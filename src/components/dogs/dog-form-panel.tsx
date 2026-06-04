@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { Img } from '@/components/ui/img'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -445,7 +446,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                 <div className="flex items-center gap-2 rounded-lg border border-hairline bg-surface-card px-3 py-2">
                   {selBreeder.logo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={selBreeder.logo_url} alt="" className="h-7 w-7 rounded object-cover" />
+                    <Img w={96} src={selBreeder.logo_url} alt="" className="h-7 w-7 rounded object-cover" />
                   ) : (
                     <div className="flex h-7 w-7 items-center justify-center rounded bg-surface-soft text-muted"><Dog className="h-4 w-4" /></div>
                   )}
@@ -466,7 +467,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                         <button key={k.id} type="button" onClick={() => selectBreeder(k)} className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-surface-card">
                           {k.logo_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={k.logo_url} alt="" className="h-6 w-6 flex-shrink-0 rounded object-cover" />
+                            <Img w={96} src={k.logo_url} alt="" className="h-6 w-6 flex-shrink-0 rounded object-cover" />
                           ) : <div className="h-6 w-6 flex-shrink-0 rounded bg-surface-soft" />}
                           <span className="truncate text-ink">{k.name}</span>
                           {(k.city || k.country) && <span className="ml-auto truncate pl-2 text-[10px] text-muted">{[k.city, k.country].filter(Boolean).join(', ')}</span>}
@@ -525,7 +526,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       {externalOwner && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex items-center gap-3">
           {externalOwner.avatar_url ? (
-            <img src={externalOwner.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+            <Img w={96} src={externalOwner.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
           ) : (
             <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
               <Shield className="w-4 h-4 text-amber-700" />
@@ -615,7 +616,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           {isEdit ? (
             <div className="flex items-center gap-3 min-w-0">
               <div className="h-10 w-10 rounded-full overflow-hidden border border-hairline bg-surface-card flex-shrink-0 flex items-center justify-center">
-                {thumbnailUrl ? <img src={thumbnailUrl} alt="" className="h-full w-full object-cover" /> : <Dog className="h-5 w-5 text-muted" />}
+                {thumbnailUrl ? <Img w={120} src={thumbnailUrl} alt="" className="h-full w-full object-cover" /> : <Dog className="h-5 w-5 text-muted" />}
               </div>
               <div className="min-w-0">
                 <h2 className="truncate text-[15px] sm:text-base font-semibold tracking-[-0.01em] text-ink">{form.name || t('Editar perro')}</h2>
@@ -842,7 +843,7 @@ function SelectCard({ label, name, image, sexColor, onClear, selector, disabled 
         className={`w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 flex items-center gap-3 cursor-pointer transition ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:border-hairline'} ${open ? 'border-ink' : ''}`}>
         {image && (
           <div className="w-8 h-8 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor || 'rgba(255,255,255,0.1)' }}>
-            <img src={image} alt="" className="w-full h-full object-cover" />
+            <Img w={96} src={image} alt="" className="w-full h-full object-cover" />
           </div>
         )}
         {sexColor && !image && <div className="w-1 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: sexColor }} />}
@@ -883,7 +884,7 @@ function SearchList({ items, value, onChange, placeholder, sexColor }: { items: 
             className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2.5 transition ${item.id === value ? 'bg-surface-card text-ink' : 'text-ink hover:bg-surface-card'}`}>
             {item.image !== null && (
               <div className="w-7 h-7 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor || 'rgba(255,255,255,0.1)' }}>
-                {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg?v=2" alt="" className="w-3 h-3 opacity-30" /></div>}
+                {item.image ? <Img w={96} src={item.image} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><img src="/icon.svg?v=2" alt="" className="w-3 h-3 opacity-30" /></div>}
               </div>
             )}
             <span className="truncate">{item.name}</span>
@@ -949,7 +950,7 @@ function LockedParentCard({ label, dog, sexColor }: {
       <div className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 flex items-center gap-3 opacity-90">
         {dog?.thumbnail_url ? (
           <div className="w-8 h-8 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor || 'rgba(255,255,255,0.1)' }}>
-            <img src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" />
+            <Img w={96} src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" />
           </div>
         ) : sexColor ? (
           <div className="w-1 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: sexColor }} />

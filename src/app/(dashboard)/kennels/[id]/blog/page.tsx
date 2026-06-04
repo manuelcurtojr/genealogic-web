@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Img } from '@/components/ui/img'
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { isUUID } from '@/lib/slug'
@@ -118,8 +119,7 @@ export default async function KennelBlogPage({ params }: { params: Promise<{ id:
               >
                 <div className="relative aspect-[16/10] bg-surface-card overflow-hidden">
                   {post.cover_image_url ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={post.cover_image_url} alt="" loading="lazy" className="h-full w-full object-cover transition-transform group-hover:scale-[1.03]" />
+                    <Img w={680} src={post.cover_image_url} alt="" loading="lazy" className="h-full w-full object-cover transition-transform group-hover:scale-[1.03]" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted">
                       <BookOpen className="h-8 w-8" />

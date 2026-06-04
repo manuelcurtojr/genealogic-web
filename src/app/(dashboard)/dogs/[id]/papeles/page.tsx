@@ -17,6 +17,7 @@ import UploadDogDocumentForm from './upload-form'
 import { deleteDogDocumentAction } from './actions'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
+import { Img } from '@/components/ui/img'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Papeles del perro · Genealogic' }
@@ -65,7 +66,8 @@ export default async function DogPapelesPage({
       <div className="flex items-center gap-4 mb-6">
         {dog.thumbnail_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Img
+            w={200}
             src={dog.thumbnail_url}
             alt={dog.name}
             className="w-14 h-14 rounded-xl object-cover border border-hairline"

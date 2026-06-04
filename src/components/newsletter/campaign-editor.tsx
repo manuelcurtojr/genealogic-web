@@ -24,6 +24,7 @@ import { AUDIENCE_LABELS, AUDIENCE_HINTS, type AudienceType } from '@/lib/newsle
 import { renderContractMarkdown } from '@/lib/contracts/markdown'
 import { ComingSoonChip } from '@/components/early-access/coming-soon'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 export type CampaignRow = {
   id: string
@@ -321,7 +322,7 @@ export default function CampaignEditor({
             <div className="rounded-xl border border-hairline bg-canvas overflow-hidden">
               {draft.hero_image_url && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={draft.hero_image_url} alt="" className="w-full h-auto" />
+                <Img w={1000} src={draft.hero_image_url} alt="" className="w-full h-auto" />
               )}
               <div className="p-5">
                 <p className="text-xs text-muted mb-2">

@@ -22,6 +22,7 @@ import ReservationThread from '@/components/reservations/reservation-thread'
 import { sendClientMessageAction } from './actions'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
+import { Img } from '@/components/ui/img'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Reserva · Mis reservas · Genealogic' }
@@ -73,7 +74,8 @@ export default async function MyReservationDetailPage({
           <div className="mt-2 flex items-center gap-3">
             {reservation.kennel?.logo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Img
+                w={120}
                 src={reservation.kennel.logo_url}
                 alt={reservation.kennel.name}
                 className="w-12 h-12 rounded-full object-cover border border-hairline"
@@ -107,7 +109,8 @@ export default async function MyReservationDetailPage({
               >
                 {reservation.dog.thumbnail_url && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Img
+                    w={200}
                     src={reservation.dog.thumbnail_url}
                     alt={reservation.dog.name}
                     className="w-20 h-20 rounded-xl object-cover group-hover:scale-[1.02] transition"

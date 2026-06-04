@@ -18,6 +18,7 @@ import {
   Sparkles, ArrowRight, MapPin, Calendar, HelpCircle, BadgeCheck,
   Globe, Dog as DogIcon, Star, Quote, Baby, Medal,
 } from 'lucide-react'
+import { Img } from '@/components/ui/img'
 import ReviewAvatar from './review-avatar'
 import LeaveReviewButton from './leave-review-button'
 import BlogSlider from './blog-slider'
@@ -216,8 +217,7 @@ export default async function KennelProHome({
             <div className="flex items-start gap-4">
               <div className="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
                 {kennel.logo_url ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={kennel.logo_url} alt={kennel.name} className="h-full w-full object-cover" />
+                  <Img w={200} src={kennel.logo_url} alt={kennel.name} className="h-full w-full object-cover" />
                 ) : (
                   <div
                     className="flex h-full w-full items-center justify-center"
@@ -740,8 +740,7 @@ function ParentMini({ name, thumbnail }: { name: string; thumbnail: string | nul
     <div className="flex items-center gap-1.5 min-w-0">
       <div className="h-9 w-9 rounded-full overflow-hidden border border-hairline bg-surface-card flex-shrink-0">
         {thumbnail ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img src={thumbnail} alt={name} className="h-full w-full object-cover" loading="lazy" />
+          <Img w={120} src={thumbnail} alt={name} className="h-full w-full object-cover" loading="lazy" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-muted">
             <DogIcon className="h-4 w-4" />

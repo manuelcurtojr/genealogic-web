@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { X, ChevronLeft, ChevronRight, FileText, Download } from 'lucide-react'
 import ReportButton, { type ReportTargetType } from '@/components/legal/report-dialog'
 import { useT } from '@/components/i18n/locale-provider'
+import { Img } from '@/components/ui/img'
 
 interface LightboxProps {
   files: string[]
@@ -76,7 +77,7 @@ export default function Lightbox({ files, startIndex, onClose, reportTarget }: L
       {/* Content */}
       <div className="flex-1 flex items-center justify-center px-16 pb-20 min-h-0">
         {img ? (
-          <img src={url} alt="" className="max-w-full max-h-full object-contain rounded-lg" onClick={e => e.stopPropagation()} />
+          <Img w={1400} src={url} alt="" className="max-w-full max-h-full object-contain rounded-lg" onClick={e => e.stopPropagation()} />
         ) : pdf ? (
           <iframe src={url} className="w-full h-full max-w-4xl rounded-lg bg-white" />
         ) : (
@@ -111,7 +112,7 @@ export default function Lightbox({ files, startIndex, onClose, reportTarget }: L
             <button key={i} onClick={() => setCurrent(i)}
               className={`w-12 h-12 rounded-lg overflow-hidden transition flex-shrink-0 ${i === current ? 'ring-2 ring-ink opacity-100' : 'opacity-40 hover:opacity-70'}`}>
               {isImage(f) ? (
-                <img src={f} alt="" className="w-full h-full object-cover" />
+                <Img w={120} src={f} alt="" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-surface-card flex items-center justify-center">
                   <FileText className="w-4 h-4 text-ink" />

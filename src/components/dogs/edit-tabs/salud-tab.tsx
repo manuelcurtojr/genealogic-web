@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import ToggleSwitch from '@/components/ui/toggle'
+import { Img } from '@/components/ui/img'
 import { createClient } from '@/lib/supabase/client'
 import { Stethoscope, Syringe, Bug, Pill, FlaskConical, Scissors, Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff, FileText } from 'lucide-react'
 import FileGallery from './file-gallery'
@@ -179,7 +180,7 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
                   {ff.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {ff.map((u: string, i: number) => /\.(jpg|jpeg|png|gif|webp)/i.test(u) ? (
-                        <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="h-10 w-10 overflow-hidden rounded-lg border border-hairline"><img src={u} alt="" className="h-full w-full object-cover" /></a>
+                        <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="h-10 w-10 overflow-hidden rounded-lg border border-hairline"><Img w={120} src={u} alt="" className="h-full w-full object-cover" /></a>
                       ) : (
                         <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-lg border border-hairline bg-surface-card hover:bg-surface-soft transition"><FileText className="h-4 w-4 text-muted" /></a>
                       ))}
