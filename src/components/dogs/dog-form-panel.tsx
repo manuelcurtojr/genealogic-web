@@ -151,8 +151,16 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         supabase.from('colors').select('id, name').order('name'),
         supabase.from('breed_colors').select('breed_id, color_id'),
         supabase.from('kennels').select('id, name, logo_url').eq('owner_id', userId).order('name'),
-        supabase.from('dogs').select('id, name, sex, thumbnail_url, breed_id').eq('sex', 'male').order('name').limit(500),
-        supabase.from('dogs').select('id, name, sex, thumbnail_url, breed_id').eq('sex', 'female').order('name').limit(500),
+        // Al EDITAR NO cargamos los 1000 perros (500+500): los padres están
+        // bloqueados y los reales se traen aparte con getDogParents. Esas dos
+        // queries ordenaban 70k+ filas por nombre → eran el cuello de botella.
+        // Solo se cargan las listas completas al CREAR (selectores de padre/madre).
+        editDogId
+          ? Promise.resolve({ data: [] as { id: string; name: string; sex: string; thumbnail_url: string | null; breed_id: string | null }[] })
+          : supabase.from('dogs').select('id, name, sex, thumbnail_url, breed_id').eq('sex', 'male').order('name').limit(500),
+        editDogId
+          ? Promise.resolve({ data: [] as { id: string; name: string; sex: string; thumbnail_url: string | null; breed_id: string | null }[] })
+          : supabase.from('dogs').select('id, name, sex, thumbnail_url, breed_id').eq('sex', 'female').order('name').limit(500),
       ])
 
       const bcMap = new Map<string, Set<string>>()
@@ -305,9 +313,15 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     }
 
     if (isEdit) {
-      const { error: err } = await supabase.from('dogs').update(payload).eq('id', editDogId!)
+      // Vía endpoint con service-role: RLS solo deja actualizar al dueño, así que
+      // editar un ancestro importado (owner_id null) fallaba en silencio (0 filas).
+      const res = await fetch('/api/update-dog', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dogId: editDogId, updates: payload }),
+      })
+      const r = await res.json().catch(() => ({}))
       setLoading(false)
-      if (err) { setError(err.message); return }
+      if (!res.ok) { setError(r.error || t('No se pudo guardar')); return }
     } else {
       const slug = generateSlug(payload.name)
       const insertData = { ...payload, slug, owner_id: userId }
