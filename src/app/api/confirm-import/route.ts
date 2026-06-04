@@ -10,8 +10,39 @@ interface ImportDog {
 
 export const maxDuration = 60
 
+/**
+ * Normaliza una fecha extraída a un DATE válido de Postgres (YYYY-MM-DD) o null.
+ * El INSERT falla si llega "1995" o "1995-03" o basura ("circa 1990"), así que
+ * lo saneamos: año→01-01, año-mes→día 01, ISO completo se valida, y DD/MM/YYYY
+ * (por si la IA no respetó el formato) se reordena. Cualquier otra cosa → null.
+ */
+function toPgDate(s: string | null | undefined): string | null {
+  if (!s || typeof s !== 'string') return null
+  const v = s.trim()
+  let y: number, mo: number, d: number
+  if (/^\d{4}$/.test(v)) { y = +v; mo = 1; d = 1 }
+  else if (/^\d{4}[-./]\d{2}$/.test(v)) { y = +v.slice(0, 4); mo = +v.slice(5, 7); d = 1 }
+  else if (/^\d{4}[-./]\d{2}[-./]\d{2}$/.test(v)) { y = +v.slice(0, 4); mo = +v.slice(5, 7); d = +v.slice(8, 10) }
+  else {
+    // Fallback DD/MM/YYYY (por si la IA no respetó el ISO; fuentes ES/EU = día primero).
+    const m = v.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/)
+    if (!m) return null
+    d = +m[1]; mo = +m[2]; y = +m[3]
+  }
+  // Validación de CALENDARIO real (días por mes + bisiesto). `new Date()` no sirve:
+  // redondea (2023-02-30 → marzo) en vez de fallar, y Postgres rechazaría la fecha
+  // rota tirando el INSERT entero. Lo que no sea válido → null (campo vacío, no error).
+  if (!Number.isInteger(y) || !Number.isInteger(mo) || !Number.isInteger(d)) return null
+  if (y < 1 || y > 9999 || mo < 1 || mo > 12 || d < 1) return null
+  const leap = y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0)
+  const dim = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+  if (d > dim[mo - 1]) return null
+  return `${String(y).padStart(4, '0')}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
+
 // POST: Confirm import
 export async function POST(request: NextRequest) {
+  const createdIds: string[] = [] // declarado fuera del try para poder limpiar en catch
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -68,18 +99,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const createdIds: string[] = []
-
-    // Create bottom-up
+    // Create bottom-up (createdIds declarado al inicio de POST para limpiar en catch)
     for (const dog of allDogs) {
       if (nameToId.has(dog.name)) continue
       const fatherId = dog.father_name ? nameToId.get(dog.father_name) || null : null
       const motherId = dog.mother_name ? nameToId.get(dog.mother_name) || null : null
-      const parsedDate = dog.birth_date && dog.birth_date.length >= 4 ? (dog.birth_date.length === 4 ? `${dog.birth_date}-01-01` : dog.birth_date) : null
+      const parsedDate = toPgDate(dog.birth_date)
 
       const isMainDog = dog.generation === 0
-      // Use dog's own breed, fall back to overrideBreed or main dog's breed
-      const breedName = dog.breed || overrideBreed || mainDog.breed
+      // El override del usuario MANDA para el perro principal (lo eligió a mano
+      // para corregir la raza); el resto usa su propia raza y, si no tiene,
+      // hereda el override o la raza del principal.
+      const breedName = (isMainDog && overrideBreed) ? overrideBreed : (dog.breed || overrideBreed || mainDog.breed)
       const { data: created } = await supabase.from('dogs').insert({
         name: formatName(dog.name), sex: dog.sex === 'Female' ? 'female' : 'male',
         registration: dog.registration || null, breed_id: findBreed(breedName), color_id: findColor(dog.color),
@@ -106,31 +137,46 @@ export async function POST(request: NextRequest) {
       if (!existing.registration && dog.registration) updates.registration = dog.registration
       if (!existing.breed_id && dog.breed) updates.breed_id = findBreed(dog.breed)
       if (!existing.color_id && dog.color) updates.color_id = findColor(dog.color)
-      if (!existing.birth_date && dog.birth_date) {
-        const pd = dog.birth_date.length === 4 ? `${dog.birth_date}-01-01` : dog.birth_date
-        updates.birth_date = pd
+      if (!existing.birth_date) {
+        const pd = toPgDate(dog.birth_date)
+        if (pd) updates.birth_date = pd
       }
       if (Object.keys(updates).length > 0) await supabase.from('dogs').update(updates).eq('id', dogId)
     }
 
     const mainDogId = nameToId.get(mainDog.name)
+    // El perro principal SIEMPRE debe existir. Si no se creó (dato inválido,
+    // constraint…), limpiamos los ancestros ya creados para no dejar huérfanos
+    // y avisamos, en vez de devolver un "éxito" sin perro principal.
+    if (!mainDogId) {
+      if (createdIds.length) { try { await supabase.from('dogs').delete().in('id', createdIds) } catch {} }
+      return NextResponse.json({ error: 'No se pudo crear el perro principal. Revisa que los datos sean válidos e inténtalo de nuevo.' }, { status: 500 })
+    }
     const importId = `import_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 
-    // Save import record
-    const notifTitle = `Genealogía importada: ${mainDog.name}`
-    await supabase.from('notifications').insert({
-      user_id: safeUserId, type: 'import',
-      title: notifTitle,
-      message: JSON.stringify({ importId, createdIds, mainDogId }),
-      is_read: false,
-    })
-
-    // Send push notification
-    const { sendPushToUser } = await import('@/lib/push')
-    await sendPushToUser(safeUserId, notifTitle, `Se han importado ${createdIds.length} perros`, { link: `/dogs/${mainDogId}` })
+    // Registro de import + push: NO deben tumbar un import ya exitoso. Si fallan,
+    // el import sigue siendo válido (solo se pierde la red de "deshacer"/aviso).
+    try {
+      const notifTitle = `Genealogía importada: ${mainDog.name}`
+      await supabase.from('notifications').insert({
+        user_id: safeUserId, type: 'import',
+        title: notifTitle,
+        message: JSON.stringify({ importId, createdIds, mainDogId }),
+        is_read: false,
+      })
+      const { sendPushToUser } = await import('@/lib/push')
+      await sendPushToUser(safeUserId, notifTitle, `Se han importado ${createdIds.length} perros`, { link: `/dogs/${mainDogId}` })
+    } catch (notifErr) {
+      console.error('[confirm-import] notificación/push falló (el import sí se completó):', notifErr)
+    }
 
     return NextResponse.json({ success: true, mainDogId, totalCreated: createdIds.length, totalLinked: nameToId.size - createdIds.length, importId })
   } catch (err: any) {
+    // Limpieza: si algo lanzó a mitad de la creación, borra los perros ya creados
+    // para no dejar huérfanos sin registro de import (no se podrían deshacer).
+    if (createdIds.length) {
+      try { const sb = await createClient(); await sb.from('dogs').delete().in('id', createdIds) } catch {}
+    }
     return NextResponse.json({ error: err.message || 'Error al importar' }, { status: 500 })
   }
 }

@@ -15,8 +15,14 @@ export const maxDuration = 60
  * Body: { messages, max_tokens?, model? }
  * Rate limit: 1 llamada cada 5s por user (in-memory).
  */
-const lastCallByUser = new Map<string, number>()
-const COOLDOWN_MS = 5_000
+// Rate limit por ventana deslizante: un import legítimo encadena varias llamadas
+// (detección de orientación + extracción + self-verify + reintentos), así que un
+// cooldown de "1 cada 5s" se bloqueaba a sí mismo. Permitimos un BURST acotado.
+const callsByUser = new Map<string, number[]>()
+const RL_WINDOW_MS = 12_000
+// Un import denso puede encadenar: detección + extracción + reintentos internos
+// (truncado/JSON) + reintento-orientación + self-verify. Margen para no auto-429.
+const RL_MAX = 12
 
 export async function POST(request: Request) {
   try {
@@ -24,16 +30,20 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-    // Rate limit
+    // Rate limit: ventana deslizante (permite el burst de un import legítimo).
     const now = Date.now()
-    const last = lastCallByUser.get(user.id) ?? 0
-    if (now - last < COOLDOWN_MS) {
-      return NextResponse.json(
-        { error: `Rate limit: espera ${Math.ceil((COOLDOWN_MS - (now - last)) / 1000)}s` },
-        { status: 429 },
-      )
+    // Barrido oportunista: evita que el Map crezca sin límite en instancias longevas.
+    if (callsByUser.size > 500) {
+      for (const [uid, arr] of callsByUser) {
+        if (!arr.some((ts) => now - ts < RL_WINDOW_MS)) callsByUser.delete(uid)
+      }
     }
-    lastCallByUser.set(user.id, now)
+    const recent = (callsByUser.get(user.id) ?? []).filter((ts) => now - ts < RL_WINDOW_MS)
+    if (recent.length >= RL_MAX) {
+      return NextResponse.json({ error: 'Rate limit: espera unos segundos' }, { status: 429 })
+    }
+    recent.push(now)
+    callsByUser.set(user.id, recent)
 
     // Resolver API key: env var → fallback platform_settings
     let apiKey = process.env.ANTHROPIC_API_KEY

@@ -33,48 +33,60 @@ function fileToBase64(file: File): Promise<string> {
 type ImageBlock = { type: 'image'; source: { type: 'base64'; media_type: string; data: string } }
 
 /**
- * Convierte una imagen en bloques para Claude, corrigiendo la orientación EXIF
- * (las fotos de móvil llegan giradas 90°).
- *
- * Devuelve SIEMPRE un "plano completo" reescalado a 1568px (el máximo que la API
- * aprovecha → da estructura y orientación del árbol) y, si la foto es grande,
- * además varios RECORTES (tiles 2×2 con solape) cada uno reescalado a 1568px.
- * Los recortes dan resolución EFECTIVA mayor que un solo envío → el texto denso
- * de una hoja A4 (15+ cajas) se vuelve legible. Sin esto, una sola imagen a
- * 1568px deja ilegible un pedigrí de 3 generaciones y el modelo (correctamente)
- * responde "unreadable".
- *
- * Devuelve null si el navegador no decodifica el formato (HEIC en Chrome) para
- * caer al envío crudo.
+ * Decodifica un File a un canvas YA ENDEREZADO: aplica orientación EXIF y, si se
+ * pasa rotateDeg (0/90/180/270 horario), gira el contenido para dejar el texto
+ * recto. Las fotos de móvil de un papel salen giradas 90° y el texto pequeño
+ * girado es lo más difícil de leer para la IA.
  */
-async function buildImageBlocks(file: File): Promise<ImageBlock[] | null> {
+async function decodeUpright(file: File, rotateDeg = 0): Promise<HTMLCanvasElement | null> {
+  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
+  const swap = rotateDeg === 90 || rotateDeg === 270
+  const fw = swap ? bitmap.height : bitmap.width
+  const fh = swap ? bitmap.width : bitmap.height
+  const canvas = document.createElement('canvas')
+  canvas.width = fw; canvas.height = fh
+  const ctx = canvas.getContext('2d')
+  if (!ctx) { bitmap.close?.(); return null }
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = 'high'
+  ctx.translate(fw / 2, fh / 2)
+  ctx.rotate((rotateDeg * Math.PI) / 180)
+  ctx.drawImage(bitmap, -bitmap.width / 2, -bitmap.height / 2)
+  bitmap.close?.()
+  return canvas
+}
+
+/** Recorta una región del canvas y la reescala a maxPx (lado largo) → bloque JPEG. */
+function canvasRegionToBlock(src: HTMLCanvasElement, sx: number, sy: number, sw: number, sh: number, maxPx: number): ImageBlock | null {
+  const scale = Math.min(1, maxPx / Math.max(sw, sh))
+  const w = Math.max(1, Math.round(sw * scale))
+  const h = Math.max(1, Math.round(sh * scale))
+  const canvas = document.createElement('canvas')
+  canvas.width = w; canvas.height = h
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return null
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = 'high'
+  ctx.drawImage(src, sx, sy, sw, sh, 0, 0, w, h)
+  const data = canvas.toDataURL('image/jpeg', 0.85).split(',')[1]
+  return data ? { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data } } : null
+}
+
+/**
+ * Bloques de imagen para Claude (ya enderezados con rotateDeg): un PLANO completo
+ * a 1568px (estructura del árbol) + si la foto es grande, RECORTES 2×2 con solape
+ * a 1568px cada uno → resolución EFECTIVA mayor → el texto denso de una hoja A4
+ * (15+ cajas) se vuelve legible. Sin esto una sola imagen a 1568px queda ilegible.
+ * Devuelve null si el navegador no decodifica el formato (HEIC en Chrome).
+ */
+async function buildImageBlocks(file: File, rotateDeg = 0): Promise<ImageBlock[] | null> {
   try {
-    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
-    const bw = bitmap.width, bh = bitmap.height
-    const MAX = 1568
-
-    const crop = (sx: number, sy: number, sw: number, sh: number): ImageBlock | null => {
-      const scale = Math.min(1, MAX / Math.max(sw, sh))
-      const w = Math.max(1, Math.round(sw * scale))
-      const h = Math.max(1, Math.round(sh * scale))
-      const canvas = document.createElement('canvas')
-      canvas.width = w; canvas.height = h
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return null
-      ctx.imageSmoothingEnabled = true
-      ctx.imageSmoothingQuality = 'high'
-      ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, w, h)
-      const data = canvas.toDataURL('image/jpeg', 0.92).split(',')[1]
-      return data ? { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data } } : null
-    }
-
+    const full = await decodeUpright(file, rotateDeg)
+    if (!full) return null
+    const bw = full.width, bh = full.height, MAX = 1568
     const blocks: ImageBlock[] = []
-    // 1) Plano completo (estructura del árbol + orientación)
-    const overview = crop(0, 0, bw, bh)
+    const overview = canvasRegionToBlock(full, 0, 0, bw, bh, MAX)
     if (overview) blocks.push(overview)
-
-    // 2) Recortes en alta resolución (solo si la foto es lo bastante grande para
-    //    aportar detalle real). 2×2 con 12% de solape para no cortar cajas.
     if (Math.max(bw, bh) > 1800) {
       const ov = 0.12, cols = 2, rows = 2
       const tw = bw / cols, th = bh / rows
@@ -84,13 +96,31 @@ async function buildImageBlocks(file: File): Promise<ImageBlock[] | null> {
           const sy = Math.max(0, Math.round(r * th - th * ov))
           const ex = Math.min(bw, Math.round((c + 1) * tw + tw * ov))
           const ey = Math.min(bh, Math.round((r + 1) * th + th * ov))
-          const tile = crop(sx, sy, ex - sx, ey - sy)
+          const tile = canvasRegionToBlock(full, sx, sy, ex - sx, ey - sy, MAX)
           if (tile) blocks.push(tile)
         }
       }
     }
-    bitmap.close?.()
+    // Guard de payload: el límite de body de Vercel (~4.5MB) incluye el base64.
+    // Si nos pasamos, quitamos recortes (los últimos) hasta caber, conservando el
+    // plano completo. Mejor menos detalle que un request que falla entero.
+    const BUDGET = 3_800_000 // chars de base64 ≈ bytes
+    let total = blocks.reduce((s, b) => s + b.source.data.length, 0)
+    while (total > BUDGET && blocks.length > 1) {
+      total -= blocks.pop()!.source.data.length
+    }
     return blocks.length ? blocks : null
+  } catch {
+    return null
+  }
+}
+
+/** Miniatura (1024px) para que la IA detecte la rotación antes de extraer. */
+async function makeThumbBlock(file: File): Promise<ImageBlock | null> {
+  try {
+    const full = await decodeUpright(file, 0)
+    if (!full) return null
+    return canvasRegionToBlock(full, 0, 0, full.width, full.height, 1024)
   } catch {
     return null
   }
@@ -130,9 +160,8 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported, isAdmi
 
   const EXTRACTION_PROMPT = `You are an expert dog pedigree data extractor. Extract the pedigree from the content provided.
 
-LEGIBILITY GATE — read this FIRST. If the source is an image that is blank, blurry, too low-resolution to read the dog names, photographed too far away, or is not actually a dog pedigree — OR if for any reason you cannot read the actual text with confidence — return EXACTLY this JSON and nothing else:
-{"unreadable": true, "reason": "<short reason in Spanish>"}
-Do NOT invent, guess, autocomplete, or fill in plausible-sounding dog names / breeds / registration numbers to complete a tree. A truthful "unreadable" is the CORRECT answer; a fabricated pedigree is a critical error. A photographed sheet may be rotated 90°/180° or skewed — mentally re-orient and read it anyway, but if you still cannot read the names after re-orienting, return unreadable.
+LEGIBILITY GATE — read this FIRST. Return EXACTLY {"unreadable": true, "reason": "<short reason in Spanish>"} and nothing else ONLY when the image is blank, is not a dog pedigree, or is so blurry/low-resolution that you cannot read ANY dog name at all.
+OTHERWISE, extract what you CAN read: include every dog whose NAME you can actually read. For any single field you cannot read clearly (registration number, date, breed, color…), set it to null — never guess it. NEVER invent, autocomplete, or fabricate a dog NAME to fill an empty slot — leave that branch out instead. A real PARTIAL pedigree (some fields null, some branches missing) is CORRECT and useful; an invented tree is a critical error. The sheet may be rotated or skewed — re-orient mentally and read it anyway.
 
 MULTIPLE IMAGES OF THE SAME SHEET: for photos you may receive the SAME pedigree as several images — first a full OVERVIEW (use it for the tree's overall structure: who descends from whom, and orientation), then several higher-resolution overlapping TILES/crops (use these to actually READ the small text: names, registration numbers, dates). Tiles overlap, so the same dog can appear in the overview and in one or more tiles — it is still ONE dog, list it once. Cross-reference all the images and merge them into ONE coherent pedigree; trust the tiles for exact spelling and numbers.
 
@@ -360,6 +389,40 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       console.error('Claude stop_reason:', stopReason, 'max_tokens:', maxTokens)
       console.error('Claude raw response:', text.substring(0, 500))
       throw new Error(t('No se pudo interpretar la respuesta de la IA'))
+    }
+  }
+
+  /**
+   * Pregunta a la IA qué rotación HORARIA (0/90/180/270) endereza el documento,
+   * usando una miniatura. Llamada directa al proxy (respuesta de texto, no JSON).
+   * Si algo falla → 0 (no rotar). Resuelve las fotos de papel giradas 90°, donde
+   * el texto pequeño girado es lo más difícil de leer para la IA.
+   */
+  async function detectRotationDeg(thumb: ImageBlock): Promise<number> {
+    try {
+      const res = await fetch('/api/import-pedigree', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-5',
+          max_tokens: 8,
+          messages: [{
+            role: 'user',
+            content: [
+              thumb,
+              { type: 'text', text: 'This is a photo of a paper document (a dog pedigree). Reply with ONLY one integer — the CLOCKWISE rotation in degrees needed to make the text upright and horizontally readable: 0, 90, 180, or 270. Output just the number, nothing else.' },
+            ],
+          }],
+        }),
+      })
+      if (!res.ok) return 0
+      const data = await res.json()
+      const text = (data.content?.[0]?.text || '').trim()
+      const m = text.match(/\d{1,3}/)
+      const deg = m ? parseInt(m[0], 10) : 0
+      return deg === 90 || deg === 180 || deg === 270 ? deg : 0
+    } catch {
+      return 0
     }
   }
 
@@ -609,6 +672,12 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       setError(t('Formato no soportado. Sube una imagen (JPG/PNG) o un PDF.'))
       return
     }
+    // Guard de tamaño para PDF: el body de Vercel ~4.5MB y el base64 infla ×1.33.
+    // Las imágenes no necesitan guard (se reescalan); el PDF va tal cual.
+    if (isPdf && file.size > 3_500_000) {
+      setError(t('El PDF es demasiado grande (máx. ~3,5 MB). Súbelo más ligero, o haz una captura/foto de la página del pedigrí.'))
+      return
+    }
 
     setUploadingImage(true); setError(''); setData(null); setSwaps({})
     setScanPhase(isPdf ? t('Analizando PDF con IA...') : t('Analizando imagen con IA...'))
@@ -617,6 +686,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       // trocean: plano completo + recortes en alta resolución (buildImageBlocks)
       // para que el texto denso de una hoja A4 sea legible y no se invente nada.
       let content: any[]
+      let rotationDeg = 0
       if (isPdf) {
         const base64 = await fileToBase64(file)
         content = [
@@ -624,20 +694,47 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
           { type: 'text', text: EXTRACTION_PROMPT },
         ]
       } else {
-        const blocks = await buildImageBlocks(file)
+        // 1) Detectar orientación con una miniatura (las fotos de papel salen
+        //    giradas 90° y el texto pequeño girado es lo más difícil de leer).
+        setScanPhase(t('Detectando orientación...'))
+        const thumb = await makeThumbBlock(file)
+        rotationDeg = thumb ? await detectRotationDeg(thumb) : 0
+        // 2) Construir bloques ya ENDEREZADOS (plano + recortes en alta resolución).
+        setScanPhase(t('Analizando imagen con IA...'))
+        const blocks = await buildImageBlocks(file, rotationDeg)
         if (blocks && blocks.length) {
           content = [...blocks, { type: 'text', text: EXTRACTION_PROMPT }]
         } else {
-          // Fallback: formato no decodificable (HEIC en Chrome…) → envío crudo.
-          const base64 = await fileToBase64(file)
-          content = [
-            { type: 'image', source: { type: 'base64', media_type: file.type || 'image/jpeg', data: base64 } },
-            { type: 'text', text: EXTRACTION_PROMPT },
-          ]
+          // El navegador no decodificó la imagen. Si el formato lo acepta la IA
+          // (jpeg/png/webp/gif) reintentamos en crudo; si es HEIC/HEIF de iPhone
+          // (Brave/Chrome no lo decodifican) damos un mensaje accionable en vez de
+          // mandar bytes que la API rechazaría con un error críptico.
+          const anthropicOk = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+          if (anthropicOk.includes(file.type)) {
+            const base64 = await fileToBase64(file)
+            content = [
+              { type: 'image', source: { type: 'base64', media_type: file.type, data: base64 } },
+              { type: 'text', text: EXTRACTION_PROMPT },
+            ]
+          } else {
+            setError(t('No pudimos procesar la imagen. Si es una foto HEIC de iPhone, súbela como JPG: hazle una captura de pantalla, o pon Ajustes › Cámara › Formatos en "Más compatible".'))
+            setUploadingImage(false); setScanPhase(''); return
+          }
         }
       }
 
       let pedigreeData = await callClaude([{ role: 'user', content }])
+
+      // Si la IA no pudo leer Y habíamos ROTADO la imagen, la detección de
+      // orientación pudo equivocarse → reintenta UNA vez con la orientación
+      // original (cubre el caso "rotó una foto que ya estaba recta").
+      if ((pedigreeData as any)?.unreadable && !isPdf && rotationDeg !== 0) {
+        setScanPhase(t('Reintentando con la orientación original...'))
+        const blocks0 = await buildImageBlocks(file, 0)
+        if (blocks0 && blocks0.length) {
+          pedigreeData = await callClaude([{ role: 'user', content: [...blocks0, { type: 'text', text: EXTRACTION_PROMPT }] }])
+        }
+      }
 
       // Guardarraíl anti-alucinación: si la IA no pudo leer la imagen, NO mostramos
       // un árbol inventado — pedimos una foto mejor.
