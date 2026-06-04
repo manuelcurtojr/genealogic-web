@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { X, Loader2, Search, ChevronDown, ChevronRight, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, Lock, Globe, Shield, Dna, Heart, History, ArrowRightLeft, Settings2 } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import { BRAND } from '@/lib/constants'
-import { formatDogName, type AffixFormat } from '@/lib/affix'
+import { formatDogName, extractPersonalName, type AffixFormat } from '@/lib/affix'
 import { generateSlug } from '@/lib/slug'
 import GalleryTab from './edit-tabs/gallery-tab'
 import SaludTab from './edit-tabs/salud-tab'
@@ -104,9 +104,44 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   const [confirmDeceased, setConfirmDeceased] = useState(false)
   const [deceasedLoading, setDeceasedLoading] = useState(false)
 
+  // ── Selector de CRIADOR ORIGINAL (busca entre TODOS los criaderos) ──
+  const [selBreeder, setSelBreeder] = useState<{ id: string; name: string; affix_format: string; logo_url?: string | null } | null>(null)
+  const [breederQ, setBreederQ] = useState('')
+  const [breederResults, setBreederResults] = useState<{ id: string; name: string; logo_url: string | null; city: string | null; country: string | null }[]>([])
+  const [breederBusy, setBreederBusy] = useState(false)
+  // Búsqueda async (typeahead) de criaderos vía search_kennels_smart.
+  useEffect(() => {
+    const q = breederQ.trim()
+    if (q.length < 2) { setBreederResults([]); setBreederBusy(false); return }
+    let cancelled = false
+    setBreederBusy(true)
+    const tmr = setTimeout(async () => {
+      const { data } = await createClient().rpc('search_kennels_smart', { q, lim: 8 })
+      if (!cancelled) { setBreederResults((data as typeof breederResults) || []); setBreederBusy(false) }
+    }, 250)
+    return () => { cancelled = true; clearTimeout(tmr) }
+  }, [breederQ])
+  // Al elegir criador: fija kennel_id y reescribe el nombre con SU afijo (quitando
+  // antes cualquier afijo previo para no apilar).
+  const selectBreeder = async (k: { id: string; name: string; logo_url: string | null }) => {
+    const { data } = await createClient().from('kennels').select('affix_format').eq('id', k.id).single()
+    const fmt = ((data?.affix_format as string) || 'suffix_de') as AffixFormat
+    const base = extractPersonalName((form.name || '').trim(), selBreeder?.name)
+    const newName = base ? formatDogName(base, k.name, fmt) : (form.name || '')
+    setForm(f => ({ ...f, kennel_id: k.id, name: newName }))
+    setSelBreeder({ id: k.id, name: k.name, affix_format: fmt, logo_url: k.logo_url })
+    setBreederQ(''); setBreederResults([])
+  }
+  const clearBreeder = () => {
+    const base = extractPersonalName((form.name || '').trim(), selBreeder?.name)
+    setForm(f => ({ ...f, kennel_id: '', name: base || f.name }))
+    setSelBreeder(null)
+  }
+
   useEffect(() => {
     if (!open) return
     setActiveTab('datos'); setCreateMode('import'); setDataLoading(true); setError('')
+    setSelBreeder(null); setBreederQ(''); setBreederResults([])
     const supabase = createClient()
     async function load() {
       // NOTA: la tabla `colors` NO tiene columna breed_id — la relación
@@ -137,6 +172,12 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           const f = { name: dog.name || '', sex: dog.sex || 'male', birth_date: dog.birth_date || '', registration: dog.registration || '', microchip: dog.microchip || '', weight: dog.weight?.toString() || '', height: dog.height?.toString() || '', breed_id: dog.breed_id || '', color_id: dog.color_id || '', kennel_id: dog.kennel_id || '', father_id: dog.father_id || '', mother_id: dog.mother_id || '', is_public: dog.is_public ?? true }
           setForm(f)
           setDeceasedAt(dog.deceased_at || null)
+          // Carga el criador original (cualquier criadero) para mostrarlo + poder
+          // quitar/cambiar el afijo del nombre.
+          if (dog.kennel_id) {
+            const { data: bk } = await supabase.from('kennels').select('id, name, affix_format, logo_url').eq('id', dog.kennel_id).single()
+            if (bk) setSelBreeder({ id: bk.id, name: bk.name, affix_format: (bk.affix_format as string) || 'suffix_de', logo_url: bk.logo_url })
+          }
           setThumbnailUrl(dog.thumbnail_url || null)
           setShowInKennel(dog.show_in_kennel ?? true)
           setIsReproductive(dog.is_reproductive ?? false)
@@ -381,8 +422,48 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                 )}
               </>
             )}
-            <SelectCard label={t('Criadero')} name={selKennel?.name} image={selKennel?.logo_url} onClear={() => set('kennel_id', '')}
-              selector={<SearchList items={kennels.map(k => ({ id: k.id, name: k.name, image: k.logo_url }))} value={form.kennel_id} onChange={v => set('kennel_id', v)} placeholder={t('Buscar criadero...')} />} />
+            {/* Criador original: busca entre TODOS los criaderos de Genealogic. Al
+                elegirlo, el nombre se reescribe con SU afijo (de/del/di/von…),
+                quitando antes cualquier afijo previo para no apilar. */}
+            <div>
+              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Criador original')}</label>
+              {selBreeder ? (
+                <div className="flex items-center gap-2 rounded-lg border border-hairline bg-surface-card px-3 py-2">
+                  {selBreeder.logo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={selBreeder.logo_url} alt="" className="h-7 w-7 rounded object-cover" />
+                  ) : (
+                    <div className="flex h-7 w-7 items-center justify-center rounded bg-surface-soft text-muted"><Dog className="h-4 w-4" /></div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-ink">{selBreeder.name}</p>
+                    <p className="truncate text-[10px] text-muted">{t('Afijo')}: {formatDogName(t('Nombre'), selBreeder.name, selBreeder.affix_format as AffixFormat)}</p>
+                  </div>
+                  <button type="button" onClick={clearBreeder} className="text-muted hover:text-ink" aria-label={t('Quitar criador')}><X className="h-4 w-4" /></button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                  <input value={breederQ} onChange={e => setBreederQ(e.target.value)} placeholder={t('Buscar criadero (cualquiera)...')} className="w-full bg-canvas border border-hairline rounded-lg pl-10 pr-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
+                  {breederQ.trim().length >= 2 && (
+                    <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-hairline bg-canvas shadow-xl max-h-56 overflow-y-auto">
+                      {breederBusy && <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted"><Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('Buscando...')}</div>}
+                      {!breederBusy && breederResults.map(k => (
+                        <button key={k.id} type="button" onClick={() => selectBreeder(k)} className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-surface-card">
+                          {k.logo_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={k.logo_url} alt="" className="h-6 w-6 flex-shrink-0 rounded object-cover" />
+                          ) : <div className="h-6 w-6 flex-shrink-0 rounded bg-surface-soft" />}
+                          <span className="truncate text-ink">{k.name}</span>
+                          {(k.city || k.country) && <span className="ml-auto truncate pl-2 text-[10px] text-muted">{[k.city, k.country].filter(Boolean).join(', ')}</span>}
+                        </button>
+                      ))}
+                      {!breederBusy && breederResults.length === 0 && <div className="px-3 py-2 text-xs text-muted">{t('Sin resultados')}</div>}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </Section>
