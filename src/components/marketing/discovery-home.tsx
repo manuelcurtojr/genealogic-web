@@ -33,7 +33,7 @@ import {
   Sparkles, Camera, Calendar, Globe, Mail, KanbanSquare,
   Stethoscope, Heart, Zap, Database, Upload,
   UserPlus, Rocket, CheckCircle2, ChevronDown,
-  Quote, Star, Baby, Mars, Venus, Clock, Plus,
+  Quote, Star, Baby, Mars, Venus, Clock, Plus, Syringe, Bug,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useT } from '@/components/i18n/locale-provider'
@@ -95,8 +95,20 @@ type ShowcaseDog = {
   photos: string[]
 }
 
+/** Perro con datos para clonar la card real del backend (mockup "Mis perros"). */
+type MiniDog = {
+  id: string
+  name: string
+  slug: string | null
+  sex: string | null
+  thumbnail_url: string | null
+  birth_date: string | null
+  breed?: { name?: string } | null
+  color?: { name?: string } | null
+}
+
 export default function DiscoveryHome({
-  counts, featuredDogs, featuredKennels, topBreeds, showcaseDog, blogPosts, mosaicPhotos,
+  counts, featuredDogs, featuredKennels, topBreeds, showcaseDog, blogPosts, mosaicPhotos, galgoDogs,
 }: {
   counts: { dogs: number; kennels: number; breeds: number }
   featuredDogs: Dog[]
@@ -105,6 +117,7 @@ export default function DiscoveryHome({
   showcaseDog: ShowcaseDog | null
   blogPosts: BlogCard[]
   mosaicPhotos: string[]
+  galgoDogs: MiniDog[]
 }) {
   const t = useT()
   const heroThumbs = mosaicPhotos.length > 0
@@ -327,7 +340,7 @@ export default function DiscoveryHome({
               {t('Sin esperas, sin onboarding de horas. La ficha de tu perro, su árbol genealógico y tus reservas — todo operativo desde el momento que entras.')}
             </p>
           </div>
-          <ProductShowcase featuredDogs={featuredDogs} showcaseDog={showcaseDog} />
+          <ProductShowcase featuredDogs={featuredDogs} galgoDogs={galgoDogs} showcaseDog={showcaseDog} />
         </div>
       </section>
 
@@ -774,66 +787,94 @@ function BentoCard({
  * ProductShowcase — 3 mini-mockups que ilustran el producto en acción.
  * Ven la lista de perros, el árbol y el pipeline en composición.
  */
-function ProductShowcase({ featuredDogs, showcaseDog }: { featuredDogs: Dog[]; showcaseDog: ShowcaseDog | null }) {
+function ProductShowcase({ featuredDogs, galgoDogs, showcaseDog }: { featuredDogs: Dog[]; galgoDogs: MiniDog[]; showcaseDog: ShowcaseDog | null }) {
   const t = useT()
+  // Galgo italianos REALES (con foto). Si la query no trajo, caemos a los
+  // perros destacados para no dejar el mockup vacío.
+  const dogs: MiniDog[] = (galgoDogs.length > 0
+    ? galgoDogs
+    : featuredDogs.map((d) => ({ id: d.id, name: d.name, slug: d.slug, sex: null, thumbnail_url: d.thumbnail_url, birth_date: null, breed: d.breed, color: null }))
+  ).slice(0, 4)
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      {/* Mockup 1: Catálogo */}
+      {/* Mockup 1: Mis perros — clona la card real del backend (dog-card):
+          foto 4:3, chip de raza arriba-derecha, barra de sexo abajo, nombre. */}
       <div className="rounded-2xl border border-hairline bg-canvas overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
         <div className="flex items-center gap-1.5 border-b border-hairline bg-surface-soft px-3 py-2">
           <span className="h-2 w-2 rounded-full bg-rose-300" />
           <span className="h-2 w-2 rounded-full bg-amber-300" />
           <span className="h-2 w-2 rounded-full bg-emerald-300" />
-          <span className="ml-2 text-[10px] text-muted">{t('Mis perros')}</span>
+          <span className="ml-2 text-[10px] text-muted truncate">{t('Mis perros')}</span>
         </div>
         <div className="p-3 grid grid-cols-2 gap-2">
-          {featuredDogs.slice(0, 4).map(d => (
-            <div key={d.id} className="aspect-square rounded-lg overflow-hidden bg-surface-card">
-              {d.thumbnail_url ? <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-6 h-6 text-muted/30" /></div>}
-            </div>
-          ))}
+          {dogs.map((d) => {
+            const sexColor = d.sex === 'male' ? '#017DFA' : d.sex === 'female' ? '#e84393' : '#9ca3af'
+            const breedName = d.breed?.name
+            return (
+              <div key={d.id} className="overflow-hidden rounded-lg border border-hairline bg-canvas">
+                <div className="relative aspect-[4/3] bg-surface-card overflow-hidden">
+                  {d.thumbnail_url ? (
+                    <img src={d.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center"><Dog className="w-6 h-6 text-muted/30" /></div>
+                  )}
+                  {breedName && (
+                    <span className="absolute right-1 top-1 rounded-full bg-canvas px-1.5 py-0.5 text-[7px] font-medium text-ink shadow-[0_1px_3px_rgba(0,0,0,0.08)]">{breedName}</span>
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 h-[3px]" style={{ background: sexColor }} />
+                </div>
+                <div className="px-1.5 py-1">
+                  <p className="truncate text-[9px] font-semibold text-ink">{d.name}</p>
+                </div>
+              </div>
+            )
+          })}
         </div>
         <div className="px-3 pb-3">
-          <p className="text-[11px] font-semibold text-ink">{t('Catálogo de perros')}</p>
-          <p className="text-[10px] text-muted">{t('Drag & drop · filtros · estados')}</p>
+          <p className="text-[11px] font-semibold text-ink">{t('Mis perros')}</p>
+          <p className="text-[10px] text-muted">{t('Foto, raza, sexo y edad de cada perro')}</p>
         </div>
       </div>
 
-      {/* Mockup 2: Ficha de perro real
-          Imita el perfil real de /dogs/[id]: foto grande, nombre +
-          breed + sex en hero, chips de info (microchip, color, edad,
-          peso), padres con avatares. Foto: usamos el primer perro
-          destacado con foto del catálogo. */}
+      {/* Mockup 2: Ficha de perro real (réplica de /dogs/[id], perro insignia). */}
       <DogProfileMockup
         showcaseDog={showcaseDog}
         fallbackDog={featuredDogs.find(d => d.thumbnail_url) || null}
       />
 
-      {/* Mockup 3: Pipeline reservas */}
+      {/* Mockup 3: Cartilla veterinaria — clona vet-records (icono por tipo +
+          título + fecha + chip), no el pipeline de criador. */}
       <div className="rounded-2xl border border-hairline bg-canvas overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
         <div className="flex items-center gap-1.5 border-b border-hairline bg-surface-soft px-3 py-2">
           <span className="h-2 w-2 rounded-full bg-rose-300" />
           <span className="h-2 w-2 rounded-full bg-amber-300" />
           <span className="h-2 w-2 rounded-full bg-emerald-300" />
-          <span className="ml-2 text-[10px] text-muted">{t('Reservas')} · 17 {t('activas')}</span>
+          <span className="ml-2 text-[10px] text-muted truncate">{t('Veterinario')} · {t('cartilla')}</span>
         </div>
-        <div className="p-3 space-y-1">
+        <div className="p-3 space-y-1.5">
           {([
-            { name: 'María G.', state: t('Seña'), value: '300€', stateClass: 'bg-blue-50 text-blue-700' },
-            { name: 'Carlos M.', state: t('Contrato'), value: '1.200€', stateClass: 'bg-violet-50 text-violet-700' },
-            { name: 'Sara H.', state: t('Seña'), value: '300€', stateClass: 'bg-blue-50 text-blue-700' },
-            { name: 'Pedro B.', state: t('Entrega'), value: '1.200€', stateClass: 'bg-emerald-50 text-emerald-700' },
-          ]).map((r, i) => (
-            <div key={i} className="flex items-center justify-between text-[9.5px] px-2 py-1 rounded border border-hairline bg-surface-soft">
-              <span className="font-semibold text-ink">{r.name}</span>
-              <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${r.stateClass}`}>{r.state}</span>
-              <span className="tabular-nums font-bold text-ink">{r.value}</span>
-            </div>
-          ))}
+            { icon: Syringe, label: t('Vacuna'), title: t('Polivalente (DHPPi)'), date: '12 mar 2025', cls: 'bg-emerald-50 text-emerald-600' },
+            { icon: Bug, label: t('Desparasitación'), title: t('Interna + externa'), date: '02 mar 2025', cls: 'bg-amber-50 text-amber-600' },
+            { icon: Syringe, label: t('Vacuna'), title: t('Rabia'), date: '15 ene 2025', cls: 'bg-emerald-50 text-emerald-600' },
+            { icon: Stethoscope, label: t('Revisión'), title: t('Chequeo anual'), date: '15 ene 2025', cls: 'bg-blue-50 text-blue-600' },
+          ]).map((r, i) => {
+            const Icon = r.icon
+            return (
+              <div key={i} className="flex items-center gap-2 rounded-lg border border-hairline bg-surface-soft px-2 py-1.5">
+                <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${r.cls}`}><Icon className="w-3 h-3" /></div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[9.5px] font-semibold text-ink truncate">{r.title}</p>
+                  <p className="text-[8px] text-muted">{r.date}</p>
+                </div>
+                <span className={`text-[7px] px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap ${r.cls}`}>{r.label}</span>
+              </div>
+            )
+          })}
         </div>
         <div className="px-3 pb-3">
-          <p className="text-[11px] font-semibold text-ink">{t('Pipeline de reservas')}</p>
-          <p className="text-[10px] text-muted">{t('Tabla sortable · estados · pagos')}</p>
+          <p className="text-[11px] font-semibold text-ink">{t('Cartilla veterinaria')}</p>
+          <p className="text-[10px] text-muted">{t('Vacunas, desparasitaciones y recordatorios')}</p>
         </div>
       </div>
     </div>

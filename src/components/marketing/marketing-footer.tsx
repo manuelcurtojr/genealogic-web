@@ -10,7 +10,7 @@
  * Incluye el LanguageSwitcher (cliente) para que el anónimo cambie idioma.
  */
 import Link from 'next/link'
-import { Dog, ShieldCheck, GitBranch } from 'lucide-react'
+import { Dog } from 'lucide-react'
 import { Wordmark } from '@/components/ui/wordmark'
 import { getTranslator } from '@/lib/i18n'
 import LanguageSwitcher from '@/components/ui/language-switcher'
@@ -53,37 +53,26 @@ export default function MarketingFooter({ locale = 'es' }: { locale?: string }) 
               </a>
             </div>
 
-            {/* Mockup iPhone con mini-ficha */}
+            {/* iPhone real con CAPTURA real de la pantalla de login */}
             <div className="flex justify-center lg:justify-end">
-              <div className="relative w-[210px] rounded-[2.2rem] border-[6px] border-[#2a2a2a] bg-black p-2 shadow-[0_20px_50px_rgba(0,0,0,0.55)]">
-                {/* notch */}
-                <div className="absolute left-1/2 top-2 h-4 w-20 -translate-x-1/2 rounded-full bg-black" />
-                <div className="overflow-hidden rounded-[1.7rem] bg-white">
-                  {/* cabecera con foto/placeholder */}
-                  <div className="relative aspect-[4/3] bg-gradient-to-br from-blue-100 via-slate-100 to-amber-100">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Dog className="h-14 w-14 text-black/10" />
-                    </div>
-                    <div className="absolute right-2.5 top-2.5 flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 shadow-sm">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      <span className="text-[9px] font-semibold text-black">{t('Verificado')}</span>
-                    </div>
+              <div className="relative w-[200px] sm:w-[220px] rounded-[2.7rem] border-[8px] border-[#1c1c1e] bg-[#1c1c1e] shadow-[0_24px_60px_rgba(0,0,0,0.6)]">
+                {/* botones laterales */}
+                <div className="absolute -left-[10px] top-[110px] h-12 w-[3px] rounded-l bg-[#0e0e0f]" />
+                <div className="absolute -right-[10px] top-[90px] h-16 w-[3px] rounded-r bg-[#0e0e0f]" />
+                <div className="overflow-hidden rounded-[2.05rem] bg-white">
+                  {/* barra de estado con Dynamic Island */}
+                  <div className="relative flex h-6 items-center justify-center bg-white">
+                    <div className="h-3.5 w-14 rounded-full bg-black" />
                   </div>
-                  {/* datos de la ficha */}
-                  <div className="px-3 py-3">
-                    <p className="text-[15px] font-bold leading-tight text-black">Luna del Valle</p>
-                    <p className="mt-0.5 text-[10.5px] text-zinc-500">Pastor Alemán · 3 años</p>
-                    <div className="mt-3 space-y-1.5">
-                      <div className="flex items-center gap-2 rounded-lg bg-zinc-100 px-2.5 py-1.5">
-                        <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0 text-emerald-600" />
-                        <span className="text-[11px] font-semibold text-black">{t('Vacunas al día')}</span>
-                      </div>
-                      <div className="flex items-center gap-2 rounded-lg bg-zinc-100 px-2.5 py-1.5">
-                        <GitBranch className="h-3.5 w-3.5 flex-shrink-0 text-blue-600" />
-                        <span className="text-[11px] font-semibold text-black">{t('Genealogía 5 gen')}</span>
-                      </div>
-                    </div>
-                  </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/mockups/login-iphone.png"
+                    alt={t('Pantalla de inicio de sesión de Genealogic en iOS')}
+                    width={390}
+                    height={844}
+                    loading="lazy"
+                    className="block w-full"
+                  />
                 </div>
               </div>
             </div>

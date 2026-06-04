@@ -46,7 +46,7 @@ export default async function Home() {
     dogsCount, kennelsCount, breedsCount,
     featuredDogsRes, mosaicRpcRes,
     topBreedsRes, topKennelsRes,
-    showcaseDogRes,
+    showcaseDogRes, galgoDogsRes,
   ] = await Promise.all([
     admin.from('dogs').select('id', { count: 'exact', head: true }),
     admin.from('kennels').select('id', { count: 'exact', head: true }),
@@ -83,6 +83,17 @@ export default async function Home() {
       .select('id, name, slug, thumbnail_url, sex, birth_date, breed_id, color_id, father_id, mother_id')
       .eq('slug', SHOWCASE_DOG_SLUG)
       .maybeSingle(),
+    // Galgo Italiano para el mockup "Mis perros" — perros REALES con foto, con
+    // el mismo aspecto que la lista de perros del backend (dog-card).
+    admin
+      .from('dogs')
+      .select('id, name, slug, sex, thumbnail_url, birth_date, breed:breeds!inner(name), color:colors(name)')
+      .eq('breed.name', 'Galgo Italiano')
+      .not('thumbnail_url', 'is', null)
+      .eq('is_public', true)
+      .is('deceased_at', null)
+      .order('created_at', { ascending: false })
+      .limit(4),
   ])
 
   // Resolver detalles del showcase dog en queries paralelas (padres, color,
@@ -164,6 +175,7 @@ export default async function Home() {
           } : null}
           blogPosts={blogPosts}
           mosaicPhotos={mosaicPhotos}
+          galgoDogs={galgoDogsRes.data || []}
         />
       </main>
       <MarketingFooter locale={locale} />
