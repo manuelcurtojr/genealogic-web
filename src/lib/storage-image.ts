@@ -20,7 +20,10 @@ export function resizedThumb(
   if (src.includes('/storage/v1/object/public/')) {
     const transformed = src.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/')
     const sep = transformed.includes('?') ? '&' : '?'
-    return `${transformed}${sep}width=${width}&quality=${quality}&resize=cover`
+    // `contain` (no `cover`): con solo width, Supabase NO escala el alto en modo
+    // cover (deja el original → imagen aplastada y pesada). contain mantiene la
+    // proporción. El recorte final lo hace el `object-cover` del CSS.
+    return `${transformed}${sep}width=${width}&quality=${quality}&resize=contain`
   }
   return src
 }

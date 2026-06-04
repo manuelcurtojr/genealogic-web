@@ -42,7 +42,17 @@ export function transformImageUrl(
     return url
   }
 
-  const { width, height, resize = 'cover', quality = 72 } = opts
+  const { width, height, quality = 72 } = opts
+
+  // CLAVE: en Supabase, `resize=cover` (y también SIN `resize`) con solo `width`
+  // NO escala proporcional — mantiene el ALTO original. Una foto 1536×2048 con
+  // width=160 sale 160×2048: distorsionada (aplastada en horizontal) y pesando
+  // ~50KB en vez de ~8KB. Solo `contain` escala manteniendo proporción
+  // (→ 160×213). Por eso: si falta una dimensión usamos `contain` (escalado
+  // proporcional, que es lo que queremos para miniaturas + object-cover en CSS);
+  // con ambas dimensiones respetamos el resize pedido (crop server-side, p.ej.
+  // avatares cuadrados exactos).
+  const resize = width && height ? (opts.resize ?? 'cover') : 'contain'
 
   // Reescribimos a /render/image/public/ para activar el endpoint
   // de transformación (ya cubre tanto el caso `/object/` como una URL
