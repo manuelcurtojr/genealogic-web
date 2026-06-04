@@ -22,10 +22,10 @@ export default function MarketingFooter({ locale = 'es' }: { locale?: string }) 
   const t = getTranslator(locale)
   return (
     <footer className="bg-surface-dark text-on-dark">
-      <div className="mx-auto max-w-[1200px] px-6 py-16 lg:px-12">
-        {/* ═════ BANDA DESCARGA APP iOS ═════ */}
-        <div className="relative mb-12 overflow-hidden rounded-2xl bg-surface-dark-elevated border border-white/10 px-6 py-10 sm:px-10 sm:py-12">
-          <div className="flex flex-col items-center gap-10 lg:flex-row lg:items-center lg:justify-center lg:gap-[30px]">
+      <div className="mx-auto max-w-[1200px] px-6 pt-16 pb-12 lg:px-12">
+        {/* ═════ BANDA DESCARGA APP iOS (sin marco, sobre el fondo del footer) ═════ */}
+        <div className="relative overflow-hidden">
+          <div className="flex flex-col items-center gap-10 lg:flex-row lg:items-center lg:justify-center lg:gap-[50px]">
             {/* iPhone real con la CAPTURA real del login — IZQUIERDA en desktop,
                 con un destello/nebulosa naranja detrás. */}
             <div className="relative flex flex-shrink-0 justify-center lg:order-1">
@@ -80,9 +80,12 @@ export default function MarketingFooter({ locale = 'es' }: { locale?: string }) 
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="mb-12 border-t border-white/10" />
+      {/* Divisor full-bleed: ocupa TODO el ancho de la pantalla */}
+      <div className="border-t border-white/10" />
 
+      <div className="mx-auto max-w-[1200px] px-6 pb-16 pt-14 lg:px-12">
         <div className="grid gap-10 sm:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
             <Wordmark size="text-2xl" className="!text-white" asLink={false} />

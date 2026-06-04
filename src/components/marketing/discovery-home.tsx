@@ -33,7 +33,7 @@ import {
   Sparkles, Camera, Calendar, Globe, Mail, KanbanSquare,
   Stethoscope, Heart, Zap, Database, Upload,
   UserPlus, Rocket, CheckCircle2, ChevronDown,
-  Quote, Star, Baby, Mars, Venus, Clock, Plus, Syringe, Bug,
+  Quote, Star, Baby, Mars, Venus, Clock, Plus, Syringe, Bug, Trophy,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useT } from '@/components/i18n/locale-provider'
@@ -140,11 +140,11 @@ export default function DiscoveryHome({
                 className="mt-5 sm:mt-7 font-semibold text-ink"
                 style={{ fontSize: 'clamp(34px, 5.4vw, 64px)', lineHeight: 1.05, letterSpacing: '-0.045em' }}
               >
-                {t('Toda la vida de tu perro,')}{' '}
-                <span style={{ color: '#FE6620' }} className="font-medium">{t('en un solo sitio.')}</span>
+                {t('La base de datos de perros más grande del mundo.')}{' '}
+                <span style={{ color: '#FE6620' }} className="font-medium">{t('La construyes tú.')}</span>
               </h1>
               <p className="mt-5 sm:mt-7 max-w-[580px] text-body" style={{ fontSize: 'clamp(15px, 1.4vw, 19px)', lineHeight: 1.5 }}>
-                {t('Su perfil, su genealogía, la cartilla veterinaria con recordatorios y las reservas con tu criador. Gratis para siempre, sin límite de perros.')}
+                {t('Mantén el perfil de tu perro al día —genealogía, vacunas, salud, premios— y a cambio tienes gratis las mejores herramientas para gestionarlo. Cada perro cuenta: así preservamos las razas.')}
               </p>
               <div className="mt-7 flex flex-wrap gap-2.5">
                 <Link href="/register?intent=owner" className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[14px] font-bold hover:opacity-90 transition">
@@ -199,17 +199,48 @@ export default function DiscoveryHome({
       <section className="border-b border-hairline">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="mb-8 sm:mb-10 max-w-3xl">
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Para ti')}</p>
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('El trato')}</p>
             <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
               {t('Genealogic es de tu perro. Y es gratis.')}
             </h2>
             <p className="mt-4 text-[15px] sm:text-[16px] text-body max-w-xl leading-relaxed">
-              {t('Documenta a tus perros sin límite y sin coste. ¿Tienes criadero? También te cubrimos — con un panel completo en Genealogic Breeders.')}
+              {t('Un trato sencillo: mantienes el perfil de tu perro al día y, a cambio, tienes gratis las mejores herramientas para gestionarlo. Cada perro que documentas hace la base de datos más grande y fiable — y ayuda a preservar su raza.')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-            {/* Propietario — primario */}
+            {/* TÚ APORTAS — la misión, en claro (sustituye la caja negra) */}
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-hairline bg-gradient-to-br from-orange-50 via-canvas to-amber-50 p-6 sm:p-8 lg:p-10">
+              <Database className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 w-32 h-32 sm:w-48 sm:h-48 text-[#FE6620]/10" strokeWidth={1} />
+              <div className="relative">
+                <div className="inline-flex w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#FE6620] items-center justify-center shadow-[0_8px_24px_rgba(254,102,32,0.3)]">
+                  <Database className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <p className="mt-4 sm:mt-5 text-[11px] font-bold uppercase tracking-wider text-[#FE6620]">{t('Tú aportas')}</p>
+                <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 30px)' }}>
+                  {t('Mantén su perfil al día.')}
+                </h3>
+                <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-md">
+                  {t('Su genealogía, sus fotos, sus datos. Cada perro que documentas hace la base de datos de perros más grande, completa y fiable del mundo — y ayuda a preservar su raza. Porque cada perro cuenta.')}
+                </p>
+                <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3">
+                  <div>
+                    <p className="text-[22px] font-bold tabular-nums leading-none text-ink">{counts.dogs.toLocaleString('es-ES')}</p>
+                    <p className="mt-1 text-[11px] text-muted">{t('perros')}</p>
+                  </div>
+                  <div>
+                    <p className="text-[22px] font-bold tabular-nums leading-none text-ink">{counts.breeds.toLocaleString('es-ES')}</p>
+                    <p className="mt-1 text-[11px] text-muted">{t('razas')}</p>
+                  </div>
+                  <div>
+                    <p className="text-[22px] font-bold tabular-nums leading-none text-ink">{counts.kennels.toLocaleString('es-ES')}</p>
+                    <p className="mt-1 text-[11px] text-muted">{t('criaderos')}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* TÚ RECIBES — las herramientas, gratis */}
             <Link href="/register?intent=owner" className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-hairline bg-gradient-to-br from-blue-50 via-canvas to-sky-50 p-6 sm:p-8 lg:p-10 hover:shadow-[0_12px_48px_rgba(59,130,246,0.15)] transition-all hover:-translate-y-1 duration-300">
               <Dog className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 w-32 h-32 sm:w-48 sm:h-48 text-blue-500/10 group-hover:text-blue-500/20 transition-colors" strokeWidth={1} />
               <div className="relative">
@@ -217,69 +248,34 @@ export default function DiscoveryHome({
                   <Dog className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="mt-4 sm:mt-5 flex items-center gap-2 flex-wrap">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700">{t('Para propietarios')}</p>
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{t('Gratis siempre · Sin límite')}</span>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700">{t('Tú recibes')}</p>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{t('Gratis · Sin límite')}</span>
                 </div>
-                <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 32px)' }}>
-                  {t('Tu perro merece su historia.')}
+                <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 30px)' }}>
+                  {t('Todo para gestionar a tu perro.')}
                 </h3>
-                <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-md">
-                  {t('Su ficha con galería, su genealogía sin límite de generaciones, la cartilla veterinaria con recordatorios y las reservas con tu criador. Sin coste, para siempre y sin límite de perros.')}
-                </p>
-                <ul className="mt-5 sm:mt-6 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px] sm:text-[13px] text-body">
-                  <MiniFeature icon={Camera}>{t('Ficha con galería')}</MiniFeature>
+                <ul className="mt-5 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px] sm:text-[13px] text-body">
                   <MiniFeature icon={GitBranch}>{t('Genealogía sin límite')}</MiniFeature>
-                  <MiniFeature icon={Calendar}>{t('Recordatorios de vacunas')}</MiniFeature>
-                  <MiniFeature icon={KanbanSquare}>{t('Reservas con tu criador')}</MiniFeature>
-                  <MiniFeature icon={ShieldCheck}>{t('Reclama tu perro')}</MiniFeature>
-                  <MiniFeature icon={Heart}>{t('Privado por defecto')}</MiniFeature>
+                  <MiniFeature icon={Calendar}>{t('Vacunas con recordatorios')}</MiniFeature>
+                  <MiniFeature icon={ShieldCheck}>{t('Certificados de salud')}</MiniFeature>
+                  <MiniFeature icon={Trophy}>{t('Premios y palmarés')}</MiniFeature>
+                  <MiniFeature icon={KanbanSquare}>{t('Seguimiento de tu reserva')}</MiniFeature>
+                  <MiniFeature icon={Globe}>{t('Comparte con un link')}</MiniFeature>
                 </ul>
-                <div className="mt-6 flex items-center gap-2 text-[12px] text-muted">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
-                  <span><strong className="text-ink tabular-nums">{counts.dogs.toLocaleString('es-ES')}</strong> {t('perros documentados')}</span>
-                </div>
-                <div className="mt-4">
+                <div className="mt-6">
                   <span className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
                     {t('Crear mi cuenta gratis')} <ArrowRight className="w-4 h-4" />
                   </span>
                 </div>
               </div>
             </Link>
+          </div>
 
-            {/* Misión — el porqué de Genealogic (no es una card de producto de criador) */}
-            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-hairline bg-ink text-on-primary p-6 sm:p-8 lg:p-10">
-              <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-[#FE6620]/25 blur-[90px] pointer-events-none" />
-              <Database className="absolute -bottom-5 -right-5 w-32 h-32 sm:w-44 sm:h-44 text-white/[0.04]" strokeWidth={1} />
-              <div className="relative">
-                <div className="inline-flex w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#FE6620] items-center justify-center shadow-[0_8px_24px_rgba(254,102,32,0.3)]">
-                  <Database className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </div>
-                <p className="mt-4 sm:mt-5 text-[11px] font-bold uppercase tracking-wider text-[#FE6620]">{t('Nuestra misión')}</p>
-                <h3 className="mt-1 font-semibold tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 32px)' }}>
-                  {t('La base de datos de perros más grande, completa y fiable del mundo.')}
-                </h3>
-                <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-white/70 leading-[1.55] max-w-md">
-                  {t('Cada perro que documentas se suma a nuestro motor de búsqueda, junto a todas las demás genealogías. Así ayudamos a preservar las razas y construimos el registro canino más fiable que existe — porque cada perro importa.')}
-                </p>
-                <div className="mt-6 grid grid-cols-3 gap-3">
-                  <div>
-                    <p className="text-[20px] sm:text-[22px] font-bold tabular-nums leading-none">{counts.dogs.toLocaleString('es-ES')}</p>
-                    <p className="mt-1 text-[11px] text-white/50">{t('perros')}</p>
-                  </div>
-                  <div>
-                    <p className="text-[20px] sm:text-[22px] font-bold tabular-nums leading-none">{counts.breeds.toLocaleString('es-ES')}</p>
-                    <p className="mt-1 text-[11px] text-white/50">{t('razas')}</p>
-                  </div>
-                  <div>
-                    <p className="text-[20px] sm:text-[22px] font-bold tabular-nums leading-none">{counts.kennels.toLocaleString('es-ES')}</p>
-                    <p className="mt-1 text-[11px] text-white/50">{t('criaderos')}</p>
-                  </div>
-                </div>
-                <Link href="/criadores" className="mt-7 inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/70 hover:text-white transition-colors">
-                  {t('¿Eres criador? Conoce Genealogic Breeders')} <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
+          {/* Enlace discreto a criadores */}
+          <div className="mt-6 text-center sm:text-left">
+            <Link href="/criadores" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted hover:text-ink transition-colors">
+              <Store className="w-3.5 h-3.5" /> {t('¿Tienes un criadero? Conoce Genealogic Breeders')} <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
       </section>
@@ -292,6 +288,9 @@ export default function DiscoveryHome({
             <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
               {t('De cero a tu perro documentado en 5 minutos.')}
             </h2>
+            <p className="mt-4 text-[15px] sm:text-[16px] text-body max-w-xl leading-relaxed">
+              {t('Sencillo, rápido y sin límites: añade los perros que quieras, gratis. Cada uno suma a la base de datos.')}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 relative">
@@ -421,6 +420,8 @@ export default function DiscoveryHome({
               size="large"
             />
             <BentoCard href="/features#cartilla" icon={Stethoscope} title={t('Salud con recordatorios')} desc={t('Cartilla, vacunas, desparasitaciones y visitas — con avisos automáticos.')} color="#34d399" />
+            <BentoCard href="/features#certificados" icon={CheckCircle2} title={t('Certificados de salud')} desc={t('Displasias, pruebas oculares y genéticas, resultados del vet — guardados y a mano.')} color="#14b8a6" />
+            <BentoCard href="/features#premios" icon={Trophy} title={t('Premios y palmarés')} desc={t('Exposiciones, títulos y trofeos. El historial deportivo de tu perro, ordenado.')} color="#eab308" />
             <BentoCard href="/features#calendario" icon={Calendar} title={t('Calendario del perro')} desc={t('Sus citas y avisos, para que no se te pase ni una.')} color="#f59e0b" />
             <BentoCard href="/features#reservas" icon={KanbanSquare} title={t('Reservas con tu criador')} desc={t('Sigue el estado, firma el contrato, paga y recibe sus documentos.')} color="#8b5cf6" />
             <BentoCard href="/features#papeles" icon={ShieldCheck} title={t('Papeles siempre a mano')} desc={t('Cartilla, contrato y microchip digitalizados — incluso sin cobertura en el vet.')} color="#0ea5e9" />
@@ -437,10 +438,13 @@ export default function DiscoveryHome({
           <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
             <div className="mb-6 sm:mb-8 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('El catálogo')}</p>
+                <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('La base de datos crece')}</p>
                 <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
                   {t('Perros recién registrados')}
                 </h2>
+                <p className="mt-2 text-[14px] text-body max-w-lg leading-relaxed">
+                  {t('Cada perfil que añade un propietario entra aquí. Esto es lo último que ha llegado.')}
+                </p>
               </div>
               <Link href="/search" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-ink hover:opacity-80">
                 {t('Ver todos')} <ArrowRight className="w-3.5 h-3.5" />
