@@ -236,7 +236,11 @@ export default async function KennelLayout({
         activePageId="home"
         variant="compact"
       />
-      {children}
+      {/* pb para que el contenido no quede pegado al footer en las subpáginas
+          (catálogo, razas, sobre…). Mismo aire que la rama standalone. Solo
+          padding vertical → no afecta a las secciones full-bleed (.kennel-bleed,
+          que se anclan al viewport, no al ancho de este wrapper). */}
+      <div className="pb-8 sm:pb-12">{children}</div>
 
       {/* Footer Pro fusionado (identidad + newsletter), full-bleed.
           Aparece en TODAS las subpáginas del kennel Pro — antes vivía
