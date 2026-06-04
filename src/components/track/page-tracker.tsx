@@ -19,11 +19,16 @@ interface Props {
  */
 export default function PageTracker({ kennelId, dogId, userId }: Props) {
   const pathname = usePathname()
-  const sent = useRef(false)
+  // Guardamos el ÚLTIMO path trackeado (no un booleano): así el tracker también
+  // funciona montado en un LAYOUT persistente (p.ej. el del kennel), que NO se
+  // desmonta al navegar entre subpáginas — con un booleano solo se contaba la 1ª.
+  // Re-dispara en cada cambio de pathname; el dedupe real (mismo path/sesión) lo
+  // siguen haciendo sessionStorage (abajo) + el endpoint /api/track.
+  const lastSent = useRef<string | null>(null)
 
   useEffect(() => {
-    if (sent.current) return
-    sent.current = true
+    if (lastSent.current === pathname) return
+    lastSent.current = pathname
 
     try {
       const key = `pv:${pathname}`

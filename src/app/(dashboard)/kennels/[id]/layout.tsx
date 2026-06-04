@@ -21,6 +21,7 @@ import { isUUID } from '@/lib/slug'
 import { isDynamicSiteHost } from '@/lib/kennel/custom-site'
 import KennelChrome from '@/components/kennel/kennel-chrome'
 import KennelProFooter from '@/components/kennel/kennel-pro-footer'
+import PageTracker from '@/components/track/page-tracker'
 import {
   isKennelOnProPlan,
   isExtraPageEnabled,
@@ -185,6 +186,14 @@ export default async function KennelLayout({
   // exacto haríamos un client component que lee usePathname.
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
 
+  // Analítica web: un solo tracker en el layout cubre TODAS las páginas del
+  // kennel Pro (home + perros, razas, sobre, instalaciones, galería, blog,
+  // contacto). Antes solo la home tenía <PageTracker>, así que las visitas a
+  // las subpáginas no llegaban a /visitas. Cubre los dos hosts: genealogic.io/
+  // kennels/[slug] y el dominio propio (que sirve estas mismas rutas). En la
+  // home convive con el tracker de su page → dedupe por sesión (sessionStorage).
+  const tracker = <PageTracker kennelId={kennel.id} />
+
   // ─── Web propia (dominio del criadero): chrome standalone ─────────────
   // Header completo (no la tira compact), contenido en max-w-7xl centrado
   // (los fondos full-bleed rompen a 100vw, igual que en la vista pública),
@@ -204,6 +213,7 @@ export default async function KennelLayout({
         {/* Sin padding-top: el contenido (en la home, el hero full-bleed)
             queda pegado al header. El aire inferior se mantiene. */}
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-[30px] pb-8 sm:pb-12">
+          {tracker}
           {children}
         </main>
         <KennelProFooter
@@ -236,6 +246,7 @@ export default async function KennelLayout({
         activePageId="home"
         variant="compact"
       />
+      {tracker}
       {/* pb para que el contenido no quede pegado al footer en las subpáginas
           (catálogo, razas, sobre…). Mismo aire que la rama standalone. Solo
           padding vertical → no afecta a las secciones full-bleed (.kennel-bleed,
