@@ -2,6 +2,13 @@ import { withSentryConfig } from '@sentry/nextjs'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    return [
+      // /propietarios se fusionó en la home (la home YA es la landing del
+      // propietario). Redirect permanente para no perder enlaces/SEO.
+      { source: '/propietarios', destination: '/', permanent: true },
+    ]
+  },
   images: {
     // Whitelist of allowed image hosts. Vercel's Image Optimization
     // will fetch, resize and convert to WebP/AVIF for the requested viewport.

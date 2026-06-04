@@ -104,7 +104,7 @@ export default function MarketingFooter({ locale = 'es' }: { locale?: string }) 
             title={t('Producto')}
             links={[
               { label: t('Para criadores'), href: '/criadores' },
-              { label: t('Para propietarios'), href: '/propietarios' },
+              { label: t('Para propietarios'), href: '/' },
               { label: t('Precios'), href: '/pricing' },
               { label: t('Buscar perros'), href: '/search' },
               { label: t('Directorio criaderos'), href: '/kennels' },
