@@ -678,8 +678,10 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           </div>
         )}
 
-        {/* Footer — guardar (solo pestaña Datos, modo manual) */}
-        {activeTab === 'datos' && createMode === 'manual' && (
+        {/* Footer — guardar: en la pestaña Datos al EDITAR (cualquier createMode) o
+            al crear en modo manual. Antes iba solo con createMode==='manual', pero
+            al pasar el default a 'import' desaparecía en edición → no se guardaba. */}
+        {activeTab === 'datos' && (isEdit || createMode === 'manual') && (
           <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hairline flex-shrink-0">
             <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">{t('Cancelar')}</button>
             <button onClick={handleSubmit} disabled={loading || !form.name.trim() || dataLoading}
