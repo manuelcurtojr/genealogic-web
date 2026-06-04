@@ -275,9 +275,9 @@ function intentBranding(data: SignupIntentData | null, t: (key: string) => strin
     title: isFree || isOwner ? t('Empieza') : t('Activa'),
     titleTail: isFree || isOwner ? t('gratis.') : `Genealogic ${planLabel}.`,
     subtitle: isOwner
-      ? t('Tu plan Owner es gratis para siempre, hasta 3 perros. Crea tu cuenta y empieza a documentar tu mascota.')
+      ? t('Tu plan Owner es gratis para siempre, con perros ilimitados. Crea tu cuenta y empieza a documentar a tus perros.')
       : isFree
-        ? t('Tu plan Kennel Free es gratis para siempre, hasta 5 perros. Crea tu cuenta para registrar tu criadero y empezar a publicar tus perros.')
+        ? t('Tu plan Kennel Free es gratis para siempre, con perros ilimitados. Crea tu cuenta para registrar tu criadero y empezar a publicar tus perros.')
         : isEnterprise
           ? t('Kennel Enterprise se activa de forma manual tras hablar con soporte (hola@genealogic.io). Crea tu cuenta y nos coordinamos contigo para el alta.')
           : t('Kennel Pro empieza con 14 días gratis sin tarjeta. Antes de terminar la prueba te pedimos método de pago para continuar.'),
@@ -295,14 +295,14 @@ function IntentBadge({ data }: { data: SignupIntentData }) {
   const label = data.intent === 'buyer'
     ? t('Cuenta de comprador')
     : isOwner
-      ? t('Plan Owner · Gratis para siempre · 3 perros')
+      ? t('Plan Owner · Gratis para siempre · Perros ilimitados')
       : planStr === 'free'
-        ? t('Plan Kennel Free · Gratis para siempre · 5 perros')
+        ? t('Plan Kennel Free · Gratis para siempre · Perros ilimitados')
         : isEnterprise
           ? t('Plan Kennel Enterprise · Activación manual tras hablar con soporte')
           : isPro
             ? t('Plan Kennel Pro · 14 días gratis sin tarjeta')
-            : t('Plan Kennel Free · Gratis para siempre · 5 perros')
+            : t('Plan Kennel Free · Gratis para siempre · Perros ilimitados')
   return (
     <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-card px-3 py-1.5">
       <Icon className="h-3.5 w-3.5 text-ink" />

@@ -2,20 +2,21 @@
  * PricingClient — /pricing con 4 planes, vista simple/avanzada
  * y toggle Mensual / Anual con descuento 15%.
  *
- * Modelo (cerrado 2026-05-28):
- *   · Owner — 3 perros · Gratis
- *   · Kennel Free — 5 perros · Gratis
- *   · Kennel Pro — Ilimitado · 49€/mes (o 499€/año, ahorro 15%) · 14 días gratis
- *   · Kennel Enterprise — Ilimitado · 149€/mes (o 1.520€/año, ahorro 15%) · alta manual
+ * Modelo (perros ILIMITADOS en todos los planes — ya no se monetiza por
+ * número de perros, sino por las HERRAMIENTAS de criadero):
+ *   · Owner — Perros ilimitados · Gratis
+ *   · Kennel Free — Perros ilimitados · Gratis
+ *   · Kennel Pro — Perros ilimitados · 49€/mes (o 499€/año, ahorro 15%) · 14 días gratis
+ *   · Kennel Enterprise — Perros ilimitados · 149€/mes (o 1.520€/año, ahorro 15%) · alta manual
  *
  * Vistas:
  *   1) Simple ("en cristiano") — 4 cards grandes con 5-6 highlights por plan
  *   2) Avanzada — tabla completa con TODAS las features marcadas por plan,
  *      agrupadas en 10 categorías
  *
- * Regla del límite (CRÍTICA, explicada en una nota visible):
- *   Un perro cuenta SI es tuyo + tiene más de 90 días + NO está marcado
- *   "Disponible" ni "Reservado" + NO está fallecido.
+ * La diferencia entre planes está en las herramientas (criadero, web,
+ * emailbot, simulador, genotipos, estadísticas), NO en cuántos perros
+ * tienes — eso es ilimitado en todos.
  *
  * El plan completo del modelo está en
  * memory/genealogic_pricing_model.md.
@@ -229,14 +230,14 @@ const PLANS: PlanDef[] = [
     monthlyCents: 0,
     annualCents: null,
     period: 'Gratis siempre',
-    maxDogs: '3 perros',
-    forWho: 'Para documentar tu mascota',
+    maxDogs: 'Perros ilimitados',
+    forWho: 'Para documentar tus perros',
     description: 'Sube su ficha, guarda su genealogía y enseña su carnet con un link.',
     icon: Dog,
     accent: '#3b82f6',
     accentBg: 'from-blue-50 via-canvas to-sky-50',
     highlights: [
-      'Hasta 3 perros en plantilla',
+      'Perros ilimitados, gratis para siempre',
       'Genealogía completa de 10 generaciones',
       'Cartilla veterinaria + recordatorios de vacunas',
       'Galería ilimitada de fotos + palmarés',
@@ -252,19 +253,19 @@ const PLANS: PlanDef[] = [
     monthlyCents: 0,
     annualCents: null,
     period: 'Gratis siempre',
-    maxDogs: '5 perros',
+    maxDogs: 'Perros ilimitados',
     forWho: 'Para el criador casero',
     description: 'Todo Owner + camadas + pipeline de reservas + contratos. Sin tarjeta.',
     icon: Store,
     accent: '#10b981',
     accentBg: 'from-emerald-50 via-canvas to-green-50',
     highlights: [
-      'Hasta 5 perros en plantilla (el legal antes de núcleo zoológico)',
+      'Perros ilimitados, gratis para siempre',
       'Camadas con un click + calendario reproductivo',
       'Pipeline de reservas con contratos y firma electrónica',
       'CRM unificado de clientes',
       'Stud-book privado + estados de cachorros',
-      'Cachorros disponibles NO cuentan en el límite',
+      'Afijo, contactos y gestión de criadero casero',
     ],
     ctaLabel: 'Empezar gratis',
     ctaHref: '/register?intent=breeder&plan=free',
@@ -275,7 +276,7 @@ const PLANS: PlanDef[] = [
     monthlyCents: 4900,  // 49€/mes
     annualCents: 49900,  // 499€/año = 41.6€/mes (-15%)
     period: '',
-    maxDogs: 'Ilimitado',
+    maxDogs: 'Perros ilimitados',
     forWho: 'Para el criadero profesional',
     description: 'Todo Free + perros ilimitados + COI explicado + simulador + estadísticas.',
     icon: Sparkles,
@@ -299,7 +300,7 @@ const PLANS: PlanDef[] = [
     monthlyCents: 14900,    // 149€/mes
     annualCents: 152000,    // 1520€/año = 126.6€/mes (-15%)
     period: '',
-    maxDogs: 'Ilimitado',
+    maxDogs: 'Perros ilimitados',
     forWho: 'Para el criadero con escaparate público',
     description: 'Todo Pro + web profesional con dominio propio + emailbot IA + multi-idioma.',
     icon: Crown,
@@ -443,16 +444,16 @@ export default function PricingClient({
           <AdvancedView isLoggedIn={isLoggedIn} cycle={cycle} />
         )}
 
-        {/* Regla del límite — explicación en cristiano (visible en ambas vistas) */}
+        {/* Perros ilimitados — nota en cristiano (visible en ambas vistas) */}
         <div className="mt-10 max-w-3xl mx-auto rounded-2xl border border-blue-200 bg-blue-50/40 p-5 sm:p-6">
           <div className="flex items-start gap-3">
             <Info className="w-5 h-5 text-blue-700 mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-sm font-bold text-blue-900 mb-1.5">
-                {t('¿Cómo cuentan los perros en el límite?')}
+                {t('Perros ilimitados en todos los planes')}
               </p>
               <p className="text-[13.5px] text-blue-900/80 leading-relaxed">
-                {t('Un perro cuenta SI es tuyo, tiene más de 90 días, NO está marcado como “Disponible” o “Reservado”, y NO está fallecido. Es decir, cuentan tus')}{' '}<strong>{t('reproductores y plantilla fija')}</strong>{t('. Cachorros para venta, perros que ya transferiste a sus dueños y perros fallecidos')}<strong> {t('no suman')}</strong>{t('. Así un criador con 3 reproductoras en Free puede tener una camada de 8 cachorros sin pasarse del límite de 5.')}
+                {t('Sube todos los perros que quieras —reproductores, camadas, retirados o fallecidos— sin límite ni coste extra, incluso en Owner y Kennel Free. No cobramos por perro: pagas por las')}{' '}<strong>{t('herramientas de criadero')}</strong>{t(' (embudo, contratos, web, emailbot, simulador de cruces, genotipos y estadísticas). El propietario es gratis para siempre.')}
               </p>
             </div>
           </div>
@@ -527,10 +528,10 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
         <p className="mt-1 text-[11px] text-muted leading-tight">{priceInfo.sub}</p>
       )}
 
-      {/* Max perros badge */}
+      {/* Perros ilimitados badge (mismo en todos los planes) */}
       <div className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-canvas/80 border border-hairline px-2.5 py-0.5 text-[11px] font-semibold text-ink">
         <Dog className="w-3 h-3" />
-        {plan.maxDogs}
+        {t(plan.maxDogs)}
       </div>
 
       {/* Descripción */}
@@ -726,13 +727,10 @@ function FAQ() {
       </div>
       <div className="space-y-2">
         <FaqItem q={t('¿De verdad Owner y Free son gratis para siempre?')}>
-          {t('Sí. Owner (3 perros) y Kennel Free (5 perros) no caducan. No te pedimos tarjeta. Si llegas al límite de tu plan y necesitas más, te ofrecemos subir — pero nunca te empujamos.')}
-        </FaqItem>
-        <FaqItem q={t('¿Qué pasa con los cachorros y el límite?')}>
-          {t('Los cachorros NO cuentan en tu límite mientras son lactantes (menos de 90 días). Pasados los 90 días, si los marcas como “Disponible” o “Reservado”, siguen sin contar. Solo cuentan cuando los decides quedarte como parte de tu plantilla (reproductor / cría / retirado). Si los transfieres a sus dueños, pasan a contar a ese cliente, no a ti.')}
+          {t('Sí. Owner y Kennel Free no caducan ni piden tarjeta. La diferencia entre planes está en las herramientas (criadero, web, emailbot…), no en cuántos perros tienes — eso es ilimitado en todos. Cuando necesites más herramientas, te ofrecemos subir, pero nunca te empujamos.')}
         </FaqItem>
         <FaqItem q={t('¿Y los perros fallecidos?')}>
-          {t('Cuando marcas un perro como fallecido (In Memoriam), deja de contar en tu límite pero su ficha sigue existiendo con toda su genealogía, fotos y palmarés. Útil para propietarios que han tenido varios perros a lo largo de su vida y quieren documentarlos a todos. Los perros con más de 20 años se marcan automáticamente como fallecidos (puedes contradecirlo en los 30 días siguientes).')}
+          {t('Cuando marcas un perro como fallecido (In Memoriam), Genealogic conserva su ficha con toda su genealogía, fotos y palmarés, y la oculta del directorio público. No hay ningún límite del que descontar: tienes perros ilimitados en todos los planes. Útil para propietarios que han tenido varios perros a lo largo de su vida y quieren documentarlos a todos. Los perros con más de 20 años se marcan automáticamente como fallecidos (puedes contradecirlo en los 30 días siguientes).')}
         </FaqItem>
         <FaqItem q={t('¿Cómo funciona la prueba de 14 días de Pro?')}>
           {t('Te das de alta sin tarjeta. Durante 14 días tienes acceso completo al plan. El día 13 te avisamos por email. El día 14 te pedimos tarjeta para seguir. Si no pagas, vuelves automáticamente a Free (tus datos se mantienen intactos).')}
@@ -744,7 +742,7 @@ function FAQ() {
           {t('Sí, sube o baja cuando quieras. Si subes, el cobro es prorrateado. Si bajas, los cambios se aplican al final del periodo facturado. Tus datos siguen siempre seguros — solo cambian las features disponibles.')}
         </FaqItem>
         <FaqItem q={t('¿Owner vs Kennel Free — cuál elegir?')}>
-          {t('Owner es para propietarios particulares que solo documentan a sus mascotas (hasta 3 perros). Kennel Free es para criadores caseros o aficionados que ya manejan camadas, reservas y contratos (hasta 5 perros — el límite legal antes de núcleo zoológico). Si tienes un macho semental y una hembra y os llega una camada, Free.')}
+          {t('Ambos son gratis y con perros ilimitados — la diferencia son las herramientas de criadero. Owner es para el particular que documenta a sus perros: ficha, genealogía, cartilla y galería. Kennel Free es para el criador casero que además gestiona camadas, reservas y contratos (afijo, pipeline, CRM y stud-book privado). Si tienes un macho semental y una hembra y os llega una camada, Free.')}
         </FaqItem>
         <FaqItem q={t('¿Cancelo cuando quiero?')}>
           {t('Sí, sin penalizaciones, sin permanencia. Cancelas desde tu panel y sigues con Pro/Enterprise hasta el final del periodo pagado. Después bajas a Kennel Free automáticamente (no pierdes datos).')}

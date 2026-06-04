@@ -11,7 +11,7 @@ import {
   ChevronRight, AlertTriangle
 } from 'lucide-react'
 import AvatarUpload from '@/components/settings/avatar-upload'
-import { getRoleLabel, getRoleBadge } from '@/lib/permissions'
+import { getRoleLabel, getRoleBadge, getPlanLabel } from '@/lib/permissions'
 import { getLocalizedCountries, searchCities } from '@/lib/countries'
 import { getTranslator } from '@/lib/i18n'
 
@@ -52,6 +52,9 @@ type Section =
 export default function SettingsPage() {
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null)
+  // ¿El usuario tiene criadero? Un owner puro (sin kennel) ve el plan como
+  // "Owner" (no "Kennel Free") y NO ve las pestañas Suscripción/Facturación.
+  const [hasKennel, setHasKennel] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [activeSection, setActiveSection] = useState<Section>('perfil')
@@ -110,8 +113,12 @@ export default function SettingsPage() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const [{ data }, { data: kennelArr }] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', user.id).single(),
+        supabase.from('kennels').select('id').eq('owner_id', user.id).limit(1),
+      ])
       setProfile(data)
+      setHasKennel((kennelArr?.length ?? 0) > 0)
       if (data) {
         setForm(prev => ({
           ...prev,
@@ -185,20 +192,20 @@ export default function SettingsPage() {
   const userRole = profile?.role || 'owner'
   const userPlan: string = (profile as any)?.plan || 'free'
   const userIsFounder: boolean = Boolean((profile as any)?.plan_is_founder)
-  // Mapeo canónico al label comercial nuevo, aceptando legacy:
-  //   rol técnico 'kennel_pro' (BBDD) → Kennel Enterprise (149€/mes, manual)
-  //   rol técnico 'kennel'     (BBDD) → Kennel Pro       (49€/mes)
-  //   free → Kennel Free (5 perros) por defecto
-  const userPlanLabel =
-    userPlan === 'kennel_pro' || userPlan === 'premium' || userPlan === 'enterprise' ? 'Kennel Enterprise' :
-    userPlan === 'kennel' || userPlan === 'pro' || userPlan === 'starter' ? 'Kennel Pro' :
-    userPlan === 'owner' ? 'Owner' :
-    'Kennel Free'
+  // getPlanLabel distingue "Owner" (free sin kennel) de "Kennel Free" (free
+  // con kennel) usando hasKennel; antes el mapeo inline caía siempre en
+  // "Kennel Free", mostrándole a un propietario un plan de criador.
+  const userPlanLabel = getPlanLabel(userPlan, hasKennel)
   const userIsEnterprise = userPlan === 'kennel_pro' || userPlan === 'premium' || userPlan === 'enterprise'
+  // Un owner puro (sin kennel, plan free) no tiene suscripción ni facturación
+  // que gestionar: ocultamos esas dos pestañas. El resto se quedan para todos.
+  const showBilling = hasKennel
   const sections: { key: Section; label: string; icon: React.ElementType }[] = [
     { key: 'perfil',         label: t('Perfil'),           icon: User },
-    { key: 'suscripcion',    label: t('Suscripción'),      icon: Crown },
-    { key: 'facturacion',    label: t('Facturación'),      icon: CreditCard },
+    ...(showBilling ? [
+      { key: 'suscripcion' as Section,  label: t('Suscripción'),  icon: Crown },
+      { key: 'facturacion' as Section,  label: t('Facturación'),  icon: CreditCard },
+    ] : []),
     { key: 'seguridad',      label: t('Seguridad'),        icon: Lock },
     { key: 'idioma',         label: t('Idioma y región'),  icon: Globe },
     { key: 'notificaciones', label: t('Notificaciones'),   icon: Bell },
@@ -326,7 +333,7 @@ export default function SettingsPage() {
           )}
 
           {/* === SUSCRIPCIÓN === */}
-          {activeSection === 'suscripcion' && (
+          {showBilling && activeSection === 'suscripcion' && (
             <div className="space-y-4">
               <SectionHeader title={t('Suscripción')} desc={t('Plan actual y opciones de upgrade')} />
               <div className="rounded-2xl border border-ink bg-canvas p-6 relative overflow-hidden">
@@ -374,7 +381,7 @@ export default function SettingsPage() {
           )}
 
           {/* === FACTURACIÓN === */}
-          {activeSection === 'facturacion' && (
+          {showBilling && activeSection === 'facturacion' && (
             <div className="space-y-4">
               <SectionHeader title={t('Facturación')} desc={t('Historial de pagos y datos fiscales')} />
               <div className="rounded-xl border border-hairline bg-canvas p-5">

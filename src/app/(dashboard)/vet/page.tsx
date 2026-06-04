@@ -7,6 +7,14 @@ export default async function VetRemindersPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
+  // ¿Es criador? El subnav solo muestra la tab "Reproductivo" a criadores.
+  const { data: kennelArr } = await supabase
+    .from('kennels')
+    .select('id')
+    .eq('owner_id', user.id)
+    .limit(1)
+  const isBreeder = (kennelArr?.length ?? 0) > 0
+
   // Fetch all reminders with dog info
   const { data: reminders } = await supabase
     .from('vet_reminders')
@@ -30,7 +38,7 @@ export default async function VetRemindersPage() {
 
   return (
     <div className="space-y-5">
-      <CalendarSubnav />
+      <CalendarSubnav isBreeder={isBreeder} />
       <VetRemindersClient
         initialReminders={reminders || []}
         dogs={dogs || []}

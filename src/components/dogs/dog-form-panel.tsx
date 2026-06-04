@@ -273,11 +273,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       const { data: newDog, error: err } = await supabase.from('dogs').insert(insertData).select('id, slug').single()
       setLoading(false)
       if (err) {
-        if (err.message?.includes('DOG_LIMIT_REACHED')) {
-          setError(t('Has alcanzado el límite de perros de tu plan. Marca un perro como "en venta" o fallecido para liberar espacio, o pásate a Kennel Pro para perros ilimitados (genealogic.io/pricing).'))
-        } else {
-          setError(err.message)
-        }
+        setError(err.message)
         return
       }
       if (onSaved) onSaved(newDog?.id)
@@ -489,7 +485,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             </div>
           ) : (
             <ActionCard icon={Heart} accent="rose" title={t('Marcar In Memoriam')}
-              desc={t('Deja de contar en tu límite. La ficha y la genealogía se conservan.')} cta={t('Marcar')} danger
+              desc={t('Su ficha y genealogía se conservan; se oculta del directorio público.')} cta={t('Marcar')} danger
               onClick={() => setConfirmDeceased(true)} />
           )}
         </div>
@@ -636,7 +632,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
               <h3 className="text-base font-semibold">{t('Marcar como fallecido')}</h3>
             </div>
             <p className="text-sm text-body leading-relaxed">
-              {form.name ? <strong>{form.name}</strong> : t('Este perro')} {t('aparecerá como «En memoria». Su ficha, genealogía, fotos y palmarés se conservan, pero deja de contar en el límite de tu plan y se oculta del directorio público.')}
+              {form.name ? <strong>{form.name}</strong> : t('Este perro')} {t('aparecerá como «En memoria». Su ficha, genealogía, fotos y palmarés se conservan, pero se oculta del directorio público.')}
             </p>
             <p className="mt-2 text-xs text-muted">
               {t('Esta acción es irreversible desde la app. Si te equivocas, escribe a soporte.')}

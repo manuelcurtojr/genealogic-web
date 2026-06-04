@@ -4,6 +4,7 @@ import { Dna, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import GenotypeEditor from '@/components/genetica/genotype-editor'
 import DogPicker from '@/components/dogs/dog-picker'
+import { hasProFeatures, isEnterpriseUser, normalizePlan } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
@@ -31,14 +32,21 @@ export default async function GeneticaPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [dogsRes, allColorsRes] = await Promise.all([
+  // Gate REAL de plan: Genotipos es feature de Kennel Pro (49€). El flag
+  // requiresPro del sidebar es solo cosmético; sin esto cualquiera abría la
+  // página por URL. Si no tiene plan de pago → /pricing.
+  const [dogsRes, allColorsRes, profileRes] = await Promise.all([
     supabase
       .from('dogs')
       .select('id, name, slug, sex, thumbnail_url, breed_id, color_id, breed:breeds(name)')
       .eq('owner_id', user.id)
       .order('name'),
     supabase.from('colors').select('id, name').order('name'),
+    supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
   ])
+  if (!isEnterpriseUser(user.id) && !hasProFeatures(normalizePlan(profileRes.data?.plan))) {
+    redirect('/pricing')
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dogs = (dogsRes.data || []) as any[]
   const allColors = allColorsRes.data || []

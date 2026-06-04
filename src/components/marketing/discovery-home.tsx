@@ -121,18 +121,18 @@ export default function DiscoveryHome({
                 className="mt-5 sm:mt-7 font-semibold text-ink"
                 style={{ fontSize: 'clamp(34px, 5.4vw, 64px)', lineHeight: 1.05, letterSpacing: '-0.045em' }}
               >
-                {t('Cada perro con su genealogía.')}{' '}
-                <span style={{ color: '#FE6620' }} className="font-medium">{t('Cada criador con su escaparate.')}</span>
+                {t('Toda la vida de tu perro,')}{' '}
+                <span style={{ color: '#FE6620' }} className="font-medium">{t('en un solo sitio.')}</span>
               </h1>
               <p className="mt-5 sm:mt-7 max-w-[580px] text-body" style={{ fontSize: 'clamp(15px, 1.4vw, 19px)', lineHeight: 1.5 }}>
-                {t('Genealogía verificable, papeles digitales y calendario veterinario. Para criadores que se toman su trabajo en serio y propietarios que merecen tenerlo todo documentado.')}
+                {t('Su perfil, su genealogía, la cartilla veterinaria con recordatorios y las reservas con tu criador. Gratis para siempre, sin límite de perros.')}
               </p>
               <div className="mt-7 flex flex-wrap gap-2.5">
-                <Link href="/register?intent=breeder" className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[14px] font-bold hover:opacity-90 transition">
-                  <Store className="w-4 h-4" /> {t('Empezar como criador')} <ArrowRight className="w-4 h-4" />
+                <Link href="/register?intent=owner" className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[14px] font-bold hover:opacity-90 transition">
+                  <Dog className="w-4 h-4" /> {t('Crear mi cuenta gratis')} <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link href="/register?intent=owner" className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas/80 backdrop-blur-md text-ink px-5 py-3 text-[14px] font-bold hover:border-ink/30 transition">
-                  <Dog className="w-4 h-4" /> {t('Empezar como propietario')}
+                <Link href="/criadores" className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas/80 backdrop-blur-md text-ink px-5 py-3 text-[14px] font-bold hover:border-ink/30 transition">
+                  <Store className="w-4 h-4" /> {t('¿Eres criador? →')}
                 </Link>
               </div>
             </div>
@@ -180,18 +180,55 @@ export default function DiscoveryHome({
       <section className="border-b border-hairline">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="mb-8 sm:mb-10 max-w-3xl">
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Dos caminos')}</p>
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Para ti')}</p>
             <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-              {t('¿Qué te trae a Genealogic?')}
+              {t('Genealogic es de tu perro. Y es gratis.')}
             </h2>
             <p className="mt-4 text-[15px] sm:text-[16px] text-body max-w-xl leading-relaxed">
-              {t('Misma plataforma, dos experiencias. Elige la tuya — y empieza gratis, sin tarjeta, sin compromisos.')}
+              {t('Documenta a tus perros sin límite y sin coste. ¿Tienes criadero? También te cubrimos — con un panel completo en Genealogic Breeders.')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-            {/* Criador */}
-            <Link href="/register?intent=breeder" className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-hairline bg-gradient-to-br from-orange-50 via-canvas to-amber-50 p-6 sm:p-8 lg:p-10 hover:shadow-[0_12px_48px_rgba(254,102,32,0.15)] transition-all hover:-translate-y-1 duration-300">
+            {/* Propietario — primario */}
+            <Link href="/register?intent=owner" className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-hairline bg-gradient-to-br from-blue-50 via-canvas to-sky-50 p-6 sm:p-8 lg:p-10 hover:shadow-[0_12px_48px_rgba(59,130,246,0.15)] transition-all hover:-translate-y-1 duration-300">
+              <Dog className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 w-32 h-32 sm:w-48 sm:h-48 text-blue-500/10 group-hover:text-blue-500/20 transition-colors" strokeWidth={1} />
+              <div className="relative">
+                <div className="inline-flex w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-blue-600 items-center justify-center shadow-[0_8px_24px_rgba(59,130,246,0.3)]">
+                  <Dog className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <div className="mt-4 sm:mt-5 flex items-center gap-2 flex-wrap">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700">{t('Para propietarios')}</p>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{t('Gratis siempre · Sin límite')}</span>
+                </div>
+                <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 32px)' }}>
+                  {t('Tu perro merece su historia.')}
+                </h3>
+                <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-md">
+                  {t('Su ficha con galería, su genealogía sin límite de generaciones, la cartilla veterinaria con recordatorios y las reservas con tu criador. Sin coste, para siempre y sin límite de perros.')}
+                </p>
+                <ul className="mt-5 sm:mt-6 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px] sm:text-[13px] text-body">
+                  <MiniFeature icon={Camera}>{t('Ficha con galería')}</MiniFeature>
+                  <MiniFeature icon={GitBranch}>{t('Genealogía sin límite')}</MiniFeature>
+                  <MiniFeature icon={Calendar}>{t('Recordatorios de vacunas')}</MiniFeature>
+                  <MiniFeature icon={KanbanSquare}>{t('Reservas con tu criador')}</MiniFeature>
+                  <MiniFeature icon={ShieldCheck}>{t('Reclama tu perro')}</MiniFeature>
+                  <MiniFeature icon={Heart}>{t('Privado por defecto')}</MiniFeature>
+                </ul>
+                <div className="mt-6 flex items-center gap-2 text-[12px] text-muted">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
+                  <span><strong className="text-ink tabular-nums">{counts.dogs.toLocaleString('es-ES')}</strong> {t('perros documentados')}</span>
+                </div>
+                <div className="mt-4">
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
+                    {t('Crear mi cuenta gratis')} <ArrowRight className="w-4 h-4" />
+                  </span>
+                </div>
+              </div>
+            </Link>
+
+            {/* Criador — puerta a Genealogic Breeders */}
+            <Link href="/criadores" className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-hairline bg-gradient-to-br from-orange-50 via-canvas to-amber-50 p-6 sm:p-8 lg:p-10 hover:shadow-[0_12px_48px_rgba(254,102,32,0.15)] transition-all hover:-translate-y-1 duration-300">
               <Store className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 w-32 h-32 sm:w-48 sm:h-48 text-[#FE6620]/10 group-hover:text-[#FE6620]/20 transition-colors" strokeWidth={1} />
               <div className="relative">
                 <div className="inline-flex w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#FE6620] items-center justify-center shadow-[0_8px_24px_rgba(254,102,32,0.3)]">
@@ -199,13 +236,13 @@ export default function DiscoveryHome({
                 </div>
                 <div className="mt-4 sm:mt-5 flex items-center gap-2 flex-wrap">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-[#FE6620]">{t('Para criadores')}</p>
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{t('7 días Pro gratis')}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{t('Genealogic Breeders')}</span>
                 </div>
                 <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 32px)' }}>
                   {t('Tu criadero, gestionado de cabo a rabo.')}
                 </h3>
                 <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-md">
-                  {t('Genealogías hasta 10 generaciones con COI calculado, calendario de celos y partos, camadas con un click, pipeline de reservas que no se pierde un lead, contratos y pagos integrados. Todo desde un único panel.')}
+                  {t('Genealogías con COI, calendario de celos y partos, camadas con un click, pipeline de reservas que no se pierde un lead, contratos y pagos integrados. Todo desde un único panel.')}
                 </p>
                 <ul className="mt-5 sm:mt-6 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px] sm:text-[13px] text-body">
                   <MiniFeature icon={GitBranch}>{t('Genealogías COI')}</MiniFeature>
@@ -215,50 +252,13 @@ export default function DiscoveryHome({
                   <MiniFeature icon={Globe}>{t('Web con tu dominio')}</MiniFeature>
                   <MiniFeature icon={Mail}>{t('Emailbot 24/7')}</MiniFeature>
                 </ul>
-                {/* Social proof + CTA en filas separadas para que no se
-                    solapen en viewports estrechos. */}
                 <div className="mt-6 flex items-center gap-2 text-[12px] text-muted">
                   <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
                   <span><strong className="text-ink tabular-nums">{counts.kennels.toLocaleString('es-ES')}</strong> {t('criaderos ya dentro')}</span>
                 </div>
                 <div className="mt-4">
                   <span className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
-                    {t('Empezar gratis')} <ArrowRight className="w-4 h-4" />
-                  </span>
-                </div>
-              </div>
-            </Link>
-
-            {/* Propietario */}
-            <Link href="/register?intent=owner" className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-hairline bg-gradient-to-br from-blue-50 via-canvas to-sky-50 p-6 sm:p-8 lg:p-10 hover:shadow-[0_12px_48px_rgba(59,130,246,0.15)] transition-all hover:-translate-y-1 duration-300">
-              <Dog className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 w-32 h-32 sm:w-48 sm:h-48 text-blue-500/10 group-hover:text-blue-500/20 transition-colors" strokeWidth={1} />
-              <div className="relative">
-                <div className="inline-flex w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-blue-600 items-center justify-center shadow-[0_8px_24px_rgba(59,130,246,0.3)]">
-                  <Dog className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </div>
-                <div className="mt-4 sm:mt-5 flex items-center gap-2 flex-wrap">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700">{t('Para propietarios')}</p>
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{t('Gratis siempre')}</span>
-                </div>
-                <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 32px)' }}>
-                  {t('Tu perro merece su historia.')}
-                </h3>
-                <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-md">
-                  {t('Sube su ficha, guarda su genealogía hasta 10 generaciones, recibe avisos de vacunas y enseña su carnet con un link. Sin coste, para siempre.')}
-                </p>
-                <ul className="mt-5 sm:mt-6 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px] sm:text-[13px] text-body">
-                  <MiniFeature icon={Camera}>{t('Galería ilimitada')}</MiniFeature>
-                  <MiniFeature icon={GitBranch}>{t('10 generaciones')}</MiniFeature>
-                  <MiniFeature icon={Calendar}>{t('Vacunas y vet')}</MiniFeature>
-                  <MiniFeature icon={ShieldCheck}>{t('Reclama tu perro')}</MiniFeature>
-                </ul>
-                <div className="mt-6 flex items-center gap-2 text-[12px] text-muted">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
-                  <span><strong className="text-ink tabular-nums">{counts.dogs.toLocaleString('es-ES')}</strong> {t('perros documentados')}</span>
-                </div>
-                <div className="mt-4">
-                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-sm font-bold group-hover:gap-3 transition-all">
-                    {t('Crear cuenta gratis')} <ArrowRight className="w-4 h-4" />
+                    {t('Ver Genealogic Breeders →')}
                   </span>
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function DiscoveryHome({
           <div className="mb-10 sm:mb-12 max-w-2xl">
             <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Cómo funciona')}</p>
             <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-              {t('De cero a tu primer perro publicado en 5 minutos.')}
+              {t('De cero a tu perro documentado en 5 minutos.')}
             </h2>
           </div>
 
@@ -285,21 +285,21 @@ export default function DiscoveryHome({
               n={1}
               icon={UserPlus}
               title={t('Crea tu cuenta')}
-              desc={t('Email + contraseña. Sin tarjeta, sin formularios largos. Eliges si eres criador o propietario y listo.')}
+              desc={t('Email + contraseña. Sin tarjeta, sin formularios largos. Empieza gratis y listo.')}
               cta={t('Gratis')}
             />
             <StepCard
               n={2}
               icon={Upload}
-              title={t('Sube tu primer perro')}
-              desc={t('Manual o pegando la URL de Presadb/Dogsfiles/K9data — nuestro importador con IA extrae todo el pedigree en 30 segundos.')}
+              title={t('Añade a tu perro')}
+              desc={t('Manual, reclamándolo del catálogo o pegando la URL de Dogsfiles/K9data — nuestro importador con IA extrae toda la genealogía en 30 segundos.')}
               cta={t('30s')}
             />
             <StepCard
               n={3}
               icon={Rocket}
               title={t('Empieza a usarlo')}
-              desc={t('Recibe reservas, comparte la ficha pública con clientes, sube fotos, gestiona camadas. Todo desde el primer día.')}
+              desc={t('Sube fotos, sigue la cartilla veterinaria con recordatorios, gestiona las reservas con tu criador y comparte su ficha con un link. Todo desde el primer día.')}
               cta={t('Listo')}
             />
           </div>
@@ -318,7 +318,7 @@ export default function DiscoveryHome({
               {t('Esto es lo que tienes el día 1.')}
             </h2>
             <p className="mt-4 text-[15px] sm:text-[16px] text-body leading-relaxed">
-              {t('Sin esperas, sin onboarding de horas. Tu dashboard, tu pipeline, tu árbol genealógico — todo operativo desde el momento que entras.')}
+              {t('Sin esperas, sin onboarding de horas. La ficha de tu perro, su árbol genealógico y tus reservas — todo operativo desde el momento que entras.')}
             </p>
           </div>
           <ProductShowcase featuredDogs={featuredDogs} showcaseDog={showcaseDog} />
@@ -355,7 +355,7 @@ export default function DiscoveryHome({
             />
             <BentoCard href="/features#coi" icon={Activity} title={t('COI explicado')} desc={t('No solo el número. Te enseñamos qué ancestros lo causan y cómo se compara con la raza.')} color="#10b981" />
             <BentoCard href="/features#importer" icon={Zap} title={t('Importador IA')} desc={t('URL de Dogsfiles o K9data → árbol completo en 30s.')} color="#a855f7" />
-            <BentoCard href="/features#pedigree" icon={GitBranch} title={t('Árbol interactivo')} desc={t('Hasta 10 generaciones · navegable · exportable.')} color="#3b82f6" />
+            <BentoCard href="/features#pedigree" icon={GitBranch} title={t('Árbol interactivo')} desc={t('Sin límite de generaciones · navegable · exportable.')} color="#3b82f6" />
             <BentoCard href="/features#reservas" icon={KanbanSquare} title={t('Pipeline de reservas')} desc={t('Tabla densa con tabs por estado.')} color="#8b5cf6" />
             <BentoCard href="/features#emailbot" icon={Mail} title={t('Emailbot 24/7')} desc={t('Responde por ti con tu tono y aprende de tus FAQs.')} color="#06b6d4" />
             <BentoCard href="/features#pages" icon={Globe} title={t('Web pública')} desc={t('Dominio propio, SEO técnico, sin tocar código.')} color="#0ea5e9" />
@@ -590,7 +590,7 @@ export default function DiscoveryHome({
               <article className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 flex flex-col justify-between">
                 <Quote className="w-6 h-6 text-[#FE6620]/30" />
                 <p className="text-[14px] text-body leading-snug mt-3">
-                  {t('«Importé 200 pedigrees de Dogsfiles en una tarde con la URL. El COI por camada me ha hecho replantear varios cruces.»')}
+                  {t('«Importé 200 genealogías de Dogsfiles en una tarde con la URL. El COI por camada me ha hecho replantear varios cruces.»')}
                 </p>
                 <div className="mt-4 flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-[11px] font-bold">PR</div>
@@ -619,61 +619,32 @@ export default function DiscoveryHome({
         </div>
       </section>
 
-      {/* ═════ PRICING TEASER ═════ */}
+      {/* ═════ PRICING BAND ═════
+           Sin tabla de precios en la home: para el propietario es gratis y
+           punto. El criador con criadero pasa a /criadores (Genealogic
+           Breeders) donde sí hay planes. */}
       <section className="border-b border-hairline bg-surface-soft/40">
-        <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
-          <div className="mb-10 max-w-2xl">
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Precios')}</p>
-            <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3.5vw, 38px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-              {t('Empieza gratis. Sube cuando quieras.')}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <PricingCard
-              tier="Owner"
-              price="0€"
-              period={t('3 perros')}
-              desc={t('Para documentar tu mascota.')}
-              features={[t('Genealogía 10 generaciones'), t('Cartilla veterinaria'), t('Galería ilimitada'), t('Importador IA')]}
-              accent="#3b82f6"
-              accentBg="from-blue-50 via-canvas to-sky-50"
-            />
-            <PricingCard
-              tier="Kennel Free"
-              price="0€"
-              period={t('5 perros')}
-              desc={t('Para el criador casero.')}
-              features={[t('Camadas + calendario'), t('Pipeline reservas'), t('Contratos + firma'), t('CRM clientes')]}
-              accent="#10b981"
-              accentBg="from-emerald-50 via-canvas to-green-50"
-            />
-            <PricingCard
-              tier="Kennel Pro"
-              price="49€"
-              period={t('/mes · ilimitado')}
-              desc={t('Para el criadero profesional.')}
-              features={[t('Perros ilimitados'), t('COI + simulador cruces'), t('Genotipos completos'), t('Pagos Stripe Connect')]}
-              accent="#FE6620"
-              accentBg="from-orange-50 via-canvas to-amber-50"
-              highlight
-            />
-            <PricingCard
-              tier="Kennel Enterprise"
-              price="149€"
-              period={t('/mes · ilimitado')}
-              desc={t('Para el criadero con escaparate público.')}
-              features={[t('Web con tu dominio'), t('Multi-idioma'), t('Emailbot IA + newsletter'), t('API + integraciones')]}
-              accent="#8b5cf6"
-              accentBg="from-violet-50 via-canvas to-purple-50"
-            />
-          </div>
-
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/pricing" className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-2.5 text-sm font-bold hover:opacity-90 transition">
-              {t('Ver pricing completo')} <ArrowRight className="w-4 h-4" />
-            </Link>
-            <span className="text-[12.5px] text-muted">{t('Empieza gratis · Sin tarjeta · Cancela cuando quieras')}</span>
+        <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-10 sm:py-14">
+          <div className="rounded-2xl sm:rounded-3xl border border-hairline bg-canvas p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-emerald-800">
+                <CheckCircle2 className="w-3 h-3" /> {t('Gratis para siempre')}
+              </div>
+              <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(20px, 3vw, 30px)', lineHeight: 1.1, letterSpacing: '-0.03em' }}>
+                {t('Para propietarios, Genealogic es gratis para siempre, sin límite de perros.')}
+              </h2>
+              <p className="mt-2.5 text-[13.5px] sm:text-[14.5px] text-body leading-relaxed">
+                {t('¿Tienes criadero? Genealogic Breeders te da camadas, pipeline de reservas, contratos y web propia.')}
+              </p>
+            </div>
+            <div className="flex flex-col gap-2.5 sm:flex-shrink-0">
+              <Link href="/register?intent=owner" className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-sm font-bold hover:opacity-90 transition">
+                <Dog className="w-4 h-4" /> {t('Crear mi cuenta gratis')} <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link href="/criadores" className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-hairline bg-canvas px-5 py-3 text-sm font-bold text-body hover:text-ink hover:border-ink/30 transition">
+                <Store className="w-4 h-4" /> {t('Ver Genealogic Breeders →')}
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -694,7 +665,7 @@ export default function DiscoveryHome({
             </div>
             <div className="space-y-2">
               <FaqItem q={t('¿Es realmente gratis?')}>
-                {t('Sí. Owner (3 perros) y Kennel Free (5 perros) no caducan, sin tarjeta. Sube a Kennel Pro (49€/mes) cuando necesites perros ilimitados, COI completo y Stripe; o a Kennel Enterprise (149€/mes) para web del criadero con dominio propio. Si pagas anual, te ahorras un 15%.')}
+                {t('Sí. Si eres propietario, Genealogic es gratis para siempre y sin límite de perros: ficha con galería, genealogía, cartilla veterinaria con recordatorios y reservas con tu criador. No pedimos tarjeta. Solo los criaderos que quieren el panel profesional (camadas, pipeline, web propia) pasan a un plan de pago en Genealogic Breeders.')}
               </FaqItem>
               <FaqItem q={t('¿Mis datos son míos? ¿Puedo exportarlos?')}>
                 {t('Sí. Cualquier perro, contrato o cliente lo exportas a PDF/CSV en un click. Servidores en EU, RGPD por defecto, histórico completo de cambios por perro. Si te vas, te llevas tus datos.')}
@@ -703,13 +674,13 @@ export default function DiscoveryHome({
                 {t('Sí en ambos. La web está optimizada para móvil y hay app iOS en proceso. Todo lo que puedes hacer en el ordenador lo puedes hacer en el teléfono.')}
               </FaqItem>
               <FaqItem q={t('¿Tengo que migrar todos mis perros yo mismo?')}>
-                {t('No. Si están en Dogsfiles, Presadb, K9data, Working-dog o Breedarchive, pegas la URL y nuestro importador con IA extrae la genealogía completa en 30 segundos. También aceptamos PDFs y screenshots.')}
+                {t('No. Si están en Dogsfiles, Presadb, K9data, Working-dog o Breedarchive, pegas la URL y nuestro importador con IA extrae la genealogía completa en 30 segundos. También aceptamos PDFs y capturas de pantalla.')}
               </FaqItem>
-              <FaqItem q={t('¿Qué pasa si dejo de pagar Kennel Pro?')}>
-                {t('Bajas automáticamente a Kennel Free. Tus perros, fotos y datos siguen ahí — solo pierdes las features Pro (COI completo, simulador, genotipos, Stripe) hasta que vuelvas a suscribirte.')}
+              <FaqItem q={t('¿Puedo reclamar un perro que ya está en el catálogo?')}>
+                {t('Sí. Hemos importado miles de perros de clubes y federaciones. Búscalo por nombre, microchip o afijo, pulsa «Reclamar» y sube tus papeles. Un humano lo revisa en menos de 72h y te transfiere la titularidad.')}
               </FaqItem>
               <FaqItem q={t('¿Cuántas generaciones soporta el árbol?')}>
-                {t('Hasta 10 generaciones por perro. El COI (coeficiente de consanguinidad) también se calcula sobre 10 generaciones, no las 4-5 típicas de los PDFs de los clubs.')}
+                {t('Sin límite de generaciones por perro. El COI (coeficiente de consanguinidad) se calcula sobre toda la profundidad disponible, no las 4-5 típicas de los certificados de los clubs.')}
               </FaqItem>
             </div>
           </div>
@@ -726,17 +697,17 @@ export default function DiscoveryHome({
         <div className="relative z-10 mx-auto max-w-[1200px] px-5 sm:px-6 lg:px-12 py-16 sm:py-24 lg:py-28 text-center">
           <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-5 sm:mb-6 text-[#FE6620]" />
           <h2 className="font-semibold mx-auto leading-[1.05]" style={{ fontSize: 'clamp(28px, 5vw, 56px)', letterSpacing: '-0.04em', maxWidth: '18ch' }}>
-            {t('Empieza gratis.')} <span className="text-white/60 font-medium">{t('Sin tarjeta.')}</span>
+            {t('Tu perro empieza a tener su historia')} <span className="text-white/60 font-medium">{t('hoy.')}</span>
           </h2>
           <p className="mt-4 sm:mt-5 text-[14px] sm:text-[18px] text-white/60 max-w-md mx-auto px-2">
-            {t('Únete a los')} {counts.kennels.toLocaleString('es-ES')} {t('criaderos que ya documentan a sus perros con Genealogic.')}
+            {t('Crea tu cuenta en 30 segundos. Gratis para siempre, sin límite de perros.')}
           </p>
           <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/register?intent=breeder" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#FE6620] text-white px-7 py-3.5 text-sm font-bold hover:scale-105 transition-transform">
-              <Store className="w-4 h-4" /> {t('Soy criador')}
+            <Link href="/register?intent=owner" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#FE6620] text-white px-7 py-3.5 text-sm font-bold hover:scale-105 transition-transform">
+              <Dog className="w-4 h-4" /> {t('Crear mi cuenta gratis')}
             </Link>
-            <Link href="/register?intent=owner" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white text-ink px-7 py-3.5 text-sm font-bold hover:scale-105 transition-transform">
-              <Dog className="w-4 h-4" /> {t('Soy propietario')}
+            <Link href="/criadores" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white text-ink px-7 py-3.5 text-sm font-bold hover:scale-105 transition-transform">
+              <Store className="w-4 h-4" /> {t('¿Eres criador? →')}
             </Link>
           </div>
         </div>
@@ -1102,56 +1073,6 @@ function CompareCell({ value }: { value: boolean | 'partial' }) {
   if (value === true) return <CheckCircle2 className="w-5 h-5 text-emerald-600 inline" />
   if (value === 'partial') return <span className="text-[11px] text-amber-700 font-semibold">{t('A medias')}</span>
   return <X className="w-4 h-4 text-rose-400 inline" />
-}
-
-/**
- * PricingCard — teaser compacto para la home, alineado visualmente con
- * /pricing. Cada plan lleva su color de marca (azul Owner, verde Free,
- * naranja Pro, violeta Enterprise) en el badge, fondo degradado, borde
- * destacado (si highlight) y check de features.
- */
-function PricingCard({
-  tier, price, period, desc, features, highlight, accent, accentBg,
-}: {
-  tier: string; price: string; period: string; desc: string; features: string[]
-  highlight?: boolean
-  /** Color hex del plan (Owner blue, Free emerald, Pro orange, Ent violet) */
-  accent: string
-  /** Tailwind gradient classes para el fondo de la card */
-  accentBg: string
-}) {
-  const t = useT()
-  return (
-    <div
-      className={`relative rounded-2xl border-2 bg-gradient-to-br ${accentBg} p-5 sm:p-6 flex flex-col ${
-        highlight ? 'shadow-[0_12px_48px_rgba(254,102,32,0.18)]' : 'border-hairline'
-      }`}
-      style={highlight ? { borderColor: accent } : {}}
-    >
-      {highlight && (
-        <span
-          className="absolute -top-3 left-5 inline-flex items-center rounded-full text-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
-          style={{ background: accent }}
-        >
-          {t('Más popular')}
-        </span>
-      )}
-      <p className="text-[11.5px] font-bold uppercase tracking-wider" style={{ color: accent }}>{tier}</p>
-      <div className="mt-2.5 flex items-baseline gap-1">
-        <span className="text-[28px] sm:text-[32px] font-bold tabular-nums leading-none text-ink">{price}</span>
-        <span className="text-[12px] text-muted">{period}</span>
-      </div>
-      <p className="mt-2 text-[12.5px] text-body leading-snug">{desc}</p>
-      <ul className="mt-4 space-y-1.5 flex-1">
-        {features.map((f, i) => (
-          <li key={i} className="flex items-start gap-2 text-[12.5px] text-body leading-snug">
-            <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: accent }} />
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
 }
 
 function FaqItem({ q, children }: { q: string; children: React.ReactNode }) {

@@ -23,6 +23,14 @@ export default async function ReproduccionPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // ¿Es criador? El subnav solo muestra la tab "Reproductivo" a criadores.
+  const { data: kennelArr } = await supabase
+    .from('kennels')
+    .select('id')
+    .eq('owner_id', user.id)
+    .limit(1)
+  const isBreeder = (kennelArr?.length ?? 0) > 0
+
   // Solo las hembras marcadas como REPRODUCTORAS aparecen en el calendario de
   // celos (el ❤ en Mis Perros). El resto de hembras del criadero no se
   // gestionan aquí. Las que ya tenían celos/camadas quedaron marcadas por el
@@ -58,7 +66,7 @@ export default async function ReproduccionPage() {
     const hasFemales = (totalFemales || 0) > 0
     return (
       <div className="space-y-6">
-        <CalendarSubnav />
+        <CalendarSubnav isBreeder={isBreeder} />
         <Header />
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-20 text-center">
           <Heart className="mx-auto h-10 w-10 text-muted" />
@@ -104,7 +112,7 @@ export default async function ReproduccionPage() {
 
   return (
     <div className="space-y-6">
-      <CalendarSubnav />
+      <CalendarSubnav isBreeder={isBreeder} />
       <Header />
       <ReproWorkspace
         females={females}

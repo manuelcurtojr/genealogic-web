@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { isIosUserAgent } from '@/lib/platform'
-import { Dog, Baby, PawPrint, Tag, Plus, Stethoscope, ArrowRight, Search, Crown, BookOpen, Store, Compass } from 'lucide-react'
+import { Dog, Baby, PawPrint, Tag, Plus, Stethoscope, ArrowRight, Search, BookOpen, Store, Compass } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import StatCard from '@/components/dashboard/stat-card'
 import DailyCheckIn from '@/components/dashboard/daily-checkin'
@@ -264,18 +264,18 @@ export default async function DashboardPage() {
               </Link>
             ))}
           </div>
-          <div className="mt-5 rounded-xl border border-hairline bg-surface-soft px-5 py-4">
-            <p className="text-[14px] font-semibold text-ink">{t('¿Eres criador?')}</p>
-            <p className="mt-1 text-[13px] text-body">
-              {t('Mejora tu plan para gestionar tu criadero, camadas y reservas con todas las herramientas pro.')}
-            </p>
+          {/* Rampa owner→criador SUTIL: una línea discreta, sin card grande
+              ni corona. No empuja a /pricing; presenta el producto B2B
+              (Genealogic Breeders) en /criadores para quien tenga criadero. */}
+          <p className="mt-5 text-[12.5px] text-muted">
+            {t('¿Tienes un criadero?')}{' '}
             <Link
-              href="/pricing"
-              className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-ink hover:opacity-80"
+              href="/criadores"
+              className="font-medium text-body hover:text-ink"
             >
-              <Crown className="h-3.5 w-3.5" /> {t('Ver planes →')}
+              {t('Conoce Genealogic Breeders →')}
             </Link>
-          </div>
+          </p>
         </section>
       )}
 

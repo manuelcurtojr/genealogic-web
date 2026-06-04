@@ -125,7 +125,9 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Embudo', href: '/embudo', icon: 'KanbanSquare', requiresKennel: true },
       // Contactos (CRM) y Contratos están incluidos desde Kennel Free según
       // /pricing (marks FPE). Antes pedían Pro — incongruencia corregida.
-      { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresKennel: true },
+      // Contactos = CRM B2B: el middleware lo redirige a /dashboard en iOS
+      // (IOS_HIDDEN_PATH_PREFIXES), así que lo ocultamos también del nav.
+      { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresKennel: true, hideOnIos: true },
       { label: 'Contratos', href: '/contratos', icon: 'FileText', requiresKennel: true },
     ],
   },
@@ -139,8 +141,10 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Comunicación',
     requiresEnterprise: true,
     items: [
-      { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresEnterprise: true },
-      { label: 'Newsletter', href: '/newsletter', icon: 'Send', requiresEnterprise: true },
+      // Emailbot y Newsletter = comms B2B: el middleware los redirige a
+      // /dashboard en iOS (IOS_HIDDEN_PATH_PREFIXES); ocultos también del nav.
+      { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresEnterprise: true, hideOnIos: true },
+      { label: 'Newsletter', href: '/newsletter', icon: 'Send', requiresEnterprise: true, hideOnIos: true },
     ],
   },
 
@@ -156,8 +160,9 @@ export const NAV_SECTIONS: NavSection[] = [
     requiresKennel: true,
     items: [
       { label: 'Mi criadero', href: '/kennel', icon: 'Store', requiresKennel: true },
-      // Web pública con dominio = Kennel Enterprise (alta manual).
-      { label: 'Páginas web', href: '/web', icon: 'Globe', requiresEnterprise: true },
+      // Web pública con dominio = Kennel Enterprise (alta manual). El
+      // middleware redirige /web a /dashboard en iOS; oculto también del nav.
+      { label: 'Páginas web', href: '/web', icon: 'Globe', requiresEnterprise: true, hideOnIos: true },
       // Estadísticas web = Kennel Pro en adelante (decisión de pricing).
       { label: 'Estadísticas', href: '/estadisticas', icon: 'BarChart3', requiresPro: true, requiresKennel: true },
     ],

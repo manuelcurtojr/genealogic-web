@@ -19,7 +19,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Precios',
   description:
-    'Owner (3 perros, gratis) y Kennel Free (5 perros, gratis) para siempre. Kennel Pro (49€/mes, perros ilimitados) y Kennel Enterprise (149€/mes, web del criadero) con 14 días de prueba sin tarjeta.',
+    'Owner y Kennel Free, gratis para siempre y con perros ilimitados. Kennel Pro (49€/mes) y Kennel Enterprise (149€/mes, web del criadero) con 14 días de prueba sin tarjeta. Pagas por las herramientas, no por el número de perros.',
   alternates: { canonical: 'https://genealogic.io/pricing' },
 }
 

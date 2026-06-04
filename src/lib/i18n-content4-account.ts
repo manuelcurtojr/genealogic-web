@@ -53,6 +53,9 @@ export const content4Account: Record<string, Record<string, string>> = {
     '¿Eres criador?': 'Are you a breeder?',
     'Mejora tu plan para gestionar tu criadero, camadas y reservas con todas las herramientas pro.': 'Upgrade your plan to manage your kennel, litters and reservations with all the pro tools.',
     'Ver planes →': 'View plans →',
+    // Rampa sutil owner→criador (dashboard/page.tsx)
+    '¿Tienes un criadero?': 'Run a kennel?',
+    'Conoce Genealogic Breeders →': 'Discover Genealogic Breeders →',
     'Próximos recordatorios vet.': 'Upcoming vet reminders',
     'Explorar': 'Explore',
     'Razas': 'Breeds',

@@ -581,6 +581,7 @@ import { content8aPublic } from './i18n-content8a'
 import { content8bDash } from './i18n-content8b'
 import { content9BreedField } from './i18n-content9-breedfield'
 import { contentContracts2 } from './i18n-content-contracts2'
+import { contentOwner } from './i18n-content-owner'
 
 export function getTranslator(lang: string) {
   const dict = translations[lang] || {}
@@ -608,6 +609,7 @@ export function getTranslator(lang: string) {
   const c8b = content8bDash[lang] || {}
   const c9 = content9BreedField[lang] || {}
   const cContracts2 = contentContracts2[lang] || {}
+  const cOwner = contentOwner[lang] || {}
   return function t(key: string): string {
     if (lang === 'es') return key // Spanish is default
     // Cascada: base → content (Fase 1) → content2 (Fase 2-3) → content3 (Fase 3b emails)
@@ -616,7 +618,7 @@ export function getTranslator(lang: string) {
       || c4dogs[key] || c4pages[key] || c4account[key]
       || c4kennel[key] || c4kennelpages[key] || c4reservas[key] || c4repro[key] || c4crm[key]
       || c4emailbot[key] || c4newsletter[key] || c4shell[key]
-      || c4site[key] || c4publicmisc[key] || c4dashmisc[key] || c4misc2[key] || c6funnel[key] || c7[key] || c8a[key] || c8b[key] || c9[key] || cContracts2[key] || key
+      || c4site[key] || c4publicmisc[key] || c4dashmisc[key] || c4misc2[key] || c6funnel[key] || c7[key] || c8a[key] || c8b[key] || c9[key] || cContracts2[key] || cOwner[key] || key
   }
 }
 

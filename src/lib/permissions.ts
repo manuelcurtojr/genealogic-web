@@ -171,23 +171,21 @@ export function roleAtLeast(_role: string | null | undefined, _minRole: string):
 }
 
 /**
- * Límite de perros "en plantilla" por plan. El enforcement DURO vive en
- * el trigger BBDD enforce_dog_limit (no se puede saltar desde el cliente);
- * esto es para UX: avisar antes y mostrar el contador.
+ * Límite de perros por plan. Decisión de producto 2026-06-04: **perros
+ * ilimitados para TODOS** (owner, free, pro, enterprise). El criador paga por
+ * las HERRAMIENTAS (embudo, contratos, web, emailbot), no por número de perros;
+ * el propietario es gratis para siempre y sin límite.
  *
- *   · Pro / Enterprise (plan kennel | kennel_pro) → Infinity
- *   · Kennel Free (free + tiene kennel)           → 5
- *   · Owner (free + sin kennel)                   → 3
- *
- * Un perro NO cuenta si está en venta, fallecido, o tiene < 90 días.
+ * Se mantiene la firma (plan, hasKennel) por compatibilidad con los callers,
+ * pero siempre devuelve Infinity. El antiguo trigger BBDD `trg_enforce_dog_limit`
+ * se eliminó (migración 20260719_unlimited_dogs.sql).
  */
-export function dogLimitFor(plan: string | null | undefined, hasKennel: boolean): number {
-  if (hasPaidPlan(plan)) return Infinity
-  return hasKennel ? 5 : 3
+export function dogLimitFor(_plan?: string | null, _hasKennel?: boolean): number {
+  return Infinity
 }
 
-export function canCreateDog(plan: string | null | undefined, hasKennel: boolean, countableDogs: number): boolean {
-  return countableDogs < dogLimitFor(plan, hasKennel)
+export function canCreateDog(_plan?: string | null, _hasKennel?: boolean, _countableDogs?: number): boolean {
+  return true
 }
 
 export function canCreateLitter(_role: string, _activeLitterCount: number): boolean {

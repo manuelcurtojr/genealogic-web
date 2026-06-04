@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Dog, Baby, UsersRound, KanbanSquare, BookOpen, Mail, TrendingUp, ArrowRight } from 'lucide-react'
 import AnalyticsSubnav from '@/components/analytics/analytics-subnav'
+import { hasProFeatures, isEnterpriseUser, normalizePlan } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
@@ -15,11 +16,20 @@ export default async function EstadisticasPage() {
 
   const t = getTranslator(await getLocale())
 
-  const { data: kennelArr } = await supabase
-    .from('kennels')
-    .select('id, name, slug')
-    .eq('owner_id', user.id)
-    .limit(1)
+  // Gate REAL de plan: Estadísticas es feature de Kennel Pro (49€). El flag
+  // requiresPro del sidebar es solo cosmético; sin esto cualquiera abría la
+  // página por URL. Si no tiene plan de pago → /pricing.
+  const [{ data: kennelArr }, { data: planProfile }] = await Promise.all([
+    supabase
+      .from('kennels')
+      .select('id, name, slug')
+      .eq('owner_id', user.id)
+      .limit(1),
+    supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
+  ])
+  if (!isEnterpriseUser(user.id) && !hasProFeatures(normalizePlan(planProfile?.plan))) {
+    redirect('/pricing')
+  }
   const kennel = kennelArr?.[0]
 
   if (!kennel) {

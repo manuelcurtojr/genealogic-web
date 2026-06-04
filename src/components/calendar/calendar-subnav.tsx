@@ -13,8 +13,13 @@ import { useT } from '@/components/i18n/locale-provider'
  * mismo grupo "Calendario" sin romper sus URLs ni su lógica interna.
  *
  * Detecta la ruta actual con usePathname() y marca la tab activa.
+ *
+ * La tab "Reproductivo" (Gantt de celos/gestaciones) es herramienta de CRÍA:
+ * solo se muestra a criadores (isBreeder). Un propietario sin criadero ve
+ * únicamente Calendario y Veterinario. El caller pasa isBreeder (los server
+ * pages lo calculan mirando si el user tiene kennel).
  */
-export default function CalendarSubnav() {
+export default function CalendarSubnav({ isBreeder = false }: { isBreeder?: boolean }) {
   const t = useT()
   const pathname = usePathname()
 
@@ -26,13 +31,14 @@ export default function CalendarSubnav() {
       icon: CalIcon,
       active: pathname === '/calendar' || pathname.startsWith('/calendar/'),
     },
-    {
+    // Solo criadores: el calendario reproductivo gestiona celos/camadas.
+    ...(isBreeder ? [{
       href: '/reproduccion',
       label: t('Reproductivo'),
       hint: t('Gantt de hembras: celos, gestaciones y camadas'),
       icon: Heart,
       active: pathname === '/reproduccion' || pathname.startsWith('/reproduccion/'),
-    },
+    }] : []),
     {
       href: '/vet',
       label: t('Veterinario'),

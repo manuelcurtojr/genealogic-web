@@ -38,6 +38,9 @@ export default function CalendarPage() {
   const [view, setView] = useState<ViewMode>('month')
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState('')
+  // ¿El usuario es criador? El subnav solo muestra la tab "Reproductivo"
+  // (herramienta de cría) a criadores con kennel.
+  const [isBreeder, setIsBreeder] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [formDefaultDate, setFormDefaultDate] = useState('')
@@ -138,6 +141,25 @@ export default function CalendarPage() {
   }, [year, month, t])
 
   useEffect(() => { fetchEvents() }, [fetchEvents])
+
+  // Detección de criador (una sola vez): ¿tiene kennel? Controla la tab
+  // "Reproductivo" del subnav.
+  useEffect(() => {
+    let active = true
+    async function detectBreeder() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data: kennelArr } = await supabase
+        .from('kennels')
+        .select('id')
+        .eq('owner_id', user.id)
+        .limit(1)
+      if (active) setIsBreeder((kennelArr?.length ?? 0) > 0)
+    }
+    detectBreeder()
+    return () => { active = false }
+  }, [])
 
   const toggleCompleted = async (event: CalendarEvent) => {
     if (event.id.startsWith('vet-') || event.id.startsWith('heat-')) return
@@ -295,7 +317,7 @@ export default function CalendarPage() {
   return (
     <div>
       <div className="mb-5">
-        <CalendarSubnav />
+        <CalendarSubnav isBreeder={isBreeder} />
       </div>
 
       {/* ═══════════════════════════════════════════ */}
