@@ -139,11 +139,21 @@ export function EmailLayout({
   children,
   showFooter = true,
   locale,
+  audience = 'account',
 }: {
   preview: string
   children: React.ReactNode
   showFooter?: boolean
   locale?: string
+  /**
+   * Quién recibe este email:
+   *   - 'account' (default): usuario registrado en Genealogic. Footer dice
+   *     "tienes una cuenta" + link para gestionar preferencias.
+   *   - 'guest': persona SIN cuenta — p.ej. solicitante de un formulario
+   *     público. Footer dice "enviaste una solicitud" y NO incluye el link a
+   *     /settings (no le sirve, no tiene login).
+   */
+  audience?: 'account' | 'guest'
 }) {
   const t = getTranslator(locale || 'es')
   return (
@@ -189,7 +199,7 @@ export function EmailLayout({
               </Row>
             </Section>
             <Section style={contentSection}>{children}</Section>
-            {showFooter && <EmailFooter locale={locale} />}
+            {showFooter && <EmailFooter locale={locale} audience={audience} />}
           </Container>
           <Text
             style={{
@@ -207,8 +217,32 @@ export function EmailLayout({
   )
 }
 
-export function EmailFooter({ locale }: { locale?: string }) {
+export function EmailFooter({
+  locale,
+  audience = 'account',
+}: {
+  locale?: string
+  audience?: 'account' | 'guest'
+}) {
   const t = getTranslator(locale || 'es')
+
+  // Variante "guest": destinatario sin cuenta (p.ej. solicitante de form
+  // público). NO mencionamos cuenta ni linkamos a /settings (no le sirve).
+  if (audience === 'guest') {
+    return (
+      <Section style={footer}>
+        <Text style={small}>
+          {t('Recibes este email porque enviaste una solicitud a través de')}{' '}
+          <Link href={SITE_URL} style={{ color: COLORS.muted, textDecoration: 'underline' }}>
+            Genealogic
+          </Link>
+          . {t('Si no fuiste tú, ignóralo y no se hará nada.')}
+        </Text>
+      </Section>
+    )
+  }
+
+  // Variante "account" (default): usuario registrado.
   return (
     <Section style={footer}>
       <Text style={small}>

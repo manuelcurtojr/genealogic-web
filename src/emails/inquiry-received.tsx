@@ -9,7 +9,7 @@
  * Tono: claro, breve, sin sobrepromesa. No diciéndole "te respondemos en X h"
  * porque eso depende del criador; sí explicando qué pasa ahora.
  */
-import { EmailLayout, H1, P, Eyebrow, InfoCard, Divider, Small, COLORS, FONT_STACK } from './_components'
+import { EmailLayout, H1, P, Eyebrow, InfoCard, COLORS, FONT_STACK } from './_components'
 import { getTranslator } from '@/lib/i18n'
 
 export type InquiryReceivedProps = {
@@ -34,7 +34,10 @@ export default function InquiryReceivedEmail({
   const sexLabel = preferredSex === 'male' ? t('Macho') : preferredSex === 'female' ? t('Hembra') : null
 
   return (
-    <EmailLayout preview={`${t('Hemos enviado tu solicitud a')} ${kennelName}`}>
+    <EmailLayout
+      preview={`${t('Hemos enviado tu solicitud a')} ${kennelName}`}
+      audience="guest"
+    >
       <Eyebrow>{t('Solicitud enviada')}</Eyebrow>
       <H1>
         {name
@@ -95,11 +98,8 @@ export default function InquiryReceivedEmail({
         </>
       )}
 
-      <Divider />
-
-      <Small>
-        {t('Recibes este correo porque enviaste una solicitud en Genealogic. Si no fuiste tú, ignóralo y no se hará nada.')}
-      </Small>
+      {/* El footer de EmailLayout (audience="guest") ya dice esto mismo,
+          así que no duplicamos. */}
     </EmailLayout>
   )
 }
