@@ -1,7 +1,13 @@
 /**
- * Email al criador cuando un visitante crea una reserva nueva en su kennel.
- * Es el email MÁS importante de la app — si no llega, el criador puede
- * perder el lead.
+ * Email al criador cuando un visitante envía una SOLICITUD nueva (lead) en su
+ * kennel. Es el email MÁS importante de la app — si no llega, el criador
+ * puede perder el lead.
+ *
+ * Nota terminológica: aunque el template se llama `reservation_new` por
+ * compatibilidad histórica (email_log + dedupe_keys), el copy dice
+ * "solicitud" en vez de "reserva". Lo que entra por el formulario público
+ * es un lead/solicitud — la "reserva" propiamente dicha es una etapa
+ * posterior del embudo (Reservas/Reserva en firme).
  */
 import { EmailLayout, H1, P, Btn, Eyebrow, InfoCard, Divider, Small, SITE_URL, COLORS, FONT_STACK } from './_components'
 import { getTranslator } from '@/lib/i18n'
@@ -27,9 +33,9 @@ export default function ReservationNewEmail({
   const sexLabel = preferredSex === 'male' ? t('Macho') : preferredSex === 'female' ? t('Hembra') : null
 
   return (
-    <EmailLayout preview={`${t('Nueva reserva de')} ${clientName} ${t('para')} ${kennelName}`}>
-      <Eyebrow>{t('Nueva reserva')}</Eyebrow>
-      <H1>{name ? `${name}${t(', te ha llegado una reserva.')}` : t('Tienes una reserva nueva.')}</H1>
+    <EmailLayout preview={`${t('Nueva solicitud de')} ${clientName} ${t('para')} ${kennelName}`}>
+      <Eyebrow>{t('Nueva solicitud')}</Eyebrow>
+      <H1>{name ? `${name}${t(', te ha llegado una solicitud.')}` : t('Tienes una solicitud nueva.')}</H1>
       <P>
         <strong style={{ color: COLORS.ink }}>{clientName}</strong>{' '}
         {t('se ha interesado por un cachorro de tu criadero')}{' '}
@@ -94,7 +100,7 @@ export default function ReservationNewEmail({
         </>
       )}
 
-      <Btn href={`${SITE_URL}/reservas/${reservationId}`}>{t('Ver reserva')}</Btn>
+      <Btn href={`${SITE_URL}/reservas/${reservationId}`}>{t('Ver solicitud')}</Btn>
 
       <Divider />
 

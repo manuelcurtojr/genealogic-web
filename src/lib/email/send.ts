@@ -104,8 +104,12 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
   },
   reservation_new: {
     category: 'reservations',
+    // NOTA: el nombre de la plantilla sigue siendo `reservation_new` por
+    // compat con email_log + dedupe_keys históricas, pero el copy ya dice
+    // "solicitud" en vez de "reserva" — lo que entra por el form es una
+    // solicitud (lead), no una reserva (esa es una etapa del embudo).
     subject: (p: ReservationNewProps, t) =>
-      `${t('Nueva reserva de')} ${p.clientName} ${t('para')} ${p.kennelName}`,
+      `${t('Nueva solicitud de')} ${p.clientName} ${t('para')} ${p.kennelName}`,
   },
   inquiry_received: {
     // 'critical' = siempre se manda. Es la confirmación inmediata de una
