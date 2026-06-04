@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { sendPasswordResetAction } from './actions'
 import Link from 'next/link'
 import { Mail, CheckCircle2 } from 'lucide-react'
 import { AuthShell, Field, AuthSubmit, AuthError } from '@/components/auth/auth-shell'
@@ -19,15 +19,10 @@ export default function ForgotPasswordPage() {
     setError('')
     setLoading(true)
 
-    const supabase = createClient()
-    const redirectTo = `${window.location.origin}/auth/callback?next=/reset-password`
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
-
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-      return
-    }
+    // Manda el email con nuestra plantilla Resend (remitente Genealogic) +
+    // enlace token_hash. La action siempre devuelve ok (no revela si el email
+    // existe), así que mostramos el estado "enviado" igualmente.
+    await sendPasswordResetAction(email)
 
     setSent(true)
     setLoading(false)

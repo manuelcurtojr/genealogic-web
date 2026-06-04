@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { sendPasswordResetEmail } from '@/lib/auth/password-reset'
 import { NextRequest } from 'next/server'
 import { logAdminAction } from '@/lib/admin/audit-log'
 import { getClientIp } from '@/lib/rate-limit'
@@ -16,12 +16,9 @@ export async function POST(request: NextRequest) {
     const { email } = await request.json()
     if (!email) return Response.json({ error: 'Missing email' }, { status: 400 })
 
-    const admin = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
-    const { error } = await admin.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://genealogic.io/settings',
-    })
-
-    if (error) return Response.json({ error: error.message }, { status: 500 })
+    // Manda el email de recuperación con nuestra plantilla Resend (remitente
+    // Genealogic) + enlace token_hash robusto — no el email de Supabase Auth.
+    await sendPasswordResetEmail(email)
 
     // Audit log — dispara email "reset password" en nombre del admin.
     await logAdminAction({

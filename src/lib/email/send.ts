@@ -36,6 +36,7 @@ import VetReminderEmail, { type VetReminderProps } from '@/emails/vet-reminder'
 import LitterNewEmail, { type LitterNewProps } from '@/emails/litter-new'
 import ContractSignedEmail, { type ContractSignedProps } from '@/emails/contract-signed'
 import ContractSentEmail, { type ContractSentProps } from '@/emails/contract-sent'
+import PasswordResetEmail, { type PasswordResetProps } from '@/emails/password-reset'
 import PaymentReceivedEmail, { type PaymentReceivedProps } from '@/emails/payment-received'
 import WeeklyDigestBreederEmail, { type WeeklyDigestBreederProps } from '@/emails/weekly-digest-breeder'
 import WeeklyDigestOwnerEmail, { type WeeklyDigestOwnerProps } from '@/emails/weekly-digest-owner'
@@ -67,6 +68,7 @@ export type EmailTemplate =
   | { template: 'litter_new';             props: LitterNewProps }
   | { template: 'contract_signed';        props: ContractSignedProps }
   | { template: 'contract_sent';          props: ContractSentProps }
+  | { template: 'password_reset';         props: PasswordResetProps }
   | { template: 'payment_received';       props: PaymentReceivedProps }
   | { template: 'weekly_digest_breeder';  props: WeeklyDigestBreederProps }
   | { template: 'weekly_digest_owner';    props: WeeklyDigestOwnerProps }
@@ -171,6 +173,10 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
     category: 'critical',
     subject: (p: ContractSentProps, t) => `${p.kennelName}: ${t('contrato para firmar')}`,
   },
+  password_reset: {
+    category: 'auth', // 'auth' nunca respeta opt-out: siempre se manda
+    subject: (_p, t) => t('Restablece tu contraseña de Genealogic'),
+  },
   payment_received: {
     category: 'critical',
     subject: (p: PaymentReceivedProps, t) =>
@@ -251,6 +257,7 @@ function renderTemplate(t: EmailTemplate, locale: Locale): Promise<string> {
     case 'litter_new':             return render(LitterNewEmail(p))
     case 'contract_signed':        return render(ContractSignedEmail(p))
     case 'contract_sent':          return render(ContractSentEmail(p))
+    case 'password_reset':         return render(PasswordResetEmail(p))
     case 'payment_received':       return render(PaymentReceivedEmail(p))
     case 'weekly_digest_breeder':  return render(WeeklyDigestBreederEmail(p))
     case 'weekly_digest_owner':    return render(WeeklyDigestOwnerEmail(p))

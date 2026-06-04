@@ -53,5 +53,15 @@ export const contentContracts2: Record<string, Record<string, string>> = {
     'El cliente': 'The client',
     'Documento firmado electrónicamente por ambas partes. Copia con validez probatoria.':
       'Document signed electronically by both parties. Copy with evidentiary value.',
+
+    // ── Email de recuperación de contraseña ──────────────────────────
+    'Restablece tu contraseña de Genealogic': 'Reset your Genealogic password',
+    Seguridad: 'Security',
+    'Restablece tu contraseña': 'Reset your password',
+    'Has solicitado cambiar tu contraseña de Genealogic. Pulsa el botón para elegir una nueva. El enlace caduca en 1 hora.':
+      'You requested to change your Genealogic password. Tap the button to choose a new one. The link expires in 1 hour.',
+    'Cambiar mi contraseña': 'Change my password',
+    'Si no has sido tú, ignora este email — tu contraseña no cambiará.':
+      "If this wasn't you, ignore this email — your password won't change.",
   },
 }

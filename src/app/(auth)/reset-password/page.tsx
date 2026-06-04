@@ -21,10 +21,30 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const run = async () => {
+      // Si venimos del email de recuperación, la URL trae
+      // ?token_hash=…&type=recovery. Lo verificamos aquí (client-side) en vez de
+      // depender del code_verifier de PKCE: así funciona aunque el enlace se
+      // abra en otro dispositivo, y un escáner de email que no ejecuta JS no
+      // consume el token de un solo uso.
+      const params = new URLSearchParams(window.location.search)
+      const tokenHash = params.get('token_hash')
+      const type = params.get('type')
+      if (tokenHash && type === 'recovery') {
+        const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+        if (!error) {
+          window.history.replaceState({}, '', '/reset-password') // quita el token de la URL/historial
+          setAuthorized(true)
+          setChecking(false)
+          return
+        }
+      }
+      // Sin token (o falló) → ¿hay ya una sesión activa?
+      const { data: { session } } = await supabase.auth.getSession()
       setAuthorized(!!session)
       setChecking(false)
-    })
+    }
+    run()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
