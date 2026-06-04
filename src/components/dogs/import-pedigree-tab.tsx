@@ -18,7 +18,48 @@ interface PedigreeData { main_dog: ImportDog; ancestors: ImportDog[] }
 interface Props { userId: string; kennelId?: string | null; onImported?: () => void; isAdmin?: boolean }
 
 const CW = 190, CH = 58
-const L = 'var(--pedigree-line, rgba(255,255,255,0.12))'
+const L = 'var(--pedigree-line, rgba(17,17,17,0.18))'
+
+/** Lee un File como base64 puro (sin el prefijo data:...;base64,). */
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve((reader.result as string).split(',')[1])
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+/**
+ * Optimiza una imagen para el OCR de la IA: corrige la orientación EXIF (las
+ * fotos de móvil llegan giradas 90°), reescala el lado largo a 1568px (el
+ * máximo que Claude aprovecha — más allá la reescala la API y suele dejar el
+ * texto denso ilegible) y exporta JPEG nítido. Devuelve null si el navegador no
+ * sabe decodificar el formato (p.ej. HEIC en Chrome) para caer al envío crudo.
+ */
+async function optimizeImageForOCR(file: File): Promise<{ base64: string; mediaType: string } | null> {
+  try {
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
+    const MAX = 1568
+    const scale = Math.min(1, MAX / Math.max(bitmap.width, bitmap.height))
+    const w = Math.max(1, Math.round(bitmap.width * scale))
+    const h = Math.max(1, Math.round(bitmap.height * scale))
+    const canvas = document.createElement('canvas')
+    canvas.width = w; canvas.height = h
+    const ctx = canvas.getContext('2d')
+    if (!ctx) { bitmap.close?.(); return null }
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(bitmap, 0, 0, w, h)
+    bitmap.close?.()
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92)
+    const base64 = dataUrl.split(',')[1]
+    if (!base64) return null
+    return { base64, mediaType: 'image/jpeg' }
+  } catch {
+    return null
+  }
+}
 
 export default function ImportPedigreeTab({ userId, kennelId, onImported, isAdmin }: Props) {
   const t = useT()
@@ -52,7 +93,13 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported, isAdmi
   const [allBreeds, setAllBreeds] = useState<{ id: string; name: string }[]>([])
   const [breedsLoaded, setBreedsLoaded] = useState(false)
 
-  const EXTRACTION_PROMPT = `You are an expert dog pedigree data extractor. Extract the COMPLETE pedigree from the content provided. Be exhaustive — include every dog you can identify, no matter how deep in the tree.
+  const EXTRACTION_PROMPT = `You are an expert dog pedigree data extractor. Extract the pedigree from the content provided.
+
+LEGIBILITY GATE — read this FIRST. If the source is an image that is blank, blurry, too low-resolution to read the dog names, photographed too far away, or is not actually a dog pedigree — OR if for any reason you cannot read the actual text with confidence — return EXACTLY this JSON and nothing else:
+{"unreadable": true, "reason": "<short reason in Spanish>"}
+Do NOT invent, guess, autocomplete, or fill in plausible-sounding dog names / breeds / registration numbers to complete a tree. A truthful "unreadable" is the CORRECT answer; a fabricated pedigree is a critical error. A photographed sheet may be rotated 90°/180° or skewed — mentally re-orient and read it anyway, but if you still cannot read the names after re-orienting, return unreadable.
+
+When the source IS legible, be exhaustive — include every dog whose name you can ACTUALLY READ, no matter how deep in the tree.
 
 OUTPUT — return ONLY this JSON object (no markdown, no prose, no explanation):
 {
@@ -74,7 +121,7 @@ OUTPUT — return ONLY this JSON object (no markdown, no prose, no explanation):
 }
 
 CRITICAL RULES:
-1. EXTRACT EVERY DOG. Even partial info counts — if you only have a name, include it.
+1. EXTRACT EVERY DOG YOU CAN READ. Even partial info counts — if you can read a name but nothing else, include just the name. But NEVER add a dog whose name you cannot actually read in the source — do not invent dogs to fill empty slots in the tree.
 2. PRESERVE NAMES EXACTLY as shown: capitalization, accents (à á è é ñ ç ö ü ø æ etc.), apostrophes, hyphens. Do not "correct" or translate.
 3. SEX inference — recognize these synonyms in ANY language:
    - Male: Sire, Father, Padre, Père, Padre, Vater, Otec, Отец, ♂, M
@@ -529,18 +576,26 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
     setUploadingImage(true); setError(''); setData(null); setSwaps({})
     setScanPhase(isPdf ? t('Analizando PDF con IA...') : t('Analizando imagen con IA...'))
     try {
-      const reader = new FileReader()
-      const base64 = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => { const result = reader.result as string; resolve(result.split(',')[1]) }
-        reader.onerror = reject
-        reader.readAsDataURL(file)
-      })
-
-      // Claude Sonnet 4.5 acepta image (jpeg/png/gif/webp) y document (pdf) nativamente.
-      const mediaType = isPdf
-        ? 'application/pdf'
-        : (file.type || 'image/jpeg')
+      // PDFs van tal cual (Claude los lee nativo, multipágina). Las imágenes se
+      // PRE-PROCESAN: orientación EXIF + reescalado a 1568px + JPEG nítido. Sin
+      // esto, una foto de móvil rotada y a resolución llena llega ilegible tras
+      // el reescalado de la API y el modelo se inventa el árbol.
       const sourceType = isPdf ? 'document' : 'image'
+      let base64: string
+      let mediaType: string
+      if (isPdf) {
+        base64 = await fileToBase64(file)
+        mediaType = 'application/pdf'
+      } else {
+        const opt = await optimizeImageForOCR(file)
+        if (opt) {
+          base64 = opt.base64; mediaType = opt.mediaType
+        } else {
+          // Formato que el navegador no decodifica (HEIC en Chrome…) → envío crudo.
+          base64 = await fileToBase64(file)
+          mediaType = file.type || 'image/jpeg'
+        }
+      }
 
       let pedigreeData = await callClaude([{
         role: 'user',
@@ -550,8 +605,12 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
         ],
       }])
 
-      if (!pedigreeData?.main_dog?.name) {
-        setError(isPdf ? t('No se pudo extraer datos del PDF.') : t('No se pudo extraer datos de la imagen.'))
+      // Guardarraíl anti-alucinación: si la IA no pudo leer la imagen, NO mostramos
+      // un árbol inventado — pedimos una foto mejor.
+      if ((pedigreeData as any)?.unreadable || !pedigreeData?.main_dog?.name) {
+        setError(isPdf
+          ? t('No se pudo leer el PDF. Asegúrate de que el texto sea nítido (no un escaneo borroso o de baja calidad).')
+          : t('No pudimos leer la foto con claridad. Prueba con una imagen más nítida y recta, de cerca, bien iluminada y sin reflejos ni sombras.'))
         setUploadingImage(false); setScanPhase(''); return
       }
 
@@ -926,7 +985,7 @@ function Card({ dog, swaps, isRoot, onSwap, onRemoveSwap }: { dog: ImportDog; sw
             <div className="absolute top-0 right-0 bottom-0 w-[3px]" style={{ backgroundColor: sc }} />
           </div>
           <div className="flex-1 min-w-0 px-2 py-1.5 flex flex-col justify-center">
-            <p className="text-[11px] font-bold text-white leading-tight truncate">{swap ? swap.name : dog.name}</p>
+            <p className="text-[11px] font-bold text-ink leading-tight truncate">{swap ? swap.name : dog.name}</p>
             {isLinked ? (
               <span className="text-[9px] font-bold text-ink flex items-center gap-0.5 mt-0.5"><Link2 className="w-2.5 h-2.5" /> {t('Registrado')}</span>
             ) : isSwapped ? (

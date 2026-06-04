@@ -56,11 +56,15 @@ export async function POST(request: Request) {
 
     const maxTokens = Math.min(Math.max(parseInt(String(body.max_tokens || 8000), 10) || 8000, 100), 16000)
     const model = String(body.model || 'claude-sonnet-4-5')
+    // Extracción de datos: temperatura 0 para minimizar invención/variación.
+    // (Sin esto, la misma foto ilegible producía un perro inventado distinto cada vez.)
+    const temperature = typeof body.temperature === 'number' ? body.temperature : 0
 
     const client = new Anthropic({ apiKey })
     const response = await client.messages.create({
       model,
       max_tokens: maxTokens,
+      temperature,
       messages: body.messages,
     })
 
