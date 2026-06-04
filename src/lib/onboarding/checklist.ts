@@ -41,7 +41,6 @@ export async function getOnboardingStatus(args: {
     kennelRes,
     dogsCountRes,
     dogsPhotoCountRes,
-    webPagesRes,
     knowledgeCountRes,
     formConfigRes,
     emailbotConfigRes,
@@ -53,8 +52,6 @@ export async function getOnboardingStatus(args: {
       .eq('kennel_id', args.kennelId),
     admin.from('dogs').select('id', { count: 'exact', head: true })
       .eq('kennel_id', args.kennelId).not('thumbnail_url', 'is', null),
-    admin.from('kennel_pages').select('id', { count: 'exact', head: true })
-      .eq('kennel_id', args.kennelId).eq('enabled', true),
     admin.from('knowledge_entries').select('id', { count: 'exact', head: true })
       .eq('kennel_id', args.kennelId).eq('is_active', true),
     admin.from('kennels').select('contact_form_config')
@@ -66,7 +63,6 @@ export async function getOnboardingStatus(args: {
   const kennel = kennelRes.data
   const dogsCount = dogsCountRes.count || 0
   const dogsWithPhotoCount = dogsPhotoCountRes.count || 0
-  const webPagesCount = webPagesRes.count || 0
   const knowledgeCount = knowledgeCountRes.count || 0
   const hasFormConfig =
     formConfigRes.data?.contact_form_config &&
@@ -107,11 +103,11 @@ export async function getOnboardingStatus(args: {
     },
     {
       id: 'public_web',
-      label: 'Activa tu web pública',
-      description: 'Una página simple con tu logo, raza, perros disponibles y formulario de contacto.',
-      done: webPagesCount > 0,
-      href: '/web',
-      ctaLabel: 'Configurar web',
+      label: 'Revisa tu web pública',
+      description: 'Tu web se genera sola con tu logo, perros y formulario de contacto. Revísala y compártela.',
+      done: !!(kennel?.logo_url && kennel?.description),
+      href: '/kennel',
+      ctaLabel: 'Ver mi web',
       icon: 'Globe',
       importance: 'required',
     },

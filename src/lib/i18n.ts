@@ -564,14 +564,12 @@ import { content4Dogs } from './i18n-content4-dogs'
 import { content4Pages } from './i18n-content4-pages'
 import { content4Account } from './i18n-content4-account'
 import { content4Kennel } from './i18n-content4-kennel'
-import { content4KennelPages } from './i18n-content4-kennelpages'
 import { content4Reservas } from './i18n-content4-reservas'
 import { content4Repro } from './i18n-content4-repro'
 import { content4Crm } from './i18n-content4-crm'
 import { content4Emailbot } from './i18n-content4-emailbot'
 import { content4Newsletter } from './i18n-content4-newsletter'
 import { content4Shell } from './i18n-content4-shell'
-import { content4Site } from './i18n-content4-site'
 import { content4PublicMisc } from './i18n-content4-publicmisc'
 import { content4DashMisc } from './i18n-content4-dashmisc'
 import { content4Misc2 } from './i18n-content4-misc2'
@@ -592,14 +590,12 @@ export function getTranslator(lang: string) {
   const c4pages = content4Pages[lang] || {}
   const c4account = content4Account[lang] || {}
   const c4kennel = content4Kennel[lang] || {}
-  const c4kennelpages = content4KennelPages[lang] || {}
   const c4reservas = content4Reservas[lang] || {}
   const c4repro = content4Repro[lang] || {}
   const c4crm = content4Crm[lang] || {}
   const c4emailbot = content4Emailbot[lang] || {}
   const c4newsletter = content4Newsletter[lang] || {}
   const c4shell = content4Shell[lang] || {}
-  const c4site = content4Site[lang] || {}
   const c4publicmisc = content4PublicMisc[lang] || {}
   const c4dashmisc = content4DashMisc[lang] || {}
   const c4misc2 = content4Misc2[lang] || {}
@@ -616,9 +612,9 @@ export function getTranslator(lang: string) {
     //          → content4 (Fase 4 dashboard: dogs/pages/account). Fallback a la clave española.
     return dict[key] || content[key] || content2[key] || content3[key]
       || c4dogs[key] || c4pages[key] || c4account[key]
-      || c4kennel[key] || c4kennelpages[key] || c4reservas[key] || c4repro[key] || c4crm[key]
+      || c4kennel[key] || c4reservas[key] || c4repro[key] || c4crm[key]
       || c4emailbot[key] || c4newsletter[key] || c4shell[key]
-      || c4site[key] || c4publicmisc[key] || c4dashmisc[key] || c4misc2[key] || c6funnel[key] || c7[key] || c8a[key] || c8b[key] || c9[key] || cContracts2[key] || cOwner[key] || key
+      || c4publicmisc[key] || c4dashmisc[key] || c4misc2[key] || c6funnel[key] || c7[key] || c8a[key] || c8b[key] || c9[key] || cContracts2[key] || cOwner[key] || key
   }
 }
 

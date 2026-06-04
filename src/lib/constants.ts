@@ -160,9 +160,6 @@ export const NAV_SECTIONS: NavSection[] = [
     requiresKennel: true,
     items: [
       { label: 'Mi criadero', href: '/kennel', icon: 'Store', requiresKennel: true },
-      // Web pública con dominio = Kennel Enterprise (alta manual). El
-      // middleware redirige /web a /dashboard en iOS; oculto también del nav.
-      { label: 'Páginas web', href: '/web', icon: 'Globe', requiresEnterprise: true, hideOnIos: true },
       // Estadísticas web = Kennel Pro en adelante (decisión de pricing).
       { label: 'Estadísticas', href: '/estadisticas', icon: 'BarChart3', requiresPro: true, requiresKennel: true },
     ],

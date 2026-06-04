@@ -1,25 +1,14 @@
 /**
- * Dominios de criadero que sirven la WEB DINÁMICA (/kennels/[slug]) en lugar
- * del constructor (/c/[slug]).
+ * Routing de dominios propios de criadero.
  *
- * Contexto: cualquier custom domain verificado se sirve por defecto con la
- * web del CONSTRUCTOR (/c/[slug]) — la que se monta a mano sección a sección.
- * Estos dominios concretos, en cambio, se sirven con la web AUTO-GENERADA
- * (/kennels/[slug]) y SIN el chrome de Genealogic (marketing header + footer
- * + sidebar): se ven como una web propia del criadero a ojos del visitante.
+ * Tras retirar el CONSTRUCTOR (/c/[slug]), CUALQUIER custom domain verificado se
+ * sirve con la WEB DINÁMICA auto-generada (/kennels/[slug]/*) y SIN el chrome de
+ * Genealogic (marketing header + footer + sidebar): se ve como una web propia
+ * del criadero a ojos del visitante.
  *
- * Es una allowlist EXPLÍCITA a propósito: cambiar el routing de forma global
- * afectaría a otros criaderos con dominio verificado que todavía usan su web
- * del constructor (les sustituiría la web por una dinámica que quizá no han
- * rellenado). Así solo migran los que pongamos aquí.
- *
- * Para migrar un criadero a la web dinámica: añade su dominio (apex, sin
- * www) a DYNAMIC_SITE_DOMAINS. Para volverlo global algún día: que
- * isDynamicSiteHost devuelva true para cualquier host no-Genealogic.
+ * Antes esto era una allowlist explícita (solo migraban los dominios listados),
+ * porque convivían dos webs. Ya no: solo existe la dinámica.
  */
-const DYNAMIC_SITE_DOMAINS = new Set<string>([
-  'iremacurto.com',
-])
 
 /** Normaliza un host: minúsculas, sin puerto, sin prefijo www. */
 export function normalizeHost(host: string | null | undefined): string {
@@ -27,10 +16,20 @@ export function normalizeHost(host: string | null | undefined): string {
 }
 
 /**
- * ¿Este host sirve la web dinámica del criadero (sin chrome de Genealogic)?
- * Lo consultan: el middleware (para elegir /kennels vs /c) y los layouts
- * (para suprimir el marketing header/footer y montar el chrome standalone).
+ * ¿Este host es un dominio PROPIO del criadero (no de Genealogic)? Si lo es, se
+ * sirve la web dinámica sin chrome. Lo consultan: el middleware (rewrite a
+ * /kennels) y los layouts (suprimir header/footer y montar el chrome standalone).
  */
 export function isDynamicSiteHost(host: string | null | undefined): boolean {
-  return DYNAMIC_SITE_DOMAINS.has(normalizeHost(host))
+  const h = normalizeHost(host)
+  if (!h) return false
+  if (
+    h.endsWith('genealogic.io') ||
+    h.endsWith('vercel.app') ||
+    h.startsWith('localhost') ||
+    h.startsWith('127.0.0.1')
+  ) {
+    return false
+  }
+  return true
 }

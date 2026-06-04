@@ -36,7 +36,6 @@ export default async function KennelPage() {
     visibleCountRes,
     reproductiveCountRes,
     littersCountRes,
-    customPageRes,
     profileRes,
     galleryRes,
     facilitiesRes,
@@ -50,10 +49,6 @@ export default async function KennelPage() {
       .eq('kennel_id', kennel.id).eq('is_reproductive', true),
     supabase.from('litters').select('id', { count: 'exact', head: true })
       .eq('owner_id', user.id),
-    supabase.from('kennel_pages')
-      .select('id')
-      .eq('kennel_id', kennel.id).eq('slug', 'home').eq('enabled', true)
-      .maybeSingle(),
     supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
     supabase.from('kennel_photos').select('id', { count: 'exact', head: true })
       .eq('kennel_id', kennel.id).eq('kind', 'gallery'),
@@ -63,7 +58,6 @@ export default async function KennelPage() {
       .eq('kennel_id', kennel.id).eq('status', 'published'),
   ])
 
-  const hasCustomWeb = !!customPageRes.data && !!kennel.slug
   const isPro = hasProAccess(profileRes.data?.plan)
   // Para los toggles de páginas Pro: enterprise users + kennel_pro plan
   const canUsePro = isEnterpriseUser(user.id) || isKennelPro(normalizePlan(profileRes.data?.plan))
@@ -86,7 +80,6 @@ export default async function KennelPage() {
           reproductive: reproductiveCountRes.count || 0,
           litters: littersCountRes.count || 0,
         }}
-        hasCustomWeb={hasCustomWeb}
         isPro={isPro}
         userId={user.id}
       />

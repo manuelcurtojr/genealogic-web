@@ -23,7 +23,6 @@ interface Props {
     reproductive: number
     litters: number
   }
-  hasCustomWeb?: boolean
   isPro?: boolean
   userId: string
 }
