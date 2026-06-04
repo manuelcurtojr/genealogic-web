@@ -865,9 +865,18 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
     return createPortal(
       <div className="fixed inset-0 z-[200] bg-canvas flex flex-col">
         <div className="flex items-center justify-between px-6 py-3 border-b border-hairline bg-surface-card flex-shrink-0">
-          <div>
-            <h2 className="text-lg font-bold">{editedMain.name}</h2>
-            <p className="text-xs text-muted">{totalDogs} {t('perros')} · {totalDogs - swappedCount} {t('nuevos')} · {swappedCount} {t('existentes')}</p>
+          <div className="min-w-0">
+            {/* Nombre EDITABLE: el usuario puede ajustarlo antes de importar —
+                p.ej. añadir su afijo ("Rebeca de La Esperanza"). Se guarda tal cual
+                porque handleConfirm manda editedMain.name. */}
+            <input
+              value={editedMain.name}
+              onChange={e => setEditedMain(m => (m ? { ...m, name: e.target.value } : m))}
+              aria-label={t('Nombre del perro')}
+              placeholder={t('Nombre del perro')}
+              className="w-full max-w-[420px] bg-transparent text-lg font-bold text-ink border-b border-dashed border-hairline focus:border-solid focus:border-ink focus:outline-none placeholder:text-muted/60"
+            />
+            <p className="text-xs text-muted">{totalDogs} {t('perros')} · {totalDogs - swappedCount} {t('nuevos')} · {swappedCount} {t('existentes')} · <span className="text-muted/70">{t('puedes editar el nombre (añade tu afijo)')}</span></p>
           </div>
           <div className="flex items-center gap-3">
             <select value={overrideBreed} onChange={e => setOverrideBreed(e.target.value)} className="bg-surface-card border border-hairline rounded-lg px-2 py-1.5 text-xs text-ink focus:border-ink focus:outline-none appearance-none cursor-pointer max-w-[160px]">

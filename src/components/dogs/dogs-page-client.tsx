@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Grid3X3, List, Search, Plus, EyeOff, Edit, ArrowRightLeft, GitBranch, Globe, Heart } from 'lucide-react'
+import { Grid3X3, List, Search, Plus, EyeOff, Edit, ArrowRightLeft, GitBranch, Globe, Heart, Undo2, ExternalLink, Loader2 } from 'lucide-react'
 import DogCard from './dog-card'
 import DogFormPanel from './dog-form-panel'
 import TransferPanel from '../kennel/transfer-panel'
@@ -29,21 +29,32 @@ interface Dog {
   kennel_id?: string | null
 }
 
+interface ImportRecord {
+  id: string
+  importId: string | null
+  mainDogId: string | null
+  count: number
+  name: string
+  createdAt: string
+}
+
 interface DogsPageClientProps {
   dogs: Dog[]
   breeds: { id: string; name: string }[]
   userId: string
   isBreeder?: boolean
   myKennelId?: string | null
+  imports?: ImportRecord[]
 }
 
 type DogTab = 'all' | 'reproductive' | 'puppies' | 'bred' | 'sale'
+type DogsView = 'dogs' | 'imports'
 
 const PUPPY_MAX_MONTHS = 12 // un perro < 12 meses se considera cachorro
 
 const PAGE_SIZE = 24
 
-export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBreeder = false, myKennelId = null }: DogsPageClientProps) {
+export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBreeder = false, myKennelId = null, imports = [] }: DogsPageClientProps) {
   const t = useT()
   // Estado local de dogs para optimistic updates al hacer toggles desde la card
   const [dogs, setDogs] = useState(initialDogs)
@@ -72,6 +83,22 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
       const url = new URL(window.location.href)
       if (tab === 'all') url.searchParams.delete('tab')
       else url.searchParams.set('tab', tab)
+      window.history.replaceState(null, '', url.toString())
+    }
+  }
+
+  // Vista: catálogo de perros vs "Mis importaciones" (deeplink ?view=imports)
+  const [view, setView] = useState<DogsView>(() => {
+    if (typeof window === 'undefined') return 'dogs'
+    const v = new URLSearchParams(window.location.search).get('view')
+    return v === 'imports' && imports.length > 0 ? 'imports' : 'dogs'
+  })
+  const changeSection = (v: DogsView) => {
+    setView(v)
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href)
+      if (v === 'dogs') url.searchParams.delete('view')
+      else url.searchParams.set('view', v)
       window.history.replaceState(null, '', url.toString())
     }
   }
@@ -204,6 +231,36 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
         </button>
       </div>
 
+      {/* Toggle Perros / Mis importaciones (solo si hay importaciones) */}
+      {imports.length > 0 && (
+        <div className="-mx-1 flex gap-1 px-1">
+          {([
+            { key: 'dogs' as const, label: t('Perros') },
+            { key: 'imports' as const, label: t('Mis importaciones') },
+          ]).map((v) => {
+            const isActive = view === v.key
+            return (
+              <button
+                key={v.key}
+                onClick={() => changeSection(v.key)}
+                className={`flex-shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                  isActive ? 'border-ink bg-ink text-on-primary' : 'border-hairline bg-canvas text-body hover:bg-surface-soft'
+                }`}
+              >
+                {v.label}
+                {v.key === 'imports' && (
+                  <span className={`rounded px-1.5 py-0.5 text-[11px] tabular-nums ${isActive ? 'bg-white/15 text-on-primary' : 'bg-surface-soft text-muted'}`}>{imports.length}</span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {view === 'imports' ? (
+        <ImportsPanel imports={imports} userId={userId} t={t} />
+      ) : (
+      <>
       {/* Tabs (solo para criadores) */}
       {isBreeder && (
         <div className="-mx-1 flex overflow-x-auto">
@@ -473,6 +530,8 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
 
       {/* Infinite scroll sentinel */}
       {hasMore && <div ref={loadMoreRef} className="h-10" />}
+      </>
+      )}
 
       {/* Dog form slide panel (add + edit) */}
       <DogFormPanel
@@ -494,6 +553,88 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
       />
 
       <PedigreeEditor open={pedigreeOpen} onClose={() => setPedigreeOpen(false)} dogId={pedigreeDogId} userId={userId} />
+    </div>
+  )
+}
+
+/**
+ * ImportsPanel — historial de importaciones del usuario con acciones:
+ *  - "Ver perro": abre el perfil del perro principal importado.
+ *  - "Revertir": llama a DELETE /api/confirm-import (borra los perros creados que
+ *    no estén referenciados por otros; ventana de 24h por seguridad).
+ */
+function ImportsPanel({ imports, userId, t }: { imports: ImportRecord[]; userId: string; t: (k: string) => string }) {
+  const [list, setList] = useState(imports)
+  const [reverting, setReverting] = useState<string | null>(null)
+  const [msg, setMsg] = useState<string | null>(null)
+
+  async function revert(importId: string, name: string) {
+    if (!window.confirm(`${t('¿Revertir la importación de')} "${name || t('esta genealogía')}"? ${t('Se borrarán los perros creados que no estén referenciados por otros.')}`)) return
+    setReverting(importId); setMsg(null)
+    try {
+      const res = await fetch('/api/confirm-import', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ importId, userId }),
+      })
+      const r = await res.json()
+      if (!res.ok) throw new Error(r.error || t('No se pudo revertir'))
+      setList((prev) => prev.filter((i) => i.importId !== importId))
+      const skipped = r.skippedCount ? ` · ${r.skippedCount} ${t('conservados (referenciados por otros)')}` : ''
+      setMsg(`✓ ${t('Importación revertida')} — ${r.deletedCount} ${t('perros borrados')}${skipped}`)
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : t('No se pudo revertir'))
+    }
+    setReverting(null)
+  }
+
+  if (list.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
+        <GitBranch className="mx-auto h-8 w-8 text-muted" />
+        <p className="mt-3 text-sm text-body">{t('Aún no has importado ninguna genealogía.')}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {msg && (
+        <div className="rounded-lg border border-hairline bg-surface-soft px-4 py-2.5 text-[13px] text-body">{msg}</div>
+      )}
+      {list.map((imp) => (
+        <div key={imp.id} className="flex flex-col gap-3 rounded-xl border border-hairline bg-canvas p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="truncate text-[14px] font-semibold text-ink">{imp.name || t('Genealogía importada')}</p>
+            <p className="mt-0.5 text-[12px] text-muted">
+              {imp.count} {imp.count === 1 ? t('perro creado') : t('perros creados')}
+              {' · '}
+              {new Date(imp.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </p>
+          </div>
+          <div className="flex flex-shrink-0 items-center gap-2">
+            {imp.mainDogId && (
+              <Link
+                href={`/dogs/${imp.mainDogId}`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-1.5 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft"
+              >
+                <ExternalLink className="h-3.5 w-3.5" /> {t('Ver perro')}
+              </Link>
+            )}
+            <button
+              onClick={() => imp.importId && revert(imp.importId, imp.name)}
+              disabled={reverting === imp.importId || !imp.importId}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/5 px-3 py-1.5 text-[13px] font-medium text-red-500 transition-colors hover:bg-red-500/10 disabled:opacity-50"
+            >
+              {reverting === imp.importId ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Undo2 className="h-3.5 w-3.5" />}
+              {t('Revertir')}
+            </button>
+          </div>
+        </div>
+      ))}
+      <p className="px-1 text-[11px] leading-relaxed text-muted">
+        {t('Revertir borra los perros creados en esa importación. Los que ya estén referenciados por otros perros, o de hace más de 24 h, se conservan por seguridad.')}
+      </p>
     </div>
   )
 }
