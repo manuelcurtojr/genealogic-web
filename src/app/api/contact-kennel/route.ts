@@ -136,6 +136,19 @@ export async function POST(request: NextRequest) {
     console.error('contact-kennel: ensure_default_pipelines failed', e)
   }
 
+  // WARN explícito si el lead va a entrar con stage_id=null. La inserción
+  // sigue (no perdemos el lead en BBDD), pero el funnel-board lo dibuja en
+  // un grupo "Sin asignar" naranja para que el criador NUNCA esté a ciegas.
+  // Causa habitual: el criador borró todos los pasos de entrada al editar el
+  // embudo y nadie tiene is_entry=true.
+  if (!entryStageId) {
+    console.warn(
+      `[contact-kennel] lead sin stage_id — kennel=${kennel.id} (${kennel.name}). ` +
+      `Probable: ningún pipeline_stages con is_entry=true. El lead se guarda ` +
+      `pero NO aparece en su paso correspondiente; saldrá en "Sin asignar".`,
+    )
+  }
+
   const insertPayload: Record<string, any> = {
     kennel_id: kennel.id,
     status: 'interested',
@@ -157,8 +170,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Error guardando la solicitud' }, { status: 500 })
   }
 
-  // Email al criador notificándole la reserva nueva (best-effort, async,
-  // no bloquea el response al solicitante).
+  // Emails best-effort, async — NO bloquean la respuesta al cliente. Se
+  // mandan DOS: uno al criador (notificación de lead) y otro al solicitante
+  // (confirmación de envío con su mensaje y reply-to directo al criador).
   ;(async () => {
     try {
       const { data: ownerProfile } = await (admin as ReturnType<typeof createKennelAdminClient>)
@@ -168,18 +182,19 @@ export async function POST(request: NextRequest) {
         .eq('id', (await (admin as any).from('kennels').select('owner_id').eq('id', kennel_id).single()).data?.owner_id || '')
         .maybeSingle()
 
-      if (ownerProfile?.email) {
-        // Resolver nombre de raza si vino preference_breed_id en el form
-        // (no es campo canónico tipado — viene como string libre del form).
+      // Resolver nombre de raza si vino preference_breed_id en el form
+      // (no es campo canónico tipado — viene como string libre del form).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const breedId = (canonical as any).preference_breed_id || values?.preference_breed_id
+      let preferredBreed: string | null = null
+      if (breedId) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const breedId = (canonical as any).preference_breed_id || values?.preference_breed_id
-        let preferredBreed: string | null = null
-        if (breedId) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { data: b } = await (admin as any).from('breeds').select('name').eq('id', breedId).single()
-          preferredBreed = b?.name || null
-        }
+        const { data: b } = await (admin as any).from('breeds').select('name').eq('id', breedId).single()
+        preferredBreed = b?.name || null
+      }
 
+      // ─── Email 1: al criador (notificación de reserva nueva) ────────────
+      if (ownerProfile?.email) {
         await sendTransactionalEmail(
           ownerProfile.email,
           {
@@ -201,8 +216,37 @@ export async function POST(request: NextRequest) {
           },
         )
       }
+
+      // ─── Email 2: al solicitante (confirmación) ─────────────────────────
+      // Reply-to = email del criador → si el solicitante responde, va directo
+      // a su bandeja, no a hola@genealogic.io. Conversación 1-a-1.
+      const applicantEmail = canonical.applicant_email
+        ? String(canonical.applicant_email).trim().toLowerCase()
+        : null
+      if (applicantEmail) {
+        await sendTransactionalEmail(
+          applicantEmail,
+          {
+            template: 'inquiry_received',
+            props: {
+              applicantName: canonical.applicant_name ? String(canonical.applicant_name) : null,
+              kennelName: kennel.name,
+              applicantMessage: canonical.applicant_message ? String(canonical.applicant_message) : null,
+              preferredBreed,
+              preferredSex: (canonical.preference_sex as 'male' | 'female' | null) || null,
+            },
+          },
+          {
+            // No tenemos userId del solicitante (puede no estar registrado),
+            // así que no chequeamos preferences — la categoría 'critical'
+            // del template ya garantiza envío.
+            dedupeKey: `inquiry_received:${insertedRes!.id}`,
+            replyTo: ownerProfile?.email || undefined,
+          },
+        )
+      }
     } catch (err) {
-      console.error('[email] reservation_new failed', err)
+      console.error('[email] contact-kennel emails failed', err)
     }
   })()
 

@@ -25,6 +25,7 @@ import { normalizeLocale, DEFAULT_LOCALE, type Locale } from '@/lib/locale'
 import WelcomeBreederEmail, { type WelcomeBreederProps } from '@/emails/welcome-breeder'
 import WelcomeOwnerEmail, { type WelcomeOwnerProps } from '@/emails/welcome-owner'
 import ReservationNewEmail, { type ReservationNewProps } from '@/emails/reservation-new'
+import InquiryReceivedEmail, { type InquiryReceivedProps } from '@/emails/inquiry-received'
 import MessageNewEmail, { type MessageNewProps } from '@/emails/message-new'
 import ClaimApprovedEmail, { type ClaimApprovedProps } from '@/emails/claim-approved'
 import ClaimRejectedEmail, { type ClaimRejectedProps } from '@/emails/claim-rejected'
@@ -57,6 +58,7 @@ export type EmailTemplate =
   | { template: 'welcome_breeder';        props: WelcomeBreederProps }
   | { template: 'welcome_owner';          props: WelcomeOwnerProps }
   | { template: 'reservation_new';        props: ReservationNewProps }
+  | { template: 'inquiry_received';       props: InquiryReceivedProps }
   | { template: 'message_new';            props: MessageNewProps }
   | { template: 'claim_approved';         props: ClaimApprovedProps }
   | { template: 'claim_rejected';         props: ClaimRejectedProps }
@@ -104,6 +106,13 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
     category: 'reservations',
     subject: (p: ReservationNewProps, t) =>
       `${t('Nueva reserva de')} ${p.clientName} ${t('para')} ${p.kennelName}`,
+  },
+  inquiry_received: {
+    // 'critical' = siempre se manda. Es la confirmación inmediata de una
+    // acción que el propio solicitante acaba de hacer, no marketing.
+    category: 'critical',
+    subject: (p: InquiryReceivedProps, t) =>
+      `${t('Hemos enviado tu solicitud a')} ${p.kennelName}`,
   },
   message_new: {
     category: 'messages',
@@ -246,6 +255,7 @@ function renderTemplate(t: EmailTemplate, locale: Locale): Promise<string> {
     case 'welcome_breeder':        return render(WelcomeBreederEmail(p))
     case 'welcome_owner':          return render(WelcomeOwnerEmail(p))
     case 'reservation_new':        return render(ReservationNewEmail(p))
+    case 'inquiry_received':       return render(InquiryReceivedEmail(p))
     case 'message_new':            return render(MessageNewEmail(p))
     case 'claim_approved':         return render(ClaimApprovedEmail(p))
     case 'claim_rejected':         return render(ClaimRejectedEmail(p))
@@ -284,7 +294,7 @@ function renderTemplate(t: EmailTemplate, locale: Locale): Promise<string> {
 export async function sendTransactionalEmail(
   to: string,
   email: EmailTemplate,
-  opts: { userId?: string; dedupeKey?: string; locale?: string } = {},
+  opts: { userId?: string; dedupeKey?: string; locale?: string; replyTo?: string } = {},
 ): Promise<{ ok: boolean; skipped?: 'preference' | 'duplicate' | 'no_key'; error?: string }> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createKennelAdminClient() as any
@@ -371,7 +381,10 @@ export async function sendTransactionalEmail(
       to,
       subject,
       html,
-      replyTo: meta.replyTo || REPLY_TO,
+      // Prioridad de reply-to: opts.replyTo (per-call) > meta.replyTo (per-template) > REPLY_TO (genérico).
+      // Per-call lo usamos en inquiry_received para que la respuesta del
+      // solicitante vaya directa al email del criador.
+      replyTo: opts.replyTo || meta.replyTo || REPLY_TO,
     })
 
     if (res?.error) {

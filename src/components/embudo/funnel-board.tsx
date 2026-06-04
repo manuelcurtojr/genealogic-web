@@ -11,7 +11,7 @@
 import { useMemo, useState, useCallback, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import confetti from 'canvas-confetti'
-import { Sparkles, X, Plus, Settings, Mail, Phone, Clock } from 'lucide-react'
+import { Sparkles, X, Plus, Settings, Mail, Phone, Clock, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import { moveEntryToStage, markEntrySeen } from '@/lib/pipelines/actions'
 import type { Pipeline, Stage, FunnelEntry } from '@/lib/pipelines/types'
@@ -53,6 +53,16 @@ export default function FunnelBoard({
   const [config, setConfig] = useState<ConfigState | null>(null)
   const [loss, setLoss] = useState<{ entryId: string; stageId: string; reasons: string[] } | null>(null)
   const [party, setParty] = useState<{ title: string; subtitle: string } | null>(null)
+  const [showOrphans, setShowOrphans] = useState(false)
+
+  // Leads HUÉRFANOS (stage_id=null) — entraron en BBDD pero no se les asignó
+  // un paso del embudo. Causa: pipeline_stages sin is_entry=true (criador
+  // borró el paso "Interesados" o equivalente). Si no los pintamos aquí,
+  // quedan completamente invisibles → leads perdidos a ojo del criador.
+  const orphanEntries = useMemo(
+    () => entries.filter((e) => !e.stage_id).sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)),
+    [entries],
+  )
 
   const byStage = useMemo(() => {
     const m = new Map<string, FunnelEntry[]>()
@@ -126,6 +136,77 @@ export default function FunnelBoard({
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
       <h1 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight mb-5">{t('Embudo')}</h1>
+
+      {/* ─── Banner SOLICITUDES SIN ASIGNAR ─────────────────────────────────
+          Aparece SOLO si hay leads con stage_id=null. Causa habitual: el
+          criador borró/renombró el paso de entrada y ya no hay ningún paso
+          con is_entry=true. Sin este banner los leads existen en BBDD pero
+          son invisibles en la UI — exactamente el bug latente que veníamos
+          a tapar. Si lo ves, el fix es ir a "Configurar embudo" y marcar un
+          paso como "Entrada". */}
+      {orphanEntries.length > 0 && (
+        <div className="mb-5 rounded-xl border border-amber-300 bg-amber-50 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-amber-900">
+                {orphanEntries.length === 1
+                  ? t('1 solicitud sin asignar')
+                  : `${orphanEntries.length} ${t('solicitudes sin asignar')}`}
+              </p>
+              <p className="text-sm text-amber-800 mt-0.5">
+                {t('Estos leads entraron sin paso porque ningún paso del embudo está marcado como "Entrada". Ábrelo y márcalo en la configuración, o atiéndelos aquí debajo.')}
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowOrphans((o) => !o)}
+                className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-amber-900 hover:text-amber-950"
+              >
+                {showOrphans ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {showOrphans ? t('Ocultar') : t('Ver solicitudes')}
+              </button>
+            </div>
+          </div>
+          {showOrphans && (
+            <ul className="mt-3 space-y-2">
+              {orphanEntries.map((e) => {
+                const isNew = !e.seen_by_breeder_at
+                return (
+                  <li key={e.id}>
+                    <button
+                      onClick={() => openLead(e)}
+                      className={
+                        'w-full text-left rounded-xl border bg-canvas p-3 transition-all hover:shadow-md hover:border-ink/20 ' +
+                        (isNew ? 'border-amber-400 ring-2 ring-amber-300/40' : 'border-hairline')
+                      }
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        {isNew && (
+                          <span className="flex-shrink-0 inline-flex items-center rounded-full bg-amber-400 text-amber-950 text-[10px] font-bold px-1.5 py-0.5 uppercase tracking-wide">
+                            {t('Nueva')}
+                          </span>
+                        )}
+                        <span className="font-semibold text-ink truncate min-w-0">{e.applicant_name || t('Sin nombre')}</span>
+                        <span className="ml-auto flex-shrink-0 inline-flex items-center gap-1 text-[11px] text-muted">
+                          <Clock className="w-3 h-3" /> {new Date(e.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {e.applicant_email && (
+                        <div className="flex items-center gap-1 text-xs text-muted truncate">
+                          <Mail className="w-3 h-3 flex-shrink-0" /> <span className="truncate">{e.applicant_email}</span>
+                        </div>
+                      )}
+                      {e.applicant_message && (
+                        <p className="mt-1 text-[13px] text-body line-clamp-2">{e.applicant_message}</p>
+                      )}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
+      )}
 
       {/* ─── Pestañas de pipeline (scroll) + crear/configurar (fijos) ─── */}
       <div className="flex items-stretch border-b border-hairline mb-5">
