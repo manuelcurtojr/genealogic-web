@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, Search, Globe, AlertTriangle, Check, X, Link2, ArrowLeftRight, Undo2 } from 'lucide-react'
+import { Loader2, Search, Globe, AlertTriangle, Check, X, Link2, ArrowLeftRight, Undo2, Sparkles, UploadCloud } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 
 interface ImportDog {
@@ -153,6 +153,12 @@ export default function ImportPedigreeTab({ userId, kennelId, onImported, isAdmi
 
   const [uploadingImage, setUploadingImage] = useState(false)
   const [scanPhase, setScanPhase] = useState('')
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null) // doc borroso para la pantalla de carga
+  const [dragActive, setDragActive] = useState(false)
+  // Revoca el object URL del preview al cambiar o desmontar (evita memory leaks).
+  useEffect(() => {
+    return () => { if (previewSrc) URL.revokeObjectURL(previewSrc) }
+  }, [previewSrc])
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(null)
   const [overrideBreed, setOverrideBreed] = useState('')
   const [allBreeds, setAllBreeds] = useState<{ id: string; name: string }[]>([])
@@ -662,10 +668,22 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
     setScanning(false); setScanPhase('')
   }
 
+  // El input (clic) y el drag&drop comparten el mismo procesado (processFile).
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file) return
+    e.target.value = '' // permite re-seleccionar el mismo archivo
+    if (file) await processFile(file)
+  }
 
+  async function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setDragActive(false)
+    if (uploadingImage || scanning) return
+    const file = e.dataTransfer.files?.[0]
+    if (file) await processFile(file)
+  }
+
+  async function processFile(file: File) {
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
     const isImage = file.type.startsWith('image/')
     if (!isPdf && !isImage) {
@@ -678,6 +696,10 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       setError(t('El PDF es demasiado grande (máx. ~3,5 MB). Súbelo más ligero, o haz una captura/foto de la página del pedigrí.'))
       return
     }
+
+    // Preview borroso del documento para la pantalla de carga (solo imágenes).
+    // El object URL se revoca en el useEffect de limpieza cuando previewSrc cambia.
+    setPreviewSrc(isImage ? URL.createObjectURL(file) : null)
 
     setUploadingImage(true); setError(''); setData(null); setSwaps({})
     setScanPhase(isPdf ? t('Analizando PDF con IA...') : t('Analizando imagen con IA...'))
@@ -718,7 +740,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
             ]
           } else {
             setError(t('No pudimos procesar la imagen. Si es una foto HEIC de iPhone, súbela como JPG: hazle una captura de pantalla, o pon Ajustes › Cámara › Formatos en "Más compatible".'))
-            setUploadingImage(false); setScanPhase(''); return
+            setUploadingImage(false); setScanPhase(''); setPreviewSrc(null); return
           }
         }
       }
@@ -742,7 +764,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
         setError(isPdf
           ? t('No se pudo leer el PDF. Asegúrate de que el texto sea nítido (no un escaneo borroso o de baja calidad).')
           : t('No pudimos leer la foto con claridad. Prueba con una imagen más nítida y recta, de cerca, bien iluminada y sin reflejos ni sombras.'))
-        setUploadingImage(false); setScanPhase(''); return
+        setUploadingImage(false); setScanPhase(''); setPreviewSrc(null); return
       }
 
       // Self-verification igual que en handleScan
@@ -781,7 +803,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       setLinkedAncestors(linked)
       setShowPreview(true)
     } catch (err: any) { setError(err.message || t('Error al analizar la imagen')) }
-    setUploadingImage(false); setScanPhase('')
+    setUploadingImage(false); setScanPhase(''); setPreviewSrc(null)
   }
 
   async function searchSwap(query: string) {
@@ -1018,28 +1040,100 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
         <div className="flex-1 border-t border-hairline" />
       </div>
 
-      {/* File upload (image or PDF) */}
+      {/* Subida (imagen o PDF) — arrastrar O hacer clic */}
       <div>
         <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Subir screenshot o PDF de la genealogía')}</label>
-        <label className={`flex items-center justify-center gap-2 border-2 border-dashed border-hairline rounded-lg py-4 cursor-pointer hover:border-hairline hover:bg-surface-card transition ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}>
-          {uploadingImage ? (
-            <><Loader2 className="w-4 h-4 animate-spin text-ink" /><span className="text-sm text-body">{scanPhase || t('Analizando con IA...')}</span></>
-          ) : (
-            <><Globe className="w-4 h-4 text-muted" /><span className="text-sm text-muted">{t('Imagen (JPG/PNG) o PDF — arrastra o haz clic')}</span></>
-          )}
+        <label
+          onDragOver={(e) => { e.preventDefault(); if (!uploadingImage && !scanning) setDragActive(true) }}
+          onDragLeave={(e) => { e.preventDefault(); setDragActive(false) }}
+          onDrop={handleDrop}
+          className={`group relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition ${
+            dragActive ? 'border-[#FE6620] bg-[#FE6620]/10' : 'border-hairline hover:border-ink/40 hover:bg-surface-card'
+          } ${uploadingImage ? 'pointer-events-none opacity-60' : ''}`}
+        >
+          <div className="pointer-events-none flex flex-col items-center gap-2">
+            <div className={`flex h-11 w-11 items-center justify-center rounded-2xl transition ${dragActive ? 'bg-[#FE6620] text-white' : 'bg-surface-card text-muted group-hover:text-ink'}`}>
+              <UploadCloud className="h-5 w-5" />
+            </div>
+            <span className="text-sm font-medium text-ink">{dragActive ? t('Suelta el documento aquí') : t('Arrastra el documento aquí o haz clic para elegir')}</span>
+            <span className="text-[11px] text-muted">{t('Imagen (JPG/PNG/WebP) o PDF')}</span>
+          </div>
           <input type="file" accept="image/*,application/pdf,.pdf" onChange={handleImageUpload} className="hidden" />
         </label>
         <p className="text-[10px] text-muted mt-1">{t('Para pedigrees oficiales RSCE/FCI (los documentos del club) sube el PDF directamente. Para webs que bloquean el scrapeo, sube un screenshot.')}</p>
       </div>
 
-      {(scanning || uploadingImage) && (
-        <div className="text-center py-8">
-          <Loader2 className="w-8 h-8 animate-spin text-ink mx-auto mb-3" />
-          <p className="text-sm text-body">{scanPhase || t('Escaneando genealogía con IA...')}</p>
-          <p className="text-xs text-muted mt-1">{t('Esto puede tardar unos segundos')}</p>
-        </div>
-      )}
+      {/* Pantalla de carga rica (portal full-screen, estable → no parpadea el panel) */}
+      {(uploadingImage || scanning) && <ImportLoadingOverlay previewSrc={previewSrc} phase={scanPhase} t={t} />}
     </div>
+  )
+}
+
+/**
+ * ImportLoadingOverlay — pantalla de carga a pantalla completa mientras la IA
+ * lee el documento. Muestra el documento BORROSO con una línea de escaneo que
+ * barre (efecto "analizando en vivo"), nebulosa de color de marca, y el texto de
+ * la fase actual en vivo. Es un portal estable (las animaciones son CSS y no se
+ * reinician al cambiar la fase), así que sustituye al loader anterior que hacía
+ * parpadear el panel. Si no hay imagen (import por URL/PDF) usa un documento
+ * placeholder con líneas que simulan texto.
+ */
+function ImportLoadingOverlay({ previewSrc, phase, t }: { previewSrc: string | null; phase: string; t: (k: string) => string }) {
+  return createPortal(
+    <div className="fixed inset-0 z-[250] flex flex-col items-center justify-center overflow-hidden bg-ink/95">
+      {/* Documento MUY borroso de fondo */}
+      {previewSrc && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={previewSrc} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-25 blur-[44px]" />
+      )}
+      {/* Nebulosa de marca animada */}
+      <div className="ilo-blob-a pointer-events-none absolute -left-1/4 -top-1/4 h-[70vh] w-[70vh] rounded-full blur-3xl" style={{ background: 'radial-gradient(circle at 40% 40%, rgba(254,102,32,0.55), transparent 70%)' }} />
+      <div className="ilo-blob-b pointer-events-none absolute -bottom-1/4 -right-1/4 h-[60vh] w-[60vh] rounded-full blur-3xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(59,130,246,0.5), transparent 70%)' }} />
+
+      {/* Tarjeta-escáner con el documento */}
+      <div className="relative z-10 aspect-[3/4] w-[240px] overflow-hidden rounded-2xl border border-white/15 bg-white/[0.04] shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:w-[280px]">
+        {previewSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={previewSrc} alt="" aria-hidden="true" className="h-full w-full object-cover opacity-85 blur-[3px]" />
+        ) : (
+          <div className="flex h-full w-full flex-col gap-2.5 bg-gradient-to-br from-white/10 to-white/[0.03] p-6">
+            {[68, 92, 80, 55, 88, 72, 96, 60, 84, 76].map((w, i) => (
+              <div key={i} className="h-2.5 rounded-full bg-white/15" style={{ width: `${w}%` }} />
+            ))}
+          </div>
+        )}
+        {/* Línea de escaneo que barre el documento */}
+        <div className="ilo-scan absolute left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#FE6620] to-transparent shadow-[0_0_22px_5px_rgba(254,102,32,0.7)]" />
+        {/* Velo de pulso + marco de visor */}
+        <div className="ilo-pulse absolute inset-0 bg-[#FE6620]/10" />
+        <div className="pointer-events-none absolute inset-3 rounded-lg border border-[#FE6620]/30" />
+      </div>
+
+      {/* Fase actual en vivo */}
+      <div className="relative z-10 mt-7 max-w-[300px] px-6 text-center">
+        <div className="inline-flex items-center gap-2 text-white">
+          <Sparkles className="h-4 w-4 text-[#FE6620]" />
+          <span className="text-[15px] font-semibold">{phase || t('Analizando el documento...')}</span>
+          <span className="ilo-dots inline-block w-3 text-left text-[#FE6620]" />
+        </div>
+        <p className="mt-2 text-[12px] leading-relaxed text-white/55">{t('Leyendo la genealogía con IA — no cierres esta ventana')}</p>
+      </div>
+
+      <style>{`
+        @keyframes ilo-scan { 0% { top: 3% } 50% { top: 93% } 100% { top: 3% } }
+        .ilo-scan { animation: ilo-scan 2.4s ease-in-out infinite; }
+        @keyframes ilo-pulse { 0%,100% { opacity: .05 } 50% { opacity: .2 } }
+        .ilo-pulse { animation: ilo-pulse 2.1s ease-in-out infinite; }
+        @keyframes ilo-a { 0%,100% { transform: translate(0,0) scale(1) } 50% { transform: translate(8%,6%) scale(1.15) } }
+        @keyframes ilo-b { 0%,100% { transform: translate(0,0) scale(1.05) } 50% { transform: translate(-7%,-8%) scale(.95) } }
+        .ilo-blob-a { animation: ilo-a 9s ease-in-out infinite; }
+        .ilo-blob-b { animation: ilo-b 11s ease-in-out infinite; }
+        @keyframes ilo-dots { 0% { content: '' } 25% { content: '.' } 50% { content: '..' } 75%,100% { content: '...' } }
+        .ilo-dots::after { content: ''; animation: ilo-dots 1.4s steps(1,end) infinite; }
+        @media (prefers-reduced-motion: reduce) { .ilo-scan,.ilo-pulse,.ilo-blob-a,.ilo-blob-b,.ilo-dots::after { animation: none } }
+      `}</style>
+    </div>,
+    document.body,
   )
 }
 

@@ -55,7 +55,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   const t = useT()
   const isEdit = !!editDogId
   const [activeTab, setActiveTab] = useState<TabKey>('datos')
-  const [createMode, setCreateMode] = useState<'manual' | 'import'>('manual')
+  const [createMode, setCreateMode] = useState<'manual' | 'import'>('import')
   const [loading, setLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
   const [error, setError] = useState('')
@@ -106,7 +106,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
 
   useEffect(() => {
     if (!open) return
-    setActiveTab('datos'); setCreateMode('manual'); setDataLoading(true); setError('')
+    setActiveTab('datos'); setCreateMode('import'); setDataLoading(true); setError('')
     const supabase = createClient()
     async function load() {
       // NOTA: la tabla `colors` NO tiene columna breed_id — la relación
@@ -538,11 +538,11 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         {/* Create mode toggle (solo creación) */}
         {!isEdit && !isFromLitter && (
           <div className="flex border-b border-hairline px-4 flex-shrink-0">
-            <button onClick={() => setCreateMode('manual')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'manual' ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}>
-              <Dog className="w-3.5 h-3.5" /> {t('Manual')}
-            </button>
             <button onClick={() => setCreateMode('import')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'import' ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}>
               <Globe className="w-3.5 h-3.5" /> {t('Importar genealogía')}
+            </button>
+            <button onClick={() => setCreateMode('manual')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'manual' ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}>
+              <Dog className="w-3.5 h-3.5" /> {t('Manual')}
             </button>
           </div>
         )}
