@@ -8,31 +8,34 @@
 -- ── 1. get_home_top_breeds ──────────────────────────────────────────────
 -- Top N razas por número de perros públicos, con UN thumbnail aleatorio
 -- de muestra para mostrar la raza visualmente en el home.
+-- Actualizado 2026-06-04: añade image_url (foto del ESTÁNDAR de la raza,
+-- breeds.image_url, normalmente Wikimedia) para que el home muestre la foto del
+-- estándar en vez de un thumbnail de un perro cualquiera. Prioriza razas con foto.
+DROP FUNCTION IF EXISTS get_home_top_breeds(integer);
 CREATE OR REPLACE FUNCTION get_home_top_breeds(p_limit int DEFAULT 12)
 RETURNS TABLE (
   id uuid,
   name text,
   dog_count bigint,
-  sample_thumbnail text
+  sample_thumbnail text,
+  image_url text
 )
 LANGUAGE sql STABLE SECURITY DEFINER AS $$
-  -- Saco top 30 razas por count + miramos cuáles tienen thumbnail, luego
-  -- priorizo las que tienen foto (los mosaicos vacíos quedan feos). Si
-  -- aún quedan slots, completo con razas sin foto en orden de count.
   WITH ranked AS (
-    SELECT b.id, b.name, COUNT(d.id) AS dog_count
+    SELECT b.id, b.name, b.image_url, COUNT(d.id) AS dog_count
     FROM breeds b
     LEFT JOIN dogs d ON d.breed_id = b.id AND d.is_public = true
-    GROUP BY b.id, b.name
+    GROUP BY b.id, b.name, b.image_url
     HAVING COUNT(d.id) > 0
     ORDER BY COUNT(d.id) DESC
-    LIMIT 30
+    LIMIT 40
   ),
   with_thumb AS (
     SELECT
       r.id,
       r.name,
       r.dog_count,
+      r.image_url,
       (
         SELECT d.thumbnail_url
         FROM dogs d
@@ -44,9 +47,9 @@ LANGUAGE sql STABLE SECURITY DEFINER AS $$
       ) AS sample_thumbnail
     FROM ranked r
   )
-  SELECT *
+  SELECT id, name, dog_count, sample_thumbnail, image_url
   FROM with_thumb
-  ORDER BY (sample_thumbnail IS NULL) ASC, dog_count DESC
+  ORDER BY (image_url IS NULL AND sample_thumbnail IS NULL) ASC, dog_count DESC
   LIMIT p_limit;
 $$;
 

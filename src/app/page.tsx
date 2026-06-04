@@ -51,13 +51,18 @@ export default async function Home() {
     admin.from('dogs').select('id', { count: 'exact', head: true }),
     admin.from('kennels').select('id', { count: 'exact', head: true }),
     admin.from('breeds').select('id', { count: 'exact', head: true }),
-    // Grid editorial: 6 perros recientes con foto.
+    // Grid editorial del catálogo: 6 perros RECIENTES, JÓVENES (<3 años) y con
+    // foto. La cota de edad da una vitrina de cachorros/jóvenes, no de perros
+    // antiguos importados. (eslint-disable: Date.now() en server component con
+    // force-dynamic es determinista por request, no el caso de react-hooks/purity.)
+    // eslint-disable-next-line react-hooks/purity
     admin
       .from('dogs')
       .select('id, name, slug, thumbnail_url, breed:breeds(name)')
       .not('thumbnail_url', 'is', null)
       .eq('is_public', true)
       .is('deceased_at', null)  // ocultar fallecidos del home
+      .gte('birth_date', new Date(Date.now() - 3 * 365.25 * 86400000).toISOString().slice(0, 10))
       .order('created_at', { ascending: false })
       .limit(6),
     // Mosaico del hero: RPC que garantiza 1 perro aleatorio POR RAZA.

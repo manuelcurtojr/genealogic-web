@@ -67,6 +67,7 @@ type BreedWithCount = {
   name: string
   dog_count: number
   sample_thumbnail: string | null
+  image_url: string | null
 }
 
 type BlogCard = {
@@ -344,7 +345,7 @@ export default function DiscoveryHome({
                 {t('El árbol genealógico de tu perro, sin límite de generaciones.')}
               </h2>
               <p className="mt-4 text-[15px] sm:text-[16px] text-body leading-relaxed max-w-xl">
-                {t('Cada ancestro con su foto y un enlace al criadero de origen. Constrúyelo a mano o pega la URL de Dogsfiles, K9data o el club: nuestro importador con IA extrae toda la línea en 30 segundos.')}
+                {t('Cada ancestro con su foto y un enlace al criadero de origen. Constrúyelo a mano, pega la URL de Dogsfiles, K9data o el club, o saca una foto a su pedigrí de papel: nuestro importador con IA extrae toda la línea en 30 segundos.')}
               </p>
               <ul className="mt-6 space-y-2.5 text-[14px] sm:text-[15px] text-body">
                 <li className="flex items-start gap-2.5">
@@ -354,6 +355,10 @@ export default function DiscoveryHome({
                 <li className="flex items-start gap-2.5">
                   <Camera className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
                   <span>{t('Ancestros con foto y enlace a su criadero de origen.')}</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <Camera className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
+                  <span>{t('¿Tienes su pedigrí de papel? Hazle una foto y la IA lo digitaliza entero.')}</span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Zap className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
@@ -405,8 +410,8 @@ export default function DiscoveryHome({
             <BentoCard href="/features#reservas" icon={KanbanSquare} title={t('Reservas con tu criador')} desc={t('Sigue el estado, firma el contrato, paga y recibe sus documentos.')} color="#8b5cf6" />
             <BentoCard href="/features#papeles" icon={ShieldCheck} title={t('Papeles siempre a mano')} desc={t('Cartilla, contrato y microchip digitalizados — incluso sin cobertura en el vet.')} color="#0ea5e9" />
             <BentoCard href="/features#reclamar" icon={Database} title={t('Reclama tu perro')} desc={t('¿Ya está importado de un club? Búscalo y reclámalo como tuyo.')} color="#06b6d4" />
-            <BentoCard href="/features#compartir" icon={Globe} title={t('Compártelo con un link')} desc={t('Un perfil público opcional para enseñar a tu perro. Privado por defecto.')} color="#3b82f6" />
-            <BentoCard href="/features#privacidad" icon={Heart} title={t('Tuyo y privado')} desc={t('Privado por defecto, exportable y borrable. Perros ilimitados, gratis.')} color="#10b981" />
+            <BentoCard href="/features#compartir" icon={Globe} title={t('Su ficha es pública')} desc={t('Su ficha y su genealogía son públicas: enséñalas con un link y entran en el catálogo de Genealogic. Esa es la gracia.')} color="#3b82f6" />
+            <BentoCard href="/features#privacidad" icon={Heart} title={t('Tú lo gestionas')} desc={t('Controlas y editas todos sus datos. Lo sensible (cartilla, papeles) se queda contigo. Perros ilimitados, gratis.')} color="#10b981" />
           </div>
         </div>
       </section>
@@ -499,8 +504,8 @@ export default function DiscoveryHome({
               {topBreeds.slice(0, 12).map((breed) => (
                 <Link key={breed.id} href={`/search?breed_id=${breed.id}`} className="group relative overflow-hidden rounded-2xl border border-hairline bg-canvas hover:border-ink/30 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all">
                   <div className="aspect-[16/10] overflow-hidden bg-surface-card">
-                    {breed.sample_thumbnail ? (
-                      <img src={breed.sample_thumbnail} alt={breed.name} className="h-full w-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
+                    {(breed.image_url || breed.sample_thumbnail) ? (
+                      <img src={breed.image_url || breed.sample_thumbnail || ''} alt={breed.name} className="h-full w-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center"><Dog className="w-10 h-10 text-muted/30" /></div>
                     )}
@@ -536,9 +541,9 @@ export default function DiscoveryHome({
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {featuredKennels.slice(0, 6).map((k) => (
-                <Link key={k.id} href={`/kennels/${k.slug || k.id}`} className="group relative overflow-hidden rounded-2xl border border-hairline bg-canvas hover:border-ink/30 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all">
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-5 px-5 sm:mx-0 sm:px-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {featuredKennels.slice(0, 3).map((k) => (
+                <Link key={k.id} href={`/kennels/${k.slug || k.id}`} className="group relative overflow-hidden rounded-2xl border border-hairline bg-canvas hover:border-ink/30 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all snap-start shrink-0 w-[82%] sm:w-[46%] lg:w-[calc((100%-2rem)/3)]">
                   {/* Hero del perro estrella como cover */}
                   <div className="aspect-[16/9] overflow-hidden bg-gradient-to-br from-orange-50 to-blue-50 relative">
                     {k.hero_dog_thumbnail ? (
@@ -598,55 +603,27 @@ export default function DiscoveryHome({
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
-            {/* Testimonio principal — Irema Curtó */}
-            <article className="lg:col-span-2 relative rounded-2xl sm:rounded-3xl border border-hairline bg-gradient-to-br from-orange-50/50 via-canvas to-amber-50/30 p-6 sm:p-8 lg:p-10">
-              <Quote className="absolute top-5 right-5 w-10 h-10 text-[#FE6620]/15" />
-              <p className="text-[16px] sm:text-[19px] lg:text-[22px] text-ink leading-snug font-medium tracking-[-0.01em]" style={{ fontFamily: 'var(--font-fraunces, serif)' }}>
-                {t('«50 años criando Presa Canario y mis fichas estaban en libretas, fotos sueltas y carpetas de WhatsApp. Genealogic me ha permitido digitalizar 400 perros con sus genealogías completas y enseñarlas con un link. Ya no tengo que escanear nada.»')}
-              </p>
-              <div className="mt-6 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FE6620] to-amber-500 flex items-center justify-center text-white font-bold">IC</div>
-                <div>
-                  <p className="text-[14px] font-bold text-ink">Irema Curtó</p>
-                  <p className="text-[12px] text-muted">Criadero Irema Curtó · Presa Canario · Tenerife</p>
-                </div>
-                <div className="ml-auto flex items-center gap-0.5">
-                  {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />)}
-                </div>
-              </div>
-            </article>
-
-            {/* 2 slots para futuros testimonios — diseño contained
-                pero discreto, no fake. */}
-            <div className="grid grid-rows-2 gap-4 sm:gap-5">
-              <article className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 flex flex-col justify-between">
-                <Quote className="w-6 h-6 text-[#FE6620]/30" />
-                <p className="text-[14px] text-body leading-snug mt-3">
-                  {t('«Tengo la cartilla de mi perro siempre en el móvil y los recordatorios de vacunas me avisan solos. En el vet ya no busco papeles.»')}
-                </p>
-                <div className="mt-4 flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[11px] font-bold">PR</div>
-                  <div>
-                    <p className="text-[12px] font-bold text-ink">{t('Propietario')}</p>
-                    <p className="text-[10.5px] text-muted">Pastor Alemán</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+            {([
+              { initials: 'LM', avatar: 'bg-blue-100 text-blue-700', quote: t('«Tengo la cartilla de mi perro siempre en el móvil y los recordatorios de vacunas me avisan solos. En el vet ya no busco papeles.»'), role: t('Propietario'), breed: 'Pastor Alemán' },
+              { initials: 'CR', avatar: 'bg-emerald-100 text-emerald-700', quote: t('«Pegué la URL de la genealogía que me pasó mi criador y se montó el árbol entero con fotos. Ahora comparto la ficha de mi perra con un link.»'), role: t('Propietaria'), breed: 'Galgo Italiano' },
+              { initials: 'JT', avatar: 'bg-violet-100 text-violet-700', quote: t('«Reservé mi cachorro y desde Genealogic seguí el estado, firmé el contrato y vi sus papeles. Sin perseguir al criador por WhatsApp.»'), role: t('Propietario'), breed: 'Presa Canario' },
+            ]).map((r, i) => (
+              <article key={i} className="rounded-2xl border border-hairline bg-canvas p-6 sm:p-7 flex flex-col">
+                <Quote className="w-7 h-7 text-[#FE6620]/25" />
+                <p className="mt-3 flex-1 text-[14.5px] sm:text-[15px] text-ink leading-snug" style={{ fontFamily: 'var(--font-fraunces, serif)' }}>{r.quote}</p>
+                <div className="mt-5 flex items-center gap-2.5">
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold ${r.avatar}`}>{r.initials}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12.5px] font-bold text-ink">{r.role}</p>
+                    <p className="text-[11px] text-muted truncate">{r.breed}</p>
+                  </div>
+                  <div className="flex items-center gap-0.5 flex-shrink-0">
+                    {[1, 2, 3, 4, 5].map(s => <Star key={s} className="w-3 h-3 fill-amber-400 text-amber-400" />)}
                   </div>
                 </div>
               </article>
-              <article className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 flex flex-col justify-between">
-                <Quote className="w-6 h-6 text-[#FE6620]/30" />
-                <p className="text-[14px] text-body leading-snug mt-3">
-                  {t('«Pegué la URL de la genealogía que me pasó mi criador y se montó el árbol entero con fotos. Ahora comparto la ficha de mi perra con un link.»')}
-                </p>
-                <div className="mt-4 flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-[11px] font-bold">PR</div>
-                  <div>
-                    <p className="text-[12px] font-bold text-ink">{t('Propietaria')}</p>
-                    <p className="text-[10.5px] text-muted">Galgo Italiano</p>
-                  </div>
-                </div>
-              </article>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -699,8 +676,8 @@ export default function DiscoveryHome({
               <FaqItem q={t('¿Es realmente gratis?')}>
                 {t('Sí. Si eres propietario, Genealogic es gratis para siempre y sin límite de perros: ficha con galería, genealogía, cartilla veterinaria con recordatorios y reservas con tu criador. No pedimos tarjeta. Solo los criaderos que quieren el panel profesional (camadas, pipeline, web propia) pasan a un plan de pago en Genealogic Breeders.')}
               </FaqItem>
-              <FaqItem q={t('¿Mis datos son míos? ¿Es privado?')}>
-                {t('Sí. Tu perro es privado por defecto: solo lo ves tú salvo que actives su perfil público. Servidores en la UE, RGPD por defecto e histórico completo de cambios. Exportas su ficha y genealogía a PDF en un click y, si te vas, te llevas tus datos o los borras.')}
+              <FaqItem q={t('¿Es público o privado?')}>
+                {t('La ficha y la genealogía de tu perro son públicas — esa es la gracia: juntas forman el mayor catálogo de genealogías caninas, y las compartes con un link. Tú las gestionas y editas. Lo sensible (cartilla veterinaria, contratos, documentos) es privado, solo para ti. Servidores en la UE, RGPD, y exportas o borras tus datos cuando quieras.')}
               </FaqItem>
               <FaqItem q={t('¿Puedo tener varios perros?')}>
                 {t('Sí. Perros ilimitados, gratis para siempre. Documenta a todos los que tengas —y también a los que ya no están, con In Memoriam, que conserva su ficha y su genealogía intactas.')}
@@ -724,29 +701,6 @@ export default function DiscoveryHome({
 
       {/* ═════ BLOG SLIDER ═════ */}
       {blogPosts.length > 0 && <BlogSlider posts={blogPosts} />}
-
-      {/* ═════ CTA FINAL ═════ */}
-      <section className="relative overflow-hidden bg-ink text-on-primary">
-        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#FE6620]/30 blur-[120px] pointer-events-none" />
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-blue-500/20 blur-[120px] pointer-events-none" />
-        <div className="relative z-10 mx-auto max-w-[1200px] px-5 sm:px-6 lg:px-12 py-16 sm:py-24 lg:py-28 text-center">
-          <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-5 sm:mb-6 text-[#FE6620]" />
-          <h2 className="font-semibold mx-auto leading-[1.05]" style={{ fontSize: 'clamp(28px, 5vw, 56px)', letterSpacing: '-0.04em', maxWidth: '18ch' }}>
-            {t('Tu perro empieza a tener su historia')} <span className="text-white/60 font-medium">{t('hoy.')}</span>
-          </h2>
-          <p className="mt-4 sm:mt-5 text-[14px] sm:text-[18px] text-white/60 max-w-md mx-auto px-2">
-            {t('Crea tu cuenta en 30 segundos. Gratis para siempre, sin límite de perros.')}
-          </p>
-          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/register?intent=owner" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#FE6620] text-white px-7 py-3.5 text-sm font-bold hover:scale-105 transition-transform">
-              <Dog className="w-4 h-4" /> {t('Crear mi cuenta gratis')}
-            </Link>
-            <Link href="/criadores" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white text-ink px-7 py-3.5 text-sm font-bold hover:scale-105 transition-transform">
-              <Store className="w-4 h-4" /> {t('¿Eres criador? →')}
-            </Link>
-          </div>
-        </div>
-      </section>
     </main>
   )
 }

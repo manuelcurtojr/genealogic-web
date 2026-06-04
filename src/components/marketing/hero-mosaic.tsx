@@ -116,7 +116,7 @@ export default function HeroMosaic({ photos }: { photos: string[] }) {
       {/* Fundido a blanco SÓLIDO en la parte inferior — empieza alto para
           que el final de las fotos quede completamente tapado y la
           transición a la siguiente sección sea invisible. */}
-      <div className="absolute bottom-0 left-0 right-0 h-3/5 sm:h-2/3 bg-gradient-to-b from-transparent via-canvas to-canvas" />
+      <div className="absolute bottom-0 left-0 right-0 h-2/5 sm:h-2/3 bg-gradient-to-b from-transparent via-canvas to-canvas" />
 
       {/* NEBULOSA — capa de "aurora" con blobs radiales borrosos en colores
           de marca + cool. Se monta POR ENCIMA de los overlays blancos para
