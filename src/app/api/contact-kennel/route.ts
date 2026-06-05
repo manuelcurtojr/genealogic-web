@@ -58,11 +58,17 @@ export async function POST(request: NextRequest) {
   // Verificar kennel y cargar config
   const { data: kennel, error: kErr } = await admin
     .from('kennels')
-    .select('id, name, contact_form_config')
+    .select('id, name, owner_id, contact_form_config')
     .eq('id', kennel_id)
     .maybeSingle()
   if (kErr || !kennel) {
     return NextResponse.json({ error: 'Criadero no encontrado' }, { status: 404 })
+  }
+  // Criadero SIN dueño (importado / sin reclamar): no hay quién reciba la solicitud,
+  // así que no creamos un lead huérfano. La UI ya oculta el botón aquí; esto es la
+  // defensa a nivel de API. El visitante debería ver el CTA "Reclama tu criadero".
+  if (!kennel.owner_id) {
+    return NextResponse.json({ error: 'Este criadero todavía no está reclamado por su criador.' }, { status: 409 })
   }
 
   // Reconstruimos la MISMA config que vio el visitante: si el kennel tiene
