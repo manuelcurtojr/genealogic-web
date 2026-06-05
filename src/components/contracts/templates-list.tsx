@@ -1,27 +1,30 @@
 /**
  * ContractTemplatesList — listado interactivo de plantillas en /contratos.
  *
- * Renderiza:
- *  - Toolbar con CTA "Nueva plantilla" (crea una desde el template Breeding
- *    hardcoded de templates.ts).
- *  - Cards de cada plantilla con nombre, preview de 2 líneas, badge "Por
- *    defecto" si aplica, y acciones rápidas (Marcar por defecto / Editar
- *    / Borrar).
- *  - Empty state cuando no hay nada.
- *
- * Todas las mutaciones llaman a server actions; tras éxito refresca la
- * lista vía router.refresh().
+ * Diseño:
+ *  - Cards con icono lateral, kind chip prominente arriba a la derecha,
+ *    preview de 2 líneas, footer compacto con acciones.
+ *  - Las plantillas marcadas como default_for_kind salen con borde naranja
+ *    + chip "Default · Reserva" / "Default · Entrega" prominente.
+ *  - Toggle de default integrado en el footer (chip toggleable, no botón
+ *    separado).
+ *  - Empty state con CTA tanto para crear como para restaurar las 2
+ *    plantillas default si el criador las borró.
  */
 'use client'
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FileText, Star, Pencil, Trash2, Plus, Loader2 } from 'lucide-react'
+import {
+  FileText, Star, Pencil, Trash2, Plus, Loader2, RotateCcw,
+  Sparkles, Layers,
+} from 'lucide-react'
 import {
   createContractTemplate,
   deleteContractTemplate,
   setDefaultContractTemplate,
+  seedDefaultContractTemplatesAction,
   type ContractTemplate,
 } from '@/lib/contracts/templates-actions'
 import { useT } from '@/components/i18n/locale-provider'
@@ -42,14 +45,11 @@ export default function ContractTemplatesList({ initialTemplates, kennelId, kenn
   async function handleCreateBlank() {
     startTransition(async () => {
       try {
-        // Plantilla de partida: el template Breeding hardcoded ya existente,
-        // sin variables resueltas (las pondrá la reserva concreta más tarde).
-        const seed = SEED_BREEDING_TEMPLATE.replace(/__KENNEL__/g, kennelName)
+        const seed = SEED_BLANK_TEMPLATE.replace(/__KENNEL__/g, kennelName)
         const { id } = await createContractTemplate({
           kennelId,
           name: 'Nueva plantilla',
           bodyMd: seed,
-          isDefault: templates.length === 0, // primera plantilla = default automático
         })
         router.push(`/contratos/${id}`)
       } catch (e) {
@@ -87,20 +87,37 @@ export default function ContractTemplatesList({ initialTemplates, kennelId, kenn
     })
   }
 
+  async function handleRestoreDefaults() {
+    startTransition(async () => {
+      const res = await seedDefaultContractTemplatesAction(kennelId)
+      if (res.ok) router.refresh()
+      else alert(res.error)
+    })
+  }
+
+  // Orden: defaults primero (reservation → delivery), luego custom por updated_at
+  const sorted = [...templates].sort((a, b) => {
+    const aDef = a.default_for_kind === 'reservation' ? 0 : a.default_for_kind === 'delivery' ? 1 : 2
+    const bDef = b.default_for_kind === 'reservation' ? 0 : b.default_for_kind === 'delivery' ? 1 : 2
+    if (aDef !== bDef) return aDef - bDef
+    return (b.updated_at || '').localeCompare(a.updated_at || '')
+  })
+
   return (
     <>
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-[13px] text-muted">
+        <div className="flex items-center gap-2 text-[13px] text-body">
+          <Layers className="h-4 w-4 text-muted" />
           {templates.length === 0
             ? t('Aún no tienes ninguna plantilla.')
-            : `${templates.length} ${templates.length === 1 ? t('plantilla guardada.') : t('plantillas guardadas.')}`}
-        </p>
+            : <><span className="font-semibold text-ink">{templates.length}</span> {templates.length === 1 ? t('plantilla') : t('plantillas')}</>}
+        </div>
         <button
           type="button"
           onClick={handleCreateBlank}
           disabled={isPending}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-[13.5px] font-bold hover:opacity-90 disabled:opacity-50 transition"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-4 py-2.5 text-[13.5px] font-bold hover:opacity-90 disabled:opacity-50 transition shadow-sm"
         >
           {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
           {t('Nueva plantilla')}
@@ -109,46 +126,44 @@ export default function ContractTemplatesList({ initialTemplates, kennelId, kenn
 
       {/* Listado o empty */}
       {templates.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft p-10 sm:p-14 text-center">
-          <FileText className="mx-auto h-8 w-8 text-muted" />
-          <p className="mt-4 text-[15px] font-semibold text-ink">{t('Tu primera plantilla')}</p>
-          <p className="mt-1.5 text-[13.5px] text-body max-w-md mx-auto leading-snug">
-            {t('Empieza desde un contrato de compraventa básico que podrás adaptar a tu criadero. Después podrás usarla en cada reserva sin re-escribir.')}
-          </p>
-          <button
-            type="button"
-            onClick={handleCreateBlank}
-            disabled={isPending}
-            className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[13.5px] font-bold hover:opacity-90 disabled:opacity-50 transition"
-          >
-            {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
-            {t('Crear desde modelo base')}
-          </button>
-        </div>
+        <EmptyState
+          onCreate={handleCreateBlank}
+          onRestore={handleRestoreDefaults}
+          isPending={isPending}
+          t={t}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-          {templates.map(tpl => {
+          {sorted.map(tpl => {
             const preview = extractPreview(tpl.body_md)
             const busy = pendingId === tpl.id && isPending
+            const isDefault = tpl.default_for_kind != null
             return (
               <article
                 key={tpl.id}
-                className={`relative rounded-2xl border bg-canvas p-5 flex flex-col gap-3 transition ${
-                  tpl.default_for_kind ? 'border-[#FE6620]/50 ring-1 ring-[#FE6620]/20' : 'border-hairline hover:border-ink/20'
+                className={`group relative rounded-2xl border bg-canvas p-5 flex flex-col gap-3 transition-all hover:shadow-md ${
+                  isDefault
+                    ? 'border-[#FE6620]/60 ring-1 ring-[#FE6620]/15 shadow-sm'
+                    : 'border-hairline hover:border-ink/30'
                 }`}
               >
-                {tpl.default_for_kind && (
-                  <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-[#FE6620] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                {isDefault && (
+                  <span className="absolute top-3.5 right-3.5 inline-flex items-center gap-1 rounded-full bg-[#FE6620] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
                     <Star className="h-2.5 w-2.5 fill-current" />
-                    {tpl.default_for_kind === 'delivery' ? t('Default · Entrega') : t('Default · Reserva')}
+                    {tpl.default_for_kind === 'delivery' ? t('Entrega') : t('Reserva')}
                   </span>
                 )}
+
                 <div className="flex items-start gap-3 min-w-0">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-card flex-shrink-0">
-                    <FileText className="h-4 w-4 text-ink" />
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl flex-shrink-0 ${
+                    isDefault
+                      ? 'bg-[#FE6620]/10 text-[#FE6620]'
+                      : 'bg-surface-card text-ink'
+                  }`}>
+                    <FileText className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1 pr-20">
-                    <h3 className="text-[15px] font-semibold text-ink truncate leading-snug">
+                    <h3 className="text-[16px] font-semibold text-ink leading-tight truncate">
                       {tpl.name}
                     </h3>
                     <p className="mt-0.5 text-[11.5px] text-muted">
@@ -156,15 +171,18 @@ export default function ContractTemplatesList({ initialTemplates, kennelId, kenn
                     </p>
                   </div>
                 </div>
+
                 {preview && (
                   <p className="text-[13px] text-body line-clamp-2 leading-snug">
                     {preview}
                   </p>
                 )}
-                <div className="mt-auto pt-3 border-t border-hairline flex flex-wrap items-center gap-1">
+
+                {/* Footer: edit + default toggle + delete */}
+                <div className="mt-auto pt-3 border-t border-hairline flex items-center gap-2 flex-wrap">
                   <Link
                     href={`/contratos/${tpl.id}`}
-                    className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-semibold text-body hover:text-ink hover:bg-surface-soft transition"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-surface-soft hover:bg-ink hover:text-on-primary px-3 py-1.5 text-[12.5px] font-semibold text-body transition-colors"
                   >
                     <Pencil className="h-3.5 w-3.5" /> {t('Editar')}
                   </Link>
@@ -180,7 +198,9 @@ export default function ContractTemplatesList({ initialTemplates, kennelId, kenn
                     type="button"
                     onClick={() => handleDelete(tpl.id)}
                     disabled={busy}
-                    className="ml-auto inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-semibold text-muted hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 transition"
+                    aria-label={t('Eliminar plantilla')}
+                    title={t('Eliminar plantilla')}
+                    className="ml-auto inline-flex items-center justify-center h-8 w-8 rounded-lg text-muted hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 transition-colors"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -191,6 +211,44 @@ export default function ContractTemplatesList({ initialTemplates, kennelId, kenn
         </div>
       )}
     </>
+  )
+}
+
+// ─── Empty state ───────────────────────────────────────────────────────────
+
+function EmptyState({
+  onCreate, onRestore, isPending, t,
+}: { onCreate: () => void; onRestore: () => void; isPending: boolean; t: (k: string) => string }) {
+  return (
+    <div className="rounded-2xl border-2 border-dashed border-hairline bg-surface-soft/30 p-10 sm:p-14 text-center">
+      <div className="mx-auto h-14 w-14 rounded-2xl bg-canvas border border-hairline flex items-center justify-center text-ink shadow-sm">
+        <FileText className="h-6 w-6" />
+      </div>
+      <p className="mt-5 text-[17px] font-bold text-ink">{t('Sin plantillas todavía')}</p>
+      <p className="mt-2 text-[13.5px] text-body max-w-md mx-auto leading-snug">
+        {t('Las plantillas por defecto de Genealogic (reserva + entrega) se crean automáticamente al entrar aquí. Si las borraste, puedes restaurarlas:')}
+      </p>
+      <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={onRestore}
+          disabled={isPending}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-2.5 text-[13.5px] font-bold hover:opacity-90 disabled:opacity-50 transition"
+        >
+          {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          {t('Restaurar plantillas por defecto')}
+        </button>
+        <button
+          type="button"
+          onClick={onCreate}
+          disabled={isPending}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-hairline bg-canvas hover:bg-surface-soft px-4 py-2.5 text-[13px] font-semibold text-body transition disabled:opacity-50"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          {t('Crear en blanco')}
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -209,7 +267,7 @@ function DefaultKindToggle({
   t: (k: string) => string
 }) {
   return (
-    <div className="inline-flex items-center gap-0.5 rounded-lg bg-surface-soft p-0.5">
+    <div className="inline-flex items-center gap-0.5 rounded-lg bg-surface-soft p-0.5 border border-hairline">
       <KindChip
         active={current === 'reservation'}
         busy={busy}
@@ -237,7 +295,7 @@ function KindChip({
       title={active ? 'Default actual — clic para desmarcar' : 'Marcar como default para este kind'}
       className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11.5px] font-semibold transition-colors disabled:opacity-50 ${
         active
-          ? 'bg-[#FE6620] text-white'
+          ? 'bg-[#FE6620] text-white shadow-sm'
           : 'text-muted hover:text-ink hover:bg-canvas'
       }`}
     >
@@ -252,7 +310,7 @@ function extractPreview(md: string): string {
   const lines = md
     .split('\n')
     .map(l => l.trim())
-    .filter(l => l && !l.startsWith('#') && !l.startsWith('---') && !l.startsWith('**Entre'))
+    .filter(l => l && !l.startsWith('#') && !l.startsWith('---') && !l.startsWith('**Entre') && !l.startsWith('<!--'))
   const joined = lines.slice(0, 2).join(' ')
   return joined.length > 200 ? joined.slice(0, 200) + '…' : joined
 }
@@ -271,56 +329,37 @@ function formatRelativeDate(iso: string, t: (k: string) => string): string {
   return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-/** Modelo de partida para la primera plantilla. Variables con sintaxis
- *  simple `{{var}}` — se sustituyen al instanciar el contrato sobre una
- *  reserva. Sin condicionales: si la variable no existe se queda en
- *  blanco. El criador puede editar libremente el texto. */
-const SEED_BREEDING_TEMPLATE = `# Contrato de compraventa de cachorro
+/** Modelo en blanco mínimo para "Crear nueva plantilla" — solo con la
+ *  estructura básica (REUNIDOS + ACUERDAN + firma). El criador rellena
+ *  el resto. */
+const SEED_BLANK_TEMPLATE = `# Título de tu plantilla
 
-**Entre:**
+En {{signCity}}, a {{todayDate}}
 
-- **VENDEDOR**: __KENNEL__, con domicilio en {{kennelAddress}}
-- **COMPRADOR**: {{clientName}}, con DNI/NIE {{clientId}}, con domicilio en {{clientAddress}}, email {{clientEmail}}.
+**REUNIDOS**
 
-Reunidos en la fecha **{{todayDate}}**, las partes acuerdan los siguientes términos.
+De una parte, **{{legalName}}**, con CIF/NIF {{legalId}} y domicilio en {{legalAddress}}, representada por D./Dª {{representative}} con DNI {{representativeId}} (en adelante, el **Criador**).
+
+Y de otra parte, D./Dª **{{clientName}}**, con DNI/NIE {{clientId}} y domicilio en {{clientAddress}} (en adelante, el **Cliente**).
+
+Reunidos a fecha **{{todayDate}}**, las partes acuerdan los siguientes términos.
 
 ---
 
 ## 1. Objeto
 
-El VENDEDOR transfiere al COMPRADOR la propiedad del cachorro con los siguientes datos:
+Describe aquí el objeto del contrato.
 
-- **Nombre**: {{dogName}}
-- **Raza**: {{breed}}
-- **Fecha de nacimiento**: {{birthDate}}
-- **Microchip**: {{microchip}}
-- **Inscripción / LOE**: {{registration}}
+## 2. Precio
 
-## 2. Precio y forma de pago
+- **Precio total:** {{totalPrice}}
+- **Señal:** {{depositAmount}}
 
-El precio total de venta es **{{totalPrice}}**. El COMPRADOR ya ha abonado una señal de **{{depositAmount}}**, que se descuenta del precio total.
+## 3. Otras condiciones
 
-El pago se realizará según el calendario acordado en el panel de pagos de la plataforma Genealogic.
-
-## 3. Garantías sanitarias
-
-El VENDEDOR garantiza que el cachorro ha pasado revisión veterinaria previa a la entrega, está identificado con microchip, cuenta con cartilla sanitaria al día y vacunaciones correspondientes a su edad, y ha sido desparasitado interna y externamente.
-
-El VENDEDOR garantiza la ausencia de enfermedades infecto-contagiosas y hereditarias detectables en el momento de la entrega, durante un periodo de **15 días** desde la misma.
-
-## 4. Obligaciones del comprador
-
-El COMPRADOR se compromete a proporcionar al cachorro un entorno adecuado, alimentación equilibrada y atención veterinaria regular, seguir el calendario de vacunaciones y desparasitaciones, y no abandonar al animal bajo ningún concepto.
-
-## 5. Pedigree y documentación
-
-El VENDEDOR entregará al COMPRADOR el pedigree oficial (cuando esté disponible), cartilla sanitaria y de vacunaciones, y una copia firmada de este contrato.
-
-## 6. Jurisdicción
-
-Para cualquier controversia derivada del presente contrato, las partes se someten a los Juzgados y Tribunales de la localidad del VENDEDOR.
+Añade aquí las cláusulas que necesites. Usa los tokens {{...}} de arriba para datos dinámicos.
 
 ---
 
-**Firmado en {{todayDate}}.**
+**Firmado en {{signCity}}, a {{todayDate}}.**
 `

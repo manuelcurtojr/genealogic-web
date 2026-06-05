@@ -322,6 +322,89 @@ async function setDefaultLegacy(
   return { ok: true }
 }
 
+/**
+ * Siembra las 2 plantillas por defecto del kennel — Contrato de reserva +
+ * Contrato de compraventa y entrega — si el kennel no tiene ninguna.
+ *
+ * Idempotente: solo crea si count===0. Si el criador las borra después,
+ * NO se vuelven a crear automáticamente (respetamos su decisión). Si quiere
+ * recuperarlas, hay un CTA en el empty state que dispara este action.
+ *
+ * Las plantillas se crean a partir de las versiones TOKENIZED de
+ * lib/contracts/templates.ts — mismo texto que la plantilla "base de
+ * Genealogic" del fallback, pero ahora editable por el criador.
+ *
+ * Marcadas como default_for_kind correspondiente, así al crear un contrato
+ * en /reservas/[id]/contrato salen pre-elegidas como "default Reserva" /
+ * "default Entrega".
+ */
+export async function seedDefaultContractTemplates(
+  kennelId: string,
+  options: { force?: boolean } = {},
+): Promise<{ created: number }> {
+  const { supabase, kennel } = await requireOwnerOfKennel(kennelId)
+
+  if (!options.force) {
+    const { count } = await supabase
+      .from('contract_templates')
+      .select('*', { count: 'exact', head: true })
+      .eq('kennel_id', kennel.id)
+    if ((count ?? 0) > 0) return { created: 0 }
+  }
+
+  const { CONTRACT_TEMPLATE_RESERVATION_TOKENIZED, CONTRACT_TEMPLATE_DELIVERY_TOKENIZED } = await import('./templates')
+
+  let created = 0
+  // Reservation
+  const { data: existingRes } = await supabase
+    .from('contract_templates')
+    .select('id')
+    .eq('kennel_id', kennel.id)
+    .eq('default_for_kind', 'reservation')
+    .maybeSingle()
+  if (!existingRes) {
+    await createContractTemplate({
+      kennelId: kennel.id,
+      name: 'Contrato de reserva',
+      bodyMd: CONTRACT_TEMPLATE_RESERVATION_TOKENIZED,
+      defaultForKind: 'reservation',
+    })
+    created++
+  }
+  // Delivery
+  const { data: existingDel } = await supabase
+    .from('contract_templates')
+    .select('id')
+    .eq('kennel_id', kennel.id)
+    .eq('default_for_kind', 'delivery')
+    .maybeSingle()
+  if (!existingDel) {
+    await createContractTemplate({
+      kennelId: kennel.id,
+      name: 'Contrato de compraventa y entrega',
+      bodyMd: CONTRACT_TEMPLATE_DELIVERY_TOKENIZED,
+      defaultForKind: 'delivery',
+    })
+    created++
+  }
+
+  return { created }
+}
+
+/** Server action wrapper para llamar desde la UI (botón "Restaurar
+ *  plantillas por defecto" en empty state). */
+export async function seedDefaultContractTemplatesAction(
+  kennelId: string,
+): Promise<{ ok: true; created: number } | { ok: false; error: string }> {
+  try {
+    const res = await seedDefaultContractTemplates(kennelId, { force: true })
+    revalidatePath('/contratos')
+    return { ok: true, created: res.created }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'unknown' }
+  }
+}
+
 /** Guarda un texto editado en el editor de UNA reserva como plantilla
  *  reusable. Atajo para el botón "Guardar como plantilla" desde
  *  /reservas/[id]/contrato. */
