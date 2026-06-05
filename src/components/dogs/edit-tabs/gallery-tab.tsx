@@ -156,8 +156,8 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     return { url: publicUrl, path }
   }
 
-  async function insertVideoRow(row: { video_provider: VideoProvider; video_url: string; url: string; storage_path?: string | null; video_storage_path?: string | null }) {
-    await supabase.from('dog_photos').insert({
+  async function insertVideoRow(row: { video_provider: VideoProvider; video_url: string; url: string; storage_path?: string | null; video_storage_path?: string | null }): Promise<any> {
+    const { data } = await supabase.from('dog_photos').insert({
       dog_id: dogId,
       media_type: 'video',
       video_provider: row.video_provider,
@@ -166,7 +166,8 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
       storage_path: row.storage_path ?? null,
       video_storage_path: row.video_storage_path ?? null,
       position: photos.length,
-    })
+    }).select('*').single()
+    return data
   }
 
   // Añadir vídeo por enlace (YouTube / Vimeo)
@@ -233,14 +234,19 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     }
     setVideoProgress(null) // subida OK → la fase de portada muestra "Generando portada…"
     const { data: { publicUrl } } = supabase.storage.from('dog-photos').getPublicUrl(path)
-    // Portada: fotograma capturado o fallback
-    let posterUrl = dogThumb || POSTER_FALLBACK
+    // Portada: intentamos capturar un fotograma del propio vídeo. Un vídeo
+    // NUNCA usa la foto del perro como portada (confunde) — si no se captura,
+    // queda un placeholder neutro y abrimos el selector para que elija uno.
+    let posterUrl = POSTER_FALLBACK
     let posterPath: string | null = null
     const blob = await capturePoster(file)
     if (blob) { const up = await uploadPoster(blob); if (up) { posterUrl = up.url; posterPath = up.path } }
-    await insertVideoRow({ video_provider: 'upload', video_url: publicUrl, url: posterUrl, storage_path: posterPath, video_storage_path: path })
+    const inserted = await insertVideoRow({ video_provider: 'upload', video_url: publicUrl, url: posterUrl, storage_path: posterPath, video_storage_path: path })
     setVideoBusy(false); setVideoProgress(null); setShowVideoForm(false)
-    loadPhotos()
+    await loadPhotos()
+    // Si la captura automática no consiguió un fotograma, abre el selector de
+    // línea de tiempo para que el usuario elija uno del propio vídeo.
+    if (!blob && inserted) setPosterPickerPhoto(inserted)
   }
 
   // Cambiar la portada de un vídeo SUBIDO: solo un fotograma real del propio
