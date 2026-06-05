@@ -103,14 +103,26 @@ export async function getAnalytics({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = admin() as any
-  const { data } = await supabase
-    .from('page_views')
-    .select('session_id, path, referrer, country, region, city, device, browser, os, created_at')
-    .eq('kennel_id', kennelId)
-    .gte('created_at', from.toISOString())
-    .order('created_at', { ascending: true })
 
-  const rows: PageViewRow[] = data ?? []
+  // El proyecto tiene PostgREST `max_rows = 1000`. Sin paginar, un kennel con
+  // >1000 visitas en el rango recibía SOLO las 1000 MÁS ANTIGUAS (order asc),
+  // dejando los días recientes a cero → el dashboard parecía "roto" / vacío.
+  // Paginamos en lotes de 1000 para traer TODAS las filas del rango.
+  const PAGE = 1000
+  const MAX_PAGES = 100 // tope de seguridad (~100k filas) para rangos enormes
+  const rows: PageViewRow[] = []
+  for (let p = 0; p < MAX_PAGES; p++) {
+    const { data, error } = await supabase
+      .from('page_views')
+      .select('session_id, path, referrer, country, region, city, device, browser, os, created_at')
+      .eq('kennel_id', kennelId)
+      .gte('created_at', from.toISOString())
+      .order('created_at', { ascending: true })
+      .range(p * PAGE, p * PAGE + PAGE - 1)
+    if (error || !data || data.length === 0) break
+    rows.push(...(data as PageViewRow[]))
+    if (data.length < PAGE) break
+  }
 
   // KPIs
   const uniqueSessions = new Set<string>()
