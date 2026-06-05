@@ -19,11 +19,11 @@
  * tiempo real, sin esperar al server.
  */
 
-import { useState, useEffect, useRef, useCallback, useTransition } from 'react'
+import { useState, useEffect, useRef, useCallback, useTransition, useMemo } from 'react'
 import {
   User, Dog, SlidersHorizontal, Euro, Calendar, Building2,
   ChevronDown, ChevronUp, Check, Loader2, AlertCircle,
-  Send, FileEdit, Lock, Info,
+  Send, FileEdit, Lock, Info, Search, X,
 } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import {
@@ -31,6 +31,7 @@ import {
   type ContractField,
   type ContractSection,
 } from '@/lib/contracts/field-schema'
+import type { BreedOption } from './contract-fill-panel'
 
 type Values = Record<string, string>
 
@@ -42,6 +43,9 @@ interface Props {
   kind: 'reservation' | 'delivery'
   /** Valores iniciales — combinación de buildContractVars + template_values guardados. */
   initialValues: Values
+  /** Catálogo de razas + colores por raza. Server-loaded via prop drilling
+   *  desde la page; el form solo lee, no hace fetch. */
+  breedOptions: BreedOption[]
   /** Si true, deshabilita los inputs (porque el criador usó "modo avanzado"
    *  y editó el markdown — ya no podemos garantizar consistencia). */
   manualOverride: boolean
@@ -78,6 +82,7 @@ export default function ContractFillForm({
   contractId,
   kind,
   initialValues,
+  breedOptions,
   manualOverride,
   onValuesChange,
   onSaveAction,
@@ -204,7 +209,7 @@ export default function ContractFillForm({
   const progressPct = totalFields > 0 ? Math.round((filledTotal / totalFields) * 100) : 0
 
   return (
-    <div className="flex flex-col min-w-0 h-full">
+    <div className="flex flex-col min-w-0">
       {/* ─── Header sticky con estado de guardado + acciones ─── */}
       <div className="sticky top-0 z-10 bg-canvas border-b border-hairline px-4 sm:px-5 py-3 min-w-0">
         <div className="flex items-center justify-between gap-3 flex-wrap min-w-0">
@@ -264,8 +269,8 @@ export default function ContractFillForm({
         </div>
       )}
 
-      {/* ─── Secciones ─── */}
-      <div className="flex-1 lg:overflow-y-auto px-4 sm:px-5 py-4 space-y-2 min-w-0">
+      {/* ─── Secciones (el scroll lo gestiona el wrapper en ContractFillPanel) ─── */}
+      <div className="px-4 sm:px-5 py-4 space-y-2 min-w-0">
         {schema.map((sec) => (
           <SectionBlock
             key={sec.id}
@@ -274,11 +279,213 @@ export default function ContractFillForm({
             onToggle={() => toggleSection(sec.id)}
             values={values}
             onChange={setValue}
+            breedOptions={breedOptions}
             disabled={manualOverride}
             t={t}
           />
         ))}
       </div>
+    </div>
+  )
+}
+
+// ─── BreedCombobox ────────────────────────────────────────────────────────
+// Typeahead sencillo sobre el catálogo de razas. Sin lib externa: input +
+// dropdown filtrado. Guarda el NOMBRE (no el id) porque la plantilla
+// interpola `{{breed}}` como string.
+function BreedCombobox({
+  id, value, options, disabled, placeholder, onChange, t,
+}: {
+  id: string
+  value: string
+  options: BreedOption[]
+  disabled: boolean
+  placeholder: string
+  onChange: (name: string) => void
+  t: (k: string) => string
+}) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState(value)
+  const wrapRef = useRef<HTMLDivElement>(null)
+
+  // Sincroniza el input visible si el value cambia desde fuera (reset al
+  // cambiar de raza, restore de saved values, etc.).
+  useEffect(() => { setQuery(value) }, [value])
+
+  // Cerrar al click fuera
+  useEffect(() => {
+    if (!open) return
+    function onDocClick(e: MouseEvent) {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
+  }, [open])
+
+  const norm = (s: string) =>
+    s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+
+  const filtered = useMemo(() => {
+    const q = norm(query.trim())
+    if (!q) return options.slice(0, 80)
+    return options
+      .filter((o) => norm(o.name).includes(q))
+      .slice(0, 80)
+  }, [query, options])
+
+  return (
+    <div ref={wrapRef} className="relative min-w-0">
+      <div className={`flex items-center min-w-0 rounded-lg border border-hairline bg-canvas focus-within:ring-2 focus-within:ring-ink/10 focus-within:border-ink/30 transition-colors ${disabled ? 'bg-surface-soft' : ''}`}>
+        <Search className="h-4 w-4 text-muted ml-3 flex-shrink-0" />
+        <input
+          id={id}
+          type="text"
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
+          onFocus={() => !disabled && setOpen(true)}
+          placeholder={placeholder}
+          disabled={disabled}
+          autoComplete="off"
+          className="flex-1 min-w-0 bg-transparent px-2.5 py-2.5 text-[14px] text-ink placeholder:text-muted/60 focus:outline-none disabled:text-muted disabled:cursor-not-allowed"
+        />
+        {value && !disabled && (
+          <button
+            type="button"
+            onClick={() => { onChange(''); setQuery(''); setOpen(false) }}
+            className="px-2 text-muted hover:text-ink"
+            aria-label={t('Quitar selección')}
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+      {open && !disabled && (
+        <div className="absolute z-20 mt-1 left-0 right-0 max-h-60 overflow-y-auto rounded-lg border border-hairline bg-canvas shadow-lg">
+          {filtered.length === 0 ? (
+            <div className="px-3 py-3 text-[12.5px] text-muted">{t('Sin resultados')}</div>
+          ) : (
+            <ul className="py-1">
+              {filtered.map((o) => {
+                const selected = o.name === value
+                return (
+                  <li key={o.id}>
+                    <button
+                      type="button"
+                      onClick={() => { onChange(o.name); setQuery(o.name); setOpen(false) }}
+                      className={`w-full text-left px-3 py-2 text-[13.5px] flex items-center justify-between gap-2 transition-colors ${
+                        selected ? 'bg-surface-soft text-ink font-semibold' : 'text-body hover:bg-surface-soft/60'
+                      }`}
+                    >
+                      <span className="truncate">{o.name}</span>
+                      {selected && <Check className="h-3.5 w-3.5 flex-shrink-0 text-emerald-600" />}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── ColorMultiSelect ─────────────────────────────────────────────────────
+// Multi-select de colores filtrado por la raza actual. Guarda el resultado
+// como string CSV ("Bardino, atigrado") para que el contrato lo interpole
+// directo. Si no hay raza seleccionada, muestra hint.
+function ColorMultiSelect({
+  value, breedName, options, disabled, onChange, t,
+}: {
+  value: string
+  breedName: string
+  options: BreedOption[]
+  disabled: boolean
+  onChange: (csv: string) => void
+  t: (k: string) => string
+}) {
+  // Colores de la raza actual
+  const breed = useMemo(
+    () => options.find((o) => o.name === breedName) || null,
+    [options, breedName],
+  )
+  const breedColors = breed?.colors || []
+
+  // Valor actual como array de nombres
+  const selected = useMemo(() => {
+    return value
+      ? value.split(',').map((s) => s.trim()).filter(Boolean)
+      : []
+  }, [value])
+
+  function toggle(name: string) {
+    const lower = name.toLowerCase()
+    const isSelected = selected.some((s) => s.toLowerCase() === lower)
+    const next = isSelected
+      ? selected.filter((s) => s.toLowerCase() !== lower)
+      : [...selected, name]
+    onChange(next.join(', '))
+  }
+
+  if (!breedName) {
+    return (
+      <div className="rounded-lg border border-dashed border-hairline bg-surface-soft/40 px-3 py-4 text-[12.5px] text-muted text-center">
+        {t('Selecciona una raza arriba para ver los colores disponibles')}
+      </div>
+    )
+  }
+
+  if (breedColors.length === 0) {
+    return (
+      <div className="rounded-lg border border-dashed border-hairline bg-surface-soft/40 px-3 py-4 text-[12.5px] text-muted text-center">
+        {t('Esta raza no tiene colores catalogados — escríbelos a mano:')}
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          placeholder={t('Ej: bardino, leonado…')}
+          className="mt-2 w-full rounded-md border border-hairline bg-canvas px-3 py-2 text-[13px] text-ink placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-ink/10 focus:border-ink/30"
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2 min-w-0">
+      <div className="flex flex-wrap gap-1.5">
+        {breedColors.map((c) => {
+          const isSel = selected.some((s) => s.toLowerCase() === c.name.toLowerCase())
+          return (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => !disabled && toggle(c.name)}
+              disabled={disabled}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                isSel
+                  ? 'border-ink bg-ink text-on-primary'
+                  : 'border-hairline bg-canvas text-body hover:border-ink/40 hover:bg-surface-soft/60'
+              }`}
+            >
+              {c.hex_code && (
+                <span
+                  className="h-2.5 w-2.5 rounded-full ring-1 ring-black/10 flex-shrink-0"
+                  style={{ backgroundColor: c.hex_code }}
+                  aria-hidden
+                />
+              )}
+              <span className="truncate">{c.name}</span>
+              {isSel && <Check className="h-3 w-3 flex-shrink-0" />}
+            </button>
+          )
+        })}
+      </div>
+      {selected.length > 0 && (
+        <p className="text-[11px] text-muted">
+          {t('Seleccionados')}: <span className="text-ink font-medium">{selected.join(', ')}</span>
+        </p>
+      )}
     </div>
   )
 }
@@ -314,13 +521,14 @@ function ProgressRing({ pct }: { pct: number }) {
 // ─── Sección plegable ─────────────────────────────────────────────────────
 
 function SectionBlock({
-  section, collapsed, onToggle, values, onChange, disabled, t,
+  section, collapsed, onToggle, values, onChange, breedOptions, disabled, t,
 }: {
   section: ContractSection
   collapsed: boolean
   onToggle: () => void
   values: Values
   onChange: (token: string, value: string) => void
+  breedOptions: BreedOption[]
   disabled: boolean
   t: (k: string) => string
 }) {
@@ -389,6 +597,14 @@ function SectionBlock({
               field={field}
               value={values[field.token] || ''}
               onChange={(v) => onChange(field.token, v)}
+              currentBreedName={values.breed || ''}
+              breedOptions={breedOptions}
+              onBreedChange={(breedName) => {
+                // Al cambiar la raza, RESETEA el color (los colores
+                // disponibles cambian con la raza).
+                onChange('breed', breedName)
+                if (values.color) onChange('color', '')
+              }}
               disabled={disabled || isKennelInfo || field.from === 'auto'}
               t={t}
             />
@@ -402,11 +618,17 @@ function SectionBlock({
 // ─── Input individual ─────────────────────────────────────────────────────
 
 function FieldInput({
-  field, value, onChange, disabled, t,
+  field, value, onChange, currentBreedName, breedOptions, onBreedChange, disabled, t,
 }: {
   field: ContractField
   value: string
   onChange: (v: string) => void
+  /** Nombre de la raza actualmente seleccionada (values.breed). Lo necesita
+   *  el color-multi para filtrar opciones. */
+  currentBreedName: string
+  breedOptions: BreedOption[]
+  /** Handler especial para el breed-select que también resetea el color. */
+  onBreedChange: (breedName: string) => void
   disabled: boolean
   t: (k: string) => string
 }) {
@@ -461,6 +683,25 @@ function FieldInput({
           />
           <span className="flex items-center px-3 text-[13px] text-muted border-l border-hairline bg-surface-soft/50 select-none">€</span>
         </div>
+      ) : field.type === 'breed-select' ? (
+        <BreedCombobox
+          id={id}
+          value={value}
+          options={breedOptions}
+          disabled={disabled}
+          placeholder={field.placeholder ? t(field.placeholder) : t('Busca una raza…')}
+          onChange={onBreedChange}
+          t={t}
+        />
+      ) : field.type === 'color-multi' ? (
+        <ColorMultiSelect
+          value={value}
+          breedName={currentBreedName}
+          options={breedOptions}
+          disabled={disabled}
+          onChange={onChange}
+          t={t}
+        />
       ) : (
         <input
           id={id}

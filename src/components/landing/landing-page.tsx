@@ -52,7 +52,7 @@ export default function LandingPage({ breeds, featuredDogs, cockerPhotos = [], c
       <PedigreeShowcase realPhotos={realPhotos} cockerPhotos={cockerPhotos} />
       <FeaturesGrid />
       <PipelineShowcase />
-      <BotConversation />
+      <KennelShowcase featuredDogs={featuredDogs} />
       <OnboardingSteps />
       <Pricing />
       <FAQ />
@@ -1088,95 +1088,106 @@ function PipelineRow({
   )
 }
 
-// ─── Bot conversation ────────────────────────────────────────────────────
-function BotConversation() {
+// ─── Kennel showcase (perfil público del criadero) ───────────────────────
+// Reemplaza la sección del emailbot (aún no shippeado). Muestra el perfil
+// público GRATUITO: reproductores + perros producidos, cada uno con su
+// genealogía. El motor de reputación del criador.
+function KennelDogCard({ dog, sex, fallbackName }: { dog: any; sex: '♂' | '♀'; fallbackName: string }) {
+  const sexColor = sex === '♂' ? 'var(--male)' : 'var(--badge-pink)'
+  return (
+    <div className="overflow-hidden rounded-xl border border-hairline bg-canvas">
+      <div className="aspect-square w-full bg-surface-soft">
+        {dog?.thumbnail_url ? (
+          <Img src={dog.thumbnail_url} w={200} alt={dog?.name || fallbackName} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-muted">
+            <Dog className="h-7 w-7" />
+          </div>
+        )}
+      </div>
+      <div className="px-2.5 py-2">
+        <div className="flex items-center justify-between gap-1.5">
+          <p className="truncate text-[12.5px] font-semibold text-ink">{dog?.name || fallbackName}</p>
+          <span className="text-[13px] font-bold leading-none" style={{ color: sexColor }}>{sex}</span>
+        </div>
+        <p className="truncate text-[10.5px] text-muted">{dog?.breed?.name || 'Cocker Spaniel'}</p>
+      </div>
+    </div>
+  )
+}
+
+function KennelShowcaseMockup({ featuredDogs }: { featuredDogs: any[] }) {
+  const t = useT()
+  const repro = (featuredDogs || []).slice(0, 3)
+  const producidos = (featuredDogs || []).slice(3, 7)
+  const sexes: ('♂' | '♀')[] = ['♂', '♀', '♂', '♀', '♂', '♀', '♀']
+  return (
+    <AppWindow url="genealogic.io/kennels/tu-criadero">
+      <div className="p-4 sm:p-6">
+        {/* Cabecera del criadero */}
+        <div className="flex items-center gap-3 border-b border-hairline pb-3.5">
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-[color:var(--brand-soft)] text-[color:var(--brand)]">
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[14px] font-semibold text-ink">{t('Criadero de Aldenham')}</p>
+            <p className="text-[11px] text-muted">{t('Cocker Spaniel Inglés · 12 perros · 4 camadas')}</p>
+          </div>
+          <span className="hidden rounded-full border border-hairline px-2.5 py-1 text-[11px] font-medium text-body sm:inline-flex">
+            {t('Perfil público')}
+          </span>
+        </div>
+
+        {/* Reproductores */}
+        <p className="mt-4 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">{t('Reproductores')}</p>
+        <div className="mt-2.5 grid grid-cols-3 gap-2.5">
+          {repro.map((d: any, i: number) => (
+            <KennelDogCard key={d?.id || i} dog={d} sex={sexes[i]} fallbackName={i === 1 ? 'Maia' : 'Lord Byron'} />
+          ))}
+        </div>
+
+        {/* Producidos por el criadero */}
+        <p className="mt-4 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">{t('Producidos por nosotros')}</p>
+        <div className="mt-2.5 grid grid-cols-4 gap-2.5">
+          {producidos.map((d: any, i: number) => (
+            <KennelDogCard key={d?.id || i} dog={d} sex={sexes[i + 3]} fallbackName="Cachorro" />
+          ))}
+        </div>
+      </div>
+    </AppWindow>
+  )
+}
+
+function KennelShowcase({ featuredDogs }: { featuredDogs: any[] }) {
   const t = useT()
   return (
     <section className="border-b border-hairline">
       <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <div className="grid gap-8 sm:gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
           <div>
-            <div className="flex flex-wrap items-center gap-2.5">
-              <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-                {t('04 · Atención 24/7')}
-              </p>
-              <span className="inline-flex items-center rounded-full border border-hairline bg-surface-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted">
-                {t('Próximamente')}
-              </span>
-            </div>
+            <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
+              {t('04 · Reputación')}
+            </p>
             <h2
               className="mt-3 font-semibold text-ink"
               style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
             >
-              {t('Habla con tus compradores incluso cuando duermes.')}
+              {t('Tu criadero entero, a la vista de todos.')}
             </h2>
             <p className="mt-5 sm:mt-6 text-[16px] leading-[1.55] text-body sm:text-[17px]">
-              {t('Conectas tu email del criadero. El bot lee, redacta una respuesta con tu tono usando tu biblioteca de conocimiento. Tú revisas y envías. O lo dejas en auto-piloto para preguntas frecuentes.')}
+              {t('Cada criadero tiene su perfil público en Genealogic, gratis desde el día 1. Tus reproductores y todos los perros que has criado, cada uno con su genealogía y su ficha. Te encuentran, ven tu trabajo serio y confían — antes de escribirte.')}
             </p>
             <div className="mt-6 sm:mt-8 space-y-3">
-              <BulletRow text={t('Lee tu biblioteca: precios, contratos, certificados, salud')} />
-              <BulletRow text={t('Responde con tu tono, no con el de ChatGPT')} />
-              <BulletRow text={t('Tú decides si auto-envía o si revisas antes')} />
+              <BulletRow text={t('Tus reproductores y los perros producidos por ti, en una página')} />
+              <BulletRow text={t('Cada perro enlaza a su árbol genealógico completo')} />
+              <BulletRow text={t('Posiciona en Google: te encuentran buscando tu raza')} />
             </div>
           </div>
 
-          <AppWindow title={`hola@tucriadero.com · ${t('Hilo 142')}`}>
-            <div className="space-y-3 p-4 sm:p-7">
-              <ChatBubble side="left">
-                {t('Hola, ¿tendréis camadas previstas para primavera? Estaba interesado en un macho con padres con certificados de cadera.')}
-              </ChatBubble>
-              <ChatBubble side="right" bot>
-                {t('¡Hola! Sí, esperamos camada de Estrella x Tornado para marzo. Ambos con HD-A oficial y prueba de carácter. Te paso enlace al perfil de los padres y el contrato de reserva (seña 300 €).')}
-              </ChatBubble>
-              <div className="flex items-center gap-2 rounded-lg border border-dashed border-hairline bg-surface-soft p-2.5 text-[11.5px] text-muted">
-                <Zap className="h-3.5 w-3.5 text-[color:var(--brand)]" />
-                <span>
-                  {t('Bot · usa biblioteca')} <span className="font-mono text-ink">{t('contratos.md')}</span>{' '}
-                  + <span className="font-mono text-ink">{t('salud-padres.md')}</span>
-                </span>
-              </div>
-            </div>
-          </AppWindow>
+          <KennelShowcaseMockup featuredDogs={featuredDogs} />
         </div>
       </div>
     </section>
-  )
-}
-
-function ChatBubble({
-  side,
-  bot,
-  children,
-}: {
-  side: 'left' | 'right'
-  bot?: boolean
-  children: React.ReactNode
-}) {
-  if (side === 'left') {
-    return (
-      <div className="flex items-start gap-2">
-        <div className="h-8 w-8 flex-shrink-0 rounded-full bg-[color:var(--badge-pink)]/30" />
-        <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-surface-card px-4 py-2.5 text-[13.5px] leading-[1.5] text-ink">
-          {children}
-        </div>
-      </div>
-    )
-  }
-  return (
-    <div className="flex items-start justify-end gap-2">
-      <div
-        className={`max-w-[85%] rounded-2xl rounded-tr-sm px-4 py-2.5 text-[13.5px] leading-[1.5] ${
-          bot ? 'bg-ink text-on-primary' : 'bg-surface-card text-ink'
-        }`}
-      >
-        {children}
-      </div>
-      {bot && (
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[color:var(--brand)] text-[11px] font-semibold text-white">
-          AI
-        </div>
-      )}
-    </div>
   )
 }
 

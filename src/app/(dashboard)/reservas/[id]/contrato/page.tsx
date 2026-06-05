@@ -24,7 +24,7 @@ import { renderContractMarkdown } from '@/lib/contracts/markdown'
 import { CONTRACT_TEMPLATES, type ContractKind, getTokenizedBaseTemplate } from '@/lib/contracts/templates'
 import { buildContractVars } from '@/lib/contracts/render'
 import ContractEditor from '@/components/contracts/contract-editor'
-import ContractFillPanel from '@/components/contracts/contract-fill-panel'
+import ContractFillPanel, { type BreedOption } from '@/components/contracts/contract-fill-panel'
 import {
   createOrInitContractAction,
   createFromUserTemplateAction,
@@ -47,6 +47,46 @@ export const metadata = { title: 'Contratos · Genealogic' }
 
 // Etapas del embudo que indican que la reserva ya está en fase de entrega.
 const DELIVERY_STAGES = new Set(['Pendiente de entrega', 'Entregado'])
+
+/**
+ * Carga el catálogo completo de razas + sus colores admitidos.
+ *
+ * Es UNA query con join lateral via breed_colors → colors. Como hay ~246
+ * razas y ~80 colores, el dataset es pequeño (< 100 KB) y se puede cachear
+ * en memoria perfectamente. Aún así lo dejamos sin cache explícita: el
+ * server component se ejecuta una vez por request y Next.js ya lo hace
+ * de su cuenta en producción.
+ */
+async function loadBreedOptions(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any,
+): Promise<BreedOption[]> {
+  // Cargar las dos tablas y la pivote por separado — joins de Supabase
+  // pueden hacer cosas raras si el tamaño es grande. Three queries en
+  // paralelo, mismo orden de magnitud que un single join.
+  const [breedsRes, colorsRes, pivotRes] = await Promise.all([
+    admin.from('breeds').select('id, name').order('name'),
+    admin.from('colors').select('id, name, hex_code'),
+    admin.from('breed_colors').select('breed_id, color_id'),
+  ])
+  const colorById = new Map<string, { id: string; name: string; hex_code: string | null }>()
+  for (const c of (colorsRes.data || []) as Array<{ id: string; name: string; hex_code: string | null }>) {
+    colorById.set(c.id, c)
+  }
+  const colorsByBreed = new Map<string, BreedOption['colors']>()
+  for (const row of (pivotRes.data || []) as Array<{ breed_id: string; color_id: string }>) {
+    const c = colorById.get(row.color_id)
+    if (!c) continue
+    const arr = colorsByBreed.get(row.breed_id) || []
+    arr.push({ id: c.id, name: c.name, hex_code: c.hex_code })
+    colorsByBreed.set(row.breed_id, arr)
+  }
+  return ((breedsRes.data || []) as Array<{ id: string; name: string }>).map((b) => ({
+    id: b.id,
+    name: b.name,
+    colors: (colorsByBreed.get(b.id) || []).sort((a, z) => a.name.localeCompare(z.name)),
+  }))
+}
 
 export default async function BreederContractPage({
   params,
@@ -100,6 +140,9 @@ export default async function BreederContractPage({
   const userTemplates = await listContractTemplatesForUser()
   const t = getTranslator(await getLocale())
 
+  // Catálogo de razas + colores para el fill-form (combobox + multi-select)
+  const breedOptions = await loadBreedOptions(admin)
+
   const reservationContract = contracts.find((c) => c.kind === 'reservation') ?? null
   const deliveryContract = contracts.find((c) => c.kind === 'delivery') ?? null
 
@@ -115,6 +158,7 @@ export default async function BreederContractPage({
       reservation={reservation}
       contract={reservationContract}
       userTemplates={userTemplates}
+      breedOptions={breedOptions}
       highlighted={!deliveryPhase}
       legalDataMissing={legalDataMissing}
       t={t}
@@ -127,6 +171,7 @@ export default async function BreederContractPage({
       reservation={reservation}
       contract={deliveryContract}
       userTemplates={userTemplates}
+      breedOptions={breedOptions}
       highlighted={deliveryPhase}
       legalDataMissing={legalDataMissing}
       t={t}
@@ -204,6 +249,7 @@ function ContractBlock({
   reservation,
   contract,
   userTemplates,
+  breedOptions,
   highlighted,
   legalDataMissing,
   t,
@@ -213,6 +259,7 @@ function ContractBlock({
   reservation: any
   contract: ReservationContract | null
   userTemplates: ContractTemplate[]
+  breedOptions: BreedOption[]
   highlighted: boolean
   legalDataMissing: boolean
   t: T
@@ -265,6 +312,7 @@ function ContractBlock({
         <DraftContractBody
           reservation={reservation}
           contract={contract}
+          breedOptions={breedOptions}
           t={t}
         />
       ) : (
@@ -288,11 +336,12 @@ function ContractBlock({
  *    el criador edita el primer campo.
  */
 async function DraftContractBody({
-  reservation, contract, t,
+  reservation, contract, breedOptions, t,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reservation: any
   contract: ReservationContract
+  breedOptions: BreedOption[]
   t: T
 }) {
   const tplValues = (contract.template_values as Record<string, unknown> | null) || null
@@ -375,6 +424,7 @@ async function DraftContractBody({
       contractTitle={contract.title}
       initialValues={initialValues}
       kennelVars={kennelVars}
+      breedOptions={breedOptions}
       manualOverride={false}
       onSaveAction={saveContractValuesAction}
       onSendAction={sendContractAction}

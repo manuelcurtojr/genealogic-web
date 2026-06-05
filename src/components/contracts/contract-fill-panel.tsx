@@ -24,6 +24,12 @@ import { useT } from '@/components/i18n/locale-provider'
 import ContractFillForm from './contract-fill-form'
 import ContractLivePreview from './contract-live-preview'
 
+export interface BreedOption {
+  id: string
+  name: string
+  colors: { id: string; name: string; hex_code?: string | null }[]
+}
+
 interface Props {
   reservationId: string
   contractId: string
@@ -37,6 +43,9 @@ interface Props {
   initialValues: Record<string, string>
   /** Vars que vienen 100% de BBDD (legal_*) — no editables aquí. */
   kennelVars: Record<string, string | null | undefined>
+  /** Catálogo de razas + sus colores, cargado server-side. Alimenta el
+   *  selector de raza (typeahead) y el multi-select de colores. */
+  breedOptions: BreedOption[]
   /** Si true, formulario disabled (el criador editó markdown a mano). */
   manualOverride: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,7 +57,7 @@ interface Props {
 
 export default function ContractFillPanel({
   reservationId, contractId, kind, templateBody, contractTitle,
-  initialValues, kennelVars, manualOverride,
+  initialValues, kennelVars, breedOptions, manualOverride,
   onSaveAction, onSendAction, onAdvancedMode,
 }: Props) {
   const t = useT()
@@ -69,40 +78,45 @@ export default function ContractFillPanel({
         </TabBtn>
       </div>
 
-      {/* Grid responsive sin altura forzada — cada panel scrollea hasta
-          max-h-[80vh]. Antes usaba h-[calc(100vh-380px)] que cuando había
-          DOS contratos apilados (reserva + entrega) tiraba la altura
-          de la 2ª caja fuera de la ventana. */}
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 lg:gap-5 min-w-0">
+      {/* Grid responsive — cada panel tiene altura fija de viewport con
+          scroll interno. Patrón clave para evitar "contenido cortado":
+            - lg:h-[calc(100vh-220px)] da una altura concreta (no max-h)
+            - lg:overflow-y-auto en cada cell hace el scroll
+            - el sticky header del form/preview se queda anclado arriba
+              porque su scroll context es esta cell.
+          En móvil cada panel crece según contenido (sin scroll interno,
+          el scroll natural de la página lo gestiona). */}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 lg:gap-5 min-w-0 lg:h-[calc(100vh-220px)] lg:min-h-[600px]">
         {/* Izquierda — Formulario */}
-        <div className={`min-w-0 ${tab === 'form' ? 'block' : 'hidden lg:block'}`}>
-          <div className="lg:max-h-[80vh] lg:overflow-hidden flex flex-col rounded-2xl border border-hairline bg-canvas">
-            <ContractFillForm
-              reservationId={reservationId}
-              contractId={contractId}
-              kind={kind}
-              initialValues={initialValues}
-              manualOverride={manualOverride}
-              onValuesChange={setValues}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onSaveAction={onSaveAction as any}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onSendAction={onSendAction as any}
-              onAdvancedMode={onAdvancedMode}
-            />
-          </div>
+        <div className={`min-w-0 rounded-2xl border border-hairline bg-canvas lg:overflow-y-auto ${
+          tab === 'form' ? 'block' : 'hidden lg:block'
+        }`}>
+          <ContractFillForm
+            reservationId={reservationId}
+            contractId={contractId}
+            kind={kind}
+            initialValues={initialValues}
+            breedOptions={breedOptions}
+            manualOverride={manualOverride}
+            onValuesChange={setValues}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onSaveAction={onSaveAction as any}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onSendAction={onSendAction as any}
+            onAdvancedMode={onAdvancedMode}
+          />
         </div>
 
         {/* Derecha — Preview */}
-        <div className={`min-w-0 ${tab === 'preview' ? 'block' : 'hidden lg:block'}`}>
-          <div className="lg:max-h-[80vh] lg:overflow-hidden flex flex-col rounded-2xl border border-hairline bg-canvas">
-            <ContractLivePreview
-              templateBody={templateBody}
-              values={values}
-              kennelVars={kennelVars}
-              title={contractTitle}
-            />
-          </div>
+        <div className={`min-w-0 rounded-2xl border border-hairline bg-canvas lg:overflow-y-auto ${
+          tab === 'preview' ? 'block' : 'hidden lg:block'
+        }`}>
+          <ContractLivePreview
+            templateBody={templateBody}
+            values={values}
+            kennelVars={kennelVars}
+            title={contractTitle}
+          />
         </div>
       </div>
     </div>

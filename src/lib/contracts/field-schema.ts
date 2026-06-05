@@ -30,6 +30,14 @@ export type FieldType =
   | 'select'
   | 'currency'
   | 'textarea'
+  /** Combobox de RAZA — typeahead sobre el catálogo de razas. El valor
+   *  guardado es el NOMBRE de la raza (no el id), porque la plantilla
+   *  interpola con `{{breed}}` = nombre. Cuando cambia, el campo color
+   *  se resetea (los colores dependen de la raza). */
+  | 'breed-select'
+  /** Multi-select de COLORES filtrado por la raza actual. Valor guardado:
+   *  string con los nombres separados por coma ("Bardino, atigrado"). */
+  | 'color-multi'
 
 export type FieldSource = 'lead' | 'puppy' | 'kennel' | 'manual' | 'auto'
 
@@ -115,9 +123,10 @@ const PREFS_SECTION: ContractSection = {
     {
       token: 'breed',
       label: 'Raza',
-      type: 'text',
+      type: 'breed-select',
       from: 'lead',
-      placeholder: 'Ej: Presa Canario',
+      placeholder: 'Busca una raza…',
+      help: 'Al cambiar la raza, los colores se recalculan.',
     },
     {
       token: 'sex',
@@ -133,9 +142,9 @@ const PREFS_SECTION: ContractSection = {
     {
       token: 'color',
       label: 'Color / capa',
-      type: 'text',
+      type: 'color-multi',
       from: 'lead',
-      placeholder: 'Ej: Bardino, leonado, atigrado…',
+      help: 'Selecciona uno o varios. Solo aparecen los colores admitidos para la raza elegida.',
     },
     {
       token: 'purpose',
