@@ -13,7 +13,8 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { listReservationMessages, markThreadRead } from '@/lib/reservations/messages'
 import ReservationThread from '@/components/reservations/reservation-thread'
-import { sendBreederMessageAction } from './actions'
+import { sendBreederMessageAction, quickMarkPaymentReceivedAction } from './actions'
+import PaymentMilestonesCard from '@/components/reservations/payment-milestones-card'
 import FeedbackButton from '@/components/feedback/feedback-button'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -178,20 +179,35 @@ export default async function BreederReservationDetailPage({
             </Link>
           </section>
 
-          <section className="rounded-2xl border border-hairline bg-canvas p-5">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-ink mb-3">
-              {t('Pagos')}
-            </h3>
-            <p className="text-xs text-muted mb-3">
-              {t('Crear cobros (Stripe Connect o manual) y marcar pagos recibidos.')}
-            </p>
-            <Link
-              href={`/reservas/${reservation.id}/pagos`}
-              className="inline-flex items-center gap-1 w-full justify-center rounded-lg border border-hairline px-3 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
-            >
-              {t('Ver pagos →')}
-            </Link>
-          </section>
+          {/* Atajos para marcar seña + pago final cobrados. Reemplaza al
+              card antiguo "Pagos" que era solo un link a /pagos — ahora el
+              criador puede marcar los 2 hitos económicos en un click sin
+              salir del panel del lead. /pagos sigue ahí para gestión fina. */}
+          <PaymentMilestonesCard
+            reservationId={reservation.id}
+            currency={reservation.currency || 'EUR'}
+            deposit={{
+              kind: 'deposit',
+              label: t('Señal recibida'),
+              description: t('Al confirmar la reserva'),
+              doneAt: reservation.deposit_paid_at,
+              amountCents: reservation.deposit_amount_cents,
+              suggestedAmount: reservation.deposit_amount_cents,
+            }}
+            finalPayment={{
+              kind: 'final',
+              label: t('Pago final recibido'),
+              description: t('Al entregar el cachorro'),
+              doneAt: reservation.paid_in_full_at,
+              amountCents: reservation.total_price_cents != null && reservation.deposit_amount_cents != null
+                ? reservation.total_price_cents - reservation.deposit_amount_cents
+                : reservation.total_price_cents,
+              suggestedAmount: reservation.total_price_cents != null && reservation.deposit_amount_cents != null
+                ? reservation.total_price_cents - reservation.deposit_amount_cents
+                : null,
+            }}
+            onMark={quickMarkPaymentReceivedAction}
+          />
         </aside>
       </div>
     </div>

@@ -85,17 +85,87 @@ export async function markPaymentPaid(args: {
 }): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createKennelAdminClient() as any
+
+  // Cargar tipo + reserva ANTES del update — lo usaremos después para
+  // sincronizar puppy_reservations.deposit_paid_at / paid_in_full_at.
+  const { data: payment } = await admin
+    .from('reservation_payments')
+    .select('id, type, amount_cents, reservation_id')
+    .eq('id', args.paymentId)
+    .maybeSingle()
+
+  const nowIso = new Date().toISOString()
   const { error } = await admin
     .from('reservation_payments')
     .update({
       status: 'paid',
-      paid_at: new Date().toISOString(),
+      paid_at: nowIso,
       paid_via: args.paidVia,
       marked_paid_by: args.paidBy,
       notes: args.notes ?? undefined,
     })
     .eq('id', args.paymentId)
   if (error) throw new Error(error.message)
+
+  // ─── Sync con puppy_reservations ──────────────────────────────────────
+  // Cuando el criador marca un pago como recibido, propagamos el hito a la
+  // RESERVA. Sin esto el timeline del cliente nunca enciende "Seña
+  // recibida" porque mira deposit_paid_at, no el pago individual.
+  //
+  // Reglas:
+  //  - type='deposit' → deposit_paid_at = now() (si no estaba) +
+  //                     status = 'deposit_paid' (si venía de 'interested'/'waitlisted')
+  //  - type='final'   → paid_in_full_at = now() +
+  //                     status = 'paid_in_full' (si venía de un estado previo)
+  //  - type='milestone'/'custom' → no toca la reserva (es un pago intermedio)
+  //
+  // deposit_amount_cents también lo refrescamos al primer deposit pagado
+  // para que el timeline pueda mostrar "Seña recibida · 300 €" sin pedir
+  // el campo aparte.
+  if (payment?.reservation_id) {
+    try {
+      if (payment.type === 'deposit') {
+        const { data: res } = await admin
+          .from('puppy_reservations')
+          .select('status, deposit_paid_at, deposit_amount_cents')
+          .eq('id', payment.reservation_id)
+          .maybeSingle()
+        if (res && !res.deposit_paid_at) {
+          const patch: Record<string, unknown> = { deposit_paid_at: nowIso }
+          if (res.deposit_amount_cents == null) patch.deposit_amount_cents = payment.amount_cents
+          if (res.status === 'interested' || res.status === 'waitlisted') {
+            patch.status = 'deposit_paid'
+          }
+          await admin
+            .from('puppy_reservations')
+            .update(patch)
+            .eq('id', payment.reservation_id)
+        }
+      } else if (payment.type === 'final') {
+        const { data: res } = await admin
+          .from('puppy_reservations')
+          .select('status, paid_in_full_at, total_price_cents')
+          .eq('id', payment.reservation_id)
+          .maybeSingle()
+        if (res && !res.paid_in_full_at) {
+          const patch: Record<string, unknown> = { paid_in_full_at: nowIso }
+          if (res.total_price_cents == null) patch.total_price_cents = payment.amount_cents
+          // Solo subimos el status si la reserva NO está ya en delivered
+          if (res.status !== 'delivered' && res.status !== 'cancelled') {
+            patch.status = 'paid_in_full'
+          }
+          await admin
+            .from('puppy_reservations')
+            .update(patch)
+            .eq('id', payment.reservation_id)
+        }
+      }
+    } catch (err) {
+      // Sync best-effort — si falla el update de reserva, el pago ya está
+      // marcado pagado. No revertimos.
+      console.error('[markPaymentPaid] reservation sync failed', err)
+    }
+  }
 
   // ─── Email al cliente confirmando el pago (best-effort, async) ───
   ;(async () => {

@@ -11,10 +11,12 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
   getMyReservation,
+  getReservationTimelineSteps,
   STATUS_META,
   formatDate,
   formatPrice,
 } from '@/lib/owner/reservations'
+import ReservationTimeline from '@/components/reservations/reservation-timeline'
 import { listReservationMessages, markThreadRead } from '@/lib/reservations/messages'
 import { listDogDocumentsForOwner } from '@/lib/dogs/documents'
 import { labelForType } from '@/lib/dogs/documents-shared'
@@ -45,7 +47,7 @@ export default async function MyReservationDetailPage({
   const isArchived = reservation.status === 'delivered' || reservation.status === 'cancelled'
 
   // Línea de tiempo: pasos del journey de la reserva
-  const timeline = buildTimeline(reservation, t)
+  const timeline = getReservationTimelineSteps(reservation)
 
   // Mensajería
   const messages = await listReservationMessages(reservation.id)
@@ -214,30 +216,15 @@ export default async function MyReservationDetailPage({
             )}
           </section>
 
-          {/* Timeline */}
-          <section className="rounded-2xl border border-hairline bg-canvas p-5">
-            <h2 className="text-base font-bold text-ink mb-4">{t('Línea de tiempo')}</h2>
-            <ol className="relative border-l-2 border-hairline pl-5 space-y-5">
-              {timeline.map((step, i) => (
-                <li key={i} className="relative">
-                  <span
-                    className={`absolute -left-[27px] w-3 h-3 rounded-full top-1 ${
-                      step.done ? 'bg-ink' : 'bg-canvas border-2 border-hairline'
-                    }`}
-                  />
-                  <p
-                    className={`text-sm font-semibold ${
-                      step.done ? 'text-ink' : 'text-muted'
-                    }`}
-                  >
-                    {step.label}
-                  </p>
-                  {step.date && (
-                    <p className="text-xs text-muted mt-0.5">{formatDate(step.date)}</p>
-                  )}
-                </li>
-              ))}
-            </ol>
+          {/* Timeline — el ciclo de vida completo de la reserva */}
+          <section className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 min-w-0">
+            <div className="flex items-baseline justify-between gap-3 flex-wrap mb-5">
+              <h2 className="text-base font-bold text-ink">{t('Estado de tu reserva')}</h2>
+              <p className="text-[11px] text-muted">
+                {timeline.filter((s) => s.state === 'done').length} {t('de')} {timeline.length} {t('completados')}
+              </p>
+            </div>
+            <ReservationTimeline steps={timeline} t={t} />
           </section>
         </div>
 
@@ -332,8 +319,6 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
-import type { ClientReservation } from '@/lib/owner/reservations'
-
 function StatusPill({ status }: { status: string }) {
   const meta = STATUS_META[status] ?? STATUS_META.interested
   const colorBg: Record<string, string> = {
@@ -353,25 +338,7 @@ function StatusPill({ status }: { status: string }) {
   )
 }
 
-function buildTimeline(r: ClientReservation, t: (k: string) => string): { label: string; date: string | null; done: boolean }[] {
-  return [
-    { label: t('Solicitud enviada'), date: r.created_at, done: true },
-    { label: t('Seña pagada'), date: r.deposit_paid_at, done: !!r.deposit_paid_at },
-    {
-      label: t('Cachorro asignado'),
-      date: null,
-      done: ['assigned', 'contract_signed', 'paid_in_full', 'delivered'].includes(r.status),
-    },
-    {
-      label: t('Contrato firmado'),
-      date: r.contract_signed_at,
-      done: !!r.contract_signed_at,
-    },
-    {
-      label: t('Pago final'),
-      date: null,
-      done: ['paid_in_full', 'delivered'].includes(r.status),
-    },
-    { label: t('Cachorro entregado'), date: r.delivered_at, done: !!r.delivered_at },
-  ]
-}
+// `buildTimeline` antiguo eliminado — sustituido por
+// getReservationTimelineSteps() + componente ReservationTimeline (más
+// completo: incluye contratos de reserva/entrega, hito celebración de
+// "Reserva confirmada", iconos por hito, estado current con badge).
