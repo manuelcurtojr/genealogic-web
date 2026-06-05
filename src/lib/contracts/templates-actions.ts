@@ -46,6 +46,33 @@ export interface ContractTemplate {
 
 // ─── Listado ────────────────────────────────────────────────────────────────
 
+/**
+ * Normaliza una fila cruda de contract_templates a `ContractTemplate`.
+ *
+ * Resiliente al rollout de la migración 20260720: si `default_for_kind`
+ * todavía no existe en BBDD (la migración no se ha aplicado), derivamos
+ * el valor desde `is_default` legacy → asumimos kind='reservation' por
+ * consistencia con el backfill de la migración. Así la página de
+ * /contratos funciona en producción ANTES de aplicar la migración.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeTemplate(row: any): ContractTemplate {
+  const defaultForKind =
+    row.default_for_kind !== undefined
+      ? (row.default_for_kind as 'reservation' | 'delivery' | null)
+      : (row.is_default ? ('reservation' as const) : null)
+  return {
+    id: row.id,
+    kennel_id: row.kennel_id,
+    name: row.name,
+    body_md: row.body_md,
+    is_default: !!row.is_default,
+    default_for_kind: defaultForKind,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  }
+}
+
 export async function listContractTemplatesForUser(): Promise<ContractTemplate[]> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -59,25 +86,28 @@ export async function listContractTemplatesForUser(): Promise<ContractTemplate[]
     .maybeSingle()
   if (!kennel) return []
 
+  // SELECT *: tolerante a columnas que pueden no existir todavía (migración
+  // 20260720 añade default_for_kind). normalizeTemplate hace fallback.
   const { data, error } = await supabase
     .from('contract_templates')
-    .select('id, kennel_id, name, body_md, is_default, default_for_kind, created_at, updated_at')
+    .select('*')
     .eq('kennel_id', kennel.id)
     .order('is_default', { ascending: false })
     .order('updated_at', { ascending: false })
   if (error) throw new Error(error.message)
-  return (data || []) as ContractTemplate[]
+  return (data || []).map(normalizeTemplate)
 }
 
 export async function getContractTemplate(id: string): Promise<ContractTemplate | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('contract_templates')
-    .select('id, kennel_id, name, body_md, is_default, default_for_kind, created_at, updated_at')
+    .select('*')
     .eq('id', id)
     .maybeSingle()
   if (error) throw new Error(error.message)
-  return (data as ContractTemplate | null) || null
+  if (!data) return null
+  return normalizeTemplate(data)
 }
 
 // ─── Mutaciones ─────────────────────────────────────────────────────────────
@@ -106,15 +136,23 @@ export async function createContractTemplate(input: {
 
   if (kind) {
     // Desmarcar la default actual de ese kind para evitar colisión con el
-    // índice único parcial.
-    await supabase
+    // índice único parcial. Si la columna no existe (migración no aplicada),
+    // ignoramos silenciosamente — el INSERT de abajo también se hará en
+    // modo legacy.
+    const { error: unsetErr } = await supabase
       .from('contract_templates')
       .update({ default_for_kind: null, is_default: false })
       .eq('kennel_id', kennel.id)
       .eq('default_for_kind', kind)
+    if (unsetErr && !/default_for_kind/i.test(unsetErr.message)) {
+      throw new Error(unsetErr.message)
+    }
   }
 
-  const { data, error } = await supabase
+  // Intentamos INSERT con default_for_kind; si la columna no existe,
+  // reintentamos sin ella (modo legacy). Sale más limpio que comprobar el
+  // schema por adelantado.
+  let inserted = await supabase
     .from('contract_templates')
     .insert({
       kennel_id: kennel.id,
@@ -125,6 +163,19 @@ export async function createContractTemplate(input: {
     })
     .select('id')
     .single()
+  if (inserted.error && /default_for_kind/i.test(inserted.error.message)) {
+    inserted = await supabase
+      .from('contract_templates')
+      .insert({
+        kennel_id: kennel.id,
+        name,
+        body_md: body,
+        is_default: kind !== null,
+      })
+      .select('id')
+      .single()
+  }
+  const { data, error } = inserted
   if (error) throw new Error(error.message)
 
   revalidatePath('/contratos')
@@ -218,19 +269,55 @@ export async function setDefaultContractTemplate(
   if (kind) {
     // Desmarca la default actual de ese kind (si la hay) para evitar
     // colisión con el índice único parcial.
-    await supabase
+    const { error: unsetErr } = await supabase
       .from('contract_templates')
       .update({ default_for_kind: null, is_default: false })
       .eq('kennel_id', tpl.kennel_id)
       .eq('default_for_kind', kind)
+    if (unsetErr && /default_for_kind/i.test(unsetErr.message)) {
+      // Columna no existe → migración 20260720 no aplicada todavía. Caemos
+      // a comportamiento legacy: solo un is_default global por kennel.
+      return await setDefaultLegacy(supabase, tpl.kennel_id, id, kind !== null)
+    }
+    if (unsetErr) throw new Error(unsetErr.message)
   }
 
   const { error } = await supabase
     .from('contract_templates')
     .update({ default_for_kind: kind, is_default: kind !== null })
     .eq('id', id)
+  if (error && /default_for_kind/i.test(error.message)) {
+    return await setDefaultLegacy(supabase, tpl.kennel_id, id, kind !== null)
+  }
   if (error) throw new Error(error.message)
 
+  revalidatePath('/contratos')
+  return { ok: true }
+}
+
+/**
+ * Fallback al esquema legacy (sin default_for_kind): toggle del boolean
+ * is_default global, máximo una default por kennel.
+ */
+async function setDefaultLegacy(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  kennelId: string,
+  templateId: string,
+  makeDefault: boolean,
+): Promise<{ ok: true }> {
+  if (makeDefault) {
+    await supabase
+      .from('contract_templates')
+      .update({ is_default: false })
+      .eq('kennel_id', kennelId)
+      .eq('is_default', true)
+  }
+  const { error } = await supabase
+    .from('contract_templates')
+    .update({ is_default: makeDefault })
+    .eq('id', templateId)
+  if (error) throw new Error(error.message)
   revalidatePath('/contratos')
   return { ok: true }
 }
