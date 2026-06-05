@@ -171,16 +171,16 @@ export const NAV_SECTIONS: NavSection[] = [
   //     auth/roles.ts por si se necesita en otro sitio.) ────────────────────
 
   // ── Soporte — accesible para TODO usuario logueado (free incluido).
-  // Antes /mis-solicitudes y /soporte vivían sin entrada en sidebar y el
-  // usuario no podía abrir un ticket ni ver el histórico de sus claims
-  // (perros/criaderos reclamados, tickets, feedback). El acceso solo
-  // estaba vía URL directa o a través del widget de feedback.
+  // /mis-solicitudes y /soporte se fusionaron en una sola página /soporte
+  // con dos pestañas (Mis solicitudes + Nueva solicitud), así que el sidebar
+  // tiene un único item. Label de sección en blanco (como 'main') para no
+  // duplicar "Soporte" como cabecera de sección Y como item: se renderiza
+  // un separador en su lugar.
   {
     id: 'support',
-    label: 'Soporte',
+    label: '',
     items: [
-      { label: 'Mis solicitudes', href: '/mis-solicitudes', icon: 'Inbox' },
-      { label: 'Contactar soporte', href: '/soporte', icon: 'LifeBuoy' },
+      { label: 'Soporte', href: '/soporte', icon: 'LifeBuoy' },
     ],
   },
 

@@ -106,7 +106,7 @@ export async function createSupportRequestAction(input: {
     .single()
 
   if (error) throw new Error(error.message)
-  revalidatePath('/mis-solicitudes')
+  revalidatePath('/soporte')
   revalidatePath('/admin/solicitudes')
 
   // Notificación al super admin (best-effort, no rompe si falla).
@@ -239,7 +239,7 @@ export async function createFeedbackAction(input: {
     }
   }
 
-  revalidatePath('/mis-solicitudes')
+  revalidatePath('/soporte')
   revalidatePath('/admin/solicitudes')
   return { id: data.id }
 }
@@ -316,7 +316,7 @@ export async function createClaimRequestAction(input: {
     throw new Error(error.message)
   }
 
-  revalidatePath('/mis-solicitudes')
+  revalidatePath('/soporte')
   revalidatePath('/admin/solicitudes')
 
   // Alerta al super admin — los claims son críticos (transfieren ownership).
@@ -404,7 +404,7 @@ export async function replyToRequestAction(input: {
     .eq('requester_user_id', user.id)
     .eq('status', 'awaiting_user')
 
-  revalidatePath(`/mis-solicitudes/${input.requestId}`)
+  revalidatePath(`/soporte/${input.requestId}`)
   revalidatePath('/admin/solicitudes')
 }
 
@@ -420,7 +420,7 @@ export async function cancelRequestAction(requestId: string): Promise<void> {
     .eq('id', requestId)
     .eq('requester_user_id', user.id)
   if (error) throw new Error(error.message)
-  revalidatePath('/mis-solicitudes')
+  revalidatePath('/soporte')
   revalidatePath('/admin/solicitudes')
 }
 
@@ -530,7 +530,7 @@ export async function adminReplyToRequestAction(input: {
   } catch { /* swallow */ }
 
   revalidatePath(`/admin/solicitudes/${input.requestId}`)
-  revalidatePath(`/mis-solicitudes/${input.requestId}`)
+  revalidatePath(`/soporte/${input.requestId}`)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -602,7 +602,7 @@ export async function adminApproveClaimAction(input: {
 
   revalidatePath(`/admin/solicitudes/${input.requestId}`)
   revalidatePath('/admin/solicitudes')
-  revalidatePath('/mis-solicitudes')
+  revalidatePath('/soporte')
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -677,7 +677,7 @@ export async function adminRejectRequestAction(input: {
 
   revalidatePath(`/admin/solicitudes/${input.requestId}`)
   revalidatePath('/admin/solicitudes')
-  revalidatePath('/mis-solicitudes')
+  revalidatePath('/soporte')
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

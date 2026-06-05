@@ -102,14 +102,28 @@ export const content4Pages: Record<string, Record<string, string>> = {
     'para pagar por transferencia bancaria o el método que prefiera.':
       'to pay by bank transfer or whatever method they prefer.',
 
-    // ─── mis-solicitudes (lista) ───
+    // ─── soporte (página unificada: lista + nueva solicitud) ───
     'Mis solicitudes': 'My requests',
     'Soporte y reclamaciones que has enviado.': 'Support and claims you have submitted.',
     'Abrir nueva': 'Open new',
     'No tienes solicitudes aún.': 'You have no requests yet.',
     'Escribir a soporte': 'Contact support',
+    'Ayuda': 'Help',
+    'Soporte': 'Support',
+    'Tus solicitudes, reporta un problema y recibe ayuda de un humano del equipo.':
+      'Your requests, report a problem and get help from a human on the team.',
+    'Nueva solicitud': 'New request',
+    'Aún no tienes solicitudes': 'You have no requests yet',
+    'Cuando abras un ticket o reclames un perro o criadero, aparecerá aquí.':
+      'When you open a ticket or claim a dog or kennel, it will show up here.',
+    '¿En qué te ayudamos?': 'How can we help?',
+    'Escribe tu consulta y un humano del equipo te responderá. Solemos tardar menos de 24h en días laborables.':
+      'Write your query and a human on the team will reply. We usually take less than 24h on business days.',
+    'Verás la respuesta en': 'You will see the reply in',
+    '. También te avisaremos por email.': '. We will also notify you by email.',
 
-    // ─── mis-solicitudes/[id] (detalle) ───
+    // ─── soporte/[id] (detalle) ───
+    'Volver a Soporte': 'Back to Support',
     'Volver a mis solicitudes': 'Back to my requests',
     'Un admin la revisará en menos de 72h. Te avisaremos por email cuando tengamos novedades.':
       'An admin will review it within 72h. We will email you when we have updates.',

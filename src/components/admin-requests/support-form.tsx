@@ -34,7 +34,7 @@ export default function SupportForm() {
           source: 'soporte_form',
           sourceUrl: typeof window !== 'undefined' ? window.location.href : undefined,
         })
-        router.push(`/mis-solicitudes/${id}?created=1`)
+        router.push(`/soporte/${id}?created=1`)
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Error')
       }
