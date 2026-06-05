@@ -280,15 +280,21 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     if (field === 'is_public') set('is_public', value)
     else if (field === 'show_in_kennel') setShowInKennel(value)
     else setIsReproductive(value)
-    const supabase = createClient()
-    const { error: err } = await supabase.from('dogs').update({ [field]: value }).eq('id', editDogId)
+    // Vía service-role: RLS de `dogs` solo deja al DUEÑO; un perro sin dueño o
+    // de otra cuenta (pero criado por tu criadero) fallaba en silencio. El
+    // endpoint autoriza por dueño O criador.
+    const res = await fetch('/api/update-dog', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dogId: editDogId, updates: { [field]: value } }),
+    }).catch(() => null)
     setSavingField(null)
-    if (err) {
+    if (!res || !res.ok) {
       // revertir
       if (field === 'is_public') set('is_public', prev)
       else if (field === 'show_in_kennel') setShowInKennel(prev)
       else setIsReproductive(prev)
-      setError(err.message)
+      const msg = res ? ((await res.json().catch(() => null))?.error || 'No se pudo guardar') : 'No se pudo guardar'
+      setError(msg)
       return
     }
     onSaved?.()

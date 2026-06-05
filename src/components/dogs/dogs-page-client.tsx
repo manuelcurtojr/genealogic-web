@@ -9,7 +9,6 @@ import PedigreeEditor from '../pedigree/pedigree-editor'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 import SortSelect, { useSortPreference, sortItems } from '@/components/ui/sort-select'
-import { createClient } from '@/lib/supabase/client'
 import { useT } from '@/components/i18n/locale-provider'
 import { Img } from '@/components/ui/img'
 
@@ -112,12 +111,18 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
     // esas vistas exigen visibilidad, no solo is_reproductive.
     const extra = field === 'is_reproductive' && newValue ? { is_public: true, show_in_kennel: true } : {}
     setDogs((prev) => prev.map((d) => (d.id === dogId ? { ...d, [field]: newValue, ...extra } : d)))
-    const supabase = createClient()
-    const { error } = await supabase.from('dogs').update({ [field]: newValue, ...extra }).eq('id', dogId)
-    if (error) {
+    // Vía service-role: RLS de `dogs` solo deja actualizar al DUEÑO. Un perro
+    // criado por tu criadero pero SIN dueño (ancestro importado) o propiedad de
+    // otra cuenta fallaba en silencio (0 filas, sin error) → el corazón "no
+    // persistía". El endpoint autoriza por dueño O criador y revierte si no.
+    const res = await fetch('/api/update-dog', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dogId, updates: { [field]: newValue, ...extra } }),
+    }).catch(() => null)
+    if (!res || !res.ok) {
       // Rollback en error
       setDogs(before)
-      console.error('Toggle error:', error)
+      console.error('Toggle error', res ? await res.text().catch(() => '') : 'network')
     }
   }
   const handleToggleReproductive = (dogId: string, current: boolean) => toggleDogField(dogId, 'is_reproductive', !current)
