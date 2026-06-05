@@ -9,11 +9,10 @@
  */
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Dog, Calendar, FileText, Stethoscope, ArrowRight, Sparkles, RefreshCw } from 'lucide-react'
-import { setOnboardingIntentAction } from '@/app/(dashboard)/dashboard/onboarding-intent-actions'
+import { Dog, Calendar, FileText, Stethoscope, ArrowRight, Sparkles, RefreshCw, Store } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 
 export default function WelcomeOwner({
@@ -25,15 +24,8 @@ export default function WelcomeOwner({
 }) {
   const t = useT()
   const router = useRouter()
-  const [pending, startTransition] = useTransition()
-
-  function switchToBreeder() {
-    if (!confirm(t('¿Cambiar a perfil de criador? Verás el flujo para crear un afijo.'))) return
-    startTransition(async () => {
-      await setOnboardingIntentAction('breeder')
-      router.refresh()
-    })
-  }
+  const [showSwitch, setShowSwitch] = useState(false)
+  const [navigating, setNavigating] = useState(false)
 
   return (
     <div className="max-w-3xl mx-auto py-8">
@@ -129,14 +121,56 @@ export default function WelcomeOwner({
       <p className="mt-8 text-center text-[12px] text-muted">
         {t('¿Me equivoqué — soy criador?')}{' '}
         <button
-          onClick={switchToBreeder}
-          disabled={pending}
-          className="text-ink underline hover:opacity-80 disabled:opacity-50 inline-flex items-center gap-1"
+          onClick={() => setShowSwitch(true)}
+          className="text-ink underline hover:opacity-80 inline-flex items-center gap-1"
         >
-          {pending && <RefreshCw className="w-3 h-3 animate-spin" />}
           {t('Cambiar a perfil de criador')}
         </button>
       </p>
+
+      {/* Modal en la web (no confirm del navegador) para pasar a criador.
+          OJO: no cambiamos el rol aquí — solo llevamos al formulario de crear
+          criadero. El rol pasa a 'breeder' cuando el criadero se crea de verdad. */}
+      {showSwitch && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setShowSwitch(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-canvas p-6 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.4)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink/10">
+                <Store className="h-5 w-5 text-ink" />
+              </div>
+              <h3 className="text-lg font-bold text-ink">{t('Cambiar a perfil de criador')}</h3>
+            </div>
+            <p className="mt-4 text-sm leading-relaxed text-body">
+              {t('Vas a convertir tu cuenta de propietario en una de CRIADERO. Es un tipo de perfil distinto: tendrás afijo, camadas, reservas y el panel de criador en lugar del de propietario.')}
+            </p>
+            <p className="mt-3 rounded-lg border border-hairline bg-surface-soft px-3 py-2.5 text-[13px] leading-relaxed text-body">
+              {t('No cambiamos tu perfil todavía: sigues siendo propietario hasta que CREES tu criadero. Al continuar te llevamos al formulario para crearlo.')}
+            </p>
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => setShowSwitch(false)}
+                className="rounded-lg border border-hairline px-4 py-2 text-sm font-medium text-body transition hover:bg-surface-soft"
+              >
+                {t('Cancelar')}
+              </button>
+              <button
+                onClick={() => { setNavigating(true); router.push('/kennel/new') }}
+                disabled={navigating}
+                className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm font-bold text-on-primary transition hover:opacity-90 disabled:opacity-50"
+              >
+                {navigating && <RefreshCw className="h-4 w-4 animate-spin" />}
+                {t('Crear mi criadero')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
