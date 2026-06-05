@@ -348,15 +348,20 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   const handleMarkDeceased = async () => {
     if (!editDogId) return
     setDeceasedLoading(true); setError('')
-    const supabase = createClient()
-    const today = new Date().toISOString().slice(0, 10)
-    const { error: err } = await supabase
-      .from('dogs')
-      .update({ deceased_at: today, deceased_locked: true })
-      .eq('id', editDogId)
+    // Vía endpoint dedicado (service-role + auth dueño-o-criador): RLS bloqueaba
+    // marcar perros sin dueño o de otra cuenta criados por tu criadero.
+    const res = await fetch('/api/dogs/mark-deceased', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dogId: editDogId }),
+    }).catch(() => null)
     setDeceasedLoading(false)
-    if (err) { setError(err.message); return }
-    setDeceasedAt(today)
+    if (!res || !res.ok) {
+      const msg = res ? ((await res.json().catch(() => null))?.error || 'No se pudo marcar como fallecido') : 'No se pudo marcar como fallecido'
+      setError(msg)
+      return
+    }
+    const data = await res.json().catch(() => null)
+    setDeceasedAt(data?.deceased_at || new Date().toISOString().slice(0, 10))
     setConfirmDeceased(false)
     if (onSaved) onSaved()
     router.refresh()
