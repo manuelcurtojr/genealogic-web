@@ -31,7 +31,8 @@ import {
   type ContractField,
   type ContractSection,
 } from '@/lib/contracts/field-schema'
-import type { BreedOption } from './contract-fill-panel'
+import type { BreedOption, KennelDogOption } from './contract-fill-panel'
+import DogAssignmentBar from './dog-assignment-bar'
 
 type Values = Record<string, string>
 
@@ -46,6 +47,15 @@ interface Props {
   /** Catálogo de razas + colores por raza. Server-loaded via prop drilling
    *  desde la page; el form solo lee, no hace fetch. */
   breedOptions: BreedOption[]
+  /** Perros del criadero para el selector "Cachorro asignado". */
+  kennelDogs: KennelDogOption[]
+  /** Perro asignado actualmente (puppy_reservations.dog_id) o null. */
+  assignedDogId: string | null
+  /** Action para asignar/desasignar perro. */
+  onAssignDogAction: (
+    reservationId: string,
+    dogId: string | null,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>
   /** Si true, deshabilita los inputs (porque el criador usó "modo avanzado"
    *  y editó el markdown — ya no podemos garantizar consistencia). */
   manualOverride: boolean
@@ -77,12 +87,24 @@ const ICONS = {
   building: Building2,
 } as const
 
+// Tokens que dependen 100% del perro asignado — si hay dog, estos campos
+// no tiene sentido mostrarlos en el formulario manual (los rellena el dog
+// y el contrato los interpola vía buildContractVars). Cuando assignedDogId
+// está set, ocultamos los inputs de estos tokens en SectionBlock.
+const DOG_DERIVED_TOKENS = new Set([
+  'dogName', 'birthDate', 'microchip', 'registration',
+  'breed', 'color', 'sex',
+])
+
 export default function ContractFillForm({
   reservationId,
   contractId,
   kind,
   initialValues,
   breedOptions,
+  kennelDogs,
+  assignedDogId,
+  onAssignDogAction,
   manualOverride,
   onValuesChange,
   onSaveAction,
@@ -269,6 +291,17 @@ export default function ContractFillForm({
         </div>
       )}
 
+      {/* ─── Asignación de perro — bar superior al schema ─── */}
+      <div className="px-4 sm:px-5 pt-4 min-w-0">
+        <DogAssignmentBar
+          reservationId={reservationId}
+          assignedDogId={assignedDogId}
+          kennelDogs={kennelDogs}
+          disabled={manualOverride}
+          onAssignDogAction={onAssignDogAction}
+        />
+      </div>
+
       {/* ─── Secciones (el scroll lo gestiona el wrapper en ContractFillPanel) ─── */}
       <div className="px-4 sm:px-5 py-4 space-y-2 min-w-0">
         {schema.map((sec) => (
@@ -280,6 +313,7 @@ export default function ContractFillForm({
             values={values}
             onChange={setValue}
             breedOptions={breedOptions}
+            hasAssignedDog={!!assignedDogId}
             disabled={manualOverride}
             t={t}
           />
@@ -521,7 +555,8 @@ function ProgressRing({ pct }: { pct: number }) {
 // ─── Sección plegable ─────────────────────────────────────────────────────
 
 function SectionBlock({
-  section, collapsed, onToggle, values, onChange, breedOptions, disabled, t,
+  section, collapsed, onToggle, values, onChange, breedOptions,
+  hasAssignedDog, disabled, t,
 }: {
   section: ContractSection
   collapsed: boolean
@@ -529,18 +564,36 @@ function SectionBlock({
   values: Values
   onChange: (token: string, value: string) => void
   breedOptions: BreedOption[]
+  /** Si hay perro asignado, los campos derivados del perro (DOG_DERIVED_TOKENS)
+   *  se ocultan — el contrato ya los toma del dog vía buildContractVars. */
+  hasAssignedDog: boolean
   disabled: boolean
   t: (k: string) => string
 }) {
   const Icon = section.icon ? ICONS[section.icon] : Info
   const isKennelInfo = section.id === 'kennel-info'
 
-  // Conteo de campos rellenos vs total (visible aunque esté colapsada)
-  const filledCount = section.fields.filter((f) => {
+  // Si hay perro asignado, ocultamos los campos derivados del perro
+  // (dogName, breed, sex, color, microchip, birthDate, registration).
+  // Esos vienen del registro del perro vía buildContractVars y mostrarlos
+  // como inputs editables sería confuso (qué prevalece?).
+  const visibleFields = section.fields.filter((f) =>
+    !(hasAssignedDog && DOG_DERIVED_TOKENS.has(f.token)),
+  )
+
+  // Si una sección se queda SIN campos visibles (p.ej. "puppy" con dog
+  // asignado y solo dogName/birthDate/microchip/registration) ocultamos
+  // la sección entera.
+  if (visibleFields.length === 0) return null
+
+  // Conteo de campos rellenos vs total (visible aunque esté colapsada).
+  // Solo contamos los visibles para que el "3/5" sea coherente con lo
+  // que el criador puede tocar.
+  const filledCount = visibleFields.filter((f) => {
     const v = values[f.token]
     return v != null && String(v).trim() !== ''
   }).length
-  const totalCount = section.fields.length
+  const totalCount = visibleFields.length
 
   // Completitud visual: full / parcial / vacío
   const completionTone =
@@ -591,7 +644,7 @@ function SectionBlock({
               {t('Editar datos legales del criadero')} →
             </a>
           )}
-          {section.fields.map((field) => (
+          {visibleFields.map((field) => (
             <FieldInput
               key={field.token}
               field={field}

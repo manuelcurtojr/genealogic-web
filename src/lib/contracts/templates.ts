@@ -56,6 +56,32 @@ Y de otra parte, D./Dª **${v(d.clientName)}**, con DNI/NIE/Pasaporte nº ${v(d.
 Ambas partes, reconociéndose capacidad legal suficiente,`
 
 // ─────────────────────────── RESERVA ───────────────────────────
+// Helper: bloque "Identificación del cachorro" cuando hay perro asignado.
+// Para la plantilla server (function): inline. Para tokenized: usa marcadores.
+const identificacionConcreta = (d: ContractTemplateVars) => `## 2. Identificación del cachorro reservado
+
+- **Nombre:** ${v(d.dogName)}
+- **Raza:** ${v(d.breed)}
+- **Sexo:** ${v(d.sex)}
+- **Color / Capa:** ${v(d.color)}
+- **Fecha de nacimiento:** ${v(d.birthDate)}
+- **Microchip nº:** ${v(d.microchip)}
+- **Nº de registro / LOE (si procede):** ${v(d.registration, '—')}
+
+El Cliente reserva el ejemplar identificado arriba mediante el pago de la señal establecida en este contrato.`
+
+const caracteristicasAbstractas = (d: ContractTemplateVars) => `## 2. Características orientativas del cachorro reservado
+
+El Cliente manifiesta su interés en un cachorro con las siguientes características orientativas (al no haberse asignado todavía un ejemplar concreto):
+
+- **Raza:** ${v(d.breed)}
+- **Sexo:** ${v(d.sex, 'Indistinto')}
+- **Color / Capa:** ${v(d.color)}
+- **Función prevista:** ${v(d.purpose, 'Compañía')}
+- **Preferencias adicionales:** ${v(d.preferences, '—')}
+
+El Cliente acepta expresamente que, al tratarse de animales vivos, no puede garantizarse de forma absoluta la concurrencia exacta de todas las características solicitadas.`
+
 export const CONTRACT_TEMPLATE_RESERVATION = (d: ContractTemplateVars) => `# Contrato de reserva de cachorro
 
 En ${v(d.signCity)}, a ${d.todayDate}
@@ -64,9 +90,9 @@ ${partesReunidas(d)}
 
 **EXPONEN**
 
-1. Que el Criador desarrolla un programa de cría profesional y es propietario legítimo de los perros reproductores y de las camadas presentes o futuras derivadas de dicho programa.
-2. Que el Cliente manifiesta su interés en **reservar un cachorro**, ya sea de una camada futura o de una camada existente aún no entregada.
-3. Que ambas partes son conscientes de que la reproducción y desarrollo de animales vivos está sujeta a factores biológicos no totalmente previsibles.
+1. Que el Criador desarrolla un programa de cría profesional y es propietario legítimo del cachorro (o de la camada de la que procede el cachorro) objeto del presente contrato.
+2. Que el Cliente manifiesta su interés en **reservar el cachorro** identificado o, en su defecto, un cachorro de la próxima camada disponible que cumpla las características acordadas.
+3. Que ambas partes son conscientes de que el desarrollo de animales vivos está sujeto a factores biológicos no totalmente previsibles.
 
 En virtud de lo anterior, **ACUERDAN**:
 
@@ -74,19 +100,9 @@ En virtud de lo anterior, **ACUERDAN**:
 
 ## 1. Objeto del contrato
 
-El presente contrato tiene por objeto regular exclusivamente la reserva de un cachorro, sin que exista todavía transmisión de la propiedad ni entrega del animal, las cuales se formalizarán mediante **Contrato de Compraventa Definitivo** en el momento de la recogida o envío del cachorro.
+El presente contrato tiene por objeto regular la reserva del cachorro, sin que exista todavía transmisión de la propiedad ni entrega física del animal, que se formalizarán mediante **Contrato de Compraventa y Entrega definitivo** en el momento de la recogida o envío.
 
-## 2. Características orientativas del cachorro reservado
-
-El Cliente manifiesta su interés en un cachorro con las siguientes características orientativas:
-
-- **Raza:** ${v(d.breed)}
-- **Sexo:** ${v(d.sex, 'Indistinto')}
-- **Color / Capa:** ${v(d.color)}
-- **Función prevista:** ${v(d.purpose, 'Compañía')}
-- **Preferencias adicionales:** ${v(d.preferences, '—')}
-
-El Cliente acepta expresamente que, al tratarse de animales vivos, no puede garantizarse de forma absoluta la concurrencia exacta de todas las características solicitadas.
+${d.dogName ? identificacionConcreta(d) : caracteristicasAbstractas(d)}
 
 ## 3. Precio y reserva
 
@@ -237,6 +253,20 @@ Y de otra parte, D./Dª **{{clientName}}**, con DNI/NIE/Pasaporte nº {{clientId
 
 Ambas partes, reconociéndose capacidad legal suficiente,`
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Bloques condicionales en plantillas tokenizadas
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Una plantilla puede incluir bloques que solo aparecen si una condición es
+// cierta. Sintaxis:
+//
+//   <!-- IF dogName -->...solo si values.dogName está rellenado...<!-- /IF -->
+//   <!-- IF_NOT dogName -->...solo si NO está rellenado...<!-- /IF_NOT -->
+//
+// El render (server y client) primero filtra los bloques condicionales y
+// luego interpola los {{tokens}}. Ver lib/contracts/interpolate.ts y
+// lib/contracts/render.ts para la implementación.
+
 export const CONTRACT_TEMPLATE_RESERVATION_TOKENIZED = `# Contrato de reserva de cachorro
 
 En {{signCity}}, a {{todayDate}}
@@ -245,9 +275,9 @@ ${PARTES_REUNIDAS_TOKENIZED}
 
 **EXPONEN**
 
-1. Que el Criador desarrolla un programa de cría profesional y es propietario legítimo de los perros reproductores y de las camadas presentes o futuras derivadas de dicho programa.
-2. Que el Cliente manifiesta su interés en **reservar un cachorro**, ya sea de una camada futura o de una camada existente aún no entregada.
-3. Que ambas partes son conscientes de que la reproducción y desarrollo de animales vivos está sujeta a factores biológicos no totalmente previsibles.
+1. Que el Criador desarrolla un programa de cría profesional y es propietario legítimo del cachorro (o de la camada de la que procede) objeto del presente contrato.
+2. Que el Cliente manifiesta su interés en **reservar el cachorro** identificado o, en su defecto, un cachorro de la próxima camada disponible que cumpla las características acordadas.
+3. Que ambas partes son conscientes de que el desarrollo de animales vivos está sujeto a factores biológicos no totalmente previsibles.
 
 En virtud de lo anterior, **ACUERDAN**:
 
@@ -255,11 +285,25 @@ En virtud de lo anterior, **ACUERDAN**:
 
 ## 1. Objeto del contrato
 
-El presente contrato tiene por objeto regular exclusivamente la reserva de un cachorro, sin que exista todavía transmisión de la propiedad ni entrega del animal, las cuales se formalizarán mediante **Contrato de Compraventa Definitivo** en el momento de la recogida o envío del cachorro.
+El presente contrato tiene por objeto regular la reserva del cachorro, sin que exista todavía transmisión de la propiedad ni entrega física del animal, que se formalizarán mediante **Contrato de Compraventa y Entrega definitivo** en el momento de la recogida o envío.
 
+<!-- IF dogName -->
+## 2. Identificación del cachorro reservado
+
+- **Nombre:** {{dogName}}
+- **Raza:** {{breed}}
+- **Sexo:** {{sex}}
+- **Color / Capa:** {{color}}
+- **Fecha de nacimiento:** {{birthDate}}
+- **Microchip nº:** {{microchip}}
+- **Nº de registro / LOE (si procede):** {{registration}}
+
+El Cliente reserva el ejemplar identificado arriba mediante el pago de la señal establecida en este contrato.
+<!-- /IF -->
+<!-- IF_NOT dogName -->
 ## 2. Características orientativas del cachorro reservado
 
-El Cliente manifiesta su interés en un cachorro con las siguientes características orientativas:
+El Cliente manifiesta su interés en un cachorro con las siguientes características orientativas (al no haberse asignado todavía un ejemplar concreto):
 
 - **Raza:** {{breed}}
 - **Sexo:** {{sex}}
@@ -268,6 +312,7 @@ El Cliente manifiesta su interés en un cachorro con las siguientes característ
 - **Preferencias adicionales:** {{preferences}}
 
 El Cliente acepta expresamente que, al tratarse de animales vivos, no puede garantizarse de forma absoluta la concurrencia exacta de todas las características solicitadas.
+<!-- /IF_NOT -->
 
 ## 3. Precio y reserva
 

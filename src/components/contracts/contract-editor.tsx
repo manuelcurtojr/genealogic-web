@@ -5,7 +5,7 @@
  * - Sin lib externa; markdown render con `renderContractMarkdown`
  */
 'use client'
-import { useState, useTransition, useRef, useEffect } from 'react'
+import { useState, useTransition, useRef, useEffect, useMemo } from 'react'
 import {
   Bold,
   Italic,
@@ -18,8 +18,12 @@ import {
   Send,
   Loader2,
   CheckCircle2,
+  Lock,
+  AlertCircle,
 } from 'lucide-react'
 import { renderContractMarkdown } from '@/lib/contracts/markdown'
+import { validateContractBody } from '@/lib/contracts/required-tokens'
+import type { ContractKind } from '@/lib/contracts/templates'
 import { useT } from '@/components/i18n/locale-provider'
 
 export default function ContractEditor({
@@ -28,6 +32,7 @@ export default function ContractEditor({
   initialBody,
   initialTitle,
   canSend,
+  kind,
   onSaveAction,
   onSendAction,
 }: {
@@ -36,6 +41,9 @@ export default function ContractEditor({
   initialBody: string
   initialTitle: string
   canSend: boolean
+  /** Kind del contrato, para validar tokens requeridos en tiempo real.
+   *  Si no se pasa, el checklist no aparece (compat con callers viejos). */
+  kind?: ContractKind
   onSaveAction: (
     reservationId: string,
     contractId: string,
@@ -53,6 +61,14 @@ export default function ContractEditor({
   const [pending, startTransition] = useTransition()
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // Validación en vivo de tokens requeridos. Si el criador borra alguno
+  // mientras edita el markdown, le mostramos un aviso ANTES de que intente
+  // guardar (y el save action también valida server-side).
+  const validation = useMemo(() => {
+    if (!kind) return null
+    return validateContractBody(body, kind)
+  }, [body, kind])
   // En móvil mostramos una sola columna a la vez (Editar / Vista). En lg el
   // split de 2 columnas se muestra completo y este estado es irrelevante.
   const [mobileTab, setMobileTab] = useState<'edit' | 'preview'>('edit')
@@ -185,7 +201,54 @@ export default function ContractEditor({
       </div>
 
       {error && (
-        <p className="text-xs text-red-600 mb-2">{error}</p>
+        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 mb-2 text-xs text-red-700 flex items-start gap-2">
+          <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* ─── Bloques dinámicos requeridos (modo avanzado) ──────────────
+          Mostramos en vivo qué tokens críticos están presentes en el
+          markdown. Si el criador borra alguno (ej: {{clientName}}),
+          aparece rojo y al pulsar Guardar el server lo rechaza. */}
+      {validation && (
+        <div className={`rounded-xl border px-3 py-2.5 mb-3 text-[12px] ${
+          validation.ok
+            ? 'border-emerald-200 bg-emerald-50/40'
+            : 'border-amber-300 bg-amber-50'
+        }`}>
+          <div className="flex items-start gap-2">
+            <Lock className={`h-3.5 w-3.5 flex-shrink-0 mt-0.5 ${
+              validation.ok ? 'text-emerald-700' : 'text-amber-700'
+            }`} />
+            <div className="flex-1 min-w-0">
+              <p className={`font-semibold leading-tight ${
+                validation.ok ? 'text-emerald-900' : 'text-amber-900'
+              }`}>
+                {validation.ok
+                  ? `✓ ${t('Todos los bloques dinámicos requeridos están presentes')}`
+                  : `${t('Faltan bloques dinámicos obligatorios')} (${validation.missing.length})`}
+              </p>
+              <p className={`mt-0.5 leading-snug ${
+                validation.ok ? 'text-emerald-800' : 'text-amber-800'
+              }`}>
+                {validation.ok
+                  ? t('Puedes editar el texto a mano, pero NO borres los {{tokens}} críticos — el contrato no será válido sin ellos.')
+                  : t('Restáuralos en el markdown antes de guardar:')}
+              </p>
+              {!validation.ok && (
+                <ul className="mt-1.5 space-y-0.5">
+                  {validation.missing.map((m) => (
+                    <li key={m.token} className="text-amber-900 font-mono text-[11px]">
+                      <code className="bg-amber-100 px-1 rounded">{`{{${m.token}}}`}</code>{' '}
+                      <span className="font-sans text-[11px] text-amber-800">— {m.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Conmutador Editar / Vista — solo en móvil (en lg se ve el split). */}

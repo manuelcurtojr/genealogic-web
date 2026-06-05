@@ -62,9 +62,27 @@ export function buildContractVars(
   }
 }
 
-/** Sustituye `{{var}}` por su valor; variable ausente → string vacío. */
+/** Sustituye `{{var}}` por su valor; variable ausente → string vacío.
+ *  Filtra primero bloques condicionales `<!-- IF/IF_NOT -->`. */
 export function interpolateUserTemplate(body: string, vars: Record<string, string | undefined>): string {
-  return body.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, key: string) => {
+  // Filtrado de bloques condicionales — mismo formato que interpolate.ts
+  // client-side. Se duplica aquí para mantener el server-only sin importar
+  // del cliente. Pequeño helper inline:
+  const isPresent = (token: string): boolean => {
+    const v = vars[token]
+    if (v == null) return false
+    return String(v).trim() !== ''
+  }
+  let out = body.replace(
+    /<!--\s*IF\s+([a-zA-Z0-9_]+)\s*-->([\s\S]*?)<!--\s*\/IF\s*-->/g,
+    (_m, token: string, content: string) => (isPresent(token) ? content : ''),
+  )
+  out = out.replace(
+    /<!--\s*IF_NOT\s+([a-zA-Z0-9_]+)\s*-->([\s\S]*?)<!--\s*\/IF_NOT\s*-->/g,
+    (_m, token: string, content: string) => (isPresent(token) ? '' : content),
+  )
+  out = out.replace(/\n{3,}/g, '\n\n')
+  return out.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, key: string) => {
     const val = vars[key]
     return val == null ? '' : String(val)
   })

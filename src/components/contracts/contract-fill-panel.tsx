@@ -30,6 +30,18 @@ export interface BreedOption {
   colors: { id: string; name: string; hex_code?: string | null }[]
 }
 
+export interface KennelDogOption {
+  id: string
+  name: string
+  sex: 'male' | 'female' | null
+  microchip: string | null
+  registration: string | null
+  birthDate: string | null
+  thumbnailUrl: string | null
+  breedName: string | null
+  colorName: string | null
+}
+
 interface Props {
   reservationId: string
   contractId: string
@@ -46,19 +58,30 @@ interface Props {
   /** Catálogo de razas + sus colores, cargado server-side. Alimenta el
    *  selector de raza (typeahead) y el multi-select de colores. */
   breedOptions: BreedOption[]
+  /** Perros del criadero (max 500) — selector del cachorro asignado. */
+  kennelDogs: KennelDogOption[]
+  /** UUID del perro actualmente asignado a la reserva (puppy_reservations.dog_id),
+   *  o null si todavía no se ha asignado un ejemplar concreto. */
+  assignedDogId: string | null
   /** Si true, formulario disabled (el criador editó markdown a mano). */
   manualOverride: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSaveAction: (...args: any[]) => Promise<any>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSendAction: (...args: any[]) => Promise<any>
+  /** Server action que asigna/desasigna perro a la reserva. */
+  onAssignDogAction: (
+    reservationId: string,
+    dogId: string | null,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>
   onAdvancedMode: () => void
 }
 
 export default function ContractFillPanel({
   reservationId, contractId, kind, templateBody, contractTitle,
-  initialValues, kennelVars, breedOptions, manualOverride,
-  onSaveAction, onSendAction, onAdvancedMode,
+  initialValues, kennelVars, breedOptions, kennelDogs, assignedDogId,
+  manualOverride,
+  onSaveAction, onSendAction, onAssignDogAction, onAdvancedMode,
 }: Props) {
   const t = useT()
   const [values, setValues] = useState<Record<string, string>>(initialValues)
@@ -97,12 +120,15 @@ export default function ContractFillPanel({
             kind={kind}
             initialValues={initialValues}
             breedOptions={breedOptions}
+            kennelDogs={kennelDogs}
+            assignedDogId={assignedDogId}
             manualOverride={manualOverride}
             onValuesChange={setValues}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onSaveAction={onSaveAction as any}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onSendAction={onSendAction as any}
+            onAssignDogAction={onAssignDogAction}
             onAdvancedMode={onAdvancedMode}
           />
         </div>

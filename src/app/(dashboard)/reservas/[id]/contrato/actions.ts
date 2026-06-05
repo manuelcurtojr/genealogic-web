@@ -17,6 +17,7 @@ import {
 } from '@/lib/contracts/contracts'
 import { CONTRACT_TEMPLATES, type ContractKind } from '@/lib/contracts/templates'
 import { generateContractBody, generateContractBodyFromValues, buildContractVars } from '@/lib/contracts/render'
+import { validateContractBody } from '@/lib/contracts/required-tokens'
 import { getContractTemplate } from '@/lib/contracts/templates-actions'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -129,6 +130,107 @@ export async function createFromUserTemplateAction(
 }
 
 /**
+ * Asigna (o desasigna) un perro concreto a la reserva. Actualiza
+ * puppy_reservations.dog_id; al regenerar el contrato, buildContractVars
+ * leerá los datos del perro automáticamente (nombre, raza, color, microchip,
+ * etc.) y los bloques condicionales del template los mostrarán.
+ *
+ * Pasa null como dogId para desasignar (volver al modo "preferencias
+ * orientativas").
+ */
+export async function assignDogToReservationAction(
+  reservationId: string,
+  dogId: string | null,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const { reservation } = await assertBreeder(reservationId)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createKennelAdminClient() as any
+
+    // Si dogId no es null, validar que el perro pertenezca al MISMO kennel
+    // (defensa además de la RLS de dogs).
+    if (dogId) {
+      const { data: dog } = await admin
+        .from('dogs')
+        .select('id, kennel_id')
+        .eq('id', dogId)
+        .maybeSingle()
+      const t = getTranslator(await getLocale())
+      if (!dog) return { ok: false, error: t('Perro no encontrado') }
+      if (dog.kennel_id !== reservation.kennel?.id) {
+        return { ok: false, error: t('Ese perro no pertenece a este criadero') }
+      }
+    }
+
+    const { error } = await admin
+      .from('puppy_reservations')
+      .update({ dog_id: dogId })
+      .eq('id', reservationId)
+    if (error) throw new Error(error.message)
+
+    // Regenerar body_html del contrato draft (si lo hay) para que refleje
+    // el cambio de perro inmediatamente, sin esperar a que el criador edite
+    // algún campo en el form.
+    const { data: drafts } = await admin
+      .from('reservation_contracts')
+      .select('id, kind, source_template_id, template_values')
+      .eq('reservation_id', reservationId)
+      .eq('status', 'draft')
+    for (const draft of (drafts || []) as Array<{
+      id: string; kind: ContractKind;
+      source_template_id: string | null;
+      template_values: Record<string, string> | null;
+    }>) {
+      // Skip si el draft está en modo manual (no tocamos su body)
+      if (draft.template_values && (draft.template_values as Record<string, unknown>).__manual__) continue
+
+      let userTemplateBody: string | null = null
+      if (draft.source_template_id) {
+        const { data: tpl } = await admin
+          .from('contract_templates')
+          .select('body_md')
+          .eq('id', draft.source_template_id)
+          .maybeSingle()
+        userTemplateBody = tpl?.body_md ?? null
+      }
+
+      // Recargamos la reserva completa con joins para que buildContractVars
+      // tenga los datos del nuevo perro asignado.
+      const { data: fullRes } = await admin
+        .from('puppy_reservations')
+        .select(
+          `*,
+           kennel:kennels(id, name, city, country, owner_id, legal_name, legal_id, legal_address, legal_representative, legal_representative_id, sign_city, jurisdiction),
+           puppy:dogs!puppy_dog_id(id, name, sex, microchip, registration, birth_date, breed:breeds(name), color:colors(name)),
+           dog:dogs!dog_id(id, name, sex, microchip, registration, birth_date, breed:breeds(name), color:colors(name))`,
+        )
+        .eq('id', reservationId)
+        .single()
+      if (!fullRes) continue
+
+      const values = (draft.template_values as Record<string, string>) || {}
+      const newBody = generateContractBodyFromValues(
+        fullRes,
+        draft.kind,
+        values,
+        userTemplateBody,
+      )
+      await admin
+        .from('reservation_contracts')
+        .update({ body_html: newBody })
+        .eq('id', draft.id)
+    }
+
+    revalidatePath(`/reservas/${reservationId}/contrato`)
+    revalidatePath(`/reservas/${reservationId}`)
+    revalidatePath(`/mis-reservas/${reservationId}`)
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'unknown' }
+  }
+}
+
+/**
  * Marca un contrato como "modo avanzado" (markdown editor). A partir de
  * aquí el fill-form queda bloqueado y se muestra el editor markdown
  * clásico para ajustes puntuales. Para volver al fill-form hay que
@@ -177,6 +279,31 @@ export async function saveContractDraftAction(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   try {
     await assertBreeder(reservationId)
+
+    // ─── Validar bloques dinámicos requeridos ───
+    // El modo avanzado markdown permite borrar cualquier cosa. Sin esta
+    // validación el criador podría quitar {{clientName}} y firmar un
+    // contrato sin identificar al cliente. Antes de guardar, comprobamos
+    // que TODOS los tokens requeridos para el kind sigan presentes.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createKennelAdminClient() as any
+    const { data: contract } = await admin
+      .from('reservation_contracts')
+      .select('kind')
+      .eq('id', contractId)
+      .maybeSingle()
+    if (contract?.kind) {
+      const { ok, missing } = validateContractBody(body, contract.kind as ContractKind)
+      if (!ok) {
+        const t = getTranslator(await getLocale())
+        const list = missing.map((m) => `{{${m.token}}} (${m.label})`).join(', ')
+        return {
+          ok: false,
+          error: `${t('Faltan bloques dinámicos obligatorios')}: ${list}. ${t('Restáuralos para poder guardar.')}`,
+        }
+      }
+    }
+
     await updateContractBody({ contractId, bodyMarkdown: body, title })
     revalidatePath(`/reservas/${reservationId}/contrato`)
     return { ok: true }

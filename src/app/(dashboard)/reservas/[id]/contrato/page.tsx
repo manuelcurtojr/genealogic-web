@@ -24,7 +24,7 @@ import { renderContractMarkdown } from '@/lib/contracts/markdown'
 import { CONTRACT_TEMPLATES, type ContractKind, getTokenizedBaseTemplate } from '@/lib/contracts/templates'
 import { buildContractVars } from '@/lib/contracts/render'
 import ContractEditor from '@/components/contracts/contract-editor'
-import ContractFillPanel, { type BreedOption } from '@/components/contracts/contract-fill-panel'
+import ContractFillPanel, { type BreedOption, type KennelDogOption } from '@/components/contracts/contract-fill-panel'
 import CopyPreviewLinkButton from '@/components/contracts/copy-preview-link-button'
 import {
   createOrInitContractAction,
@@ -35,6 +35,7 @@ import {
   sendContractAction,
   signContractAsBreederAction,
   cancelContractAction,
+  assignDogToReservationAction,
 } from './actions'
 import { listContractTemplatesForUser, type ContractTemplate } from '@/lib/contracts/templates-actions'
 import { CheckCircle2, FileText, AlertCircle, AlertTriangle } from 'lucide-react'
@@ -58,6 +59,43 @@ const DELIVERY_STAGES = new Set(['Pendiente de entrega', 'Entregado'])
  * server component se ejecuta una vez por request y Next.js ya lo hace
  * de su cuenta en producción.
  */
+/**
+ * Carga los perros del criadero para el selector "Cachorro asignado" del
+ * fill-form. Incluye name, sexo, microchip, fecha nacimiento, raza y color
+ * resueltos. Limitado a 500 — kennel medio tiene 20-100 perros, 500 es un
+ * tope generoso para evitar payloads enormes.
+ */
+async function loadKennelDogs(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any,
+  kennelId: string | null | undefined,
+): Promise<KennelDogOption[]> {
+  if (!kennelId) return []
+  const { data } = await admin
+    .from('dogs')
+    .select(`
+      id, name, sex, microchip, registration, birth_date, thumbnail_url,
+      breed:breeds(name),
+      color:colors(name)
+    `)
+    .eq('kennel_id', kennelId)
+    .order('name')
+    .limit(500)
+  return ((data || []) as Array<Record<string, unknown>>).map((d) => ({
+    id: d.id as string,
+    name: d.name as string,
+    sex: (d.sex as 'male' | 'female' | null) || null,
+    microchip: (d.microchip as string | null) || null,
+    registration: (d.registration as string | null) || null,
+    birthDate: (d.birth_date as string | null) || null,
+    thumbnailUrl: (d.thumbnail_url as string | null) || null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    breedName: ((d.breed as any)?.name as string | null) || null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    colorName: ((d.color as any)?.name as string | null) || null,
+  }))
+}
+
 async function loadBreedOptions(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   admin: any,
@@ -144,6 +182,9 @@ export default async function BreederContractPage({
   // Catálogo de razas + colores para el fill-form (combobox + multi-select)
   const breedOptions = await loadBreedOptions(admin)
 
+  // Perros del criadero — para el selector "Cachorro asignado" del fill-form
+  const kennelDogs = await loadKennelDogs(admin, reservation.kennel?.id)
+
   const reservationContract = contracts.find((c) => c.kind === 'reservation') ?? null
   const deliveryContract = contracts.find((c) => c.kind === 'delivery') ?? null
 
@@ -160,6 +201,7 @@ export default async function BreederContractPage({
       contract={reservationContract}
       userTemplates={userTemplates}
       breedOptions={breedOptions}
+      kennelDogs={kennelDogs}
       highlighted={!deliveryPhase}
       legalDataMissing={legalDataMissing}
       t={t}
@@ -173,6 +215,7 @@ export default async function BreederContractPage({
       contract={deliveryContract}
       userTemplates={userTemplates}
       breedOptions={breedOptions}
+      kennelDogs={kennelDogs}
       highlighted={deliveryPhase}
       legalDataMissing={legalDataMissing}
       t={t}
@@ -251,6 +294,7 @@ function ContractBlock({
   contract,
   userTemplates,
   breedOptions,
+  kennelDogs,
   highlighted,
   legalDataMissing,
   t,
@@ -261,6 +305,7 @@ function ContractBlock({
   contract: ReservationContract | null
   userTemplates: ContractTemplate[]
   breedOptions: BreedOption[]
+  kennelDogs: KennelDogOption[]
   highlighted: boolean
   legalDataMissing: boolean
   t: T
@@ -325,6 +370,7 @@ function ContractBlock({
           reservation={reservation}
           contract={contract}
           breedOptions={breedOptions}
+          kennelDogs={kennelDogs}
           t={t}
         />
       ) : (
@@ -348,12 +394,13 @@ function ContractBlock({
  *    el criador edita el primer campo.
  */
 async function DraftContractBody({
-  reservation, contract, breedOptions, t,
+  reservation, contract, breedOptions, kennelDogs, t,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reservation: any
   contract: ReservationContract
   breedOptions: BreedOption[]
+  kennelDogs: KennelDogOption[]
   t: T
 }) {
   const tplValues = (contract.template_values as Record<string, unknown> | null) || null
@@ -369,6 +416,7 @@ async function DraftContractBody({
         initialBody={contract.body_html}
         initialTitle={contract.title}
         canSend
+        kind={contract.kind}
         onSaveAction={saveContractDraftAction}
         onSendAction={sendContractAction}
       />
@@ -437,9 +485,12 @@ async function DraftContractBody({
       initialValues={initialValues}
       kennelVars={kennelVars}
       breedOptions={breedOptions}
+      kennelDogs={kennelDogs}
+      assignedDogId={reservation.dog_id || null}
       manualOverride={false}
       onSaveAction={saveContractValuesAction}
       onSendAction={sendContractAction}
+      onAssignDogAction={assignDogToReservationAction}
       onAdvancedMode={handleSetAdvancedMode}
     />
   )
