@@ -20,6 +20,7 @@ import {
   formatPrice,
 } from '@/lib/owner/reservations'
 import ReservationTimeline from '@/components/reservations/reservation-timeline'
+import ReservationChatPanel from '@/components/reservations/reservation-chat-panel'
 import { listReservationMessages, markThreadRead } from '@/lib/reservations/messages'
 import { listDogDocumentsForOwner } from '@/lib/dogs/documents'
 import { labelForType } from '@/lib/dogs/documents-shared'
@@ -80,7 +81,28 @@ export default async function MyReservationDetailPage({
   const kennelInitial = reservation.kennel?.name[0]?.toUpperCase() ?? '?'
   const kennelHref = reservation.kennel?.slug ? `/kennels/${reservation.kennel.slug}` : null
 
+  // Aproximación de no-leídos del criador. Si el modelo no tiene flag de
+  // "leído por cliente", queda en 0 y el badge no aparece.
+  const unreadCount = messages.filter((m) =>
+    m.sender_role === 'breeder' && !('read_at' in m && m.read_at)
+  ).length
+
   return (
+    <ReservationChatPanel
+      kennelLogoUrl={reservation.kennel?.logo_url ?? null}
+      kennelName={reservation.kennel?.name || t('el criadero')}
+      kennelTagline={t('Criadero · Genealogic')}
+      unreadCount={unreadCount}
+      chatBody={
+        <ReservationThread
+          messages={messages}
+          currentRole="client"
+          reservationId={reservation.id}
+          onSendAction={sendClientMessageAction}
+          otherSideName={reservation.kennel?.name || t('el criador')}
+        />
+      }
+    >
     <div className="space-y-6 sm:space-y-7">
       {/* Breadcrumb */}
       <Link
@@ -89,14 +111,6 @@ export default async function MyReservationDetailPage({
       >
         <ArrowLeft className="h-3.5 w-3.5" /> {t('Mis reservas')}
       </Link>
-
-      {/* ═══ PANEL LAYOUT: contenido + chat sticky a la derecha en xl+ ═══
-          En xl: grid 2-col → contenido (flex 1) | chat sidebar fijo 400px.
-          En lg- (móvil/tablet): el chat se renderiza al final apilado
-          (hidden xl:block en el sidebar + xl:hidden en el bloque inferior). */}
-      <div className="grid xl:grid-cols-[minmax(0,1fr)_minmax(0,420px)] gap-6 xl:gap-7">
-        {/* ─── COLUMNA IZQUIERDA: todo el contenido ─── */}
-        <div className="space-y-6 sm:space-y-7 min-w-0">
 
       {/* ═══ HERO CARD ═══ */}
       <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-canvas via-canvas to-surface-soft/60 p-6 sm:p-8">
@@ -428,58 +442,14 @@ export default async function MyReservationDetailPage({
         </Card>
       )}
 
-      {/* ═══ Mensajes — versión mobile/tablet apilada al final (solo lg-) ═══ */}
-      <Card id="mensajes" className="xl:hidden">
-        <CardHeader
-          title={t('Mensajes con el criador')}
-          subtitle={messages.length === 0
-            ? t('Aún no hay mensajes — empieza la conversación')
-            : `${messages.length} ${messages.length === 1 ? t('mensaje') : t('mensajes')}`}
-          icon={MessageCircle}
-        />
-        <ReservationThread
-          messages={messages}
-          currentRole="client"
-          reservationId={reservation.id}
-          onSendAction={sendClientMessageAction}
-          otherSideName={reservation.kennel?.name || t('el criador')}
-        />
-      </Card>
-
       {isArchived && (
         <div className="rounded-xl bg-surface-soft border border-hairline p-4 text-[12.5px] text-muted flex items-start gap-3">
           <Archive className="h-4 w-4 flex-shrink-0 mt-0.5" />
           <p>{t('Esta reserva está archivada. Se mantiene visible para tu histórico pero ya no recibirá actualizaciones.')}</p>
         </div>
       )}
-
-        </div>
-        {/* ─── COLUMNA DERECHA: chat sticky (solo xl+) ───
-            En desktop el chat queda fijo a la derecha para que el cliente
-            pueda mensajearse mientras navega por contratos/pagos/timeline.
-            Ocupa la altura disponible de viewport (max-h calc). */}
-        <aside className="hidden xl:block xl:sticky xl:top-6 xl:self-start xl:max-h-[calc(100vh-3rem)] min-w-0">
-          <Card>
-            <CardHeader
-              title={t('Mensajes con el criador')}
-              subtitle={messages.length === 0
-                ? t('Aún no hay mensajes')
-                : `${messages.length} ${messages.length === 1 ? t('mensaje') : t('mensajes')}`}
-              icon={MessageCircle}
-            />
-            <div className="max-h-[calc(100vh-280px)] overflow-y-auto -mx-2 px-2">
-              <ReservationThread
-                messages={messages}
-                currentRole="client"
-                reservationId={reservation.id}
-                onSendAction={sendClientMessageAction}
-                otherSideName={reservation.kennel?.name || t('el criador')}
-              />
-            </div>
-          </Card>
-        </aside>
-      </div>
     </div>
+    </ReservationChatPanel>
   )
 }
 

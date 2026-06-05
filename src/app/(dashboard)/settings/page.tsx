@@ -6,11 +6,13 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  User, Mail, Shield, Loader2, Check, Lock, Globe, Bell, Eye, EyeOff,
-  Download, Trash2, CreditCard, Calendar, Phone, MapPin, Crown,
-  ChevronRight, AlertTriangle
+  User, Shield, Loader2, Check, Lock, Globe, Bell, Eye,
+  Download, Trash2, CreditCard, Crown, Monitor,
+  ChevronRight, AlertTriangle, EyeOff, AtSign, PhoneCall,
+  Languages, CalendarDays, Coins, Clock, FileJson
 } from 'lucide-react'
 import AvatarUpload from '@/components/settings/avatar-upload'
+import NotificationsSection from '@/components/settings/notifications-section'
 import { getRoleLabel, getRoleBadge, getPlanLabel } from '@/lib/permissions'
 import { getLocalizedCountries, searchCities } from '@/lib/countries'
 import { getTranslator } from '@/lib/i18n'
@@ -63,7 +65,6 @@ export default function SettingsPage() {
   const [form, setForm] = useState({
     display_name: '', phone: '', country: '', city: '', bio: '',
     language: 'es', date_format: 'DD/MM/YYYY', currency: 'EUR', timezone: '',
-    notif_email: true, notif_submissions: true, notif_vet: true, notif_calendar: true,
     public_profile: true, show_email: false, show_phone: false,
   })
 
@@ -131,10 +132,6 @@ export default function SettingsPage() {
           date_format: data.date_format || 'DD/MM/YYYY',
           currency: data.currency || 'EUR',
           timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-          notif_email: data.notif_email ?? true,
-          notif_submissions: data.notif_submissions ?? true,
-          notif_vet: data.notif_vet ?? true,
-          notif_calendar: data.notif_calendar ?? true,
           public_profile: data.public_profile ?? true,
           show_email: data.show_email ?? false,
           show_phone: data.show_phone ?? false,
@@ -157,8 +154,6 @@ export default function SettingsPage() {
       city: form.city || null, bio: form.bio || null,
       language: form.language, date_format: form.date_format,
       currency: form.currency, timezone: form.timezone,
-      notif_email: form.notif_email, notif_submissions: form.notif_submissions,
-      notif_vet: form.notif_vet, notif_calendar: form.notif_calendar,
       public_profile: form.public_profile, show_email: form.show_email,
       show_phone: form.show_phone,
     }).eq('id', profile.id)
@@ -213,18 +208,21 @@ export default function SettingsPage() {
   ]
 
   return (
-    <div className="max-w-4xl space-y-6 sm:space-y-8">
+    <div className="max-w-5xl space-y-6 sm:space-y-8">
       <div>
         <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted">{t('Cuenta')}</p>
         <h1 className="mt-1.5 text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.04em] text-ink">
           {t('Ajustes')}
         </h1>
+        <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-body">
+          {t('Gestiona tu perfil, seguridad, idioma, notificaciones y privacidad desde un solo lugar.')}
+        </p>
       </div>
 
-      <div className="flex flex-col gap-6 md:flex-row md:gap-8">
+      <div className="flex flex-col gap-6 md:flex-row md:gap-10">
         {/* Sidebar navigation */}
-        <div className="hidden w-52 flex-shrink-0 md:block">
-          <nav className="sticky top-24 space-y-0.5">
+        <div className="hidden w-56 flex-shrink-0 md:block">
+          <nav className="sticky top-24 space-y-1">
             {sections.map(s => {
               const Icon = s.icon
               const active = activeSection === s.key
@@ -232,11 +230,25 @@ export default function SettingsPage() {
                 <button
                   key={s.key}
                   onClick={() => setActiveSection(s.key)}
-                  className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-[13px] font-medium transition-colors ${
-                    active ? 'bg-surface-card text-ink' : 'text-body hover:bg-surface-soft hover:text-ink'
+                  className={`group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium transition-all ${
+                    active
+                      ? 'bg-surface-card text-ink'
+                      : 'text-body hover:bg-surface-soft hover:text-ink'
                   }`}
                 >
-                  <Icon className="h-4 w-4" /> {s.label}
+                  {active && (
+                    <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-[color:var(--brand)]" />
+                  )}
+                  <span
+                    className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg transition-colors ${
+                      active
+                        ? 'bg-[color:var(--brand-soft)] text-[color:var(--brand)]'
+                        : 'text-muted group-hover:text-ink'
+                    }`}
+                  >
+                    <Icon className="h-[17px] w-[17px]" />
+                  </span>
+                  {s.label}
                 </button>
               )
             })}
@@ -244,38 +256,43 @@ export default function SettingsPage() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 space-y-6">
+        <div className="min-w-0 flex-1 space-y-6">
           {/* Mobile section tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-1 md:hidden">
-            {sections.map(s => (
-              <button
-                key={s.key}
-                onClick={() => setActiveSection(s.key)}
-                className={`whitespace-nowrap rounded-md px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
-                  activeSection === s.key
-                    ? 'bg-ink text-on-primary'
-                    : 'border border-hairline bg-canvas text-body hover:bg-surface-soft hover:text-ink'
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 md:hidden">
+            {sections.map(s => {
+              const Icon = s.icon
+              const active = activeSection === s.key
+              return (
+                <button
+                  key={s.key}
+                  onClick={() => setActiveSection(s.key)}
+                  className={`flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[12.5px] font-medium transition-colors ${
+                    active
+                      ? 'bg-ink text-on-primary'
+                      : 'border border-hairline bg-canvas text-body hover:bg-surface-soft hover:text-ink'
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {s.label}
+                </button>
+              )
+            })}
           </div>
 
           {/* === PERFIL === */}
           {activeSection === 'perfil' && (
             <div className="space-y-4">
-              <SectionHeader title={t('Perfil personal')} desc={t('Tu información personal y avatar')} />
-              <div className="rounded-xl border border-hairline bg-canvas p-5">
-                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
+              <SectionHeader icon={User} title={t('Perfil personal')} desc={t('Tu información personal y avatar')} />
+              <div className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6">
+                <div className="mb-5 flex items-center gap-4 sm:mb-6">
                   <AvatarUpload userId={profile?.id} currentUrl={profile?.avatar_url} displayName={form.display_name} onUploaded={(url) => setProfile((prev: any) => ({ ...prev, avatar_url: url }))} />
-                  <div>
-                    <p className="font-semibold">{form.display_name || t('Sin nombre')}</p>
-                    <p className="text-xs text-muted">{profile?.email}</p>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getRoleBadge(userRole).bg}`}>{getRoleLabel(userRole)}</span>
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-ink">{form.display_name || t('Sin nombre')}</p>
+                    <p className="truncate text-xs text-muted">{profile?.email}</p>
+                    <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${getRoleBadge(userRole).bg}`}>{getRoleLabel(userRole)}</span>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <Field label={t('Nombre para mostrar')} value={form.display_name} onChange={v => set('display_name', v)} />
                   <Field label={t('Teléfono')} value={form.phone} onChange={v => set('phone', v)} placeholder="+34 600 000 000" />
                   {/* Country selector */}
@@ -334,7 +351,7 @@ export default function SettingsPage() {
           {/* === SUSCRIPCIÓN === */}
           {showBilling && activeSection === 'suscripcion' && (
             <div className="space-y-4">
-              <SectionHeader title={t('Suscripción')} desc={t('Plan actual y opciones de upgrade')} />
+              <SectionHeader icon={Crown} title={t('Suscripción')} desc={t('Plan actual y opciones de upgrade')} />
               <div className="rounded-2xl border border-ink bg-canvas p-6 relative overflow-hidden">
                 <div className="absolute top-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-ink text-on-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
                   <Crown className="w-3 h-3" />
@@ -374,11 +391,11 @@ export default function SettingsPage() {
           {/* === FACTURACIÓN === */}
           {showBilling && activeSection === 'facturacion' && (
             <div className="space-y-4">
-              <SectionHeader title={t('Facturación')} desc={t('Historial de pagos y datos fiscales')} />
-              <div className="rounded-xl border border-hairline bg-canvas p-5">
+              <SectionHeader icon={CreditCard} title={t('Facturación')} desc={t('Historial de pagos y datos fiscales')} />
+              <div className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6">
                 <div className="flex items-start gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-surface-card flex items-center justify-center flex-shrink-0">
-                    <CreditCard className="w-5 h-5 text-ink" />
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[color:var(--brand-soft)]">
+                    <CreditCard className="h-5 w-5 text-[color:var(--brand)]" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-ink">{t('Stripe en preparación')}</p>
@@ -408,13 +425,18 @@ export default function SettingsPage() {
           {/* === SEGURIDAD === */}
           {activeSection === 'seguridad' && (
             <div className="space-y-4">
-              <SectionHeader title={t('Contraseña y seguridad')} desc={t('Gestiona tu contraseña de acceso')} />
-              <div className="rounded-xl border border-hairline bg-canvas p-5">
+              <SectionHeader icon={Lock} title={t('Contraseña y seguridad')} desc={t('Gestiona tu contraseña de acceso')} />
+              <div className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6">
                 {passwordSuccess && <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm text-green-400 mb-4 flex items-center gap-2"><Check className="w-4 h-4" /> {t('Contraseña actualizada correctamente')}</div>}
                 {!showPassword ? (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3"><Lock className="w-4 h-4 text-muted" /><div><p className="text-sm font-medium">{t('Contraseña')}</p><p className="text-xs text-muted">••••••••</p></div></div>
-                    <button onClick={() => setShowPassword(true)} className="text-sm text-ink hover:opacity-80 transition font-medium">{t('Cambiar')}</button>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[color:var(--brand-soft)]">
+                        <Lock className="h-[18px] w-[18px] text-[color:var(--brand)]" />
+                      </div>
+                      <div><p className="text-sm font-medium text-ink">{t('Contraseña')}</p><p className="text-xs text-muted">••••••••</p></div>
+                    </div>
+                    <button onClick={() => setShowPassword(true)} className="flex-shrink-0 rounded-lg border border-hairline bg-canvas px-3.5 py-1.5 text-sm font-medium text-ink transition hover:bg-surface-soft">{t('Cambiar')}</button>
                   </div>
                 ) : (
                   <form onSubmit={handleChangePassword} className="space-y-3">
@@ -430,17 +452,17 @@ export default function SettingsPage() {
               </div>
 
               {/* Sessions */}
-              <div className="rounded-xl border border-hairline bg-canvas p-5">
+              <div className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold">{t('Sesiones activas')}</h3>
+                  <h3 className="text-sm font-semibold text-ink">{t('Sesiones activas')}</h3>
                 </div>
-                <div className="rounded-lg border border-hairline bg-canvas p-3 flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                    <Shield className="w-4 h-4 text-green-400" />
+                <div className="rounded-xl border border-hairline bg-surface-soft p-3 flex items-center gap-3 mb-3">
+                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-green-500/10">
+                    <Monitor className="h-[18px] w-[18px] text-green-500" />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium flex items-center gap-2">{t('Sesión actual')} <span className="text-[9px] bg-green-500/10 text-green-400 px-1.5 py-0.5 rounded-full">{t('Activa')}</span></p>
-                    <p className="text-xs text-muted">{typeof navigator !== 'undefined' ? navigator.userAgent.split('(')[1]?.split(')')[0] || t('Navegador') : t('Navegador')}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-ink flex items-center gap-2">{t('Sesión actual')} <span className="text-[9px] bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded-full">{t('Activa')}</span></p>
+                    <p className="truncate text-xs text-muted">{typeof navigator !== 'undefined' ? navigator.userAgent.split('(')[1]?.split(')')[0] || t('Navegador') : t('Navegador')}</p>
                   </div>
                 </div>
                 {sessionsSuccess && <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm text-green-400 mb-3 flex items-center gap-2"><Check className="w-4 h-4" /> {t('Todas las sesiones han sido cerradas')}</div>}
@@ -467,10 +489,10 @@ export default function SettingsPage() {
           {/* === IDIOMA === */}
           {activeSection === 'idioma' && (
             <div className="space-y-4">
-              <SectionHeader title={t('Idioma y región')} desc={t('Configura tu idioma, moneda y formato de fecha')} />
-              <div className="rounded-xl border border-hairline bg-canvas p-5 space-y-3">
+              <SectionHeader icon={Globe} title={t('Idioma y región')} desc={t('Configura tu idioma, moneda y formato de fecha')} />
+              <div className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 space-y-4">
                 <div>
-                  <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Idioma')}</label>
+                  <SelectLabel icon={Languages} label={t('Idioma')} />
                   <select value={form.language} onChange={e => set('language', e.target.value)}
                     className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none">
                     {LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
@@ -478,21 +500,25 @@ export default function SettingsPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Formato de fecha')}</label>
+                    <SelectLabel icon={CalendarDays} label={t('Formato de fecha')} />
                     <select value={form.date_format} onChange={e => set('date_format', e.target.value)}
                       className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none">
                       {DATE_FORMATS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Moneda preferida')}</label>
+                    <SelectLabel icon={Coins} label={t('Moneda preferida')} />
                     <select value={form.currency} onChange={e => set('currency', e.target.value)}
                       className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition appearance-none">
                       {CURRENCIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                     </select>
                   </div>
                 </div>
-                <Field label={t('Zona horaria')} value={form.timezone} onChange={v => set('timezone', v)} />
+                <div>
+                  <SelectLabel icon={Clock} label={t('Zona horaria')} />
+                  <input type="text" value={form.timezone} onChange={e => set('timezone', e.target.value)}
+                    className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition" />
+                </div>
                 <SaveButton saving={saving} onClick={handleSave} t={t} />
               </div>
             </div>
@@ -501,42 +527,43 @@ export default function SettingsPage() {
           {/* === NOTIFICACIONES === */}
           {activeSection === 'notificaciones' && (
             <div className="space-y-4">
-              <SectionHeader title={t('Notificaciones')} desc={t('Elige qué notificaciones quieres recibir')} />
-              <div className="rounded-xl border border-hairline bg-canvas p-5 space-y-3">
-                <Toggle label={t('Notificaciones por email')} desc={t('Recibir notificaciones importantes por correo')} value={form.notif_email} onChange={v => set('notif_email', v)} />
-                <Toggle label={t('Nuevas solicitudes')} desc={t('Cuando alguien rellena tu formulario de contacto')} value={form.notif_submissions} onChange={v => set('notif_submissions', v)} />
-                <Toggle label={t('Recordatorios veterinarios')} desc={t('Próximas citas y vacunas')} value={form.notif_vet} onChange={v => set('notif_vet', v)} />
-                <Toggle label={t('Eventos del calendario')} desc={t('Recordatorios de eventos próximos')} value={form.notif_calendar} onChange={v => set('notif_calendar', v)} />
-                <SaveButton saving={saving} onClick={handleSave} t={t} />
-              </div>
+              <SectionHeader icon={Bell} title={t('Notificaciones')} desc={t('Elige qué correos quieres recibir. Se guardan al instante.')} />
+              <NotificationsSection t={t} />
             </div>
           )}
 
           {/* === PRIVACIDAD === */}
           {activeSection === 'privacidad' && (
             <div className="space-y-4">
-              <SectionHeader title={t('Privacidad')} desc={t('Controla qué información es visible para otros')} />
-              <div className="rounded-xl border border-hairline bg-canvas p-5 space-y-3">
-                <Toggle label={t('Perfil público visible')} desc={t('Otros usuarios pueden ver tu perfil')} value={form.public_profile} onChange={v => set('public_profile', v)} />
-                <Toggle label={t('Mostrar email en perfil')} desc={t('Tu email será visible en tu perfil público')} value={form.show_email} onChange={v => set('show_email', v)} />
-                <Toggle label={t('Mostrar teléfono en perfil')} desc={t('Tu teléfono será visible en tu perfil público')} value={form.show_phone} onChange={v => set('show_phone', v)} />
-                <SaveButton saving={saving} onClick={handleSave} t={t} />
+              <SectionHeader icon={Eye} title={t('Privacidad')} desc={t('Controla qué información es visible para otros')} />
+              <div className="rounded-2xl border border-hairline bg-canvas p-2 sm:p-2.5">
+                <div className="divide-y divide-hairline">
+                  <Toggle icon={form.public_profile ? Eye : EyeOff} label={t('Perfil público visible')} desc={t('Otros usuarios pueden ver tu perfil')} value={form.public_profile} onChange={v => set('public_profile', v)} />
+                  <Toggle icon={AtSign} label={t('Mostrar email en perfil')} desc={t('Tu email será visible en tu perfil público')} value={form.show_email} onChange={v => set('show_email', v)} />
+                  <Toggle icon={PhoneCall} label={t('Mostrar teléfono en perfil')} desc={t('Tu teléfono será visible en tu perfil público')} value={form.show_phone} onChange={v => set('show_phone', v)} />
+                </div>
               </div>
+              <SaveButton saving={saving} onClick={handleSave} t={t} />
             </div>
           )}
 
           {/* === DATOS === */}
           {activeSection === 'datos' && (
             <div className="space-y-4">
-              <SectionHeader title={t('Datos y exportación')} desc={t('Exporta o elimina tu información')} />
-              <div className="rounded-xl border border-hairline bg-canvas p-5 space-y-4">
+              <SectionHeader icon={Download} title={t('Datos y exportación')} desc={t('Exporta o elimina tu información')} />
+              <div className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3"><Download className="w-5 h-5 text-blue-400 flex-shrink-0" /><div><p className="text-sm font-medium">{t('Exportar mis datos')}</p><p className="text-xs text-muted">{t('Descarga todos tus datos en formato JSON')}</p></div></div>
-                  <button onClick={() => window.location.href = '/api/export-data'} className="text-sm text-blue-400 hover:text-blue-300 font-medium transition">{t('Exportar')}</button>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[color:var(--brand-soft)]">
+                      <FileJson className="h-5 w-5 text-[color:var(--brand)]" />
+                    </div>
+                    <div><p className="text-sm font-medium text-ink">{t('Exportar mis datos')}</p><p className="text-xs text-muted">{t('Descarga todos tus datos en formato JSON')}</p></div>
+                  </div>
+                  <button onClick={() => window.location.href = '/api/export-data'} className="flex-shrink-0 rounded-lg border border-hairline bg-canvas px-3.5 py-1.5 text-sm font-medium text-ink transition hover:bg-surface-soft">{t('Exportar')}</button>
                 </div>
               </div>
               {/* Danger zone */}
-              <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 sm:p-5">
+              <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-5 sm:p-6">
                 <h3 className="text-sm font-semibold text-red-400 flex items-center gap-2 mb-3"><AlertTriangle className="w-4 h-4" /> {t('Zona de peligro')}</h3>
                 {!deleteConfirm ? (
                   <>
@@ -605,12 +632,26 @@ export default function SettingsPage() {
   )
 }
 
-function SectionHeader({ title, desc }: { title: string; desc: string }) {
+function SectionHeader({ icon: Icon, title, desc }: { icon: React.ElementType; title: string; desc: string }) {
   return (
-    <div>
-      <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">{title}</h2>
-      <p className="mt-1 text-[13.5px] text-body">{desc}</p>
+    <div className="flex items-center gap-3">
+      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[color:var(--brand-soft)] text-[color:var(--brand)]">
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="min-w-0">
+        <h2 className="text-[21px] font-semibold leading-tight tracking-[-0.03em] text-ink">{title}</h2>
+        <p className="mt-0.5 text-[13px] text-muted">{desc}</p>
+      </div>
     </div>
+  )
+}
+
+function SelectLabel({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
+  return (
+    <label className="mb-1.5 flex items-center gap-1.5 text-[12px] font-medium text-body">
+      <Icon className="h-3.5 w-3.5 text-muted" />
+      {label}
+    </label>
   )
 }
 
@@ -629,14 +670,19 @@ function Field({ label, value, onChange, type = 'text', placeholder }: { label: 
   )
 }
 
-function Toggle({ label, desc, value, onChange }: { label: string; desc: string; value: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ icon: Icon, label, desc, value, onChange }: { icon: React.ElementType; label: string; desc: string; value: boolean; onChange: (v: boolean) => void }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-2">
-      <div className="min-w-0">
-        <p className="text-[14px] font-medium text-ink">{label}</p>
-        <p className="text-[12.5px] text-muted">{desc}</p>
+    <div className="flex items-center justify-between gap-4 px-3 py-3.5 sm:px-4">
+      <div className="flex min-w-0 items-start gap-3">
+        <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[color:var(--brand-soft)] text-[color:var(--brand)]">
+          <Icon className="h-[18px] w-[18px]" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[14px] font-medium text-ink">{label}</p>
+          <p className="mt-0.5 text-[12.5px] leading-snug text-muted">{desc}</p>
+        </div>
       </div>
-      <ToggleSwitch value={value} onChange={onChange} />
+      <ToggleSwitch value={value} onChange={onChange} color="bg-[color:var(--brand)]" className="flex-shrink-0" />
     </div>
   )
 }
