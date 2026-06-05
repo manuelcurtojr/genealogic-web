@@ -315,7 +315,7 @@ function SectionBlock({
           )}
           {isKennelInfo && (
             <a
-              href="/kennel/contenido/legal"
+              href="/kennel/legal"
               className="inline-flex items-center gap-1 text-[12px] text-ink underline hover:text-[#FE6620] transition-colors"
             >
               {t('Editar datos legales del criadero')} →

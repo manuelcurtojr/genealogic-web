@@ -7,7 +7,7 @@ import Link from 'next/link'
 import {
   Edit, Globe, ExternalLink, Camera, Loader2, Dog, Baby,
   Eye, Heart, Key, Link2, ArrowRight, Inbox, CreditCard, TrendingUp,
-  ChevronDown, Pencil, Sparkles,
+  ChevronDown, Pencil, Sparkles, ShieldCheck,
 } from 'lucide-react'
 import KennelEditPanel from './kennel-edit-panel'
 import ContactFormBuilder from './contact-form-builder'
@@ -99,6 +99,12 @@ export default function KennelConfigView({ kennel, stats, isPro = false, userId 
 
   // Herramientas avanzadas — solo las que aportan, agrupadas
   const advancedTools = [
+    {
+      label: t('Datos legales'),
+      desc: t('Razón social, NIF, domicilio y representante. Se rellenan automáticamente en tus contratos.'),
+      icon: ShieldCheck,
+      href: '/kennel/legal',
+    },
     {
       label: t('Formulario de contacto'),
       desc: t('Personaliza las preguntas que ven los visitantes (plantilla + campos custom).'),

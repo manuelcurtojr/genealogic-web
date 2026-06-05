@@ -168,7 +168,7 @@ export default async function BreederContractPage({
                 {t('Sin ellos los contratos salen con huecos en blanco y no son válidos para presentar al cliente.')}
               </p>
               <Link
-                href="/kennel/contenido/legal"
+                href="/kennel/legal"
                 className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-amber-900 text-amber-50 px-4 py-2 text-sm font-semibold hover:bg-amber-950"
               >
                 {t('Completar datos legales')} →
