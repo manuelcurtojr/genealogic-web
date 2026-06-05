@@ -131,9 +131,11 @@ export default function FeaturesSidebar({ activeSlug }: Props) {
                       >
                         <Icon className={`h-3.5 w-3.5 flex-shrink-0 ${isActive ? 'text-[#FE6620]' : 'text-muted group-hover:text-ink'}`} />
                         <span className="truncate">{f.title}</span>
-                        {f.proOnly && (
+                        {f.comingSoon ? (
+                          <span className="ml-auto text-[9px] font-bold tracking-wider text-muted">PRONTO</span>
+                        ) : f.proOnly ? (
                           <span className="ml-auto text-[9px] font-bold tracking-wider text-[#FE6620]">PRO</span>
-                        )}
+                        ) : null}
                       </a>
                     </li>
                   )

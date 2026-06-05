@@ -751,6 +751,7 @@ function FeaturesGrid() {
             title={t('Tu escaparate que vende')}
             desc={t('Web pública con tu propio dominio. Editor visual + 3 temas. Un escaparate serio que posiciona en Google y vende por ti.')}
             color="blue"
+            comingSoon
           />
           <FeatureCard
             icon={<Calendar className="h-5 w-5" />}
@@ -763,6 +764,7 @@ function FeaturesGrid() {
             title={t('Newsletter que fideliza')}
             desc={t('4 audiencias auto-calculadas: todos, clientes, leads y los que recibieron cachorro. Mantén tu lista caliente sin esfuerzo.')}
             color="orange"
+            comingSoon
           />
         </div>
 
@@ -1275,7 +1277,7 @@ function Pricing() {
           {t('Empieza gratis. Sube cuando crezcas.')}
         </h2>
         <p className="mt-5 sm:mt-6 max-w-[560px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
-          {t('La genealogía es siempre completa, sin límite de generaciones, en todos los planes. La diferencia son las herramientas: Kennel Free es gratis para siempre y sin tarjeta; Kennel Pro añade el control de la cría, las ventas y la genética seria. Y cuando lo necesites, amplías Pro con extensiones à la carte: web del criadero con tu dominio, newsletter y más.')}
+          {t('La genealogía es siempre completa, sin límite de generaciones, en todos los planes. La diferencia son las herramientas: Kennel Free es gratis para siempre y sin tarjeta; Kennel Pro añade el control de la cría, las ventas y la genética seria. Y cuando lo necesites, amplías Pro con extensiones à la carte (próximamente): web del criadero con tu dominio, newsletter y más.')}
         </p>
 
         <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -1333,21 +1335,21 @@ function Pricing() {
             <ul className="mt-5 space-y-3 text-[13.5px] flex-1">
               <li className="flex items-baseline justify-between gap-3">
                 <span className="text-body">{t('Web del criadero + dominio propio')}</span>
-                <span className="font-semibold text-ink whitespace-nowrap">19 € <span className="text-[11px] font-normal text-muted">/ {t('mes')}</span></span>
+                <span className="whitespace-nowrap text-[12.5px] font-semibold text-muted">19 € · {t('Próximamente')}</span>
               </li>
               <li className="flex items-baseline justify-between gap-3">
                 <span className="text-body">{t('Newsletter')}</span>
-                <span className="font-semibold text-ink whitespace-nowrap">9 € <span className="text-[11px] font-normal text-muted">/ {t('mes')}</span></span>
+                <span className="whitespace-nowrap text-[12.5px] font-semibold text-muted">9 € · {t('Próximamente')}</span>
               </li>
               <li className="flex items-baseline justify-between gap-3">
                 <span className="text-body">{t('Emailbot IA')}</span>
-                <span className="font-medium text-muted whitespace-nowrap">{t('Próximamente')}</span>
+                <span className="whitespace-nowrap text-[12.5px] font-semibold text-muted">19 € · {t('Próximamente')}</span>
               </li>
             </ul>
             <Button href="/register?intent=breeder&plan=pro" variant="secondary" className="mt-6 w-full">
               {t('Empezar con Kennel Pro')}
             </Button>
-            <p className="mt-2 text-center text-[11px] text-muted">{t('Las extensiones se activan sobre Kennel Pro desde tu cuenta.')}</p>
+            <p className="mt-2 text-center text-[11px] text-muted">{t('Las extensiones llegarán próximamente; se activarán sobre Kennel Pro desde tu cuenta.')}</p>
           </div>
         </div>
 
@@ -1390,7 +1392,7 @@ function FAQ() {
     },
     {
       q: t('¿Qué son las extensiones de Kennel Pro?'),
-      a: t('Son módulos de pago que añades sobre Kennel Pro solo si los necesitas: la Web del criadero (web pública profesional con tu propio dominio, editor visual y temas) por 19€/mes, y la Newsletter por 9€/mes. El Emailbot con IA que responde a tus leads llegará próximamente. Cada extensión se activa y se cancela por separado desde tu cuenta.'),
+      a: t('Son módulos de pago que añades sobre Kennel Pro solo si los necesitas: la Web del criadero (web pública profesional con tu propio dominio, editor visual y temas, 19€/mes), la Newsletter (9€/mes) y el Emailbot con IA que responde a tus leads (19€/mes). Las tres están en desarrollo y llegarán próximamente; cuando se activen, las contratas y las cancelas por separado desde tu cuenta.'),
     },
     {
       q: t('¿Qué pasa si paso de plan?'),
@@ -1398,7 +1400,7 @@ function FAQ() {
     },
     {
       q: t('¿Puedo usar mi propio dominio?'),
-      a: t('Sí, con la extensión Web del criadero (19€/mes sobre Kennel Pro). Conectas un dominio propio (criadero.com) desde Ajustes con un par de DNS records. Nuestro middleware sirve tu web directamente, sin subdominios feos ni redirects extra.'),
+      a: t('Lo podrás hacer con la extensión Web del criadero (19€/mes sobre Kennel Pro), que llegará próximamente: conectarás un dominio propio (criadero.com) desde Ajustes con un par de DNS records, y nuestro middleware servirá tu web directamente, sin subdominios feos ni redirects extra.'),
     },
     {
       q: t('¿Puedo cancelar cuando quiera?'),
@@ -1595,12 +1597,15 @@ function FeatureCard({
   title,
   desc,
   color,
+  comingSoon,
 }: {
   icon: React.ReactNode
   title: string
   desc: string
   color: 'brand' | 'pink' | 'blue' | 'violet' | 'orange' | 'emerald'
+  comingSoon?: boolean
 }) {
+  const t = useT()
   const map: Record<string, string> = {
     brand: 'var(--brand)',
     pink: 'var(--badge-pink)',
@@ -1617,9 +1622,16 @@ function FeatureCard({
       >
         {icon}
       </div>
-      <h3 className="mt-5 text-[18px] font-semibold text-ink" style={{ letterSpacing: '-0.01em' }}>
-        {title}
-      </h3>
+      <div className="mt-5 flex flex-wrap items-center gap-2">
+        <h3 className="text-[18px] font-semibold text-ink" style={{ letterSpacing: '-0.01em' }}>
+          {title}
+        </h3>
+        {comingSoon && (
+          <span className="inline-flex items-center rounded-full border border-hairline bg-surface-soft px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted">
+            {t('Próximamente')}
+          </span>
+        )}
+      </div>
       <p className="mt-2 text-[14px] leading-[1.55] text-body">{desc}</p>
     </div>
   )

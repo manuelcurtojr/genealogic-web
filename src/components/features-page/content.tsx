@@ -64,6 +64,11 @@ export default async function FeaturesContent() {
                             Kennel Pro
                           </span>
                         )}
+                        {feature.comingSoon && (
+                          <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-muted bg-surface-soft border border-hairline px-2 py-0.5 rounded-full">
+                            Próximamente
+                          </span>
+                        )}
                       </div>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
                         {feature.problem}

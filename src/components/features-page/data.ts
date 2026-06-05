@@ -49,6 +49,8 @@ export interface MajorFeature {
   mockup: string
   /** Si la feature requiere plan Pro, mostramos badge */
   proOnly?: boolean
+  /** Si la feature es una extensión aún no disponible, mostramos "Próximamente" */
+  comingSoon?: boolean
 }
 
 export interface Category {
@@ -436,6 +438,7 @@ export const CATEGORIES: Category[] = [
         ],
         mockup: 'kennel-web',
         proOnly: true,
+        comingSoon: true,
       },
       {
         slug: 'blog',
@@ -452,6 +455,7 @@ export const CATEGORIES: Category[] = [
         ],
         mockup: 'blog-list',
         proOnly: true,
+        comingSoon: true,
       },
     ],
     featurettes: [
@@ -479,6 +483,7 @@ export const CATEGORIES: Category[] = [
         title: 'Emailbot que responde solo',
         description: 'Conecta tu email del kennel (Gmail/IMAP) y el bot responde las preguntas frecuentes con tu tono. Cuando detecta que necesita un humano, te lo escala. Tú apruebas cada respuesta antes de enviar (modo seguro).',
         proOnly: true,
+        comingSoon: true,
         bullets: [
           'Aprende de tus FAQs, tu web y tu histórico de emails',
           'Multilingüe: ES, EN, IT, FR, DE',
@@ -495,6 +500,7 @@ export const CATEGORIES: Category[] = [
         title: 'Newsletter con un click',
         description: 'Construye una lista de suscriptores desde tu web y mándales novedades cuando hay camada, evento o noticia. Sin Mailchimp, sin coste extra, sin límite de suscriptores.',
         proOnly: true,
+        comingSoon: true,
         bullets: [
           'Composer drag-and-drop',
           'Plantillas: nueva camada, próximo evento, novedades',

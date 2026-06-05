@@ -270,7 +270,7 @@ const PLANS: PlanDef[] = [
       'Genotipos y pruebas DNA',
       'Estadísticas web del criadero + contratos + visitas',
       'Soporte prioritario <24h',
-      'Amplíalo con extensiones: web, newsletter y emailbot',
+      'Amplíalo con extensiones (próximamente): web, newsletter y emailbot',
     ],
     ctaLabel: 'Probar 14 días gratis',
   },
@@ -299,6 +299,7 @@ const ADDONS: AddonDef[] = [
     icon: Globe,
     accent: '#8b5cf6',
     accentBg: 'from-violet-50 via-canvas to-purple-50',
+    comingSoon: true,
   },
   {
     name: 'Newsletter',
@@ -307,6 +308,7 @@ const ADDONS: AddonDef[] = [
     icon: Mail,
     accent: '#0ea5e9',
     accentBg: 'from-sky-50 via-canvas to-blue-50',
+    comingSoon: true,
   },
   {
     name: 'Emailbot',
@@ -804,7 +806,7 @@ function FAQ() {
           {t('Te das de alta sin tarjeta. Durante 14 días tienes acceso completo al plan. El día 13 te avisamos por email. El día 14 te pedimos tarjeta para seguir. Si no pagas, vuelves automáticamente a Free (tus datos se mantienen intactos).')}
         </FaqItem>
         <FaqItem q={t('¿Qué son las extensiones?')}>
-          {t('Son add-ons que se contratan aparte sobre Kennel Pro, para que pagues solo lo que usas: la Web del criadero (19€/mes) te da una web pública con dominio propio; la Newsletter (9€/mes) te deja lanzar campañas y gestionar lista de espera; y el Emailbot (19€/mes, próximamente) es un asistente IA que responde consultas de cachorros 24/7. Las activas y las cancelas cuando quieras desde tu panel.')}
+          {t('Son add-ons que se contratan aparte sobre Kennel Pro, para que pagues solo lo que usas: la Web del criadero (19€/mes) te da una web pública con dominio propio; la Newsletter (9€/mes) te deja lanzar campañas y gestionar lista de espera; y el Emailbot (19€/mes) es un asistente IA que responde consultas de cachorros 24/7. Las tres están en desarrollo y llegarán próximamente; cuando se activen, las contratas y las cancelas cuando quieras desde tu panel.')}
         </FaqItem>
         <FaqItem q={t('¿Puedo cambiar de plan en cualquier momento?')}>
           {t('Sí, sube o baja cuando quieras. Si subes, el cobro es prorrateado. Si bajas, los cambios se aplican al final del periodo facturado. Tus datos siguen siempre seguros — solo cambian las features disponibles.')}
