@@ -27,7 +27,6 @@ import {
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Wordmark } from '@/components/ui/wordmark'
-import SearchBar from '@/components/layout/search-bar'
 import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {
@@ -283,7 +282,7 @@ function Hero({ heroDogs, counts }: { heroDogs: any[]; counts?: { dogs: number; 
               {t('Cría mejor. Vende más. Sin papeleo.')}
             </h1>
             <p className="mt-5 sm:mt-6 max-w-[520px] text-[16px] leading-[1.55] text-body sm:text-[18px]">
-              {t('Tu criadero entero en un panel —perros, camadas, reservas y clientes—, sobre la mayor red de genealogías del mundo. Más orden, mejor cría y un escaparate que de verdad vende. Gratis para empezar.')}
+              {t('Camadas, reservas, contratos y salud en un solo sitio —adiós al Excel y al WhatsApp—. Planifica cada cruce viendo el COI antes de criar y vende sobre la mayor red de genealogías del mundo. Gratis para empezar.')}
             </p>
 
             {/* CTAs */}
@@ -300,60 +299,8 @@ function Hero({ heroDogs, counts }: { heroDogs: any[]; counts?: { dogs: number; 
             </p>
           </div>
 
-          {/* Right: app-window mockup with real SearchBar */}
-          <div className="relative">
-            <AppWindow url="genealogic.io/buscar">
-              <div className="px-5 py-6 sm:px-8 sm:py-8">
-                <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
-                  {t('Registro público')}
-                </p>
-                <h3
-                  className="mt-1.5 font-semibold text-ink"
-                  style={{ fontSize: 'clamp(20px, 2.4vw, 26px)', lineHeight: 1.15, letterSpacing: '-0.02em' }}
-                >
-                  {t('Buscar en el registro')}
-                </h3>
-                <div className="mt-5 text-left">
-                  <SearchBar />
-                </div>
-
-                {/* Featured dogs row — real data */}
-                {heroDogs.length > 0 && (
-                  <div className="mt-6">
-                    <p className="text-[10.5px] font-medium uppercase tracking-[0.12em] text-muted">
-                      {t('Publicados recientemente')}
-                    </p>
-                    <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                      {heroDogs.slice(0, 5).map((dog: any) => (
-                        <Link
-                          key={dog.id}
-                          href={`/dogs/${dog.slug || dog.id}`}
-                          className="block h-11 w-11 overflow-hidden rounded-lg border border-hairline bg-surface-card transition hover:border-ink/40 hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
-                          title={dog.name}
-                        >
-                          {dog.thumbnail_url && (
-                            <Img src={dog.thumbnail_url} w={120} alt={dog.name} className="h-full w-full object-cover" />
-                          )}
-                        </Link>
-                      ))}
-                      <Link
-                        href="/search"
-                        className="flex h-11 items-center rounded-lg border border-hairline px-3 text-[12px] font-medium text-body transition hover:border-ink/40 hover:text-ink"
-                      >
-                        {t('Ver todos →')}
-                      </Link>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </AppWindow>
-            {/* Floating accent dot */}
-            <div
-              aria-hidden
-              className="absolute -bottom-3 -right-3 hidden h-20 w-20 rounded-full opacity-30 blur-2xl sm:block"
-              style={{ background: 'var(--brand)' }}
-            />
-          </div>
+          {/* Right: mockup de criador — planificador de cruces (el diferencial) */}
+          <BreederHeroMockup heroDogs={heroDogs} />
         </div>
       </div>
     </section>
@@ -393,6 +340,119 @@ function AppWindow({
         <div className="w-[54px]" />
       </div>
       {children}
+    </div>
+  )
+}
+
+// ─── Breeder hero mockup: planificador de cruces (COI proyectado) ─────────
+// El diferencial que NINGÚN competidor enseña de protagonista (research 2026-06):
+// ver el COI de la camada ANTES de cruzar. "Cría para mejorar". Reusa AppWindow
+// + fotos reales de heroDogs para los dos progenitores.
+function ParentChip({ dog, label, fallbackName }: { dog: any; label: string; fallbackName: string }) {
+  return (
+    <div className="min-w-0 flex-1 rounded-xl border border-hairline bg-surface-card p-2.5">
+      <div className="flex items-center gap-2.5">
+        <div className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg border border-hairline bg-surface-soft">
+          {dog?.thumbnail_url ? (
+            <Img src={dog.thumbnail_url} w={120} alt={dog?.name || label} className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-muted">
+              <Dog className="h-5 w-5" />
+            </div>
+          )}
+        </div>
+        <div className="min-w-0">
+          <p className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-muted">{label}</p>
+          <p className="truncate text-[13px] font-semibold text-ink">{dog?.name || fallbackName}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function BreederHeroMockup({ heroDogs }: { heroDogs: any[] }) {
+  const t = useT()
+  const sire = heroDogs?.[0]
+  const dam = heroDogs?.[1]
+  return (
+    <div className="relative">
+      <AppWindow url="genealogic.io/cruces">
+        <div className="px-5 py-6 sm:px-7 sm:py-7">
+          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
+            {t('Planificador de cruces')}
+          </p>
+          <h3
+            className="mt-1.5 font-semibold text-ink"
+            style={{ fontSize: 'clamp(19px, 2.3vw, 25px)', lineHeight: 1.12, letterSpacing: '-0.02em' }}
+          >
+            {t('Antes de cruzar, mira el resultado.')}
+          </h3>
+
+          {/* Progenitores (fotos reales) */}
+          <div className="mt-5 flex items-center gap-2.5">
+            <ParentChip dog={sire} label={t('Macho')} fallbackName="Lord Byron" />
+            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-hairline bg-surface-soft text-[14px] font-semibold text-muted">
+              ×
+            </div>
+            <ParentChip dog={dam} label={t('Hembra')} fallbackName="Maia" />
+          </div>
+
+          {/* COI proyectado de la camada — el momento "cría para mejorar" */}
+          <div
+            className="mt-4 rounded-xl border p-4"
+            style={{
+              borderColor: 'color-mix(in srgb, var(--badge-emerald) 30%, transparent)',
+              background: 'color-mix(in srgb, var(--badge-emerald) 7%, transparent)',
+            }}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[12px] font-medium text-body">{t('COI de la camada proyectado')}</p>
+              <span
+                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold"
+                style={{
+                  background: 'color-mix(in srgb, var(--badge-emerald) 15%, transparent)',
+                  color: 'var(--badge-emerald)',
+                }}
+              >
+                <Check className="h-3 w-3" /> {t('Saludable')}
+              </span>
+            </div>
+            <div className="mt-2 flex items-end gap-2">
+              <span
+                className="font-semibold text-ink"
+                style={{ fontSize: 'clamp(30px, 5vw, 42px)', lineHeight: 1, letterSpacing: '-0.03em' }}
+              >
+                4,2%
+              </span>
+              <span className="mb-1 text-[12px] leading-tight text-body">
+                {t('por debajo de la media de la raza')} <span className="text-muted">(8,1%)</span>
+              </span>
+            </div>
+            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-soft">
+              <div className="h-full rounded-full" style={{ width: '24%', background: 'var(--badge-emerald)' }} />
+            </div>
+          </div>
+
+          {/* Stats secundarias */}
+          <div className="mt-3.5 grid grid-cols-2 gap-2.5">
+            <div className="rounded-lg border border-hairline bg-surface-card px-3 py-2">
+              <p className="text-[11px] text-muted">{t('Color probable')}</p>
+              <p className="mt-0.5 text-[12.5px] font-medium text-ink">{t('Negro · canela')}</p>
+            </div>
+            <div className="rounded-lg border border-hairline bg-surface-card px-3 py-2">
+              <p className="text-[11px] text-muted">{t('Diversidad genética')}</p>
+              <p className="mt-0.5 text-[12.5px] font-medium text-ink">{t('Alta')}</p>
+            </div>
+          </div>
+        </div>
+      </AppWindow>
+
+      {/* Floating accent dot (clip-safe dentro del overflow-hidden del hero) */}
+      <div
+        aria-hidden
+        className="absolute -bottom-3 -right-3 hidden h-20 w-20 rounded-full opacity-30 blur-2xl sm:block"
+        style={{ background: 'var(--brand)' }}
+      />
     </div>
   )
 }
@@ -663,7 +723,7 @@ function FeaturesGrid() {
             {t('Tu criadero entero bajo control, en un panel.')}
           </h2>
           <p className="max-w-[460px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
-            {t('Planifica cruces sin consanguinidad, no pierdas un solo lead, cobra señas y entregas, y deja que un emailbot responda por ti. Las herramientas que hacen tu criadero más profesional y te ahorran horas cada semana.')}
+            {t('Planifica cada cruce viendo el COI antes de criar, no pierdas un solo lead, cobra señas y firma contratos, y lleva cada camada al día. Las herramientas que hacen tu criadero más profesional y te ahorran horas cada semana.')}
           </p>
         </div>
 
@@ -676,8 +736,8 @@ function FeaturesGrid() {
           />
           <FeatureCard
             icon={<GitBranch className="h-5 w-5" />}
-            title={t('Control total de la cría')}
-            desc={t('COI calculado para planificar cruces sin consanguinidad, genotipos, simulador con predicción de color y calendario de celos y partos.')}
+            title={t('Cría para mejorar')}
+            desc={t('Mira el COI de la camada antes de cruzar. Genotipos, simulador con predicción de color y diversidad genética en una pantalla. Menos consanguinidad, cachorros más sanos.')}
             color="emerald"
           />
           <FeatureCard
@@ -693,13 +753,13 @@ function FeaturesGrid() {
             color="blue"
           />
           <FeatureCard
-            icon={<Mail className="h-5 w-5" />}
-            title={t('Emailbot que responde 24/7')}
-            desc={t('Lee tu biblioteca y responde a tus leads con tu tono, de día y de noche. Tú revisas y envías, o lo dejas en auto-piloto.')}
+            icon={<Calendar className="h-5 w-5" />}
+            title={t('Camadas y salud al día')}
+            desc={t('Calendario de celos y partos, cartilla sanitaria con recordatorios de vacunas y desparasitación, y el peso de cada cachorro. Todo el ciclo de la camada sin perder una fecha.')}
             color="violet"
           />
           <FeatureCard
-            icon={<Calendar className="h-5 w-5" />}
+            icon={<Mail className="h-5 w-5" />}
             title={t('Newsletter que fideliza')}
             desc={t('4 audiencias auto-calculadas: todos, clientes, leads y los que recibieron cachorro. Mantén tu lista caliente sin esfuerzo.')}
             color="orange"
@@ -1036,9 +1096,14 @@ function BotConversation() {
       <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <div className="grid gap-8 sm:gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
           <div>
-            <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-              {t('04 · Atención 24/7')}
-            </p>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
+                {t('04 · Atención 24/7')}
+              </p>
+              <span className="inline-flex items-center rounded-full border border-hairline bg-surface-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted">
+                {t('Próximamente')}
+              </span>
+            </div>
             <h2
               className="mt-3 font-semibold text-ink"
               style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
@@ -1142,7 +1207,7 @@ function OnboardingSteps() {
             {t('Editor visual. 8 páginas troncales, 36 secciones. Conecta tu dominio.')}
           </Step>
           <Step n="4" duration={t('Day 1')} title={t('Empieza a vender')}>
-            {t('Activa pipeline de reservas y emailbot. Tu próxima consulta entra al CRM.')}
+            {t('Activa el pipeline de reservas y cada consulta nueva entra directa a tu CRM.')}
           </Step>
         </div>
       </div>

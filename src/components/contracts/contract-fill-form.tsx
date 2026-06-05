@@ -192,60 +192,80 @@ export default function ContractFillForm({
     })
   }
 
+  // Conteo total para badge de progreso en el header
+  const totalFields = schema.reduce((n, s) =>
+    n + s.fields.filter((f) => f.from !== 'kennel' && f.from !== 'auto').length, 0)
+  const filledTotal = schema.reduce((n, s) =>
+    n + s.fields.filter((f) => {
+      if (f.from === 'kennel' || f.from === 'auto') return false
+      const v = values[f.token]
+      return v != null && String(v).trim() !== ''
+    }).length, 0)
+  const progressPct = totalFields > 0 ? Math.round((filledTotal / totalFields) * 100) : 0
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col min-w-0 h-full">
       {/* ─── Header sticky con estado de guardado + acciones ─── */}
-      <div className="sticky top-0 z-10 bg-canvas/95 backdrop-blur border-b border-hairline px-1 py-2.5 mb-3 flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2 min-w-0">
-          <SaveBadge state={saveState} />
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              if (!confirm(t('Cambiar a modo avanzado te permite editar el texto del contrato a mano (markdown). Una vez activado, el formulario se bloquea para evitar inconsistencias. ¿Continuar?'))) return
-              onAdvancedMode()
-            }}
-            className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-canvas text-body hover:text-ink hover:border-ink/30 px-3 py-1.5 text-[12px] font-medium transition-colors"
-            title={t('Edita el texto markdown directamente (avanzado)')}
-          >
-            <FileEdit className="h-3.5 w-3.5" />
-            {t('Modo avanzado')}
-          </button>
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={pending}
-            className="inline-flex items-center gap-1.5 rounded-md bg-ink text-on-primary hover:opacity-90 px-3.5 py-1.5 text-[12.5px] font-semibold disabled:opacity-50 transition-opacity"
-          >
-            <Send className="h-3.5 w-3.5" />
-            {t('Enviar al cliente')}
-          </button>
+      <div className="sticky top-0 z-10 bg-canvas border-b border-hairline px-4 sm:px-5 py-3 min-w-0">
+        <div className="flex items-center justify-between gap-3 flex-wrap min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <ProgressRing pct={progressPct} />
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold text-ink leading-tight">{t('Formulario')}</p>
+              <SaveBadge state={saveState} />
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                if (!confirm(t('Cambiar a modo avanzado te permite editar el texto del contrato a mano (markdown). Una vez activado, el formulario se bloquea para evitar inconsistencias. ¿Continuar?'))) return
+                onAdvancedMode()
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg text-body hover:text-ink hover:bg-surface-soft px-2.5 py-1.5 text-[12px] font-medium transition-colors"
+              title={t('Edita el texto markdown directamente (avanzado)')}
+            >
+              <FileEdit className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{t('Avanzado')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={pending}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-ink text-on-primary hover:opacity-90 px-3 py-1.5 text-[12.5px] font-semibold disabled:opacity-50 transition-opacity"
+            >
+              <Send className="h-3.5 w-3.5" />
+              {t('Enviar')}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Banner manual-override */}
-      {manualOverride && (
-        <div className="mb-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-[13px] text-amber-900 flex items-start gap-2.5">
-          <Lock className="h-4 w-4 flex-shrink-0 mt-0.5" />
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold">{t('Modo avanzado activo')}</p>
-            <p className="mt-0.5 text-amber-800">
-              {t('Editaste el texto del contrato a mano. El formulario queda deshabilitado para no sobrescribir tus cambios. Cancela el contrato para volver a este modo.')}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-3 rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-[13px] text-rose-900 flex items-start gap-2">
-          <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-          <span>{error}</span>
+      {/* Banners */}
+      {(manualOverride || error) && (
+        <div className="px-4 sm:px-5 pt-3 space-y-2 min-w-0">
+          {manualOverride && (
+            <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 text-[12.5px] text-amber-900 flex items-start gap-2 min-w-0">
+              <Lock className="h-4 w-4 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold">{t('Modo avanzado activo')}</p>
+                <p className="mt-0.5 text-amber-800">
+                  {t('Cancela el contrato para volver al formulario.')}
+                </p>
+              </div>
+            </div>
+          )}
+          {error && (
+            <div className="rounded-xl border border-rose-300 bg-rose-50 px-3 py-2.5 text-[12.5px] text-rose-900 flex items-start gap-2 min-w-0">
+              <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+              <span className="min-w-0 break-words">{error}</span>
+            </div>
+          )}
         </div>
       )}
 
       {/* ─── Secciones ─── */}
-      <div className="space-y-3 flex-1 overflow-y-auto pb-4">
+      <div className="flex-1 lg:overflow-y-auto px-4 sm:px-5 py-4 space-y-2 min-w-0">
         {schema.map((sec) => (
           <SectionBlock
             key={sec.id}
@@ -259,6 +279,34 @@ export default function ContractFillForm({
           />
         ))}
       </div>
+    </div>
+  )
+}
+
+/** Ring de progreso pequeño (28x28). Visual de cuántos campos faltan. */
+function ProgressRing({ pct }: { pct: number }) {
+  const radius = 12
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference - (pct / 100) * circumference
+  const color = pct >= 100 ? '#10b981' : pct >= 50 ? '#FE6620' : '#9ca3af'
+  return (
+    <div className="relative flex-shrink-0">
+      <svg width={28} height={28} className="-rotate-90">
+        <circle cx={14} cy={14} r={radius} stroke="#e5e7eb" strokeWidth={2.5} fill="none" />
+        <circle
+          cx={14} cy={14} r={radius}
+          stroke={color}
+          strokeWidth={2.5}
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 250ms ease' }}
+        />
+      </svg>
+      <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-ink">
+        {pct}
+      </span>
     </div>
   )
 }
@@ -286,20 +334,34 @@ function SectionBlock({
   }).length
   const totalCount = section.fields.length
 
+  // Completitud visual: full / parcial / vacío
+  const completionTone =
+    filledCount === totalCount
+      ? 'emerald'
+      : filledCount > 0
+      ? 'amber'
+      : 'muted'
+
   return (
-    <section className="rounded-xl border border-hairline bg-canvas overflow-hidden">
+    <section className={`rounded-xl bg-surface-soft/40 transition-colors overflow-hidden min-w-0 ${
+      !collapsed ? 'ring-1 ring-hairline' : 'hover:bg-surface-soft/70'
+    }`}>
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-soft/50 transition-colors text-left"
+        className="w-full flex items-center gap-3 px-3.5 py-2.5 text-left min-w-0"
       >
-        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-surface-soft text-ink">
+        <div className={`flex items-center justify-center h-8 w-8 rounded-lg flex-shrink-0 ${
+          completionTone === 'emerald' ? 'bg-emerald-100 text-emerald-700' :
+          completionTone === 'amber' ? 'bg-amber-100 text-amber-700' :
+          'bg-canvas text-muted border border-hairline'
+        }`}>
           <Icon className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-[14px] text-ink">{t(section.title)}</p>
-          <p className="text-[11.5px] text-muted">
-            {filledCount}/{totalCount} {t('campos rellenos')}
+          <p className="font-semibold text-[13.5px] text-ink truncate">{t(section.title)}</p>
+          <p className="text-[11px] text-muted">
+            {filledCount}/{totalCount} {t('rellenos')}
             {isKennelInfo && ` · ${t('solo lectura')}`}
           </p>
         </div>
@@ -309,14 +371,14 @@ function SectionBlock({
       </button>
 
       {!collapsed && (
-        <div className="px-4 pb-4 pt-1 space-y-3 border-t border-hairline">
+        <div className="px-3.5 pb-4 pt-1 space-y-3 min-w-0">
           {section.hint && (
-            <p className="text-[12px] text-muted leading-snug mt-3">{t(section.hint)}</p>
+            <p className="text-[11.5px] text-muted leading-snug mt-2 px-0.5">{t(section.hint)}</p>
           )}
           {isKennelInfo && (
             <a
               href="/kennel/legal"
-              className="inline-flex items-center gap-1 text-[12px] text-ink underline hover:text-[#FE6620] transition-colors"
+              className="inline-flex items-center gap-1 text-[12px] font-medium text-ink hover:text-[#FE6620] transition-colors"
             >
               {t('Editar datos legales del criadero')} →
             </a>
@@ -349,12 +411,10 @@ function FieldInput({
   t: (k: string) => string
 }) {
   const id = `f-${field.token}`
-  const baseClass = `w-full rounded-lg border bg-canvas px-3 py-2.5 text-[14px] text-ink placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-ink/10 disabled:bg-surface-soft disabled:text-muted disabled:cursor-not-allowed transition-colors ${
-    value ? 'border-hairline' : 'border-hairline'
-  } focus:border-ink/30`
+  const baseClass = 'w-full min-w-0 rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-[14px] text-ink placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-ink/10 focus:border-ink/30 disabled:bg-surface-soft disabled:text-muted disabled:cursor-not-allowed transition-colors'
 
   return (
-    <div>
+    <div className="min-w-0">
       <label htmlFor={id} className="block mb-1 text-[12px] font-medium text-body">
         {t(field.label)}
         {field.required && <span className="text-rose-500 ml-0.5">*</span>}
@@ -383,7 +443,10 @@ function FieldInput({
           ))}
         </select>
       ) : field.type === 'currency' ? (
-        <div className="relative">
+        // Layout flex con el € como add-on a la derecha, NO absolute. Así
+        // el value y el símbolo no se pisan en widths pequeños y el wrapper
+        // respeta su contenedor (min-w-0).
+        <div className={`flex items-stretch min-w-0 rounded-lg border border-hairline bg-canvas overflow-hidden focus-within:ring-2 focus-within:ring-ink/10 focus-within:border-ink/30 transition-colors ${disabled ? 'bg-surface-soft' : ''}`}>
           <input
             id={id}
             type="number"
@@ -394,9 +457,9 @@ function FieldInput({
             onChange={(e) => onChange(e.target.value)}
             placeholder={field.placeholder}
             disabled={disabled}
-            className={baseClass + ' pr-10'}
+            className="flex-1 min-w-0 bg-transparent px-3 py-2.5 text-[14px] text-ink placeholder:text-muted/60 focus:outline-none disabled:text-muted disabled:cursor-not-allowed"
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-muted pointer-events-none">€</span>
+          <span className="flex items-center px-3 text-[13px] text-muted border-l border-hairline bg-surface-soft/50 select-none">€</span>
         </div>
       ) : (
         <input
@@ -423,29 +486,29 @@ function SaveBadge({ state }: { state: SaveState }) {
   const t = useT()
   if (state === 'saving') {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[12px] text-muted">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+      <span className="inline-flex items-center gap-1 text-[11px] text-muted">
+        <Loader2 className="h-3 w-3 animate-spin" />
         {t('Guardando…')}
       </span>
     )
   }
   if (state === 'saved') {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[12px] text-emerald-700">
-        <Check className="h-3.5 w-3.5" />
+      <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700">
+        <Check className="h-3 w-3" />
         {t('Guardado')}
       </span>
     )
   }
   if (state === 'error') {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[12px] text-rose-700">
-        <AlertCircle className="h-3.5 w-3.5" />
+      <span className="inline-flex items-center gap-1 text-[11px] text-rose-700">
+        <AlertCircle className="h-3 w-3" />
         {t('Error al guardar')}
       </span>
     )
   }
   return (
-    <span className="text-[12px] text-muted">{t('Autosave activo')}</span>
+    <span className="text-[11px] text-muted">{t('Autosave activo')}</span>
   )
 }

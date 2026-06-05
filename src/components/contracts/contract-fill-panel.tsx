@@ -5,9 +5,10 @@
  * ContractLivePreview (derecha) en un layout split.
  *
  * Layout:
- *  - Desktop (lg+): 2 columnas (40% form, 60% preview). Cada panel scrollea
- *    independiente con su propio sticky header.
- *  - Móvil: tabs (Formulario / Vista previa).
+ *  - Desktop (lg+): 2 columnas (40% form, 60% preview), altura natural.
+ *    Cada panel scrollea independiente con su propio sticky header,
+ *    capped a max-h-[80vh] para no dejar al usuario sin contexto.
+ *  - Móvil: tabs (Formulario / Vista previa), cada uno ocupa lo que necesite.
  *
  * Estado compartido: los `values` del form se sincronizan al preview vía
  * callback `onValuesChange`. El preview reinterpola al instante (no
@@ -55,7 +56,7 @@ export default function ContractFillPanel({
   const [tab, setTab] = useState<'form' | 'preview'>('form')
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 min-w-0">
       {/* Tabs solo en móvil */}
       <div className="lg:hidden inline-flex rounded-lg bg-surface-soft p-0.5 border border-hairline">
         <TabBtn active={tab === 'form'} onClick={() => setTab('form')}>
@@ -68,32 +69,40 @@ export default function ContractFillPanel({
         </TabBtn>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 lg:gap-5 h-[calc(100vh-380px)] min-h-[600px]">
+      {/* Grid responsive sin altura forzada — cada panel scrollea hasta
+          max-h-[80vh]. Antes usaba h-[calc(100vh-380px)] que cuando había
+          DOS contratos apilados (reserva + entrega) tiraba la altura
+          de la 2ª caja fuera de la ventana. */}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 lg:gap-5 min-w-0">
         {/* Izquierda — Formulario */}
-        <div className={tab === 'form' ? 'block' : 'hidden lg:block'}>
-          <ContractFillForm
-            reservationId={reservationId}
-            contractId={contractId}
-            kind={kind}
-            initialValues={initialValues}
-            manualOverride={manualOverride}
-            onValuesChange={setValues}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onSaveAction={onSaveAction as any}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onSendAction={onSendAction as any}
-            onAdvancedMode={onAdvancedMode}
-          />
+        <div className={`min-w-0 ${tab === 'form' ? 'block' : 'hidden lg:block'}`}>
+          <div className="lg:max-h-[80vh] lg:overflow-hidden flex flex-col rounded-2xl border border-hairline bg-canvas">
+            <ContractFillForm
+              reservationId={reservationId}
+              contractId={contractId}
+              kind={kind}
+              initialValues={initialValues}
+              manualOverride={manualOverride}
+              onValuesChange={setValues}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onSaveAction={onSaveAction as any}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onSendAction={onSendAction as any}
+              onAdvancedMode={onAdvancedMode}
+            />
+          </div>
         </div>
 
         {/* Derecha — Preview */}
-        <div className={tab === 'preview' ? 'block' : 'hidden lg:block'}>
-          <ContractLivePreview
-            templateBody={templateBody}
-            values={values}
-            kennelVars={kennelVars}
-            title={contractTitle}
-          />
+        <div className={`min-w-0 ${tab === 'preview' ? 'block' : 'hidden lg:block'}`}>
+          <div className="lg:max-h-[80vh] lg:overflow-hidden flex flex-col rounded-2xl border border-hairline bg-canvas">
+            <ContractLivePreview
+              templateBody={templateBody}
+              values={values}
+              kennelVars={kennelVars}
+              title={contractTitle}
+            />
+          </div>
         </div>
       </div>
     </div>

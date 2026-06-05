@@ -54,32 +54,39 @@ export default function ContractLivePreview({
   }, [html])
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header del preview */}
-      <div className="sticky top-0 z-10 bg-canvas/95 backdrop-blur border-b border-hairline px-1 py-2.5 mb-3 flex items-center justify-between gap-3 flex-wrap">
+    <div className="flex flex-col min-w-0 h-full">
+      {/* Header del preview — sticky con info de estado */}
+      <div className="sticky top-0 z-10 bg-canvas border-b border-hairline px-4 sm:px-5 py-3 flex items-center justify-between gap-3 flex-wrap min-w-0">
         <div className="flex items-center gap-2 min-w-0">
           <FileText className="h-4 w-4 text-muted flex-shrink-0" />
-          <span className="text-[12px] font-semibold uppercase tracking-wider text-muted">
+          <span className="text-[13px] font-semibold text-ink">
             {t('Vista previa')}
           </span>
         </div>
-        {blanksRemaining > 0 && (
-          <span className="inline-flex items-center gap-1.5 text-[12px] text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
+        {blanksRemaining > 0 ? (
+          <span className="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
             <AlertCircle className="h-3 w-3" />
-            {blanksRemaining} {blanksRemaining === 1 ? t('hueco por rellenar') : t('huecos por rellenar')}
+            {blanksRemaining} {blanksRemaining === 1 ? t('hueco') : t('huecos')}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+            ✓ {t('Listo')}
           </span>
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto rounded-xl border border-hairline bg-canvas">
-        <div className="px-6 sm:px-10 py-8 sm:py-10">
-          <h2 className="text-[18px] sm:text-[20px] font-bold tracking-tight text-ink mb-6 pb-4 border-b border-hairline">
-            {title}
-          </h2>
-          <article
-            className="contract-preview prose prose-sm max-w-none min-w-0 overflow-x-hidden break-words text-[13.5px] leading-[1.65] text-ink"
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
+      {/* Body del preview — fondo gris claro para que parezca "papel" */}
+      <div className="flex-1 lg:overflow-y-auto bg-surface-soft/30 min-w-0">
+        <div className="px-4 sm:px-6 py-5 sm:py-6">
+          <div className="bg-canvas rounded-lg shadow-sm border border-hairline px-5 sm:px-10 py-7 sm:py-10 min-w-0">
+            <h2 className="text-[18px] sm:text-[22px] font-bold tracking-tight text-ink mb-5 pb-4 border-b border-hairline">
+              {title}
+            </h2>
+            <article
+              className="contract-preview prose prose-sm max-w-none min-w-0 overflow-x-hidden break-words text-[13.5px] leading-[1.65] text-ink"
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+          </div>
         </div>
       </div>
     </div>

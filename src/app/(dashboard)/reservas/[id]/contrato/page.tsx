@@ -221,16 +221,34 @@ function ContractBlock({
     ? t('Contrato de compraventa y entrega')
     : t('Contrato de reserva')
 
+  const blockSubtitle = kind === 'delivery'
+    ? t('Se firma al entregar el cachorro. Identifica al perro concreto, importes finales y garantías.')
+    : t('Se firma al pagar la señal. Define raza, sexo, color y precio estimado.')
+
+  // Cuando el contrato está en draft (fill-form), envolver con un border
+  // mínimo: el split panel ya tiene sus propias tarjetas y un padding
+  // adicional pesado anida cards y empeora el ancho útil. Para los otros
+  // estados (sin contrato, sent, signed) mantenemos un card más cálido.
+  const isDraftWithPanel = contract?.status === 'draft'
+  const containerClass = isDraftWithPanel
+    ? 'min-w-0'
+    : `rounded-2xl border p-5 sm:p-6 min-w-0 ${
+        highlighted ? 'border-ink/30 bg-surface-soft/40' : 'border-hairline bg-canvas'
+      }`
+
   return (
-    <section
-      className={`rounded-2xl border p-5 sm:p-6 ${
-        highlighted ? 'border-ink/25 bg-surface-soft' : 'border-hairline bg-transparent'
-      }`}
-    >
-      <header className="flex items-baseline justify-between gap-3 flex-wrap mb-5">
-        <div className="flex items-center gap-2.5">
-          <FileText className="h-5 w-5 text-ink" />
-          <h2 className="text-xl font-bold tracking-tight text-ink">{blockTitle}</h2>
+    <section className={containerClass}>
+      <header className="flex items-start justify-between gap-3 flex-wrap mb-5 min-w-0">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className={`flex h-9 w-9 items-center justify-center rounded-lg flex-shrink-0 ${
+            highlighted ? 'bg-ink text-on-primary' : 'bg-surface-soft text-ink border border-hairline'
+          }`}>
+            <FileText className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-[17px] sm:text-[19px] font-bold tracking-tight text-ink leading-tight">{blockTitle}</h2>
+            <p className="mt-0.5 text-[12.5px] text-muted leading-snug max-w-md">{blockSubtitle}</p>
+          </div>
         </div>
         {contract && <StatusBadge status={contract.status} t={t} />}
       </header>
@@ -366,18 +384,17 @@ async function DraftContractBody({
 }
 
 function StatusBadge({ status, t }: { status: string; t: T }) {
-  const meta: Record<string, { label: string; color: string }> = {
-    draft: { label: 'Borrador', color: 'bg-gray-100 text-gray-700' },
-    sent: { label: 'Enviado al cliente', color: 'bg-blue-50 text-blue-800' },
-    signed_partial: { label: 'Firmado parcial', color: 'bg-amber-50 text-amber-800' },
-    signed_full: { label: '✓ Firmado por ambas partes', color: 'bg-emerald-50 text-emerald-800' },
-    cancelled: { label: 'Cancelado', color: 'bg-red-50 text-red-700' },
+  const meta: Record<string, { label: string; color: string; dot: string }> = {
+    draft:          { label: 'Borrador',                color: 'bg-gray-100 text-gray-700 border-gray-200',    dot: 'bg-gray-400' },
+    sent:           { label: 'Enviado al cliente',      color: 'bg-blue-50 text-blue-800 border-blue-200',     dot: 'bg-blue-500' },
+    signed_partial: { label: 'Firmado parcial',         color: 'bg-amber-50 text-amber-800 border-amber-200',  dot: 'bg-amber-500' },
+    signed_full:    { label: 'Firmado por ambas partes', color: 'bg-emerald-50 text-emerald-800 border-emerald-200', dot: 'bg-emerald-500' },
+    cancelled:      { label: 'Cancelado',               color: 'bg-red-50 text-red-700 border-red-200',        dot: 'bg-red-500' },
   }
   const m = meta[status] ?? meta.draft
   return (
-    <span
-      className={`text-[11px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full ${m.color}`}
-    >
+    <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full border ${m.color}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${m.dot}`} />
       {t(m.label)}
     </span>
   )
