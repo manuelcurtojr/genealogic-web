@@ -18,6 +18,7 @@ import { CSS } from '@dnd-kit/utilities'
 interface GalleryTabProps { dogId: string; userId: string }
 
 const POSTER_FALLBACK = '/icon.svg?v=2'
+const MAX_VIDEO_BYTES = 500 * 1024 * 1024 // 500 MB — límite global de subida del proyecto
 
 export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
   const [photos, setPhotos] = useState<any[]>([])
@@ -31,6 +32,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
   const [linkInput, setLinkInput] = useState('')
   const [videoBusy, setVideoBusy] = useState(false)
   const [videoError, setVideoError] = useState<string | null>(null)
+  const [videoProgress, setVideoProgress] = useState<number | null>(null)
   const [posterTargetId, setPosterTargetId] = useState<string | null>(null)
 
   const fileRef = useRef<HTMLInputElement>(null)
@@ -170,14 +172,51 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     loadPhotos()
   }
 
-  // Subir vídeo (archivo) → captura portada
+  // Subida REANUDABLE (TUS) — robusta para vídeos grandes en móvil (reintenta y
+  // reanuda si se corta la conexión). Trozos de 6MB (requisito de Supabase).
+  async function uploadVideoResumable(file: File, path: string, onProgress: (pct: number) => void) {
+    const tus = await import('tus-js-client')
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+    if (!token) throw new Error(t('Inicia sesión para subir vídeos.'))
+    await new Promise<void>((resolve, reject) => {
+      const upload = new tus.Upload(file, {
+        endpoint: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/upload/resumable`,
+        retryDelays: [0, 3000, 5000, 10000, 20000],
+        headers: { authorization: `Bearer ${token}`, 'x-upsert': 'true' },
+        uploadDataDuringCreation: true,
+        removeFingerprintOnSuccess: true,
+        metadata: { bucketName: 'dog-photos', objectName: path, contentType: file.type || 'video/mp4', cacheControl: '3600' },
+        chunkSize: 6 * 1024 * 1024,
+        onError: reject,
+        onProgress: (sent, total) => onProgress(total ? Math.round((sent / total) * 100) : 0),
+        onSuccess: () => resolve(),
+      })
+      upload.findPreviousUploads().then((prev) => {
+        if (prev.length) upload.resumeFromPreviousUpload(prev[0])
+        upload.start()
+      }).catch(reject)
+    })
+  }
+
+  // Subir vídeo (archivo) → subida resumable + captura portada
   async function handleUploadVideo(file: File | null) {
     if (!file) return
-    setVideoError(null); setVideoBusy(true)
+    setVideoError(null)
+    if (file.size > MAX_VIDEO_BYTES) {
+      setVideoError(t('El vídeo supera los 500 MB. Súbelo a YouTube o Vimeo y pega el enlace, o redúcelo antes de importarlo.'))
+      return
+    }
+    setVideoBusy(true); setVideoProgress(0)
     const ext = file.name.split('.').pop()
     const path = `${userId}/${dogId}/video-${Date.now()}.${ext}`
-    const { error: upErr } = await supabase.storage.from('dog-photos').upload(path, file)
-    if (upErr) { setVideoError(upErr.message); setVideoBusy(false); return }
+    try {
+      await uploadVideoResumable(file, path, (pct) => setVideoProgress(pct))
+    } catch (err: any) {
+      setVideoError(err?.message || t('No se pudo subir el vídeo. Inténtalo de nuevo.'))
+      setVideoBusy(false); setVideoProgress(null)
+      return
+    }
     const { data: { publicUrl } } = supabase.storage.from('dog-photos').getPublicUrl(path)
     // Portada: fotograma capturado o fallback
     let posterUrl = dogThumb || POSTER_FALLBACK
@@ -185,7 +224,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     const blob = await capturePoster(file)
     if (blob) { const up = await uploadPoster(blob); if (up) { posterUrl = up.url; posterPath = up.path } }
     await insertVideoRow({ video_provider: 'upload', video_url: publicUrl, url: posterUrl, storage_path: posterPath, video_storage_path: path })
-    setVideoBusy(false); setShowVideoForm(false)
+    setVideoBusy(false); setVideoProgress(null); setShowVideoForm(false)
     loadPhotos()
   }
 
@@ -300,9 +339,16 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
               <button onClick={() => videoFileRef.current?.click()} disabled={videoBusy}
                 className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition hover:opacity-90 disabled:opacity-50">
                 {videoBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Film className="h-4 w-4" />}
-                {videoBusy ? t('Subiendo y generando portada...') : t('Elegir vídeo (mp4)')}
+                {videoBusy
+                  ? (videoProgress !== null ? `${t('Subiendo vídeo…')} ${videoProgress}%` : t('Generando portada…'))
+                  : t('Elegir vídeo (mp4)')}
               </button>
-              <p className="mt-1.5 text-[11px] text-muted">{t('Se genera una portada automática del primer fotograma; podrás cambiarla luego. Recomendado < 100 MB; para vídeos largos usa YouTube/Vimeo.')}</p>
+              {videoBusy && videoProgress !== null && (
+                <div className="mt-2 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-canvas">
+                  <div className="h-full rounded-full bg-ink transition-all" style={{ width: `${videoProgress}%` }} />
+                </div>
+              )}
+              <p className="mt-1.5 text-[11px] text-muted">{t('Se genera una portada automática del primer fotograma; podrás cambiarla luego. Hasta 500 MB, con subida reanudable; para vídeos largos usa YouTube/Vimeo.')}</p>
             </div>
           ) : (
             <div className="flex flex-col gap-2 sm:flex-row">
