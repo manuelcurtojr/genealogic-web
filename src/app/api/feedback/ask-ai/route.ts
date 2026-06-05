@@ -33,7 +33,7 @@ export const runtime = 'nodejs'
  * Si la zona no aparece aquí, cae al genérico.
  */
 const SCOPE_HINTS: Partial<Record<FeedbackScope, string>> = {
-  importer: `El user está usando el IMPORTADOR DE PEDIGREES. Causas frecuentes de fricción:
+  importer: `El user está usando el IMPORTADOR DE GENEALOGÍAS. Causas frecuentes de fricción:
 - URL no soportada → solo aceptamos Pawdoq, working-dog, breedarchive y unos pocos más; si la URL es otra, sugiérele subir un PDF en su lugar.
 - Imagen/PDF borroso → la IA necesita texto legible; sugiere mejor calidad o reescanear.
 - "No detecta el perro" → probablemente el sitio cambió HTML; pídele que escale el ticket para que lo arreglemos.
@@ -79,7 +79,7 @@ const SCOPE_HINTS: Partial<Record<FeedbackScope, string>> = {
 
   billing: `El user está en FACTURACIÓN o CHECKOUT. Causas frecuentes:
 - "Error iniciando pago" → suele ser env var de Stripe ausente; el user no puede arreglarlo, escala.
-- Planes vigentes: Owner 0€/mes (3 perros), Kennel Free 0€/mes (5 perros), Kennel Pro 49€/mes ó 499€/año -15% (ilimitado).
+- Planes vigentes: Owner 0€/mes (ilimitado), Kennel Free 0€/mes (ilimitado), Kennel Pro 49€/mes ó 499€/año (ilimitado, panel completo). Todos los planes con perros ilimitados.
 - Extensiones de pago à la carte sobre Kennel Pro: Web del criadero (dominio propio) 19€/mes, Newsletter 9€/mes. Emailbot IA próximamente. Cada una se factura por separado.
 - Trial: 14 días gratis SIN tarjeta para Kennel Pro. Antes de terminar la prueba se pide método de pago para continuar; sin él, baja a Kennel Free. Las extensiones no tienen prueba.
 - No existe Kennel Enterprise ni plan de 149€, y no ofrecemos API pública: ya no se ofrecen.
