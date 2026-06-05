@@ -33,11 +33,10 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
   const [videoBusy, setVideoBusy] = useState(false)
   const [videoError, setVideoError] = useState<string | null>(null)
   const [videoProgress, setVideoProgress] = useState<number | null>(null)
-  const [posterTargetId, setPosterTargetId] = useState<string | null>(null)
+  const [posterPickerPhoto, setPosterPickerPhoto] = useState<any | null>(null)
 
   const fileRef = useRef<HTMLInputElement>(null)
   const videoFileRef = useRef<HTMLInputElement>(null)
-  const posterFileRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
   const t = useT()
 
@@ -228,20 +227,18 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     loadPhotos()
   }
 
-  // Cambiar la portada de un vídeo
-  async function handleChangePoster(file: File | null) {
-    const target = photos.find(p => p.id === posterTargetId)
-    setPosterTargetId(null)
-    if (!file || !target) return
+  // Cambiar la portada de un vídeo SUBIDO: solo un fotograma real del propio
+  // vídeo (elegido en la línea de tiempo). NO se permite subir una imagen
+  // personalizada, para que nadie falsee la portada ni haga clickbait.
+  async function applyNewPoster(photo: any, blob: Blob) {
     setVideoBusy(true)
     // borra portada anterior (si era de nuestro storage)
-    if (target.storage_path) await supabase.storage.from('dog-photos').remove([target.storage_path])
-    const up = await uploadPoster(file)
-    if (up) await supabase.from('dog_photos').update({ url: up.url, storage_path: up.path }).eq('id', target.id)
-    setVideoBusy(false)
+    if (photo.storage_path) await supabase.storage.from('dog-photos').remove([photo.storage_path])
+    const up = await uploadPoster(blob)
+    if (up) await supabase.from('dog_photos').update({ url: up.url, storage_path: up.path }).eq('id', photo.id)
+    setVideoBusy(false); setPosterPickerPhoto(null)
     loadPhotos()
   }
-  function requestChangePoster(photoId: string) { setPosterTargetId(photoId); posterFileRef.current?.click() }
 
   async function deletePhoto(photo: any) {
     const toRemove = [photo.storage_path, photo.video_storage_path].filter(Boolean) as string[]
@@ -287,7 +284,6 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     <div className="space-y-3">
       <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={e => handleUpload(e.target.files)} />
       <input ref={videoFileRef} type="file" accept="video/*" className="hidden" onChange={e => handleUploadVideo(e.target.files?.[0] || null)} />
-      <input ref={posterFileRef} type="file" accept="image/*" className="hidden" onChange={e => handleChangePoster(e.target.files?.[0] || null)} />
 
       <p className="text-[11px] text-muted">{t('Arrastra (en el móvil, mantén pulsado) para reordenar. El primer elemento será la portada del perfil. Puedes añadir fotos y vídeos.')}</p>
 
@@ -315,7 +311,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
                 t={t}
                 onDelete={() => deletePhoto(photo)}
                 onUpscale={() => handleUpscale(photo)}
-                onChangePoster={() => requestChangePoster(photo.id)}
+                onChangePoster={() => setPosterPickerPhoto(photo)}
               />
             ))}
           </SortableContext>
@@ -371,8 +367,18 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
         <p className="text-xs text-muted text-center py-2">{t('Añade fotos o vídeos del perro.')}</p>
       )}
       <p className="text-[11px] text-muted">
-        {t('En las fotos, pulsa')} <Sparkles className="w-3 h-3 inline -mt-0.5" /> {t('para mejorarlas con IA. En los vídeos,')} <ImagePlus className="w-3 h-3 inline -mt-0.5" /> {t('cambia la portada.')}
+        {t('En las fotos, pulsa')} <Sparkles className="w-3 h-3 inline -mt-0.5" /> {t('para mejorarlas con IA. En los vídeos subidos,')} <ImagePlus className="w-3 h-3 inline -mt-0.5" /> {t('elige la portada (un fotograma del propio vídeo).')}
       </p>
+
+      {posterPickerPhoto && (
+        <PosterPicker
+          videoUrl={posterPickerPhoto.video_url}
+          t={t}
+          busy={videoBusy}
+          onCancel={() => setPosterPickerPhoto(null)}
+          onPick={(blob) => applyNewPoster(posterPickerPhoto, blob)}
+        />
+      )}
     </div>
   )
 }
@@ -449,10 +455,12 @@ function SortableMediaItem({
 
       {/* Acción: cambiar portada (vídeo) o mejorar IA (foto) — visible en móvil */}
       {isVideo ? (
-        <button {...stopDnd} onClick={onChangePoster} title={t('Cambiar portada')}
-          className="absolute bottom-1 right-1 w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-black/60 text-white flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition hover:bg-ink">
-          <ImagePlus className="w-3 h-3" />
-        </button>
+        photo.video_provider === 'upload' && (
+          <button {...stopDnd} onClick={onChangePoster} title={t('Elegir portada')}
+            className="absolute bottom-1 right-1 w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-black/60 text-white flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition hover:bg-ink">
+            <ImagePlus className="w-3 h-3" />
+          </button>
+        )
       ) : (!photo.upscaled_at && !upscaling && (
         <button {...stopDnd} onClick={onUpscale} title={t('Mejorar con IA')}
           className="absolute bottom-1 right-1 w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-black/60 text-white flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition hover:bg-violet-600">
@@ -463,6 +471,114 @@ function SortableMediaItem({
         className="absolute top-1 right-1 w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-black/60 text-white flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition hover:bg-red-500">
         <X className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
       </button>
+    </div>
+  )
+}
+
+// ─── Selector de portada (línea de tiempo, estilo Instagram) ──────────────
+// Solo permite elegir un FOTOGRAMA REAL del vídeo subido — nada de imágenes
+// personalizadas — para que la portada no se pueda falsear ni hacer clickbait.
+function PosterPicker({ videoUrl, t, busy, onCancel, onPick }: {
+  videoUrl: string
+  t: (s: string) => string
+  busy: boolean
+  onCancel: () => void
+  onPick: (blob: Blob) => void
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [duration, setDuration] = useState(0)
+  const [time, setTime] = useState(0)
+  const [ready, setReady] = useState(false)
+  const [capturing, setCapturing] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+
+  function onLoadedMetadata() {
+    const v = videoRef.current; if (!v) return
+    setDuration(v.duration || 0)
+    setReady(true)
+    const start = Math.min(0.1, (v.duration || 0) / 2)
+    setTime(start)
+    try { v.currentTime = start } catch {}
+  }
+  function onScrub(e: React.ChangeEvent<HTMLInputElement>) {
+    const v = videoRef.current; if (!v) return
+    const tt = parseFloat(e.target.value)
+    setTime(tt)
+    try { v.currentTime = tt } catch {}
+  }
+  function fmt(s: number) { const m = Math.floor(s / 60); const ss = Math.floor(s % 60); return `${m}:${ss.toString().padStart(2, '0')}` }
+
+  async function capture() {
+    const v = videoRef.current; if (!v) return
+    setCapturing(true); setErr(null)
+    try {
+      // asegura que el frame de `time` está pintado antes de capturar
+      await new Promise<void>((res) => {
+        if (Math.abs(v.currentTime - time) < 0.05 && v.readyState >= 2) return res()
+        let done = false
+        const finish = () => { if (done) return; done = true; v.removeEventListener('seeked', finish); res() }
+        v.addEventListener('seeked', finish)
+        try { v.currentTime = time } catch { finish() }
+        setTimeout(finish, 1500)
+      })
+      const canvas = document.createElement('canvas')
+      canvas.width = v.videoWidth || 640
+      canvas.height = v.videoHeight || 360
+      const ctx = canvas.getContext('2d')
+      if (!ctx) throw new Error('no-ctx')
+      ctx.drawImage(v, 0, 0, canvas.width, canvas.height)
+      const blob = await new Promise<Blob | null>((res) => canvas.toBlob((b) => res(b), 'image/jpeg', 0.85))
+      if (!blob) throw new Error('no-blob')
+      onPick(blob)
+    } catch {
+      setErr(t('No se pudo capturar el fotograma (permisos del vídeo). Inténtalo de nuevo.'))
+      setCapturing(false)
+    }
+  }
+
+  const working = capturing || busy
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4" onClick={onCancel}>
+      <div className="w-full max-w-md rounded-2xl bg-canvas p-4 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.4)]" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-[15px] font-semibold text-ink">{t('Elige la portada')}</h3>
+          <button onClick={onCancel} className="rounded-full p-1 text-muted transition hover:text-ink"><X className="h-4 w-4" /></button>
+        </div>
+
+        <div className="overflow-hidden rounded-xl bg-black">
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            crossOrigin="anonymous"
+            preload="metadata"
+            muted
+            playsInline
+            onLoadedMetadata={onLoadedMetadata}
+            onError={() => setErr(t('No se pudo cargar el vídeo.'))}
+            className="mx-auto max-h-[50vh] w-full object-contain"
+          />
+        </div>
+
+        <div className="mt-3">
+          <input type="range" min={0} max={duration || 0} step={0.05} value={time} onChange={onScrub} disabled={!ready}
+            style={{ accentColor: 'var(--brand)' }} className="w-full disabled:opacity-50" />
+          <div className="mt-1 flex justify-between text-[11px] tabular-nums text-muted">
+            <span>{fmt(time)}</span><span>{fmt(duration)}</span>
+          </div>
+        </div>
+        <p className="mt-1 text-[11px] text-muted">{t('Arrastra para elegir el fotograma. La portada será exactamente ese momento del vídeo.')}</p>
+        {err && <p className="mt-2 text-[12px] text-red-500">{err}</p>}
+
+        <div className="mt-4 flex justify-end gap-2">
+          <button onClick={onCancel} className="rounded-lg border border-hairline px-4 py-2 text-[13px] font-medium text-body transition hover:bg-surface-soft">{t('Cancelar')}</button>
+          <button onClick={capture} disabled={!ready || working}
+            className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition hover:opacity-90 disabled:opacity-50">
+            {working && <Loader2 className="h-4 w-4 animate-spin" />}
+            {t('Usar este fotograma')}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
