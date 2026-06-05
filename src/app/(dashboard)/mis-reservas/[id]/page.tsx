@@ -1,10 +1,13 @@
 /**
  * Panel del Propietario: detalle de una reserva.
  *
- * Vista solo lectura en Fase A. Próximas fases:
- *  - Fase B: marcar perro como recibido cuando el criador hace transfer
- *  - Fase C: firma de contrato + plan de pagos (Stripe Connect del criador)
- *           + mensajería interna 2-way
+ * Vista del cliente con todo el ciclo de vida de la reserva en una sola
+ * página. Diseño orientado a "saber dónde estoy y qué falta":
+ *
+ *   1. Hero — kennel + status + fecha + acciones rápidas (contrato/pagos/mensajes)
+ *   2. Timeline + Sidebar info — el "dónde estoy" en grande, info clave a un lado
+ *   3. Detalles — cachorro, solicitud, camada, documentos en cards uniformes
+ *   4. Mensajes — hilo con el criador al final, full width
  */
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
@@ -25,6 +28,11 @@ import { sendClientMessageAction } from './actions'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { Img } from '@/components/ui/img'
+import {
+  ArrowLeft, ScrollText, Wallet, MessageCircle,
+  Dog, FileText, Calendar, Heart, Inbox, Download, Archive,
+  ChevronRight, ExternalLink,
+} from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Reserva · Mis reservas · Genealogic' }
@@ -46,266 +54,431 @@ export default async function MyReservationDetailPage({
   const meta = STATUS_META[reservation.status] ?? STATUS_META.interested
   const isArchived = reservation.status === 'delivered' || reservation.status === 'cancelled'
 
-  // Línea de tiempo: pasos del journey de la reserva
   const timeline = getReservationTimelineSteps(reservation)
+  const completedSteps = timeline.filter((s) => s.state === 'done').length
+  const progressPct = Math.round((completedSteps / timeline.length) * 100)
 
-  // Mensajería
   const messages = await listReservationMessages(reservation.id)
-  // Marcar como leídos los mensajes del criador (no bloqueante)
   markThreadRead(reservation.id, 'client').catch(() => {})
 
-  // Documentos del cachorro asignado (solo los visibles al propietario)
   const documents = reservation.dog
     ? await listDogDocumentsForOwner(reservation.dog.id)
     : []
 
+  // Estado de los contratos para los CTAs rápidos
+  const reservationContract = reservation.contracts.find((c) => c.kind === 'reservation') || null
+  const deliveryContract = reservation.contracts.find((c) => c.kind === 'delivery') || null
+  const pendingSignature = (reservationContract && !reservationContract.signed_at_client && reservationContract.status === 'sent')
+    || (reservationContract && !reservationContract.signed_at_client && reservationContract.status === 'signed_partial')
+    || (deliveryContract && !deliveryContract.signed_at_client && deliveryContract.status === 'sent')
+    || (deliveryContract && !deliveryContract.signed_at_client && deliveryContract.status === 'signed_partial')
+  const allSigned = !!reservationContract?.signed_at_client && (!deliveryContract || !!deliveryContract.signed_at_client)
+  const totalPending = reservation.total_price_cents != null && reservation.deposit_amount_cents != null
+    ? reservation.total_price_cents - reservation.deposit_amount_cents
+    : null
+
+  const kennelInitial = reservation.kennel?.name[0]?.toUpperCase() ?? '?'
+  const kennelHref = reservation.kennel?.slug ? `/kennels/${reservation.kennel.slug}` : null
+
   return (
-    <div>
+    <div className="mx-auto max-w-6xl space-y-6 sm:space-y-7">
+      {/* Breadcrumb */}
       <Link
         href="/mis-reservas"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted hover:text-ink mb-5"
+        className="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wider text-muted hover:text-ink transition-colors"
       >
-        ← {t('Mis reservas')}
+        <ArrowLeft className="h-3.5 w-3.5" /> {t('Mis reservas')}
       </Link>
 
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted">
-            {t('Reserva con')}
-          </p>
-          <div className="mt-2 flex items-center gap-3">
-            {reservation.kennel?.logo_url ? (
+      {/* ═══ HERO CARD ═══ */}
+      <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-canvas via-canvas to-surface-soft/60 p-6 sm:p-8">
+        {/* Glow decorativo */}
+        <div
+          aria-hidden
+          className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-[#FE6620]/8 blur-3xl pointer-events-none"
+        />
+        <div className="relative flex items-start gap-4 sm:gap-5 flex-wrap">
+          {reservation.kennel?.logo_url ? (
+            kennelHref ? (
+              <Link href={kennelHref} target="_blank" className="flex-shrink-0 group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <Img
+                  w={200}
+                  src={reservation.kennel.logo_url}
+                  alt={reservation.kennel.name}
+                  className="h-16 w-16 rounded-2xl object-cover border border-hairline shadow-sm group-hover:shadow transition-shadow"
+                />
+              </Link>
+            ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <Img
-                w={120}
+                w={200}
                 src={reservation.kennel.logo_url}
-                alt={reservation.kennel.name}
-                className="w-12 h-12 rounded-full object-cover border border-hairline"
+                alt={reservation.kennel?.name || ''}
+                className="h-16 w-16 rounded-2xl object-cover border border-hairline shadow-sm flex-shrink-0"
               />
-            ) : (
-              <div className="w-12 h-12 rounded-full bg-surface-card flex items-center justify-center text-base font-bold text-ink">
-                {reservation.kennel?.name[0]?.toUpperCase() ?? '?'}
-              </div>
-            )}
-            <h1 className="text-3xl font-bold tracking-tight text-ink">
+            )
+          ) : (
+            <div className="h-16 w-16 rounded-2xl bg-ink text-on-primary flex items-center justify-center text-xl font-bold flex-shrink-0">
+              {kennelInitial}
+            </div>
+          )}
+
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+              {t('Reserva con')}
+            </p>
+            <h1 className="mt-1 text-[28px] sm:text-[36px] font-bold tracking-[-0.035em] text-ink leading-[1.05]">
               {reservation.kennel?.name ?? '—'}
             </h1>
+            <p className="mt-1 text-[13px] text-body max-w-2xl leading-snug">
+              {meta.description}
+            </p>
+            <div className="mt-3 flex items-center gap-3 flex-wrap">
+              <StatusPill status={reservation.status} />
+              <span className="text-[12px] text-muted inline-flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {t('Reservada el')} {formatDate(reservation.created_at)}
+              </span>
+              {reservation.dog && (
+                <span className="text-[12px] text-emerald-700 font-medium inline-flex items-center gap-1">
+                  <Dog className="h-3 w-3" />
+                  {reservation.dog.name}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-        <StatusPill status={reservation.status} />
-      </div>
 
-      <p className="mt-3 text-body max-w-2xl">{meta.description}</p>
-
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Columna principal */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Cachorro asignado */}
-          {reservation.dog && (
-            <section className="rounded-2xl border border-hairline bg-canvas p-5">
-              <h2 className="text-base font-bold text-ink mb-4">{t('Cachorro asignado')}</h2>
-              <Link
-                href={`/dogs/${reservation.dog.slug}`}
-                target="_blank"
-                className="flex items-center gap-4 group"
-              >
-                {reservation.dog.thumbnail_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <Img
-                    w={200}
-                    src={reservation.dog.thumbnail_url}
-                    alt={reservation.dog.name}
-                    className="w-20 h-20 rounded-xl object-cover group-hover:scale-[1.02] transition"
-                  />
-                )}
-                <div>
-                  <p className="text-lg font-bold text-ink group-hover:text-brand">
-                    {reservation.dog.name}
-                  </p>
-                  <p className="text-xs text-muted mt-1">
-                    {t('Ver ficha completa en Genealogic')} →
-                  </p>
-                </div>
-              </Link>
-            </section>
-          )}
-
-          {/* Tu solicitud original (datos del formulario) */}
-          {(reservation.applicant_message ||
-            reservation.applicant_purpose ||
-            reservation.preference_sex ||
-            reservation.preference_color) && (
-            <section className="rounded-2xl border border-hairline bg-canvas p-5">
-              <h2 className="text-base font-bold text-ink mb-4">{t('Tu solicitud')}</h2>
-              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {reservation.preference_sex && (
-                  <Field label={t('Sexo preferido')}>
-                    {reservation.preference_sex === 'male'
-                      ? t('Macho')
-                      : reservation.preference_sex === 'female'
-                        ? t('Hembra')
-                        : t('Indiferente')}
-                  </Field>
-                )}
-                {reservation.preference_color && (
-                  <Field label={t('Color preferido')}>{reservation.preference_color}</Field>
-                )}
-                {reservation.applicant_purpose && (
-                  <Field label={t('Función')}>{reservation.applicant_purpose}</Field>
-                )}
-                {reservation.preference_notes && (
-                  <Field label={t('Notas')}>{reservation.preference_notes}</Field>
-                )}
-              </dl>
-              {reservation.applicant_message && (
-                <div className="mt-5 pt-5 border-t border-hairline">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
-                    {t('Mensaje al criador')}
-                  </p>
-                  <p className="text-sm text-body leading-relaxed whitespace-pre-line">
-                    {reservation.applicant_message}
-                  </p>
-                </div>
-              )}
-            </section>
-          )}
-
-          {/* Camada (si está asignada) */}
-          {reservation.litter && (
-            <section className="rounded-2xl border border-hairline bg-canvas p-5">
-              <h2 className="text-base font-bold text-ink mb-4">{t('Camada')}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {reservation.litter.expected_date && (
-                  <Field label={t('Fecha esperada')}>
-                    {formatDate(reservation.litter.expected_date)}
-                  </Field>
-                )}
-                {reservation.litter.birth_date && (
-                  <Field label={t('Nacimiento')}>{formatDate(reservation.litter.birth_date)}</Field>
-                )}
-              </div>
-            </section>
-          )}
-
-          {/* Documentos del cachorro asignado */}
-          <section className="rounded-2xl border border-hairline bg-canvas p-5">
-            <h2 className="text-base font-bold text-ink mb-4">{t('Documentos')}</h2>
-            {documents.length > 0 ? (
-              <ul className="divide-y divide-hairline">
-                {documents.map((doc) => (
-                  <li key={doc.id} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-ink truncate">{doc.title}</p>
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted mt-0.5">
-                        {labelForType(doc.type)}
-                      </p>
-                    </div>
-                    <a
-                      href={doc.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-hairline px-3 py-1.5 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
-                    >
-                      {t('Descargar')} →
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-xs text-muted italic">{t('Aún no hay documentos')}</p>
-            )}
-          </section>
-
-          {/* Timeline — el ciclo de vida completo de la reserva */}
-          <section className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 min-w-0">
-            <div className="flex items-baseline justify-between gap-3 flex-wrap mb-5">
-              <h2 className="text-base font-bold text-ink">{t('Estado de tu reserva')}</h2>
-              <p className="text-[11px] text-muted">
-                {timeline.filter((s) => s.state === 'done').length} {t('de')} {timeline.length} {t('completados')}
-              </p>
-            </div>
-            <ReservationTimeline steps={timeline} t={t} />
-          </section>
+        {/* Barra de progreso de hitos */}
+        <div className="relative mt-6 pt-5 border-t border-hairline/60">
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <p className="text-[11.5px] font-semibold uppercase tracking-wider text-muted">
+              {t('Progreso')}
+            </p>
+            <p className="text-[11.5px] font-bold text-ink tabular-nums">
+              {completedSteps} / {timeline.length} {t('hitos')}
+            </p>
+          </div>
+          <div className="h-2 rounded-full bg-surface-soft overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
         </div>
+      </section>
 
-        {/* Columna lateral: pagos + acciones */}
-        <div className="space-y-6">
-          <section className="rounded-2xl border border-hairline bg-canvas p-5">
-            <h2 className="text-base font-bold text-ink mb-4">{t('Económico')}</h2>
-            <dl className="space-y-3 text-sm">
+      {/* ═══ ACCIONES RÁPIDAS ═══ — 3 CTAs prominentes */}
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <QuickAction
+          href={`/mis-reservas/${reservation.id}/contrato`}
+          icon={ScrollText}
+          title={t('Contrato')}
+          subtitle={
+            allSigned
+              ? `✓ ${t('Firmado')}`
+              : pendingSignature
+                ? t('Pendiente de tu firma')
+                : t('Aún no enviado')
+          }
+          tone={pendingSignature ? 'amber' : allSigned ? 'emerald' : 'neutral'}
+          badge={pendingSignature ? t('Acción') : null}
+        />
+        <QuickAction
+          href={`/mis-reservas/${reservation.id}/pagos`}
+          icon={Wallet}
+          title={t('Pagos')}
+          subtitle={
+            reservation.total_price_cents != null
+              ? `${formatPrice(reservation.total_price_cents, reservation.currency)}${totalPending != null && totalPending > 0 ? ` · ${formatPrice(totalPending, reservation.currency)} ${t('pendiente')}` : ''}`
+              : t('Sin importes configurados')
+          }
+          tone={totalPending != null && totalPending > 0 ? 'amber' : 'neutral'}
+        />
+        <QuickAction
+          href={`#mensajes`}
+          icon={MessageCircle}
+          title={t('Mensajes')}
+          subtitle={messages.length === 0 ? t('Sin mensajes todavía') : `${messages.length} ${messages.length === 1 ? t('mensaje') : t('mensajes')}`}
+          tone="neutral"
+        />
+      </section>
+
+      {/* ═══ GRID PRINCIPAL: Timeline + Sidebar Económico ═══ */}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-5 sm:gap-6">
+        {/* Timeline — pieza central */}
+        <Card>
+          <CardHeader
+            title={t('Estado de tu reserva')}
+            subtitle={`${completedSteps} ${t('de')} ${timeline.length} ${t('completados')}`}
+          />
+          <ReservationTimeline steps={timeline} t={t} />
+        </Card>
+
+        {/* Sidebar derecho — info económica */}
+        <div className="space-y-5">
+          <Card>
+            <CardHeader title={t('Importes')} subtitle={t('Resumen económico')} />
+            <dl className="space-y-3 text-[14px]">
               {reservation.deposit_amount_cents != null && (
                 <div className="flex items-center justify-between">
-                  <dt className="text-muted">{t('Seña')}</dt>
+                  <dt className="text-muted">{t('Señal')}</dt>
                   <dd className="font-semibold text-ink tabular-nums">
                     {formatPrice(reservation.deposit_amount_cents, reservation.currency)}
                   </dd>
                 </div>
               )}
+              {reservation.total_price_cents != null && reservation.deposit_amount_cents != null && (
+                <div className="flex items-center justify-between text-[13px]">
+                  <dt className="text-muted">{t('Pago final estimado')}</dt>
+                  <dd className="text-body tabular-nums">
+                    {formatPrice(reservation.total_price_cents - reservation.deposit_amount_cents, reservation.currency)}
+                  </dd>
+                </div>
+              )}
               {reservation.total_price_cents != null && (
                 <div className="flex items-center justify-between pt-3 border-t border-hairline">
-                  <dt className="text-muted">{t('Total')}</dt>
-                  <dd className="font-bold text-ink tabular-nums text-base">
+                  <dt className="text-ink font-semibold">{t('Total')}</dt>
+                  <dd className="font-bold text-ink tabular-nums text-[18px]">
                     {formatPrice(reservation.total_price_cents, reservation.currency)}
                   </dd>
                 </div>
               )}
-              {reservation.deposit_amount_cents == null &&
-                reservation.total_price_cents == null && (
-                  <p className="text-xs text-muted italic">
-                    {t('El criador no ha configurado importes todavía.')}
-                  </p>
-                )}
+              {reservation.deposit_amount_cents == null && reservation.total_price_cents == null && (
+                <p className="text-[12.5px] text-muted italic py-2">
+                  {t('El criador no ha configurado importes todavía.')}
+                </p>
+              )}
             </dl>
             <Link
               href={`/mis-reservas/${reservation.id}/pagos`}
-              className="mt-5 inline-flex items-center gap-1 w-full justify-center rounded-lg border border-hairline px-3 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
+              className="mt-5 inline-flex items-center gap-1.5 w-full justify-center rounded-lg bg-ink text-on-primary hover:opacity-90 px-3 py-2.5 text-[12.5px] font-semibold transition-opacity"
             >
-              {t('Ver pagos y abonar')} →
+              {t('Ver pagos y abonar')}
+              <ChevronRight className="h-3.5 w-3.5" />
             </Link>
-          </section>
+          </Card>
 
-          <section className="rounded-2xl border border-hairline bg-canvas p-5">
-            <h2 className="text-base font-bold text-ink mb-3">{t('Contrato')}</h2>
-            {reservation.contract_signed_at ? (
-              <p className="text-sm font-semibold text-emerald-700 mb-3">
-                ✓ {t('Firmado el')} {formatDate(reservation.contract_signed_at)}
-              </p>
-            ) : (
-              <p className="text-sm text-muted mb-3">
-                {t('Revisa el estado del contrato y fírmalo cuando el criador lo envíe.')}
-              </p>
-            )}
-            <Link
-              href={`/mis-reservas/${reservation.id}/contrato`}
-              className="inline-flex items-center gap-1 w-full justify-center rounded-lg border border-hairline px-3 py-2 text-xs font-semibold text-body hover:border-ink/30 hover:text-ink"
-            >
-              {t('Abrir contrato')} →
-            </Link>
-          </section>
-
-          <section>
-            <div className="flex items-end justify-between mb-3">
-              <h2 className="text-base font-bold text-ink">{t('Mensajes')}</h2>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-                {messages.length} {messages.length === 1 ? t('mensaje') : t('mensajes')}
-              </span>
-            </div>
-            <ReservationThread
-              messages={messages}
-              currentRole="client"
-              reservationId={reservation.id}
-              onSendAction={sendClientMessageAction}
-              otherSideName={reservation.kennel?.name || t('el criador')}
-            />
-          </section>
+          {reservation.litter && (
+            <Card>
+              <CardHeader title={t('Camada')} subtitle={t('De donde viene tu cachorro')} icon={Heart} />
+              <dl className="space-y-2.5 text-[13.5px]">
+                {reservation.litter.expected_date && (
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted">{t('Fecha esperada')}</dt>
+                    <dd className="font-medium text-ink">{formatDate(reservation.litter.expected_date)}</dd>
+                  </div>
+                )}
+                {reservation.litter.birth_date && (
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted">{t('Nacimiento')}</dt>
+                    <dd className="font-medium text-ink">{formatDate(reservation.litter.birth_date)}</dd>
+                  </div>
+                )}
+              </dl>
+            </Card>
+          )}
         </div>
       </div>
 
+      {/* ═══ Cachorro asignado + Tu solicitud — grid de cards ═══ */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+        {/* Cachorro */}
+        <Card>
+          <CardHeader
+            title={t('Cachorro asignado')}
+            subtitle={reservation.dog ? t('Ya tiene tu nombre') : t('Aún no asignado')}
+            icon={Dog}
+          />
+          {reservation.dog ? (
+            <Link
+              href={`/dogs/${reservation.dog.slug}`}
+              target="_blank"
+              className="group flex items-center gap-4 -m-2 p-2 rounded-xl hover:bg-surface-soft/50 transition-colors"
+            >
+              {reservation.dog.thumbnail_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <Img
+                  w={200}
+                  src={reservation.dog.thumbnail_url}
+                  alt={reservation.dog.name}
+                  className="w-20 h-20 rounded-2xl object-cover border border-hairline group-hover:scale-[1.02] transition-transform"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-surface-card flex items-center justify-center text-muted">
+                  <Dog className="h-6 w-6" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-[18px] font-bold text-ink truncate group-hover:text-[#FE6620] transition-colors">
+                  {reservation.dog.name}
+                </p>
+                <p className="mt-1 text-[12px] text-muted inline-flex items-center gap-1">
+                  {t('Ver ficha completa')}
+                  <ExternalLink className="h-3 w-3" />
+                </p>
+              </div>
+            </Link>
+          ) : (
+            <EmptyState
+              icon={Dog}
+              message={t('El criador asignará un cachorro concreto cuando llegue el momento. Te avisaremos.')}
+            />
+          )}
+        </Card>
+
+        {/* Tu solicitud */}
+        {(reservation.applicant_message ||
+          reservation.applicant_purpose ||
+          reservation.preference_sex ||
+          reservation.preference_color) ? (
+          <Card>
+            <CardHeader title={t('Tu solicitud')} subtitle={t('Lo que pediste al contactar')} icon={Inbox} />
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-[13.5px]">
+              {reservation.preference_sex && (
+                <Field label={t('Sexo preferido')}>
+                  {reservation.preference_sex === 'male'
+                    ? t('Macho')
+                    : reservation.preference_sex === 'female'
+                      ? t('Hembra')
+                      : t('Indiferente')}
+                </Field>
+              )}
+              {reservation.preference_color && (
+                <Field label={t('Color preferido')}>{reservation.preference_color}</Field>
+              )}
+              {reservation.applicant_purpose && (
+                <Field label={t('Función')}>{reservation.applicant_purpose}</Field>
+              )}
+              {reservation.preference_notes && (
+                <Field label={t('Notas')}>{reservation.preference_notes}</Field>
+              )}
+            </dl>
+            {reservation.applicant_message && (
+              <div className="mt-4 pt-4 border-t border-hairline">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted mb-2">
+                  {t('Mensaje al criador')}
+                </p>
+                <p className="text-[13.5px] text-body leading-[1.6] whitespace-pre-line italic">
+                  &ldquo;{reservation.applicant_message}&rdquo;
+                </p>
+              </div>
+            )}
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader title={t('Tu solicitud')} subtitle={t('Lo que pediste al contactar')} icon={Inbox} />
+            <EmptyState icon={Inbox} message={t('No registramos preferencias concretas en tu solicitud.')} />
+          </Card>
+        )}
+      </div>
+
+      {/* ═══ Documentos del cachorro ═══ */}
+      {(documents.length > 0 || reservation.dog) && (
+        <Card>
+          <CardHeader
+            title={t('Documentos del cachorro')}
+            subtitle={reservation.dog
+              ? `${documents.length} ${documents.length === 1 ? t('archivo disponible') : t('archivos disponibles')}`
+              : t('Aparecerán cuando se asigne un cachorro')}
+            icon={FileText}
+          />
+          {documents.length > 0 ? (
+            <ul className="divide-y divide-hairline -mx-2">
+              {documents.map((doc) => (
+                <li key={doc.id} className="flex items-center justify-between gap-4 py-3 px-2 rounded-lg hover:bg-surface-soft/50 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-card text-muted flex-shrink-0">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[14px] font-semibold text-ink truncate">{doc.title}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted mt-0.5">
+                        {labelForType(doc.type)}
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={doc.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-hairline px-3 py-1.5 text-[12px] font-semibold text-body hover:border-ink/30 hover:bg-surface-soft hover:text-ink transition"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    {t('Descargar')}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState
+              icon={FileText}
+              message={t('El criador subirá aquí cartilla veterinaria, microchip, pedigree, etc.')}
+            />
+          )}
+        </Card>
+      )}
+
+      {/* ═══ Mensajes — full width al final ═══ */}
+      <Card id="mensajes">
+        <CardHeader
+          title={t('Mensajes con el criador')}
+          subtitle={messages.length === 0
+            ? t('Aún no hay mensajes — empieza la conversación')
+            : `${messages.length} ${messages.length === 1 ? t('mensaje') : t('mensajes')}`}
+          icon={MessageCircle}
+        />
+        <ReservationThread
+          messages={messages}
+          currentRole="client"
+          reservationId={reservation.id}
+          onSendAction={sendClientMessageAction}
+          otherSideName={reservation.kennel?.name || t('el criador')}
+        />
+      </Card>
+
       {isArchived && (
-        <div className="mt-10 rounded-xl bg-surface-soft border border-hairline p-4 text-xs text-muted">
-          {t('Esta reserva está archivada. Se mantiene visible para tu histórico pero ya no recibirá actualizaciones.')}
+        <div className="rounded-xl bg-surface-soft border border-hairline p-4 text-[12.5px] text-muted flex items-start gap-3">
+          <Archive className="h-4 w-4 flex-shrink-0 mt-0.5" />
+          <p>{t('Esta reserva está archivada. Se mantiene visible para tu histórico pero ya no recibirá actualizaciones.')}</p>
         </div>
       )}
+    </div>
+  )
+}
+
+// ─── Building blocks ───────────────────────────────────────────────────────
+
+function Card({ children, id }: { children: React.ReactNode; id?: string }) {
+  return (
+    <section
+      id={id}
+      className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 min-w-0"
+    >
+      {children}
+    </section>
+  )
+}
+
+function CardHeader({
+  title, subtitle, icon: Icon,
+}: {
+  title: string
+  subtitle?: string
+  icon?: React.ElementType
+}) {
+  return (
+    <div className="flex items-start gap-3 mb-5">
+      {Icon && (
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-soft text-ink flex-shrink-0">
+          <Icon className="h-4 w-4" />
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <h2 className="text-[15.5px] font-bold tracking-[-0.01em] text-ink leading-tight">{title}</h2>
+        {subtitle && <p className="mt-0.5 text-[11.5px] text-muted">{subtitle}</p>}
+      </div>
     </div>
   )
 }
@@ -313,32 +486,85 @@ export default async function MyReservationDetailPage({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-[10px] font-semibold uppercase tracking-wider text-muted">{label}</dt>
-      <dd className="mt-1 text-sm text-ink font-medium">{children}</dd>
+      <dt className="text-[10px] font-bold uppercase tracking-wider text-muted">{label}</dt>
+      <dd className="mt-0.5 text-[13.5px] text-ink font-medium">{children}</dd>
     </div>
+  )
+}
+
+function EmptyState({
+  icon: Icon, message,
+}: { icon: React.ElementType; message: string }) {
+  return (
+    <div className="flex items-center gap-3 px-1 py-2 text-[12.5px] text-muted italic">
+      <Icon className="h-4 w-4 flex-shrink-0 opacity-50" />
+      <p className="leading-snug">{message}</p>
+    </div>
+  )
+}
+
+function QuickAction({
+  href, icon: Icon, title, subtitle, tone, badge,
+}: {
+  href: string
+  icon: React.ElementType
+  title: string
+  subtitle: string
+  tone: 'neutral' | 'amber' | 'emerald'
+  badge?: string | null
+}) {
+  const toneClass =
+    tone === 'amber'
+      ? 'border-amber-300 bg-amber-50/40 hover:bg-amber-50/70 hover:border-amber-400'
+      : tone === 'emerald'
+      ? 'border-emerald-300 bg-emerald-50/40 hover:bg-emerald-50/70 hover:border-emerald-400'
+      : 'border-hairline bg-canvas hover:border-ink/30 hover:bg-surface-soft/40'
+  const iconClass =
+    tone === 'amber'
+      ? 'bg-amber-100 text-amber-700'
+      : tone === 'emerald'
+      ? 'bg-emerald-100 text-emerald-700'
+      : 'bg-surface-soft text-ink'
+
+  return (
+    <Link
+      href={href}
+      className={`group relative rounded-2xl border p-4 sm:p-5 flex items-center gap-3 transition-all ${toneClass}`}
+    >
+      {badge && (
+        <span className="absolute top-2 right-2 inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-amber-900 bg-amber-200 px-1.5 py-0.5 rounded-full">
+          {badge}
+        </span>
+      )}
+      <div className={`flex h-11 w-11 items-center justify-center rounded-xl flex-shrink-0 ${iconClass}`}>
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[14px] font-bold text-ink leading-tight">{title}</p>
+        <p className="mt-0.5 text-[11.5px] text-muted truncate">{subtitle}</p>
+      </div>
+      <ChevronRight className="h-4 w-4 text-muted group-hover:text-ink group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+    </Link>
   )
 }
 
 function StatusPill({ status }: { status: string }) {
   const meta = STATUS_META[status] ?? STATUS_META.interested
-  const colorBg: Record<string, string> = {
-    gray: 'bg-gray-100 text-gray-700 ring-gray-200',
-    amber: 'bg-amber-50 text-amber-800 ring-amber-200',
-    blue: 'bg-blue-50 text-blue-800 ring-blue-200',
-    violet: 'bg-violet-50 text-violet-800 ring-violet-200',
-    emerald: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
-    red: 'bg-red-50 text-red-700 ring-red-200',
+  const colorBg: Record<string, { bg: string; dot: string }> = {
+    gray:    { bg: 'bg-gray-100 text-gray-700 ring-gray-200',          dot: 'bg-gray-400' },
+    amber:   { bg: 'bg-amber-50 text-amber-800 ring-amber-200',        dot: 'bg-amber-500' },
+    blue:    { bg: 'bg-blue-50 text-blue-800 ring-blue-200',           dot: 'bg-blue-500' },
+    violet:  { bg: 'bg-violet-50 text-violet-800 ring-violet-200',     dot: 'bg-violet-500' },
+    emerald: { bg: 'bg-emerald-50 text-emerald-800 ring-emerald-200',  dot: 'bg-emerald-500' },
+    red:     { bg: 'bg-red-50 text-red-700 ring-red-200',              dot: 'bg-red-500' },
   }
+  const c = colorBg[meta.color]
   return (
     <span
-      className={`shrink-0 text-[11px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full ring-1 ${colorBg[meta.color]}`}
+      className={`inline-flex items-center gap-1.5 shrink-0 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ring-1 ${c.bg}`}
     >
+      <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
       {meta.label}
     </span>
   )
 }
-
-// `buildTimeline` antiguo eliminado — sustituido por
-// getReservationTimelineSteps() + componente ReservationTimeline (más
-// completo: incluye contratos de reserva/entrega, hito celebración de
-// "Reserva confirmada", iconos por hito, estado current con badge).
