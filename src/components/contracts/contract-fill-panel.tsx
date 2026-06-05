@@ -74,6 +74,14 @@ interface Props {
     reservationId: string,
     dogId: string | null,
   ) => Promise<{ ok: true } | { ok: false; error: string }>
+  onResetDraftAction?: (
+    reservationId: string,
+    contractId: string,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>
+  onDeleteDraftAction?: (
+    reservationId: string,
+    contractId: string,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>
   onAdvancedMode: () => void
 }
 
@@ -81,7 +89,8 @@ export default function ContractFillPanel({
   reservationId, contractId, kind, templateBody, contractTitle,
   initialValues, kennelVars, breedOptions, kennelDogs, assignedDogId,
   manualOverride,
-  onSaveAction, onSendAction, onAssignDogAction, onAdvancedMode,
+  onSaveAction, onSendAction, onAssignDogAction,
+  onResetDraftAction, onDeleteDraftAction, onAdvancedMode,
 }: Props) {
   const t = useT()
   const [values, setValues] = useState<Record<string, string>>(initialValues)
@@ -129,6 +138,8 @@ export default function ContractFillPanel({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onSendAction={onSendAction as any}
             onAssignDogAction={onAssignDogAction}
+            onResetDraftAction={onResetDraftAction}
+            onDeleteDraftAction={onDeleteDraftAction}
             onAdvancedMode={onAdvancedMode}
           />
         </div>

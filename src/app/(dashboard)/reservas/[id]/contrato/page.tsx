@@ -36,6 +36,8 @@ import {
   signContractAsBreederAction,
   cancelContractAction,
   assignDogToReservationAction,
+  resetDraftContractAction,
+  deleteDraftContractAction,
 } from './actions'
 import { listContractTemplatesForUser, type ContractTemplate } from '@/lib/contracts/templates-actions'
 import { CheckCircle2, FileText, AlertCircle, AlertTriangle } from 'lucide-react'
@@ -419,6 +421,8 @@ async function DraftContractBody({
         kind={contract.kind}
         onSaveAction={saveContractDraftAction}
         onSendAction={sendContractAction}
+        onResetDraftAction={resetDraftContractAction}
+        onDeleteDraftAction={deleteDraftContractAction}
       />
     )
   }
@@ -491,6 +495,8 @@ async function DraftContractBody({
       onSaveAction={saveContractValuesAction}
       onSendAction={sendContractAction}
       onAssignDogAction={assignDogToReservationAction}
+      onResetDraftAction={resetDraftContractAction}
+      onDeleteDraftAction={deleteDraftContractAction}
       onAdvancedMode={handleSetAdvancedMode}
     />
   )

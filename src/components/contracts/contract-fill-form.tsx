@@ -33,6 +33,7 @@ import {
 } from '@/lib/contracts/field-schema'
 import type { BreedOption, KennelDogOption } from './contract-fill-panel'
 import DogAssignmentBar from './dog-assignment-bar'
+import DraftActionsMenu from './draft-actions-menu'
 
 type Values = Record<string, string>
 
@@ -55,6 +56,16 @@ interface Props {
   onAssignDogAction: (
     reservationId: string,
     dogId: string | null,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>
+  /** Actions para resetear/eliminar el borrador. Opcionales para compat —
+   *  si no se pasan, el menú "⋯" no aparece. */
+  onResetDraftAction?: (
+    reservationId: string,
+    contractId: string,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>
+  onDeleteDraftAction?: (
+    reservationId: string,
+    contractId: string,
   ) => Promise<{ ok: true } | { ok: false; error: string }>
   /** Si true, deshabilita los inputs (porque el criador usó "modo avanzado"
    *  y editó el markdown — ya no podemos garantizar consistencia). */
@@ -105,6 +116,8 @@ export default function ContractFillForm({
   kennelDogs,
   assignedDogId,
   onAssignDogAction,
+  onResetDraftAction,
+  onDeleteDraftAction,
   manualOverride,
   onValuesChange,
   onSaveAction,
@@ -264,6 +277,14 @@ export default function ContractFillForm({
               <Send className="h-3.5 w-3.5" />
               {t('Enviar')}
             </button>
+            {onResetDraftAction && onDeleteDraftAction && (
+              <DraftActionsMenu
+                reservationId={reservationId}
+                contractId={contractId}
+                onResetAction={onResetDraftAction}
+                onDeleteAction={onDeleteDraftAction}
+              />
+            )}
           </div>
         </div>
       </div>

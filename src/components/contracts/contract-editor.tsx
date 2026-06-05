@@ -24,6 +24,7 @@ import {
 import { renderContractMarkdown } from '@/lib/contracts/markdown'
 import { validateContractBody } from '@/lib/contracts/required-tokens'
 import type { ContractKind } from '@/lib/contracts/templates'
+import DraftActionsMenu from './draft-actions-menu'
 import { useT } from '@/components/i18n/locale-provider'
 
 export default function ContractEditor({
@@ -35,6 +36,8 @@ export default function ContractEditor({
   kind,
   onSaveAction,
   onSendAction,
+  onResetDraftAction,
+  onDeleteDraftAction,
 }: {
   reservationId: string
   contractId: string
@@ -51,6 +54,14 @@ export default function ContractEditor({
     title?: string,
   ) => Promise<{ ok: true } | { ok: false; error: string }>
   onSendAction: (
+    reservationId: string,
+    contractId: string,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>
+  onResetDraftAction?: (
+    reservationId: string,
+    contractId: string,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>
+  onDeleteDraftAction?: (
     reservationId: string,
     contractId: string,
   ) => Promise<{ ok: true } | { ok: false; error: string }>
@@ -196,6 +207,14 @@ export default function ContractEditor({
               <Send className="h-3.5 w-3.5" />
               {t('Enviar al cliente')}
             </button>
+          )}
+          {onResetDraftAction && onDeleteDraftAction && (
+            <DraftActionsMenu
+              reservationId={reservationId}
+              contractId={contractId}
+              onResetAction={onResetDraftAction}
+              onDeleteAction={onDeleteDraftAction}
+            />
           )}
         </div>
       </div>

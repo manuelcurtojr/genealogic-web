@@ -14,6 +14,7 @@ import {
   updateContractBody,
   setContractStatus,
   getContractByReservation,
+  deleteContract,
 } from '@/lib/contracts/contracts'
 import { CONTRACT_TEMPLATES, type ContractKind } from '@/lib/contracts/templates'
 import { generateContractBody, generateContractBodyFromValues, buildContractVars } from '@/lib/contracts/render'
@@ -514,6 +515,110 @@ export async function signContractAsBreederAction(
     })
     revalidatePath(`/reservas/${reservationId}/contrato`)
     revalidatePath(`/mis-reservas/${reservationId}/contrato`)
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'unknown' }
+  }
+}
+
+/**
+ * Resetea un borrador de contrato:
+ *  - Limpia template_values (vuelve a {}, perdiendo lo rellenado en el form)
+ *  - Quita el flag __manual__ (si el criador estaba en modo avanzado)
+ *  - Regenera body_html desde buildContractVars (valores iniciales derivados
+ *    del lead + perro asignado + datos legales del criador)
+ *
+ * Útil cuando el criador la lió editando y quiere empezar limpio sin tener
+ * que eliminar y recrear desde plantilla.
+ *
+ * Solo funciona en status='draft' — para sent/signed usa cancelContractAction.
+ */
+export async function resetDraftContractAction(
+  reservationId: string,
+  contractId: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const t = getTranslator(await getLocale())
+  try {
+    const { reservation } = await assertBreeder(reservationId)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createKennelAdminClient() as any
+
+    const { data: contract } = await admin
+      .from('reservation_contracts')
+      .select('id, kind, status, source_template_id, title')
+      .eq('id', contractId)
+      .maybeSingle()
+    if (!contract) return { ok: false, error: t('Contrato no encontrado') }
+    if (contract.status !== 'draft') {
+      return { ok: false, error: t('Solo se puede resetear un borrador. Para contratos enviados usa "Volver a borrador".') }
+    }
+
+    // Cargar plantilla origen (si la hay) para regenerar body desde cero
+    let userTemplateBody: string | null = null
+    if (contract.source_template_id) {
+      const { data: tpl } = await admin
+        .from('contract_templates')
+        .select('body_md')
+        .eq('id', contract.source_template_id)
+        .maybeSingle()
+      userTemplateBody = tpl?.body_md ?? null
+    }
+
+    // Regenerar body con valores iniciales (sin overrides del criador)
+    const newBody = generateContractBody(
+      reservation,
+      contract.kind as ContractKind,
+      userTemplateBody,
+    )
+
+    const { error } = await admin
+      .from('reservation_contracts')
+      .update({
+        template_values: {},
+        body_html: newBody,
+      })
+      .eq('id', contractId)
+    if (error) throw new Error(error.message)
+
+    revalidatePath(`/reservas/${reservationId}/contrato`)
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'unknown' }
+  }
+}
+
+/**
+ * Elimina un borrador de contrato. La reserva vuelve al estado "sin
+ * contrato" — el criador puede crear uno nuevo desde plantilla.
+ *
+ * Solo funciona en status='draft' para evitar borrar contratos firmados
+ * por accidente (esos hay que cancelar primero con cancelContractAction).
+ */
+export async function deleteDraftContractAction(
+  reservationId: string,
+  contractId: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const t = getTranslator(await getLocale())
+  try {
+    await assertBreeder(reservationId)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createKennelAdminClient() as any
+    const { data: contract } = await admin
+      .from('reservation_contracts')
+      .select('status')
+      .eq('id', contractId)
+      .maybeSingle()
+    if (!contract) return { ok: false, error: t('Contrato no encontrado') }
+    if (contract.status !== 'draft') {
+      return {
+        ok: false,
+        error: t('Solo se puede eliminar un borrador. Para contratos enviados o firmados, primero cancélalos.'),
+      }
+    }
+
+    await deleteContract(contractId)
+    revalidatePath(`/reservas/${reservationId}/contrato`)
+    revalidatePath(`/reservas/${reservationId}`)
     return { ok: true }
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'unknown' }
