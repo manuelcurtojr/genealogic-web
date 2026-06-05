@@ -104,7 +104,8 @@ export default async function MyReservationDetailPage({
         />
       }
     >
-    <div className="space-y-6 sm:space-y-7">
+    {/* pb-24 xl:pb-0 → espacio para que el FAB del chat no tape el último card en móvil/tablet */}
+    <div className="space-y-5 sm:space-y-7 pb-24 xl:pb-0">
       {/* Breadcrumb */}
       <Link
         href="/mis-reservas"
@@ -114,13 +115,13 @@ export default async function MyReservationDetailPage({
       </Link>
 
       {/* ═══ HERO CARD ═══ */}
-      <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-canvas via-canvas to-surface-soft/60 p-6 sm:p-8">
+      <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-hairline bg-gradient-to-br from-canvas via-canvas to-surface-soft/60 p-4 sm:p-7 md:p-8">
         {/* Glow decorativo */}
         <div
           aria-hidden
           className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-[#FE6620]/8 blur-3xl pointer-events-none"
         />
-        <div className="relative flex items-start gap-4 sm:gap-5 flex-wrap">
+        <div className="relative flex items-start gap-3 sm:gap-5 flex-wrap">
           {reservation.kennel?.logo_url ? (
             kennelHref ? (
               <Link href={kennelHref} target="_blank" className="flex-shrink-0 group">
@@ -129,7 +130,7 @@ export default async function MyReservationDetailPage({
                   w={200}
                   src={reservation.kennel.logo_url}
                   alt={reservation.kennel.name}
-                  className="h-16 w-16 rounded-2xl object-cover border border-hairline shadow-sm group-hover:shadow transition-shadow"
+                  className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl object-cover border border-hairline shadow-sm group-hover:shadow transition-shadow"
                 />
               </Link>
             ) : (
@@ -138,23 +139,23 @@ export default async function MyReservationDetailPage({
                 w={200}
                 src={reservation.kennel.logo_url}
                 alt={reservation.kennel?.name || ''}
-                className="h-16 w-16 rounded-2xl object-cover border border-hairline shadow-sm flex-shrink-0"
+                className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl object-cover border border-hairline shadow-sm flex-shrink-0"
               />
             )
           ) : (
-            <div className="h-16 w-16 rounded-2xl bg-ink text-on-primary flex items-center justify-center text-xl font-bold flex-shrink-0">
+            <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl bg-ink text-on-primary flex items-center justify-center text-lg sm:text-xl font-bold flex-shrink-0">
               {kennelInitial}
             </div>
           )}
 
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+            <p className="text-[10.5px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
               {t('Reserva con')}
             </p>
-            <h1 className="mt-1 text-[28px] sm:text-[36px] font-bold tracking-[-0.035em] text-ink leading-[1.05]">
+            <h1 className="mt-0.5 sm:mt-1 text-[22px] sm:text-[30px] md:text-[36px] font-bold tracking-[-0.035em] text-ink leading-[1.1] break-words">
               {reservation.kennel?.name ?? '—'}
             </h1>
-            <p className="mt-1 text-[13px] text-body max-w-2xl leading-snug">
+            <p className="mt-1 text-[12.5px] sm:text-[13px] text-body max-w-2xl leading-snug">
               {meta.description}
             </p>
             <div className="mt-3 flex items-center gap-3 flex-wrap">
@@ -228,8 +229,11 @@ export default async function MyReservationDetailPage({
         />
       </section>
 
-      {/* ═══ GRID PRINCIPAL: Timeline + Sidebar Económico ═══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-5 sm:gap-6">
+      {/* ═══ GRID PRINCIPAL: Timeline + Sidebar Económico ═══
+          Apilado hasta xl- (mejor lectura en mobile/tablet/desktop pequeño) y
+          side-by-side a xl+. Cuando el panel chat está abierto en xl, queda
+          un poco apretado pero las 2 cols todavía respiran (≥860px). */}
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-4 sm:gap-6">
         {/* Timeline — pieza central */}
         <Card>
           <CardHeader
@@ -306,7 +310,7 @@ export default async function MyReservationDetailPage({
       </div>
 
       {/* ═══ Cachorro asignado + Tu solicitud — grid de cards ═══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Cachorro */}
         <Card>
           <CardHeader
@@ -462,7 +466,7 @@ function Card({
   return (
     <section
       id={id}
-      className={`rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 min-w-0 ${className}`}
+      className={`rounded-2xl border border-hairline bg-canvas p-4 sm:p-6 min-w-0 ${className}`}
     >
       {children}
     </section>
@@ -477,14 +481,14 @@ function CardHeader({
   icon?: React.ElementType
 }) {
   return (
-    <div className="flex items-start gap-3 mb-5">
+    <div className="flex items-start gap-2.5 sm:gap-3 mb-4 sm:mb-5">
       {Icon && (
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-soft text-ink flex-shrink-0">
-          <Icon className="h-4 w-4" />
+        <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg sm:rounded-xl bg-surface-soft text-ink flex-shrink-0">
+          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <h2 className="text-[15.5px] font-bold tracking-[-0.01em] text-ink leading-tight">{title}</h2>
+        <h2 className="text-[14.5px] sm:text-[15.5px] font-bold tracking-[-0.01em] text-ink leading-tight">{title}</h2>
         {subtitle && <p className="mt-0.5 text-[11.5px] text-muted">{subtitle}</p>}
       </div>
     </div>
@@ -537,18 +541,18 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className={`group relative rounded-2xl border p-4 sm:p-5 flex items-center gap-3 transition-all ${toneClass}`}
+      className={`group relative rounded-xl sm:rounded-2xl border p-3.5 sm:p-5 flex items-center gap-3 transition-all ${toneClass}`}
     >
       {badge && (
         <span className="absolute top-2 right-2 inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-amber-900 bg-amber-200 px-1.5 py-0.5 rounded-full">
           {badge}
         </span>
       )}
-      <div className={`flex h-11 w-11 items-center justify-center rounded-xl flex-shrink-0 ${iconClass}`}>
-        <Icon className="h-5 w-5" />
+      <div className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-lg sm:rounded-xl flex-shrink-0 ${iconClass}`}>
+        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[14px] font-bold text-ink leading-tight">{title}</p>
+        <p className="text-[13.5px] sm:text-[14px] font-bold text-ink leading-tight">{title}</p>
         <p className="mt-0.5 text-[11.5px] text-muted truncate">{subtitle}</p>
       </div>
       <ChevronRight className="h-4 w-4 text-muted group-hover:text-ink group-hover:translate-x-0.5 transition-all flex-shrink-0" />
