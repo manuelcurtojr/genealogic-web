@@ -9,10 +9,11 @@ export default async function DogsPage() {
   // Detectar si el usuario es criador (tiene kennel) para mostrar tabs avanzados
   const { data: kennelArr } = await supabase
     .from('kennels')
-    .select('id')
+    .select('id, name, slug, logo_url')
     .eq('owner_id', user!.id)
     .limit(1)
-  const myKennelId = kennelArr?.[0]?.id || null
+  const myKennel = kennelArr?.[0] || null
+  const myKennelId = myKennel?.id || null
   const isBreeder = !!myKennelId
 
   // Traer perros donde el usuario es owner OR breeder OR el kennel del perro es el suyo.
@@ -66,6 +67,9 @@ export default async function DogsPage() {
         userId={user!.id}
         isBreeder={isBreeder}
         myKennelId={myKennelId}
+        myKennelName={myKennel?.name || null}
+        myKennelSlug={myKennel?.slug || null}
+        myKennelLogo={myKennel?.logo_url || null}
         imports={imports}
       />
     </div>

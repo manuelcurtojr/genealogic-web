@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Grid3X3, List, Search, Plus, EyeOff, Edit, ArrowRightLeft, GitBranch, Globe, Heart, Undo2, ExternalLink, Loader2 } from 'lucide-react'
+import { Grid3X3, List, Search, Plus, EyeOff, Edit, ArrowRightLeft, GitBranch, Globe, Heart, Undo2, ExternalLink, Loader2, ArrowRight, Store } from 'lucide-react'
 import DogCard from './dog-card'
 import DogFormPanel from './dog-form-panel'
 import TransferPanel from '../kennel/transfer-panel'
@@ -44,6 +44,9 @@ interface DogsPageClientProps {
   userId: string
   isBreeder?: boolean
   myKennelId?: string | null
+  myKennelName?: string | null
+  myKennelSlug?: string | null
+  myKennelLogo?: string | null
   imports?: ImportRecord[]
 }
 
@@ -54,7 +57,7 @@ const PUPPY_MAX_MONTHS = 12 // un perro < 12 meses se considera cachorro
 
 const PAGE_SIZE = 24
 
-export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBreeder = false, myKennelId = null, imports = [] }: DogsPageClientProps) {
+export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBreeder = false, myKennelId = null, myKennelName = null, myKennelSlug = null, myKennelLogo = null, imports = [] }: DogsPageClientProps) {
   const t = useT()
   // Estado local de dogs para optimistic updates al hacer toggles desde la card
   const [dogs, setDogs] = useState(initialDogs)
@@ -229,12 +232,35 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
             </p>
           )}
         </div>
-        <button
-          onClick={openAdd}
-          className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90"
-        >
-          <Plus className="h-4 w-4" /> {t('Perro')}
-        </button>
+        {isBreeder && myKennelName ? (
+          /* Acceso directo al criadero — sustituye el botón "+ Perro" para
+             criadores (añadir perro sigue en los tiles "Añadir perro" de la
+             cuadrícula/lista). Toda la tarjeta es el enlace a la web pública. */
+          <Link
+            href={`/kennels/${myKennelSlug || myKennelId}`}
+            title={t('Ver criadero')}
+            className="group flex flex-shrink-0 items-center gap-2.5 rounded-xl border border-hairline bg-canvas px-3 py-2 transition-colors hover:border-ink/30 hover:bg-surface-soft"
+          >
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-surface-card">
+              {myKennelLogo
+                ? <Img src={myKennelLogo} w={72} alt="" className="h-full w-full object-cover" />
+                : <Store className="h-4 w-4 text-muted" />}
+            </div>
+            <div className="min-w-0 text-left">
+              <p className="max-w-[110px] truncate text-[13.5px] font-semibold leading-tight text-ink sm:max-w-[200px]">{myKennelName}</p>
+              <span className="mt-0.5 inline-flex items-center gap-0.5 text-[11.5px] font-medium text-muted transition-colors group-hover:text-ink">
+                {t('Ver criadero')} <ArrowRight className="h-3 w-3" />
+              </span>
+            </div>
+          </Link>
+        ) : (
+          <button
+            onClick={openAdd}
+            className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90"
+          >
+            <Plus className="h-4 w-4" /> {t('Perro')}
+          </button>
+        )}
       </div>
 
       {/* Toggle Perros / Mis importaciones (solo si hay importaciones) */}
