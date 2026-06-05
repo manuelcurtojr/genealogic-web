@@ -89,9 +89,9 @@ export default async function MyReservationDetailPage({
 
   return (
     <ReservationChatPanel
-      kennelLogoUrl={reservation.kennel?.logo_url ?? null}
-      kennelName={reservation.kennel?.name || t('el criadero')}
-      kennelTagline={t('Criadero · Genealogic')}
+      otherSideLogoUrl={reservation.kennel?.logo_url ?? null}
+      otherSideName={reservation.kennel?.name || t('el criadero')}
+      otherSideTagline={t('Criadero · Genealogic')}
       unreadCount={unreadCount}
       chatBody={
         <ReservationThread

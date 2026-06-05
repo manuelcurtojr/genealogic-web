@@ -26,9 +26,14 @@ interface ReservationChatPanelProps {
   /** Contenido principal de la página — adapta margin-right cuando el
    *  panel está abierto en xl+. */
   children: ReactNode
-  kennelLogoUrl: string | null
-  kennelName: string
-  kennelTagline?: string | null
+  /** Logo/avatar de la otra parte de la conversación. Si es null se
+   *  muestra un avatar con la inicial de `otherSideName`. */
+  otherSideLogoUrl: string | null
+  /** Nombre de la otra parte (kennel para vista cliente, cliente para
+   *  vista criador). */
+  otherSideName: string
+  /** Subtítulo del header — por defecto "Conversación · Genealogic". */
+  otherSideTagline?: string | null
   chatBody: ReactNode
   /** Número de mensajes sin leer — badge en la tab/FAB cuando está cerrado. */
   unreadCount?: number
@@ -37,7 +42,7 @@ interface ReservationChatPanelProps {
 const LS_KEY = 'genealogic.reservationChatOpen'
 
 export default function ReservationChatPanel({
-  children, kennelLogoUrl, kennelName, kennelTagline, chatBody, unreadCount = 0,
+  children, otherSideLogoUrl, otherSideName, otherSideTagline, chatBody, unreadCount = 0,
 }: ReservationChatPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [hasMounted, setHasMounted] = useState(false)
@@ -114,7 +119,7 @@ export default function ReservationChatPanel({
       <button
         type="button"
         onClick={() => setIsOpen((o) => !o)}
-        aria-label={isOpen ? 'Cerrar chat' : 'Abrir chat con el criador'}
+        aria-label={isOpen ? 'Cerrar chat' : `Abrir chat con ${otherSideName}`}
         className={`xl:hidden fixed bottom-6 right-6 z-[80] h-14 w-14 rounded-full shadow-2xl transition-transform flex items-center justify-center ${
           isOpen
             ? 'bg-canvas text-ink border border-hairline scale-90'
@@ -153,23 +158,23 @@ export default function ReservationChatPanel({
 
         {/* Header */}
         <header className="flex items-center gap-3 px-4 sm:px-5 py-3.5 border-b border-hairline flex-shrink-0 bg-gradient-to-br from-canvas via-canvas to-surface-soft/40">
-          {kennelLogoUrl ? (
+          {otherSideLogoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={kennelLogoUrl}
+              src={otherSideLogoUrl}
               alt=""
               className="h-11 w-11 rounded-full object-cover border border-hairline flex-shrink-0"
             />
           ) : (
             <div className="h-11 w-11 rounded-full bg-ink text-on-primary flex items-center justify-center text-[15px] font-bold flex-shrink-0">
-              {kennelName[0]?.toUpperCase() || '?'}
+              {otherSideName[0]?.toUpperCase() || '?'}
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-bold text-ink truncate leading-tight">{kennelName}</p>
+            <p className="text-[14px] font-bold text-ink truncate leading-tight">{otherSideName}</p>
             <p className="text-[11.5px] text-muted flex items-center gap-1 mt-0.5">
               <Building2 className="h-3 w-3" />
-              {kennelTagline || 'Criadero · Genealogic'}
+              {otherSideTagline || 'Conversación · Genealogic'}
             </p>
           </div>
           <button
@@ -195,8 +200,8 @@ export default function ReservationChatPanel({
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          aria-label="Abrir chat con el criador"
-          title={`Abrir chat con ${kennelName}`}
+          aria-label={`Abrir chat con ${otherSideName}`}
+          title={`Abrir chat con ${otherSideName}`}
           className="hidden xl:flex fixed top-1/2 -translate-y-1/2 right-0 z-[65] h-14 w-7 items-center justify-center rounded-l-lg border border-r-0 border-hairline bg-canvas text-muted hover:text-ink transition-colors"
         >
           <ChevronLeft className="h-3.5 w-3.5" />

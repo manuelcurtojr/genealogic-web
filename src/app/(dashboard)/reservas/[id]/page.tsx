@@ -17,6 +17,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { listReservationMessages, markThreadRead } from '@/lib/reservations/messages'
 import ReservationThread from '@/components/reservations/reservation-thread'
+import ReservationChatPanel from '@/components/reservations/reservation-chat-panel'
 import { sendBreederMessageAction, quickMarkPaymentReceivedAction } from './actions'
 import { assignDogToReservationAction } from './contrato/actions'
 import PaymentMilestonesCard from '@/components/reservations/payment-milestones-card'
@@ -77,15 +78,50 @@ export default async function BreederReservationDetailPage({
   const kennelDogs = await loadKennelDogs(admin, reservation.kennel?.id)
 
   const messages = await listReservationMessages(reservation.id)
+  // Importante: el conteo de unread tiene que calcularse ANTES de marcar
+  // el thread como leído. Si no, siempre es 0.
+  const unreadCount = messages.filter((m) =>
+    m.sender_role === 'client' && !('read_at' in m && m.read_at)
+  ).length
   markThreadRead(reservation.id, 'breeder').catch(() => {})
 
   const hasClientAccount = !!reservation.client_user_id
   const applicantInitial = (reservation.applicant_name || reservation.applicant_email || '?')[0]?.toUpperCase() || '?'
+  const applicantDisplayName = reservation.applicant_name || reservation.applicant_email || t('el cliente')
   const statusLabel = STATUS_LABEL[reservation.status as keyof typeof STATUS_LABEL] || reservation.status
   const statusTone = STATUS_TONE[reservation.status as keyof typeof STATUS_TONE] || 'gray'
 
+  const chatBody = hasClientAccount ? (
+    <ReservationThread
+      messages={messages}
+      currentRole="breeder"
+      reservationId={reservation.id}
+      onSendAction={sendBreederMessageAction}
+      otherSideName={reservation.applicant_name || t('el cliente')}
+      variant="fill"
+    />
+  ) : (
+    <div className="flex-1 flex items-center justify-center p-6">
+      <div className="rounded-xl border border-dashed border-hairline bg-surface-soft/40 px-5 py-6 text-center max-w-sm">
+        <p className="text-[13.5px] font-semibold text-ink">{t('Cliente sin cuenta')}</p>
+        <p className="mt-1 text-[12.5px] text-body leading-snug">
+          {t('Cuando el cliente cree cuenta en Genealogic con el email')}{' '}
+          <strong>{reservation.applicant_email}</strong>
+          {t(', podrás chatear aquí. Mientras tanto, usa email/WhatsApp.')}
+        </p>
+      </div>
+    </div>
+  )
+
   return (
-    <div className="mx-auto max-w-6xl space-y-6 sm:space-y-7">
+    <ReservationChatPanel
+      otherSideLogoUrl={null}
+      otherSideName={applicantDisplayName}
+      otherSideTagline={hasClientAccount ? t('Cliente · Genealogic') : t('Cliente sin cuenta')}
+      unreadCount={unreadCount}
+      chatBody={chatBody}
+    >
+    <div className="space-y-6 sm:space-y-7">
       <FeedbackButton scope="reservation_form" pageLabel={t('Detalle de reserva')} />
 
       {/* Breadcrumb */}
@@ -360,39 +396,8 @@ export default async function BreederReservationDetailPage({
         </div>
       </div>
 
-      {/* ═══ Mensajes — full width al final ═══ */}
-      <Card id="mensajes">
-        <CardHeader
-          title={t('Mensajes con el cliente')}
-          subtitle={
-            !hasClientAccount
-              ? t('El cliente todavía no tiene cuenta — necesita registrarse para chatear')
-              : messages.length === 0
-                ? t('Aún no hay mensajes — empieza la conversación')
-                : `${messages.length} ${messages.length === 1 ? t('mensaje') : t('mensajes')}`
-          }
-          icon={MessageCircle}
-        />
-        {hasClientAccount ? (
-          <ReservationThread
-            messages={messages}
-            currentRole="breeder"
-            reservationId={reservation.id}
-            onSendAction={sendBreederMessageAction}
-            otherSideName={reservation.applicant_name || t('el cliente')}
-          />
-        ) : (
-          <div className="rounded-xl border border-dashed border-hairline bg-surface-soft/40 px-5 py-6 text-center">
-            <p className="text-[13.5px] font-semibold text-ink">{t('Cliente sin cuenta')}</p>
-            <p className="mt-1 text-[12.5px] text-body max-w-md mx-auto leading-snug">
-              {t('Cuando el cliente cree cuenta en Genealogic con el email')}{' '}
-              <strong>{reservation.applicant_email}</strong>
-              {t(', podrás chatear aquí. Mientras tanto, usa email/WhatsApp.')}
-            </p>
-          </div>
-        )}
-      </Card>
     </div>
+    </ReservationChatPanel>
   )
 }
 
