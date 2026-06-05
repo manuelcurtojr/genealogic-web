@@ -196,7 +196,6 @@ export default function SettingsPage() {
   // con kennel) usando hasKennel; antes el mapeo inline caía siempre en
   // "Kennel Free", mostrándole a un propietario un plan de criador.
   const userPlanLabel = getPlanLabel(userPlan, hasKennel)
-  const userIsEnterprise = userPlan === 'kennel_pro' || userPlan === 'premium' || userPlan === 'enterprise'
   // Un owner puro (sin kennel, plan free) no tiene suscripción ni facturación
   // que gestionar: ocultamos esas dos pestañas. El resto se quedan para todos.
   const showBilling = hasKennel
@@ -360,14 +359,6 @@ export default function SettingsPage() {
                     {t('Ver detalle del plan')}
                     <ChevronRight className="w-4 h-4" />
                   </Link>
-                  {!userIsEnterprise && (
-                    <a
-                      href="mailto:hola@genealogic.io?subject=Activar%20Kennel%20Enterprise"
-                      className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-semibold text-body hover:border-ink/30 hover:text-ink"
-                    >
-                      {t('Hablar con soporte (Kennel Enterprise)')}
-                    </a>
-                  )}
                 </div>
               </div>
               <p className="text-xs text-muted">

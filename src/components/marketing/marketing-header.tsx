@@ -16,7 +16,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, Search, Store, Dog, BookOpen, Tag, Zap, LogIn, Compass, LifeBuoy, ArrowRight } from 'lucide-react'
+import { Menu, X, Search, Store, Dog, BookOpen, Tag, LogIn, Compass, LifeBuoy, ArrowRight } from 'lucide-react'
 import SearchBar from '@/components/layout/search-bar'
 import { Wordmark } from '@/components/ui/wordmark'
 import { Button } from '@/components/ui/button'
@@ -173,9 +173,6 @@ export default function MarketingHeader({ locale = 'es' }: { locale?: string }) 
                 </DrawerLink>
                 <DrawerLink href="/pricing" icon={Tag} onClick={() => setDrawerOpen(false)}>
                   {t('Precios')}
-                </DrawerLink>
-                <DrawerLink href="/api-docs" icon={Zap} onClick={() => setDrawerOpen(false)}>
-                  {t('API pública')}
                 </DrawerLink>
               </DrawerSection>
             </nav>

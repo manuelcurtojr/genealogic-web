@@ -47,9 +47,9 @@ export default function TrialEndingSoonEmail({
 }: TrialEndingSoonProps) {
   const t = getTranslator(locale || 'es')
   const name = recipientName?.split(' ')[0] || null
-  // BBDD: plan 'kennel_pro' = Kennel Enterprise (149€); plan 'kennel' = Kennel Pro (49€).
-  const isEnterprise = plan === 'kennel_pro' || plan === 'premium'
-  const planLabel = isEnterprise ? 'Kennel Enterprise' : 'Kennel Pro'
+  // Enterprise retirado: cualquier plan de pago (incl. legacy kennel_pro) = "Kennel Pro".
+  void plan
+  const planLabel = 'Kennel Pro'
   const endDate = formatSpanishDate(trialEndsAt)
   const days = daysUntil(trialEndsAt)
   const daysLabel = days === 1 ? `1 ${t('día')}` : `${days ?? 3} ${t('días')}`
@@ -95,7 +95,7 @@ export default function TrialEndingSoonEmail({
           <strong style={{ color: COLORS.ink }}>{t('Cancelar la suscripción')}</strong> {t('si decides no continuar (sin coste).')}
         </li>
         <li style={{ marginBottom: '6px', color: COLORS.body, fontSize: '14.5px', lineHeight: 1.6 }}>
-          <strong style={{ color: COLORS.ink }}>{t('Cambiar de plan')}</strong> {t('a Kennel Pro / Kennel Enterprise según necesites.')}
+          <strong style={{ color: COLORS.ink }}>{t('Cambiar de plan')}</strong> {t('a Kennel Pro según necesites.')}
         </li>
       </ul>
 

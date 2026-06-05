@@ -17,7 +17,10 @@
  */
 
 export type SignupIntent = 'breeder' | 'buyer' | 'owner'
-export type SignupPlan = 'free' | 'kennel' | 'kennel_pro' | 'pro' | 'premium'
+// Modelo vigente: solo Kennel Free ('free') y Kennel Pro ('kennel'/'pro').
+// Los valores legacy 'kennel_pro' | 'premium' | 'enterprise' ya no existen
+// como plan propio (se retiró Kennel Enterprise) — se mapean a Pro al parsear.
+export type SignupPlan = 'free' | 'kennel' | 'pro'
 
 export type SignupIntentData = {
   intent: SignupIntent
@@ -32,7 +35,10 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 días
 // 'buyer' = legacy (mantenido por compatibilidad con URLs antiguas).
 //   Internamente se trata como 'owner'.
 const VALID_INTENTS: SignupIntent[] = ['breeder', 'buyer', 'owner']
-const VALID_PLANS: SignupPlan[] = ['free', 'kennel', 'kennel_pro', 'pro', 'premium']
+const VALID_PLANS: SignupPlan[] = ['free', 'kennel', 'pro']
+// Planes legacy retirados (Kennel Enterprise, Premium, Kennel Pro Founder):
+// se aceptan en la URL por compatibilidad pero se mapean a Kennel Pro.
+const LEGACY_PRO_PLANS = ['kennel_pro', 'premium', 'enterprise']
 
 /** Lee intent de query params, normaliza, devuelve null si inválido. */
 export function parseIntentFromQuery(
@@ -51,8 +57,11 @@ export function parseIntentFromQuery(
   const intent: SignupIntent = VALID_INTENTS.includes(intentRaw as SignupIntent)
     ? (intentRaw as SignupIntent)
     : 'breeder'
-  const plan: SignupPlan = VALID_PLANS.includes(planRaw as SignupPlan)
-    ? (planRaw as SignupPlan)
+  // Legacy: ?plan=enterprise|premium|kennel_pro → Kennel Pro ('kennel'),
+  // no Kennel Free, para no degradar la intención del usuario.
+  const planNormalized = planRaw && LEGACY_PRO_PLANS.includes(planRaw) ? 'kennel' : planRaw
+  const plan: SignupPlan = VALID_PLANS.includes(planNormalized as SignupPlan)
+    ? (planNormalized as SignupPlan)
     : 'free'
   return { intent, plan }
 }

@@ -30,9 +30,9 @@ export default function SubscriptionActivatedEmail({
 }: SubscriptionActivatedProps) {
   const t = getTranslator(locale || 'es')
   const name = recipientName?.split(' ')[0] || null
-  // BBDD: plan 'kennel_pro' = Kennel Enterprise (149€); plan 'kennel' = Kennel Pro (49€).
-  const isEnterprise = plan === 'kennel_pro' || plan === 'premium'
-  const planLabel = isEnterprise ? 'Kennel Enterprise' : 'Kennel Pro'
+  // Enterprise retirado: cualquier plan de pago (incl. legacy kennel_pro) = "Kennel Pro".
+  void plan
+  const planLabel = 'Kennel Pro'
   const trialEnd = formatTrialDate(trialEndsAt)
   const isTrial = !!trialEnd
 

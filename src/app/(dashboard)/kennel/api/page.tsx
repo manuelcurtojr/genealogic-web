@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { ArrowLeft, Loader2, Plus, Copy, Check, Trash2, Key, AlertTriangle, ExternalLink } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 
@@ -16,6 +17,12 @@ interface ApiKey {
 }
 
 export default function KennelApiKeysPage() {
+  // La API REST pública está retirada del producto por ahora. Ocultamos la
+  // gestión de API keys redirigiendo a /kennel. La página y /api-docs se
+  // conservan para reactivarlas en el futuro. redirect() lanza, así que
+  // ningún hook de abajo llega a ejecutarse (orden de hooks consistente).
+  redirect('/kennel')
+
   const t = useT()
   const [kennelId, setKennelId] = useState<string>('')
   const [kennelName, setKennelName] = useState<string>('')

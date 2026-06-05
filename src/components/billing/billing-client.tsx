@@ -56,19 +56,19 @@ function fmtDate(iso: string) {
 }
 
 // Labels comerciales actuales (rol técnico → nombre público):
-//   'kennel'     → "Kennel Pro" (49€/mes)
-//   'kennel_pro' → "Kennel Enterprise" (149€/mes, activación manual)
-//   'free'       → "Kennel Free" (5 perros, gratis para siempre)
-//   'owner'      → "Owner" (3 perros, gratis para siempre)
+//   'kennel' / 'kennel_pro' → "Kennel Pro" (49€/mes) — único plan de pago
+//   'free'                  → "Kennel Free" (5 perros, gratis para siempre)
+//   'owner'                 → "Owner" (3 perros, gratis para siempre)
+// Las antiguas suscripciones premium/enterprise se mapean a Kennel Pro.
 const PLAN_LABEL: Record<string, string> = {
   free: 'Kennel Free',
   owner: 'Owner',
   kennel: 'Kennel Pro',
-  kennel_pro: 'Kennel Enterprise',
-  enterprise: 'Kennel Enterprise',
+  kennel_pro: 'Kennel Pro',
+  enterprise: 'Kennel Pro',
   // Legacy aliases (suscripciones antiguas)
   pro: 'Kennel Pro',
-  premium: 'Kennel Enterprise',
+  premium: 'Kennel Pro',
   starter: 'Kennel Pro',
 }
 
@@ -76,10 +76,10 @@ const PLAN_PRICE: Record<string, string> = {
   free: 'Gratis',
   owner: 'Gratis',
   kennel: '49 €/mes',
-  kennel_pro: '149 €/mes',
-  enterprise: '149 €/mes',
+  kennel_pro: '49 €/mes',
+  enterprise: '49 €/mes',
   pro: '49 €/mes',
-  premium: '149 €/mes',
+  premium: '49 €/mes',
   starter: '49 €/mes',
 }
 
@@ -177,7 +177,7 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
                   {' '}{t('Primer cargo el')} {trialEndsDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}.
                 </span>
               ) : !hasStripe ? (
-                <>{t('Aún sin método de pago.')} {hasKennel ? t('Suscríbete para desbloquear Kennel Pro o Kennel Enterprise.') : t('Crea tu criadero para acceder a planes de pago.')}</>
+                <>{t('Aún sin método de pago.')} {hasKennel ? t('Suscríbete para desbloquear Kennel Pro.') : t('Crea tu criadero para acceder a planes de pago.')}</>
               ) : subStatus === 'active' ? (
                 <>{t('Suscripción activa en Stripe.')}</>
               ) : subStatus === 'past_due' ? (
@@ -221,7 +221,7 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <PlanCard
                 t={t}
                 name="Kennel Pro"
@@ -231,16 +231,6 @@ export default function BillingClient({ profile, invoices, stripeReady, hasKenne
                 highlight
                 onSelect={() => startCheckoutFn('pro')}
                 disabled={checkoutPending}
-              />
-              <PlanCard
-                t={t}
-                name="Kennel Enterprise"
-                price="149 €"
-                period={t('/mes')}
-                description={t('Web propia con dominio y multi-idioma, emailbot IA, newsletter, API REST, multi-usuario, white-label e integraciones. Activación manual tras hablar con soporte — no se contrata desde la web.')}
-                onSelect={() => startCheckoutFn('premium')}
-                disabled={checkoutPending}
-                comingSoon
               />
             </div>
           )}

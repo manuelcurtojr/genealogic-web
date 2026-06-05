@@ -252,25 +252,25 @@ function intentBranding(data: SignupIntentData | null, t: (key: string) => strin
     }
   }
   // breeder
-  // Plan comercial nuevo, mapeado desde los valores que aún acepta el type
-  // SignupPlan ('free' | 'kennel' | 'kennel_pro' | 'pro' | 'premium').
-  // Tras el rename:
-  //   kennel_pro / premium → Kennel Enterprise (149€/mes · activación manual)
-  //   pro / kennel        → Kennel Pro (49€/mes · 14 días gratis sin tarjeta)
-  //   free                → Kennel Free (5 perros · gratis)
+  // Plan comercial vigente. El type SignupPlan ya solo admite
+  // 'free' | 'kennel' | 'pro' (los legacy kennel_pro/premium/enterprise se
+  // normalizan a Pro al parsear la URL en signup-intent.ts).
+  // Modelo actual (sin Enterprise): cualquier plan de pago de criador es
+  // Kennel Pro. Las extensiones (Web 19€, Newsletter 9€) se contratan luego
+  // desde la cuenta, no en el registro.
+  //   pro / kennel / kennel_pro / premium / enterprise → Kennel Pro (49€/mes · 14 días gratis sin tarjeta)
+  //   free                                             → Kennel Free (5 perros · gratis)
   // El plan Owner (3 perros) llega por intent === 'owner', no por data.plan.
   const planStr = data.plan as string
-  const isEnterprise = planStr === 'enterprise' || planStr === 'kennel_pro' || planStr === 'premium'
-  const isPro = planStr === 'pro' || planStr === 'kennel'
   const isOwner = planStr === 'owner'
   const isFree = planStr === 'free' && !isOwner
-  const planLabel = isEnterprise
-    ? 'Kennel Enterprise'
-    : isPro
-      ? 'Kennel Pro'
-      : isOwner
-        ? 'Owner'
-        : 'Kennel Free'
+  // Todo lo que no sea free/owner cae en Pro (incluye legacy kennel_pro/premium/enterprise).
+  const isPro = !isOwner && !isFree
+  const planLabel = isPro
+    ? 'Kennel Pro'
+    : isOwner
+      ? 'Owner'
+      : 'Kennel Free'
   return {
     title: isFree || isOwner ? t('Empieza') : t('Activa'),
     titleTail: isFree || isOwner ? t('gratis.') : `Genealogic ${planLabel}.`,
@@ -278,9 +278,7 @@ function intentBranding(data: SignupIntentData | null, t: (key: string) => strin
       ? t('Tu plan Owner es gratis para siempre, con perros ilimitados. Crea tu cuenta y empieza a documentar a tus perros.')
       : isFree
         ? t('Tu plan Kennel Free es gratis para siempre, con perros ilimitados. Crea tu cuenta para registrar tu criadero y empezar a publicar tus perros.')
-        : isEnterprise
-          ? t('Kennel Enterprise se activa de forma manual tras hablar con soporte (hola@genealogic.io). Crea tu cuenta y nos coordinamos contigo para el alta.')
-          : t('Kennel Pro empieza con 14 días gratis sin tarjeta. Antes de terminar la prueba te pedimos método de pago para continuar.'),
+        : t('Kennel Pro empieza con 14 días gratis sin tarjeta. Antes de terminar la prueba te pedimos método de pago para continuar.'),
     submitLabel: isFree || isOwner ? t('Crear cuenta gratis') : t('Crear cuenta y continuar'),
   }
 }
@@ -289,20 +287,17 @@ function IntentBadge({ data }: { data: SignupIntentData }) {
   const t = useT()
   const Icon = data.intent === 'buyer' ? Search : Store
   const planStr = data.plan as string
-  const isEnterprise = planStr === 'enterprise' || planStr === 'kennel_pro' || planStr === 'premium'
-  const isPro = planStr === 'pro' || planStr === 'kennel'
   const isOwner = planStr === 'owner'
+  const isFree = planStr === 'free' && !isOwner
+  // Cualquier plan de pago de criador (incl. legacy kennel_pro/premium/enterprise) es Kennel Pro.
+  const isPro = data.intent !== 'buyer' && !isOwner && !isFree
   const label = data.intent === 'buyer'
     ? t('Cuenta de comprador')
     : isOwner
       ? t('Plan Owner · Gratis para siempre · Perros ilimitados')
-      : planStr === 'free'
-        ? t('Plan Kennel Free · Gratis para siempre · Perros ilimitados')
-        : isEnterprise
-          ? t('Plan Kennel Enterprise · Activación manual tras hablar con soporte')
-          : isPro
-            ? t('Plan Kennel Pro · 14 días gratis sin tarjeta')
-            : t('Plan Kennel Free · Gratis para siempre · Perros ilimitados')
+      : isPro
+        ? t('Plan Kennel Pro · 14 días gratis sin tarjeta')
+        : t('Plan Kennel Free · Gratis para siempre · Perros ilimitados')
   return (
     <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-card px-3 py-1.5">
       <Icon className="h-3.5 w-3.5 text-ink" />

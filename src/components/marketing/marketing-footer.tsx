@@ -103,7 +103,6 @@ export default function MarketingFooter({ locale = 'es' }: { locale?: string }) 
               { label: t('Buscar perros'), href: '/search' },
               { label: t('Directorio criaderos'), href: '/kennels' },
               { label: t('Blog'), href: '/blog' },
-              { label: t('API pública'), href: '/api-docs' },
             ]}
           />
 

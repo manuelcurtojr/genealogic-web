@@ -180,9 +180,6 @@ function PublicDrawer({ open, onClose }: { open: boolean; onClose: () => void })
             <DrawerAnchor href="#criadores" onClick={onClose}>{t('Para criadores')}</DrawerAnchor>
             <DrawerAnchor href="#precios" onClick={onClose}>{t('Precios')}</DrawerAnchor>
             <DrawerAnchor href="#faq" onClick={onClose}>{t('FAQ')}</DrawerAnchor>
-            <DrawerLink href="/api-docs" icon={Zap} onClick={onClose}>
-              {t('API pública')}
-            </DrawerLink>
           </DrawerSection>
         </nav>
 
@@ -1171,9 +1168,10 @@ function Step({
 }
 
 // ─── Pricing ─────────────────────────────────────────────────────────────
-// Landing de CRIADOR: solo planes de criadero (Kennel Free / Kennel Pro /
-// Kennel Enterprise). El plan Owner (propietario particular) vive en /pricing,
-// no aquí. Modelo cerrado 2026-05-28 (memory/genealogic_pricing_model.md).
+// Landing de CRIADOR: planes de criadero (Kennel Free / Kennel Pro) +
+// extensiones de pago à la carte sobre Pro (Web del criadero 19€,
+// Newsletter 9€, Emailbot próximamente). El plan Owner (propietario
+// particular) vive en /pricing, no aquí.
 function Pricing() {
   const t = useT()
   return (
@@ -1189,7 +1187,7 @@ function Pricing() {
           {t('Empieza gratis. Sube cuando crezcas.')}
         </h2>
         <p className="mt-5 sm:mt-6 max-w-[560px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
-          {t('La genealogía es siempre completa, sin límite de generaciones, en todos los planes. La diferencia son las herramientas: Kennel Free es gratis para siempre y sin tarjeta; Kennel Pro y Kennel Enterprise añaden el control de la cría, las ventas y el escaparate profesional.')}
+          {t('La genealogía es siempre completa, sin límite de generaciones, en todos los planes. La diferencia son las herramientas: Kennel Free es gratis para siempre y sin tarjeta; Kennel Pro añade el control de la cría, las ventas y la genética seria. Y cuando lo necesites, amplías Pro con extensiones à la carte: web del criadero con tu dominio, newsletter y más.')}
         </p>
 
         <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -1237,32 +1235,36 @@ function Pricing() {
             </Button>
           </div>
 
-          {/* Kennel Enterprise */}
+          {/* Extensiones à la carte sobre Pro */}
           <div className="rounded-[16px] border border-hairline bg-gradient-to-br from-violet-50 via-canvas to-purple-50 p-6 flex flex-col">
-            <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-violet-600">Kennel Enterprise</p>
-            <p className="mt-3 text-[32px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
-              149 € <span className="text-[13px] font-normal text-muted">/ {t('mes')}</span>
+            <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-violet-600">{t('Extensiones')}</p>
+            <p className="mt-3 text-[22px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
+              {t('Amplía tu Kennel Pro')}
             </p>
-            <p className="mt-1 text-[13px] text-body">{t('Ilimitado · Escaparate público')}</p>
-            <ul className="mt-5 space-y-2 text-[13.5px] flex-1">
-              <PricingRow>{t('Web con tu dominio')}</PricingRow>
-              <PricingRow>{t('Multi-idioma (ES/EN/IT/FR)')}</PricingRow>
-              <PricingRow>{t('Emailbot IA + newsletter')}</PricingRow>
-              <PricingRow>{t('API + integraciones')}</PricingRow>
+            <p className="mt-1 text-[13px] text-body">{t('À la carte · activa solo lo que uses')}</p>
+            <ul className="mt-5 space-y-3 text-[13.5px] flex-1">
+              <li className="flex items-baseline justify-between gap-3">
+                <span className="text-body">{t('Web del criadero + dominio propio')}</span>
+                <span className="font-semibold text-ink whitespace-nowrap">19 € <span className="text-[11px] font-normal text-muted">/ {t('mes')}</span></span>
+              </li>
+              <li className="flex items-baseline justify-between gap-3">
+                <span className="text-body">{t('Newsletter')}</span>
+                <span className="font-semibold text-ink whitespace-nowrap">9 € <span className="text-[11px] font-normal text-muted">/ {t('mes')}</span></span>
+              </li>
+              <li className="flex items-baseline justify-between gap-3">
+                <span className="text-body">{t('Emailbot IA')}</span>
+                <span className="font-medium text-muted whitespace-nowrap">{t('Próximamente')}</span>
+              </li>
             </ul>
-            <a
-              href="mailto:hola@genealogic.io?subject=Kennel%20Enterprise"
-              className="mt-6 inline-flex w-full items-center justify-center rounded-xl border-2 px-5 py-3 text-sm font-bold transition hover:bg-canvas/50"
-              style={{ borderColor: '#8b5cf6', color: '#8b5cf6' }}
-            >
-              {t('Hablar con soporte')}
-            </a>
-            <p className="mt-2 text-center text-[11px] text-muted">{t('Activación manual mientras testeamos.')}</p>
+            <Button href="/register?intent=breeder&plan=pro" variant="secondary" className="mt-6 w-full">
+              {t('Empezar con Kennel Pro')}
+            </Button>
+            <p className="mt-2 text-center text-[11px] text-muted">{t('Las extensiones se activan sobre Kennel Pro desde tu cuenta.')}</p>
           </div>
         </div>
 
         <p className="mt-10 text-center text-[13px] text-muted">
-          {t('Pro y Enterprise se prueban 14 días sin tarjeta. Si no actualizas método de pago, vuelves automáticamente a Free sin perder datos.')}
+          {t('Kennel Pro se prueba 14 días sin tarjeta. Si no actualizas método de pago, vuelves automáticamente a Free sin perder datos. Las extensiones se contratan aparte cuando las necesites.')}
         </p>
       </div>
     </section>
@@ -1299,20 +1301,20 @@ function FAQ() {
       a: t('Todo Kennel Free + COI Wright explicado (lista de ancestros duplicados, comparativa con la raza), simulador de cruces con COI proyectado y predicción de color por genotipos, pagos integrados con Stripe Connect (cobras señas y entregas), registro de visitas al criadero y soporte prioritario en menos de 24 horas.'),
     },
     {
-      q: t('¿Y Kennel Enterprise a 149€/mes?'),
-      a: t('Todo Kennel Pro + web pública del criadero con dominio propio, blog SEO, multi-idioma (ES/EN/IT/FR), emailbot con IA que responde a leads 24/7, newsletter integrada, multi-usuario para equipo, white-label, API REST e integraciones (Zapier). De momento se activa manualmente tras hablar con soporte (hola@genealogic.io) mientras testeamos el chatbot y la web — pasaremos a auto-servicio en próximas semanas.'),
+      q: t('¿Qué son las extensiones de Kennel Pro?'),
+      a: t('Son módulos de pago que añades sobre Kennel Pro solo si los necesitas: la Web del criadero (web pública profesional con tu propio dominio, editor visual y temas) por 19€/mes, y la Newsletter por 9€/mes. El Emailbot con IA que responde a tus leads llegará próximamente. Cada extensión se activa y se cancela por separado desde tu cuenta.'),
     },
     {
       q: t('¿Qué pasa si paso de plan?'),
-      a: t('Todos tus perros, genealogías y datos se mantienen idénticos. Solo se desbloquean nuevas secciones (COI completo en Pro, web del criadero en Enterprise...). Misma cuenta, misma URL pública.'),
+      a: t('Todos tus perros, genealogías y datos se mantienen idénticos. Solo se desbloquean nuevas secciones (COI completo, simulador de cruces y genotipos al subir a Kennel Pro). Misma cuenta, misma URL pública.'),
     },
     {
       q: t('¿Puedo usar mi propio dominio?'),
-      a: t('Sí, en Kennel Enterprise. Conectas un dominio propio (criadero.com) desde Ajustes con un par de DNS records. Nuestro middleware sirve tu web directamente, sin subdominios feos ni redirects extra.'),
+      a: t('Sí, con la extensión Web del criadero (19€/mes sobre Kennel Pro). Conectas un dominio propio (criadero.com) desde Ajustes con un par de DNS records. Nuestro middleware sirve tu web directamente, sin subdominios feos ni redirects extra.'),
     },
     {
       q: t('¿Puedo cancelar cuando quiera?'),
-      a: t('Sí. Sin permanencia, sin penalización. Si cancelas Kennel Pro o Enterprise, vuelves a Kennel Free conservando todos tus datos. Si subes de plan, el cobro es prorrateado.'),
+      a: t('Sí. Sin permanencia, sin penalización. Si cancelas Kennel Pro, vuelves a Kennel Free conservando todos tus datos. Las extensiones se cancelan por separado cuando quieras. Si subes de plan, el cobro es prorrateado.'),
     },
     {
       q: t('¿Y si ya tengo todo en Excel o WhatsApp?'),
@@ -1412,7 +1414,6 @@ function Footer() {
               { label: t('Buscar perros'), href: '/search' },
               { label: t('Directorio criaderos'), href: '/kennels' },
               { label: t('Blog'), href: '/blog' },
-              { label: t('API pública'), href: '/api-docs' },
             ]}
           />
           <FooterCol

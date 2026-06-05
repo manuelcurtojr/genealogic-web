@@ -79,9 +79,10 @@ const SCOPE_HINTS: Partial<Record<FeedbackScope, string>> = {
 
   billing: `El user está en FACTURACIÓN o CHECKOUT. Causas frecuentes:
 - "Error iniciando pago" → suele ser env var de Stripe ausente; el user no puede arreglarlo, escala.
-- Planes vigentes: Owner 0€/mes (3 perros), Kennel Free 0€/mes (5 perros), Kennel Pro 49€/mes ó 499€/año -15% (ilimitado), Kennel Enterprise 149€/mes ó 1520€/año -15% (ilimitado, web propia + API + multi-usuario).
-- Trial: 14 días gratis SIN tarjeta para Kennel Pro. Antes de terminar la prueba se pide método de pago para continuar; sin él, baja a Kennel Free.
-- Kennel Enterprise se activa manualmente tras hablar con soporte (hola@genealogic.io). No se contrata desde la web ni tiene prueba.
+- Planes vigentes: Owner 0€/mes (3 perros), Kennel Free 0€/mes (5 perros), Kennel Pro 49€/mes ó 499€/año -15% (ilimitado).
+- Extensiones de pago à la carte sobre Kennel Pro: Web del criadero (dominio propio) 19€/mes, Newsletter 9€/mes. Emailbot IA próximamente. Cada una se factura por separado.
+- Trial: 14 días gratis SIN tarjeta para Kennel Pro. Antes de terminar la prueba se pide método de pago para continuar; sin él, baja a Kennel Free. Las extensiones no tienen prueba.
+- No existe Kennel Enterprise ni plan de 149€, y no ofrecemos API pública: ya no se ofrecen.
 - Cancelar: portal de Stripe desde /cuenta/facturacion.
 - Factura no llega → revisar email registrado y carpeta spam.`,
 }

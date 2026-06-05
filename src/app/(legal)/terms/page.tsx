@@ -65,7 +65,7 @@ export default function TermsPage() {
         <li><strong>Owner (gratuito, para siempre):</strong> hasta 3 perros con ficha completa, genealogía sin límite de generaciones, importador IA, cartilla veterinaria, galería ilimitada y búsqueda pública. Sin tarjeta. Pensado para propietarios que documentan su mascota.</li>
         <li><strong>Kennel Free (gratuito, para siempre):</strong> hasta 5 perros (límite legal anterior a núcleo zoológico de tenencia en España). Todo lo de Owner + calendario reproductivo, camadas, stud-book, pipeline de reservas, plantillas de contrato, firma electrónica básica, CRM y estadísticas. Sin tarjeta. Pensado para el criador casero.</li>
         <li><strong>Kennel Pro (49 €/mes o 499 €/año, ahorro del 15%):</strong> perros ilimitados. Todo lo de Kennel Free + COI de Wright, ancestros duplicados, simulador de cruces, predicción de color por genotipos, pagos online integrados con Stripe Connect y soporte prioritario. <strong>14 días de prueba sin tarjeta</strong>; al finalizar la prueba se solicita método de pago para continuar.</li>
-        <li><strong>Kennel Enterprise (149 €/mes o 1.520 €/año, ahorro del 15%):</strong> perros ilimitados. Todo lo de Kennel Pro + web pública del criadero con dominio propio, multi-idioma, blog SEO, emailbot multi-modelo, newsletter, API REST, multi-usuario, white-label e integraciones. <strong>Activación manual</strong>: se contrata escribiendo a soporte (hola@genealogic.io). No tiene periodo de prueba ni alta automática desde la web.</li>
+        <li><strong>Extensiones de pago sobre Kennel Pro:</strong> de forma opcional, los suscriptores de Kennel Pro pueden contratar módulos adicionales por separado, como la <strong>Web del criadero</strong> (web pública con dominio propio, 19 €/mes) o la <strong>Newsletter</strong> (9 €/mes). Cada extensión se contrata, factura y cancela de forma independiente desde la cuenta. La disponibilidad de extensiones puede variar.</li>
       </ul>
       <p>
         Los precios se muestran con IVA cuando aplicable. La disponibilidad y características
@@ -91,9 +91,9 @@ export default function TermsPage() {
       </p>
       <p>
         Los planes <strong>Owner</strong> y <strong>Kennel Free</strong> son gratuitos
-        de forma indefinida y no requieren periodo de prueba. El plan{' '}
-        <strong>Kennel Enterprise</strong> se activa de forma manual tras contacto
-        con soporte y, por tanto, no dispone de prueba gratuita automática.
+        de forma indefinida y no requieren periodo de prueba. Las{' '}
+        <strong>extensiones de pago</strong> de Kennel Pro se contratan de forma
+        opcional e independiente y se facturan por separado, sin periodo de prueba.
       </p>
 
       <h3>5.4 Renovación automática</h3>

@@ -1,22 +1,25 @@
 /**
- * PricingClient — /pricing con 4 planes, vista simple/avanzada
- * y toggle Mensual / Anual con descuento 15%.
+ * PricingClient — /pricing con 3 planes + extensiones à la carte,
+ * vista simple/avanzada y toggle Mensual / Anual con descuento.
  *
  * Modelo (perros ILIMITADOS en todos los planes — ya no se monetiza por
  * número de perros, sino por las HERRAMIENTAS de criadero):
  *   · Owner — Perros ilimitados · Gratis
- *   · Kennel Free — Perros ilimitados · Gratis
- *   · Kennel Pro — Perros ilimitados · 49€/mes (o 499€/año, ahorro 15%) · 14 días gratis
- *   · Kennel Enterprise — Perros ilimitados · 149€/mes (o 1.520€/año, ahorro 15%) · alta manual
+ *   · Kennel Free — Perros ilimitados · Gratis (embudo de ventas LIMITADO)
+ *   · Kennel Pro — Perros ilimitados · 49€/mes (o 499€/año) · 14 días gratis
+ *
+ * Extensiones (add-ons que se pagan APARTE, sobre Kennel Pro):
+ *   · Web del criadero — 19€/mes (web pública con dominio propio)
+ *   · Newsletter — 9€/mes (campañas + lista de espera)
+ *   · Emailbot — 19€/mes · PRÓXIMAMENTE (aún no vendible)
  *
  * Vistas:
- *   1) Simple ("en cristiano") — 4 cards grandes con 5-6 highlights por plan
- *   2) Avanzada — tabla completa con TODAS las features marcadas por plan,
- *      agrupadas en 10 categorías
+ *   1) Simple ("en cristiano") — 3 cards grandes con highlights por plan
+ *   2) Avanzada — tabla completa con TODAS las features marcadas por plan
  *
- * La diferencia entre planes está en las herramientas (criadero, web,
- * emailbot, simulador, genotipos, estadísticas), NO en cuántos perros
- * tienes — eso es ilimitado en todos.
+ * La diferencia entre planes está en las herramientas (criadero, simulador,
+ * genotipos, estadísticas), NO en cuántos perros tienes — ilimitado en todos.
+ * La web, el emailbot y la newsletter son extensiones aparte sobre Pro.
  *
  * El plan completo del modelo está en
  * memory/genealogic_pricing_model.md.
@@ -27,26 +30,27 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
-  Check, Sparkles, ArrowRight, Dog, Store, Crown, Building2,
+  Check, Sparkles, ArrowRight, Dog, Store, Globe, Mail, Bot, Building2,
   Minus, Info, ChevronDown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import CheckoutButton from '@/components/billing/checkout-button'
 import { useT } from '@/components/i18n/locale-provider'
 
-type PlanId = 'owner' | 'free' | 'pro' | 'enterprise'
+type PlanId = 'owner' | 'free' | 'pro'
 
 // ──────────────────────────────────────────────────────────────────────
 // Matriz de features — sincronizada con el PDF de planes y con la
 // memoria genealogic_pricing_model.md. Cada feature lleva la lista de
 // planes en los que está disponible.
-// Las cadenas "OFPE" representan los 4 planes: Owner / Free / Pro / Ent.
+// Las cadenas "OFP" representan los 3 planes: Owner / Free / Pro.
+// La web, el emailbot y la newsletter NO están aquí: son extensiones
+// à la carte sobre Pro (ver sección Extensiones más abajo).
 // ──────────────────────────────────────────────────────────────────────
 const PLAN_CODES: Record<PlanId, string> = {
   owner: 'O',
   free: 'F',
   pro: 'P',
-  enterprise: 'E',
 }
 
 interface FeatureRow { name: string; marks: string }
@@ -56,116 +60,90 @@ const CATEGORIES: CategoryDef[] = [
   {
     label: 'Plataforma',
     features: [
-      { name: 'Perfil del perro indexable en Google', marks: 'OFPE' },
-      { name: 'Importador de genealogías con IA (URL → árbol completo)', marks: 'OFPE' },
-      { name: 'Histórico de cambios por perro (auditoría)', marks: 'OFPE' },
-      { name: 'Sistema de moderación (soft-hide, reportes)', marks: 'OFPE' },
-      { name: 'Exportar perfil completo a PDF', marks: 'OFPE' },
-      { name: 'Perfiles privados o públicos por perro', marks: 'OFPE' },
-      { name: 'Interfaz multi-idioma (ES, EN, IT, FR)', marks: 'OFPE' },
-      { name: 'API pública REST', marks: 'E' },
+      { name: 'Perfil del perro indexable en Google', marks: 'OFP' },
+      { name: 'Importador de genealogías con IA (URL → árbol completo)', marks: 'OFP' },
+      { name: 'Histórico de cambios por perro (auditoría)', marks: 'OFP' },
+      { name: 'Sistema de moderación (soft-hide, reportes)', marks: 'OFP' },
+      { name: 'Exportar perfil completo a PDF', marks: 'OFP' },
+      { name: 'Perfiles privados o públicos por perro', marks: 'OFP' },
+      { name: 'Interfaz multi-idioma (ES, EN, IT, FR)', marks: 'OFP' },
     ],
   },
   {
     label: 'Genealogía',
     features: [
-      { name: 'Árbol genealógico hasta 10 generaciones', marks: 'OFPE' },
-      { name: 'COI Wright + lista de ancestros duplicados', marks: 'PE' },
-      { name: 'Comparativa COI vs media de la raza', marks: 'PE' },
-      { name: 'PDF de genealogía con tu marca', marks: 'PE' },
-      { name: 'Hermanos y descendientes auto-detectados', marks: 'OFPE' },
-      { name: 'Editor visual de genealogía', marks: 'OFPE' },
-      { name: 'Campo de registro oficial (LOE, AKC, KC...)', marks: 'OFPE' },
+      { name: 'Árbol genealógico hasta 10 generaciones', marks: 'OFP' },
+      { name: 'COI Wright + lista de ancestros duplicados', marks: 'P' },
+      { name: 'Comparativa COI vs media de la raza', marks: 'P' },
+      { name: 'PDF de genealogía con tu marca', marks: 'P' },
+      { name: 'Hermanos y descendientes auto-detectados', marks: 'OFP' },
+      { name: 'Editor visual de genealogía', marks: 'OFP' },
+      { name: 'Campo de registro oficial (LOE, AKC, KC...)', marks: 'OFP' },
     ],
   },
   {
     label: 'Cría y reproducción',
     features: [
-      { name: 'Simulador de cruces (COI proyectado)', marks: 'PE' },
-      { name: 'Predicción de color por genotipos', marks: 'PE' },
-      { name: 'Calendario reproductivo (gantt anual de celos y partos)', marks: 'FPE' },
-      { name: 'Camadas con un click (cachorros heredan padres + afijo)', marks: 'FPE' },
-      { name: 'Stud-book privado del criadero', marks: 'FPE' },
-      { name: 'Histórico de COI medio del criadero', marks: 'PE' },
+      { name: 'Simulador de cruces (COI proyectado)', marks: 'P' },
+      { name: 'Predicción de color por genotipos', marks: 'P' },
+      { name: 'Calendario reproductivo (gantt anual de celos y partos)', marks: 'FP' },
+      { name: 'Camadas con un click (cachorros heredan padres + afijo)', marks: 'FP' },
+      { name: 'Stud-book privado del criadero', marks: 'FP' },
+      { name: 'Histórico de COI medio del criadero', marks: 'P' },
     ],
   },
   {
     label: 'Salud y genética',
     features: [
-      { name: 'Cartilla veterinaria digital', marks: 'OFPE' },
-      { name: 'Recordatorios de vacunas (push + email)', marks: 'OFPE' },
-      { name: 'Genotipos (locus E, B, K, D, A, S)', marks: 'PE' },
-      { name: 'Pruebas raciales (DM, PLL, displasia, OFA)', marks: 'FPE' },
+      { name: 'Cartilla veterinaria digital', marks: 'OFP' },
+      { name: 'Recordatorios de vacunas (push + email)', marks: 'OFP' },
+      { name: 'Genotipos (locus E, B, K, D, A, S)', marks: 'P' },
+      { name: 'Pruebas raciales (DM, PLL, displasia, OFA)', marks: 'FP' },
     ],
   },
   {
     label: 'Catálogo de perros',
     features: [
-      { name: 'Galería ilimitada de fotos', marks: 'OFPE' },
-      { name: 'Upscale IA de fotos (5 gratis · ilimitado en Pro)', marks: 'OFPE' },
-      { name: 'Palmarés y títulos (CAC, CACIB, BIS)', marks: 'OFPE' },
-      { name: 'Transferir propietario en 1 click', marks: 'OFPE' },
-      { name: 'Estados (reproductor, en venta, criado)', marks: 'FPE' },
-      { name: 'Búsqueda y filtros avanzados', marks: 'OFPE' },
-      { name: 'Marcar perro como fallecido (In Memoriam)', marks: 'OFPE' },
+      { name: 'Galería ilimitada de fotos', marks: 'OFP' },
+      { name: 'Upscale IA de fotos (5 gratis · ilimitado en Pro)', marks: 'OFP' },
+      { name: 'Palmarés y títulos (CAC, CACIB, BIS)', marks: 'OFP' },
+      { name: 'Transferir propietario en 1 click', marks: 'OFP' },
+      { name: 'Estados (reproductor, en venta, criado)', marks: 'FP' },
+      { name: 'Búsqueda y filtros avanzados', marks: 'OFP' },
+      { name: 'Marcar perro como fallecido (In Memoriam)', marks: 'OFP' },
     ],
   },
   {
-    label: 'Pipeline y CRM',
+    label: 'Embudo de ventas y CRM',
     features: [
-      { name: 'Pipeline de reservas (tabla + tabs por estado)', marks: 'FPE' },
-      { name: 'Plantillas de contrato reutilizables', marks: 'FPE' },
-      { name: 'Firma electrónica básica', marks: 'FPE' },
-      { name: 'Pagos integrados con Stripe Connect (próximamente)', marks: 'PE' },
-      { name: 'Calendario de pagos (seña + parcial + final, manual)', marks: 'FPE' },
-      { name: 'CRM unificado de clientes', marks: 'FPE' },
-      { name: 'Estadísticas web del criadero (visitas, fuentes)', marks: 'PE' },
-      { name: 'Notificaciones email + push iOS', marks: 'OFPE' },
-    ],
-  },
-  {
-    label: 'Web pública del kennel',
-    features: [
-      { name: 'Web profesional del criadero', marks: 'E' },
-      { name: 'Dominio personalizado propio', marks: 'E' },
-      { name: 'Blog integrado con SEO', marks: 'E' },
-      // Reseñas y formulario de contacto se incluyen también en Pro:
-      // el criador profesional necesita captar leads y mostrar prueba
-      // social aunque su web la lleve en Enterprise.
-      { name: 'Reseñas verificadas de clientes', marks: 'PE' },
-      { name: 'Formulario de contacto configurable', marks: 'PE' },
-      { name: 'Ubicación en mapa embebida', marks: 'E' },
-      { name: 'Tema personalizable (colores, fuentes, hero)', marks: 'E' },
-      { name: 'Web del criadero multi-idioma', marks: 'E' },
-    ],
-  },
-  {
-    label: 'Comunicación',
-    features: [
-      { name: 'Emailbot con IA (multilingüe)', marks: 'E' },
-      { name: 'Newsletter con composer drag & drop', marks: 'E' },
-      { name: 'Hilos de email por cliente', marks: 'FPE' },
-      { name: 'Biblioteca de conocimiento (FAQs del bot)', marks: 'E' },
+      // En Free el embudo se ve LIMITADO (solo el número de solicitudes,
+      // borroso). El detalle completo del pipeline es de Pro.
+      { name: 'Embudo de ventas completo (tabla + tabs por estado)', marks: 'P' },
+      { name: 'Plantillas de contrato reutilizables', marks: 'FP' },
+      { name: 'Firma electrónica básica', marks: 'FP' },
+      { name: 'Pagos integrados con Stripe Connect (próximamente)', marks: 'P' },
+      { name: 'Calendario de pagos (seña + parcial + final, manual)', marks: 'FP' },
+      { name: 'CRM unificado de clientes', marks: 'P' },
+      { name: 'Reseñas verificadas de clientes', marks: 'P' },
+      { name: 'Formulario de contacto configurable', marks: 'P' },
+      { name: 'Visitas al criadero', marks: 'P' },
+      { name: 'Notificaciones email + push iOS', marks: 'OFP' },
     ],
   },
   {
     label: 'Analítica y datos',
     features: [
-      { name: 'Estadísticas web en tiempo real', marks: 'PE' },
-      { name: 'Funnel de conversión', marks: 'PE' },
-      { name: 'Exportable a CSV', marks: 'PE' },
+      { name: 'Estadísticas web del criadero en tiempo real', marks: 'P' },
+      { name: 'Funnel de conversión', marks: 'P' },
+      { name: 'Exportable a CSV', marks: 'P' },
     ],
   },
   {
     label: 'Soporte y plataforma',
     features: [
-      { name: 'App iOS', marks: 'OFPE' },
-      { name: 'Soporte por email', marks: 'OFPE' },
-      { name: 'Soporte prioritario (respuesta <24h)', marks: 'PE' },
-      { name: 'Onboarding personalizado', marks: 'E' },
-      { name: 'Cuenta multi-usuario (team)', marks: 'E' },
-      { name: 'White-label (sin marca Genealogic)', marks: 'E' },
-      { name: 'Integraciones custom (API / Zapier)', marks: 'E' },
+      { name: 'App iOS', marks: 'OFP' },
+      { name: 'Soporte por email', marks: 'OFP' },
+      { name: 'Soporte prioritario (respuesta <24h)', marks: 'P' },
     ],
   },
 ]
@@ -208,9 +186,7 @@ function fmtPrice(plan: PlanDef, cycle: BillingCycle): { amount: string; per: st
     return {
       amount: `${plan.monthlyCents / 100}€`,
       per: '/mes',
-      sub: plan.id === 'pro' ? '14 días gratis · sin tarjeta'
-        : plan.id === 'enterprise' ? 'Alta manual con soporte'
-        : null,
+      sub: plan.id === 'pro' ? '14 días gratis · sin tarjeta' : null,
     }
   }
   // Anual: enseñamos /mes con descuento aplicado + total
@@ -255,17 +231,17 @@ const PLANS: PlanDef[] = [
     period: 'Gratis siempre',
     maxDogs: 'Perros ilimitados',
     forWho: 'Para el criador casero',
-    description: 'Todo Owner + camadas + pipeline de reservas + contratos. Sin tarjeta.',
+    description: 'Todo Owner + camadas + contratos. Ves cuántas solicitudes recibes (el embudo completo es de Pro). Sin tarjeta.',
     icon: Store,
     accent: '#10b981',
     accentBg: 'from-emerald-50 via-canvas to-green-50',
     highlights: [
       'Perros ilimitados, gratis para siempre',
+      'Perfil de criadero + afijo + marcar reproductores',
       'Camadas con un click + calendario reproductivo',
-      'Pipeline de reservas con contratos y firma electrónica',
-      'CRM unificado de clientes',
+      'Contratos con firma electrónica',
       'Stud-book privado + estados de cachorros',
-      'Afijo, contactos y gestión de criadero casero',
+      'Ves el número de solicitudes que recibes',
     ],
     ctaLabel: 'Empezar gratis',
     ctaHref: '/register?intent=breeder&plan=free',
@@ -278,43 +254,64 @@ const PLANS: PlanDef[] = [
     period: '',
     maxDogs: 'Perros ilimitados',
     forWho: 'Para el criadero profesional',
-    description: 'Todo Free + perros ilimitados + COI explicado + simulador + estadísticas.',
+    description: 'El panel completo: embudo de ventas, simulador de cruces, genotipos, estadísticas, CRM, contratos y visitas.',
     icon: Sparkles,
     accent: '#FE6620',
     accentBg: 'from-orange-50 via-canvas to-amber-50',
     highlight: true,
     highlights: [
-      'Perros ilimitados',
+      'Embudo de ventas completo + CRM + contactos',
       'COI Wright + ancestros duplicados + comparativa con la raza',
       'Simulador de cruces (COI proyectado, color, riesgos)',
       'Genotipos y pruebas DNA',
-      'Pagos con Stripe Connect (próximamente)',
-      'Reseñas verificadas + formulario de contacto',
+      'Estadísticas web del criadero + contratos + visitas',
       'Soporte prioritario <24h',
+      'Amplíalo con extensiones: web, newsletter y emailbot',
     ],
     ctaLabel: 'Probar 14 días gratis',
   },
+]
+
+
+// ──────────────────────────────────────────────────────────────────────
+// Extensiones (add-ons à la carte SOBRE Kennel Pro). No son planes:
+// se contratan aparte una vez tienes Pro.
+// ──────────────────────────────────────────────────────────────────────
+interface AddonDef {
+  name: string
+  monthlyCents: number
+  description: string
+  icon: typeof Dog
+  accent: string
+  accentBg: string
+  comingSoon?: boolean
+}
+
+const ADDONS: AddonDef[] = [
   {
-    id: 'enterprise',
-    name: 'Kennel Enterprise',
-    monthlyCents: 14900,    // 149€/mes
-    annualCents: 152000,    // 1520€/año = 126.6€/mes (-15%)
-    period: '',
-    maxDogs: 'Perros ilimitados',
-    forWho: 'Para el criadero con escaparate público',
-    description: 'Todo Pro + web profesional con dominio propio + emailbot IA + multi-idioma.',
-    icon: Crown,
+    name: 'Web del criadero',
+    monthlyCents: 1900,  // 19€/mes
+    description: 'Tu web pública profesional con dominio propio. Sobre nosotros, galería, blog, y todos tus perros y genealogías ya integrados.',
+    icon: Globe,
     accent: '#8b5cf6',
     accentBg: 'from-violet-50 via-canvas to-purple-50',
-    highlights: [
-      'Web del criadero con tu dominio + blog SEO',
-      'Web multi-idioma (ES, EN, IT, FR)',
-      'Emailbot IA que responde a leads 24/7',
-      'Newsletter integrada + biblioteca de conocimiento',
-      'Multi-usuario (team) + white-label + integraciones',
-      'Onboarding personalizado + API pública REST',
-    ],
-    ctaLabel: 'Hablar con soporte',
+  },
+  {
+    name: 'Newsletter',
+    monthlyCents: 900,  // 9€/mes
+    description: 'Campañas a tus clientes y lista de espera: anuncia camadas y novedades.',
+    icon: Mail,
+    accent: '#0ea5e9',
+    accentBg: 'from-sky-50 via-canvas to-blue-50',
+  },
+  {
+    name: 'Emailbot',
+    monthlyCents: 1900,  // 19€/mes
+    description: 'Asistente IA que responde consultas de cachorros 24/7 desde la biblioteca de tu criadero.',
+    icon: Bot,
+    accent: '#FE6620',
+    accentBg: 'from-orange-50 via-canvas to-amber-50',
+    comingSoon: true,
   },
 ]
 
@@ -372,7 +369,7 @@ export default function PricingClient({
             {t('Empieza gratis. Sube cuando crezcas.')}
           </h1>
           <p className="text-base sm:text-lg text-body max-w-2xl mx-auto leading-relaxed">
-            {t('Owner y Kennel Free son gratis para siempre, sin tarjeta. Pro y Enterprise vienen con 14 días de prueba.')}
+            {t('Owner y Kennel Free son gratis para siempre, sin tarjeta. Kennel Pro viene con 14 días de prueba, y lo amplías con extensiones cuando lo necesites.')}
           </p>
         </div>
 
@@ -453,11 +450,14 @@ export default function PricingClient({
                 {t('Perros ilimitados en todos los planes')}
               </p>
               <p className="text-[13.5px] text-blue-900/80 leading-relaxed">
-                {t('Sube todos los perros que quieras —reproductores, camadas, retirados o fallecidos— sin límite ni coste extra, incluso en Owner y Kennel Free. No cobramos por perro: pagas por las')}{' '}<strong>{t('herramientas de criadero')}</strong>{t(' (embudo, contratos, web, emailbot, simulador de cruces, genotipos y estadísticas). El propietario es gratis para siempre.')}
+                {t('Sube todos los perros que quieras —reproductores, camadas, retirados o fallecidos— sin límite ni coste extra, incluso en Owner y Kennel Free. No cobramos por perro: pagas por las')}{' '}<strong>{t('herramientas de criadero')}</strong>{t(' (embudo de ventas, contratos, simulador de cruces, genotipos y estadísticas), y por las extensiones que añadas. El propietario es gratis para siempre.')}
               </p>
             </div>
           </div>
         </div>
+
+        {/* Extensiones (add-ons à la carte sobre Pro) */}
+        <AddonsSection />
 
         {/* FAQ */}
         <FAQ />
@@ -479,7 +479,7 @@ export default function PricingClient({
 // ──────────────────────────────────────────────────────────────────────
 function SimpleView({ isLoggedIn, cycle }: { isLoggedIn: boolean; cycle: BillingCycle }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 max-w-5xl mx-auto">
       {PLANS.map((plan) => (
         <PlanCard key={plan.id} plan={plan} isLoggedIn={isLoggedIn} cycle={cycle} />
       ))}
@@ -560,15 +560,6 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
           >
             {t(plan.ctaLabel)}
           </Button>
-        ) : plan.id === 'enterprise' ? (
-          // Enterprise: por ahora contacto directo hasta tener checkout activo
-          <a
-            href="mailto:hola@genealogic.io?subject=Kennel%20Enterprise"
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border-2 px-5 py-3 text-sm font-bold transition hover:bg-canvas/50"
-            style={{ borderColor: plan.accent, color: plan.accent }}
-          >
-            {t(plan.ctaLabel)}
-          </a>
         ) : (
           <CheckoutButton
             plan="pro"
@@ -582,11 +573,6 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
         {plan.id === 'pro' && (
           <p className="mt-2 text-[10.5px] text-muted text-center">
             {t('Sin tarjeta para empezar el trial · Cancela cuando quieras')}
-          </p>
-        )}
-        {plan.id === 'enterprise' && (
-          <p className="mt-2 text-[10.5px] text-muted text-center">
-            {t('Activación manual tras hablar con soporte · Cancela cuando quieras')}
           </p>
         )}
       </div>
@@ -604,7 +590,7 @@ function AdvancedView({ isLoggedIn, cycle }: { isLoggedIn: boolean; cycle: Billi
     <div className="space-y-6">
       {/* Header de la tabla con precios resumidos */}
       <div className="rounded-2xl border border-hairline bg-canvas overflow-x-auto">
-        <table className="w-full min-w-[760px] text-sm">
+        <table className="w-full min-w-[680px] text-sm">
           <thead>
             <tr className="border-b border-hairline bg-surface-soft/40">
               <th className="text-left px-4 py-4 font-semibold text-muted text-[11px] uppercase tracking-wider w-[40%]">
@@ -647,14 +633,6 @@ function AdvancedView({ isLoggedIn, cycle }: { isLoggedIn: boolean; cycle: Billi
                     >
                       {t(plan.ctaLabel)} <ArrowRight className="w-3 h-3" />
                     </Link>
-                  ) : plan.id === 'enterprise' ? (
-                    <a
-                      href="mailto:hola@genealogic.io?subject=Kennel%20Enterprise"
-                      className="inline-flex items-center justify-center gap-1 rounded-lg border-2 px-3 py-2 text-[12px] font-bold transition hover:bg-canvas/50"
-                      style={{ borderColor: plan.accent, color: plan.accent }}
-                    >
-                      {t('Contactar')}
-                    </a>
                   ) : (
                     <CheckoutButton
                       plan="pro"
@@ -680,7 +658,7 @@ function CategorySection({ cat }: { cat: CategoryDef }) {
   return (
     <>
       <tr>
-        <td colSpan={5} className="px-4 py-2.5 bg-[#FE6620]/10 border-y border-[#FE6620]/20">
+        <td colSpan={4} className="px-4 py-2.5 bg-[#FE6620]/10 border-y border-[#FE6620]/20">
           <p className="text-[11px] font-bold uppercase tracking-wider text-[#FE6620]">
             {t(cat.label)}
           </p>
@@ -713,6 +691,82 @@ function CategorySection({ cat }: { cat: CategoryDef }) {
 
 
 // ──────────────────────────────────────────────────────────────────────
+// Extensiones — add-ons à la carte sobre Kennel Pro
+// ──────────────────────────────────────────────────────────────────────
+function AddonsSection() {
+  const t = useT()
+  return (
+    <section className="mt-14 sm:mt-20 max-w-5xl mx-auto">
+      <div className="text-center mb-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#FE6620]">{t('Extensiones')}</p>
+        <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3vw, 32px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}>
+          {t('Amplía tu Kennel Pro à la carte')}
+        </h2>
+        <p className="mt-3 text-[14px] sm:text-[15px] text-body max-w-2xl mx-auto leading-relaxed">
+          {t('Añade solo lo que necesites, cuando lo necesites. Todas las extensiones requieren')}{' '}<strong>{t('Kennel Pro')}</strong>{t(' y se facturan aparte.')}
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+        {ADDONS.map((addon) => (
+          <AddonCard key={addon.name} addon={addon} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function AddonCard({ addon }: { addon: AddonDef }) {
+  const t = useT()
+  const Icon = addon.icon
+  return (
+    <div className={`relative rounded-2xl border border-hairline bg-gradient-to-br ${addon.accentBg} p-5 sm:p-6 flex flex-col`}>
+      {addon.comingSoon && (
+        <span className="absolute -top-3 left-5 inline-flex items-center rounded-full bg-ink/85 text-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider">
+          {t('Próximamente')}
+        </span>
+      )}
+
+      {/* Icono */}
+      <div className="inline-flex w-10 h-10 rounded-xl items-center justify-center mb-4" style={{ background: `${addon.accent}20`, color: addon.accent }}>
+        <Icon className="w-5 h-5" />
+      </div>
+
+      {/* Nombre */}
+      <h3 className="text-[18px] sm:text-[20px] font-bold text-ink leading-tight">
+        {addon.name}
+      </h3>
+
+      {/* Precio */}
+      <div className="mt-2 flex items-baseline gap-1">
+        <span className="text-[26px] sm:text-[30px] font-bold tabular-nums text-ink leading-none">
+          {addon.monthlyCents / 100}€
+        </span>
+        <span className="text-[12px] text-muted">{t('/mes')}</span>
+      </div>
+
+      {/* Descripción */}
+      <p className="mt-3 text-[13px] text-body leading-relaxed flex-1">
+        {t(addon.description)}
+      </p>
+
+      {/* Requiere Pro */}
+      <div className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-canvas/80 border border-hairline px-2.5 py-0.5 text-[11px] font-semibold text-muted">
+        <Sparkles className="w-3 h-3" style={{ color: addon.accent }} />
+        {t('Requiere Kennel Pro')}
+      </div>
+
+      {/* Estado */}
+      {addon.comingSoon && (
+        <p className="mt-4 text-[12px] font-semibold text-muted text-center">
+          {t('Aún en construcción — próximamente disponible')}
+        </p>
+      )}
+    </div>
+  )
+}
+
+
+// ──────────────────────────────────────────────────────────────────────
 // FAQ
 // ──────────────────────────────────────────────────────────────────────
 function FAQ() {
@@ -727,7 +781,7 @@ function FAQ() {
       </div>
       <div className="space-y-2">
         <FaqItem q={t('¿De verdad Owner y Free son gratis para siempre?')}>
-          {t('Sí. Owner y Kennel Free no caducan ni piden tarjeta. La diferencia entre planes está en las herramientas (criadero, web, emailbot…), no en cuántos perros tienes — eso es ilimitado en todos. Cuando necesites más herramientas, te ofrecemos subir, pero nunca te empujamos.')}
+          {t('Sí. Owner y Kennel Free no caducan ni piden tarjeta. La diferencia entre planes está en las herramientas (embudo de ventas completo, simulador, genotipos, estadísticas…), no en cuántos perros tienes — eso es ilimitado en todos. Cuando necesites más herramientas, te ofrecemos subir, pero nunca te empujamos.')}
         </FaqItem>
         <FaqItem q={t('¿Y los perros fallecidos?')}>
           {t('Cuando marcas un perro como fallecido (In Memoriam), Genealogic conserva su ficha con toda su genealogía, fotos y palmarés, y la oculta del directorio público. No hay ningún límite del que descontar: tienes perros ilimitados en todos los planes. Útil para propietarios que han tenido varios perros a lo largo de su vida y quieren documentarlos a todos. Los perros con más de 20 años se marcan automáticamente como fallecidos (puedes contradecirlo en los 30 días siguientes).')}
@@ -735,8 +789,8 @@ function FAQ() {
         <FaqItem q={t('¿Cómo funciona la prueba de 14 días de Pro?')}>
           {t('Te das de alta sin tarjeta. Durante 14 días tienes acceso completo al plan. El día 13 te avisamos por email. El día 14 te pedimos tarjeta para seguir. Si no pagas, vuelves automáticamente a Free (tus datos se mantienen intactos).')}
         </FaqItem>
-        <FaqItem q={t('¿Y Enterprise? ¿También 14 días gratis?')}>
-          {t('Enterprise se activa manualmente tras hablar con soporte (hola@genealogic.io). De momento estamos validando el chatbot y la web del criadero con un grupo cerrado de criaderos. Si lo quieres probar, escríbenos y te activamos la cuenta en menos de 24h. Pasaremos a auto-servicio cuando esté pulido.')}
+        <FaqItem q={t('¿Qué son las extensiones?')}>
+          {t('Son add-ons que se contratan aparte sobre Kennel Pro, para que pagues solo lo que usas: la Web del criadero (19€/mes) te da una web pública con dominio propio; la Newsletter (9€/mes) te deja lanzar campañas y gestionar lista de espera; y el Emailbot (19€/mes, próximamente) es un asistente IA que responde consultas de cachorros 24/7. Las activas y las cancelas cuando quieras desde tu panel.')}
         </FaqItem>
         <FaqItem q={t('¿Puedo cambiar de plan en cualquier momento?')}>
           {t('Sí, sube o baja cuando quieras. Si subes, el cobro es prorrateado. Si bajas, los cambios se aplican al final del periodo facturado. Tus datos siguen siempre seguros — solo cambian las features disponibles.')}
@@ -745,7 +799,7 @@ function FAQ() {
           {t('Ambos son gratis y con perros ilimitados — la diferencia son las herramientas de criadero. Owner es para el particular que documenta a sus perros: ficha, genealogía, cartilla y galería. Kennel Free es para el criador casero que además gestiona camadas, reservas y contratos (afijo, pipeline, CRM y stud-book privado). Si tienes un macho semental y una hembra y os llega una camada, Free.')}
         </FaqItem>
         <FaqItem q={t('¿Cancelo cuando quiero?')}>
-          {t('Sí, sin penalizaciones, sin permanencia. Cancelas desde tu panel y sigues con Pro/Enterprise hasta el final del periodo pagado. Después bajas a Kennel Free automáticamente (no pierdes datos).')}
+          {t('Sí, sin penalizaciones, sin permanencia. Cancelas desde tu panel y sigues con Pro (y sus extensiones) hasta el final del periodo pagado. Después bajas a Kennel Free automáticamente (no pierdes datos).')}
         </FaqItem>
         <FaqItem q={t('¿Mis datos son míos? ¿Puedo exportarlos?')}>
           {t('Sí. Cualquier perro, genealogía, contrato o cliente lo exportas a PDF/CSV en un click. Servidores en EU, RGPD por defecto. Si te vas de Genealogic, te llevas tus datos.')}
