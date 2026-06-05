@@ -21,12 +21,16 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getContractsByReservation, type ReservationContract } from '@/lib/contracts/contracts'
 import { renderContractMarkdown } from '@/lib/contracts/markdown'
-import { CONTRACT_TEMPLATES, type ContractKind } from '@/lib/contracts/templates'
+import { CONTRACT_TEMPLATES, type ContractKind, getTokenizedBaseTemplate } from '@/lib/contracts/templates'
+import { buildContractVars } from '@/lib/contracts/render'
 import ContractEditor from '@/components/contracts/contract-editor'
+import ContractFillPanel from '@/components/contracts/contract-fill-panel'
 import {
   createOrInitContractAction,
   createFromUserTemplateAction,
   saveContractDraftAction,
+  saveContractValuesAction,
+  setAdvancedModeAction,
   sendContractAction,
   signContractAsBreederAction,
   cancelContractAction,
@@ -240,19 +244,125 @@ function ContractBlock({
           t={t}
         />
       ) : contract.status === 'draft' ? (
-        <ContractEditor
-          reservationId={reservation.id}
-          contractId={contract.id}
-          initialBody={contract.body_html}
-          initialTitle={contract.title}
-          canSend
-          onSaveAction={saveContractDraftAction}
-          onSendAction={sendContractAction}
+        <DraftContractBody
+          reservation={reservation}
+          contract={contract}
+          t={t}
         />
       ) : (
         <SentOrSignedView reservation={reservation} contract={contract} t={t} />
       )}
     </section>
+  )
+}
+
+/**
+ * Decide qué editor montar para un contrato en estado draft:
+ *
+ *  - `template_values` es NULL (contrato pre-refactor) → editor markdown
+ *    clásico, sin tocar (compat hacia atrás).
+ *
+ *  - `template_values.__manual__` === true → el criador eligió "Modo
+ *    avanzado", editor markdown clásico también. Para volver al fill-form
+ *    tiene que cancelar el contrato.
+ *
+ *  - resto (template_values es {} o tiene valores normales) → fill-form
+ *    nuevo: formulario izquierda + preview derecha, datos legales del
+ *    criadero auto-rellenados.
+ */
+async function DraftContractBody({
+  reservation, contract, t,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  reservation: any
+  contract: ReservationContract
+  t: T
+}) {
+  const tplValues = (contract.template_values as Record<string, unknown> | null) || null
+  const manualOverride = tplValues?.__manual__ === true
+  const isLegacyContract = tplValues == null
+
+  // Caso legacy o modo avanzado → editor markdown clásico
+  if (isLegacyContract || manualOverride) {
+    return (
+      <ContractEditor
+        reservationId={reservation.id}
+        contractId={contract.id}
+        initialBody={contract.body_html}
+        initialTitle={contract.title}
+        canSend
+        onSaveAction={saveContractDraftAction}
+        onSendAction={sendContractAction}
+      />
+    )
+  }
+
+  // Caso nuevo flow → fill-form + preview
+  // Resolvemos la plantilla:
+  //   - Si source_template_id está, cargamos su body_md
+  //   - Si no, usamos la plantilla base tokenizada del kind
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createKennelAdminClient() as any
+  let templateBody: string
+  if (contract.source_template_id) {
+    const { data: srcTpl } = await admin
+      .from('contract_templates')
+      .select('body_md')
+      .eq('id', contract.source_template_id)
+      .maybeSingle()
+    templateBody = srcTpl?.body_md || getTokenizedBaseTemplate(contract.kind)
+  } else {
+    templateBody = getTokenizedBaseTemplate(contract.kind)
+  }
+
+  // Resolver los valores iniciales del form: kennel/lead vars + saved values
+  const baseVars = buildContractVars(reservation, contract.kind)
+  const initialValues: Record<string, string> = {}
+  for (const [k, v] of Object.entries(baseVars)) {
+    if (v != null && String(v).trim() !== '' && k !== '__manual__') {
+      initialValues[k] = String(v)
+    }
+  }
+  // Saved values en BBDD ganan sobre los derivados (lo que el criador edite
+  // se persiste y mantiene al recargar).
+  const saved = (tplValues as Record<string, string> | null) || {}
+  for (const [k, v] of Object.entries(saved)) {
+    if (k === '__manual__') continue
+    if (v != null && String(v).trim() !== '') initialValues[k] = String(v)
+  }
+
+  // kennelVars: lo que NO se edita en el form pero se inyecta al preview
+  const kennelVars: Record<string, string | null | undefined> = {
+    legalName: baseVars.legalName,
+    legalId: baseVars.legalId,
+    legalAddress: baseVars.legalAddress,
+    representative: baseVars.representative,
+    representativeId: baseVars.representativeId,
+    signCity: baseVars.signCity,
+    jurisdiction: baseVars.jurisdiction,
+  }
+
+  // Server action wrapper: el cliente llama con (resId, contractId, values),
+  // el server descarta __manual__ si llegara colado del cliente.
+  async function handleSetAdvancedMode() {
+    'use server'
+    await setAdvancedModeAction(reservation.id, contract.id)
+  }
+
+  return (
+    <ContractFillPanel
+      reservationId={reservation.id}
+      contractId={contract.id}
+      kind={contract.kind}
+      templateBody={templateBody}
+      contractTitle={contract.title}
+      initialValues={initialValues}
+      kennelVars={kennelVars}
+      manualOverride={false}
+      onSaveAction={saveContractValuesAction}
+      onSendAction={sendContractAction}
+      onAdvancedMode={handleSetAdvancedMode}
+    />
   )
 }
 
@@ -295,10 +405,11 @@ function CreateContractCard({
     ? t('Crear contrato de entrega')
     : t('Crear contrato de reserva')
 
-  // Plantilla por defecto del kennel (si la marcó como default en /contratos)
-  // sale destacada como alternativa.
-  const defaultTpl = userTemplates.find((tp) => tp.is_default) || null
-  const otherUserTpls = userTemplates.filter((tp) => !tp.is_default)
+  // Plantilla por defecto del kennel PARA ESTE KIND (si la marcó como default
+  // en /contratos) sale destacada como alternativa. Si la default es de otro
+  // kind, se lista junto a las demás sin distinción.
+  const defaultTpl = userTemplates.find((tp) => tp.default_for_kind === kind) || null
+  const otherUserTpls = userTemplates.filter((tp) => tp.id !== defaultTpl?.id)
 
   return (
     <div className="rounded-2xl border border-dashed border-hairline bg-canvas p-6 sm:p-8">

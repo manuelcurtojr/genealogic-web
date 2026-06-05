@@ -18,6 +18,9 @@ export type ReservationContract = {
   title: string
   body_html: string
   body_json: unknown | null
+  /** Valores del fill-form (token → valor). NULL para contratos legacy
+   *  creados antes del refactor de fill-form (siguen usando markdown). */
+  template_values: Record<string, unknown> | null
   status: ContractStatus
   sent_at: string | null
   signed_at_breeder: string | null

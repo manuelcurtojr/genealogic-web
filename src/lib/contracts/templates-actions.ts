@@ -36,6 +36,10 @@ export interface ContractTemplate {
   name: string
   body_md: string
   is_default: boolean
+  /** Para qué tipo de contrato es la default de este kennel: null si no es
+   *  default de ninguno, 'reservation' o 'delivery' si lo es. Permite una
+   *  default por kind (en lugar de una global). */
+  default_for_kind: 'reservation' | 'delivery' | null
   created_at: string
   updated_at: string
 }
@@ -57,7 +61,7 @@ export async function listContractTemplatesForUser(): Promise<ContractTemplate[]
 
   const { data, error } = await supabase
     .from('contract_templates')
-    .select('id, kennel_id, name, body_md, is_default, created_at, updated_at')
+    .select('id, kennel_id, name, body_md, is_default, default_for_kind, created_at, updated_at')
     .eq('kennel_id', kennel.id)
     .order('is_default', { ascending: false })
     .order('updated_at', { ascending: false })
@@ -69,7 +73,7 @@ export async function getContractTemplate(id: string): Promise<ContractTemplate 
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('contract_templates')
-    .select('id, kennel_id, name, body_md, is_default, created_at, updated_at')
+    .select('id, kennel_id, name, body_md, is_default, default_for_kind, created_at, updated_at')
     .eq('id', id)
     .maybeSingle()
   if (error) throw new Error(error.message)
@@ -82,20 +86,32 @@ export async function createContractTemplate(input: {
   kennelId: string
   name: string
   bodyMd: string
+  /** @deprecated Usa `defaultForKind` en su lugar. Si true se interpreta como
+   *  defaultForKind='reservation' (compat con callers viejos). */
   isDefault?: boolean
+  /** Marca esta plantilla como default para el kind dado.
+   *  Si null/undefined → no es default de nada. */
+  defaultForKind?: 'reservation' | 'delivery' | null
 }): Promise<{ id: string }> {
   const { supabase, kennel } = await requireOwnerOfKennel(input.kennelId)
   const name = input.name.trim().slice(0, 120) || 'Sin nombre'
   const body = input.bodyMd.slice(0, 60000)
 
-  // Si pide is_default, antes desmarcamos los otros del kennel (el índice
-  // único parcial protege a nivel DB pero damos UX limpia desactivando).
-  if (input.isDefault) {
+  // Resolver el kind default: si vino defaultForKind explícito lo usamos,
+  // si no usamos isDefault (legacy → asume 'reservation').
+  const kind: 'reservation' | 'delivery' | null =
+    input.defaultForKind !== undefined
+      ? input.defaultForKind
+      : (input.isDefault ? 'reservation' : null)
+
+  if (kind) {
+    // Desmarcar la default actual de ese kind para evitar colisión con el
+    // índice único parcial.
     await supabase
       .from('contract_templates')
-      .update({ is_default: false })
+      .update({ default_for_kind: null, is_default: false })
       .eq('kennel_id', kennel.id)
-      .eq('is_default', true)
+      .eq('default_for_kind', kind)
   }
 
   const { data, error } = await supabase
@@ -104,7 +120,8 @@ export async function createContractTemplate(input: {
       kennel_id: kennel.id,
       name,
       body_md: body,
-      is_default: !!input.isDefault,
+      is_default: kind !== null,
+      default_for_kind: kind,
     })
     .select('id')
     .single()
@@ -168,7 +185,24 @@ export async function deleteContractTemplate(id: string): Promise<{ ok: true }> 
   return { ok: true }
 }
 
-export async function setDefaultContractTemplate(id: string): Promise<{ ok: true }> {
+/**
+ * Marca una plantilla como default PARA UN KIND concreto.
+ *
+ * Reglas:
+ *  - Solo puede haber 1 default por (kennel_id, kind) — el índice único
+ *    parcial creado en 20260720_contracts_redesign.sql lo asegura a nivel
+ *    BBDD. Antes de asignar, desmarcamos la default actual de ese kind.
+ *  - `is_default` (boolean global, legacy) se mantiene sincronizada para
+ *    compat — true si la plantilla es default de cualquier kind, false si
+ *    no. Se eliminará en migración futura.
+ *
+ * Si `kind` es null → desmarca la default (la plantilla deja de ser default
+ * para cualquier kind).
+ */
+export async function setDefaultContractTemplate(
+  id: string,
+  kind: 'reservation' | 'delivery' | null,
+): Promise<{ ok: true }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('unauthenticated')
@@ -181,16 +215,19 @@ export async function setDefaultContractTemplate(id: string): Promise<{ ok: true
   if (!tpl) throw new Error('not_found')
   await requireOwnerOfKennel(tpl.kennel_id)
 
-  // Desmarca todos los otros del kennel, marca este. Dos updates en serie —
-  // si el segundo falla queda el kennel sin default (estado válido).
-  await supabase
-    .from('contract_templates')
-    .update({ is_default: false })
-    .eq('kennel_id', tpl.kennel_id)
-    .eq('is_default', true)
+  if (kind) {
+    // Desmarca la default actual de ese kind (si la hay) para evitar
+    // colisión con el índice único parcial.
+    await supabase
+      .from('contract_templates')
+      .update({ default_for_kind: null, is_default: false })
+      .eq('kennel_id', tpl.kennel_id)
+      .eq('default_for_kind', kind)
+  }
+
   const { error } = await supabase
     .from('contract_templates')
-    .update({ is_default: true })
+    .update({ default_for_kind: kind, is_default: kind !== null })
     .eq('id', id)
   if (error) throw new Error(error.message)
 

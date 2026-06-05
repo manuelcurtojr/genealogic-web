@@ -16,7 +16,7 @@ import {
   getContractByReservation,
 } from '@/lib/contracts/contracts'
 import { CONTRACT_TEMPLATES, type ContractKind } from '@/lib/contracts/templates'
-import { generateContractBody } from '@/lib/contracts/render'
+import { generateContractBody, generateContractBodyFromValues, buildContractVars } from '@/lib/contracts/render'
 import { getContractTemplate } from '@/lib/contracts/templates-actions'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -69,6 +69,18 @@ export async function createOrInitContractAction(
       title: tpl.label,
       bodyMarkdown: generateContractBody(reservation, kind),
     })
+
+    // Inicializa template_values = {} para que la UI sepa que es un contrato
+    // "nuevo flow" (fill-form) y no uno legacy (markdown). Contratos pre-
+    // refactor tienen template_values=NULL y se mantienen en el editor
+    // markdown clásico hasta que el criador los recree.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createKennelAdminClient() as any
+    await admin
+      .from('reservation_contracts')
+      .update({ template_values: {} })
+      .eq('id', created.id)
+
     revalidatePath(`/reservas/${reservationId}/contrato`)
     return { ok: true, contractId: created.id }
   } catch (e) {
@@ -101,8 +113,49 @@ export async function createFromUserTemplateAction(
       title: tpl.name,
       bodyMarkdown: generateContractBody(reservation, kind, tpl.body_md),
     })
+    // Inicializa template_values = {} (mismo motivo que en createOrInit).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createKennelAdminClient() as any
+    await admin
+      .from('reservation_contracts')
+      .update({ template_values: {} })
+      .eq('id', created.id)
+
     revalidatePath(`/reservas/${reservationId}/contrato`)
     return { ok: true, contractId: created.id }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'unknown' }
+  }
+}
+
+/**
+ * Marca un contrato como "modo avanzado" (markdown editor). A partir de
+ * aquí el fill-form queda bloqueado y se muestra el editor markdown
+ * clásico para ajustes puntuales. Para volver al fill-form hay que
+ * "cancelar contrato" (vuelve a draft limpio).
+ */
+export async function setAdvancedModeAction(
+  reservationId: string,
+  contractId: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await assertBreeder(reservationId)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createKennelAdminClient() as any
+    const { data: existing } = await admin
+      .from('reservation_contracts')
+      .select('template_values')
+      .eq('id', contractId)
+      .maybeSingle()
+    const current = (existing?.template_values as Record<string, unknown> | null) || {}
+    const next = { ...current, __manual__: true }
+    const { error } = await admin
+      .from('reservation_contracts')
+      .update({ template_values: next })
+      .eq('id', contractId)
+    if (error) throw new Error(error.message)
+    revalidatePath(`/reservas/${reservationId}/contrato`)
+    return { ok: true }
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'unknown' }
   }
@@ -122,6 +175,114 @@ export async function saveContractDraftAction(
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'unknown' }
   }
+}
+
+/**
+ * Guarda los valores del FILL-FORM y regenera el body_html en consecuencia.
+ *
+ * Es la nueva alternativa al `saveContractDraftAction`: en lugar de guardar
+ * markdown editado a mano, guardamos token→valor y dejamos que el server
+ * reinterpole. Esto permite que la próxima vez que el criador abra el
+ * contrato, vea el FORMULARIO relleno (en `template_values`) en lugar de
+ * solo el texto resuelto.
+ *
+ * Si el contrato fue creado desde plantilla custom, usa esa plantilla.
+ * Si no (sourceTemplateId=null), usa la plantilla base hardcoded del kind.
+ *
+ * No bloquea el envío: incluso si faltan campos required, se guarda como
+ * borrador. La validación de required se hace al "Enviar al cliente".
+ */
+export async function saveContractValuesAction(
+  reservationId: string,
+  contractId: string,
+  values: Record<string, string | null>,
+): Promise<{ ok: true; bodyHtml: string } | { ok: false; error: string }> {
+  try {
+    const { reservation } = await assertBreeder(reservationId)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createKennelAdminClient() as any
+
+    // Cargar el contrato para saber su kind + qué plantilla usa
+    const { data: contract } = await admin
+      .from('reservation_contracts')
+      .select('id, kind, source_template_id, status')
+      .eq('id', contractId)
+      .maybeSingle()
+    if (!contract) {
+      const t = getTranslator(await getLocale())
+      return { ok: false, error: t('Contrato no encontrado') }
+    }
+    if (contract.status !== 'draft') {
+      const t = getTranslator(await getLocale())
+      return { ok: false, error: t('Solo se pueden editar los borradores') }
+    }
+
+    // Plantilla custom (si la hay)
+    let userTemplateBody: string | null = null
+    if (contract.source_template_id) {
+      const { data: tpl } = await admin
+        .from('contract_templates')
+        .select('body_md')
+        .eq('id', contract.source_template_id)
+        .maybeSingle()
+      userTemplateBody = tpl?.body_md ?? null
+    }
+
+    // Regenerar el body_html desde plantilla + buildContractVars + values
+    const bodyHtml = generateContractBodyFromValues(
+      reservation,
+      contract.kind as ContractKind,
+      values,
+      userTemplateBody,
+    )
+
+    // Persistir AMBOS: template_values (fuente de verdad para el form) y
+    // body_html (representación renderizada, lo que se enseña/firma)
+    const { error } = await admin
+      .from('reservation_contracts')
+      .update({ template_values: values, body_html: bodyHtml })
+      .eq('id', contractId)
+    if (error) throw new Error(error.message)
+
+    revalidatePath(`/reservas/${reservationId}/contrato`)
+    return { ok: true, bodyHtml }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'unknown' }
+  }
+}
+
+/**
+ * Devuelve las variables iniciales del formulario para un contrato draft
+ * recién creado. Combina `template_values` guardados (si los hay) con los
+ * datos extraídos de la reserva/puppy/kennel. Los guardados ganan.
+ *
+ * Usado por la page server-side al renderizar el FillForm — así el form
+ * se monta ya con los datos correctos sin un round-trip extra.
+ */
+export async function getInitialFormValues(
+  reservationId: string,
+  contractId: string,
+): Promise<Record<string, string>> {
+  const { reservation } = await assertBreeder(reservationId)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createKennelAdminClient() as any
+  const { data: contract } = await admin
+    .from('reservation_contracts')
+    .select('kind, template_values')
+    .eq('id', contractId)
+    .maybeSingle()
+  if (!contract) return {}
+
+  const baseVars = buildContractVars(reservation, contract.kind as ContractKind)
+  const merged: Record<string, string> = {}
+  for (const [k, v] of Object.entries(baseVars)) {
+    if (v != null && String(v).trim() !== '') merged[k] = String(v)
+  }
+  const saved = (contract.template_values as Record<string, string> | null) || {}
+  for (const [k, v] of Object.entries(saved)) {
+    if (v != null && String(v).trim() !== '') merged[k] = String(v)
+  }
+  return merged
 }
 
 export async function sendContractAction(

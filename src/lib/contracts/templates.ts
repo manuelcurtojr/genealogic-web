@@ -214,3 +214,172 @@ export const CONTRACT_TEMPLATES = [
 ] as const
 
 export type ContractTemplateId = (typeof CONTRACT_TEMPLATES)[number]['id']
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VERSIONES TOKENIZADAS — para el fill-form preview en vivo
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Las plantillas de arriba son funciones que toman `vars` y devuelven el
+// markdown YA resuelto. Eso sirve perfecto para email/PDF (generación
+// puntual server-side), pero el preview en vivo del fill-form necesita una
+// plantilla con `{{tokens}}` que pueda reinterpolar client-side cada vez
+// que el criador edita un campo, sin server round-trip.
+//
+// Estas versiones son las mismas plantillas pero con `{{token}}` en lugar
+// de `${v(d.token)}`. Cualquier cambio de copy en una versión DEBE
+// replicarse en la otra (ojo a la doble fuente de verdad).
+
+const PARTES_REUNIDAS_TOKENIZED = `**REUNIDOS**
+
+De una parte, **{{legalName}}**, con CIF/NIF {{legalId}}, y domicilio fiscal en {{legalAddress}}, representada en este acto por D./Dª {{representative}}, con DNI {{representativeId}}, en calidad de administrador (en adelante, el **Criador**).
+
+Y de otra parte, D./Dª **{{clientName}}**, con DNI/NIE/Pasaporte nº {{clientId}}, y domicilio en {{clientAddress}}, email {{clientEmail}} (en adelante, el **Cliente**).
+
+Ambas partes, reconociéndose capacidad legal suficiente,`
+
+export const CONTRACT_TEMPLATE_RESERVATION_TOKENIZED = `# Contrato de reserva de cachorro
+
+En {{signCity}}, a {{todayDate}}
+
+${PARTES_REUNIDAS_TOKENIZED}
+
+**EXPONEN**
+
+1. Que el Criador desarrolla un programa de cría profesional y es propietario legítimo de los perros reproductores y de las camadas presentes o futuras derivadas de dicho programa.
+2. Que el Cliente manifiesta su interés en **reservar un cachorro**, ya sea de una camada futura o de una camada existente aún no entregada.
+3. Que ambas partes son conscientes de que la reproducción y desarrollo de animales vivos está sujeta a factores biológicos no totalmente previsibles.
+
+En virtud de lo anterior, **ACUERDAN**:
+
+---
+
+## 1. Objeto del contrato
+
+El presente contrato tiene por objeto regular exclusivamente la reserva de un cachorro, sin que exista todavía transmisión de la propiedad ni entrega del animal, las cuales se formalizarán mediante **Contrato de Compraventa Definitivo** en el momento de la recogida o envío del cachorro.
+
+## 2. Características orientativas del cachorro reservado
+
+El Cliente manifiesta su interés en un cachorro con las siguientes características orientativas:
+
+- **Raza:** {{breed}}
+- **Sexo:** {{sex}}
+- **Color / Capa:** {{color}}
+- **Función prevista:** {{purpose}}
+- **Preferencias adicionales:** {{preferences}}
+
+El Cliente acepta expresamente que, al tratarse de animales vivos, no puede garantizarse de forma absoluta la concurrencia exacta de todas las características solicitadas.
+
+## 3. Precio y reserva
+
+- **Precio total estimado del cachorro:** {{totalPrice}}
+- **Importe entregado en concepto de reserva:** {{depositAmount}}
+
+La cantidad entregada tiene carácter de **reserva**, será descontada del precio final y **no es reembolsable**, salvo pacto expreso por escrito. El importe restante se abonará conforme se establezca en el Contrato de Compraventa Definitivo, que deberá estar íntegramente satisfecho antes de la entrega del cachorro.
+
+## 4. Asignación del cachorro
+
+La selección y asignación concreta del cachorro corresponderá exclusivamente al Criador, quien tendrá en cuenta las preferencias del Cliente siempre que sea posible, priorizando el bienestar del animal y su correcta adecuación al futuro propietario. La identificación definitiva del cachorro (fecha de nacimiento, microchip, etc.) se realizará únicamente en el Contrato de Compraventa Definitivo.
+
+## 5. Plazos y disponibilidad
+
+El Cliente acepta que los plazos de espera son aproximados, al depender de factores biológicos propios de la reproducción animal. El Criador se compromete a informar al Cliente de forma razonable sobre la evolución de la reserva y las camadas previstas.
+
+## 6. Fallecimiento, indisponibilidad o fuerza mayor
+
+En caso de fallecimiento del cachorro asignado antes de la entrega, o de imposibilidad objetiva de entrega por causas biológicas o veterinarias, la reserva se mantendrá activa para futuras camadas, sin derecho a devolución ni indemnización. El Criador no será responsable por retrasos o incumplimientos derivados de causas de fuerza mayor ajenas a su control razonable.
+
+## 7. Desistimiento del Cliente
+
+En caso de desistimiento voluntario por parte del Cliente, este perderá íntegramente las cantidades entregadas en concepto de reserva, sin derecho a reclamación alguna.
+
+## 8. Naturaleza del contrato
+
+El presente contrato no constituye una compraventa, ni implica entrega, transmisión de propiedad, ni activación de garantías sanitarias o genéticas, las cuales se regularán exclusivamente en el Contrato de Compraventa Definitivo.
+
+## 9. Legislación y jurisdicción
+
+El presente contrato se rige por la legislación española. Para cualquier controversia, las partes se someten a los Juzgados y Tribunales de {{jurisdiction}}, sin perjuicio de los derechos que pudieran corresponder al Cliente conforme a la normativa de consumidores.
+
+## 10. Aceptación
+
+Leído el presente contrato y encontrándolo conforme, ambas partes lo firman electrónicamente a través de la plataforma Genealogic.
+`
+
+export const CONTRACT_TEMPLATE_DELIVERY_TOKENIZED = `# Contrato definitivo de compraventa y entrega de cachorro
+
+En {{signCity}}, a {{todayDate}}
+
+${PARTES_REUNIDAS_TOKENIZED}
+
+**EXPONEN**
+
+- Que con fecha {{reservationDate}} ambas partes formalizaron un Contrato de Reserva, habiéndose cumplido las condiciones establecidas en el mismo.
+- Que el Criador es propietario legítimo del cachorro objeto del presente contrato.
+- Que el Cliente ha tenido oportunidad de informarse adecuadamente sobre la raza, características y necesidades del animal.
+
+En virtud de lo anterior, **ACUERDAN**:
+
+---
+
+## 1. Objeto del contrato
+
+El presente contrato tiene por objeto la compraventa y entrega definitiva del cachorro que se identifica a continuación, produciéndose en este acto la transmisión de la propiedad al Cliente.
+
+## 2. Identificación del cachorro
+
+- **Nombre:** {{dogName}}
+- **Raza:** {{breed}}
+- **Sexo:** {{sex}}
+- **Color / Capa:** {{color}}
+- **Fecha de nacimiento:** {{birthDate}}
+- **Microchip nº:** {{microchip}}
+- **Nº de registro / LOE (si procede):** {{registration}}
+
+El Cliente declara recibir el cachorro en buen estado aparente y acorde a su edad.
+
+## 3. Precio y forma de pago
+
+- **Precio total del cachorro:** {{totalPrice}}
+- **Importe abonado en concepto de reserva:** {{depositAmount}}
+- **Importe final abonado el día de la recogida:** {{finalAmount}}
+
+El Cliente declara haber abonado la totalidad del precio, no quedando cantidad alguna pendiente.
+
+## 4. Entrega y transmisión de responsabilidad
+
+La entrega del cachorro se realiza en este acto / mediante envío acordado entre las partes. Desde el momento de la entrega, la responsabilidad legal, civil y sanitaria del cachorro recae íntegramente sobre el Cliente, quedando el Criador exento de cualquier responsabilidad derivada de la tenencia, custodia o uso del animal.
+
+## 5. Condiciones sanitarias y documentación
+
+El cachorro se entrega conforme a la legislación vigente, acompañado de: microchip identificativo, cartilla veterinaria o pasaporte sanitario, vacunas y desparasitaciones acordes a su edad, certificado veterinario general de salud y documentación de origen o registro, si procede.
+
+## 6. Garantía frente a enfermedades víricas
+
+El Criador garantiza que el cachorro se encuentra libre de enfermedades víricas graves en el momento de la entrega. Se establece un plazo de garantía de **10 días naturales** desde la entrega, siempre que el Cliente comunique la incidencia por escrito dentro de dicho plazo y aporte informe veterinario oficial emitido por profesional colegiado. La garantía dará derecho, a elección exclusiva del Criador, a la sustitución del cachorro por otro de características similares cuando exista disponibilidad, sin devolución económica. Quedan excluidos gastos veterinarios, tratamientos, desplazamientos e indemnizaciones, así como enfermedades derivadas de negligencia, accidentes, estrés, mala alimentación, incumplimiento de pautas veterinarias o falta de vacunación posterior a la entrega.
+
+## 7. Garantía genética
+
+El Criador ofrece una garantía genética de hasta **tres (3) años**, limitada exclusivamente a enfermedades hereditarias graves diagnosticadas por veterinario especialista, confirmadas mediante pruebas oficiales, que comprometan gravemente la calidad de vida del animal o provoquen su fallecimiento. Quedan excluidas taras o defectos estéticos, enfermedades multifactoriales, patologías propias de la raza, la evolución natural del animal y los resultados derivados de manejo, alimentación o ejercicio inadecuados. En caso de aplicación, el Criador ofrecerá un cachorro de reemplazo sin devolución económica cuando exista disponibilidad.
+
+## 8. Cesión, cría y derecho preferente
+
+El Cliente se compromete a no ceder el perro a terceros criadores ni instituciones de cría sin consentimiento previo y por escrito del Criador, y a notificar al Criador cualquier imposibilidad de continuar con la tenencia. El Criador ostentará derecho preferente de recompra en caso de transmisión del animal.
+
+## 9. Uso de imagen y seguimiento
+
+El Cliente autoriza al Criador a utilizar imágenes y material audiovisual del perro con fines promocionales o informativos, sin compensación económica adicional, y acepta un seguimiento razonable del bienestar del animal.
+
+## 10. Legislación aplicable y jurisdicción
+
+El presente contrato se rige por la legislación española. Para cualquier controversia, las partes se someten a los Juzgados y Tribunales de {{jurisdiction}}, sin perjuicio de los derechos que pudieran corresponder al Cliente conforme a la normativa de consumidores.
+
+## 11. Aceptación
+
+Leído el presente contrato y encontrándolo conforme, ambas partes lo firman electrónicamente a través de la plataforma Genealogic.
+`
+
+export function getTokenizedBaseTemplate(kind: ContractKind): string {
+  return kind === 'delivery'
+    ? CONTRACT_TEMPLATE_DELIVERY_TOKENIZED
+    : CONTRACT_TEMPLATE_RESERVATION_TOKENIZED
+}

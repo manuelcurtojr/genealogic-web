@@ -17,7 +17,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FileText, Star, Pencil, Trash2, Plus, Check, Loader2 } from 'lucide-react'
+import { FileText, Star, Pencil, Trash2, Plus, Loader2 } from 'lucide-react'
 import {
   createContractTemplate,
   deleteContractTemplate,
@@ -58,11 +58,11 @@ export default function ContractTemplatesList({ initialTemplates, kennelId, kenn
     })
   }
 
-  async function handleSetDefault(id: string) {
+  async function handleSetDefault(id: string, kind: 'reservation' | 'delivery' | null) {
     setPendingId(id)
     startTransition(async () => {
       try {
-        await setDefaultContractTemplate(id)
+        await setDefaultContractTemplate(id, kind)
         router.refresh()
       } catch (e) {
         alert((e as Error).message || t('Error marcando por defecto'))
@@ -134,12 +134,13 @@ export default function ContractTemplatesList({ initialTemplates, kennelId, kenn
               <article
                 key={tpl.id}
                 className={`relative rounded-2xl border bg-canvas p-5 flex flex-col gap-3 transition ${
-                  tpl.is_default ? 'border-[#FE6620]/50 ring-1 ring-[#FE6620]/20' : 'border-hairline hover:border-ink/20'
+                  tpl.default_for_kind ? 'border-[#FE6620]/50 ring-1 ring-[#FE6620]/20' : 'border-hairline hover:border-ink/20'
                 }`}
               >
-                {tpl.is_default && (
+                {tpl.default_for_kind && (
                   <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-[#FE6620] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
-                    <Star className="h-2.5 w-2.5 fill-current" /> {t('Por defecto')}
+                    <Star className="h-2.5 w-2.5 fill-current" />
+                    {tpl.default_for_kind === 'delivery' ? t('Default · Entrega') : t('Default · Reserva')}
                   </span>
                 )}
                 <div className="flex items-start gap-3 min-w-0">
@@ -160,24 +161,21 @@ export default function ContractTemplatesList({ initialTemplates, kennelId, kenn
                     {preview}
                   </p>
                 )}
-                <div className="mt-auto pt-3 border-t border-hairline flex items-center gap-1">
+                <div className="mt-auto pt-3 border-t border-hairline flex flex-wrap items-center gap-1">
                   <Link
                     href={`/contratos/${tpl.id}`}
                     className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-semibold text-body hover:text-ink hover:bg-surface-soft transition"
                   >
                     <Pencil className="h-3.5 w-3.5" /> {t('Editar')}
                   </Link>
-                  {!tpl.is_default && (
-                    <button
-                      type="button"
-                      onClick={() => handleSetDefault(tpl.id)}
-                      disabled={busy}
-                      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-semibold text-body hover:text-ink hover:bg-surface-soft disabled:opacity-50 transition"
-                    >
-                      {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-                      {t('Marcar por defecto')}
-                    </button>
-                  )}
+
+                  <DefaultKindToggle
+                    current={tpl.default_for_kind}
+                    busy={busy}
+                    onChoose={(k) => handleSetDefault(tpl.id, k)}
+                    t={t}
+                  />
+
                   <button
                     type="button"
                     onClick={() => handleDelete(tpl.id)}
@@ -193,6 +191,59 @@ export default function ContractTemplatesList({ initialTemplates, kennelId, kenn
         </div>
       )}
     </>
+  )
+}
+
+/**
+ * Toggle de "Marcar como default para X kind". Es un grupo de dos chips
+ * activos/inactivos para cada kind (reserva / entrega) que permite al
+ * criador marcar una plantilla como la default de uno, ambos, o ninguno.
+ * Cliquear sobre la chip activa la desmarca (toggle).
+ */
+function DefaultKindToggle({
+  current, busy, onChoose, t,
+}: {
+  current: 'reservation' | 'delivery' | null
+  busy: boolean
+  onChoose: (kind: 'reservation' | 'delivery' | null) => void
+  t: (k: string) => string
+}) {
+  return (
+    <div className="inline-flex items-center gap-0.5 rounded-lg bg-surface-soft p-0.5">
+      <KindChip
+        active={current === 'reservation'}
+        busy={busy}
+        onClick={() => onChoose(current === 'reservation' ? null : 'reservation')}
+        label={t('Reserva')}
+      />
+      <KindChip
+        active={current === 'delivery'}
+        busy={busy}
+        onClick={() => onChoose(current === 'delivery' ? null : 'delivery')}
+        label={t('Entrega')}
+      />
+    </div>
+  )
+}
+
+function KindChip({
+  active, busy, onClick, label,
+}: { active: boolean; busy: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={busy}
+      title={active ? 'Default actual — clic para desmarcar' : 'Marcar como default para este kind'}
+      className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11.5px] font-semibold transition-colors disabled:opacity-50 ${
+        active
+          ? 'bg-[#FE6620] text-white'
+          : 'text-muted hover:text-ink hover:bg-canvas'
+      }`}
+    >
+      {busy && active ? <Loader2 className="h-3 w-3 animate-spin" /> : <Star className={`h-3 w-3 ${active ? 'fill-current' : ''}`} />}
+      {label}
+    </button>
   )
 }
 

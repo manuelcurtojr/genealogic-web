@@ -86,3 +86,48 @@ export function generateContractBody(
   const tpl = CONTRACT_TEMPLATES.find((ct) => ct.kind === kind) ?? CONTRACT_TEMPLATES[0]
   return tpl.body(vars)
 }
+
+/**
+ * Variante de `generateContractBody` para el fill-form:
+ *   - Parte de `buildContractVars(reservation)` (datos del criadero,
+ *     reserva, puppy) como base
+ *   - Sobrescribe con los valores del formulario (lo que el criador editó)
+ *   - Interpola la plantilla (propia o base)
+ *
+ * Los valores del formulario GANAN sobre los derivados de la reserva. Eso
+ * permite, por ejemplo, que el criador ajuste el precio mostrado en el
+ * contrato aunque la reserva tenga otro valor (caso de descuento
+ * aplicado).
+ *
+ * Excepción: los datos legales del criadero (`legalName`, `legalId`, etc.)
+ * SIEMPRE vienen de BBDD vía buildContractVars y NO se sobrescriben — la
+ * UI los muestra como info, no como campos editables.
+ */
+export function generateContractBodyFromValues(
+  reservation: Record<string, unknown>,
+  kind: ContractKind,
+  formValues: Record<string, string | null | undefined>,
+  userTemplateBody?: string | null,
+): string {
+  const baseVars = buildContractVars(reservation, kind) as unknown as Record<string, string | undefined>
+  // Limpia los valores vacíos del form para que el fallback de baseVars
+  // funcione (un campo vacío en el form no debería borrar el dato de BBDD).
+  const cleanFormValues: Record<string, string> = {}
+  for (const [k, v] of Object.entries(formValues || {})) {
+    if (v != null && String(v).trim() !== '') cleanFormValues[k] = String(v)
+  }
+  // Los legalName/legalId/etc. SIEMPRE vienen de BBDD — no se aceptan del form.
+  for (const k of [
+    'legalName', 'legalId', 'legalAddress',
+    'representative', 'representativeId',
+    'signCity', 'jurisdiction',
+  ]) {
+    delete cleanFormValues[k]
+  }
+  const merged: Record<string, string | undefined> = { ...baseVars, ...cleanFormValues }
+  if (userTemplateBody != null) {
+    return interpolateUserTemplate(userTemplateBody, merged)
+  }
+  const tpl = CONTRACT_TEMPLATES.find((ct) => ct.kind === kind) ?? CONTRACT_TEMPLATES[0]
+  return tpl.body(merged as unknown as Parameters<typeof tpl.body>[0])
+}

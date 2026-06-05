@@ -29,7 +29,9 @@ interface Props {
   templateId: string
   initialName: string
   initialBodyMd: string
-  isDefault: boolean
+  /** null = no es default de ningún kind; 'reservation'/'delivery' = es la
+   *  default de ese tipo de contrato para el criadero. */
+  defaultForKind: 'reservation' | 'delivery' | null
   kennelName: string
 }
 
@@ -38,13 +40,13 @@ type SaveState = 'idle' | 'saving' | 'saved' | 'error'
 const AUTOSAVE_MS = 1500
 
 export default function TemplateEditor({
-  templateId, initialName, initialBodyMd, isDefault: initialIsDefault, kennelName,
+  templateId, initialName, initialBodyMd, defaultForKind: initialDefaultForKind, kennelName,
 }: Props) {
   const t = useT()
   const router = useRouter()
   const [name, setName] = useState(initialName)
   const [bodyMd, setBodyMd] = useState(initialBodyMd)
-  const [isDefault, setIsDefault] = useState(initialIsDefault)
+  const [defaultForKind, setDefaultForKind] = useState<'reservation' | 'delivery' | null>(initialDefaultForKind)
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [tab, setTab] = useState<'edit' | 'preview'>('edit')
   const [error, setError] = useState<string | null>(null)
@@ -99,10 +101,10 @@ export default function TemplateEditor({
     return () => window.removeEventListener('keydown', onKey)
   }, [name, bodyMd, doSave])
 
-  async function handleSetDefault() {
+  async function handleSetDefault(kind: 'reservation' | 'delivery' | null) {
     try {
-      await setDefaultContractTemplate(templateId)
-      setIsDefault(true)
+      await setDefaultContractTemplate(templateId, kind)
+      setDefaultForKind(kind)
       router.refresh()
     } catch (e) {
       alert((e as Error).message || t('Error marcando por defecto'))
@@ -126,9 +128,10 @@ export default function TemplateEditor({
         <div className="flex-1 min-w-0">
           <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#FE6620] mb-1.5 flex items-center gap-1.5">
             <FileText className="h-3 w-3" /> {t('Plantilla')} — {kennelName}
-            {isDefault && (
+            {defaultForKind && (
               <span className="inline-flex items-center gap-1 rounded-full bg-[#FE6620] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
-                <Star className="h-2.5 w-2.5 fill-current" /> {t('Por defecto')}
+                <Star className="h-2.5 w-2.5 fill-current" />
+                {defaultForKind === 'delivery' ? t('Default · Entrega') : t('Default · Reserva')}
               </span>
             )}
           </p>
@@ -141,17 +144,22 @@ export default function TemplateEditor({
             maxLength={120}
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <SaveBadge state={saveState} />
-          {!isDefault && (
-            <button
-              type="button"
-              onClick={handleSetDefault}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[12.5px] font-semibold text-body hover:text-ink hover:bg-surface-soft transition"
-            >
-              <Star className="h-3.5 w-3.5" /> {t('Marcar por defecto')}
-            </button>
-          )}
+          {/* Toggle: marcar esta plantilla como default de Reserva, Entrega,
+              ambas (clic en ambas chips) o ninguna (clic en la activa). */}
+          <div className="inline-flex items-center gap-0.5 rounded-lg bg-surface-soft p-0.5 border border-hairline">
+            <DefaultKindChip
+              active={defaultForKind === 'reservation'}
+              onClick={() => handleSetDefault(defaultForKind === 'reservation' ? null : 'reservation')}
+              label={t('Default · Reserva')}
+            />
+            <DefaultKindChip
+              active={defaultForKind === 'delivery'}
+              onClick={() => handleSetDefault(defaultForKind === 'delivery' ? null : 'delivery')}
+              label={t('Default · Entrega')}
+            />
+          </div>
           <button
             type="button"
             onClick={handleDelete}
@@ -271,6 +279,26 @@ function SaveBadge({ state }: { state: SaveState }) {
     )
   }
   return null
+}
+
+function DefaultKindChip({
+  active, onClick, label,
+}: { active: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={active ? 'Default actual — clic para desmarcar' : 'Marcar esta plantilla como default'}
+      className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-[11.5px] font-semibold transition-colors ${
+        active
+          ? 'bg-[#FE6620] text-white'
+          : 'text-muted hover:text-ink hover:bg-canvas'
+      }`}
+    >
+      <Star className={`h-3 w-3 ${active ? 'fill-current' : ''}`} />
+      {label}
+    </button>
+  )
 }
 
 function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {

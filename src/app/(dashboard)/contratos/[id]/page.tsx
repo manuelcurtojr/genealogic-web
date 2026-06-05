@@ -59,7 +59,7 @@ export default async function ContractTemplateEditorPage({
         templateId={tpl.id}
         initialName={tpl.name}
         initialBodyMd={tpl.body_md}
-        isDefault={tpl.is_default}
+        defaultForKind={tpl.default_for_kind}
         kennelName={kennel.name}
       />
     </div>
