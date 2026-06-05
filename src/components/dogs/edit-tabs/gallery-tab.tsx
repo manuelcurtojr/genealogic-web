@@ -6,6 +6,14 @@ import { Plus, X, Loader2, GripVertical, Star, Sparkles, Film, Play, ImagePlus }
 import { parseVideoUrl, youtubePoster, fetchVimeoPoster, type VideoProvider } from '@/lib/video'
 import { useT } from '@/components/i18n/locale-provider'
 import { Img } from '@/components/ui/img'
+import {
+  DndContext, closestCenter, MouseSensor, TouchSensor, KeyboardSensor,
+  useSensor, useSensors, type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext, useSortable, arrayMove, rectSortingStrategy, sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface GalleryTabProps { dogId: string; userId: string }
 
@@ -14,7 +22,6 @@ const POSTER_FALLBACK = '/icon.svg?v=2'
 export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
   const [photos, setPhotos] = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
-  const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [upscalingId, setUpscalingId] = useState<string | null>(null)
   const [upscaleMsg, setUpscaleMsg] = useState<string | null>(null)
   const [dogThumb, setDogThumb] = useState<string | null>(null)
@@ -31,6 +38,14 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
   const posterFileRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
   const t = useT()
+
+  // Sensores dnd-kit: ratón (desktop, arrastrar tras 6px) + táctil (móvil,
+  // long-press 200ms para no pelearse con el scroll) + teclado (a11y).
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
 
   // La portada vive en dogs.thumbnail_url y RLS solo deja actualizarla al dueño →
   // para perros sin dueño (ancestros importados, p.ej. "Bora de Irema Curto") el
@@ -187,6 +202,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     setVideoBusy(false)
     loadPhotos()
   }
+  function requestChangePoster(photoId: string) { setPosterTargetId(photoId); posterFileRef.current?.click() }
 
   async function deletePhoto(photo: any) {
     const toRemove = [photo.storage_path, photo.video_storage_path].filter(Boolean) as string[]
@@ -201,14 +217,21 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     setPhotos(list)
   }
 
-  async function movePhoto(fromIdx: number, toIdx: number) {
-    if (fromIdx === toIdx) return
-    const reordered = [...photos]
-    const [moved] = reordered.splice(fromIdx, 1)
-    reordered.splice(toIdx, 0, moved)
-    setPhotos(reordered)
+  // Persistir el nuevo orden tras un drag (dnd-kit)
+  async function persistOrder(reordered: any[]) {
     for (let i = 0; i < reordered.length; i++) await supabase.from('dog_photos').update({ position: i }).eq('id', reordered[i].id)
     await setThumbnail(reordered[0]?.url || null)
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = photos.findIndex(p => p.id === active.id)
+    const newIndex = photos.findIndex(p => p.id === over.id)
+    if (oldIndex < 0 || newIndex < 0) return
+    const reordered = arrayMove(photos, oldIndex, newIndex)
+    setPhotos(reordered)            // optimista
+    persistOrder(reordered)         // BD + portada (fire-and-forget)
   }
 
   async function handleUpscale(photo: any) {
@@ -221,92 +244,49 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
     } catch { setUpscaleMsg(t('No se pudo mejorar la imagen. Inténtalo de nuevo.')) } finally { setUpscalingId(null) }
   }
 
-  function handleDragStart(idx: number) { setDragIdx(idx) }
-  function handleDragOver(e: React.DragEvent) { e.preventDefault() }
-  function handleDrop(idx: number) { if (dragIdx !== null) movePhoto(dragIdx, idx); setDragIdx(null) }
-
   return (
     <div className="space-y-3">
       <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={e => handleUpload(e.target.files)} />
       <input ref={videoFileRef} type="file" accept="video/*" className="hidden" onChange={e => handleUploadVideo(e.target.files?.[0] || null)} />
       <input ref={posterFileRef} type="file" accept="image/*" className="hidden" onChange={e => handleChangePoster(e.target.files?.[0] || null)} />
 
-      <p className="text-[11px] text-muted">{t('Arrastra para reordenar. El primer elemento será la portada del perfil. Puedes añadir fotos y vídeos.')}</p>
+      <p className="text-[11px] text-muted">{t('Arrastra (en el móvil, mantén pulsado) para reordenar. El primer elemento será la portada del perfil. Puedes añadir fotos y vídeos.')}</p>
 
-      <div className="flex gap-2 flex-wrap">
-        {/* Subir foto */}
-        <button onClick={() => fileRef.current?.click()} disabled={uploading} title={t('Subir fotos')}
-          className="w-[88px] h-[88px] border-2 border-dashed border-hairline rounded-lg flex flex-col items-center justify-center gap-1 hover:border-ink/40 transition cursor-pointer flex-shrink-0">
-          {uploading ? <Loader2 className="w-5 h-5 animate-spin text-muted" /> : <><Plus className="w-5 h-5 text-muted" /><span className="text-[9px] text-muted">{t('Foto')}</span></>}
-        </button>
-        {/* Añadir vídeo */}
-        <button onClick={() => { setShowVideoForm(v => !v); setVideoError(null) }} title={t('Añadir vídeo')}
-          className="w-[88px] h-[88px] border-2 border-dashed border-hairline rounded-lg flex flex-col items-center justify-center gap-1 hover:border-ink/40 transition cursor-pointer flex-shrink-0">
-          <Film className="w-5 h-5 text-muted" /><span className="text-[9px] text-muted">{t('Vídeo')}</span>
-        </button>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-2 sm:gap-2.5">
+          {/* Subir foto */}
+          <button onClick={() => fileRef.current?.click()} disabled={uploading} title={t('Subir fotos')}
+            className="aspect-square w-full border-2 border-dashed border-hairline rounded-lg flex flex-col items-center justify-center gap-1 hover:border-ink/40 transition cursor-pointer">
+            {uploading ? <Loader2 className="w-5 h-5 animate-spin text-muted" /> : <><Plus className="w-5 h-5 text-muted" /><span className="text-[9px] text-muted">{t('Foto')}</span></>}
+          </button>
+          {/* Añadir vídeo */}
+          <button onClick={() => { setShowVideoForm(v => !v); setVideoError(null) }} title={t('Añadir vídeo')}
+            className="aspect-square w-full border-2 border-dashed border-hairline rounded-lg flex flex-col items-center justify-center gap-1 hover:border-ink/40 transition cursor-pointer">
+            <Film className="w-5 h-5 text-muted" /><span className="text-[9px] text-muted">{t('Vídeo')}</span>
+          </button>
 
-        {/* Media items */}
-        {photos.map((photo, idx) => {
-          const isVideo = photo.media_type === 'video'
-          return (
-          <div key={photo.id}
-            draggable onDragStart={() => handleDragStart(idx)} onDragOver={handleDragOver} onDrop={() => handleDrop(idx)}
-            className={`relative w-[88px] h-[88px] rounded-lg overflow-hidden group cursor-grab active:cursor-grabbing flex-shrink-0 ${dragIdx === idx ? 'opacity-40 ring-2 ring-ink' : ''} ${idx === 0 ? 'ring-2 ring-ink/50' : ''}`}>
-            <Img src={photo.url} w={180} alt="" className="w-full h-full object-cover" />
-
-            {isVideo && (
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black/55"><Play className="h-3.5 w-3.5 translate-x-px fill-white text-white" /></span>
-              </div>
-            )}
-
-            {idx === 0 && (
-              <div className="absolute top-1 left-1 bg-ink rounded px-1 py-0.5 flex items-center gap-0.5">
-                <Star className="w-2.5 h-2.5 text-white" /><span className="text-[8px] text-white font-bold">{t('PERFIL')}</span>
-              </div>
-            )}
-            {isVideo && (
-              <div className="absolute bottom-1 left-1 bg-black/60 rounded px-1 py-0.5 flex items-center gap-0.5">
-                <Film className="w-2.5 h-2.5 text-white" /><span className="text-[8px] text-white font-bold uppercase">{photo.video_provider}</span>
-              </div>
-            )}
-            {!isVideo && photo.upscaled_at && (
-              <div className="absolute bottom-1 left-1 bg-violet-600 rounded px-1 py-0.5 flex items-center gap-0.5">
-                <Sparkles className="w-2.5 h-2.5 text-white" /><span className="text-[8px] text-white font-bold">{t('IA')}</span>
-              </div>
-            )}
-            {upscalingId === photo.id && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-white" /></div>
-            )}
-
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-              <div className="opacity-0 group-hover:opacity-100 transition"><GripVertical className="w-4 h-4 text-ink" /></div>
-            </div>
-
-            {/* Acción: cambiar portada (vídeo) o mejorar IA (foto) */}
-            {isVideo ? (
-              <button onClick={() => { setPosterTargetId(photo.id); posterFileRef.current?.click() }} title={t('Cambiar portada')}
-                className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-ink">
-                <ImagePlus className="w-3 h-3" />
-              </button>
-            ) : (!photo.upscaled_at && upscalingId !== photo.id && (
-              <button onClick={() => handleUpscale(photo)} title={t('Mejorar con IA')}
-                className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-violet-600">
-                <Sparkles className="w-3 h-3" />
-              </button>
+          {/* Media items (ordenables) */}
+          <SortableContext items={photos.map(p => p.id)} strategy={rectSortingStrategy}>
+            {photos.map((photo, idx) => (
+              <SortableMediaItem
+                key={photo.id}
+                photo={photo}
+                isFirst={idx === 0}
+                upscaling={upscalingId === photo.id}
+                t={t}
+                onDelete={() => deletePhoto(photo)}
+                onUpscale={() => handleUpscale(photo)}
+                onChangePoster={() => requestChangePoster(photo.id)}
+              />
             ))}
-            <button onClick={() => deletePhoto(photo)}
-              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-red-500">
-              <X className="w-3 h-3" />
-            </button>
-          </div>
-        )})}
-      </div>
+          </SortableContext>
+        </div>
+      </DndContext>
 
       {/* Formulario de vídeo */}
       {showVideoForm && (
         <div className="rounded-xl border border-hairline bg-surface-soft p-3 space-y-3">
-          <div className="flex gap-1 rounded-lg bg-canvas p-0.5 w-fit">
+          <div className="flex flex-wrap gap-1 rounded-lg bg-canvas p-0.5 w-fit">
             {(['youtube', 'vimeo', 'upload'] as VideoProvider[]).map(p => (
               <button key={p} onClick={() => { setVideoProvider(p); setVideoError(null) }}
                 className={`rounded-md px-3 py-1 text-[12px] font-medium transition ${videoProvider === p ? 'bg-ink text-on-primary' : 'text-muted hover:text-ink'}`}>
@@ -325,12 +305,12 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
               <p className="mt-1.5 text-[11px] text-muted">{t('Se genera una portada automática del primer fotograma; podrás cambiarla luego. Recomendado < 100 MB; para vídeos largos usa YouTube/Vimeo.')}</p>
             </div>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <input value={linkInput} onChange={e => setLinkInput(e.target.value)}
                 placeholder={videoProvider === 'youtube' ? 'https://youtube.com/watch?v=...' : 'https://vimeo.com/...'}
-                className="flex-1 rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
+                className="min-w-0 flex-1 rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
               <button onClick={handleAddVideoLink} disabled={videoBusy || !linkInput.trim()}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition hover:opacity-90 disabled:opacity-50">
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition hover:opacity-90 disabled:opacity-50">
                 {videoBusy && <Loader2 className="h-4 w-4 animate-spin" />} {t('Añadir')}
               </button>
             </div>
@@ -347,6 +327,96 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
       <p className="text-[11px] text-muted">
         {t('En las fotos, pulsa')} <Sparkles className="w-3 h-3 inline -mt-0.5" /> {t('para mejorarlas con IA. En los vídeos,')} <ImagePlus className="w-3 h-3 inline -mt-0.5" /> {t('cambia la portada.')}
       </p>
+    </div>
+  )
+}
+
+// ─── Item ordenable (dnd-kit) ─────────────────────────────────────────────
+// La tarjeta entera es el área de arrastre; los botones de acción hacen
+// stopPropagation en pointerDown para que un toque sea click y no un drag.
+// Botones visibles SIEMPRE en móvil (sin hover) y hover-reveal en desktop.
+function SortableMediaItem({
+  photo, isFirst, upscaling, t, onDelete, onUpscale, onChangePoster,
+}: {
+  photo: any
+  isFirst: boolean
+  upscaling: boolean
+  t: (s: string) => string
+  onDelete: () => void
+  onUpscale: () => void
+  onChangePoster: () => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: photo.id })
+  const isVideo = photo.media_type === 'video'
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 20 : undefined,
+  }
+  // Evita que tocar un botón inicie un arrastre: corta los activadores de
+  // dnd-kit (MouseSensor usa onMouseDown, TouchSensor usa onTouchStart).
+  const stopDnd = {
+    onPointerDown: (e: React.PointerEvent) => e.stopPropagation(),
+    onMouseDown: (e: React.MouseEvent) => e.stopPropagation(),
+    onTouchStart: (e: React.TouchEvent) => e.stopPropagation(),
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`relative aspect-square w-full rounded-lg overflow-hidden group cursor-grab active:cursor-grabbing select-none ${isDragging ? 'opacity-50 ring-2 ring-ink' : ''} ${isFirst ? 'ring-2 ring-ink/50' : ''}`}
+    >
+      <Img src={photo.url} w={180} alt="" className="w-full h-full object-cover pointer-events-none" />
+
+      {isVideo && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black/55"><Play className="h-3.5 w-3.5 translate-x-px fill-white text-white" /></span>
+        </div>
+      )}
+
+      {isFirst && (
+        <div className="pointer-events-none absolute top-1 left-1 bg-ink rounded px-1 py-0.5 flex items-center gap-0.5">
+          <Star className="w-2.5 h-2.5 text-white" /><span className="text-[8px] text-white font-bold">{t('PERFIL')}</span>
+        </div>
+      )}
+      {isVideo && (
+        <div className="pointer-events-none absolute bottom-1 left-1 bg-black/60 rounded px-1 py-0.5 flex items-center gap-0.5">
+          <Film className="w-2.5 h-2.5 text-white" /><span className="text-[8px] text-white font-bold uppercase">{photo.video_provider}</span>
+        </div>
+      )}
+      {!isVideo && photo.upscaled_at && (
+        <div className="pointer-events-none absolute bottom-1 left-1 bg-violet-600 rounded px-1 py-0.5 flex items-center gap-0.5">
+          <Sparkles className="w-2.5 h-2.5 text-white" /><span className="text-[8px] text-white font-bold">{t('IA')}</span>
+        </div>
+      )}
+      {upscaling && (
+        <div className="pointer-events-none absolute inset-0 bg-black/60 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-white" /></div>
+      )}
+
+      {/* Pista de arrastre (centro) */}
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 sm:group-hover:bg-black/20 transition">
+        <GripVertical className="w-4 h-4 text-white opacity-0 drop-shadow sm:group-hover:opacity-100 transition" />
+      </div>
+
+      {/* Acción: cambiar portada (vídeo) o mejorar IA (foto) — visible en móvil */}
+      {isVideo ? (
+        <button {...stopDnd} onClick={onChangePoster} title={t('Cambiar portada')}
+          className="absolute bottom-1 right-1 w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-black/60 text-white flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition hover:bg-ink">
+          <ImagePlus className="w-3 h-3" />
+        </button>
+      ) : (!photo.upscaled_at && !upscaling && (
+        <button {...stopDnd} onClick={onUpscale} title={t('Mejorar con IA')}
+          className="absolute bottom-1 right-1 w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-black/60 text-white flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition hover:bg-violet-600">
+          <Sparkles className="w-3 h-3" />
+        </button>
+      ))}
+      <button {...stopDnd} onClick={onDelete} title={t('Eliminar')}
+        className="absolute top-1 right-1 w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-black/60 text-white flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition hover:bg-red-500">
+        <X className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+      </button>
     </div>
   )
 }
