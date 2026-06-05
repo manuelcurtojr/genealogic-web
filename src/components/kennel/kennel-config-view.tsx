@@ -13,6 +13,7 @@ import KennelEditPanel from './kennel-edit-panel'
 import ContactFormBuilder from './contact-form-builder'
 import { Img } from '@/components/ui/img'
 import { useT } from '@/components/i18n/locale-provider'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,9 +45,11 @@ interface Props {
  *   - Botón "Ver" del header card → ya hay CTA en "Tu web"
  *   - userId silencer hack
  */
-export default function KennelConfigView({ kennel, stats, isPro = false }: Props) {
+export default function KennelConfigView({ kennel, stats, isPro = false, userId }: Props) {
   const t = useT()
   const router = useRouter()
+  // La web pública RICA (editor de contenido + dominio) es la EXTENSIÓN "web".
+  const hasWeb = kennelHasAddon(kennel, 'web', userId)
   const [showEdit, setShowEdit] = useState(false)
   const [showFormBuilder, setShowFormBuilder] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -115,12 +118,6 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
       href: '/cuenta/dominio',
     },
     {
-      label: t('Pagos online (Stripe)'),
-      desc: t('Conecta Stripe Connect para cobrar reservas y entregas online.'),
-      icon: CreditCard,
-      href: '/kennel/pagos',
-    },
-    {
       label: t('API keys'),
       desc: t('Tokens para integrar datos con servicios externos.'),
       icon: Key,
@@ -186,8 +183,8 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
         </button>
       </section>
 
-      {/* ═══ Tu web pública ═══ — sección protagonista */}
-      {isPro && (
+      {/* ═══ Tu web pública ═══ — sección protagonista (extensión "web") */}
+      {hasWeb && (
         <section className="rounded-2xl border border-hairline bg-gradient-to-br from-orange-50/50 via-canvas to-blue-50/50 p-5 sm:p-6 relative overflow-hidden">
           {/* Glow decorativo sutil */}
           <div
@@ -231,8 +228,8 @@ export default function KennelConfigView({ kennel, stats, isPro = false }: Props
         </section>
       )}
 
-      {/* Para no-Pro: enlace simple a ver el perfil público (sin glow) */}
-      {!isPro && publicUrl && (
+      {/* Sin extensión web: enlace simple a ver el perfil público (sin glow) */}
+      {!hasWeb && publicUrl && (
         <Link
           href={publicUrl}
           target="_blank"

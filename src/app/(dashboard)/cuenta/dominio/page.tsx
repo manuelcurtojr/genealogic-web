@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import DomainClient from '@/components/billing/domain-client'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
@@ -14,7 +15,7 @@ export default async function DominioPage() {
 
   const { data: kennelArr } = await supabase
     .from('kennels')
-    .select('id, name, slug, custom_domain, custom_domain_verified, custom_domain_added_at')
+    .select('id, name, slug, addons, custom_domain, custom_domain_verified, custom_domain_added_at')
     .eq('owner_id', user.id)
     .limit(1)
   const kennel = kennelArr?.[0]
@@ -27,6 +28,9 @@ export default async function DominioPage() {
       </div>
     )
   }
+
+  // El dominio propio es parte de la EXTENSIÓN "web". Sin ella → /kennel.
+  if (!kennelHasAddon(kennel, 'web', user.id)) redirect('/kennel')
 
   return (
     <DomainClient

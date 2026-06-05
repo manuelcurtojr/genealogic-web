@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { TEST_PROFILES_SEED } from '@/lib/ai/test-profiles-seed'
+import { userHasAddon } from '@/lib/kennel/addons-server'
 
 export const runtime = 'nodejs'
 
@@ -18,6 +19,10 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+
+  if (!(await userHasAddon(user.id, 'emailbot'))) {
+    return NextResponse.json({ error: 'Esta función requiere la extensión Emailbot' }, { status: 403 })
+  }
 
   const body = await request.json().catch(() => ({}))
   const { kennel_id } = body

@@ -18,7 +18,7 @@ import { useT } from '@/components/i18n/locale-provider'
 
 interface DashboardShellProps {
   user: { display_name: string; email: string; role: string; avatar_url: string | null } | null
-  kennel: { name: string; logo_url: string | null } | null
+  kennel: { name: string; logo_url: string | null; addons?: string[] | null } | null
   plan: string
   planIsFounder?: boolean
   userId?: string

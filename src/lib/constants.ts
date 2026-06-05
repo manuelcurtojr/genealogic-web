@@ -27,8 +27,8 @@ export interface NavItem {
   requiresKennel?: boolean
   /** Plan Kennel Pro+ (kennel o kennel_pro) */
   requiresPro?: boolean
-  /** Plan Kennel Enterprise (kennel_pro / ENTERPRISE_USERS) — alta manual */
-  requiresEnterprise?: boolean
+  /** Requiere la extensión (add-on) indicada activa en el criadero. */
+  requiresAddon?: 'web' | 'emailbot' | 'newsletter'
   requiresAdmin?: boolean
   /** Si el usuario ES pro, este item se oculta (porque hay uno mejor) */
   hideIfPro?: boolean
@@ -43,8 +43,8 @@ export interface NavSection {
   label: string
   requiresKennel?: boolean
   requiresPro?: boolean
-  /** Plan Kennel Enterprise (kennel_pro / ENTERPRISE_USERS) — alta manual */
-  requiresEnterprise?: boolean
+  /** Requiere la extensión (add-on) indicada activa en el criadero. */
+  requiresAddon?: 'web' | 'emailbot' | 'newsletter'
   requiresAdmin?: boolean
   /** Solo visible si el user es cliente (tiene reservas/perros recibidos) */
   requiresClient?: boolean
@@ -127,8 +127,8 @@ export const NAV_SECTIONS: NavSection[] = [
       // /pricing (marks FPE). Antes pedían Pro — incongruencia corregida.
       // Contactos = CRM B2B: el middleware lo redirige a /dashboard en iOS
       // (IOS_HIDDEN_PATH_PREFIXES), así que lo ocultamos también del nav.
-      { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresKennel: true, hideOnIos: true },
-      { label: 'Contratos', href: '/contratos', icon: 'FileText', requiresKennel: true },
+      { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresKennel: true, requiresPro: true, hideOnIos: true },
+      { label: 'Contratos', href: '/contratos', icon: 'FileText', requiresKennel: true, requiresPro: true },
     ],
   },
 
@@ -139,12 +139,13 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     id: 'comms',
     label: 'Comunicación',
-    requiresEnterprise: true,
+    requiresKennel: true,
     items: [
-      // Emailbot y Newsletter = comms B2B: el middleware los redirige a
-      // /dashboard en iOS (IOS_HIDDEN_PATH_PREFIXES); ocultos también del nav.
-      { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresEnterprise: true, hideOnIos: true },
-      { label: 'Newsletter', href: '/newsletter', icon: 'Send', requiresEnterprise: true, hideOnIos: true },
+      // Emailbot y Newsletter = EXTENSIONES (add-ons) sobre Pro. Se muestran
+      // solo si el criadero tiene la extensión activa (el founder, todas).
+      // Comms B2B: el middleware los redirige a /dashboard en iOS; hideOnIos.
+      { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresAddon: 'emailbot', hideOnIos: true },
+      { label: 'Newsletter', href: '/newsletter', icon: 'Send', requiresAddon: 'newsletter', hideOnIos: true },
     ],
   },
 

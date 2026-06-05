@@ -15,7 +15,7 @@
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { revalidateKennelHome } from '@/lib/kennel/kennel-home-cache'
-import { isKennelPro, isEnterpriseUser, normalizePlan } from '@/lib/permissions'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -26,20 +26,16 @@ async function requireOwnerOfProKennel(kennelId: string) {
 
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, owner_id')
+    .select('id, slug, owner_id, addons')
     .eq('id', kennelId)
     .single()
   if (!kennel) throw new Error('kennel_not_found')
   if (kennel.owner_id !== user.id) throw new Error('forbidden')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('plan')
-    .eq('id', user.id)
-    .single()
-  const userPlan = normalizePlan(profile?.plan)
-  const isEnterprise = isEnterpriseUser(user.id)
-  if (!isEnterprise && !isKennelPro(userPlan)) throw new Error('requires_kennel_pro')
+  // Gate web add-on: el criadero debe tener la extensión "web" (o ser founder).
+  // El string 'requires_kennel_pro' se mantiene porque el cliente
+  // (about-editor.tsx / photos-manager.tsx) lo matchea.
+  if (!kennelHasAddon(kennel, 'web', user.id)) throw new Error('requires_kennel_pro')
 
   return { supabase, user, kennel }
 }

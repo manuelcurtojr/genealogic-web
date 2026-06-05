@@ -13,7 +13,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { isKennelPro, isEnterpriseUser, normalizePlan } from '@/lib/permissions'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import { EXTRA_PAGES, type ExtraPageId } from './pro-web'
 
 export async function toggleKennelPageAction(input: {
@@ -27,24 +27,19 @@ export async function toggleKennelPageAction(input: {
 
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, owner_id, enabled_pages')
+    .select('id, slug, owner_id, enabled_pages, addons')
     .eq('id', input.kennelId)
     .single()
   if (!kennel) throw new Error('kennel_not_found')
   if (kennel.owner_id !== user.id) throw new Error('forbidden')
 
-  // Gate Pro: si la página está siendo activada, el owner debe ser Pro
-  // o enterprise. Si la está desactivando lo permitimos sin gate (cualquier
-  // owner debería poder limpiar su propio estado).
+  // Gate web add-on: si la página está siendo activada, el criadero debe tener
+  // la extensión "web" (o ser founder). Si la está desactivando lo permitimos
+  // sin gate (cualquier owner debería poder limpiar su propio estado).
+  // Nota: el string 'requires_kennel_pro' se mantiene porque el cliente
+  // (pages-toggles.tsx / about-editor.tsx / photos-manager.tsx) lo matchea.
   if (input.enabled) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('plan')
-      .eq('id', user.id)
-      .single()
-    const userIsEnterprise = isEnterpriseUser(user.id)
-    const userPlan = normalizePlan(profile?.plan)
-    if (!userIsEnterprise && !isKennelPro(userPlan)) {
+    if (!kennelHasAddon(kennel, 'web', user.id)) {
       throw new Error('requires_kennel_pro')
     }
   }

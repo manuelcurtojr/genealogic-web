@@ -19,7 +19,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import type { Metadata } from 'next'
 import { isUUID } from '@/lib/slug'
-import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import { getKennelReproductiveBreeds, pickKennelHeroPhotoForBreed } from '@/lib/kennel/breeds'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -56,22 +56,13 @@ export default async function KennelRazasPage(
 
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, name, owner_id')
+    .select('id, slug, name, owner_id, addons')
     .eq(field, id)
     .maybeSingle()
   if (!kennel) notFound()
 
-  // Pro check — para Free, esta página no existe (404)
-  let ownerPlan: string | null = null
-  if (kennel.owner_id) {
-    const { data: prof } = await supabase
-      .from('profiles')
-      .select('plan')
-      .eq('id', kennel.owner_id)
-      .maybeSingle()
-    ownerPlan = prof?.plan || null
-  }
-  if (!isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })) {
+  // Extensión Web — sin ella, esta página no existe (404)
+  if (!kennelHasAddon(kennel, 'web', kennel.owner_id)) {
     notFound()
   }
 

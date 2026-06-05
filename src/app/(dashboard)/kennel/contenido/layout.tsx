@@ -10,7 +10,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { hasProFeatures, isEnterpriseUser, normalizePlan } from '@/lib/permissions'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
 import ContenidoSubNav from '@/components/kennel/contenido-subnav'
 import { getTranslator } from '@/lib/i18n'
@@ -26,20 +26,15 @@ export default async function KennelContenidoLayout({ children }: { children: Re
 
   const { data: kennels } = await supabase
     .from('kennels')
-    .select('id, slug, name')
+    .select('id, slug, name, addons, owner_id')
     .eq('owner_id', user.id)
     .order('created_at')
     .limit(1)
   const kennel = kennels?.[0]
   if (!kennel) redirect('/kennel/new')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('plan')
-    .eq('id', user.id)
-    .single()
-  const canEdit = isEnterpriseUser(user.id) || hasProFeatures(normalizePlan(profile?.plan))
-  if (!canEdit) redirect('/kennel')
+  // El editor de la web es parte de la EXTENSIÓN "web" (sobre Pro). Sin ella → /kennel.
+  if (!kennelHasAddon(kennel, 'web', user.id)) redirect('/kennel')
 
   return (
     <div className="space-y-6">

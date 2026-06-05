@@ -20,6 +20,7 @@ import {
 } from '@/lib/ai/emailbot-tester'
 import { getModel, getDefaultModel } from '@/lib/ai/models'
 import { isProviderAvailable } from '@/lib/ai/client'
+import { userHasAddon } from '@/lib/kennel/addons-server'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300 // 5 min para el background processing
@@ -28,6 +29,10 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+
+  if (!(await userHasAddon(user.id, 'emailbot'))) {
+    return NextResponse.json({ error: 'Esta función requiere la extensión Emailbot' }, { status: 403 })
+  }
 
   const body = await request.json().catch(() => ({}))
   const { kennel_id } = body

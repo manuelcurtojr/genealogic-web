@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { isUUID } from '@/lib/slug'
-import { isKennelOnProPlan, isExtraPageEnabled, hasPublishableContent } from '@/lib/kennel/pro-web'
+import { isExtraPageEnabled, hasPublishableContent } from '@/lib/kennel/pro-web'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import { ProPageShell, OwnerDraftBanner, EmptyContentState } from '@/components/kennel/pro-page-shell'
 import { pageNotYetPublicMessage } from '@/lib/kennel/pro-page-loader'
 import AboutContent from '@/components/kennel/about-content'
@@ -62,7 +63,7 @@ export default async function KennelSobrePage({ params }: { params: Promise<{ id
   const field = isUUID(id) ? 'id' : 'slug'
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, owner_id, name, about_md, logo_url, foundation_date, city, country, enabled_pages')
+    .select('id, slug, owner_id, name, about_md, logo_url, foundation_date, city, country, enabled_pages, addons')
     .eq(field, id)
     .single()
   if (!kennel) notFound()
@@ -72,16 +73,19 @@ export default async function KennelSobrePage({ params }: { params: Promise<{ id
     redirect(`/kennels/${kennel.slug}/sobre`)
   }
 
-  // Plan del dueño
-  let ownerPlan: string | null = null
+  // Extensión Web — sin ella, redirect a la home del kennel
+  if (!kennelHasAddon(kennel, 'web', kennel.owner_id)) {
+    redirect(`/kennels/${kennel.slug || kennel.id}`)
+  }
+
+  // Datos del dueño (para el bloque "Equipo")
   let ownerProfile: { display_name: string | null; avatar_url: string | null; bio: string | null } | null = null
   if (kennel.owner_id) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('plan, display_name, avatar_url, bio')
+      .select('display_name, avatar_url, bio')
       .eq('id', kennel.owner_id)
       .single()
-    ownerPlan = profile?.plan || null
     if (profile) {
       ownerProfile = {
         display_name: profile.display_name || null,
@@ -89,10 +93,6 @@ export default async function KennelSobrePage({ params }: { params: Promise<{ id
         bio: profile.bio || null,
       }
     }
-  }
-  const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
-  if (!isPro) {
-    redirect(`/kennels/${kennel.slug || kennel.id}`)
   }
 
   const isOwner = user?.id === kennel.owner_id

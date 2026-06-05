@@ -3,6 +3,8 @@ import { ProPageShell } from '@/components/kennel/pro-page-shell'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 import { MapPin, Calendar, Globe, ExternalLink, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import { isUUID } from '@/lib/slug'
 import type { Metadata } from 'next'
 import { getTranslator } from '@/lib/i18n'
@@ -38,6 +40,9 @@ export default async function KennelContactoPage({ params }: { params: Promise<{
   const { id } = await params
   const t = getTranslator(await getLocale())
   const { kennel } = await loadProPage({ kennelId: id, pageId: null })
+
+  // Extensión Web — sin ella, redirect a la home del kennel
+  if (!kennelHasAddon(kennel, 'web', kennel.owner_id)) redirect(`/kennels/${kennel.slug || kennel.id}`)
 
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const foundationYear = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null

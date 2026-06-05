@@ -3,7 +3,8 @@ import { Img } from '@/components/ui/img'
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { isUUID } from '@/lib/slug'
-import { isKennelOnProPlan, isExtraPageEnabled } from '@/lib/kennel/pro-web'
+import { isExtraPageEnabled } from '@/lib/kennel/pro-web'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import { pageNotYetPublicMessage } from '@/lib/kennel/pro-page-loader'
 import { ProPageShell, OwnerDraftBanner, EmptyContentState } from '@/components/kennel/pro-page-shell'
 import { BookOpen } from 'lucide-react'
@@ -46,7 +47,7 @@ export default async function KennelBlogPage({ params }: { params: Promise<{ id:
   const field = isUUID(id) ? 'id' : 'slug'
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, owner_id, name, enabled_pages')
+    .select('id, slug, owner_id, name, enabled_pages, addons')
     .eq(field, id)
     .single()
   if (!kennel) notFound()
@@ -54,13 +55,7 @@ export default async function KennelBlogPage({ params }: { params: Promise<{ id:
     redirect(`/kennels/${kennel.slug}/blog`)
   }
 
-  let ownerPlan: string | null = null
-  if (kennel.owner_id) {
-    const { data: profile } = await supabase.from('profiles').select('plan').eq('id', kennel.owner_id).single()
-    ownerPlan = profile?.plan || null
-  }
-  const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
-  if (!isPro) redirect(`/kennels/${kennel.slug || kennel.id}`)
+  if (!kennelHasAddon(kennel, 'web', kennel.owner_id)) redirect(`/kennels/${kennel.slug || kennel.id}`)
 
   const isOwner = user?.id === kennel.owner_id
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

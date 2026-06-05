@@ -2,6 +2,8 @@ import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ensureDefaultPipelines, getKennelPipelines } from '@/lib/pipelines/queries'
 import FunnelBoard from '@/components/embudo/funnel-board'
+import EmbudoTeaser from '@/components/embudo/embudo-teaser'
+import { hasPaidPlan, isEnterpriseUser } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
@@ -38,6 +40,19 @@ export default async function EmbudoPage() {
         </p>
       </div>
     )
+  }
+
+  // El embudo de ventas es Pro. El FREE ve un TEASER: el número REAL de
+  // solicitudes que le han llegado (el upsell duele porque hay clientes
+  // esperando) pero SIN cargar los datos del solicitante al navegador.
+  const { data: profile } = await supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle()
+  const isPro = hasPaidPlan(profile?.plan) || isEnterpriseUser(user.id)
+  if (!isPro) {
+    const { count } = await supabase
+      .from('puppy_reservations')
+      .select('id', { count: 'exact', head: true })
+      .eq('kennel_id', kennel.id)
+    return <EmbudoTeaser count={count || 0} />
   }
 
   // Siembra lazy de los pipelines por defecto (service role) + carga (RLS owner)

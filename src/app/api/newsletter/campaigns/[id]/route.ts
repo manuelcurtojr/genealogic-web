@@ -7,6 +7,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
+import { userHasAddon } from '@/lib/kennel/addons-server'
 
 export const runtime = 'nodejs'
 
@@ -38,6 +39,10 @@ export async function PATCH(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
+  if (!(await userHasAddon(user.id, 'newsletter'))) {
+    return NextResponse.json({ error: 'Esta función requiere la extensión Newsletter' }, { status: 403 })
+  }
+
   const guard = await assertOwnership(id, user.id)
   if ('error' in guard) return NextResponse.json({ error: guard.error }, { status: guard.status })
   if (['sent', 'sending'].includes(guard.campaign.status)) {
@@ -68,6 +73,10 @@ export async function DELETE(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+
+  if (!(await userHasAddon(user.id, 'newsletter'))) {
+    return NextResponse.json({ error: 'Esta función requiere la extensión Newsletter' }, { status: 403 })
+  }
 
   const guard = await assertOwnership(id, user.id)
   if ('error' in guard) return NextResponse.json({ error: guard.error }, { status: guard.status })

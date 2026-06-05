@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { Img } from '@/components/ui/img'
 import { createClient } from '@/lib/supabase/server'
 import { isUUID } from '@/lib/slug'
-import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import { ProPageShell } from '@/components/kennel/pro-page-shell'
 import { ArrowLeft } from 'lucide-react'
 import { getTranslator } from '@/lib/i18n'
@@ -21,7 +21,7 @@ export default async function KennelBlogPostPage({
   const field = isUUID(id) ? 'id' : 'slug'
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, owner_id, name')
+    .select('id, slug, owner_id, name, addons')
     .eq(field, id)
     .single()
   if (!kennel) notFound()
@@ -29,12 +29,7 @@ export default async function KennelBlogPostPage({
     redirect(`/kennels/${kennel.slug}/blog/${postSlug}`)
   }
 
-  let ownerPlan: string | null = null
-  if (kennel.owner_id) {
-    const { data: profile } = await supabase.from('profiles').select('plan').eq('id', kennel.owner_id).single()
-    ownerPlan = profile?.plan || null
-  }
-  const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
+  const isPro = kennelHasAddon(kennel, 'web', kennel.owner_id)
   if (!isPro) redirect(`/kennels/${kennel.slug || kennel.id}`)
 
   const { data: post } = await supabase

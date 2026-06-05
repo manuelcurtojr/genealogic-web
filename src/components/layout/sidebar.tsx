@@ -14,7 +14,7 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { NAV_SECTIONS, BRAND } from '@/lib/constants'
-import { isAdmin, hasProFeatures, hasEnterpriseFeatures } from '@/lib/permissions'
+import { isAdmin, hasProFeatures } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 import { Wordmark } from '@/components/ui/wordmark'
 
@@ -29,7 +29,7 @@ const iconMap: Record<string, React.ElementType> = {
 
 interface SidebarProps {
   user: { display_name: string; email: string; role: string; avatar_url: string | null } | null
-  kennel: { name: string; logo_url: string | null } | null
+  kennel: { name: string; logo_url: string | null; addons?: string[] | null } | null
   plan: string
   planIsFounder?: boolean
   /** Si el user tiene reservas vinculadas o perros transferidos como cliente. */
@@ -48,10 +48,11 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
   const userRole = user?.role || 'owner'
   const isBreeder = !!kennel
   const userIsAdmin = isAdmin(userRole)
-  // `plan` llega ya efectivo (loadShellContext resuelve ENTERPRISE_USERS →
-  // kennel_pro). Pro = cualquier plan de pago; Enterprise = kennel_pro.
+  // `plan` llega ya efectivo (loadShellContext: founder → kennel/Pro).
   const userHasPro = hasProFeatures(plan)
-  const userHasEnterprise = hasEnterpriseFeatures(plan)
+  // Extensiones EFECTIVAS (loadShellContext ya aplicó el override de founder).
+  // Gatean los items del modelo "Pro + extensiones": Emailbot, Newsletter, Web.
+  const userAddons = new Set<string>(kennel?.addons ?? [])
   const lang = typeof window !== 'undefined' ? localStorage.getItem('genealogic-lang') || 'es' : 'es'
   const t = getTranslator(lang)
 
@@ -67,7 +68,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
       if (section.requiresAdmin && !userIsAdmin) return false
       if (section.requiresKennel && !isBreeder) return false
       if (section.requiresPro && !userHasPro) return false
-      if (section.requiresEnterprise && !userHasEnterprise) return false
+      if (section.requiresAddon && !userAddons.has(section.requiresAddon)) return false
       if (section.requiresClient && !isClient) return false
       if (section.hideOnIos && isIos) return false
       return true
@@ -78,7 +79,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
         if (item.requiresAdmin && !userIsAdmin) return false
         if (item.requiresKennel && !isBreeder) return false
         if (item.requiresPro && !userHasPro) return false
-        if (item.requiresEnterprise && !userHasEnterprise) return false
+        if (item.requiresAddon && !userAddons.has(item.requiresAddon)) return false
         if (item.requiresClient && !isClient) return false
         if (item.hideIfPro && userHasPro) return false
         if (item.hideOnIos && isIos) return false

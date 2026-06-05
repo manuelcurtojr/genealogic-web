@@ -25,7 +25,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import type { Metadata } from 'next'
 import { isUUID } from '@/lib/slug'
-import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import {
   isReproductiveBreedOfKennel,
   pickKennelHeroPhotoForBreed,
@@ -59,21 +59,12 @@ async function loadData(kennelId: string, breedSlug: string) {
 
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, name, owner_id')
+    .select('id, slug, name, owner_id, addons')
     .eq(field, kennelId)
     .maybeSingle()
   if (!kennel) return null
 
-  let ownerPlan: string | null = null
-  if (kennel.owner_id) {
-    const { data: prof } = await supabase
-      .from('profiles')
-      .select('plan')
-      .eq('id', kennel.owner_id)
-      .maybeSingle()
-    ownerPlan = prof?.plan || null
-  }
-  if (!isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })) return null
+  if (!kennelHasAddon(kennel, 'web', kennel.owner_id)) return null
 
   const isReproductive = await isReproductiveBreedOfKennel(kennel.id, breedSlug)
   if (!isReproductive) return null

@@ -12,6 +12,7 @@ import { scrapeUrl } from '@/lib/ai/scrape'
 import { extractKnowledgeFromText } from '@/lib/ai/extract'
 import { saveExtractedEntries } from '@/lib/ai/save-entries'
 import { logAIUsage } from '@/lib/ai/track'
+import { userHasAddon } from '@/lib/kennel/addons-server'
 
 export const maxDuration = 60
 export const runtime = 'nodejs'
@@ -20,6 +21,10 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+
+  if (!(await userHasAddon(user.id, 'emailbot'))) {
+    return NextResponse.json({ error: 'Esta función requiere la extensión Emailbot' }, { status: 403 })
+  }
 
   const body = await request.json().catch(() => ({}))
   const { kennel_id, url, model_id } = body

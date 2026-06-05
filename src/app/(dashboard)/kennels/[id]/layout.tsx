@@ -23,12 +23,12 @@ import KennelChrome from '@/components/kennel/kennel-chrome'
 import KennelProFooter from '@/components/kennel/kennel-pro-footer'
 import PageTracker from '@/components/track/page-tracker'
 import {
-  isKennelOnProPlan,
   isExtraPageEnabled,
   hasPublishableContent,
   PAGE_NAV_LABEL,
   type ExtraPageId,
 } from '@/lib/kennel/pro-web'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import { getKennelReproductiveBreeds } from '@/lib/kennel/breeds'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -47,24 +47,15 @@ export default async function KennelLayout({
   // Cargamos el kennel + el plan del dueño para decidir Pro vs no
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, name, logo_url, owner_id, enabled_pages, about_md, city, country, website, social_instagram, social_facebook')
+    .select('id, slug, name, logo_url, owner_id, addons, enabled_pages, about_md, city, country, website, social_instagram, social_facebook')
     .eq(field, id)
     .single()
 
   if (!kennel) return notFound()
 
-  // Plan del dueño — solo si hay owner
-  let ownerPlan: string | null = null
-  if (kennel.owner_id) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('plan')
-      .eq('id', kennel.owner_id)
-      .single()
-    ownerPlan = profile?.plan || null
-  }
-
-  const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
+  // La web pública RICA (chrome propio + subpáginas + footer) es la EXTENSIÓN
+  // "web" del criadero. Sin ella, se sirve el perfil BÁSICO (home autogenerada).
+  const hasWeb = kennelHasAddon(kennel, 'web', kennel.owner_id)
 
   // ¿Hay sidebar? Solo logueado el perfil se monta dentro del DashboardShell
   // (sidebar a la izquierda). Sin login va en el layout público (centrado).
@@ -104,8 +95,8 @@ export default async function KennelLayout({
       )
       : <>{children}</>
 
-  // Si NO es Pro: sin chrome del kennel — sólo el contenido
-  if (!isPro) {
+  // Sin la extensión "web": perfil BÁSICO, sin chrome del kennel — sólo el contenido.
+  if (!hasWeb) {
     // Bajo dominio propio: contenido centrado en max-w-7xl, sin chrome.
     if (standalone) {
       return (

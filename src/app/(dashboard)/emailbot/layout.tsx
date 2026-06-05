@@ -5,7 +5,7 @@
  */
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { hasEnterpriseFeatures } from '@/lib/permissions'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import ComingSoon from '@/components/early-access/coming-soon'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -16,17 +16,18 @@ export default async function EmailbotLayout({ children }: { children: React.Rea
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('plan')
-    .eq('id', user.id)
-    .maybeSingle()
+  const { data: ks } = await supabase
+    .from('kennels')
+    .select('addons, owner_id')
+    .eq('owner_id', user.id)
+    .limit(1)
+  const kennel = ks?.[0] || null
 
-  if (!hasEnterpriseFeatures(profile?.plan, user.id)) {
+  if (!kennelHasAddon(kennel, 'emailbot', user.id)) {
     return (
       <ComingSoon
         featureId="emailbot"
-        description={t('Asistente IA que responde por email a consultas de cachorros usando la biblioteca de tu criadero. Disponible próximamente para todos.')}
+        description={t('Asistente IA que responde por email a consultas de cachorros usando la biblioteca de tu criadero. Es una extensión de Kennel Pro.')}
         backHref="/dashboard"
         backLabel={t('← Volver al dashboard')}
       />

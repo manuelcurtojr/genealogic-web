@@ -18,8 +18,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { isUUID } from '@/lib/slug'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import {
-  isKennelOnProPlan,
   isExtraPageEnabled,
   hasPublishableContent,
   type ExtraPageId,
@@ -71,19 +71,12 @@ export async function loadProPage(args: {
 
   const isOwner = user?.id === kennel.owner_id
 
-  // Plan del dueño
-  let ownerPlan: string | null = null
-  if (kennel.owner_id) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('plan')
-      .eq('id', kennel.owner_id)
-      .single()
-    ownerPlan = profile?.plan || null
-  }
-  const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
+  // Gate web add-on: las páginas secundarias solo existen si el criadero tiene
+  // la extensión "web" (o es founder). El kennel se carga con select('*'), así
+  // que addons + owner_id están presentes.
+  const isPro = kennelHasAddon(kennel, 'web', kennel.owner_id)
 
-  // Si NO es Pro: las páginas secundarias no existen — redirect a la home
+  // Si NO tiene la web: las páginas secundarias no existen — redirect a la home
   if (!isPro) {
     redirect(`/kennels/${kennel.slug || kennel.id}`)
   }

@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { userHasAddon } from '@/lib/kennel/addons-server'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  if (!(await userHasAddon(user.id, 'newsletter'))) {
+    return NextResponse.json({ error: 'Esta función requiere la extensión Newsletter' }, { status: 403 })
+  }
 
   const body = await request.json()
   const { kennel_id, email, full_name, source, tags, is_active } = body

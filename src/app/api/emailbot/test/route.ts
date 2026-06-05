@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { generateReply, type BotContext } from '@/lib/emailbot'
 import { logAIUsage } from '@/lib/ai/track'
 import { checkBotReplyQuota, quotaReasonMessage } from '@/lib/ai/quotas'
+import { userHasAddon } from '@/lib/kennel/addons-server'
 
 export const maxDuration = 30
 
@@ -14,6 +15,10 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  if (!(await userHasAddon(user.id, 'emailbot'))) {
+    return NextResponse.json({ error: 'Esta función requiere la extensión Emailbot' }, { status: 403 })
+  }
 
   const body = await request.json()
   const { kennel_id, scenario, messages } = body

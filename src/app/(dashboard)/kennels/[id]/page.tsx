@@ -17,7 +17,7 @@ import { HIDDEN_REASON_LABELS, type HiddenReason } from '@/lib/moderation/types'
 import { EyeOff } from 'lucide-react'
 import { sortDogsByPhotoQuality } from '@/lib/dogs/sort-quality'
 import { KennelJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
-import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import { getKennelReproductiveBreedNames } from '@/lib/kennel/breeds'
 import { getKennelHomeData } from '@/lib/kennel/kennel-home-cache'
 import type { Metadata } from 'next'
@@ -129,7 +129,6 @@ export default async function KennelDetailPage({
   const breedNames = homeData.breedNames
   const faqEntries = homeData.faqEntries
   const reviewsRaw = homeData.reviewsRaw
-  const ownerPlan = homeData.ownerPlan
   const recentPosts = homeData.recentPosts
   const clientUserIds = new Set(homeData.clientUserIds)
 
@@ -148,7 +147,7 @@ export default async function KennelDetailPage({
       : (r.submitted_by_user_id && clientUserIds.has(r.submitted_by_user_id) ? 'client' as const : 'user' as const),
   }))
 
-  const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
+  const isPro = kennelHasAddon(kennel, 'web', kennel.owner_id)
 
   // Sort 3-tier (count fotos): perros con galería rica primero, después
   // los que solo tienen thumbnail, al final los sin foto. El photoCount

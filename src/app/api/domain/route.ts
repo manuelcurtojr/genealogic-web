@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 
 const VERCEL_API = 'https://api.vercel.com'
 
@@ -47,9 +48,14 @@ export async function POST(request: NextRequest) {
   }
 
   const { data: kennel } = await supabase
-    .from('kennels').select('id, owner_id, custom_domain').eq('id', kennel_id).single()
+    .from('kennels').select('id, owner_id, custom_domain, addons').eq('id', kennel_id).single()
   if (!kennel || kennel.owner_id !== user.id) {
     return NextResponse.json({ error: 'Kennel no encontrado o no es tuyo' }, { status: 403 })
+  }
+
+  // El dominio propio es parte de la extensión Web
+  if (!kennelHasAddon(kennel, 'web', kennel.owner_id)) {
+    return NextResponse.json({ error: 'El dominio propio requiere la extensión Web' }, { status: 403 })
   }
 
   // Si ya tiene otro dominio, primero removerlo de Vercel

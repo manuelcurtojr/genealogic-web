@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import KennelConfigView from '@/components/kennel/kennel-config-view'
 import PagesToggles from '@/components/kennel/pages-toggles'
-import { hasProAccess, isKennelPro, isEnterpriseUser, normalizePlan } from '@/lib/permissions'
+import { hasProAccess } from '@/lib/permissions'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,8 +60,9 @@ export default async function KennelPage() {
   ])
 
   const isPro = hasProAccess(profileRes.data?.plan)
-  // Para los toggles de páginas Pro: enterprise users + kennel_pro plan
-  const canUsePro = isEnterpriseUser(user.id) || isKennelPro(normalizePlan(profileRes.data?.plan))
+  // Las páginas extra (sobre/galería/instalaciones/blog) son parte de la web →
+  // requieren la EXTENSIÓN "web". Sin ella, los toggles salen "Próximamente".
+  const canUsePro = kennelHasAddon(kennel, 'web', user.id)
 
   // Status del contenido para los badges "Pendiente: contenido" en toggles
   const contentStatus = {

@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { sendCampaignTest, isResendConfigured } from '@/lib/newsletter/send'
+import { userHasAddon } from '@/lib/kennel/addons-server'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -24,6 +25,10 @@ export async function POST(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+
+  if (!(await userHasAddon(user.id, 'newsletter'))) {
+    return NextResponse.json({ error: 'Esta función requiere la extensión Newsletter' }, { status: 403 })
+  }
 
   const body = await request.json().catch(() => ({}))
   const toEmail = (body.to_email as string)?.trim()

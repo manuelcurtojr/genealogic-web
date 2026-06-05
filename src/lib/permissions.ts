@@ -49,7 +49,9 @@ export function isEnterpriseUser(userId: string | null | undefined): boolean {
  * Usar en layouts/server components al determinar qué mostrar.
  */
 export function effectivePlanFor(userId: string | null | undefined, rawPlan: string | null | undefined): UserPlan {
-  if (isEnterpriseUser(userId)) return 'kennel_pro'
+  // Enterprise retirado: el founder es Pro (`kennel`); sus extras van por
+  // extensiones (kennelHasAddon), no por el plan.
+  if (isEnterpriseUser(userId)) return 'kennel'
   return normalizePlan(rawPlan)
 }
 
@@ -158,7 +160,8 @@ export function isPremium(plan: string | null | undefined): boolean {
  */
 export function getPlanLabel(plan: string | null | undefined, hasKennel = false): string {
   const n = normalizePlan(plan)
-  if (n === 'kennel_pro') return 'Kennel Enterprise'
+  // Enterprise retirado: el legacy `kennel_pro` se muestra ya como "Kennel Pro".
+  if (n === 'kennel_pro') return 'Kennel Pro'
   if (n === 'kennel') return 'Kennel Pro'
   return hasKennel ? 'Kennel Free' : 'Owner'
 }

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { hasEnterpriseFeatures } from '@/lib/permissions'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import KnowledgePageClient from '@/components/conocimiento/knowledge-page-client'
@@ -16,26 +16,24 @@ export default async function ConocimientoPage() {
 
   const t = getTranslator(await getLocale())
 
-  // La Biblioteca alimenta al Emailbot IA → feature de Kennel Enterprise.
-  const { data: profile } = await supabase
-    .from('profiles').select('plan').eq('id', user.id).maybeSingle()
-  if (!hasEnterpriseFeatures(profile?.plan, user.id)) {
+  // La Biblioteca alimenta al Emailbot IA → extensión Emailbot del criadero.
+  const { data: kennelArr } = await supabase
+    .from('kennels')
+    .select('id, name, addons, owner_id')
+    .eq('owner_id', user.id)
+    .limit(1)
+  const kennel = kennelArr?.[0]
+
+  if (!kennelHasAddon(kennel, 'emailbot', user.id)) {
     return (
       <ComingSoon
         featureId="emailbot"
-        description={t('La Biblioteca de conocimiento alimenta al Emailbot IA de tu criadero. Disponible en Kennel Enterprise.')}
+        description={t('La Biblioteca de conocimiento alimenta al Emailbot IA de tu criadero. Es parte de la extensión Emailbot.')}
         backHref="/dashboard"
         backLabel={t('← Volver al dashboard')}
       />
     )
   }
-
-  const { data: kennelArr } = await supabase
-    .from('kennels')
-    .select('id, name')
-    .eq('owner_id', user.id)
-    .limit(1)
-  const kennel = kennelArr?.[0]
 
   if (!kennel) {
     return (

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { isUUID } from '@/lib/slug'
-import { isKennelOnProPlan } from '@/lib/kennel/pro-web'
+import { kennelHasAddon } from '@/lib/kennel/addons'
 import { sortDogsByPhotoQuality } from '@/lib/dogs/sort-quality'
 import PerrosCatalog from '@/components/kennel/perros-catalog'
 import { headers } from 'next/headers'
@@ -44,7 +44,7 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
   const field = isUUID(id) ? 'id' : 'slug'
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, owner_id, name, contact_form_config')
+    .select('id, slug, owner_id, name, contact_form_config, addons')
     .eq(field, id)
     .single()
   if (!kennel) notFound()
@@ -52,13 +52,7 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
     redirect(`/kennels/${kennel.slug}/perros`)
   }
 
-  let ownerPlan: string | null = null
-  if (kennel.owner_id) {
-    const { data: profile } = await supabase.from('profiles').select('plan').eq('id', kennel.owner_id).single()
-    ownerPlan = profile?.plan || null
-  }
-  const isPro = isKennelOnProPlan({ ownerPlan, ownerUserId: kennel.owner_id })
-  if (!isPro) redirect(`/kennels/${kennel.slug || kennel.id}`)
+  if (!kennelHasAddon(kennel, 'web', kennel.owner_id)) redirect(`/kennels/${kennel.slug || kennel.id}`)
 
   const [dogsRes, littersRes] = await Promise.all([
     supabase
