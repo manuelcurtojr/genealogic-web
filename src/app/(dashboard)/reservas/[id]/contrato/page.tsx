@@ -32,7 +32,7 @@ import {
   cancelContractAction,
 } from './actions'
 import { listContractTemplatesForUser, type ContractTemplate } from '@/lib/contracts/templates-actions'
-import { CheckCircle2, FileText, AlertCircle } from 'lucide-react'
+import { CheckCircle2, FileText, AlertCircle, AlertTriangle } from 'lucide-react'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
@@ -58,11 +58,36 @@ export default async function BreederContractPage({
   const admin = createKennelAdminClient() as any
   const { data: reservation } = await admin
     .from('puppy_reservations')
-    .select('id, kennel_id, applicant_name, stage_id, kennel:kennels(owner_id, name), stage:pipeline_stages(name)')
+    .select(`
+      id, kennel_id, applicant_name, stage_id,
+      kennel:kennels(
+        owner_id, name,
+        legal_name, legal_id, legal_address,
+        legal_representative, legal_representative_id,
+        sign_city, jurisdiction
+      ),
+      stage:pipeline_stages(name)
+    `)
     .eq('id', id)
     .maybeSingle()
   if (!reservation) notFound()
   if (reservation.kennel?.owner_id !== user.id) redirect('/reservas')
+
+  // ─── Gate de datos legales ────────────────────────────────────────────
+  // Sin los datos legales del criadero, los contratos se generan con
+  // razón social, CIF, domicilio, representante, etc. en blanco
+  // (`__________________`). Eso pasa siempre que un kennel acaba de crearse.
+  // Mejor avisarlo en banner ANTES de que genere 50 contratos vacíos. Los
+  // 4 campos obligatorios son los mínimos para que un contrato sea válido
+  // legalmente — los otros 3 (sign_city, jurisdiction, representative_id)
+  // son recomendados pero no bloqueantes.
+  const k = reservation.kennel as Record<string, string | null> | null
+  const missingLegalFields: string[] = []
+  if (!k?.legal_name) missingLegalFields.push('Razón social')
+  if (!k?.legal_id) missingLegalFields.push('NIF/CIF')
+  if (!k?.legal_address) missingLegalFields.push('Domicilio')
+  if (!k?.legal_representative) missingLegalFields.push('Representante legal')
+  const legalDataMissing = missingLegalFields.length > 0
 
   // Contratos + firma electrónica básica están incluidos desde Kennel Free
   // (marca FPE en /pricing). El acceso se restringe por propiedad de la
@@ -87,6 +112,7 @@ export default async function BreederContractPage({
       contract={reservationContract}
       userTemplates={userTemplates}
       highlighted={!deliveryPhase}
+      legalDataMissing={legalDataMissing}
       t={t}
     />
   )
@@ -98,6 +124,7 @@ export default async function BreederContractPage({
       contract={deliveryContract}
       userTemplates={userTemplates}
       highlighted={deliveryPhase}
+      legalDataMissing={legalDataMissing}
       t={t}
     />
   )
@@ -117,6 +144,35 @@ export default async function BreederContractPage({
       <p className="text-sm text-body mb-8 max-w-2xl">
         {t('Cada reserva tiene dos contratos: la reserva inicial (con señal) y la compraventa definitiva en el momento de la entrega. Gestiona cada uno por separado.')}
       </p>
+
+      {/* ─── Gate: datos legales del criadero incompletos ─────────────────
+          Aparece SOLO si faltan campos obligatorios (razón social, CIF,
+          domicilio, representante). Sin ellos, los contratos se generan
+          con esos huecos en blanco — válido a nivel BBDD pero no útil
+          legalmente. El CTA lleva directo a /kennel/contenido/legal. */}
+      {legalDataMissing && (
+        <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 sm:p-5">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-700 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-amber-900">
+                {t('Completa tus datos legales antes de generar contratos')}
+              </p>
+              <p className="mt-1 text-sm text-amber-800">
+                {t('Faltan campos obligatorios del criadero:')}{' '}
+                <strong>{missingLegalFields.join(', ')}</strong>.{' '}
+                {t('Sin ellos los contratos salen con huecos en blanco y no son válidos para presentar al cliente.')}
+              </p>
+              <Link
+                href="/kennel/contenido/legal"
+                className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-amber-900 text-amber-50 px-4 py-2 text-sm font-semibold hover:bg-amber-950"
+              >
+                {t('Completar datos legales')} →
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-10">
         {deliveryPhase ? (
@@ -145,6 +201,7 @@ function ContractBlock({
   contract,
   userTemplates,
   highlighted,
+  legalDataMissing,
   t,
 }: {
   kind: ContractKind
@@ -153,6 +210,7 @@ function ContractBlock({
   contract: ReservationContract | null
   userTemplates: ContractTemplate[]
   highlighted: boolean
+  legalDataMissing: boolean
   t: T
 }) {
   const blockTitle = kind === 'delivery'
@@ -178,6 +236,7 @@ function ContractBlock({
           reservationId={reservation.id}
           kind={kind}
           userTemplates={userTemplates}
+          locked={legalDataMissing}
           t={t}
         />
       ) : contract.status === 'draft' ? (
@@ -219,11 +278,15 @@ function CreateContractCard({
   reservationId,
   kind,
   userTemplates,
+  locked,
   t,
 }: {
   reservationId: string
   kind: ContractKind
   userTemplates: ContractTemplate[]
+  /** Si true, deshabilita los botones de "Crear contrato". El banner del
+   *  gate de datos legales explica por qué arriba; aquí solo bloqueamos. */
+  locked: boolean
   t: T
 }) {
   // Plantilla base correspondiente a este tipo de contrato.
@@ -252,7 +315,9 @@ function CreateContractCard({
       >
         <button
           type="submit"
-          className="inline-flex items-center gap-1.5 rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90"
+          disabled={locked}
+          title={locked ? t('Completa primero tus datos legales (banner amarillo arriba)') : undefined}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-ink text-on-primary px-5 py-2.5 text-sm font-semibold hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:opacity-40"
         >
           <FileText className="h-4 w-4" />
           {createLabel}
@@ -275,7 +340,8 @@ function CreateContractCard({
               >
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas text-ink px-4 py-2 text-sm font-semibold hover:border-ink/30 transition"
+                  disabled={locked}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas text-ink px-4 py-2 text-sm font-semibold hover:border-ink/30 transition disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   ★ {defaultTpl.name} <span className="text-[10px] opacity-75">{t('(por defecto)')}</span>
                 </button>
@@ -291,7 +357,8 @@ function CreateContractCard({
               >
                 <button
                   type="submit"
-                  className="rounded-lg border border-hairline bg-canvas text-ink px-4 py-2 text-sm font-semibold hover:border-ink/30 transition"
+                  disabled={locked}
+                  className="rounded-lg border border-hairline bg-canvas text-ink px-4 py-2 text-sm font-semibold hover:border-ink/30 transition disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {tpl.name}
                 </button>
