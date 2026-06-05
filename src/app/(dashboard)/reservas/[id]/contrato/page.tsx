@@ -259,16 +259,15 @@ function ContractBlock({
 /**
  * Decide qué editor montar para un contrato en estado draft:
  *
- *  - `template_values` es NULL (contrato pre-refactor) → editor markdown
- *    clásico, sin tocar (compat hacia atrás).
- *
  *  - `template_values.__manual__` === true → el criador eligió "Modo
- *    avanzado", editor markdown clásico también. Para volver al fill-form
- *    tiene que cancelar el contrato.
+ *    avanzado", editor markdown clásico. Para volver al fill-form tiene
+ *    que cancelar el contrato (que limpia el flag y vuelve a draft).
  *
- *  - resto (template_values es {} o tiene valores normales) → fill-form
+ *  - resto (incluido template_values=NULL en contratos legacy) → fill-form
  *    nuevo: formulario izquierda + preview derecha, datos legales del
- *    criadero auto-rellenados.
+ *    criadero auto-rellenados. Para contratos legacy, el form arranca con
+ *    los valores derivados de la reserva — body_html se regenera en cuanto
+ *    el criador edita el primer campo.
  */
 async function DraftContractBody({
   reservation, contract, t,
@@ -280,10 +279,10 @@ async function DraftContractBody({
 }) {
   const tplValues = (contract.template_values as Record<string, unknown> | null) || null
   const manualOverride = tplValues?.__manual__ === true
-  const isLegacyContract = tplValues == null
 
-  // Caso legacy o modo avanzado → editor markdown clásico
-  if (isLegacyContract || manualOverride) {
+  // Solo el modo avanzado explícito → markdown editor. Todo lo demás
+  // (incluido contratos legacy con template_values=NULL) → fill-form.
+  if (manualOverride) {
     return (
       <ContractEditor
         reservationId={reservation.id}

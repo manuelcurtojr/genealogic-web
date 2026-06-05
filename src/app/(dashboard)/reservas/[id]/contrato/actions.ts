@@ -142,11 +142,19 @@ export async function setAdvancedModeAction(
     await assertBreeder(reservationId)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = createKennelAdminClient() as any
-    const { data: existing } = await admin
+    const { data: existing, error: readErr } = await admin
       .from('reservation_contracts')
       .select('template_values')
       .eq('id', contractId)
       .maybeSingle()
+    // Si la columna no existe (migración no aplicada), no hay forma de
+    // persistir el flag — devolvemos error claro para que la UI avise.
+    if (readErr && /template_values/i.test(readErr.message)) {
+      return {
+        ok: false,
+        error: 'El modo avanzado requiere aplicar la migración de BBDD pendiente. Consulta con soporte.',
+      }
+    }
     const current = (existing?.template_values as Record<string, unknown> | null) || {}
     const next = { ...current, __manual__: true }
     const { error } = await admin
@@ -237,11 +245,24 @@ export async function saveContractValuesAction(
     )
 
     // Persistir AMBOS: template_values (fuente de verdad para el form) y
-    // body_html (representación renderizada, lo que se enseña/firma)
-    const { error } = await admin
+    // body_html (representación renderizada, lo que se enseña/firma).
+    //
+    // Resiliente: si la columna template_values aún no existe en BBDD
+    // (migración 20260720 no aplicada), reintentamos solo con body_html.
+    // El criador puede usar el fill-form, pero los valores no se persisten
+    // hasta que aplique la migración — al reabrir el contrato verá el form
+    // reinicializado desde buildContractVars(reservation).
+    let { error } = await admin
       .from('reservation_contracts')
       .update({ template_values: values, body_html: bodyHtml })
       .eq('id', contractId)
+    if (error && /template_values/i.test(error.message)) {
+      const retry = await admin
+        .from('reservation_contracts')
+        .update({ body_html: bodyHtml })
+        .eq('id', contractId)
+      error = retry.error
+    }
     if (error) throw new Error(error.message)
 
     revalidatePath(`/reservas/${reservationId}/contrato`)
