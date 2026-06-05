@@ -111,25 +111,40 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
   }
 
   // Captura un fotograma del vídeo (en el navegador) como portada.
+  // CON TIMEOUT + guard: si el navegador no puede decodificar el vídeo (típico
+  // con .mov/HEVC de iPhone en Chromium/Brave) y nunca dispara onloadeddata/
+  // onseeked, NO se cuelga — resuelve null a los 8s y se usa una portada de
+  // respaldo (el usuario puede elegir el fotograma luego con el selector).
   function capturePoster(file: File): Promise<Blob | null> {
     return new Promise((resolve) => {
+      let settled = false
+      let objUrl: string | null = null
+      const finish = (b: Blob | null) => {
+        if (settled) return
+        settled = true
+        clearTimeout(timer)
+        if (objUrl) URL.revokeObjectURL(objUrl)
+        resolve(b)
+      }
+      const timer = setTimeout(() => finish(null), 8000)
       try {
         const video = document.createElement('video')
         video.preload = 'metadata'; video.muted = true; (video as any).playsInline = true
-        const objUrl = URL.createObjectURL(file)
+        objUrl = URL.createObjectURL(file)
         video.src = objUrl
-        const cleanup = () => URL.revokeObjectURL(objUrl)
-        video.onloadeddata = () => { try { video.currentTime = Math.min(1, (video.duration || 2) / 2) } catch { resolve(null); cleanup() } }
+        video.onloadeddata = () => { try { video.currentTime = Math.min(1, (video.duration || 2) / 2) } catch { finish(null) } }
         video.onseeked = () => {
-          const canvas = document.createElement('canvas')
-          canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 360
-          const ctx = canvas.getContext('2d')
-          if (!ctx) { resolve(null); cleanup(); return }
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-          canvas.toBlob((b) => { resolve(b); cleanup() }, 'image/jpeg', 0.85)
+          try {
+            const canvas = document.createElement('canvas')
+            canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 360
+            const ctx = canvas.getContext('2d')
+            if (!ctx) { finish(null); return }
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+            canvas.toBlob((b) => finish(b), 'image/jpeg', 0.85)
+          } catch { finish(null) }
         }
-        video.onerror = () => { resolve(null); cleanup() }
-      } catch { resolve(null) }
+        video.onerror = () => finish(null)
+      } catch { finish(null) }
     })
   }
 
@@ -216,6 +231,7 @@ export default function GalleryTab({ dogId, userId }: GalleryTabProps) {
       setVideoBusy(false); setVideoProgress(null)
       return
     }
+    setVideoProgress(null) // subida OK → la fase de portada muestra "Generando portada…"
     const { data: { publicUrl } } = supabase.storage.from('dog-photos').getPublicUrl(path)
     // Portada: fotograma capturado o fallback
     let posterUrl = dogThumb || POSTER_FALLBACK
