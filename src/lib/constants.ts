@@ -80,17 +80,16 @@ export const NAV_SECTIONS: NavSection[] = [
     label: '',
     items: [
       { label: 'Escritorio', href: '/dashboard', icon: 'LayoutDashboard' },
+      // Reservas (lado COMPRADOR) — justo debajo de Escritorio. Visible para
+      // TODO usuario logueado, no solo clientes con reserva: /mis-reservas tiene
+      // empty state propio ("Explorar criaderos") para quien aún no tiene
+      // ninguna. Es un destino descubrible por cualquier futuro comprador.
+      { label: 'Reservas', href: '/mis-reservas', icon: 'PawPrint' },
       // Buscar = descubrimiento unificado: desde /search se accede a Perros,
       // Criaderos y Razas vía tabs, así que no duplicamos "Razas" aquí.
       { label: 'Buscar', href: '/search', icon: 'Search' },
       { label: 'Blog', href: '/blog', icon: 'BookOpen' },
       { label: 'Calendario', href: '/calendar', icon: 'Calendar' },
-      // Reservas (lado COMPRADOR) — visible para TODO usuario logueado, no solo
-      // clientes con reserva: la página /mis-reservas tiene empty state propio
-      // ("Explorar criaderos") para quien aún no tiene ninguna. Antes vivía en
-      // la sección "Propietario" con requiresClient; se subió aquí para que sea
-      // un destino descubrible por cualquier futuro comprador.
-      { label: 'Reservas', href: '/mis-reservas', icon: 'PawPrint' },
     ],
   },
 
