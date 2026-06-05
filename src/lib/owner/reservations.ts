@@ -59,51 +59,170 @@ const SELECT_COLS = `
 const ACTIVE_STATUSES = ['interested', 'waitlisted', 'deposit_paid', 'assigned', 'contract_signed', 'paid_in_full']
 const ARCHIVED_STATUSES = ['delivered', 'cancelled']
 
+/** Fetch del listado (activas o histórico) con el mismo fallback robusto
+ *  de getMyReservation: si el embed PostgREST peta, hace SELECT base y
+ *  resuelve los joins en lookups separados. */
+async function listReservationsWithFallback(
+  userId: string,
+  statuses: string[],
+  orderCol: 'created_at' | 'updated_at',
+): Promise<ClientReservation[]> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createKennelAdminClient() as any
+  const { data, error } = await admin
+    .from('puppy_reservations')
+    .select(SELECT_COLS)
+    .eq('client_user_id', userId)
+    .in('status', statuses)
+    .order(orderCol, { ascending: false })
+
+  if (!error && data) return data as ClientReservation[]
+
+  if (error) {
+    console.error('[listReservationsWithFallback] embed query failed, falling back', error.message)
+  }
+
+  // Fallback sin embeds
+  const { data: bases, error: baseErr } = await admin
+    .from('puppy_reservations')
+    .select(`
+      id, status, preference_sex, preference_color, preference_notes,
+      deposit_amount_cents, total_price_cents, currency,
+      deposit_paid_at, paid_in_full_at, contract_signed_at, delivered_at,
+      dog_id, kennel_id, litter_id, position_in_queue,
+      applicant_name, applicant_email, applicant_message, applicant_purpose, applicant_extra_data,
+      created_at, updated_at
+    `)
+    .eq('client_user_id', userId)
+    .in('status', statuses)
+    .order(orderCol, { ascending: false })
+  if (baseErr || !bases) {
+    if (baseErr) console.error('[listReservationsWithFallback] base query failed', baseErr.message)
+    return []
+  }
+
+  // Resolver lookups en batch (un solo IN por tabla)
+  const kennelIds = Array.from(new Set(bases.map((b: { kennel_id: string | null }) => b.kennel_id).filter(Boolean)))
+  const dogIds = Array.from(new Set(bases.map((b: { dog_id: string | null }) => b.dog_id).filter(Boolean)))
+  const litterIds = Array.from(new Set(bases.map((b: { litter_id: string | null }) => b.litter_id).filter(Boolean)))
+  const reservationIds = bases.map((b: { id: string }) => b.id)
+
+  const [kRes, dRes, lRes, cRes] = await Promise.all([
+    kennelIds.length ? admin.from('kennels').select('id, slug, name, logo_url').in('id', kennelIds) : { data: [] },
+    dogIds.length ? admin.from('dogs').select('id, slug, name, thumbnail_url').in('id', dogIds) : { data: [] },
+    litterIds.length ? admin.from('litters').select('id, expected_date, birth_date').in('id', litterIds) : { data: [] },
+    admin.from('reservation_contracts')
+      .select('reservation_id, kind, status, signed_at_breeder, signed_at_client')
+      .in('reservation_id', reservationIds),
+  ])
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const kennelById = new Map((kRes.data || []).map((k: any) => [k.id, k]))
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dogById = new Map((dRes.data || []).map((d: any) => [d.id, d]))
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const litterById = new Map((lRes.data || []).map((l: any) => [l.id, l]))
+  const contractsByRes = new Map<string, ClientReservation['contracts']>()
+  for (const c of ((cRes.data || []) as Array<{ reservation_id: string } & ClientReservation['contracts'][number]>)) {
+    const arr = contractsByRes.get(c.reservation_id) || []
+    arr.push({ kind: c.kind, status: c.status, signed_at_breeder: c.signed_at_breeder, signed_at_client: c.signed_at_client })
+    contractsByRes.set(c.reservation_id, arr)
+  }
+
+  return bases.map((b: { id: string; kennel_id: string | null; dog_id: string | null; litter_id: string | null }) => ({
+    ...b,
+    kennel: b.kennel_id ? kennelById.get(b.kennel_id) ?? null : null,
+    dog: b.dog_id ? dogById.get(b.dog_id) ?? null : null,
+    litter: b.litter_id ? litterById.get(b.litter_id) ?? null : null,
+    contracts: contractsByRes.get(b.id) || [],
+  })) as ClientReservation[]
+}
+
 /**
  * Reservas activas del cliente (NO histórico).
  * Ordenadas por created_at desc.
  */
 export const getMyActiveReservations = cache(async (userId: string): Promise<ClientReservation[]> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const admin = createKennelAdminClient() as any
-  const { data } = await admin
-    .from('puppy_reservations')
-    .select(SELECT_COLS)
-    .eq('client_user_id', userId)
-    .in('status', ACTIVE_STATUSES)
-    .order('created_at', { ascending: false })
-  return (data as ClientReservation[]) ?? []
+  return listReservationsWithFallback(userId, ACTIVE_STATUSES, 'created_at')
 })
 
 /**
  * Histórico de reservas del cliente (delivered + cancelled).
  */
 export const getMyHistoricalReservations = cache(async (userId: string): Promise<ClientReservation[]> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const admin = createKennelAdminClient() as any
-  const { data } = await admin
-    .from('puppy_reservations')
-    .select(SELECT_COLS)
-    .eq('client_user_id', userId)
-    .in('status', ARCHIVED_STATUSES)
-    .order('updated_at', { ascending: false })
-  return (data as ClientReservation[]) ?? []
+  return listReservationsWithFallback(userId, ARCHIVED_STATUSES, 'updated_at')
 })
 
 /**
  * Una reserva específica si el cliente tiene acceso. RLS hace doble check.
+ *
+ * Robusto a fallos del embed Supabase (`dog:dogs!dog_id`, `contracts:...`):
+ * si el SELECT con embeds peta (FK ambigua, sintaxis, etc.) hacemos un
+ * fallback con SELECT base + fetches separados para dog/litter/contracts.
+ * Antes el error se tragaba silenciosamente con `?? null` → la página
+ * caía a 404 sin pista.
  */
 export const getMyReservation = cache(
   async (userId: string, reservationId: string): Promise<ClientReservation | null> => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = createKennelAdminClient() as any
-    const { data } = await admin
+
+    // 1) Intentar el SELECT completo con embeds (rápido, 1 round-trip)
+    const { data, error } = await admin
       .from('puppy_reservations')
       .select(SELECT_COLS)
       .eq('client_user_id', userId)
       .eq('id', reservationId)
       .maybeSingle()
-    return (data as ClientReservation | null) ?? null
+    if (!error && data) return data as ClientReservation
+
+    if (error) {
+      console.error('[getMyReservation] embed query failed, falling back', error.message)
+    }
+
+    // 2) Fallback: SELECT base sin embeds + lookups separados.
+    //    Sirve para casos donde el embed PostgREST falla (FK ambigua, etc.)
+    const { data: base, error: baseErr } = await admin
+      .from('puppy_reservations')
+      .select(`
+        id, status, preference_sex, preference_color, preference_notes,
+        deposit_amount_cents, total_price_cents, currency,
+        deposit_paid_at, paid_in_full_at, contract_signed_at, delivered_at,
+        dog_id, kennel_id, litter_id, position_in_queue,
+        applicant_name, applicant_email, applicant_message, applicant_purpose, applicant_extra_data,
+        created_at, updated_at
+      `)
+      .eq('client_user_id', userId)
+      .eq('id', reservationId)
+      .maybeSingle()
+    if (baseErr || !base) {
+      if (baseErr) console.error('[getMyReservation] base query failed', baseErr.message)
+      return null
+    }
+
+    // Lookups paralelos
+    const [kennelRes, dogRes, litterRes, contractsRes] = await Promise.all([
+      base.kennel_id
+        ? admin.from('kennels').select('id, slug, name, logo_url').eq('id', base.kennel_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      base.dog_id
+        ? admin.from('dogs').select('id, slug, name, thumbnail_url').eq('id', base.dog_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      base.litter_id
+        ? admin.from('litters').select('id, expected_date, birth_date').eq('id', base.litter_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      admin.from('reservation_contracts')
+        .select('kind, status, signed_at_breeder, signed_at_client')
+        .eq('reservation_id', base.id),
+    ])
+
+    return {
+      ...base,
+      kennel: kennelRes.data ?? null,
+      dog: dogRes.data ?? null,
+      litter: litterRes.data ?? null,
+      contracts: (contractsRes.data ?? []) as ClientReservation['contracts'],
+    } as ClientReservation
   },
 )
 
