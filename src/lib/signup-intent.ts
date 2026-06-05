@@ -54,9 +54,12 @@ export function parseIntentFromQuery(
   const planRaw = get('plan')
   if (!intentRaw && !planRaw) return null
 
+  // Owner-first: si el intent falta o es inválido (pero hay algún param, p.ej.
+  // ?plan=...), el rol por defecto es PROPIETARIO, no criador. Solo un intent
+  // 'breeder' explícito marca criador.
   const intent: SignupIntent = VALID_INTENTS.includes(intentRaw as SignupIntent)
     ? (intentRaw as SignupIntent)
-    : 'breeder'
+    : 'owner'
   // Legacy: ?plan=enterprise|premium|kennel_pro → Kennel Pro ('kennel'),
   // no Kennel Free, para no degradar la intención del usuario.
   const planNormalized = planRaw && LEGACY_PRO_PLANS.includes(planRaw) ? 'kennel' : planRaw

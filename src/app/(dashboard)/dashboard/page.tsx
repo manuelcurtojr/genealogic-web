@@ -10,7 +10,6 @@ import OnboardingCard from '@/components/onboarding/onboarding-card'
 import OnboardingCardOwner from '@/components/onboarding/onboarding-card-owner'
 import WelcomeNoKennel from '@/components/onboarding/welcome-no-kennel'
 import WelcomeOwner from '@/components/onboarding/welcome-owner'
-import RoleSelector from '@/components/onboarding/role-selector'
 import { getOnboardingStatus } from '@/lib/onboarding/checklist'
 import { getOwnerOnboardingStatus } from '@/lib/onboarding/checklist-owner'
 import { hasProAccess } from '@/lib/permissions'
@@ -46,24 +45,18 @@ export default async function DashboardPage() {
   const kennel = kennelArr?.[0] || null
   const isBreeder = !!kennel
 
-  // SIN KENNEL: ramificar según onboarding_intent
-  //   - null              → RoleSelector (Paso 0, elegir rol)
-  //   - 'owner'           → WelcomeOwner + checklist owner
-  //   - 'breeder'         → WelcomeNoKennel ("crea tu kennel")
-  // El campo se rellena automáticamente con backfill para users existentes
-  // (ver migration 20260610_profiles_onboarding_intent.sql).
+  // SIN KENNEL — owner-first:
+  //   - 'breeder' (eligió criador explícitamente) → WelcomeNoKennel ("crea tu kennel")
+  //   - resto (propietario, o sin elegir todavía)  → WelcomeOwner + checklist propietario
+  // El propietario es el caso POR DEFECTO. Antes un RoleSelector de "Paso 0" le
+  // ofrecía a un propietario crear criadero; se retiró por el modelo owner-first.
+  // Para pasarse a criador, WelcomeOwner tiene el botón "¿Me equivoqué — soy criador?".
   if (!isBreeder) {
     const intent = (profile as { onboarding_intent?: 'breeder' | 'owner' | null })?.onboarding_intent ?? null
-
-    // Paso 0: todavía no eligió
-    if (!intent) {
-      return <RoleSelector displayName={profile?.display_name || null} />
-    }
-
     const roles = await getEffectiveRoles(user.id)
 
-    // Rama breeder (sin kennel todavía): CTA crear criadero
-    if (intent !== 'owner') {
+    // Solo un CRIADOR explícito ve el onboarding de crear criadero.
+    if (intent === 'breeder') {
       return (
         <WelcomeNoKennel
           displayName={profile?.display_name || null}
