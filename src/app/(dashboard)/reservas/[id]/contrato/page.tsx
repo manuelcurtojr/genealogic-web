@@ -144,7 +144,7 @@ export default async function BreederContractPage({
   const { data: reservation } = await admin
     .from('puppy_reservations')
     .select(`
-      id, kennel_id, applicant_name, stage_id,
+      id, kennel_id, applicant_name, applicant_email, dog_id, stage_id,
       kennel:kennels(
         owner_id, name,
         legal_name, legal_id, legal_address,
@@ -491,6 +491,8 @@ async function DraftContractBody({
       breedOptions={breedOptions}
       kennelDogs={kennelDogs}
       assignedDogId={reservation.dog_id || null}
+      recipientEmail={reservation.applicant_email || null}
+      recipientName={reservation.applicant_name || null}
       manualOverride={false}
       onSaveAction={saveContractValuesAction}
       onSendAction={sendContractAction}

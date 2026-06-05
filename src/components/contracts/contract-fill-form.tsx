@@ -34,6 +34,7 @@ import {
 import type { BreedOption, KennelDogOption } from './contract-fill-panel'
 import DogAssignmentBar from './dog-assignment-bar'
 import DraftActionsMenu from './draft-actions-menu'
+import SendContractDialog from './send-contract-dialog'
 
 type Values = Record<string, string>
 
@@ -52,6 +53,10 @@ interface Props {
   kennelDogs: KennelDogOption[]
   /** Perro asignado actualmente (puppy_reservations.dog_id) o null. */
   assignedDogId: string | null
+  /** Email del cliente (applicant_email) para mostrar en el dialog de envío. */
+  recipientEmail: string | null
+  /** Nombre del cliente (applicant_name) para mostrar en el dialog de envío. */
+  recipientName: string | null
   /** Action para asignar/desasignar perro. */
   onAssignDogAction: (
     reservationId: string,
@@ -115,6 +120,8 @@ export default function ContractFillForm({
   breedOptions,
   kennelDogs,
   assignedDogId,
+  recipientEmail,
+  recipientName,
   onAssignDogAction,
   onResetDraftAction,
   onDeleteDraftAction,
@@ -129,6 +136,7 @@ export default function ContractFillForm({
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
+  const [sendDialogOpen, setSendDialogOpen] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastSavedRef = useRef<string>(JSON.stringify(initialValues))
   const schema = getFieldSchema(kind)
@@ -222,13 +230,22 @@ export default function ContractFillForm({
       )
       return
     }
-    if (!confirm(t('¿Enviar el contrato al cliente? Después de enviar no podrás editar los campos (sí puedes cancelar y volver a editar).'))) return
+    // Abre el modal de confirmación in-app (sustituye al window.confirm)
     setError(null)
+    setSendDialogOpen(true)
+  }
+
+  function confirmSend() {
     startTransition(async () => {
       // Guarda primero por si hay cambios pendientes
       await onSaveAction(reservationId, contractId, values)
       const res = await onSendAction(reservationId, contractId)
-      if (!res.ok) setError(res.error)
+      if (!res.ok) {
+        setError(res.error)
+        setSendDialogOpen(false)
+      }
+      // Si ok, el revalidate/refresh de la action recargará la página y
+      // el contrato pasará a SentOrSignedView automáticamente.
     })
   }
 
@@ -340,6 +357,17 @@ export default function ContractFillForm({
           />
         ))}
       </div>
+
+      {/* Modal in-app del envío — reemplaza al window.confirm() */}
+      <SendContractDialog
+        open={sendDialogOpen}
+        recipientEmail={recipientEmail}
+        recipientName={recipientName}
+        kind={kind}
+        pending={pending}
+        onConfirm={confirmSend}
+        onCancel={() => setSendDialogOpen(false)}
+      />
     </div>
   )
 }

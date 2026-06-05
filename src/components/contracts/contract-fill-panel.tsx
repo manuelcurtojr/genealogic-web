@@ -63,6 +63,9 @@ interface Props {
   /** UUID del perro actualmente asignado a la reserva (puppy_reservations.dog_id),
    *  o null si todavía no se ha asignado un ejemplar concreto. */
   assignedDogId: string | null
+  /** Email + nombre del cliente — para el modal "Confirmar envío". */
+  recipientEmail: string | null
+  recipientName: string | null
   /** Si true, formulario disabled (el criador editó markdown a mano). */
   manualOverride: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -88,6 +91,7 @@ interface Props {
 export default function ContractFillPanel({
   reservationId, contractId, kind, templateBody, contractTitle,
   initialValues, kennelVars, breedOptions, kennelDogs, assignedDogId,
+  recipientEmail, recipientName,
   manualOverride,
   onSaveAction, onSendAction, onAssignDogAction,
   onResetDraftAction, onDeleteDraftAction, onAdvancedMode,
@@ -131,6 +135,8 @@ export default function ContractFillPanel({
             breedOptions={breedOptions}
             kennelDogs={kennelDogs}
             assignedDogId={assignedDogId}
+            recipientEmail={recipientEmail}
+            recipientName={recipientName}
             manualOverride={manualOverride}
             onValuesChange={setValues}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
