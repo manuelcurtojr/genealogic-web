@@ -8,7 +8,7 @@
  * Reutiliza el componente LandingPage tal cual. El layout del grupo
  * (public) ya monta el MarketingHeader arriba.
  */
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import LandingPage from '@/components/landing/landing-page'
 import type { Metadata } from 'next'
 import { getTranslator } from '@/lib/i18n'
@@ -54,7 +54,12 @@ async function fetchCockerPhotos(): Promise<string[]> {
 export default async function CriadoresPage() {
   const supabase = await createClient()
 
-  const [{ data: breeds }, { data: featuredDogs }, cockerPhotos] = await Promise.all([
+  // Contadores reales (admin = service-role para no truncar a 1000). Antes el
+  // hero mostraba "1.366 perros / 148 criaderos" hardcodeado → infravendía la
+  // escala real (la mayor BBDD), justo el argumento. Ahora va en vivo.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createKennelAdminClient() as any
+  const [{ data: breeds }, { data: featuredDogs }, cockerPhotos, dogsCountRes, kennelsCountRes] = await Promise.all([
     supabase.from('breeds').select('id, name').order('name').limit(20),
     supabase
       .from('dogs')
@@ -64,6 +69,8 @@ export default async function CriadoresPage() {
       .order('created_at', { ascending: false })
       .limit(8),
     fetchCockerPhotos(),
+    admin.from('dogs').select('id', { count: 'exact', head: true }),
+    admin.from('kennels').select('id', { count: 'exact', head: true }),
   ])
 
   return (
@@ -71,6 +78,7 @@ export default async function CriadoresPage() {
       breeds={breeds || []}
       featuredDogs={featuredDogs || []}
       cockerPhotos={cockerPhotos}
+      counts={{ dogs: dogsCountRes.count || 0, kennels: kennelsCountRes.count || 0 }}
     />
   )
 }

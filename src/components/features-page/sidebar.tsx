@@ -146,7 +146,7 @@ export default function FeaturesSidebar({ activeSlug }: Props) {
         <div className="mt-8 rounded-xl border border-hairline bg-gradient-to-br from-orange-50/60 to-blue-50/40 p-4">
           <p className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[#FE6620]">{t('¿Listo?')}</p>
           <p className="mt-1.5 text-[13px] font-semibold text-ink leading-snug">
-            {t('Empieza gratis. Kennel Pro 7 días de prueba sin tarjeta.')}
+            {t('Empieza gratis. Kennel Pro 14 días de prueba sin tarjeta.')}
           </p>
           <Link
             href="/register?intent=breeder"

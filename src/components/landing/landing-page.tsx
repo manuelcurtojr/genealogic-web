@@ -34,15 +34,16 @@ interface Props {
   breeds: { id: string; name: string }[]
   featuredDogs: any[]
   cockerPhotos?: string[]
+  counts?: { dogs: number; kennels: number }
 }
 
-export default function LandingPage({ breeds, featuredDogs, cockerPhotos = [] }: Props) {
+export default function LandingPage({ breeds, featuredDogs, cockerPhotos = [], counts }: Props) {
   const heroDogs = featuredDogs.slice(0, 6)
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
       {/* Header eliminado — lo aporta (public)/layout.tsx con MarketingHeader. */}
-      <Hero heroDogs={heroDogs} />
+      <Hero heroDogs={heroDogs} counts={counts} />
       <PedigreeShowcase cockerPhotos={cockerPhotos} />
       <FeaturesGrid />
       <PipelineShowcase />
@@ -241,7 +242,7 @@ function DrawerAnchor({ href, onClick, children }: { href: string; onClick: () =
 }
 
 // ─── Hero ────────────────────────────────────────────────────────────────
-function Hero({ heroDogs }: { heroDogs: any[] }) {
+function Hero({ heroDogs, counts }: { heroDogs: any[]; counts?: { dogs: number; kennels: number } }) {
   const t = useT()
   return (
     <section className="relative overflow-hidden border-b border-hairline">
@@ -273,10 +274,10 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
               className="mt-5 sm:mt-7 max-w-[16ch] font-semibold text-ink"
               style={{ fontSize: 'clamp(32px, 6vw, 68px)', lineHeight: 1.02, letterSpacing: '-0.04em' }}
             >
-              {t('Gestiona tu criadero. Vende más cachorros.')}
+              {t('Cría mejor. Vende más. Sin papeleo.')}
             </h1>
             <p className="mt-5 sm:mt-6 max-w-[520px] text-[16px] leading-[1.55] text-body sm:text-[18px]">
-              {t('El panel donde llevas tus perros, camadas, genealogías, reservas y clientes de cabo a rabo. Se acabaron los Excels: más orden, mejor control de la cría y un escaparate que vende. Gratis para empezar.')}
+              {t('Tu criadero entero en un panel —perros, camadas, reservas y clientes—, sobre la mayor red de genealogías del mundo. Más orden, mejor cría y un escaparate que de verdad vende. Gratis para empezar.')}
             </p>
 
             {/* CTAs */}
@@ -289,7 +290,7 @@ function Hero({ heroDogs }: { heroDogs: any[] }) {
               </Button>
             </div>
             <p className="mt-4 text-[13px] text-muted">
-              {t('Sin tarjeta · 1.366 perros y 148 criaderos ya en el registro')}
+              {t('Sin tarjeta ·')} {(counts?.dogs ?? 257807).toLocaleString('es-ES')} {t('perros y')} {(counts?.kennels ?? 6722).toLocaleString('es-ES')} {t('criaderos ya en el registro')}
             </p>
           </div>
 

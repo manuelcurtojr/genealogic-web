@@ -77,7 +77,7 @@ export default async function FeaturesPage() {
               {t('Ver precios')}
             </Link>
             <span className="text-[12.5px] text-muted ml-1">
-              {t('7 días de Kennel Pro · sin tarjeta')}
+              {t('14 días de Kennel Pro · sin tarjeta')}
             </span>
           </div>
         </div>
