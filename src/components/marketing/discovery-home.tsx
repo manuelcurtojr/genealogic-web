@@ -357,44 +357,50 @@ export default function DiscoveryHome({
            reales de perros recientes, las pasa; si no, relleno determinista. */}
       <section className="border-b border-hairline bg-surface-soft/40">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 lg:gap-14 items-center">
-            <div>
-              <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('El momento magia')}</p>
-              <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-                {t('Su genealogía no se teclea. Se pega.')}
-              </h2>
-              <p className="mt-4 text-[15px] sm:text-[16px] text-body leading-relaxed max-w-xl">
-                {t('Pega el enlace de otra plataforma o hazle una foto a su genealogía en papel. Nuestra IA lee a cada ancestro, lo enlaza con los que ya viven en Genealogic y te devuelve el árbol completo —con fotos y sin límite de generaciones— en 30 segundos. Lo que en otros sitios son dos horas de tecleo, aquí es un Ctrl+V.')}
-              </p>
-              <ul className="mt-6 space-y-2.5 text-[14px] sm:text-[15px] text-body">
-                <li className="flex items-start gap-2.5">
-                  <Zap className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
-                  <span>{t('Pega una URL o sube una foto y la IA reconstruye toda la línea en 30 segundos.')}</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <GitBranch className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
-                  <span>{t('Generaciones ilimitadas: sigue hacia atrás pinchando en cada ancestro.')}</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <Camera className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
-                  <span>{t('Cada ancestro con su foto y un enlace a su criadero de origen.')}</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <Database className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
-                  <span>{t('Se enlaza con los perros que ya viven en Genealogic, la mayor base canina del mundo.')}</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <Search className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
-                  <span>{t('Su ficha y su árbol entran en el buscador, junto a toda la comunidad.')}</span>
-                </li>
-              </ul>
-              <Link href="/register?intent=owner" className="mt-7 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[14px] font-bold hover:opacity-90 transition">
-                <Dog className="w-4 h-4" /> {t('Crear mi cuenta gratis')} <ArrowRight className="w-4 h-4" />
-              </Link>
+          {/* Encabezado (ancho de lectura — el H2 ya no se aplasta) */}
+          <div className="max-w-2xl">
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('El momento magia')}</p>
+            <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(26px, 4.5vw, 46px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
+              {t('Su genealogía no se teclea. Se pega.')}
+            </h2>
+            <p className="mt-4 text-[15px] sm:text-[17px] text-body leading-relaxed">
+              {t('Pega el enlace de otra plataforma o hazle una foto a su genealogía en papel. Nuestra IA lee a cada ancestro, lo enlaza con los que ya viven en Genealogic y te devuelve el árbol completo —con fotos y sin límite de generaciones— en 30 segundos. Lo que en otros sitios son dos horas de tecleo, aquí es un Ctrl+V.')}
+            </p>
+          </div>
+
+          {/* Mockup del árbol a todo el ancho — necesita ~860px, por eso no va en columna */}
+          <div className="mt-8 sm:mt-12">
+            <PedigreeTreeMockup photos={featuredDogs.slice(0, 7).map((d) => d.thumbnail_url).filter(Boolean) as string[]} />
+          </div>
+
+          {/* Bullets en rejilla + CTA */}
+          <div className="mt-8 sm:mt-10 grid gap-x-10 gap-y-3.5 sm:grid-cols-2 lg:grid-cols-3 text-[14px] sm:text-[15px] text-body">
+            <div className="flex items-start gap-2.5">
+              <Zap className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
+              <span>{t('Pega una URL o sube una foto y la IA reconstruye toda la línea en 30 segundos.')}</span>
             </div>
-            <div>
-              <PedigreeTreeMockup photos={featuredDogs.slice(0, 7).map((d) => d.thumbnail_url).filter(Boolean) as string[]} />
+            <div className="flex items-start gap-2.5">
+              <GitBranch className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
+              <span>{t('Generaciones ilimitadas: sigue hacia atrás pinchando en cada ancestro.')}</span>
             </div>
+            <div className="flex items-start gap-2.5">
+              <Camera className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
+              <span>{t('Cada ancestro con su foto y un enlace a su criadero de origen.')}</span>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <Database className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
+              <span>{t('Se enlaza con los perros que ya viven en Genealogic, la mayor base canina del mundo.')}</span>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <Search className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
+              <span>{t('Su ficha y su árbol entran en el buscador, junto a toda la comunidad.')}</span>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <Link href="/register?intent=owner" className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[14px] font-bold hover:opacity-90 transition">
+              <Dog className="w-4 h-4" /> {t('Crear mi cuenta gratis')} <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>
