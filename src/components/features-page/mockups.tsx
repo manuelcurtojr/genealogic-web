@@ -1047,7 +1047,7 @@ function CoiDetail() {
             </div>
             <div className="mt-1 flex items-baseline gap-2">
               <span className="text-[28px] font-bold tabular-nums text-emerald-700 leading-none">4.2%</span>
-              <span className="text-[9px] text-muted">Wright · 10 generaciones</span>
+              <span className="text-[9px] text-muted">Wright · generaciones ilimitadas</span>
             </div>
           </div>
           <div className="text-right">

@@ -39,12 +39,18 @@ interface Props {
 
 export default function LandingPage({ breeds, featuredDogs, cockerPhotos = [], counts }: Props) {
   const heroDogs = featuredDogs.slice(0, 6)
+  // Fotos REALES de perros de Genealogic para el mockup de genealogía.
+  // Priorizamos perros reales sobre el stock externo de dog.ceo (cockerPhotos),
+  // que solo queda como fallback defensivo si no hay perros con foto.
+  const realPhotos: string[] = featuredDogs
+    .map((d: any) => d?.thumbnail_url)
+    .filter((url: unknown): url is string => typeof url === 'string' && url.length > 0)
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
       {/* Header eliminado — lo aporta (public)/layout.tsx con MarketingHeader. */}
       <Hero heroDogs={heroDogs} counts={counts} />
-      <PedigreeShowcase cockerPhotos={cockerPhotos} />
+      <PedigreeShowcase realPhotos={realPhotos} cockerPhotos={cockerPhotos} />
       <FeaturesGrid />
       <PipelineShowcase />
       <BotConversation />
@@ -392,7 +398,7 @@ function AppWindow({
 }
 
 // ─── Pedigree showcase ───────────────────────────────────────────────────
-function PedigreeShowcase({ cockerPhotos }: { cockerPhotos: string[] }) {
+function PedigreeShowcase({ realPhotos, cockerPhotos }: { realPhotos: string[]; cockerPhotos: string[] }) {
   const t = useT()
   return (
     <section id="producto" className="border-b border-hairline bg-surface-soft">
@@ -415,7 +421,7 @@ function PedigreeShowcase({ cockerPhotos }: { cockerPhotos: string[] }) {
         {/* Real-looking pedigree mockup inside app window */}
         <div className="mt-10 sm:mt-14">
           <AppWindow url="genealogic.io/dogs/lord-byron-de-aldenham">
-            <RealPedigreeMockup cockerPhotos={cockerPhotos} />
+            <RealPedigreeMockup realPhotos={realPhotos} cockerPhotos={cockerPhotos} />
           </AppWindow>
         </div>
 
@@ -459,8 +465,13 @@ function PedigreeShowcase({ cockerPhotos }: { cockerPhotos: string[] }) {
  *
  * Card is 220×64, so right edge x=card_x+220, vertical center y=card_y+32.
  */
-function RealPedigreeMockup({ cockerPhotos }: { cockerPhotos: string[] }) {
+function RealPedigreeMockup({ realPhotos, cockerPhotos }: { realPhotos: string[]; cockerPhotos: string[] }) {
   const t = useT()
+  // Fotos de los nodos del árbol: SIEMPRE perros reales de Genealogic
+  // (featuredDogs.thumbnail_url). Si faltan para rellenar los 7 nodos,
+  // se ciclan. El stock externo de cocker (dog.ceo) solo entra como
+  // fallback defensivo si no llega ninguna foto real.
+  const photoPool = realPhotos.length > 0 ? realPhotos : cockerPhotos
   const dogs: Array<{ name: string; sex: 'male' | 'female'; reg?: string }> = [
     { name: 'Lord Byron de Aldenham', sex: 'male', reg: 'LOE 2189437' }, // root
     { name: 'Ch. Whiskey de Aldenham', sex: 'male' },                    // father
@@ -538,7 +549,7 @@ function RealPedigreeMockup({ cockerPhotos }: { cockerPhotos: string[] }) {
               registration={d.reg}
               sex={d.sex}
               isRoot={i === 0}
-              photo={cockerPhotos[i] || cockerPhotos[i % Math.max(cockerPhotos.length, 1)]}
+              photo={photoPool.length > 0 ? photoPool[i % photoPool.length] : undefined}
               fallbackSeed={i}
             />
           </div>

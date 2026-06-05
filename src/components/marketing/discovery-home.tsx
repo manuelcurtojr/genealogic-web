@@ -145,7 +145,7 @@ export default function DiscoveryHome({
                 <span style={{ color: '#FE6620' }} className="font-medium">{t('la construyes tú.')}</span>
               </h1>
               <p className="mt-5 sm:mt-7 max-w-[580px] text-body" style={{ fontSize: 'clamp(15px, 1.4vw, 19px)', lineHeight: 1.5 }}>
-                {t('Mantén el perfil de tu perro al día —genealogía, vacunas, salud, premios— y a cambio tienes gratis las mejores herramientas para gestionarlo. Cada perro cuenta: así preservamos las razas.')}
+                {t('Pega el enlace de la genealogía de tu perro y la montamos entera en 30 segundos, con fotos. Su árbol, su cartilla y sus papeles —gratis para siempre. Cada perro que añades hace la mayor base de datos canina del mundo.')}
               </p>
               <div className="mt-7 flex flex-wrap gap-2.5">
                 <Link href="/register?intent=owner" className="inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[14px] font-bold hover:opacity-90 transition">
@@ -200,12 +200,12 @@ export default function DiscoveryHome({
       <section className="border-b border-hairline">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="mb-8 sm:mb-10 max-w-3xl">
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('El trato')}</p>
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Gratis de verdad')}</p>
             <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
               {t('Genealogic es de tu perro. Y es gratis.')}
             </h2>
             <p className="mt-4 text-[15px] sm:text-[16px] text-body max-w-xl leading-relaxed">
-              {t('Un trato sencillo: mantienes el perfil de tu perro al día y, a cambio, tienes gratis las mejores herramientas para gestionarlo. Cada perro que documentas hace la base de datos más grande y fiable — y ayuda a preservar su raza.')}
+              {t('Perros ilimitados, su árbol, su cartilla y sus papeles —gratis para siempre, sin tarjeta. La única gracia: su ficha es pública. Y así, entre todos, construimos el mayor registro canino del mundo.')}
             </p>
           </div>
 
@@ -217,9 +217,9 @@ export default function DiscoveryHome({
                 <div className="inline-flex w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#FE6620] items-center justify-center shadow-[0_8px_24px_rgba(254,102,32,0.3)]">
                   <Database className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <p className="mt-4 sm:mt-5 text-[11px] font-bold uppercase tracking-wider text-[#FE6620]">{t('Tú aportas')}</p>
+                <p className="mt-4 sm:mt-5 text-[11px] font-bold uppercase tracking-wider text-[#FE6620]">{t('Entre todos')}</p>
                 <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 30px)' }}>
-                  {t('Mantén su perfil al día.')}
+                  {t('Construimos el mayor registro canino del mundo.')}
                 </h3>
                 <p className="mt-2.5 sm:mt-3 text-[14px] sm:text-[15px] text-body leading-[1.55] max-w-md">
                   {t('Su genealogía, sus fotos, sus datos. Cada perro que documentas hace la base de datos de perros más grande, completa y fiable del mundo — y ayuda a preservar su raza. Porque cada perro cuenta.')}
@@ -249,7 +249,7 @@ export default function DiscoveryHome({
                   <Dog className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="mt-4 sm:mt-5 flex items-center gap-2 flex-wrap">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700">{t('Tú recibes')}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700">{t('Para tu perro')}</p>
                   <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{t('Gratis · Sin límite')}</span>
                 </div>
                 <h3 className="mt-1 font-semibold text-ink tracking-[-0.02em] leading-tight" style={{ fontSize: 'clamp(22px, 3.5vw, 30px)' }}>
@@ -349,42 +349,43 @@ export default function DiscoveryHome({
         </div>
       </section>
 
-      {/* ═════ ÁRBOL GENEALÓGICO ═════
-           Sección destacada owner-first: el árbol de generaciones ilimitadas,
-           con ancestros con foto y enlace al criadero de origen. Reusa el
+      {/* ═════ EL MOMENTO MAGIA — IMPORTADOR + ÁRBOL ═════
+           Sección destacada owner-first: el aha del importador IA (pega URL o
+           foto → árbol completo en 30s) con el árbol de generaciones ilimitadas
+           como resultado visual. Ancestros con foto y enlace al criadero. Reusa el
            mockup compartido con /criadores (PedigreeTreeMockup). Si hay fotos
            reales de perros recientes, las pasa; si no, relleno determinista. */}
       <section className="border-b border-hairline bg-surface-soft/40">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-12 sm:py-20 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 lg:gap-14 items-center">
             <div>
-              <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('Su linaje')}</p>
+              <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-[#FE6620]">{t('El momento magia')}</p>
               <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(24px, 4vw, 44px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-                {t('El árbol genealógico de tu perro, sin límite de generaciones.')}
+                {t('Su genealogía no se teclea. Se pega.')}
               </h2>
               <p className="mt-4 text-[15px] sm:text-[16px] text-body leading-relaxed max-w-xl">
-                {t('Cada ancestro con su foto y un enlace al criadero de origen. Constrúyelo a mano, pega la URL de otras plataformas de genealogías, o saca una foto a su genealogía en papel: nuestro importador con IA extrae toda la línea en 30 segundos.')}
+                {t('Pega el enlace de otra plataforma o hazle una foto a su genealogía en papel. Nuestra IA lee a cada ancestro, lo enlaza con los que ya viven en Genealogic y te devuelve el árbol completo —con fotos y sin límite de generaciones— en 30 segundos. Lo que en otros sitios son dos horas de tecleo, aquí es un Ctrl+V.')}
               </p>
               <ul className="mt-6 space-y-2.5 text-[14px] sm:text-[15px] text-body">
                 <li className="flex items-start gap-2.5">
-                  <GitBranch className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
-                  <span>{t('Generaciones ilimitadas, navegables y exportables.')}</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <Camera className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
-                  <span>{t('Ancestros con foto y enlace a su criadero de origen.')}</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <Camera className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
-                  <span>{t('¿Tienes su pedigrí de papel? Hazle una foto y la IA lo digitaliza entero.')}</span>
-                </li>
-                <li className="flex items-start gap-2.5">
                   <Zap className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
-                  <span>{t('Importa la genealogía desde otras plataformas pegando una URL, con IA.')}</span>
+                  <span>{t('Pega una URL o sube una foto y la IA reconstruye toda la línea en 30 segundos.')}</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <GitBranch className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
+                  <span>{t('Generaciones ilimitadas: sigue hacia atrás pinchando en cada ancestro.')}</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <Camera className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
+                  <span>{t('Cada ancestro con su foto y un enlace a su criadero de origen.')}</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <Database className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
+                  <span>{t('Se enlaza con los perros que ya viven en Genealogic, la mayor base canina del mundo.')}</span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Search className="w-4 h-4 mt-0.5 text-[#FE6620] flex-shrink-0" />
-                  <span>{t('Su ficha y genealogía se suman a nuestro motor de búsqueda, junto a todas las demás.')}</span>
+                  <span>{t('Su ficha y su árbol entran en el buscador, junto a toda la comunidad.')}</span>
                 </li>
               </ul>
               <Link href="/register?intent=owner" className="mt-7 inline-flex items-center gap-1.5 rounded-xl bg-ink text-on-primary px-5 py-3 text-[14px] font-bold hover:opacity-90 transition">

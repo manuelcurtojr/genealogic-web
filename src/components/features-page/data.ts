@@ -137,10 +137,10 @@ export const CATEGORIES: Category[] = [
         icon: GitBranch,
         problem: 'Tu genealogía está en PDF, en papel o se ha perdido',
         title: 'Árbol genealógico interactivo',
-        description: 'Hasta 10 generaciones visualizadas en horizontal o vertical. Cada ancestro es navegable, con su foto, palmarés y descendientes. Coeficiente de consanguinidad (COI) calculado en cliente con código de colores.',
+        description: 'Generaciones ilimitadas: el árbol es dinámico, clicas cualquier antepasado y sigue hacia atrás sin tope. Cada ancestro es navegable, con su foto, palmarés y descendientes. Coeficiente de consanguinidad (COI) calculado en cliente con código de colores.',
         bullets: [
           'Vista horizontal o vertical · zoom in/out · pan con drag',
-          'COI calculado con 10 generaciones — semáforo verde/ámbar/rojo',
+          'COI calculado con generaciones ilimitadas — semáforo verde/ámbar/rojo',
           'Click en cualquier ancestro para abrir su perfil completo',
           'Detecta ancestros duplicados (Wright path coefficient)',
           'Versión móvil con panel COI a pantalla completa',
@@ -152,9 +152,9 @@ export const CATEGORIES: Category[] = [
         icon: Activity,
         problem: 'Sabes que la consanguinidad es mala, pero no sabes cuánto tienen tus perros',
         title: 'COI explicado, no solo calculado',
-        description: 'Coeficiente de consanguinidad (Wright) para cada perro, calculado con hasta 10 generaciones. No te damos solo el número: te enseñamos QUÉ ancestros lo causan, cuántas veces aparecen y cómo se compara con la media de tu raza. Decisiones de cría con base científica.',
+        description: 'Coeficiente de consanguinidad (Wright) para cada perro, calculado sobre generaciones ilimitadas. No te damos solo el número: te enseñamos QUÉ ancestros lo causan, cuántas veces aparecen y cómo se compara con la media de tu raza. Decisiones de cría con base científica.',
         bullets: [
-          'Cálculo Wright sobre 10 generaciones (no las 4-5 típicas de PDFs FCI)',
+          'Cálculo Wright sobre generaciones ilimitadas (no las 4-5 típicas de PDFs FCI)',
           'Lista de ancestros duplicados ordenados por contribución %',
           'Wright path: cada camino genealógico que repite a un ancestro',
           'Comparativa vs media de la raza en Genealogic (percentil)',
@@ -203,7 +203,7 @@ export const CATEGORIES: Category[] = [
         title: 'Simulador de cruces',
         description: 'Selecciona macho y hembra (los tuyos o cualquiera del directorio público) y predice el COI de la camada, los colores probables y los riesgos genéticos visibles antes de decidir cubrir.',
         bullets: [
-          'COI proyectado con 10 generaciones de ambos lados',
+          'COI proyectado con generaciones ilimitadas de ambos lados',
           'Predicción de color basada en genotipos visibles (locus E, B, K…)',
           'Detección de duplicados peligrosos en la ascendencia común',
           'Compara hasta 4 cruces lado a lado',

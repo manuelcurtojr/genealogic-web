@@ -65,10 +65,7 @@ export default async function FeaturesContent() {
                           </span>
                         )}
                       </div>
-                      <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-rose-700 bg-rose-50 inline-block px-2 py-0.5 rounded">
-                        {t('Problema')}
-                      </p>
-                      <p className="mt-1.5 text-[14px] text-body italic leading-snug">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
                         {feature.problem}
                       </p>
                       <h3 className="mt-5 text-[22px] sm:text-[26px] font-semibold tracking-[-0.025em] text-ink leading-[1.2]">

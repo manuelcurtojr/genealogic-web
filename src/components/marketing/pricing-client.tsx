@@ -72,7 +72,7 @@ const CATEGORIES: CategoryDef[] = [
   {
     label: 'Genealogía',
     features: [
-      { name: 'Árbol genealógico hasta 10 generaciones', marks: 'OFP' },
+      { name: 'Árbol genealógico interactivo · generaciones ilimitadas', marks: 'OFP' },
       { name: 'COI Wright + lista de ancestros duplicados', marks: 'P' },
       { name: 'Comparativa COI vs media de la raza', marks: 'P' },
       { name: 'PDF de genealogía con tu marca', marks: 'P' },
@@ -168,6 +168,9 @@ interface PlanDef {
   accent: string
   accentBg: string
   highlights: string[]
+  /** Ancla de valor: línea destacada que aparece ENCIMA de las bullets
+   *  (ej. "sustituye tu web + CRM + Mailchimp..."). Opcional. */
+  valueAnchor?: string
   highlight?: boolean
   ctaLabel: string
   ctaHref?: string
@@ -195,7 +198,7 @@ function fmtPrice(plan: PlanDef, cycle: BillingCycle): { amount: string; per: st
   return {
     amount: `${perMonth}€`,
     per: '/mes',
-    sub: `${annual / 100}€/año · ahorras 15%`,
+    sub: `${annual / 100}€/año · 2 meses gratis`,
   }
 }
 
@@ -214,7 +217,7 @@ const PLANS: PlanDef[] = [
     accentBg: 'from-blue-50 via-canvas to-sky-50',
     highlights: [
       'Perros ilimitados, gratis para siempre',
-      'Genealogía completa de 10 generaciones',
+      'Árbol genealógico interactivo, generaciones ilimitadas',
       'Cartilla veterinaria + recordatorios de vacunas',
       'Galería ilimitada de fotos + palmarés',
       'Importador IA: pega URL → árbol completo en 30s',
@@ -259,6 +262,7 @@ const PLANS: PlanDef[] = [
     accent: '#FE6620',
     accentBg: 'from-orange-50 via-canvas to-amber-50',
     highlight: true,
+    valueAnchor: 'Sustituye tu web (≈15€/mes), tu CRM, Mailchimp (≈20€/mes) y al diseñador que te hace los PDFs de genealogía. Todo por 49€.',
     highlights: [
       'Embudo de ventas completo + CRM + contactos',
       'COI Wright + ancestros duplicados + comparativa con la raza',
@@ -366,17 +370,17 @@ export default function PricingClient({
             {t('Precios')}
           </div>
           <h1 className="font-semibold text-ink mb-4 tracking-tight" style={{ fontSize: 'clamp(28px, 5vw, 52px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-            {t('Empieza gratis. Sube cuando crezcas.')}
+            {t('Para tu perro, gratis para siempre. Para tu criadero, 49€.')}
           </h1>
           <p className="text-base sm:text-lg text-body max-w-2xl mx-auto leading-relaxed">
-            {t('Owner y Kennel Free son gratis para siempre, sin tarjeta. Kennel Pro viene con 14 días de prueba, y lo amplías con extensiones cuando lo necesites.')}
+            {t('No cobramos por perro —sube todos los que quieras—. Solo pagas las herramientas profesionales cuando críes en serio.')}
           </p>
         </div>
 
         {/* Toggle Mensual / Anual — palanca principal de pricing.
             Pongo este toggle PRIMERO (antes del vista simple/avanzada)
-            porque condiciona la decisión de compra. El badge -15% sobre
-            "Anual" comunica el ahorro sin necesidad de leer copy.
+            porque condiciona la decisión de compra. El badge "2 meses
+            gratis" sobre "Anual" comunica el ahorro sin necesidad de leer copy.
             Solo se muestra cuando la vista lo necesita (planes de pago
             visibles — ambas vistas los muestran, así que siempre). */}
         <div className="flex justify-center mb-5 sm:mb-6">
@@ -400,8 +404,8 @@ export default function PricingClient({
               }`}
             >
               {t('Anual')}
-              <span className="ml-1.5 inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-1.5 py-0.5 text-[10px] font-bold tabular-nums">
-                –15%
+              <span className="ml-1.5 inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-1.5 py-0.5 text-[10px] font-bold">
+                {t('2 meses gratis')}
               </span>
             </button>
           </div>
@@ -538,6 +542,16 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
       <p className="mt-3 text-[13px] text-body leading-relaxed">
         {t(plan.description)}
       </p>
+
+      {/* Ancla de valor (línea destacada encima de las bullets) */}
+      {plan.valueAnchor && (
+        <p
+          className="mt-4 rounded-xl border bg-canvas/70 px-3 py-2.5 text-[12.5px] font-semibold leading-snug text-ink"
+          style={{ borderColor: `${plan.accent}40` }}
+        >
+          {t(plan.valueAnchor)}
+        </p>
+      )}
 
       {/* Highlights */}
       <ul className="mt-5 space-y-2 flex-1">
