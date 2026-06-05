@@ -12,6 +12,10 @@ export type ContractSentProps = {
   contractKind: 'reservation' | 'delivery'
   reservationId: string
   hasAccount: boolean
+  /** UUID del preview_token del contrato → link público sólo-lectura
+   *  para que el cliente lea sin crear cuenta. Si no está presente,
+   *  el email omite ese CTA secundario. */
+  previewToken?: string | null
   locale?: string
 }
 
@@ -21,6 +25,7 @@ export default function ContractSentEmail({
   contractKind,
   reservationId,
   hasAccount,
+  previewToken,
   locale,
 }: ContractSentProps) {
   const t = getTranslator(locale || 'es')
@@ -33,6 +38,7 @@ export default function ContractSentEmail({
   const url = hasAccount
     ? `${SITE_URL}/login?intent=owner&redirect=${encodeURIComponent(dest)}`
     : `${SITE_URL}/register?intent=owner&redirect=${encodeURIComponent(dest)}`
+  const previewUrl = previewToken ? `${SITE_URL}/contrato-preview/${previewToken}` : null
   return (
     <EmailLayout preview={`${kennelName}: ${t('contrato para firmar')}`} locale={locale}>
       <Eyebrow>{t('Contrato para firmar')}</Eyebrow>
@@ -46,10 +52,18 @@ export default function ContractSentEmail({
       </P>
       {!hasAccount && (
         <P>
-          {t('Para verlo y firmarlo necesitas una cuenta de Genealogic. Créala con este mismo email y tu reserva aparecerá automáticamente.')}
+          {t('Para firmarlo necesitas una cuenta de Genealogic. Créala con este mismo email y tu reserva aparecerá automáticamente.')}
         </P>
       )}
       <Btn href={url}>{hasAccount ? t('Ver y firmar el contrato') : t('Crear cuenta y firmar')}</Btn>
+      {previewUrl && (
+        <P>
+          {t('¿Prefieres leerlo antes sin crear cuenta?')}{' '}
+          <a href={previewUrl} style={{ color: '#FE6620', fontWeight: 600 }}>
+            {t('Vista previa del contrato')} →
+          </a>
+        </P>
+      )}
       <Small>
         {t('Si no esperabas este contrato, puedes ignorar este email o escribir a hola@genealogic.io.')}
       </Small>

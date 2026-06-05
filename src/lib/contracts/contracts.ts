@@ -21,6 +21,9 @@ export type ReservationContract = {
   /** Valores del fill-form (token → valor). NULL para contratos legacy
    *  creados antes del refactor de fill-form (siguen usando markdown). */
   template_values: Record<string, unknown> | null
+  /** UUID público para vista previa sin auth en /contrato-preview/[token].
+   *  Cualquiera con el link puede LEER (no firmar). */
+  preview_token: string
   status: ContractStatus
   sent_at: string | null
   signed_at_breeder: string | null

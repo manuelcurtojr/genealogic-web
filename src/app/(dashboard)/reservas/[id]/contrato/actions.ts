@@ -316,7 +316,7 @@ export async function sendContractAction(
     const admin = createKennelAdminClient() as any
     const { data: contract } = await admin
       .from('reservation_contracts')
-      .select('kind')
+      .select('kind, preview_token')
       .eq('id', contractId)
       .maybeSingle()
     await setContractStatus(contractId, 'sent', {
@@ -340,6 +340,7 @@ export async function sendContractAction(
                 | 'delivery',
               reservationId,
               hasAccount: !!reservation.client_user_id,
+              previewToken: contract?.preview_token ?? null,
             },
           },
           { userId: reservation.client_user_id || undefined },

@@ -25,6 +25,7 @@ import { CONTRACT_TEMPLATES, type ContractKind, getTokenizedBaseTemplate } from 
 import { buildContractVars } from '@/lib/contracts/render'
 import ContractEditor from '@/components/contracts/contract-editor'
 import ContractFillPanel, { type BreedOption } from '@/components/contracts/contract-fill-panel'
+import CopyPreviewLinkButton from '@/components/contracts/copy-preview-link-button'
 import {
   createOrInitContractAction,
   createFromUserTemplateAction,
@@ -297,7 +298,18 @@ function ContractBlock({
             <p className="mt-0.5 text-[12.5px] text-muted leading-snug max-w-md">{blockSubtitle}</p>
           </div>
         </div>
-        {contract && <StatusBadge status={contract.status} t={t} />}
+        {contract && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Link público sólo-lectura — útil para compartir antes de
+                pedir firma. El cliente lo lee sin tener que registrarse.
+                Si preview_token no existe (migración 20260721 no aplicada)
+                el botón se oculta sin romper. */}
+            {contract.preview_token && (
+              <CopyPreviewLinkButton token={contract.preview_token} label={t('Copiar link para leer')} />
+            )}
+            <StatusBadge status={contract.status} t={t} />
+          </div>
+        )}
       </header>
 
       {!contract ? (
