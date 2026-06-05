@@ -22,6 +22,7 @@ export default function ReservationThread({
   reservationId,
   onSendAction,
   otherSideName,
+  variant = 'card',
 }: {
   messages: ReservationMessage[]
   currentRole: 'client' | 'breeder'
@@ -32,6 +33,11 @@ export default function ReservationThread({
   ) => Promise<{ ok: true } | { ok: false; error: string }>
   /** Nombre que se muestra cuando NO hay mensajes ("Escribir a Irema Curtó..."). */
   otherSideName: string
+  /** 'card' (default): wrapper con border + h-[500px] — para empotrar en una
+   *  página. 'fill': sin border ni altura fija, ocupa el 100% del padre —
+   *  para panels laterales (ReservationChatPanel) donde el contenedor
+   *  controla la altura. */
+  variant?: 'card' | 'fill'
 }) {
   const t = useT()
   const [text, setText] = useState('')
@@ -67,11 +73,15 @@ export default function ReservationThread({
     }
   }
 
+  const wrapperClass = variant === 'fill'
+    ? 'flex flex-col h-full bg-canvas overflow-hidden'
+    : 'flex flex-col h-[500px] rounded-2xl border border-hairline bg-canvas overflow-hidden'
+
   return (
-    <div className="flex flex-col h-[500px] rounded-2xl border border-hairline bg-canvas overflow-hidden">
+    <div className={wrapperClass}>
       <div
         ref={listRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3"
+        className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3"
       >
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">

@@ -100,6 +100,7 @@ export default async function MyReservationDetailPage({
           reservationId={reservation.id}
           onSendAction={sendClientMessageAction}
           otherSideName={reservation.kennel?.name || t('el criador')}
+          variant="fill"
         />
       }
     >

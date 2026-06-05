@@ -1,41 +1,36 @@
 'use client'
 
 /**
- * ReservationChatPanel — chat con el criador estilo "panel lateral plegable"
- * (patrón Genos / chatGPT / Linear).
+ * ReservationChatPanel — chat con el criador como panel lateral derecho.
  *
- * Layout:
- *  - xl+ (≥1280px): el panel se ancla al borde derecho con 420px. Cuando
- *    está abierto, empuja el contenido a la izquierda con margin-right.
- *    Cuando está plegado, el contenido recupera el ancho completo y solo
- *    queda visible una pestaña vertical en el borde derecho para
- *    reabrir.
- *  - lg- (<1280px): el panel es overlay full-screen que desliza desde la
- *    derecha. El toggle es un FAB redondo en bottom-right con badge de
- *    no-leídos. Backdrop blur al abrir.
+ * Inspirado en dos patrones del propio Genealogic:
+ *  - GenosPanel: panel full-height (top-0 bottom-0 right-0), header fijo
+ *    + body scroll + composer fijo. flex flex-col + flex-1 min-h-0.
+ *  - PedigreeTree COI panel: tab sutil para desplegar/plegar. h-14 w-7,
+ *    pegada al borde izquierdo del panel, solo icono chevron, neutral
+ *    border-r-0 para fundirse con el panel.
  *
- * Estado persistido en localStorage (mismo entre páginas de reserva).
+ * Layout responsivo:
+ *  - xl+ (≥1280px): el panel hace push del contenido (margin-right).
+ *    Tab plegable estilo COI visible cuando está cerrado.
+ *  - lg- (móvil/tablet): el panel es overlay full-screen con backdrop blur.
+ *    FAB redondo bottom-right como toggle.
  *
- * Header del panel: logo del kennel + nombre + "Criadero" → el cliente
- * tiene siempre claro con quién está hablando.
+ * Estado persistido en localStorage entre páginas.
  */
 
-import { useState, useEffect, useRef, type ReactNode } from 'react'
-import { MessageCircle, X, ChevronRight, Building2 } from 'lucide-react'
+import { useState, useEffect, type ReactNode } from 'react'
+import { MessageCircle, X, ChevronLeft, Building2 } from 'lucide-react'
 
 interface ReservationChatPanelProps {
-  /** Contenido principal de la página — recibe el espacio que sobra cuando
-   *  el panel está abierto. */
+  /** Contenido principal de la página — adapta margin-right cuando el
+   *  panel está abierto en xl+. */
   children: ReactNode
-  /** Header del panel (kennel logo + nombre). Lo pasamos como ReactNode
-   *  para que el server component pueda construirlo con sus joins. */
   kennelLogoUrl: string | null
   kennelName: string
   kennelTagline?: string | null
-  /** Hilo de mensajes (se renderiza dentro del panel). */
   chatBody: ReactNode
-  /** Número de mensajes sin leer del criador — badge en el FAB cuando
-   *  el panel está cerrado. */
+  /** Número de mensajes sin leer — badge en la tab/FAB cuando está cerrado. */
   unreadCount?: number
 }
 
@@ -44,22 +39,15 @@ const LS_KEY = 'genealogic.reservationChatOpen'
 export default function ReservationChatPanel({
   children, kennelLogoUrl, kennelName, kennelTagline, chatBody, unreadCount = 0,
 }: ReservationChatPanelProps) {
-  // Default: cerrado en SSR (evita layout shift). useEffect lo restaura
-  // desde localStorage al montar — para xl+ por defecto abierto si no
-  // hay valor guardado.
   const [isOpen, setIsOpen] = useState(false)
   const [hasMounted, setHasMounted] = useState(false)
-  const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setHasMounted(true)
     const stored = typeof window !== 'undefined' ? localStorage.getItem(LS_KEY) : null
     if (stored === 'true') setIsOpen(true)
     else if (stored === 'false') setIsOpen(false)
-    else {
-      // Default según ancho de viewport
-      setIsOpen(typeof window !== 'undefined' && window.innerWidth >= 1280)
-    }
+    else setIsOpen(typeof window !== 'undefined' && window.innerWidth >= 1280)
   }, [])
 
   useEffect(() => {
@@ -67,7 +55,7 @@ export default function ReservationChatPanel({
     localStorage.setItem(LS_KEY, String(isOpen))
   }, [isOpen, hasMounted])
 
-  // Bloquear scroll del body cuando el overlay mobile está abierto
+  // Block body scroll cuando el overlay mobile está abierto
   useEffect(() => {
     if (!hasMounted) return
     if (isOpen && window.innerWidth < 1280) {
@@ -76,19 +64,15 @@ export default function ReservationChatPanel({
     }
   }, [isOpen, hasMounted])
 
-  // Esc para cerrar
+  // Esc cierra
   useEffect(() => {
     if (!isOpen) return
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setIsOpen(false)
-    }
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') setIsOpen(false) }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [isOpen])
 
-  // Capturar clicks en links a "#mensajes" (QuickAction "Mensajes" de la
-  // página) → abre el panel en lugar de hacer scroll a un anchor que ya
-  // no existe. Bubble phase, así otros links no se ven afectados.
+  // Click en links a #mensajes / #chat → abre el panel
   useEffect(() => {
     if (!hasMounted) return
     function onAnchorClick(e: MouseEvent) {
@@ -104,54 +88,36 @@ export default function ReservationChatPanel({
 
   return (
     <>
-      {/* ─── CONTENIDO PRINCIPAL — adapta margin-right en xl+ ─── */}
+      {/* ─── CONTENIDO PRINCIPAL — push margin en xl+ ───
+          Usamos data-attribute + clase generada en build-time. Las
+          clases xl:mr-[420px] se incluyen en el bundle solo si están
+          escritas literalmente en el código fuente (Tailwind las
+          detecta con regex). */}
       <div
         className={`transition-[margin] duration-300 ease-out ${
-          isOpen ? 'xl:mr-[440px]' : 'xl:mr-0'
+          hasMounted && isOpen ? 'xl:mr-[420px]' : 'xl:mr-0'
         }`}
       >
         {children}
       </div>
 
       {/* ─── BACKDROP (solo overlay mobile) ─── */}
-      {isOpen && (
-        <div
-          onClick={() => setIsOpen(false)}
-          aria-hidden
-          className="fixed inset-0 z-30 bg-ink/40 backdrop-blur-sm xl:hidden transition-opacity"
-        />
-      )}
+      <div
+        onClick={() => setIsOpen(false)}
+        aria-hidden
+        className={`fixed inset-0 z-[60] bg-ink/40 backdrop-blur-sm xl:hidden transition-opacity duration-300 ${
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      />
 
-      {/* ─── PESTAÑA LATERAL (xl+, solo cuando está CERRADO) ───
-          Es una tab vertical anclada al borde derecho de la ventana, así
-          el cliente puede reabrir el chat sin bajar al FAB de móvil. */}
-      {!isOpen && (
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          aria-label="Abrir chat con el criador"
-          className="hidden xl:flex fixed top-1/2 -translate-y-1/2 right-0 z-30 items-center gap-2 rounded-l-2xl rounded-r-none bg-ink text-on-primary px-3 py-4 shadow-lg hover:opacity-90 transition-all group"
-        >
-          <MessageCircle className="h-4 w-4" />
-          <span className="text-[12px] font-bold uppercase tracking-wider [writing-mode:vertical-rl] rotate-180">
-            {kennelName}
-          </span>
-          {unreadCount > 0 && (
-            <span className="absolute top-2 right-2 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-amber-400 text-amber-950 text-[10px] font-bold">
-              {unreadCount}
-            </span>
-          )}
-        </button>
-      )}
-
-      {/* ─── FAB MÓVIL/TABLET (siempre visible) ─── */}
+      {/* ─── FAB MÓVIL/TABLET ─── */}
       <button
         type="button"
         onClick={() => setIsOpen((o) => !o)}
         aria-label={isOpen ? 'Cerrar chat' : 'Abrir chat con el criador'}
-        className={`xl:hidden fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-2xl transition-all flex items-center justify-center ${
+        className={`xl:hidden fixed bottom-6 right-6 z-[80] h-14 w-14 rounded-full shadow-2xl transition-transform flex items-center justify-center ${
           isOpen
-            ? 'bg-canvas text-ink border border-hairline'
+            ? 'bg-canvas text-ink border border-hairline scale-90'
             : 'bg-ink text-on-primary hover:scale-105'
         }`}
       >
@@ -164,15 +130,29 @@ export default function ReservationChatPanel({
       </button>
 
       {/* ─── PANEL CHAT ─── */}
+      {/* fixed top-0 bottom-0 right-0 → full viewport height (no h-screen
+          que en mobile cuenta con la barra del navegador). flex flex-col
+          deja que header sea flex-shrink-0 y body flex-1 min-h-0. */}
       <aside
-        ref={panelRef}
-        className={`fixed top-0 right-0 z-40 h-screen bg-canvas border-l border-hairline shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+        className={`fixed top-0 bottom-0 right-0 z-[70] bg-canvas border-l border-hairline shadow-2xl flex flex-col transition-transform duration-300 ease-out w-full sm:w-[420px] xl:w-[420px] ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
-        } w-full sm:w-[420px] xl:w-[420px]`}
+        }`}
+        style={{
+          paddingTop: 'var(--safe-area-top)',
+          paddingBottom: 'var(--safe-area-bottom)',
+        }}
         aria-hidden={!isOpen}
       >
-        {/* Header con kennel info */}
-        <header className="flex items-center gap-3 px-4 sm:px-5 py-4 border-b border-hairline bg-gradient-to-br from-canvas via-canvas to-surface-soft/60 flex-shrink-0">
+        {/* ─── TAB SUTIL PLEGABLE (estilo COI panel) ───
+            Solo visible en xl+. Cuando el panel está abierto, esta tab
+            sirve para cerrarlo (chevron derecha). Cuando está cerrado, el
+            panel está translateado fuera, pero la tab queda visible porque
+            está posicionada absolute -left-7 dentro del panel. Trick: la
+            ENVOLVEMOS en un wrapper aparte que NO se translatea cuando el
+            panel sí. Implementado abajo como hermano del aside. */}
+
+        {/* Header */}
+        <header className="flex items-center gap-3 px-4 sm:px-5 py-3.5 border-b border-hairline flex-shrink-0 bg-gradient-to-br from-canvas via-canvas to-surface-soft/40">
           {kennelLogoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -198,16 +178,35 @@ export default function ReservationChatPanel({
             aria-label="Cerrar chat"
             className="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:text-ink hover:bg-surface-soft transition-colors flex-shrink-0"
           >
-            <ChevronRight className="h-4 w-4 hidden xl:block" />
-            <X className="h-4 w-4 xl:hidden" />
+            <X className="h-4 w-4" />
           </button>
         </header>
 
-        {/* Body — chat thread scrollable */}
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        {/* Body — chat thread fill height */}
+        <div className="flex-1 min-h-0 overflow-hidden">
           {chatBody}
         </div>
       </aside>
+
+      {/* ─── TAB COI-STYLE (solo cuando panel está CERRADO en xl+) ───
+          Pequeña pestaña 56×28px pegada al borde derecho del viewport,
+          igual que el panel COI del pedigree tree. */}
+      {!isOpen && (
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          aria-label="Abrir chat con el criador"
+          title={`Abrir chat con ${kennelName}`}
+          className="hidden xl:flex fixed top-1/2 -translate-y-1/2 right-0 z-[65] h-14 w-7 items-center justify-center rounded-l-lg border border-r-0 border-hairline bg-canvas text-muted hover:text-ink transition-colors"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1.5 -left-1.5 inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full bg-amber-400 text-amber-950 text-[9px] font-bold border border-canvas">
+              {unreadCount}
+            </span>
+          )}
+        </button>
+      )}
     </>
   )
 }
