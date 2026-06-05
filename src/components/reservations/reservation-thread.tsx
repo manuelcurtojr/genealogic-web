@@ -111,14 +111,15 @@ export default function ReservationThread({
             onKeyDown={handleKeyDown}
             disabled={pending}
             placeholder={`${t('Escribir a')} ${otherSideName}...`}
-            rows={2}
-            className="flex-1 resize-none rounded-lg border border-hairline bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:border-ink/30"
+            rows={1}
+            style={{ maxHeight: '120px' }}
+            className="flex-1 resize-none rounded-xl border border-hairline bg-canvas px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:outline-none focus:border-ink disabled:opacity-50"
           />
           <button
             type="button"
             onClick={handleSend}
             disabled={pending || !text.trim()}
-            className="inline-flex items-center justify-center rounded-lg bg-ink text-on-primary px-3 py-2 hover:opacity-90 disabled:opacity-40"
+            className="w-10 h-10 rounded-xl bg-ink text-on-primary flex items-center justify-center hover:opacity-90 disabled:opacity-50 flex-shrink-0"
             title={t('Enviar (Enter)')}
           >
             {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
