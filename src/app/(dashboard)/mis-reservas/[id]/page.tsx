@@ -81,7 +81,7 @@ export default async function MyReservationDetailPage({
   const kennelHref = reservation.kennel?.slug ? `/kennels/${reservation.kennel.slug}` : null
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 sm:space-y-7">
+    <div className="space-y-6 sm:space-y-7">
       {/* Breadcrumb */}
       <Link
         href="/mis-reservas"
@@ -89,6 +89,14 @@ export default async function MyReservationDetailPage({
       >
         <ArrowLeft className="h-3.5 w-3.5" /> {t('Mis reservas')}
       </Link>
+
+      {/* ═══ PANEL LAYOUT: contenido + chat sticky a la derecha en xl+ ═══
+          En xl: grid 2-col → contenido (flex 1) | chat sidebar fijo 400px.
+          En lg- (móvil/tablet): el chat se renderiza al final apilado
+          (hidden xl:block en el sidebar + xl:hidden en el bloque inferior). */}
+      <div className="grid xl:grid-cols-[minmax(0,1fr)_minmax(0,420px)] gap-6 xl:gap-7">
+        {/* ─── COLUMNA IZQUIERDA: todo el contenido ─── */}
+        <div className="space-y-6 sm:space-y-7 min-w-0">
 
       {/* ═══ HERO CARD ═══ */}
       <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-canvas via-canvas to-surface-soft/60 p-6 sm:p-8">
@@ -420,8 +428,8 @@ export default async function MyReservationDetailPage({
         </Card>
       )}
 
-      {/* ═══ Mensajes — full width al final ═══ */}
-      <Card id="mensajes">
+      {/* ═══ Mensajes — versión mobile/tablet apilada al final (solo lg-) ═══ */}
+      <Card id="mensajes" className="xl:hidden">
         <CardHeader
           title={t('Mensajes con el criador')}
           subtitle={messages.length === 0
@@ -444,17 +452,46 @@ export default async function MyReservationDetailPage({
           <p>{t('Esta reserva está archivada. Se mantiene visible para tu histórico pero ya no recibirá actualizaciones.')}</p>
         </div>
       )}
+
+        </div>
+        {/* ─── COLUMNA DERECHA: chat sticky (solo xl+) ───
+            En desktop el chat queda fijo a la derecha para que el cliente
+            pueda mensajearse mientras navega por contratos/pagos/timeline.
+            Ocupa la altura disponible de viewport (max-h calc). */}
+        <aside className="hidden xl:block xl:sticky xl:top-6 xl:self-start xl:max-h-[calc(100vh-3rem)] min-w-0">
+          <Card>
+            <CardHeader
+              title={t('Mensajes con el criador')}
+              subtitle={messages.length === 0
+                ? t('Aún no hay mensajes')
+                : `${messages.length} ${messages.length === 1 ? t('mensaje') : t('mensajes')}`}
+              icon={MessageCircle}
+            />
+            <div className="max-h-[calc(100vh-280px)] overflow-y-auto -mx-2 px-2">
+              <ReservationThread
+                messages={messages}
+                currentRole="client"
+                reservationId={reservation.id}
+                onSendAction={sendClientMessageAction}
+                otherSideName={reservation.kennel?.name || t('el criador')}
+              />
+            </div>
+          </Card>
+        </aside>
+      </div>
     </div>
   )
 }
 
 // ─── Building blocks ───────────────────────────────────────────────────────
 
-function Card({ children, id }: { children: React.ReactNode; id?: string }) {
+function Card({
+  children, id, className = '',
+}: { children: React.ReactNode; id?: string; className?: string }) {
   return (
     <section
       id={id}
-      className="rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 min-w-0"
+      className={`rounded-2xl border border-hairline bg-canvas p-5 sm:p-6 min-w-0 ${className}`}
     >
       {children}
     </section>
