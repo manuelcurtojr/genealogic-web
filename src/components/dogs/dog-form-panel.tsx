@@ -17,6 +17,7 @@ import PedigreePdfTab from './edit-tabs/pedigree-pdf-tab'
 import GeneticaTab from './edit-tabs/genetica-tab'
 import ReproduccionTab from './edit-tabs/reproduccion-tab'
 import ImportPedigreeTab from './import-pedigree-tab'
+import FeedbackButton from '@/components/feedback/feedback-button'
 import HistoricoTab from './edit-tabs/historico-tab'
 import PedigreeEditor from '@/components/pedigree/pedigree-editor'
 import TransferPanel from '@/components/kennel/transfer-panel'
@@ -744,6 +745,16 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             </div>
           </div>
         )}
+
+        {/* Ayuda — "¿Algo ha salido mal?" abajo a la derecha del popup. En modo
+            manual se sube para no tapar el footer de guardar. */}
+        <FeedbackButton
+          scope={createMode === 'import' ? 'importer' : 'dog_form'}
+          pageLabel={createMode === 'import' ? 'Añadir perro · Importador' : 'Añadir perro · Manual'}
+          variant="fixed"
+          className="absolute right-4 z-20"
+          style={{ bottom: createMode === 'manual' ? 'calc(4.75rem + var(--safe-area-bottom))' : 'calc(1rem + var(--safe-area-bottom))' }}
+        />
       </div>
       ) : (
       // ════════════ EDICIÓN / AÑADIR CACHORRO — SLIDE-OVER LATERAL ════════════

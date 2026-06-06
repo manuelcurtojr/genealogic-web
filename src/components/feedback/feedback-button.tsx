@@ -17,7 +17,7 @@
  */
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type CSSProperties } from 'react'
 import { MessageCircleWarning, X, Send, Sparkles, Loader2, CheckCircle2, Bot, User as UserIcon } from 'lucide-react'
 import { createFeedbackAction } from '@/lib/admin-requests/actions'
 import type { FeedbackScope } from '@/lib/admin-requests/types'
@@ -33,10 +33,15 @@ interface Props {
   variant?: 'fixed' | 'inline'
   /** Texto custom para el botón. Por defecto "¿Algo ha salido mal?" */
   label?: string
+  /** Sobreescribe el posicionamiento del botón fixed (p.ej. para anclarlo DENTRO
+   *  de un popup con `absolute` en vez de a la ventana). Si se omite: fixed bottom-right. */
+  className?: string
+  /** Estilo extra para el botón fixed (p.ej. bottom con safe-area dentro de un modal). */
+  style?: CSSProperties
 }
 
 export default function FeedbackButton({
-  scope, pageLabel, variant = 'fixed', label = '¿Algo ha salido mal?',
+  scope, pageLabel, variant = 'fixed', label = '¿Algo ha salido mal?', className, style,
 }: Props) {
   const t = useT()
   const [open, setOpen] = useState(false)
@@ -47,7 +52,8 @@ export default function FeedbackButton({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed bottom-4 right-4 z-40 inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-3.5 py-2 text-[12.5px] font-semibold text-body shadow-[0_4px_16px_rgba(0,0,0,0.08)] backdrop-blur hover:border-ink/30 hover:text-ink hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] transition-all"
+          className={`${className ?? 'fixed bottom-4 right-4 z-40'} inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-3.5 py-2 text-[12.5px] font-semibold text-body shadow-[0_4px_16px_rgba(0,0,0,0.08)] backdrop-blur hover:border-ink/30 hover:text-ink hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] transition-all`}
+          style={style}
           aria-label={t(label)}
         >
           <MessageCircleWarning className="h-3.5 w-3.5 text-amber-600" />
