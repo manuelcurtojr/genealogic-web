@@ -5,7 +5,7 @@ import { Img } from '@/components/ui/img'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, ChevronRight, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, Lock, Globe, Shield, Dna, Heart, History, ArrowRightLeft, Settings2, Sparkles, Info } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, ChevronRight, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, Lock, Globe, Shield, Dna, Heart, History, ArrowRightLeft, Settings2, Sparkles, Info } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import { BRAND } from '@/lib/constants'
 import { formatDogName, extractPersonalName, type AffixFormat } from '@/lib/affix'
@@ -13,7 +13,6 @@ import { generateSlug } from '@/lib/slug'
 import GalleryTab from './edit-tabs/gallery-tab'
 import SaludTab from './edit-tabs/salud-tab'
 import PalmaresTab from './edit-tabs/palmares-tab'
-import PedigreePdfTab from './edit-tabs/pedigree-pdf-tab'
 import GeneticaTab from './edit-tabs/genetica-tab'
 import ReproduccionTab from './edit-tabs/reproduccion-tab'
 import ImportPedigreeTab from './import-pedigree-tab'
@@ -50,7 +49,6 @@ const TABS = [
   { key: 'reproduccion', label: 'Reproducción', icon: Heart, femaleOnly: true },
   { key: 'genetica', label: 'Genética', icon: Dna },
   { key: 'palmares', label: 'Palmarés', icon: Trophy },
-  { key: 'pedigree-pdf', label: 'Genealogía PDF', icon: FileText },
   { key: 'historico', label: 'Histórico', icon: History },
   { key: 'gestion', label: 'Gestión', icon: Settings2 },
 ] as const
@@ -673,7 +671,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       {activeTab === 'reproduccion' && editDogId && form.sex === 'female' && canPro && <ReproduccionTab dogId={editDogId} userId={userId} />}
       {activeTab === 'genetica' && editDogId && canPro && <GeneticaTab dogId={editDogId} userId={userId} />}
       {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
-      {activeTab === 'pedigree-pdf' && editDogId && <PedigreePdfTab dogId={editDogId} dogName={form.name} userId={userId} />}
       {activeTab === 'historico' && editDogId && <HistoricoTab dogId={editDogId} />}
       {activeTab === 'gestion' && editDogId && gestionContent}
     </>

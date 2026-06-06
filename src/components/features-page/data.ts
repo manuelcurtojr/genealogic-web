@@ -20,7 +20,7 @@
 import type { ElementType } from 'react'
 import {
   KanbanSquare, Globe, GitBranch, Mail, Dog, BarChart3,
-  FileText, ArrowRightLeft, Camera, Stethoscope, Calendar,
+  ArrowRightLeft, Camera, Stethoscope, Calendar,
   Send, Search, Star, Inbox, Upload, Sparkles, Heart,
   CreditCard, BookOpen, Bell, Users, Tag, MapPin, Eye, Lock,
   Database, Globe2, History, Dna, FlaskConical, FileSignature,
@@ -181,20 +181,6 @@ export const CATEGORIES: Category[] = [
         mockup: 'coi-detail',
         proOnly: true,
         reserved: true,
-      },
-      {
-        slug: 'pdf-pedigree',
-        icon: FileText,
-        problem: 'Generar una genealogía imprimible requiere Photoshop o pagar a un diseñador',
-        title: 'PDF de genealogía con tu marca',
-        description: 'Genera un PDF con la genealogía del perro de 4 generaciones y la marca de tu criadero. Listo para entregar al cliente con cada cachorro.',
-        bullets: [
-          'Árbol de 4 generaciones en una sola página A4',
-          'Datos del perro, propietario y criadero',
-          'En español',
-          'Documento digital (no sustituye al pedigree oficial del club)',
-        ],
-        mockup: 'pedigree-pdf',
       },
     ],
     featurettes: [
