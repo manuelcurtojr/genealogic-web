@@ -30,6 +30,9 @@ export type ClientReservation = {
   applicant_extra_data: Record<string, unknown> | null
   created_at: string
   updated_at: string
+  /** Si la reserva es un clon hecho por handoff entre pipelines, apunta al
+   *  id de la reserva original. Usado para deduplicar en /mis-reservas. */
+  origin_entry_id: string | null
   // Joins
   kennel: { id: string; slug: string; name: string; logo_url: string | null } | null
   dog: { id: string; slug: string; name: string; thumbnail_url: string | null } | null
@@ -49,7 +52,7 @@ const SELECT_COLS = `
   deposit_paid_at, paid_in_full_at, contract_signed_at, delivered_at,
   dog_id, position_in_queue,
   applicant_name, applicant_email, applicant_message, applicant_purpose, applicant_extra_data,
-  created_at, updated_at,
+  created_at, updated_at, origin_entry_id,
   kennel:kennels(id, slug, name, logo_url),
   dog:dogs!dog_id(id, slug, name, thumbnail_url),
   litter:litters(id, expected_date, birth_date),
@@ -58,6 +61,28 @@ const SELECT_COLS = `
 
 const ACTIVE_STATUSES = ['interested', 'waitlisted', 'deposit_paid', 'assigned', 'contract_signed', 'paid_in_full']
 const ARCHIVED_STATUSES = ['delivered', 'cancelled']
+
+/**
+ * Dedupe pipeline handoffs: cuando el criador mueve un lead a un stage con
+ * `handoff_stage_id` (típicamente "Venta ganada" en Ventas → "Reserva en
+ * firme" en Reservas en firme), el sistema CLONA la reserva al pipeline
+ * destino (ver src/lib/pipelines/actions.ts:130). Para el cliente eso son 2
+ * filas idénticas: la original sigue en el pipeline de captación, el clon
+ * vive en el operativo.
+ *
+ * En /mis-reservas del cliente solo queremos mostrar UNA: el clon (la "viva"
+ * en el flujo operativo). Si una fila X tiene una hija Y con
+ * `origin_entry_id = X`, ocultamos X y mantenemos Y.
+ *
+ * Solo aplica al lado cliente — en /embudo del criador cada pipeline muestra
+ * sus filas y la separación es deliberada.
+ */
+function dedupeHandoffClones<T extends { id: string; origin_entry_id?: string | null }>(rows: T[]): T[] {
+  const originIds = new Set(
+    rows.map((r) => r.origin_entry_id).filter((v): v is string => !!v),
+  )
+  return rows.filter((r) => !originIds.has(r.id))
+}
 
 /** Fetch del listado (activas o histórico) con el mismo fallback robusto
  *  de getMyReservation: si el embed PostgREST peta, hace SELECT base y
@@ -76,7 +101,7 @@ async function listReservationsWithFallback(
     .in('status', statuses)
     .order(orderCol, { ascending: false })
 
-  if (!error && data) return data as ClientReservation[]
+  if (!error && data) return dedupeHandoffClones(data) as ClientReservation[]
 
   if (error) {
     console.error('[listReservationsWithFallback] embed query failed, falling back', error.message)
@@ -91,7 +116,7 @@ async function listReservationsWithFallback(
       deposit_paid_at, paid_in_full_at, contract_signed_at, delivered_at,
       dog_id, kennel_id, litter_id, position_in_queue,
       applicant_name, applicant_email, applicant_message, applicant_purpose, applicant_extra_data,
-      created_at, updated_at
+      created_at, updated_at, origin_entry_id
     `)
     .eq('client_user_id', userId)
     .in('status', statuses)
@@ -129,13 +154,14 @@ async function listReservationsWithFallback(
     contractsByRes.set(c.reservation_id, arr)
   }
 
-  return bases.map((b: { id: string; kennel_id: string | null; dog_id: string | null; litter_id: string | null }) => ({
+  const hydrated = bases.map((b: { id: string; kennel_id: string | null; dog_id: string | null; litter_id: string | null; origin_entry_id?: string | null }) => ({
     ...b,
     kennel: b.kennel_id ? kennelById.get(b.kennel_id) ?? null : null,
     dog: b.dog_id ? dogById.get(b.dog_id) ?? null : null,
     litter: b.litter_id ? litterById.get(b.litter_id) ?? null : null,
     contracts: contractsByRes.get(b.id) || [],
   })) as ClientReservation[]
+  return dedupeHandoffClones(hydrated)
 }
 
 /**
