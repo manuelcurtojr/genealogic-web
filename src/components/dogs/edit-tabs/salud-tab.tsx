@@ -26,7 +26,7 @@ const REMINDER_TYPES: Record<string, { label: string; color: string; icon: any }
   custom: { label: 'Otro', color: '#8B5CF6', icon: Calendar },
 }
 
-// Mapea el tipo de registro de la cartilla (vet_records.record_type) al tipo de
+// Mapea el tipo de registro de la cartilla (vet_records.type) al tipo de
 // recordatorio (vet_reminders.type). Los recordatorios solo tienen 4 tipos.
 function mapRecordTypeToReminderType(recordType: string): string {
   switch (recordType) {
@@ -99,8 +99,8 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
   }
   useEffect(() => { load() }, [dogId])
 
-  const counts = VET_TYPES.map(vt => ({ ...vt, count: records.filter(r => r.record_type === vt.key).length }))
-  const filtered = filter === 'all' ? records : records.filter(r => r.record_type === filter)
+  const counts = VET_TYPES.map(vt => ({ ...vt, count: records.filter(r => r.type === vt.key).length }))
+  const filtered = filter === 'all' ? records : records.filter(r => r.type === filter)
 
   function parseFiles(fileUrl: string | null): string[] { try { return fileUrl ? JSON.parse(fileUrl) : [] } catch { return fileUrl ? [fileUrl] : [] } }
 
@@ -122,7 +122,7 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
     setEditRecord(r); setError(null); setReminderTouched(false)
     // En edición NO pre-rellenamos el recordatorio: solo se crea uno si el
     // usuario lo añade explícitamente en este submit (evita duplicados).
-    setForm({ type: r.record_type, title: r.name, date: r.date, notes: r.notes || '', is_public: r.is_public ?? false, files: parseFiles(r.file_url), reminderDate: '', reminderMonths: '' })
+    setForm({ type: r.type, title: r.title, date: r.date, notes: r.notes || '', is_public: r.is_public ?? false, files: parseFiles(r.file_url), reminderDate: '', reminderMonths: '' })
     setShowForm(true)
   }
 
@@ -148,8 +148,8 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
   async function handleSave() {
     if (!form.title.trim()) return
     setSaving(true); setError(null)
-    // La tabla vet_records usa las columnas record_type y name (no type/title).
-    const payload = { dog_id: dogId, owner_id: userId, record_type: form.type, name: form.title.trim(), date: form.date, notes: form.notes.trim() || null, is_public: form.is_public, file_url: form.files.length > 0 ? JSON.stringify(form.files) : null }
+    // La tabla vet_records usa las columnas type y title (no record_type/name).
+    const payload = { dog_id: dogId, owner_id: userId, type: form.type, title: form.title.trim(), date: form.date, notes: form.notes.trim() || null, is_public: form.is_public, file_url: form.files.length > 0 ? JSON.stringify(form.files) : null }
     const { error: err } = editRecord
       ? await supabase.from('vet_records').update(payload).eq('id', editRecord.id)
       : await supabase.from('vet_records').insert(payload)
@@ -381,14 +381,14 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
       ) : (
         <div className="space-y-2.5">
           {filtered.map(r => {
-            const type = VET_TYPES.find(vt => vt.key === r.record_type) || VET_TYPES[0]; const Icon = type.icon
+            const type = VET_TYPES.find(vt => vt.key === r.type) || VET_TYPES[0]; const Icon = type.icon
             const ff = parseFiles(r.file_url)
             return (
               <div key={r.id} className="rounded-2xl border border-hairline bg-canvas p-3.5 flex items-start gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full flex-shrink-0" style={{ backgroundColor: type.color + '1a' }}><Icon className="h-5 w-5" style={{ color: type.color }} /></div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-[14px] font-medium text-ink leading-tight">{r.name}</p>
+                    <p className="text-[14px] font-medium text-ink leading-tight">{r.title}</p>
                     <span className="rounded-full px-1.5 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: type.color + '1a', color: type.color }}>{t(type.label)}</span>
                     {r.is_public && <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600"><Eye className="h-2.5 w-2.5" /> {t('Público')}</span>}
                   </div>
