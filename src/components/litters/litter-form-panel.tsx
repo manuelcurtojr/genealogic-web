@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
+import { kennelRosterOrFilter } from '@/lib/dogs/roster'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Search, ChevronDown, Lock, Calendar, Heart, PawPrint, Plus, Dog } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
@@ -50,10 +51,13 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
 
     const supabase = createClient()
     async function load() {
+      // Roster del criadero: incluye perros importados/producidos sin owner_id
+      // (kennel_id/breeder_id del criador), p.ej. "Hilda de Irema Curtó".
+      const roster = await kennelRosterOrFilter(userId)
       const [bRes, mRes, fRes] = await Promise.all([
         supabase.from('breeds').select('id, name').order('name'),
-        supabase.from('dogs').select('id, name, thumbnail_url, breed_id').eq('owner_id', userId).eq('sex', 'male').order('name'),
-        supabase.from('dogs').select('id, name, thumbnail_url, breed_id').eq('owner_id', userId).eq('sex', 'female').order('name'),
+        supabase.from('dogs').select('id, name, thumbnail_url, breed_id').or(roster).eq('sex', 'male').order('name'),
+        supabase.from('dogs').select('id, name, thumbnail_url, breed_id').or(roster).eq('sex', 'female').order('name'),
       ])
       setBreeds(bRes.data || [])
       setMaleDogs(mRes.data || [])

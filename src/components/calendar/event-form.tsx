@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
+import { kennelRosterOrFilter } from '@/lib/dogs/roster'
 import { Loader2, X, Trash2 } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
@@ -41,8 +42,10 @@ export default function EventForm({ open, onClose, onSaved, initialData, default
   useEffect(() => {
     async function loadEntities() {
       const supabase = createClient()
+      // Roster del criadero (incluye perros importados/producidos sin owner_id).
+      const roster = await kennelRosterOrFilter(userId)
       const [d, l] = await Promise.all([
-        supabase.from('dogs').select('id, name').eq('owner_id', userId).order('name'),
+        supabase.from('dogs').select('id, name').or(roster).order('name'),
         supabase.from('litters').select('id, breed:breeds(name)').eq('owner_id', userId),
       ])
       setDogs((d.data || []).map((x: any) => ({ value: x.id, label: x.name, image: null })))

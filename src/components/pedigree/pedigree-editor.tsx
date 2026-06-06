@@ -9,6 +9,7 @@ import { useT } from '@/components/i18n/locale-provider'
 import AdminPedigreeTree from '../admin/admin-pedigree-tree'
 import DogFormPanel from '../dogs/dog-form-panel'
 import { setDogParent } from '@/lib/dogs/set-dog-parent'
+import { kennelRosterOrFilter } from '@/lib/dogs/roster'
 
 interface Props {
   open: boolean
@@ -51,9 +52,10 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
     const supabase = createClient()
 
     async function load() {
+      const roster = await kennelRosterOrFilter(userId)
       const [pedigreeRes, dogsRes, dogRes] = await Promise.all([
         supabase.rpc('get_pedigree', { dog_uuid: dogId, max_gen: 10 }),
-        supabase.from('dogs').select('id, name, sex, thumbnail_url, breed:breeds(name)').eq('owner_id', userId).order('name').limit(1000),
+        supabase.from('dogs').select('id, name, sex, thumbnail_url, breed:breeds(name)').or(roster).order('name').limit(1000),
         supabase.from('dogs').select('name').eq('id', dogId).single(),
       ])
       setPedigreeData(pedigreeRes.data || [])
@@ -97,9 +99,10 @@ export default function PedigreeEditor({ open, onClose, dogId, userId }: Props) 
 
   const reloadPedigree = useCallback(async () => {
     const supabase = createClient()
+    const roster = await kennelRosterOrFilter(userId)
     const [pedigreeRes, dogsRes] = await Promise.all([
       supabase.rpc('get_pedigree', { dog_uuid: dogId, max_gen: 10 }),
-      supabase.from('dogs').select('id, name, sex, thumbnail_url, breed:breeds(name)').eq('owner_id', userId).order('name').limit(1000),
+      supabase.from('dogs').select('id, name, sex, thumbnail_url, breed:breeds(name)').or(roster).order('name').limit(1000),
     ])
     setPedigreeData(pedigreeRes.data || [])
     setAllDogs(dogsRes.data || [])
