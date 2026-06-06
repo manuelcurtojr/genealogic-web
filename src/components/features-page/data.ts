@@ -211,7 +211,7 @@ export const CATEGORIES: Category[] = [
   {
     slug: 'cria',
     label: 'Cría y reproducción',
-    tagline: 'Planifica cruces, controla ciclos, gestiona camadas — sin Excel.',
+    tagline: 'Registra tus camadas y conéctalas a la genealogía, cachorro a cachorro.',
     features: [
       {
         slug: 'cruces',

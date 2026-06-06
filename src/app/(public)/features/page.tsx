@@ -61,7 +61,7 @@ export default async function FeaturesPage() {
             {t('Todo lo que tu criadero necesita, en un solo sitio.')}
           </h1>
           <p className="mt-4 text-[15px] sm:text-[17px] text-body leading-snug max-w-2xl">
-            {t('Pipeline de reservas, genealogía interactiva, simulador de cruces y analítica, listos desde el día 1. Más las extensiones que llegan pronto: web del criadero, newsletter y emailbot. Mira cómo se ven antes de probarlas.')}
+            {t('Tu genealogía completa, el importador con IA y el perfil público de tu criadero, indexable en Google y listo desde el día 1. Y vamos soltando herramientas nuevas cada poco. Mira cómo se ven antes de empezar.')}
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link
