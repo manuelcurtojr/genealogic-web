@@ -231,11 +231,17 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
         </section>
       )}
 
-      {/* Genealogía — full bleed en pantallas anchas (rompe max-w-7xl
-          del dashboard layout). Ver dogs/[id]/page.tsx para el motivo. */}
+      {/* Genealogía.
+          · Anónimo (sin sidebar): full-bleed a 100vw para aprovechar todo el
+            ancho — `calc(50% - 50vw)` ancla al borde del viewport.
+          · Registrado: NO usar 50vw porque el viewport incluye el sidebar
+            fijo de la izquierda → el árbol se metía DETRÁS del panel. Lo
+            dejamos en el flujo normal de la sección (hereda el padding del
+            dashboard-shell) y el árbol scrollea horizontal si necesita más.
+          (Mismo patrón que dogs/[id]/page.tsx). */}
       {pedigreeData.length > 1 && pedigreeRootId && (
-        <section className="-mx-4 sm:-mx-[30px] lg:mx-[calc(50%-50vw)] lg:px-6">
-          <h2 className="mb-4 px-4 sm:px-[30px] lg:px-2 text-[22px] font-semibold tracking-[-0.04em] text-ink">
+        <section className={user ? '' : '-mx-4 sm:-mx-[30px] lg:mx-[calc(50%-50vw)] lg:px-6'}>
+          <h2 className={`mb-4 text-[22px] font-semibold tracking-[-0.04em] text-ink ${user ? '' : 'px-4 sm:px-[30px] lg:px-2'}`}>
             {t('Genealogía')}
           </h2>
           <PedigreeTree data={pedigreeData} rootId={pedigreeRootId} />
