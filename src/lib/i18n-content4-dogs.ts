@@ -396,6 +396,22 @@ export const content4Dogs: Record<string, Record<string, string>> = {
     'Sin títulos todavía': 'No titles yet',
     'Mostrar en perfil': 'Show on profile',
     'Ocultar del perfil': 'Hide from profile',
+    // palmares-tab — rediseño (destacados + timeline + atajos)
+    'Añadir al palmarés': 'Add to the awards',
+    'Nuevo logro': 'New award',
+    'Editar logro': 'Edit award',
+    'Trayectoria': 'Track record',
+    'logro': 'award',
+    'logros': 'awards',
+    'Excelente 1º': 'Excellent 1st',
+    'Ej: Exposición Nacional': 'e.g. National Show',
+    'Ej: Exposición Internacional': 'e.g. International Show',
+    'Ej: Exposición Monográfica': 'e.g. Specialty Show',
+    'Ej: Mejor de Raza': 'e.g. Best of Breed',
+    'El palmarés está vacío': 'The awards list is empty',
+    'Registra los logros de tu perro en exposición: CAC, CACIB, BOB, títulos de campeón… y construye su trayectoria.': 'Log your dog\'s show achievements: CAC, CACIB, BOB, champion titles… and build its track record.',
+    'Añadir primer logro': 'Add first award',
+    'No hay logros de este tipo.': 'No awards of this type.',
 
     // ── pedigree-pdf-tab ──
     'Desconocido': 'Unknown',
