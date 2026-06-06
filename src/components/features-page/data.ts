@@ -579,13 +579,18 @@ export const CATEGORIES: Category[] = [
 ]
 
 /**
- * Fase 1 "carta reducida": el catálogo público solo muestra las features YA
- * lanzadas. Filtramos cada categoría quitando sus features/featurettes
- * `reserved` y descartamos las categorías que se quedan completamente vacías.
- * Lo usan tanto el contenido (content.tsx) como el sidebar para que NUNCA se
- * desincronicen. Al lanzar un área, basta con quitar `reserved` de sus items.
+ * /features se presenta en dos bloques ORDENADOS: "Disponible ahora" primero,
+ * "Próximamente" después. Derivamos ambos del mismo CATEGORIES filtrando por el
+ * flag `reserved` para que NUNCA se desincronicen content.tsx y sidebar.tsx.
+ * Al lanzar un área, basta con quitar `reserved` de sus items: salta sola de
+ * "Próximamente" a "Disponible ahora".
  */
-export const visibleCategories: Category[] = CATEGORIES
+
+/**
+ * Categorías con SOLO lo ya lanzado (features/featurettes sin `reserved`),
+ * descartando las que quedan vacías. Es el bloque "Disponible ahora".
+ */
+export const availableCategories: Category[] = CATEGORIES
   .map((cat) => ({
     ...cat,
     features: cat.features.filter((f) => !f.reserved),
@@ -594,15 +599,19 @@ export const visibleCategories: Category[] = CATEGORIES
   .filter((cat) => cat.features.length > 0 || cat.featurettes.length > 0)
 
 /**
- * Nombres (solo nombres, sin detalle) de las áreas RESERVADAS para la sección
- * "Llegando pronto" del final de /features. Señala profundidad sin saturar al
- * recién llegado. Orden ≈ orden de lanzamiento previsto.
+ * Categorías con SOLO lo construido-pero-no-lanzado (features/featurettes
+ * `reserved`), descartando las que quedan vacías. Es el bloque "Próximamente",
+ * que se renderiza como tarjetas compactas (roadmap, no segunda página de venta).
  */
-export const COMING_SOON_NAMES: string[] = [
-  'Planificador de cruces',
-  'Genotipos',
-  'CRM de reservas',
-  'Contratos',
-  'Web del criadero',
-  'Newsletter',
-]
+export const comingCategories: Category[] = CATEGORIES
+  .map((cat) => ({
+    ...cat,
+    features: cat.features.filter((f) => f.reserved),
+    featurettes: cat.featurettes.filter((f) => f.reserved),
+  }))
+  .filter((cat) => cat.features.length > 0 || cat.featurettes.length > 0)
+
+/**
+ * Id de anchor del bloque "Próximamente" (deep-linking desde el sidebar).
+ */
+export const COMING_SECTION_ID = 'proximamente'
