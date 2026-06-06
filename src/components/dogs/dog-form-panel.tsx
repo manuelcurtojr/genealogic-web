@@ -23,6 +23,7 @@ import PedigreeEditor from '@/components/pedigree/pedigree-editor'
 import TransferPanel from '@/components/kennel/transfer-panel'
 import { useT } from '@/components/i18n/locale-provider'
 import { getDogParents } from '@/lib/dogs/get-dog-parents'
+import { hasProFeatures, isEnterpriseUser } from '@/lib/permissions'
 
 interface DogFormPanelProps {
   open: boolean
@@ -65,6 +66,9 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   const [loading, setLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
   const [error, setError] = useState('')
+  // Pestañas pro (Genética, Reproducción): solo visibles para insider / plan de
+  // pago / admin. Son features Kennel Pro, igual que el COI. Se carga al abrir.
+  const [canPro, setCanPro] = useState(false)
 
   const [breeds, setBreeds] = useState<any[]>([])
   const [colors, setColors] = useState<any[]>([])
@@ -286,6 +290,19 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     return () => document.removeEventListener('keydown', h)
   }, [open, onClose])
 
+  // ¿El usuario puede ver las pestañas pro (Genética/Reproducción)? Insider, admin
+  // o plan de pago. Si no, se ocultan (son Kennel Pro, como el COI).
+  useEffect(() => {
+    if (!open) return
+    if (isEnterpriseUser(userId)) { setCanPro(true); return }
+    let cancelled = false
+    ;(async () => {
+      const { data } = await createClient().from('profiles').select('plan, role').eq('id', userId).maybeSingle()
+      if (!cancelled) setCanPro(data?.role === 'admin' || hasProFeatures((data?.plan as string | null) ?? null))
+    })()
+    return () => { cancelled = true }
+  }, [open, userId])
+
   function filterByBreed(breedId: string, cd?: any[], md?: any[], fd?: any[]) {
     const c = cd || allColors, m = md || allMaleDogs, f = fd || allFemaleDogs
     if (!breedId) { setColors(c); setMaleDogs(m); setFemaleDogs(f) }
@@ -410,7 +427,13 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   const selMother = allFemaleDogs.find(d => d.id === form.mother_id)
   const selKennel = kennels.find(k => k.id === form.kennel_id)
   const sexLabel = form.sex === 'male' ? t('Macho') : form.sex === 'female' ? t('Hembra') : null
-  const visibleTabs = TABS.filter((tab) => !('femaleOnly' in tab && tab.femaleOnly) || form.sex === 'female')
+  const visibleTabs = TABS.filter((tab) => {
+    // Reproducción solo en hembras.
+    if ('femaleOnly' in tab && tab.femaleOnly && form.sex !== 'female') return false
+    // Genética y Reproducción son features Kennel Pro: ocultas para no-pro.
+    if ((tab.key === 'genetica' || tab.key === 'reproduccion') && !canPro) return false
+    return true
+  })
 
   // ── Contenido de la pestaña "Datos" (compartido creación/edición) ──────
   const datosContent = (
@@ -647,8 +670,8 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-500 mb-4">{error}</div>}
       {activeTab === 'datos' && datosContent}
       {activeTab === 'salud' && editDogId && <SaludTab dogId={editDogId} userId={userId} />}
-      {activeTab === 'reproduccion' && editDogId && form.sex === 'female' && <ReproduccionTab dogId={editDogId} userId={userId} />}
-      {activeTab === 'genetica' && editDogId && <GeneticaTab dogId={editDogId} userId={userId} />}
+      {activeTab === 'reproduccion' && editDogId && form.sex === 'female' && canPro && <ReproduccionTab dogId={editDogId} userId={userId} />}
+      {activeTab === 'genetica' && editDogId && canPro && <GeneticaTab dogId={editDogId} userId={userId} />}
       {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
       {activeTab === 'pedigree-pdf' && editDogId && <PedigreePdfTab dogId={editDogId} dogName={form.name} userId={userId} />}
       {activeTab === 'historico' && editDogId && <HistoricoTab dogId={editDogId} />}
