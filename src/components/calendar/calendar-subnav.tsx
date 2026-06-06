@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Calendar as CalIcon, Heart, Stethoscope } from 'lucide-react'
+import { Calendar as CalIcon, Heart } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 
 /**
@@ -39,13 +39,6 @@ export default function CalendarSubnav({ isBreeder = false }: { isBreeder?: bool
       icon: Heart,
       active: pathname === '/reproduccion' || pathname.startsWith('/reproduccion/'),
     }] : []),
-    {
-      href: '/vet',
-      label: t('Veterinario'),
-      hint: t('Vacunas, desparasitaciones y recordatorios'),
-      icon: Stethoscope,
-      active: pathname === '/vet' || pathname.startsWith('/vet/'),
-    },
   ]
 
   return (

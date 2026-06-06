@@ -195,7 +195,7 @@ export default async function DashboardPage() {
       ) : (
         <section className="grid gap-4 sm:grid-cols-3">
           <StatCard icon={Dog} label={t('Mis perros')} value={dogCount} accentColor="#fb923c" sub={t('en tu cuenta')} href="/dogs" />
-          <StatCard icon={Stethoscope} label={t('Registros vet.')} value={vetRes.count || 0} accentColor="#3b82f6" sub={t('historiales clínicos')} href="/vet" />
+          <StatCard icon={Stethoscope} label={t('Registros vet.')} value={vetRes.count || 0} accentColor="#3b82f6" sub={t('historiales clínicos')} href="/calendar" />
           <StatCard icon={Tag} label={t('En venta')} value={forSaleCount} accentColor="#34d399" sub={t('publicados')} href="/dogs?for_sale=1" />
         </section>
       )}
@@ -246,7 +246,7 @@ export default async function DashboardPage() {
             {[
               { icon: Dog, label: t('Mis perros'), desc: t('Gestiona el registro de tus perros y sus genealogías.'), color: '#fb923c', href: '/dogs' },
               { icon: Search, label: t('Buscar perros'), desc: t('Explora el registro público de perros con genealogía verificable.'), color: '#8b5cf6', href: '/search' },
-              { icon: Stethoscope, label: t('Veterinario'), desc: t('Historial clínico y recordatorios de vacunas para cada perro.'), color: '#3b82f6', href: '/vet' },
+              { icon: Stethoscope, label: t('Veterinario'), desc: t('Historial clínico y recordatorios de vacunas para cada perro.'), color: '#3b82f6', href: '/calendar' },
             ].map(item => (
               <Link
                 key={item.label}
@@ -283,7 +283,7 @@ export default async function DashboardPage() {
             <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">
               {t('Próximos recordatorios vet.')}
             </h2>
-            <Link href="/vet" className="text-[13px] font-medium text-body hover:text-ink">
+            <Link href="/calendar" className="text-[13px] font-medium text-body hover:text-ink">
               {t('Ver todos →')}
             </Link>
           </div>
