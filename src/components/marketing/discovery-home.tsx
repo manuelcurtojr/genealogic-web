@@ -641,7 +641,7 @@ export default function DiscoveryHome({
             {([
               { initials: 'LM', avatar: 'bg-blue-100 text-blue-700', quote: t('«Tengo la cartilla de mi perro siempre en el móvil y los recordatorios de vacunas me avisan solos. En el vet ya no busco papeles.»'), role: 'Laura Méndez', breed: t('Propietaria · Pastor Alemán') },
               { initials: 'CR', avatar: 'bg-emerald-100 text-emerald-700', quote: t('«Pegué la URL de la genealogía que me pasó mi criador y se montó el árbol entero con fotos. Ahora comparto la ficha de mi perra con un link.»'), role: 'Carla Ruiz', breed: t('Propietaria · Galgo Italiano') },
-              { initials: 'JT', avatar: 'bg-violet-100 text-violet-700', quote: t('«Reservé mi cachorro y desde Genealogic seguí el estado, firmé el contrato y vi sus papeles. Sin perseguir al criador por WhatsApp.»'), role: 'Javier Torres', breed: t('Propietario · Presa Canario') },
+              { initials: 'JT', avatar: 'bg-violet-100 text-violet-700', quote: t('«Reservé mi cachorro y desde Genealogic seguí el estado y vi sus papeles. Sin perseguir al criador por WhatsApp.»'), role: 'Javier Torres', breed: t('Propietario · Presa Canario') },
             ]).map((r, i) => (
               <article key={i} className="rounded-2xl border border-hairline bg-canvas p-6 sm:p-7 flex flex-col">
                 <Quote className="w-7 h-7 text-[#FE6620]/25" />
@@ -665,7 +665,7 @@ export default function DiscoveryHome({
       {/* ═════ PRICING BAND ═════
            Sin tabla de precios en la home: para el propietario es gratis y
            punto. El criador con criadero pasa a /criadores (Genealogic
-           Breeders) donde sí hay planes. */}
+           Breeders). En el lanzamiento todo es gratis; los planes pro llegan luego. */}
       <section className="border-b border-hairline bg-surface-soft/40">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-6 lg:px-12 py-10 sm:py-14">
           <div className="rounded-2xl sm:rounded-3xl border border-hairline bg-canvas p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
@@ -677,7 +677,7 @@ export default function DiscoveryHome({
                 {t('Para propietarios, Genealogic es gratis para siempre, sin límite de perros.')}
               </h2>
               <p className="mt-2.5 text-[13.5px] sm:text-[14.5px] text-body leading-relaxed">
-                {t('¿Tienes criadero? Genealogic Breeders te da camadas, pipeline de reservas, contratos y web propia.')}
+                {t('¿Tienes criadero? Genealogic Breeders es gratis también: tu perfil público, genealogías con IA y camadas. Y vienen el pipeline de reservas, los contratos y la web propia.')}
               </p>
             </div>
             <div className="flex flex-col gap-2.5 sm:flex-shrink-0">
@@ -708,7 +708,7 @@ export default function DiscoveryHome({
             </div>
             <div className="space-y-2">
               <FaqItem q={t('¿Es realmente gratis?')}>
-                {t('Sí. Si eres propietario, Genealogic es gratis para siempre y sin límite de perros: ficha con galería, genealogía, cartilla veterinaria con recordatorios y reservas con tu criador. No pedimos tarjeta. Solo los criaderos que quieren el panel profesional (camadas, pipeline, web propia) pasan a un plan de pago en Genealogic Breeders.')}
+                {t('Sí. Para propietarios es gratis para siempre y sin límite de perros: ficha con galería, genealogía, cartilla veterinaria con recordatorios y reservas con tu criador. No pedimos tarjeta. Y si tienes criadero, ahora también es gratis: perfil público, genealogías y camadas. Las herramientas pro (pipeline de reservas, contratos, web propia) las iremos lanzando poco a poco y te avisaremos.')}
               </FaqItem>
               <FaqItem q={t('¿Es público o privado?')}>
                 {t('La ficha y la genealogía de tu perro son públicas — esa es la gracia: juntas forman el mayor catálogo de genealogías caninas, y las compartes con un link. Tú las gestionas y editas. Lo sensible (cartilla veterinaria, contratos, documentos) es privado, solo para ti. Servidores en la UE, RGPD, y exportas o borras tus datos cuando quieras.')}

@@ -6,18 +6,13 @@ import {
   ArrowRight,
   GitBranch,
   Sparkles,
-  KanbanSquare,
   Globe,
-  Mail,
-  TrendingUp,
   Check,
   Plus,
   Minus,
   Dog,
-  Heart,
   Calendar,
   ShieldCheck,
-  Zap,
   Lock,
   Menu,
   X,
@@ -37,7 +32,6 @@ interface Props {
 }
 
 export default function LandingPage({ breeds, featuredDogs, cockerPhotos = [], counts }: Props) {
-  const heroDogs = featuredDogs.slice(0, 6)
   // Fotos REALES de perros de Genealogic para el mockup de genealogía.
   // Priorizamos perros reales sobre el stock externo de dog.ceo (cockerPhotos),
   // que solo queda como fallback defensivo si no hay perros con foto.
@@ -48,10 +42,9 @@ export default function LandingPage({ breeds, featuredDogs, cockerPhotos = [], c
   return (
     <main className="min-h-screen bg-canvas text-ink">
       {/* Header eliminado — lo aporta (public)/layout.tsx con MarketingHeader. */}
-      <Hero heroDogs={heroDogs} counts={counts} />
+      <Hero featuredDogs={featuredDogs} counts={counts} />
       <PedigreeShowcase realPhotos={realPhotos} cockerPhotos={cockerPhotos} />
       <FeaturesGrid />
-      <PipelineShowcase />
       <KennelShowcase featuredDogs={featuredDogs} />
       <OnboardingSteps />
       <Pricing />
@@ -247,7 +240,7 @@ function DrawerAnchor({ href, onClick, children }: { href: string; onClick: () =
 }
 
 // ─── Hero ────────────────────────────────────────────────────────────────
-function Hero({ heroDogs, counts }: { heroDogs: any[]; counts?: { dogs: number; kennels: number } }) {
+function Hero({ featuredDogs, counts }: { featuredDogs: any[]; counts?: { dogs: number; kennels: number } }) {
   const t = useT()
   return (
     <section className="relative overflow-hidden border-b border-hairline">
@@ -279,16 +272,16 @@ function Hero({ heroDogs, counts }: { heroDogs: any[]; counts?: { dogs: number; 
               className="mt-5 sm:mt-7 max-w-[16ch] font-semibold text-ink"
               style={{ fontSize: 'clamp(32px, 6vw, 68px)', lineHeight: 1.02, letterSpacing: '-0.04em' }}
             >
-              {t('Cría mejor. Vende más. Sin papeleo.')}
+              {t('Tu criadero, con perfil público que te encuentran en Google.')}
             </h1>
             <p className="mt-5 sm:mt-6 max-w-[520px] text-[16px] leading-[1.55] text-body sm:text-[18px]">
-              {t('Camadas, reservas, contratos y salud en un solo sitio —adiós al Excel y al WhatsApp—. Planifica cada cruce viendo el COI antes de criar y vende sobre la mayor red de genealogías del mundo. Gratis para empezar.')}
+              {t('Tu escaparate con tus reproductores y los perros que has criado, cada uno con su genealogía. Importa genealogías con IA en segundos, lleva tus camadas y la salud al día —todo sobre la mayor red de genealogías del mundo. Gratis.')}
             </p>
 
             {/* CTAs */}
             <div className="mt-7 sm:mt-9 flex flex-wrap items-center gap-3">
               <Button href="/register?intent=breeder&plan=free" variant="primary" size="lg">
-                {t('Empieza gratis')} <ArrowRight className="h-4 w-4" />
+                {t('Crea tu criadero gratis')} <ArrowRight className="h-4 w-4" />
               </Button>
               <Button href="/features" variant="secondary" size="lg">
                 {t('Explora el producto al detalle')} <ArrowRight className="h-4 w-4" />
@@ -299,8 +292,19 @@ function Hero({ heroDogs, counts }: { heroDogs: any[]; counts?: { dogs: number; 
             </p>
           </div>
 
-          {/* Right: mockup de criador — planificador de cruces (el diferencial) */}
-          <BreederHeroMockup heroDogs={heroDogs} />
+          {/* Right: mockup de criador — perfil público indexable del criadero
+              (escaparate con reproductores + producidos). Es valor DISPONIBLE
+              desde el día 1; sustituye al antiguo planificador de cruces (COI),
+              que aún no está lanzado. */}
+          <div className="relative">
+            <KennelShowcaseMockup featuredDogs={featuredDogs} />
+            {/* Floating accent dot (clip-safe dentro del overflow-hidden del hero) */}
+            <div
+              aria-hidden
+              className="absolute -bottom-3 -right-3 hidden h-20 w-20 rounded-full opacity-30 blur-2xl sm:block"
+              style={{ background: 'var(--brand)' }}
+            />
+          </div>
         </div>
       </div>
     </section>
@@ -340,119 +344,6 @@ function AppWindow({
         <div className="w-[54px]" />
       </div>
       {children}
-    </div>
-  )
-}
-
-// ─── Breeder hero mockup: planificador de cruces (COI proyectado) ─────────
-// El diferencial que NINGÚN competidor enseña de protagonista (research 2026-06):
-// ver el COI de la camada ANTES de cruzar. "Cría para mejorar". Reusa AppWindow
-// + fotos reales de heroDogs para los dos progenitores.
-function ParentChip({ dog, label, fallbackName }: { dog: any; label: string; fallbackName: string }) {
-  return (
-    <div className="min-w-0 flex-1 rounded-xl border border-hairline bg-surface-card p-2.5">
-      <div className="flex items-center gap-2.5">
-        <div className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg border border-hairline bg-surface-soft">
-          {dog?.thumbnail_url ? (
-            <Img src={dog.thumbnail_url} w={120} alt={dog?.name || label} className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-muted">
-              <Dog className="h-5 w-5" />
-            </div>
-          )}
-        </div>
-        <div className="min-w-0">
-          <p className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-muted">{label}</p>
-          <p className="truncate text-[13px] font-semibold text-ink">{dog?.name || fallbackName}</p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function BreederHeroMockup({ heroDogs }: { heroDogs: any[] }) {
-  const t = useT()
-  const sire = heroDogs?.[0]
-  const dam = heroDogs?.[1]
-  return (
-    <div className="relative">
-      <AppWindow url="genealogic.io/cruces">
-        <div className="px-5 py-6 sm:px-7 sm:py-7">
-          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
-            {t('Planificador de cruces')}
-          </p>
-          <h3
-            className="mt-1.5 font-semibold text-ink"
-            style={{ fontSize: 'clamp(19px, 2.3vw, 25px)', lineHeight: 1.12, letterSpacing: '-0.02em' }}
-          >
-            {t('Antes de cruzar, mira el resultado.')}
-          </h3>
-
-          {/* Progenitores (fotos reales) */}
-          <div className="mt-5 flex items-center gap-2.5">
-            <ParentChip dog={sire} label={t('Macho')} fallbackName="Lord Byron" />
-            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-hairline bg-surface-soft text-[14px] font-semibold text-muted">
-              ×
-            </div>
-            <ParentChip dog={dam} label={t('Hembra')} fallbackName="Maia" />
-          </div>
-
-          {/* COI proyectado de la camada — el momento "cría para mejorar" */}
-          <div
-            className="mt-4 rounded-xl border p-4"
-            style={{
-              borderColor: 'color-mix(in srgb, var(--badge-emerald) 30%, transparent)',
-              background: 'color-mix(in srgb, var(--badge-emerald) 7%, transparent)',
-            }}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-[12px] font-medium text-body">{t('COI de la camada proyectado')}</p>
-              <span
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold"
-                style={{
-                  background: 'color-mix(in srgb, var(--badge-emerald) 15%, transparent)',
-                  color: 'var(--badge-emerald)',
-                }}
-              >
-                <Check className="h-3 w-3" /> {t('Saludable')}
-              </span>
-            </div>
-            <div className="mt-2 flex items-end gap-2">
-              <span
-                className="font-semibold text-ink"
-                style={{ fontSize: 'clamp(30px, 5vw, 42px)', lineHeight: 1, letterSpacing: '-0.03em' }}
-              >
-                4,2%
-              </span>
-              <span className="mb-1 text-[12px] leading-tight text-body">
-                {t('por debajo de la media de la raza')} <span className="text-muted">(8,1%)</span>
-              </span>
-            </div>
-            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-soft">
-              <div className="h-full rounded-full" style={{ width: '24%', background: 'var(--badge-emerald)' }} />
-            </div>
-          </div>
-
-          {/* Stats secundarias */}
-          <div className="mt-3.5 grid grid-cols-2 gap-2.5">
-            <div className="rounded-lg border border-hairline bg-surface-card px-3 py-2">
-              <p className="text-[11px] text-muted">{t('Color probable')}</p>
-              <p className="mt-0.5 text-[12.5px] font-medium text-ink">{t('Negro · canela')}</p>
-            </div>
-            <div className="rounded-lg border border-hairline bg-surface-card px-3 py-2">
-              <p className="text-[11px] text-muted">{t('Diversidad genética')}</p>
-              <p className="mt-0.5 text-[12.5px] font-medium text-ink">{t('Alta')}</p>
-            </div>
-          </div>
-        </div>
-      </AppWindow>
-
-      {/* Floating accent dot (clip-safe dentro del overflow-hidden del hero) */}
-      <div
-        aria-hidden
-        className="absolute -bottom-3 -right-3 hidden h-20 w-20 rounded-full opacity-30 blur-2xl sm:block"
-        style={{ background: 'var(--brand)' }}
-      />
     </div>
   )
 }
@@ -706,65 +597,50 @@ function PedCard({
   )
 }
 
-// ─── Features grid (Pro) ─────────────────────────────────────────────────
+// ─── Features grid ───────────────────────────────────────────────────────
+// Fase 1 ("carta reducida"): solo vendemos lo LANZADO (genealogías + IA,
+// camadas + salud, perfil público indexable). Las herramientas construidas
+// pero aún no lanzadas (cruces/COI, CRM de reservas, web propia, newsletter,
+// emailbot, contratos) se insinúan en un único bloque "Llegando pronto" —
+// nombres, sin mockups ni detalle. Cuando se lanza una, se mueve aquí arriba.
 function FeaturesGrid() {
   const t = useT()
   return (
     <section id="criadores" className="border-b border-hairline">
       <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-          {t('02 · Orden, control y ventas')}
+          {t('02 · Tu criadero, en orden')}
         </p>
         <div className="mt-3 grid gap-6 sm:gap-12 lg:grid-cols-[1fr_1fr] lg:items-end">
           <h2
             className="max-w-[20ch] font-semibold text-ink"
             style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
           >
-            {t('Tu criadero entero bajo control, en un panel.')}
+            {t('Todo tu criadero, en un panel. Gratis.')}
           </h2>
           <p className="max-w-[460px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
-            {t('Planifica cada cruce viendo el COI antes de criar, no pierdas un solo lead, cobra señas y firma contratos, y lleva cada camada al día. Las herramientas que hacen tu criadero más profesional y te ahorran horas cada semana.')}
+            {t('Registra tus perros con su genealogía, impórtalas con IA en segundos, lleva tus camadas y la salud al día, y enséñalo todo en tu perfil público indexable. Las herramientas que profesionalizan tu criadero — sin coste.')}
           </p>
         </div>
 
         <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <FeatureCard
-            icon={<KanbanSquare className="h-5 w-5" />}
-            title={t('Más ventas, cero leads perdidos')}
-            desc={t('Pipeline de reservas con vistas Ventas y Clientes. Cada interesado avanza de estado con un click, con su conversación y sus acciones. No más Excel.')}
-            color="brand"
-          />
-          <FeatureCard
-            icon={<GitBranch className="h-5 w-5" />}
-            title={t('Cría para mejorar')}
-            desc={t('Mira el COI de la camada antes de cruzar. Genotipos, simulador con predicción de color y diversidad genética en una pantalla. Menos consanguinidad, cachorros más sanos.')}
-            color="emerald"
-          />
-          <FeatureCard
-            icon={<Heart className="h-5 w-5" />}
-            title={t('Todos tus clientes en orden')}
-            desc={t('Hub de contactos: suscriptores, leads sin cerrar y clientes con reserva, cada uno con su historial completo. Contratos y pagos integrados.')}
-            color="pink"
+            icon={<Sparkles className="h-5 w-5" />}
+            title={t('Genealogías con IA')}
+            desc={t('Cada perro con su árbol genealógico ilimitado, fotos, registro y salud. Importa genealogías existentes con IA en segundos: pega una URL o sube una foto y tienes el árbol completo.')}
+            color="violet"
           />
           <FeatureCard
             icon={<Globe className="h-5 w-5" />}
-            title={t('Tu escaparate que vende')}
-            desc={t('Web pública con tu propio dominio. Editor visual + 3 temas. Un escaparate serio que posiciona en Google y vende por ti.')}
-            color="blue"
-            comingSoon
+            title={t('Perfil público que te encuentran')}
+            desc={t('Tu escaparate gratis desde el día 1: reproductores y perros producidos, cada uno con su genealogía. Posiciona en Google y genera consultas, sin pagar anuncios.')}
+            color="emerald"
           />
           <FeatureCard
             icon={<Calendar className="h-5 w-5" />}
             title={t('Camadas y salud al día')}
-            desc={t('Calendario de celos y partos, cartilla sanitaria con recordatorios de vacunas y desparasitación, y el peso de cada cachorro. Todo el ciclo de la camada sin perder una fecha.')}
-            color="violet"
-          />
-          <FeatureCard
-            icon={<Mail className="h-5 w-5" />}
-            title={t('Newsletter que fideliza')}
-            desc={t('4 audiencias auto-calculadas: todos, clientes, leads y los que recibieron cachorro. Mantén tu lista caliente sin esfuerzo.')}
-            color="orange"
-            comingSoon
+            desc={t('Calendario de celos y partos, camadas con un click (los cachorros heredan padres y afijo), cartilla sanitaria con recordatorios de vacunas y desparasitación, y el peso de cada cachorro.')}
+            color="brand"
           />
         </div>
 
@@ -774,319 +650,51 @@ function FeaturesGrid() {
             {t('Ver todo lo que incluye')} <ArrowRight className="h-4 w-4" />
           </Button>
           <p className="text-[14px] text-muted">
-            {t('Más de 30 herramientas para gestionar tu criadero de cabo a rabo.')}
+            {t('Todo gratis para empezar. Y vamos soltando herramientas nuevas de una en una.')}
           </p>
         </div>
-      </div>
-    </section>
-  )
-}
 
-// ─── Pipeline showcase (DEMO INTERACTIVA) ────────────────────────────────
-// Mockup VIVO del pipeline real de /reservas. El visitante puede:
-//   - Cambiar entre Ventas/Clientes (cada vista tiene su set de estados)
-//   - Filtrar por estado (chips con contadores dinámicos)
-//   - Cambiar el estado de cualquier lead (select inline)
-//     Si pasa a un estado de la otra vista (ej: 'assigned' es Clientes),
-//     el lead se mueve automáticamente — comportamiento idéntico al de la
-//     app real.
-//
-// Sin DB, sin backend — todo state local. Perfecto para que un visitor
-// "toque" el producto antes de registrarse.
-
-type DemoStatus =
-  | 'interested' | 'deposit_paid'                           // VENTAS
-  | 'assigned' | 'contract_signed' | 'paid_in_full' | 'delivered' // CLIENTES
-
-const VENTAS_STATUSES: DemoStatus[] = ['interested', 'deposit_paid']
-const CLIENTES_STATUSES: DemoStatus[] = ['assigned', 'contract_signed', 'paid_in_full', 'delivered']
-
-const STATUS_LABEL: Record<DemoStatus, string> = {
-  interested:      'Interesado',
-  deposit_paid:    'Seña pagada',
-  assigned:        'Asignado',
-  contract_signed: 'Contrato firmado',
-  paid_in_full:    'Pagado',
-  delivered:       'Entregado',
-}
-
-const STATUS_COLOR: Record<DemoStatus, string> = {
-  interested:      'badge-orange',
-  deposit_paid:    'badge-violet',
-  assigned:        'badge-emerald',
-  contract_signed: 'badge-emerald',
-  paid_in_full:    'badge-emerald',
-  delivered:       'muted',
-}
-
-type DemoLead = {
-  id: string
-  name: string
-  email: string
-  status: DemoStatus
-  pref: string
-  date: string
-}
-
-const INITIAL_LEADS: DemoLead[] = [
-  // Ventas
-  { id: '1', name: 'Laura Martín',  email: 'laura.m@gmail.com',          status: 'interested',   pref: 'Macho · atigrado',     date: '14 mar' },
-  { id: '2', name: 'Diego Romero',  email: 'diego.rdz@hey.com',          status: 'deposit_paid', pref: 'Hembra',                date: '12 mar' },
-  { id: '3', name: 'Ana Pereira',   email: 'ana.pereira@yahoo.es',       status: 'interested',   pref: 'Sin preferencia',       date: '6 mar' },
-  { id: '4', name: 'Carlos Delgado',email: 'carlos.d@protonmail.com',    status: 'interested',   pref: 'Lista de espera',       date: '2 mar' },
-  { id: '5', name: 'María Lucas',   email: 'marial84@gmail.com',         status: 'deposit_paid', pref: 'Hembra · primavera',    date: '28 feb' },
-  // Clientes
-  { id: '6', name: 'Pablo Gómez',   email: 'pablo@gomezvet.es',          status: 'assigned',        pref: 'Macho · cachorro #7', date: '20 feb' },
-  { id: '7', name: 'Elena Castro',  email: 'elena.castro@outlook.com',   status: 'contract_signed', pref: 'Macho · cachorro #3', date: '14 feb' },
-  { id: '8', name: 'Jorge Trujillo',email: 'jorge.t@trujillobogados.es', status: 'paid_in_full',    pref: 'Hembra · cachorro #5',date: '4 feb' },
-  { id: '9', name: 'Sofía Bermejo', email: 'sofia.bermejo@gmail.com',    status: 'delivered',       pref: 'Macho · cachorro #1', date: '28 ene' },
-  { id: '10', name: 'Iván Costa',   email: 'ivan.costa@me.com',          status: 'delivered',       pref: 'Hembra · cachorro #2',date: '20 ene' },
-]
-
-function PipelineShowcase() {
-  const t = useT()
-  const [leads, setLeads] = useState<DemoLead[]>(INITIAL_LEADS)
-  const [view, setView] = useState<'ventas' | 'clientes'>('ventas')
-  const [filter, setFilter] = useState<DemoStatus | 'all'>('all')
-  const [highlightedId, setHighlightedId] = useState<string | null>(null)
-
-  // Cuando cambia view, reset filter (para no quedar con un filter de la
-  // otra mitad — comportamiento idéntico al pipeline real)
-  function changeView(next: 'ventas' | 'clientes') {
-    setView(next)
-    setFilter('all')
-  }
-
-  function changeStatus(leadId: string, next: DemoStatus) {
-    setLeads((prev) => prev.map((l) => l.id === leadId ? { ...l, status: next } : l))
-    // Pulso visual del cambio (que el visitor vea que algo pasó)
-    setHighlightedId(leadId)
-    setTimeout(() => setHighlightedId((cur) => cur === leadId ? null : cur), 1200)
-  }
-
-  // Counts por status (para chips)
-  const viewStatuses = view === 'ventas' ? VENTAS_STATUSES : CLIENTES_STATUSES
-  const leadsInView = leads.filter((l) => viewStatuses.includes(l.status))
-  const totalVentas = leads.filter((l) => VENTAS_STATUSES.includes(l.status)).length
-  const totalClientes = leads.filter((l) => CLIENTES_STATUSES.includes(l.status)).length
-  const filterCounts = Object.fromEntries(
-    viewStatuses.map((s) => [s, leadsInView.filter((l) => l.status === s).length]),
-  ) as Record<DemoStatus, number>
-
-  const visible = filter === 'all' ? leadsInView : leadsInView.filter((l) => l.status === filter)
-
-  function resetDemo() {
-    setLeads(INITIAL_LEADS)
-    setView('ventas')
-    setFilter('all')
-  }
-
-  const demoTouched = JSON.stringify(leads) !== JSON.stringify(INITIAL_LEADS) || view !== 'ventas' || filter !== 'all'
-
-  return (
-    <section className="border-b border-hairline bg-surface-soft">
-      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
-        <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-          {t('03 · Más ventas')}
-        </p>
-        <h2
-          className="mt-3 max-w-[24ch] font-semibold text-ink"
-          style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
-        >
-          {t('Tu próxima camada se reserva sola.')}
-        </h2>
-        <p className="mt-5 sm:mt-6 max-w-[600px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
-          {t('Un CRM hecho para criadores: ningún interesado se queda en visto. Cada lead con su estado (interesado, seña, asignado, contrato, entregado). Cambias estado con un click. Vistas separadas')}{' '}
-          <strong>{t('Ventas')}</strong>{' '}
-          {t('(leads abiertos) y')} <strong>{t('Clientes')}</strong> {t('(reservas cerradas). Panel lateral con detalle, conversación y acciones.')}
-        </p>
-
-        {/* Demo banner */}
-        <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-[color:var(--brand)]/30 bg-[color:var(--brand-soft)] px-3 py-1 text-[12px] font-medium text-[color:var(--brand)]">
-          <Zap className="h-3 w-3" />
-          {t('Demo interactiva — toca lo que quieras')}
-          {demoTouched && (
-            <button
-              onClick={resetDemo}
-              className="ml-2 inline-flex items-center gap-1 rounded-full bg-canvas px-2 py-0.5 text-[10px] font-semibold text-ink transition hover:opacity-80"
-            >
-              {t('Reset')}
-            </button>
-          )}
-        </div>
-
-        <div className="mt-6">
-          <AppWindow url="genealogic.io/reservas">
-            <div className="p-4 sm:p-7">
-              {/* Switcher Ventas/Clientes */}
-              <div className="inline-flex rounded-lg border border-hairline bg-surface-soft p-1 mb-4">
-                <button
-                  onClick={() => changeView('ventas')}
-                  className={`inline-flex items-center gap-2 rounded-md px-3 py-1 text-[12px] font-medium transition ${
-                    view === 'ventas' ? 'bg-ink text-on-primary' : 'text-muted hover:text-ink'
-                  }`}
-                >
-                  {t('Ventas')}
-                  <span
-                    className={`rounded-full px-1.5 py-0.5 text-[10px] ${
-                      view === 'ventas' ? 'bg-white/20 text-on-primary' : 'bg-canvas'
-                    }`}
-                  >
-                    {totalVentas}
-                  </span>
-                </button>
-                <button
-                  onClick={() => changeView('clientes')}
-                  className={`inline-flex items-center gap-2 rounded-md px-3 py-1 text-[12px] font-medium transition ${
-                    view === 'clientes' ? 'bg-ink text-on-primary' : 'text-muted hover:text-ink'
-                  }`}
-                >
-                  {t('Clientes')}
-                  <span
-                    className={`rounded-full px-1.5 py-0.5 text-[10px] ${
-                      view === 'clientes' ? 'bg-white/20 text-on-primary' : 'bg-canvas'
-                    }`}
-                  >
-                    {totalClientes}
-                  </span>
-                </button>
-              </div>
-
-              {/* Filter chips */}
-              <div className="flex flex-wrap gap-2 border-b border-hairline pb-3 mb-3">
-                <FilterChip
-                  label={t('Todas')}
-                  count={leadsInView.length}
-                  active={filter === 'all'}
-                  onClick={() => setFilter('all')}
-                />
-                {viewStatuses.map((s) => (
-                  <FilterChip
-                    key={s}
-                    label={t(STATUS_LABEL[s])}
-                    count={filterCounts[s] || 0}
-                    active={filter === s}
-                    onClick={() => setFilter(s)}
-                  />
-                ))}
-              </div>
-
-              {/* Tabla */}
-              <div className="overflow-hidden rounded-lg border border-hairline">
-                <table className="w-full text-[12.5px]">
-                  <thead className="bg-surface-soft/70 text-[10px] uppercase tracking-wider text-muted">
-                    <tr>
-                      <th className="px-3 py-2 text-left font-semibold">{t('Solicitante')}</th>
-                      <th className="px-3 py-2 text-left font-semibold">{t('Estado')}</th>
-                      <th className="px-3 py-2 text-left font-semibold hidden sm:table-cell">{t('Preferencia')}</th>
-                      <th className="px-3 py-2 text-right font-semibold hidden md:table-cell">{t('Recibida')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-hairline-soft">
-                    {visible.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="px-3 py-12 text-center text-[12px] text-muted">
-                          {t('Ningún lead en este filtro.')}
-                        </td>
-                      </tr>
-                    ) : (
-                      visible.map((l) => (
-                        <PipelineRow
-                          key={l.id}
-                          lead={l}
-                          highlighted={highlightedId === l.id}
-                          onChangeStatus={(s) => changeStatus(l.id, s)}
-                        />
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Hint sutil */}
-              <p className="mt-3 text-[11px] text-muted text-center">
-                {t('Tip: cambia el estado de cualquier fila. Si pasa a Asignado o más, el lead se mueve a la vista Clientes.')}
-              </p>
-            </div>
-          </AppWindow>
+        {/* Llegando pronto — herramientas construidas que iremos lanzando.
+            Solo nombres + una línea, sin mockups ni detalle (mismo espíritu
+            que el teaser de /features). */}
+        <div className="mt-12 sm:mt-16 border-t border-hairline pt-10 sm:pt-12">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[color:var(--brand)]">
+            {t('Llegando pronto')}
+          </p>
+          <h3 className="mt-2 max-w-2xl text-[22px] sm:text-[28px] font-semibold leading-[1.2] tracking-[-0.03em] text-ink">
+            {t('Vamos soltando herramientas nuevas de una en una.')}
+          </h3>
+          <p className="mt-3 max-w-2xl text-[14px] sm:text-[15px] leading-[1.6] text-body">
+            {t('Estas piezas ya están en camino. Te avisaremos por email en cuanto cada una esté lista — sin coste extra mientras siga todo gratis.')}
+          </p>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <ComingSoonRow title={t('Planificador de cruces')} desc={t('Simula el COI de la camada antes de criar.')} />
+            <ComingSoonRow title={t('Genotipos y DNA')} desc={t('Predicción de color y pruebas raciales.')} />
+            <ComingSoonRow title={t('CRM de reservas')} desc={t('Pipeline de leads y clientes, sin Excel.')} />
+            <ComingSoonRow title={t('Contratos')} desc={t('Plantillas con firma electrónica.')} />
+            <ComingSoonRow title={t('Web del criadero')} desc={t('Tu web pública con dominio propio.')} />
+            <ComingSoonRow title={t('Newsletter y emailbot')} desc={t('Campañas y asistente IA para tus leads.')} />
+          </ul>
         </div>
       </div>
     </section>
   )
 }
 
-function FilterChip({
-  label, count, active, onClick,
-}: {
-  label: string
-  count: number
-  active?: boolean
-  onClick?: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium transition ${
-        active ? 'bg-ink text-on-primary' : 'bg-surface-card text-body hover:bg-canvas'
-      }`}
-    >
-      {label}
-      <span
-        className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-          active ? 'bg-white/20 text-on-primary' : 'bg-canvas text-muted'
-        }`}
-      >
-        {count}
-      </span>
-    </button>
-  )
-}
-
-function PipelineRow({
-  lead, highlighted, onChangeStatus,
-}: {
-  lead: DemoLead
-  highlighted: boolean
-  onChangeStatus: (next: DemoStatus) => void
-}) {
+// Fila compacta para el bloque "Llegando pronto": nombre + una línea, con
+// chip "Próximamente". Sin mockups ni CTA (no es vendible aún).
+function ComingSoonRow({ title, desc }: { title: string; desc: string }) {
   const t = useT()
-  const allStatuses: DemoStatus[] = [...VENTAS_STATUSES, ...CLIENTES_STATUSES]
-  const color = STATUS_COLOR[lead.status]
-
   return (
-    <tr
-      className={`transition-colors duration-300 ${
-        highlighted ? 'bg-[color:var(--brand-soft)]' : 'hover:bg-surface-soft/40'
-      }`}
-    >
-      <td className="px-3 py-2.5">
-        <p className="font-medium text-ink">{lead.name}</p>
-        <p className="text-[10.5px] text-muted truncate">{lead.email}</p>
-      </td>
-      <td className="px-3 py-2.5">
-        <select
-          value={lead.status}
-          onChange={(e) => onChangeStatus(e.target.value as DemoStatus)}
-          className="cursor-pointer rounded-md border-0 px-2 py-0.5 text-[10.5px] font-medium focus:outline-none focus:ring-2 focus:ring-ink/20"
-          style={{
-            background: color === 'muted'
-              ? 'var(--surface-card)'
-              : `color-mix(in srgb, var(--${color}) 15%, transparent)`,
-            color: color === 'muted' ? 'var(--muted)' : `var(--${color})`,
-          }}
-        >
-          {allStatuses.map((s) => (
-            <option key={s} value={s}>
-              {t(STATUS_LABEL[s])}
-            </option>
-          ))}
-        </select>
-      </td>
-      <td className="px-3 py-2.5 text-muted hidden sm:table-cell">{t(lead.pref)}</td>
-      <td className="px-3 py-2.5 text-right text-[11px] text-muted tabular-nums hidden md:table-cell">
-        {lead.date}
-      </td>
-    </tr>
+    <li className="rounded-[12px] border border-hairline bg-canvas/60 p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[14.5px] font-semibold text-ink">{title}</span>
+        <span className="inline-flex items-center rounded-full border border-hairline bg-surface-soft px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted">
+          {t('Próximamente')}
+        </span>
+      </div>
+      <p className="mt-1.5 text-[13px] leading-[1.5] text-muted">{desc}</p>
+    </li>
   )
 }
 
@@ -1168,7 +776,7 @@ function KennelShowcase({ featuredDogs }: { featuredDogs: any[] }) {
         <div className="grid gap-8 sm:gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
           <div>
             <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-              {t('04 · Reputación')}
+              {t('03 · Reputación')}
             </p>
             <h2
               className="mt-3 font-semibold text-ink"
@@ -1200,7 +808,7 @@ function OnboardingSteps() {
     <section className="border-b border-hairline bg-surface-soft">
       <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-          {t('05 · Ahorra tiempo')}
+          {t('04 · Ahorra tiempo')}
         </p>
         <h2
           className="mt-3 max-w-[18ch] font-semibold text-ink"
@@ -1216,11 +824,11 @@ function OnboardingSteps() {
           <Step n="2" duration={t('1 hora')} title={t('Importa tus perros')}>
             {t('Sube fotos de genealogías existentes. La IA extrae el árbol entero en segundos.')}
           </Step>
-          <Step n="3" duration={t('1 día')} title={t('Diseña tu web')}>
-            {t('Editor visual. 8 páginas troncales, 36 secciones. Conecta tu dominio.')}
+          <Step n="3" duration={t('1 día')} title={t('Publica tu perfil')}>
+            {t('Tu criadero, con reproductores y producidos, queda público e indexable en Google. Que te encuentren.')}
           </Step>
-          <Step n="4" duration={t('Day 1')} title={t('Empieza a vender')}>
-            {t('Activa el pipeline de reservas y cada consulta nueva entra directa a tu CRM.')}
+          <Step n="4" duration={t('Day 1')} title={t('Lleva todo al día')}>
+            {t('Camadas, calendario reproductivo y cartilla sanitaria con recordatorios. Tu criadero entero en un sitio.')}
           </Step>
         </div>
       </div>
@@ -1258,78 +866,85 @@ function Step({
 }
 
 // ─── Pricing ─────────────────────────────────────────────────────────────
-// Landing de CRIADOR: planes de criadero (Kennel Free / Kennel Pro) +
-// extensiones de pago à la carte sobre Pro (Web del criadero 19€,
-// Newsletter 9€, Emailbot próximamente). El plan Owner (propietario
-// particular) vive en /pricing, no aquí.
+// Fase 1 (lanzamiento GRATIS): todo es gratis ahora mismo, para propietarios
+// y criadores, con perros ilimitados y sin tarjeta. Los planes de pago
+// (Kennel Pro + extensiones) siguen VISIBLES como visión, pero etiquetados
+// "Próximamente" — aún no se venden. Cuando se activen, avisaremos a los
+// usuarios gratuitos por email.
 function Pricing() {
   const t = useT()
   return (
     <section id="precios" className="border-b border-hairline">
       <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
-          {t('06 · Precios')}
+          {t('05 · Precios')}
         </p>
         <h2
           className="mt-3 max-w-[18ch] font-semibold text-ink"
           style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
         >
-          {t('Empieza gratis. Sube cuando crezcas.')}
+          {t('Gratis para criar. Sin tarjeta.')}
         </h2>
         <p className="mt-5 sm:mt-6 max-w-[560px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
-          {t('La genealogía es siempre completa, sin límite de generaciones, en todos los planes. La diferencia son las herramientas: Kennel Free es gratis para siempre y sin tarjeta; Kennel Pro añade el control de la cría, las ventas y la genética seria. Y cuando lo necesites, amplías Pro con extensiones à la carte (próximamente): web del criadero con tu dominio, newsletter y más.')}
+          {t('Ahora mismo Genealogic es gratis para propietarios y criadores, con perros ilimitados y sin tarjeta. La genealogía es siempre completa, sin límite de generaciones. Estamos preparando herramientas profesionales de pago para el criadero — las verás abajo como visión, y te avisaremos cuando lleguen.')}
         </p>
 
         <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {/* Kennel Free */}
-          <div className="rounded-[16px] border border-hairline bg-gradient-to-br from-emerald-50 via-canvas to-green-50 p-6 flex flex-col">
-            <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-emerald-600">Kennel Free</p>
+          {/* Gratis — todo lo lanzado, ahora mismo, sin coste */}
+          <div className="relative rounded-[16px] border-2 bg-gradient-to-br from-emerald-50 via-canvas to-green-50 p-6 flex flex-col shadow-[0_12px_48px_rgba(16,185,129,0.12)]" style={{ borderColor: '#10b981' }}>
+            <span className="absolute -top-3 left-5 rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+              {t('Disponible ya')}
+            </span>
+            <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-emerald-600">{t('Criadero')}</p>
             <p className="mt-3 text-[32px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
-              0 € <span className="text-[13px] font-normal text-muted">/ {t('siempre')}</span>
+              0 € <span className="text-[13px] font-normal text-muted">/ {t('gratis')}</span>
             </p>
-            <p className="mt-1 text-[13px] text-body">{t('Perros ilimitados · Criador casero')}</p>
+            <p className="mt-1 text-[13px] text-body">{t('Perros ilimitados · Sin tarjeta')}</p>
             <ul className="mt-5 space-y-2 text-[13.5px] flex-1">
-              <PricingRow>{t('Camadas + calendario')}</PricingRow>
-              <PricingRow>{t('Pipeline reservas')}</PricingRow>
-              <PricingRow>{t('Contratos + firma')}</PricingRow>
-              <PricingRow>{t('CRM clientes')}</PricingRow>
+              <PricingRow>{t('Genealogías ilimitadas + importador IA')}</PricingRow>
+              <PricingRow>{t('Perfil público indexable en Google')}</PricingRow>
+              <PricingRow>{t('Camadas + calendario reproductivo')}</PricingRow>
+              <PricingRow>{t('Salud: cartilla + recordatorios de vacunas')}</PricingRow>
             </ul>
-            <Button href="/register?intent=breeder&plan=free" variant="secondary" className="mt-6 w-full">
-              {t('Empezar gratis')}
+            <Button href="/register?intent=breeder&plan=free" variant="primary" className="mt-6 w-full">
+              {t('Crea tu criadero gratis')}
             </Button>
           </div>
 
-          {/* Kennel Pro (highlighted) */}
-          <div className="relative rounded-[16px] border-2 bg-gradient-to-br from-orange-50 via-canvas to-amber-50 p-6 flex flex-col shadow-[0_12px_48px_rgba(254,102,32,0.15)]" style={{ borderColor: '#FE6620' }}>
-            <span className="absolute -top-3 left-5 rounded-full bg-[#FE6620] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-              {t('Más popular')}
+          {/* Kennel Pro — visión, aún NO vendible (Próximamente) */}
+          <div className="relative rounded-[16px] border border-hairline bg-gradient-to-br from-orange-50 via-canvas to-amber-50 p-6 flex flex-col">
+            <span className="absolute -top-3 left-5 rounded-full bg-ink/85 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+              {t('Próximamente')}
             </span>
             <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-[#FE6620]">Kennel Pro</p>
             <p className="mt-3 text-[32px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
               49 € <span className="text-[13px] font-normal text-muted">/ {t('mes')}</span>
             </p>
-            <p className="mt-1 text-[13px] text-body">{t('Ilimitado · Criadero profesional')}</p>
+            <p className="mt-1 text-[13px] text-body">{t('Las herramientas pro del criadero')}</p>
             <ul className="mt-5 space-y-2 text-[13.5px] flex-1">
-              <PricingRow>{t('Perros ilimitados')}</PricingRow>
               <PricingRow>{t('COI + simulador de cruces')}</PricingRow>
-              <PricingRow>{t('Genotipos completos')}</PricingRow>
-              <PricingRow>{t('Pagos Stripe Connect')}</PricingRow>
-              <PricingRow>{t('Soporte prioritario <24h')}</PricingRow>
+              <PricingRow>{t('Genotipos y DNA')}</PricingRow>
+              <PricingRow>{t('CRM de reservas + contratos')}</PricingRow>
+              <PricingRow>{t('Estadísticas del criadero')}</PricingRow>
             </ul>
-            <Button
-              href="/register?intent=breeder&plan=pro"
-              variant="primary"
-              className="mt-6 w-full"
+            <button
+              type="button"
+              disabled
+              aria-disabled="true"
+              className="mt-6 w-full cursor-not-allowed rounded-xl border border-hairline bg-surface-soft px-5 py-3 text-sm font-semibold text-muted"
             >
-              {t('Probar 14 días gratis')}
-            </Button>
+              {t('Próximamente')}
+            </button>
           </div>
 
-          {/* Extensiones à la carte sobre Pro */}
-          <div className="rounded-[16px] border border-hairline bg-gradient-to-br from-violet-50 via-canvas to-purple-50 p-6 flex flex-col">
+          {/* Extensiones — visión, aún NO vendibles (Próximamente) */}
+          <div className="relative rounded-[16px] border border-hairline bg-gradient-to-br from-violet-50 via-canvas to-purple-50 p-6 flex flex-col">
+            <span className="absolute -top-3 left-5 rounded-full bg-ink/85 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+              {t('Próximamente')}
+            </span>
             <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-violet-600">{t('Extensiones')}</p>
             <p className="mt-3 text-[22px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
-              {t('Amplía tu Kennel Pro')}
+              {t('Amplía tu criadero')}
             </p>
             <p className="mt-1 text-[13px] text-body">{t('À la carte · activa solo lo que uses')}</p>
             <ul className="mt-5 space-y-3 text-[13.5px] flex-1">
@@ -1346,15 +961,19 @@ function Pricing() {
                 <span className="whitespace-nowrap text-[12.5px] font-semibold text-muted">19 € · {t('Próximamente')}</span>
               </li>
             </ul>
-            <Button href="/register?intent=breeder&plan=pro" variant="secondary" className="mt-6 w-full">
-              {t('Empezar con Kennel Pro')}
-            </Button>
-            <p className="mt-2 text-center text-[11px] text-muted">{t('Las extensiones llegarán próximamente; se activarán sobre Kennel Pro desde tu cuenta.')}</p>
+            <button
+              type="button"
+              disabled
+              aria-disabled="true"
+              className="mt-6 w-full cursor-not-allowed rounded-xl border border-hairline bg-surface-soft px-5 py-3 text-sm font-semibold text-muted"
+            >
+              {t('Próximamente')}
+            </button>
           </div>
         </div>
 
         <p className="mt-10 text-center text-[13px] text-muted">
-          {t('Kennel Pro se prueba 14 días sin tarjeta. Si no actualizas método de pago, vuelves automáticamente a Free sin perder datos. Las extensiones se contratan aparte cuando las necesites.')}
+          {t('Las herramientas de pago llegarán poco a poco. Mientras tanto, todo es gratis — y avisaremos a los usuarios gratuitos por email en cuanto cada novedad esté lista.')}
         </p>
       </div>
     </section>
@@ -1379,43 +998,35 @@ function FAQ() {
   const t = useT()
   const faqs = [
     {
-      q: t('¿Cómo funciona la prueba de 14 días de Kennel Pro?'),
-      a: t('Te das de alta sin tarjeta. Durante 14 días tienes acceso completo a Pro (COI, simulador, genotipos, Stripe). El día 13 te avisamos por email. El día 14 te pedimos tarjeta para seguir. Si no pagas, vuelves automáticamente a Kennel Free conservando todos tus datos.'),
+      q: t('¿De verdad es gratis ahora mismo?'),
+      a: t('Sí. Ahora mismo Genealogic es gratis para propietarios y criadores, con perros ilimitados y sin tarjeta. Registras tus perros y su genealogía, los importas con IA, llevas tus camadas y la salud al día, y tienes tu perfil público indexable en Google — todo sin coste.'),
     },
     {
-      q: t('¿Owner vs Kennel Free — cuál elijo?'),
-      a: t('Owner es para propietarios particulares que documentan a sus perros (su mascota o las que han tenido a lo largo de la vida). Kennel Free es para el criador casero o aficionado que ya maneja camadas, reservas, contratos y CRM de clientes. Ambos son gratis para siempre y con perros ilimitados — la diferencia son las herramientas de criadero.'),
+      q: t('¿Qué incluye gratis para criadores?'),
+      a: t('Genealogías ilimitadas con importador IA, perfil público del criadero indexable en Google (con tus reproductores y los perros que has criado), camadas con un click, calendario reproductivo, cartilla sanitaria con recordatorios de vacunas, galería de fotos y el buscador con más de 250.000 perros. Todo gratis.'),
     },
     {
-      q: t('¿Qué incluye Kennel Pro a 49€/mes?'),
-      a: t('Todo Kennel Free + COI Wright explicado (lista de ancestros duplicados, comparativa con la raza), simulador de cruces con COI proyectado y predicción de color por genotipos, pagos integrados con Stripe Connect (cobras señas y entregas), registro de visitas al criadero y soporte prioritario en menos de 24 horas.'),
+      q: t('¿Qué son las herramientas que llegarán próximamente?'),
+      a: t('Estamos puliendo herramientas profesionales para el criadero —simulador de cruces con COI proyectado, genotipos y DNA, CRM de reservas, contratos, web del criadero con dominio propio, newsletter y emailbot— que iremos lanzando poco a poco. Las verás en la web como visión; cuando cada una esté lista te avisaremos por email.'),
     },
     {
-      q: t('¿Qué son las extensiones de Kennel Pro?'),
-      a: t('Son módulos de pago que añades sobre Kennel Pro solo si los necesitas: la Web del criadero (web pública profesional con tu propio dominio, editor visual y temas, 19€/mes), la Newsletter (9€/mes) y el Emailbot con IA que responde a tus leads (19€/mes). Las tres están en desarrollo y llegarán próximamente; cuando se activen, las contratas y las cancelas por separado desde tu cuenta.'),
+      q: t('¿Tendré que pagar más adelante?'),
+      a: t('Lo que usas hoy seguirá siendo gratis. Algunas herramientas pro del criadero serán de pago cuando se lancen, pero nunca te cobraremos por sorpresa: si algo pasa a ser de pago, te lo decimos con antelación y tú decides. Sin tarjeta para empezar.'),
     },
     {
-      q: t('¿Qué pasa si paso de plan?'),
-      a: t('Todos tus perros, genealogías y datos se mantienen idénticos. Solo se desbloquean nuevas secciones (COI completo, simulador de cruces y genotipos al subir a Kennel Pro). Misma cuenta, misma URL pública.'),
-    },
-    {
-      q: t('¿Puedo usar mi propio dominio?'),
-      a: t('Lo podrás hacer con la extensión Web del criadero (19€/mes sobre Kennel Pro), que llegará próximamente: conectarás un dominio propio (criadero.com) desde Ajustes con un par de DNS records, y nuestro middleware servirá tu web directamente, sin subdominios feos ni redirects extra.'),
-    },
-    {
-      q: t('¿Puedo cancelar cuando quiera?'),
-      a: t('Sí. Sin permanencia, sin penalización. Si cancelas Kennel Pro, vuelves a Kennel Free conservando todos tus datos. Las extensiones se cancelan por separado cuando quieras. Si subes de plan, el cobro es prorrateado.'),
+      q: t('¿Mis datos son míos? ¿Puedo exportarlos?'),
+      a: t('Sí. Cualquier perro, genealogía o ficha la exportas a PDF en un click. Servidores en EU, RGPD por defecto. Si te vas de Genealogic, te llevas tus datos.'),
     },
     {
       q: t('¿Y si ya tengo todo en Excel o WhatsApp?'),
-      a: t('Para genealogías: la importación con IA (URL de Dogsfiles/Presadb/K9data, foto o PDF) te ahorra horas. Para clientes y leads existentes: importas un CSV o los añades a mano. La primera tarde es de setup; a partir de ahí todo en un sitio.'),
+      a: t('Para genealogías: la importación con IA (URL de Dogsfiles/Presadb/K9data, foto o PDF) te ahorra horas. El resto de fichas las añades a mano en un rato. La primera tarde es de setup; a partir de ahí todo en un sitio.'),
     },
   ]
 
   return (
     <section id="faq" className="border-b border-hairline bg-surface-soft">
       <div className="mx-auto max-w-[860px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
-        <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">{t('07 · FAQ')}</p>
+        <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">{t('06 · FAQ')}</p>
         <h2
           className="mt-3 font-semibold text-ink"
           style={{ fontSize: 'clamp(26px, 5vw, 48px)', lineHeight: 1.1, letterSpacing: '-0.03em' }}
@@ -1465,17 +1076,17 @@ function FinalCta() {
           className="mx-auto max-w-[18ch] font-semibold text-ink"
           style={{ fontSize: 'clamp(30px, 6vw, 72px)', lineHeight: 1.02, letterSpacing: '-0.035em' }}
         >
-          {t('Tu próxima camada se reserva sola.')}
+          {t('Tu criadero, donde tiene que estar.')}
         </h2>
         <p className="mx-auto mt-5 sm:mt-6 max-w-[480px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
-          {t('Genealogía verificable + criadero profesional + IA. En una sola cuenta.')}
+          {t('Genealogías verificables + perfil público indexable + IA. En una sola cuenta. Gratis.')}
         </p>
         <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-3">
           <Button href="/register?intent=breeder&plan=free" variant="primary" size="lg">
-            {t('Empieza gratis')} <ArrowRight className="h-4 w-4" />
+            {t('Crea tu criadero gratis')} <ArrowRight className="h-4 w-4" />
           </Button>
-          <Button href="/register?intent=breeder&plan=pro" variant="secondary" size="lg">
-            {t('Probar Kennel Pro 14 días gratis')}
+          <Button href="/features" variant="secondary" size="lg">
+            {t('Explora el producto al detalle')}
           </Button>
         </div>
       </div>

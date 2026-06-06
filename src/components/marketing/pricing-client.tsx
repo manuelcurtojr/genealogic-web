@@ -6,7 +6,8 @@
  * número de perros, sino por las HERRAMIENTAS de criadero):
  *   · Owner — Perros ilimitados · Gratis
  *   · Kennel Free — Perros ilimitados · Gratis (embudo de ventas LIMITADO)
- *   · Kennel Pro — Perros ilimitados · 49€/mes (o 499€/año) · 14 días gratis
+ *   · Kennel Pro — Perros ilimitados · 49€/mes (o 499€/año) · PRÓXIMAMENTE
+ *     (Fase 1: visible como visión pero NO comprable; CTA "Próximamente").
  *
  * Extensiones (add-ons que se pagan APARTE, sobre Kennel Pro):
  *   · Web del criadero — 19€/mes (web pública con dominio propio)
@@ -174,6 +175,9 @@ interface PlanDef {
   highlight?: boolean
   ctaLabel: string
   ctaHref?: string
+  /** Fase 1: plan VISIBLE como visión pero NO comprable todavía. Su CTA se
+   *  renderiza como botón "Próximamente" deshabilitado (sin checkout). */
+  comingSoon?: boolean
 }
 
 /**
@@ -189,7 +193,7 @@ function fmtPrice(plan: PlanDef, cycle: BillingCycle): { amount: string; per: st
     return {
       amount: `${plan.monthlyCents / 100}€`,
       per: '/mes',
-      sub: plan.id === 'pro' ? '14 días gratis · sin tarjeta' : null,
+      sub: plan.comingSoon ? 'Próximamente · ahora gratis' : null,
     }
   }
   // Anual: enseñamos /mes con descuento aplicado + total
@@ -261,8 +265,8 @@ const PLANS: PlanDef[] = [
     icon: Sparkles,
     accent: '#FE6620',
     accentBg: 'from-orange-50 via-canvas to-amber-50',
-    highlight: true,
-    valueAnchor: 'Sustituye tu web (≈15€/mes), tu CRM, Mailchimp (≈20€/mes) y al diseñador que te hace los PDFs de genealogía. Todo por 49€.',
+    comingSoon: true,
+    valueAnchor: 'La visión: sustituirá tu web, tu CRM y al diseñador que te hace los PDFs de genealogía. Lo iremos lanzando poco a poco — de momento todo es gratis.',
     highlights: [
       'Embudo de ventas completo + CRM + contactos',
       'COI Wright + ancestros duplicados + comparativa con la raza',
@@ -272,7 +276,7 @@ const PLANS: PlanDef[] = [
       'Soporte prioritario <24h',
       'Amplíalo con extensiones (próximamente): web, newsletter y emailbot',
     ],
-    ctaLabel: 'Probar 14 días gratis',
+    ctaLabel: 'Próximamente',
   },
 ]
 
@@ -372,10 +376,10 @@ export default function PricingClient({
             {t('Precios')}
           </div>
           <h1 className="font-semibold text-ink mb-4 tracking-tight" style={{ fontSize: 'clamp(28px, 5vw, 52px)', lineHeight: 1.05, letterSpacing: '-0.04em' }}>
-            {t('Para tu perro, gratis para siempre. Para tu criadero, 49€.')}
+            {t('Gratis para propietarios y criadores. Sin tarjeta.')}
           </h1>
           <p className="text-base sm:text-lg text-body max-w-2xl mx-auto leading-relaxed">
-            {t('No cobramos por perro —sube todos los que quieras—. Solo pagas las herramientas profesionales cuando críes en serio.')}
+            {t('Ahora mismo Genealogic es gratis para todos, con perros ilimitados y sin tarjeta. Estamos preparando herramientas profesionales de pago para el criadero — abajo las ves como visión, etiquetadas «Próximamente».')}
           </p>
         </div>
 
@@ -567,7 +571,16 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
 
       {/* CTA */}
       <div className="mt-6">
-        {plan.ctaHref ? (
+        {plan.comingSoon ? (
+          <button
+            type="button"
+            disabled
+            aria-disabled="true"
+            className="inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-xl border border-hairline bg-surface-soft px-5 py-3 text-sm font-bold text-muted"
+          >
+            {t('Próximamente')}
+          </button>
+        ) : plan.ctaHref ? (
           <Button
             href={plan.ctaHref}
             variant={plan.highlight ? 'primary' : 'secondary'}
@@ -586,9 +599,9 @@ function PlanCard({ plan, isLoggedIn, cycle }: { plan: PlanDef; isLoggedIn: bool
             style={{ background: plan.accent }}
           />
         )}
-        {plan.id === 'pro' && (
+        {plan.comingSoon && (
           <p className="mt-2 text-[10.5px] text-muted text-center">
-            {t('Sin tarjeta para empezar el trial · Cancela cuando quieras')}
+            {t('Lo lanzamos poco a poco. Mientras tanto es gratis — te avisaremos por email cuando esté disponible.')}
           </p>
         )}
       </div>
@@ -641,7 +654,16 @@ function AdvancedView({ isLoggedIn, cycle }: { isLoggedIn: boolean; cycle: Billi
               <td className="px-4 py-4"></td>
               {PLANS.map((plan) => (
                 <td key={plan.id} className="px-3 py-4 text-center" style={{ background: plan.highlight ? `${plan.accent}08` : undefined }}>
-                  {plan.ctaHref ? (
+                  {plan.comingSoon ? (
+                    <button
+                      type="button"
+                      disabled
+                      aria-disabled="true"
+                      className="inline-flex cursor-not-allowed items-center justify-center gap-1 rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-[12px] font-bold text-muted"
+                    >
+                      {t('Próximamente')}
+                    </button>
+                  ) : plan.ctaHref ? (
                     <Link
                       href={plan.ctaHref}
                       className="inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-[12px] font-bold transition text-on-primary hover:opacity-90"
@@ -802,8 +824,8 @@ function FAQ() {
         <FaqItem q={t('¿Y los perros fallecidos?')}>
           {t('Cuando marcas un perro como fallecido (In Memoriam), Genealogic conserva su ficha con toda su genealogía, fotos y palmarés, y la oculta del directorio público. No hay ningún límite del que descontar: tienes perros ilimitados en todos los planes. Útil para propietarios que han tenido varios perros a lo largo de su vida y quieren documentarlos a todos. Los perros con más de 20 años se marcan automáticamente como fallecidos (puedes contradecirlo en los 30 días siguientes).')}
         </FaqItem>
-        <FaqItem q={t('¿Cómo funciona la prueba de 14 días de Pro?')}>
-          {t('Te das de alta sin tarjeta. Durante 14 días tienes acceso completo al plan. El día 13 te avisamos por email. El día 14 te pedimos tarjeta para seguir. Si no pagas, vuelves automáticamente a Free (tus datos se mantienen intactos).')}
+        <FaqItem q={t('¿Cuándo podré contratar Kennel Pro?')}>
+          {t('Todavía no está a la venta. Estamos puliendo las herramientas pro del criadero (simulador de cruces, genotipos, CRM de reservas, estadísticas…) y las iremos lanzando poco a poco. Mientras tanto, todo es gratis con perros ilimitados. Cuando Pro esté disponible te avisaremos por email — sin compromiso, decides tú.')}
         </FaqItem>
         <FaqItem q={t('¿Qué son las extensiones?')}>
           {t('Son add-ons que se contratan aparte sobre Kennel Pro, para que pagues solo lo que usas: la Web del criadero (19€/mes) te da una web pública con dominio propio; la Newsletter (9€/mes) te deja lanzar campañas y gestionar lista de espera; y el Emailbot (19€/mes) es un asistente IA que responde consultas de cachorros 24/7. Las tres están en desarrollo y llegarán próximamente; cuando se activen, las contratas y las cancelas cuando quieras desde tu panel.')}

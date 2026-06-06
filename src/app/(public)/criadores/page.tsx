@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t('Para criadores'),
     description: t(
-      'Software para criaderos: gestión de afijo, perros, camadas, pipeline de reservas, web pública y emailbot. Empieza gratis.'
+      'Software gratis para criaderos: perfil público indexable en Google, genealogías con importador IA, camadas y salud. Crea tu criadero gratis — y más herramientas llegando.'
     ),
     alternates: { canonical: 'https://genealogic.io/criadores' },
     openGraph: {
