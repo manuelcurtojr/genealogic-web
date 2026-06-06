@@ -470,5 +470,24 @@ export const content4Dogs: Record<string, Record<string, string>> = {
     'Pronto': 'Soon',
     'meses': 'months',
     'El registro se guardó, pero no se pudo crear el recordatorio.': 'The record was saved, but the reminder could not be created.',
+    // salud-tab — rediseño cartilla (agenda + timeline + atajos)
+    'Añadir a la cartilla': 'Add to the record',
+    'Pendientes': 'To do',
+    'Cartilla': 'Health record',
+    'Hecho': 'Done',
+    'Todo al día': 'All up to date',
+    'No hay recordatorios pendientes para este perro.': 'No pending reminders for this dog.',
+    'cada': 'every',
+    'Te avisaremos el': 'We\'ll remind you on',
+    'La cartilla de salud está vacía': 'The health record is empty',
+    'Registra vacunas, desparasitaciones, pruebas y tratamientos. Te avisaremos de lo que toca.': 'Log vaccines, dewormings, tests and treatments. We\'ll remind you when something is due.',
+    'Añadir primer registro': 'Add first record',
+    'o empieza por uno de estos:': 'or start with one of these:',
+    'No hay registros de este tipo.': 'No records of this type.',
+    // ('Ver todos' y 'Privado' ya están definidos arriba en este diccionario)
+    // Atajos de alta rápida (presets)
+    'Rabia': 'Rabies',
+    'Polivalente (DHPPi)': 'Multivalent (DHPPi)',
+    'Revisión anual': 'Annual checkup',
   },
 }

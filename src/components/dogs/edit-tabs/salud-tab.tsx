@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import ToggleSwitch from '@/components/ui/toggle'
 import { Img } from '@/components/ui/img'
 import { createClient } from '@/lib/supabase/client'
-import { Stethoscope, Syringe, Bug, Pill, FlaskConical, Scissors, Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff, FileText, Bell, Check, Clock, Calendar } from 'lucide-react'
+import { Stethoscope, Syringe, Bug, Pill, FlaskConical, Scissors, Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff, FileText, Bell, Check, Clock, Calendar, Repeat, CheckCircle2, AlertCircle, CalendarClock, Sparkles } from 'lucide-react'
 import FileGallery from './file-gallery'
 import { useT } from '@/components/i18n/locale-provider'
 
@@ -25,6 +25,16 @@ const REMINDER_TYPES: Record<string, { label: string; color: string; icon: any }
   checkup: { label: 'Revisión', color: '#3B82F6', icon: Stethoscope },
   custom: { label: 'Otro', color: '#8B5CF6', icon: Calendar },
 }
+
+// Atajos de alta rápida (un toque pre-rellena el formulario). Hardcoded a
+// propósito: cubren las entradas más comunes de una cartilla. `months` alimenta
+// la sugerencia de recordatorio (igual que suggestedMonths, pero por preset).
+const QUICK_ADD: { label: string; type: string; title: string; months: number | null }[] = [
+  { label: 'Rabia', type: 'vaccine', title: 'Rabia', months: 12 },
+  { label: 'Polivalente (DHPPi)', type: 'vaccine', title: 'Polivalente (DHPPi)', months: 12 },
+  { label: 'Desparasitación', type: 'deworming', title: 'Desparasitación', months: 3 },
+  { label: 'Revisión anual', type: 'test', title: 'Revisión anual', months: 12 },
+]
 
 // Mapea el tipo de registro de la cartilla (vet_records.type) al tipo de
 // recordatorio (vet_reminders.type). Los recordatorios solo tienen 4 tipos.
@@ -62,6 +72,11 @@ function addDays(dateStr: string, days: number): string {
 }
 
 const REMINDER_SELECT = 'id, dog_id, owner_id, template_id, title, type, due_date, completed_date, recurrence_days, auto_generated'
+
+// Formatea YYYY-MM-DD a "8 mar 2026" (es-ES).
+function fmtDate(dateStr: string): string {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+}
 
 export default function SaludTab({ dogId, userId }: { dogId: string; userId: string }) {
   const [records, setRecords] = useState<any[]>([])
@@ -123,6 +138,18 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
     // En edición NO pre-rellenamos el recordatorio: solo se crea uno si el
     // usuario lo añade explícitamente en este submit (evita duplicados).
     setForm({ type: r.type, title: r.title, date: r.date, notes: r.notes || '', is_public: r.is_public ?? false, files: parseFiles(r.file_url), reminderDate: '', reminderMonths: '' })
+    setShowForm(true)
+  }
+
+  // Atajo de alta rápida: abre el formulario ya rellenado con tipo + título +
+  // la sugerencia de recordatorio del preset (sobre la fecha de hoy).
+  function openPreset(p: { type: string; title: string; months: number | null }) {
+    setEditRecord(null); setError(null); setReminderTouched(false)
+    const date = new Date().toISOString().split('T')[0]
+    const sug = p.months != null
+      ? { reminderDate: addMonths(date, p.months), reminderMonths: String(p.months) }
+      : { reminderDate: '', reminderMonths: '' }
+    setForm({ type: p.type, title: p.title, date, notes: '', is_public: false, files: [], ...sug })
     setShowForm(true)
   }
 
@@ -204,76 +231,67 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
 
   const selType = VET_TYPES.find(vt => vt.key === form.type) || VET_TYPES[0]
   const todayISO = new Date().toISOString().split('T')[0]
+  const hasRecords = records.length > 0
+
+  // Agrupa los registros filtrados por año (clave número) preservando el orden
+  // (ya vienen ordenados por fecha desc desde load()).
+  const groupedByYear: { year: number; items: any[] }[] = []
+  for (const r of filtered) {
+    const year = new Date(r.date + 'T00:00:00').getFullYear()
+    const last = groupedByYear[groupedByYear.length - 1]
+    if (last && last.year === year) last.items.push(r)
+    else groupedByYear.push({ year, items: [r] })
+  }
+
+  // Bloque de atajos de alta rápida (reutilizado en cabecera y empty state).
+  const quickAddRow = (
+    <div className="flex flex-wrap gap-1.5">
+      {QUICK_ADD.map(p => {
+        const vt = VET_TYPES.find(v => v.key === p.type) || VET_TYPES[0]
+        const Icon = vt.icon
+        return (
+          <button key={p.label} type="button" onClick={() => openPreset(p)}
+            className="group inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-2.5 py-1.5 text-[12px] font-medium text-body transition hover:border-ink hover:text-ink">
+            <span className="flex h-4 w-4 items-center justify-center rounded-full" style={{ backgroundColor: vt.color + '1a' }}>
+              <Icon className="h-2.5 w-2.5" style={{ color: vt.color }} />
+            </span>
+            {t(p.label)}
+          </button>
+        )
+      })}
+    </div>
+  )
 
   return (
-    <div className="space-y-4">
-      {/* Resumen por tipo */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-0.5 px-0.5">
-        {counts.map(vt => { const Icon = vt.icon; return (
-          <div key={vt.key} className="flex-shrink-0 rounded-xl border border-hairline bg-canvas px-3 py-2 min-w-[94px]">
-            <div className="flex items-center gap-1.5">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full" style={{ backgroundColor: vt.color + '1a' }}><Icon className="h-3.5 w-3.5" style={{ color: vt.color }} /></span>
-              <span className="text-[18px] font-semibold tabular-nums leading-none text-ink">{vt.count}</span>
-            </div>
-            <p className="mt-1 text-[11px] text-muted truncate">{t(vt.label)}</p>
+    <div className="space-y-5">
+      {/* ── Acción primaria: añadir + atajos rápidos ── */}
+      {!showForm && (
+        <div className="space-y-2.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted">
+            <Sparkles className="h-3 w-3" /> {t('Añadir a la cartilla')}
           </div>
-        )})}
-      </div>
-
-      {/* Próximos recordatorios (vet_reminders pendientes de este perro) */}
-      {reminders.length > 0 && (
-        <div className="rounded-2xl border border-hairline bg-canvas p-3.5">
-          <h3 className="mb-2.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted">
-            <Bell className="h-3.5 w-3.5" /> {t('Próximos recordatorios')} ({reminders.length})
-          </h3>
-          <div className="space-y-1.5">
-            {reminders.map(rem => {
-              const conf = REMINDER_TYPES[rem.type] || REMINDER_TYPES.custom
-              const Icon = conf.icon
-              const isOverdue = rem.due_date < todayISO
-              const isDueToday = rem.due_date === todayISO
-              const isSoon = !isOverdue && !isDueToday && rem.due_date <= addDays(todayISO, 14)
-              const highlight = isOverdue || isDueToday || isSoon
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button onClick={openAdd} className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-semibold text-on-primary transition hover:opacity-90">
+              <Plus className="h-3.5 w-3.5" /> {t('Nuevo registro')}
+            </button>
+            {QUICK_ADD.map(p => {
+              const vt = VET_TYPES.find(v => v.key === p.type) || VET_TYPES[0]
+              const Icon = vt.icon
               return (
-                <div key={rem.id} className={`flex items-center gap-2.5 rounded-lg p-2.5 border ${highlight ? 'bg-amber-500/5 border-amber-500/30' : 'bg-surface-card border-hairline'}`}>
-                  <div className="flex h-7 w-7 items-center justify-center rounded-md flex-shrink-0" style={{ background: conf.color + '15' }}>
-                    <Icon className="h-3.5 w-3.5" style={{ color: conf.color }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-ink truncate">{rem.title}</p>
-                    <p className={`flex items-center gap-1 text-[11px] ${highlight ? 'text-amber-700' : 'text-muted'}`}>
-                      <Clock className="h-2.5 w-2.5" />
-                      {isOverdue ? `${t('Vencido')} · ` : isDueToday ? `${t('Hoy')} · ` : isSoon ? `${t('Pronto')} · ` : ''}
-                      {new Date(rem.due_date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
-                      {rem.recurrence_days ? ` · ↻ ${Math.round(rem.recurrence_days / 30)} ${t('meses')}` : ''}
-                    </p>
-                  </div>
-                  <button onClick={() => completeReminder(rem)} disabled={completingId === rem.id}
-                    className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition flex-shrink-0 disabled:opacity-50"
-                    title={t('Marcar como hecho')}>
-                    {completingId === rem.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-                  </button>
-                </div>
+                <button key={p.label} type="button" onClick={() => openPreset(p)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-2.5 py-1.5 text-[12px] font-medium text-body transition hover:border-ink hover:text-ink">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full" style={{ backgroundColor: vt.color + '1a' }}>
+                    <Icon className="h-2.5 w-2.5" style={{ color: vt.color }} />
+                  </span>
+                  {t(p.label)}
+                </button>
               )
             })}
           </div>
         </div>
       )}
 
-      {/* Filtros */}
-      <div className="flex gap-1.5 flex-wrap">
-        <button onClick={() => setFilter('all')} className={`rounded-full px-3 py-1 text-xs font-medium transition ${filter === 'all' ? 'bg-ink text-on-primary' : 'bg-surface-card text-body hover:text-ink'}`}>{t('Todos')}</button>
-        {VET_TYPES.map(vt => <button key={vt.key} onClick={() => setFilter(vt.key)} className={`rounded-full px-3 py-1 text-xs font-medium transition ${filter === vt.key ? 'text-white' : 'bg-surface-card text-body hover:text-ink'}`} style={filter === vt.key ? { backgroundColor: vt.color } : undefined}>{t(vt.label)}</button>)}
-      </div>
-
-      {/* Botón añadir */}
-      {!showForm && (
-        <button onClick={openAdd} className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-2 text-[13px] font-medium text-on-primary transition hover:opacity-90">
-          <Plus className="h-4 w-4" /> {t('Añadir registro')}
-        </button>
-      )}
-
-      {/* Formulario */}
+      {/* ── Formulario (alta / edición) ── */}
       {showForm && (
         <div className="rounded-2xl border border-hairline bg-surface-soft p-4 space-y-3.5">
           <div className="flex items-center justify-between">
@@ -343,8 +361,15 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
               </div>
             </div>
             {form.reminderDate ? (
-              <button type="button" onClick={() => { setReminderTouched(true); setForm(p => ({ ...p, reminderDate: '', reminderMonths: '' })) }}
-                className="text-[11px] text-muted hover:text-ink transition">{t('Quitar recordatorio')}</button>
+              <div className="flex items-center justify-between gap-2">
+                <p className="flex items-center gap-1 text-[11px] text-emerald-600">
+                  <CalendarClock className="h-3 w-3" />
+                  {t('Te avisaremos el')} {fmtDate(form.reminderDate)}
+                  {form.reminderMonths && parseInt(form.reminderMonths) > 0 ? ` · ${t('cada')} ${form.reminderMonths} ${t('meses')}` : ''}
+                </p>
+                <button type="button" onClick={() => { setReminderTouched(true); setForm(p => ({ ...p, reminderDate: '', reminderMonths: '' })) }}
+                  className="flex-shrink-0 text-[11px] text-muted hover:text-ink transition">{t('Quitar recordatorio')}</button>
+              </div>
             ) : (
               <p className="text-[10.5px] text-muted">{t('Añade una fecha para recibir un aviso (en el calendario y por email).')}</p>
             )}
@@ -372,50 +397,164 @@ export default function SaludTab({ dogId, userId }: { dogId: string; userId: str
         </div>
       )}
 
-      {/* Lista (la cartilla — privada por defecto) */}
-      {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-hairline py-10 text-center text-muted">
-          <Stethoscope className="mx-auto mb-2 h-8 w-8 opacity-30" />
-          <p className="text-sm">{t('Sin registros todavía')}</p>
+      {/* ── Agenda: pendientes / próximos recordatorios (lo más útil, arriba) ── */}
+      <div>
+        <div className="mb-2.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted">
+          <Bell className="h-3.5 w-3.5" /> {t('Pendientes')}{reminders.length > 0 ? ` (${reminders.length})` : ''}
         </div>
-      ) : (
-        <div className="space-y-2.5">
-          {filtered.map(r => {
-            const type = VET_TYPES.find(vt => vt.key === r.type) || VET_TYPES[0]; const Icon = type.icon
-            const ff = parseFiles(r.file_url)
-            return (
-              <div key={r.id} className="rounded-2xl border border-hairline bg-canvas p-3.5 flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full flex-shrink-0" style={{ backgroundColor: type.color + '1a' }}><Icon className="h-5 w-5" style={{ color: type.color }} /></div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-[14px] font-medium text-ink leading-tight">{r.title}</p>
-                    <span className="rounded-full px-1.5 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: type.color + '1a', color: type.color }}>{t(type.label)}</span>
-                    {r.is_public && <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600"><Eye className="h-2.5 w-2.5" /> {t('Público')}</span>}
+        {reminders.length === 0 ? (
+          <div className="flex items-center gap-2.5 rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.06] px-4 py-3.5">
+            <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-600" />
+            <div>
+              <p className="text-[13px] font-medium text-ink">{t('Todo al día')}</p>
+              <p className="text-[11.5px] text-muted">{t('No hay recordatorios pendientes para este perro.')}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {reminders.map(rem => {
+              const conf = REMINDER_TYPES[rem.type] || REMINDER_TYPES.custom
+              const Icon = conf.icon
+              const isOverdue = rem.due_date < todayISO
+              const isDueToday = rem.due_date === todayISO
+              const isSoon = !isOverdue && !isDueToday && rem.due_date <= addDays(todayISO, 14)
+              // Semáforo: rojo (vencido), ámbar (hoy/pronto ≤14d), neutro (futuro).
+              const tone = isOverdue
+                ? { box: 'bg-red-500/[0.06] border-red-500/30', text: 'text-red-600', StateIcon: AlertCircle, state: t('Vencido') }
+                : (isDueToday || isSoon)
+                  ? { box: 'bg-amber-500/[0.07] border-amber-500/30', text: 'text-amber-700', StateIcon: Clock, state: isDueToday ? t('Hoy') : t('Pronto') }
+                  : { box: 'bg-surface-card border-hairline', text: 'text-muted', StateIcon: CalendarClock, state: '' }
+              const StateIcon = tone.StateIcon
+              return (
+                <div key={rem.id} className={`flex items-center gap-2.5 rounded-xl border p-2.5 ${tone.box}`}>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0" style={{ background: conf.color + '15' }}>
+                    <Icon className="h-4 w-4" style={{ color: conf.color }} />
                   </div>
-                  <p className="mt-0.5 text-[12px] text-muted">{new Date(r.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                  {r.notes && <p className="mt-1 text-[12.5px] text-body leading-snug">{r.notes}</p>}
-                  {ff.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {ff.map((u: string, i: number) => /\.(jpg|jpeg|png|gif|webp)/i.test(u) ? (
-                        <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="h-10 w-10 overflow-hidden rounded-lg border border-hairline"><Img w={120} src={u} alt="" className="h-full w-full object-cover" /></a>
-                      ) : (
-                        <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-lg border border-hairline bg-surface-card hover:bg-surface-soft transition"><FileText className="h-4 w-4 text-muted" /></a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-0.5 flex-shrink-0">
-                  <button onClick={() => togglePublic(r)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-surface-card hover:text-ink transition" title={r.is_public ? t('Ocultar del perfil') : t('Mostrar en perfil')}>
-                    {r.is_public ? <Eye className="h-3.5 w-3.5 text-emerald-600" /> : <EyeOff className="h-3.5 w-3.5" />}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-medium text-ink truncate">{rem.title}</p>
+                    <p className={`flex items-center gap-1 text-[11px] ${tone.text}`}>
+                      <StateIcon className="h-2.5 w-2.5 flex-shrink-0" />
+                      {tone.state ? `${tone.state} · ` : ''}
+                      {fmtDate(rem.due_date)}
+                      {rem.recurrence_days ? ` · ↻ ${t('cada')} ${Math.round(rem.recurrence_days / 30)} ${t('meses')}` : ''}
+                    </p>
+                  </div>
+                  <button onClick={() => completeReminder(rem)} disabled={completingId === rem.id}
+                    className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/10 px-2.5 py-1.5 text-[12px] font-semibold text-emerald-600 hover:bg-emerald-500/20 transition flex-shrink-0 disabled:opacity-50"
+                    title={t('Marcar como hecho')}>
+                    {completingId === rem.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                    {t('Hecho')}
                   </button>
-                  <button onClick={() => openEdit(r)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-surface-card hover:text-ink transition" title={t('Editar')}><Pencil className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => handleDelete(r.id)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-red-50 hover:text-red-500 transition" title={t('Eliminar')}><Trash2 className="h-3.5 w-3.5" /></button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── La cartilla: resumen + filtros por tipo + timeline ── */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted">
+          <Stethoscope className="h-3.5 w-3.5" /> {t('Cartilla')}{hasRecords ? ` (${records.length})` : ''}
+        </div>
+
+        {/* Filtros por tipo (chip con icono + recuento; activo on-brand) */}
+        {hasRecords && (
+          <div className="flex gap-1.5 flex-wrap">
+            <button onClick={() => setFilter('all')} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium transition ${filter === 'all' ? 'bg-ink text-on-primary' : 'border border-hairline bg-canvas text-body hover:text-ink'}`}>
+              {t('Todos')} <span className="tabular-nums opacity-70">{records.length}</span>
+            </button>
+            {counts.map(vt => { const Icon = vt.icon; const on = filter === vt.key; return (
+              <button key={vt.key} onClick={() => setFilter(vt.key)}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium transition ${on ? 'text-white' : 'border border-hairline bg-canvas text-body hover:text-ink'}`}
+                style={on ? { backgroundColor: vt.color } : undefined}>
+                <Icon className="h-3 w-3" style={on ? undefined : { color: vt.color }} />
+                {t(vt.label)} <span className="tabular-nums opacity-70">{vt.count}</span>
+              </button>
+            )})}
+          </div>
+        )}
+
+        {/* Timeline (o estado vacío) */}
+        {!hasRecords ? (
+          <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft/40 px-5 py-9 text-center">
+            <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-surface-card">
+              <Stethoscope className="h-6 w-6 text-muted" />
+            </span>
+            <p className="text-[14.5px] font-semibold text-ink">{t('La cartilla de salud está vacía')}</p>
+            <p className="mx-auto mt-1 max-w-xs text-[12.5px] leading-snug text-muted">{t('Registra vacunas, desparasitaciones, pruebas y tratamientos. Te avisaremos de lo que toca.')}</p>
+            <button onClick={openAdd} className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-semibold text-on-primary transition hover:opacity-90">
+              <Plus className="h-4 w-4" /> {t('Añadir primer registro')}
+            </button>
+            <div className="mt-4 flex flex-col items-center gap-2">
+              <p className="text-[11px] text-muted">{t('o empieza por uno de estos:')}</p>
+              <div className="flex justify-center">{quickAddRow}</div>
+            </div>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-hairline py-9 text-center text-muted">
+            <p className="text-[13px]">{t('No hay registros de este tipo.')}</p>
+            <button onClick={() => setFilter('all')} className="mt-1 text-[12px] font-medium text-ink underline-offset-2 hover:underline">{t('Ver todos')}</button>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {groupedByYear.map(group => (
+              <div key={group.year}>
+                {/* Cabecera de año (solo si hay más de un año para no recargar) */}
+                {groupedByYear.length > 1 && (
+                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted tabular-nums">{group.year}</p>
+                )}
+                {/* Línea de tiempo vertical */}
+                <div className="relative space-y-2.5 pl-5 before:absolute before:left-[7px] before:top-1.5 before:bottom-1.5 before:w-px before:bg-hairline">
+                  {group.items.map(r => {
+                    const type = VET_TYPES.find(vt => vt.key === r.type) || VET_TYPES[0]; const Icon = type.icon
+                    const ff = parseFiles(r.file_url)
+                    return (
+                      <div key={r.id} className="group relative">
+                        {/* Nodo en la línea, con el color del tipo */}
+                        <span className="absolute -left-5 top-3 flex h-3.5 w-3.5 items-center justify-center rounded-full ring-4 ring-canvas" style={{ backgroundColor: type.color }} />
+                        <div className="rounded-2xl border border-hairline bg-canvas p-3.5 flex items-start gap-3 transition hover:border-ink/20">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl flex-shrink-0" style={{ backgroundColor: type.color + '1a' }}><Icon className="h-4.5 w-4.5" style={{ color: type.color }} /></div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-[14px] font-medium text-ink leading-tight">{r.title}</p>
+                              <span className="rounded-full px-1.5 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: type.color + '1a', color: type.color }}>{t(type.label)}</span>
+                              <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${r.is_public ? 'bg-emerald-50 text-emerald-600' : 'bg-surface-card text-muted'}`}>
+                                {r.is_public ? <><Eye className="h-2.5 w-2.5" /> {t('Público')}</> : <><EyeOff className="h-2.5 w-2.5" /> {t('Privado')}</>}
+                              </span>
+                            </div>
+                            <p className="mt-0.5 flex items-center gap-1 text-[12px] text-muted">
+                              <Calendar className="h-3 w-3" /> {fmtDate(r.date)}
+                            </p>
+                            {r.notes && <p className="mt-1 text-[12.5px] text-body leading-snug">{r.notes}</p>}
+                            {ff.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                {ff.map((u: string, i: number) => /\.(jpg|jpeg|png|gif|webp)/i.test(u) ? (
+                                  <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="h-10 w-10 overflow-hidden rounded-lg border border-hairline"><Img w={120} src={u} alt="" className="h-full w-full object-cover" /></a>
+                                ) : (
+                                  <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-lg border border-hairline bg-surface-card hover:bg-surface-soft transition"><FileText className="h-4 w-4 text-muted" /></a>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          {/* Acciones: visibles en móvil, hover en desktop */}
+                          <div className="flex items-center gap-0.5 flex-shrink-0 sm:opacity-0 sm:transition sm:group-hover:opacity-100">
+                            <button onClick={() => togglePublic(r)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-surface-card hover:text-ink transition" title={r.is_public ? t('Ocultar del perfil') : t('Mostrar en perfil')}>
+                              {r.is_public ? <Eye className="h-3.5 w-3.5 text-emerald-600" /> : <EyeOff className="h-3.5 w-3.5" />}
+                            </button>
+                            <button onClick={() => openEdit(r)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-surface-card hover:text-ink transition" title={t('Editar')}><Pencil className="h-3.5 w-3.5" /></button>
+                            <button onClick={() => handleDelete(r.id)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-red-50 hover:text-red-500 transition" title={t('Eliminar')}><Trash2 className="h-3.5 w-3.5" /></button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
-            )
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
