@@ -22,6 +22,7 @@ import type { Metadata } from 'next'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import { Img } from '@/components/ui/img'
+import { hasProFeatures, isEnterpriseUser } from '@/lib/permissions'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
@@ -203,13 +204,17 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
   //  · Resto / anónimo → 404 (no indexable)
   // Comprobación de admin: lookup directo del role del usuario.
   let userIsAdmin = false
+  // COI es feature Pro: solo lo ve el VIEWER si es insider o tiene plan de pago.
+  // Anónimo → false. Reutilizamos el lookup de profiles para traer también el plan.
+  let canSeeCoi = false
   if (user) {
     const { data: prof } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, plan')
       .eq('id', user.id)
       .maybeSingle()
     userIsAdmin = prof?.role === 'admin'
+    canSeeCoi = isEnterpriseUser(user.id) || hasProFeatures(prof?.plan)
   }
   const isOwnerOfDog = !!(user && dog.owner_id && user.id === dog.owner_id)
   const isHidden = !!dog.hidden_at
@@ -439,7 +444,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
           <h2 className={`mb-5 sm:mb-6 text-[22px] font-semibold tracking-[-0.04em] text-ink ${user ? '' : 'px-4 sm:px-[30px] lg:px-2'}`}>
             {t('Genealogía')}
           </h2>
-          <PedigreeTree data={pedigree} rootId={dog.id} breedId={dog.breed_id} />
+          <PedigreeTree data={pedigree} rootId={dog.id} breedId={dog.breed_id} showCoi={canSeeCoi} />
         </div>
       )}
     </div>

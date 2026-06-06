@@ -140,7 +140,8 @@ export default function PlannerPage() {
           <h2 className="mb-4 px-4 text-[22px] font-semibold tracking-[-0.04em] text-ink lg:px-0">
             {t('Genealogía combinada')}
           </h2>
-          <PedigreeTree data={pedigreeData} rootId="virtual-litter" />
+          {/* Ruta reservada (solo insiders vía middleware) → siempre Pro. */}
+          <PedigreeTree data={pedigreeData} rootId="virtual-litter" showCoi={true} />
         </section>
       ) : sireId && damId ? (
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">

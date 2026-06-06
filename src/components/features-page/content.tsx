@@ -176,8 +176,15 @@ export default async function FeaturesContent() {
                           <span className="flex items-center justify-center h-9 w-9 rounded-lg bg-surface-card">
                             <Icon className="h-4 w-4 text-ink" />
                           </span>
-                          <span className="ml-auto inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-muted bg-surface-soft border border-hairline px-2 py-0.5 rounded-full">
-                            {t('Próximamente')}
+                          {/* Toda feature próxima es de pago (Pro/Enterprise):
+                              chip "Pro" con acento de marca + chip "Próximamente" muteado. */}
+                          <span className="ml-auto flex items-center gap-1.5">
+                            <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-[#FE6620] bg-[#FE6620]/10 px-2 py-0.5 rounded-full">
+                              {t('Pro')}
+                            </span>
+                            <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-muted bg-surface-soft border border-hairline px-2 py-0.5 rounded-full">
+                              {t('Próximamente')}
+                            </span>
                           </span>
                         </div>
                         <p className="text-[13.5px] font-semibold text-ink leading-snug">{feature.title}</p>
@@ -197,8 +204,15 @@ export default async function FeaturesContent() {
                           <span className="flex items-center justify-center h-9 w-9 rounded-lg bg-surface-card">
                             <FIcon className="h-4 w-4 text-ink" />
                           </span>
-                          <span className="ml-auto inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-muted bg-surface-soft border border-hairline px-2 py-0.5 rounded-full">
-                            {t('Próximamente')}
+                          {/* Toda feature próxima es de pago (Pro/Enterprise):
+                              chip "Pro" con acento de marca + chip "Próximamente" muteado. */}
+                          <span className="ml-auto flex items-center gap-1.5">
+                            <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-[#FE6620] bg-[#FE6620]/10 px-2 py-0.5 rounded-full">
+                              {t('Pro')}
+                            </span>
+                            <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-muted bg-surface-soft border border-hairline px-2 py-0.5 rounded-full">
+                              {t('Próximamente')}
+                            </span>
                           </span>
                         </div>
                         <p className="text-[13.5px] font-semibold text-ink leading-snug">{f.title}</p>

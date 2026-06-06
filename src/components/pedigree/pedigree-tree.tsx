@@ -10,7 +10,10 @@ const PedigreeCtx = createContext<{ onClickDog?: (id: string) => void; onClickEm
 import { calculateCOI, getCOILevel, getCOIInterpretation } from './coi-calculator'
 
 interface PN { id:string;name:string;sex:string;registration:string|null;father_id:string|null;mother_id:string|null;generation:number;photo_url:string|null;breed_name:string|null;color_name:string|null;is_hidden?:boolean;slug?:string|null }
-interface Props { data:PN[];rootId:string;breedId?:string|null;onClickDog?:(dogId:string)=>void;onClickEmpty?:(parentDogId:string,role:'father'|'mother')=>void }
+// `showCoi` gatea TODA la UI de COI (botón, panel, highlight de consanguinidad).
+// El COI es feature Pro: solo se pasa true si el VIEWER tiene acceso Pro.
+// Default false → árbol sin nada de COI (anónimos y plan free).
+interface Props { data:PN[];rootId:string;breedId?:string|null;showCoi?:boolean;onClickDog?:(dogId:string)=>void;onClickEmpty?:(parentDogId:string,role:'father'|'mother')=>void }
 
 function countOcc(nId:string|null,nm:Map<string,PN>,mx:number,g:number,c:Map<string,number>){if(!nId||g>mx)return;const n=nm.get(nId);if(!n)return;c.set(nId,(c.get(nId)||0)+1);countOcc(n.father_id,nm,mx,g+1,c);countOcc(n.mother_id,nm,mx,g+1,c)}
 // Repetition badge colors — pastels Cal
@@ -19,7 +22,7 @@ const CW=200,CH=64,PH=56
 // Línea conectora — usa token + fallback Cal (oscuro suave sobre canvas)
 const L='var(--pedigree-line, rgba(17, 17, 17, 0.14))'
 
-export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpty}:Props){
+export default function PedigreeTree({data,rootId,breedId,showCoi=false,onClickDog,onClickEmpty}:Props){
   const t=useT()
   const[isNative,setIsNative]=useState(false)
   useEffect(()=>{if((window as any).Capacitor?.isNativePlatform?.())setIsNative(true)},[])
@@ -69,7 +72,7 @@ export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpt
             con las dimensiones aparentes, así el overflow-auto scrollea bien. */}
         <div className="overflow-auto pb-20" style={{ zoom: zoom / 100 } as React.CSSProperties}>
           <div className="min-w-max py-4 px-4 lg:px-2">
-            {vert?<VN n={root} nm={nm} g={0} mx={maxGen} isRoot si={showIB} rc={rc}/>:<HN n={root} nm={nm} g={0} mx={maxGen} isRoot si={showIB} rc={rc}/>}
+            {vert?<VN n={root} nm={nm} g={0} mx={maxGen} isRoot si={showCoi&&showIB} rc={rc}/>:<HN n={root} nm={nm} g={0} mx={maxGen} isRoot si={showCoi&&showIB} rc={rc}/>}
           </div>
         </div>
       </PedigreeCtx.Provider>
@@ -79,7 +82,7 @@ export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpt
           320px que tapaba el header sin backdrop ni botón cerrar visible.
           Desktop: panel lateral 320px como antes.
           Posicionamiento respeta safe-area-top en iPhones con notch. */}
-      {coiPanel && (
+      {showCoi && coiPanel && (
         <div
           className="sm:hidden fixed inset-0 z-[9099] bg-black/45 backdrop-blur-[2px]"
           onClick={() => setCoiPanel(false)}
@@ -97,6 +100,7 @@ export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpt
               que respeta safe-area-inset-top (notch iPhone). Igual que el
               panel de editar perro y añadir perro.
             desktop: panel lateral 320px desde el top de la viewport. */}
+      {showCoi && (
       <div
         className={`fixed top-0 bottom-0 right-0 left-0 sm:left-auto z-[9100] flex flex-col border-l border-hairline bg-canvas shadow-[-8px_0_24px_rgba(0,0,0,0.06)] transition-transform duration-300 w-full sm:w-[320px] ${coiPanel?'translate-x-0':'translate-x-full pointer-events-none'}`}
         style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
@@ -174,6 +178,7 @@ export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpt
           <p className="text-center text-[10.5px] text-muted">{t('Calculado con 10 generaciones.')}</p>
         </div>
       </div>
+      )}
       {/* Floating buttons — outside transform context so fixed works.
           - left: en mobile (`left-4` = 16px) ignoramos la var --sidebar-width
             que el dashboard-shell setea siempre a 256px aunque la sidebar
@@ -244,17 +249,19 @@ export default function PedigreeTree({data,rootId,breedId,onClickDog,onClickEmpt
         >
           <ArrowLeftRight className="h-4 w-4"/>
         </button>
-        <button
-          onClick={toggleIB}
-          title={t('Salud genética')}
-          className={`flex h-11 w-11 items-center justify-center rounded-full border shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-colors ${
-            showIB
-              ? 'border-ink bg-ink text-on-primary'
-              : 'border-hairline bg-canvas text-body hover:bg-surface-soft hover:text-ink'
-          }`}
-        >
-          <GitBranch className="h-4 w-4"/>
-        </button>
+        {showCoi && (
+          <button
+            onClick={toggleIB}
+            title={t('Salud genética')}
+            className={`flex h-11 w-11 items-center justify-center rounded-full border shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-colors ${
+              showIB
+                ? 'border-ink bg-ink text-on-primary'
+                : 'border-hairline bg-canvas text-body hover:bg-surface-soft hover:text-ink'
+            }`}
+          >
+            <GitBranch className="h-4 w-4"/>
+          </button>
+        )}
       </div>
     </>
   )

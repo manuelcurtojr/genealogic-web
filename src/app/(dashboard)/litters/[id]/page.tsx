@@ -9,6 +9,7 @@ import LitterEditButton from '@/components/litters/litter-edit-button'
 import { Img } from '@/components/ui/img'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
+import { hasProFeatures, isEnterpriseUser } from '@/lib/permissions'
 
 export default async function LitterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -34,6 +35,18 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
     .select('id, name, logo_url, whatsapp_enabled, whatsapp_phone, whatsapp_text, affix_format')
     .eq('owner_id', litter.owner_id).limit(1)
   const kennel = kennelArr?.[0]
+
+  // COI es feature Pro: gateamos por el plan del VIEWER (no del dueño de la
+  // camada). Insider o cualquier plan de pago → ve el COI. Anónimo → false.
+  let canSeeCoi = false
+  if (user) {
+    const { data: viewerProfile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', user.id)
+      .maybeSingle()
+    canSeeCoi = isEnterpriseUser(user.id) || hasProFeatures(viewerProfile?.plan)
+  }
 
   let puppies: any[] = []
   // Preferimos los cachorros enlazados a ESTA camada (litter_id). Así dos
@@ -244,7 +257,7 @@ export default async function LitterDetailPage({ params }: { params: Promise<{ i
           <h2 className={`mb-4 text-[22px] font-semibold tracking-[-0.04em] text-ink ${user ? '' : 'px-4 sm:px-[30px] lg:px-2'}`}>
             {t('Genealogía')}
           </h2>
-          <PedigreeTree data={pedigreeData} rootId={pedigreeRootId} />
+          <PedigreeTree data={pedigreeData} rootId={pedigreeRootId} showCoi={canSeeCoi} />
         </section>
       )}
     </div>
