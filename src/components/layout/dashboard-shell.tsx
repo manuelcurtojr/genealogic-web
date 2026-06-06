@@ -219,6 +219,7 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
         kennel={kennel}
         plan={plan}
         planIsFounder={planIsFounder}
+        userId={userId}
         isClient={isClient ?? false}
         isIos={isIos}
         mobileOpen={mobileOpen}

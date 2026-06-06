@@ -8,6 +8,7 @@ import {
   shouldBypassPlatformLogic,
 } from '@/lib/platform'
 import { hasProAccess, isEnterpriseUser } from '@/lib/permissions'
+import { isReservedPath, isInsider } from '@/lib/features/launch'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -156,6 +157,19 @@ export async function updateSession(request: NextRequest) {
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
+
+  // ─── Carta reducida (Fase 1): rutas RESERVADAS, no lanzadas al público ──
+  // Las features construidas-pero-no-lanzadas (ver lib/features/launch.ts) solo
+  // son accesibles para INSIDERS (Irema, El Nieto vía ENTERPRISE_USERS). El
+  // resto de usuarios logueados → /dashboard. Al lanzar una feature, se quita
+  // de RESERVED_PATHS y queda abierta para todos. (Logout ya cae en el gate de
+  // ruta protegida de arriba.)
+  if (user && isReservedPath(pathname) && !isInsider(user.id)) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    url.search = ''
     return NextResponse.redirect(url)
   }
 

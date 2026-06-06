@@ -34,6 +34,7 @@ export function isAdmin(role: string | null | undefined): boolean {
 // Cuando este caso de uso crezca, migrar a una columna profiles.is_enterprise.
 export const ENTERPRISE_USERS = new Set<string>([
   '89d97ded-1043-4e59-939e-00edecd679b1', // Irema Curtó (fundador / usuario 0)
+  'a0884cf3-389e-44c6-a0a3-003e0dd80a3d', // El Nieto (criaderodelnieto@gmail.com)
 ])
 
 export function isEnterpriseUser(userId: string | null | undefined): boolean {

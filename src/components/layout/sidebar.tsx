@@ -14,6 +14,7 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { NAV_SECTIONS, BRAND } from '@/lib/constants'
+import { isReservedPath, isInsider } from '@/lib/features/launch'
 import { isAdmin, hasProFeatures } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 import { Wordmark } from '@/components/ui/wordmark'
@@ -32,6 +33,8 @@ interface SidebarProps {
   kennel: { name: string; logo_url: string | null; addons?: string[] | null } | null
   plan: string
   planIsFounder?: boolean
+  /** profiles.id — para el gate de features reservadas (insider = ve todo). */
+  userId?: string
   /** Si el user tiene reservas vinculadas o perros transferidos como cliente. */
   isClient?: boolean
   /** True cuando la web se carga dentro del WebView iOS (App Store 3.1.1). */
@@ -42,7 +45,7 @@ interface SidebarProps {
   onToggleCollapse: () => void
 }
 
-export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = false, isIos = false, mobileOpen, onClose, collapsed, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({ user, kennel, plan, planIsFounder, userId, isClient = false, isIos = false, mobileOpen, onClose, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const userRole = user?.role || 'owner'
@@ -53,6 +56,9 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
   // Extensiones EFECTIVAS (loadShellContext ya aplicó el override de founder).
   // Gatean los items del modelo "Pro + extensiones": Emailbot, Newsletter, Web.
   const userAddons = new Set<string>(kennel?.addons ?? [])
+  // Insider (Irema, El Nieto) ve las features RESERVADAS (aún no lanzadas); el
+  // resto solo ve la carta de Fase 1 (ver lib/features/launch.ts).
+  const insider = isInsider(userId)
   const lang = typeof window !== 'undefined' ? localStorage.getItem('genealogic-lang') || 'es' : 'es'
   const t = getTranslator(lang)
 
@@ -83,6 +89,8 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, isClient = 
         if (item.requiresClient && !isClient) return false
         if (item.hideIfPro && userHasPro) return false
         if (item.hideOnIos && isIos) return false
+        // Carta reducida (Fase 1): ocultar features reservadas salvo a insiders.
+        if (isReservedPath(item.href) && !insider) return false
         return true
       }),
     }))
