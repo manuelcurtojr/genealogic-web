@@ -53,7 +53,7 @@ export async function getOwnerOnboardingStatus(args: {
       label: 'Añade tu primer perro',
       description: 'Crea la ficha con foto, raza y fecha de nacimiento. Empieza por uno — luego añades el resto.',
       done: dogsCount > 0,
-      href: '/dogs/new',
+      href: '/dogs?new=1',
       ctaLabel: 'Añadir perro',
       icon: 'Dog',
       importance: 'required',

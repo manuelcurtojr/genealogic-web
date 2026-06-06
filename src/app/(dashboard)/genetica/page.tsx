@@ -110,7 +110,7 @@ export default async function GeneticaPage({
             {t('No tienes perros registrados. Añade perros para empezar.')}
           </p>
           <Link
-            href="/dogs/new"
+            href="/dogs?new=1"
             className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90"
           >
             {t('Añadir perro')}

@@ -10,6 +10,7 @@ import OnboardingCard from '@/components/onboarding/onboarding-card'
 import OnboardingCardOwner from '@/components/onboarding/onboarding-card-owner'
 import WelcomeNoKennel from '@/components/onboarding/welcome-no-kennel'
 import WelcomeOwner from '@/components/onboarding/welcome-owner'
+import AddDogButton from '@/components/dogs/add-dog-button'
 import { getOnboardingStatus } from '@/lib/onboarding/checklist'
 import { getOwnerOnboardingStatus } from '@/lib/onboarding/checklist-owner'
 import { hasProAccess } from '@/lib/permissions'
@@ -83,6 +84,7 @@ export default async function DashboardPage() {
       return (
         <div className="space-y-6 sm:space-y-8">
           <WelcomeOwner
+            userId={user.id}
             displayName={profile?.display_name || null}
             hasReservations={roles.isClient}
           />
@@ -396,9 +398,9 @@ export default async function DashboardPage() {
           <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-12 text-center">
             <PawPrint className="mx-auto h-8 w-8 text-muted" />
             <p className="mt-3 text-[14px] text-body">{t('No tienes perros aún.')}</p>
-            <Link href="/dogs" className="mt-3 inline-block text-[13px] font-medium text-ink hover:opacity-80">
+            <AddDogButton userId={user.id} className="mt-3 inline-block text-[13px] font-medium text-ink hover:opacity-80">
               {t('Añade tu primer perro →')}
-            </Link>
+            </AddDogButton>
           </div>
         )}
       </section>

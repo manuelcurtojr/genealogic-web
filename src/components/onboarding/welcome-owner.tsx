@@ -14,11 +14,14 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Dog, Calendar, FileText, Stethoscope, ArrowRight, Sparkles, RefreshCw, Store } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
+import AddDogButton from '@/components/dogs/add-dog-button'
 
 export default function WelcomeOwner({
+  userId,
   displayName,
   hasReservations,
 }: {
+  userId: string
   displayName: string | null
   hasReservations: boolean
 }) {
@@ -92,13 +95,13 @@ export default function WelcomeOwner({
           </BenefitItem>
         </ul>
 
-        <Link
-          href="/dogs/new"
+        <AddDogButton
+          userId={userId}
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink text-on-primary px-6 py-3 text-sm font-bold hover:opacity-90"
         >
           {t('Añadir mi primer perro')}
           <ArrowRight className="w-4 h-4" />
-        </Link>
+        </AddDogButton>
         <p className="text-[11px] text-muted text-center mt-3">
           {t('Gratis para siempre. Sin tarjeta, sin límite de perros.')}
         </p>

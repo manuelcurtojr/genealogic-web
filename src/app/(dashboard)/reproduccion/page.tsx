@@ -85,7 +85,7 @@ export default async function ReproduccionPage() {
           ) : (
             <>
               <p className="mt-3 text-[14px] text-body">{t('No tienes hembras registradas. Añade hembras a tu criadero para empezar a planificar.')}</p>
-              <Link href="/dogs/new" className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90">
+              <Link href="/dogs?new=1" className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90">
                 {t('Añadir hembra')}
               </Link>
             </>

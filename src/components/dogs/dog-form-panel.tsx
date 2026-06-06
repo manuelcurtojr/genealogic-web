@@ -5,7 +5,7 @@ import { Img } from '@/components/ui/img'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, ChevronRight, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, Lock, Globe, Shield, Dna, Heart, History, ArrowRightLeft, Settings2 } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, ChevronRight, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, FileText, Lock, Globe, Shield, Dna, Heart, History, ArrowRightLeft, Settings2, Sparkles, Info } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import { BRAND } from '@/lib/constants'
 import { formatDogName, extractPersonalName, type AffixFormat } from '@/lib/affix'
@@ -655,10 +655,98 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     </>
   )
 
+  // Add a PANTALLA COMPLETA (no es edición ni "añadir cachorro de camada"): popup
+  // que llena el viewport, con selector Manual/Importador como foco visual.
+  // Edición y "añadir cachorro" conservan el slide-over lateral de siempre.
+  const isFullScreenAdd = !isEdit && !isFromLitter
+
   return (
     <Portal>
       <>
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
+      {isFullScreenAdd ? (
+      // ════════════ AÑADIR PERRO — POPUP A PANTALLA COMPLETA ════════════
+      <div
+        className={`fixed inset-0 z-[70] bg-canvas flex flex-col overflow-x-hidden transition-all duration-200 ${open ? 'opacity-100 scale-100' : 'opacity-0 scale-[0.98] pointer-events-none'}`}
+        style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
+      >
+        {/* Barra superior */}
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="hidden sm:flex h-9 w-9 items-center justify-center rounded-xl bg-ink flex-shrink-0">
+              <Dog className="h-[18px] w-[18px] text-on-primary" />
+            </div>
+            <h2 className="text-base sm:text-lg font-semibold tracking-[-0.01em] text-ink">{t('Añadir perro')}</h2>
+          </div>
+          <button onClick={onClose} className="text-muted hover:text-ink transition p-1.5 -mr-1 rounded-lg hover:bg-surface-soft flex-shrink-0" aria-label={t('Cerrar')}><X className="w-5 h-5" /></button>
+        </div>
+
+        {/* Selector Manual / Importador — foco visual del popup */}
+        <div className="flex-shrink-0 border-b border-hairline px-4 sm:px-6 py-4 sm:py-5">
+          <div className="mx-auto grid w-full max-w-2xl grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+            <CreateModeCard
+              active={createMode === 'import'}
+              icon={Sparkles}
+              title={t('Importar genealogía')}
+              subtitle={t('Pega un enlace y la IA monta el árbol completo en 30 s.')}
+              onClick={() => setCreateMode('import')}
+            />
+            <CreateModeCard
+              active={createMode === 'manual'}
+              icon={Dog}
+              title={t('Manual')}
+              subtitle={t('Rellénalo a mano, paso a paso.')}
+              onClick={() => setCreateMode('manual')}
+            />
+          </div>
+        </div>
+
+        {/* Contenido — columna centrada, scrollable */}
+        <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">
+          <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 py-5 sm:py-6">
+            {createMode === 'import' ? (
+              <>
+                {/* Instrucción para nuevos: la IA puede equivocarse, revisa antes de
+                    guardar. Las fuentes soportadas YA las lista ImportPedigreeTab en
+                    su propio aviso naranja, así que no las repetimos aquí. */}
+                <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-hairline bg-surface-soft px-3.5 py-3">
+                  <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted" />
+                  <p className="text-[12.5px] leading-relaxed text-body">
+                    {t('La IA extrae los datos automáticamente, pero no es infalible: revisa el árbol y corrige lo que haga falta antes de guardar.')}
+                  </p>
+                </div>
+                <ImportPedigreeTab userId={userId} kennelId={defaultKennelId || undefined} onImported={() => { onClose(); onSaved?.(); router.refresh() }} />
+              </>
+            ) : dataLoading ? (
+              <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-muted" /></div>
+            ) : (
+              <>
+                <p className="mb-5 text-[12.5px] leading-relaxed text-muted">
+                  {t('Rellena lo que sepas; el resto lo completas cuando quieras.')}
+                </p>
+                {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-500 mb-4">{error}</div>}
+                {datosContent}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Footer guardar — solo en modo manual (en import el botón vive dentro del tab) */}
+        {createMode === 'manual' && (
+          <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hairline flex-shrink-0">
+            <div className="mx-auto flex w-full max-w-2xl items-center justify-end gap-3">
+              <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">{t('Cancelar')}</button>
+              <button onClick={handleSubmit} disabled={loading || !form.name.trim() || dataLoading}
+                className="bg-ink text-on-primary hover:opacity-90 font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {loading ? t('Guardando...') : t('Crear perro')}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+      ) : (
+      // ════════════ EDICIÓN / AÑADIR CACHORRO — SLIDE-OVER LATERAL ════════════
       <div
         className={`fixed top-0 right-0 h-dvh w-full z-[70] bg-canvas border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${isEdit ? 'sm:max-w-3xl' : 'sm:max-w-xl'} ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
         style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
@@ -683,24 +771,8 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           <button onClick={onClose} className="text-muted hover:text-ink transition p-1 flex-shrink-0"><X className="w-5 h-5" /></button>
         </div>
 
-        {/* Create mode toggle (solo creación) */}
-        {!isEdit && !isFromLitter && (
-          <div className="flex border-b border-hairline px-4 flex-shrink-0">
-            <button onClick={() => setCreateMode('import')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'import' ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}>
-              <Globe className="w-3.5 h-3.5" /> {t('Importar genealogía')}
-            </button>
-            <button onClick={() => setCreateMode('manual')} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition border-b-2 -mb-px ${createMode === 'manual' ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'}`}>
-              <Dog className="w-3.5 h-3.5" /> {t('Manual')}
-            </button>
-          </div>
-        )}
-
         {/* CUERPO */}
-        {!isEdit && !isFromLitter && createMode === 'import' ? (
-          <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
-            <ImportPedigreeTab userId={userId} kennelId={defaultKennelId || undefined} onImported={() => { onClose(); onSaved?.(); router.refresh() }} />
-          </div>
-        ) : dataLoading ? (
+        {dataLoading ? (
           <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-muted" /></div>
         ) : isEdit ? (
           // EDICIÓN: navegación lateral (desktop) / pills (móvil) + contenido
@@ -762,6 +834,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           </div>
         )}
       </div>
+      )}
 
       {/* Paneles secundarios lanzados desde Gestión (encima del editor) */}
       {isEdit && editDogId && (
@@ -854,6 +927,35 @@ function ActionCard({ icon: Icon, accent, title, desc, cta, onClick, danger }: {
       </div>
       <span className={`inline-flex items-center gap-0.5 text-[12.5px] font-medium flex-shrink-0 ${danger ? 'text-rose-500' : 'text-ink'}`}>
         {cta} <ChevronRight className="h-3.5 w-3.5" />
+      </span>
+    </button>
+  )
+}
+
+/** Tarjeta-segmento grande del selector Manual/Importador (popup a pantalla
+ *  completa). Estado activo claro y on-brand: borde acento #FE6620 + tinte suave
+ *  e icono en pastilla acento. Inactiva = superficie sobria que invita a tocar. */
+function CreateModeCard({ active, icon: Icon, title, subtitle, onClick }: { active: boolean; icon: React.ElementType; title: string; subtitle: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`group relative flex items-start gap-3 rounded-2xl border p-4 text-left transition ${
+        active
+          ? 'border-[#FE6620] bg-[#FE6620]/[0.06] shadow-[0_2px_12px_rgba(254,102,32,0.10)]'
+          : 'border-hairline bg-surface-card hover:border-ink/25 hover:bg-surface-soft'
+      }`}
+    >
+      <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl transition ${active ? 'bg-[#FE6620] text-white' : 'bg-surface-soft text-muted group-hover:text-ink'}`}>
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className={`text-[14px] font-semibold leading-tight ${active ? 'text-ink' : 'text-ink'}`}>{title}</p>
+        <p className="mt-1 text-[12px] leading-snug text-muted">{subtitle}</p>
+      </div>
+      <span className={`mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border transition ${active ? 'border-[#FE6620] bg-[#FE6620]' : 'border-hairline'}`}>
+        {active && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
       </span>
     </button>
   )

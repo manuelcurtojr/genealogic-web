@@ -1,32 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
-import DogForm from '@/components/dogs/dog-form'
-import FeedbackButton from '@/components/feedback/feedback-button'
+import { redirect } from 'next/navigation'
 
-export default async function NewDogPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) return null
-
-  const [breedsRes, colorsRes, kennelsRes, maleDogsRes, femaleDogsRes] = await Promise.all([
-    supabase.from('breeds').select('id, name').order('name'),
-    supabase.from('colors').select('id, name').order('name'),
-    supabase.from('kennels').select('id, name').eq('owner_id', user.id).order('name'),
-    supabase.from('dogs').select('id, name').eq('owner_id', user.id).eq('sex', 'male').order('name'),
-    supabase.from('dogs').select('id, name').eq('owner_id', user.id).eq('sex', 'female').order('name'),
-  ])
-
-  return (
-    <>
-      <DogForm
-        breeds={breedsRes.data || []}
-        colors={colorsRes.data || []}
-        kennels={kennelsRes.data || []}
-        maleDogs={maleDogsRes.data || []}
-        femaleDogs={femaleDogsRes.data || []}
-        userId={user.id}
-      />
-      <FeedbackButton scope="dog_form" pageLabel="Crear perro (/dogs/new)" />
-    </>
-  )
+// La página manual de "Crear perro" se retiró: ahora "Añadir perro" es un popup a
+// pantalla completa (Manual / Importador) que se abre desde /dogs. Cualquier enlace
+// que aún apunte aquí se redirige al popup vía el deeplink ?new=1.
+export default function NewDogPage() {
+  redirect('/dogs?new=1')
 }

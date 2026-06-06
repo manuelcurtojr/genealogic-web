@@ -265,8 +265,8 @@ function DogPicker({
       <div className="max-h-64 overflow-y-auto">
         {kennelDogs.length === 0 ? (
           <div className="px-4 py-8 text-center text-[12.5px] text-muted">
-            Aún no tienes perros en tu criadero. Crea tu primer perro en{' '}
-            <a href="/dogs/new" className="text-ink underline font-semibold">/dogs/new</a>.
+            Aún no tienes perros en tu criadero.{' '}
+            <a href="/dogs?new=1" className="text-ink underline font-semibold">Crea tu primer perro</a>.
           </div>
         ) : filtered.length === 0 ? (
           <div className="px-4 py-6 text-center text-[12.5px] text-muted">

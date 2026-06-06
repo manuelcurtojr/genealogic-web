@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Grid3X3, List, Search, Plus, EyeOff, Edit, ArrowRightLeft, GitBranch, Globe, Heart, Undo2, ExternalLink, Loader2, ArrowRight, Store } from 'lucide-react'
 import DogCard from './dog-card'
 import DogFormPanel from './dog-form-panel'
@@ -135,6 +136,25 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
   const openEdit = (dogId: string) => { setEditDogId(dogId); setPanelOpen(true) }
   const openPedigree = (dogId: string) => { setPedigreeDogId(dogId); setPedigreeOpen(true) }
   const closePanel = () => { setPanelOpen(false); setEditDogId(null) }
+
+  // Deeplink ?new=1 (desde el checklist owner / antigua /dogs/new) → abre el popup
+  // de "Añadir perro" automáticamente UNA vez y limpia el parámetro para que un
+  // refresh no lo reabra.
+  const searchParams = useSearchParams()
+  const newParamHandled = useRef(false)
+  useEffect(() => {
+    if (newParamHandled.current) return
+    if (searchParams.get('new') === '1') {
+      newParamHandled.current = true
+      openAdd()
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+        url.searchParams.delete('new')
+        window.history.replaceState(null, '', url.toString())
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
   const [sexFilter, setSexFilter] = useState('')
   const [breedFilter, setBreedFilter] = useState('')
   const [sortBy, setSortBy] = useSortPreference('dogs-sort')
