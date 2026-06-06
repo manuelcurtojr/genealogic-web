@@ -16,7 +16,7 @@ interface LitterFormPanelProps {
   onClose: () => void
   editLitterId?: string | null
   userId: string
-  onAddPuppy?: (litterId: string, breedId: string | null, fatherId: string | null, motherId: string | null) => void
+  onAddPuppy?: (litterId: string, breedId: string | null, fatherId: string | null, motherId: string | null, birthDate: string | null) => void
 }
 
 const STATUSES = [
@@ -310,7 +310,7 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                 )}
                 <button
                   type="button"
-                  onClick={() => onAddPuppy?.(editLitterId!, form.breed_id || null, form.father_id || null, form.mother_id || null)}
+                  onClick={() => onAddPuppy?.(editLitterId!, form.breed_id || null, form.father_id || null, form.mother_id || null, form.birth_date || null)}
                   className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-hairline text-xs text-muted hover:text-ink hover:border-hairline transition"
                 >
                   <Plus className="w-3.5 h-3.5" /> {t('Añadir cachorro')}

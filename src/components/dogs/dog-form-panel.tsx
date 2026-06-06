@@ -33,6 +33,10 @@ interface DogFormPanelProps {
   defaultBreedId?: string | null
   defaultFatherId?: string | null
   defaultMotherId?: string | null
+  /** Fecha de nacimiento heredada de la camada. Si viene + isFromLitter, el
+   *  campo "Nacimiento" se pre-rellena y se muestra bloqueado (la camada ya
+   *  la pidió, no tiene sentido pedirla otra vez). */
+  defaultBirthDate?: string | null
   defaultKennelId?: string | null
   defaultKennelName?: string | null
   defaultAffixFormat?: string | null
@@ -51,7 +55,7 @@ const TABS = [
 
 type TabKey = typeof TABS[number]['key']
 
-export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId, defaultLitterId, defaultBreedId, defaultFatherId, defaultMotherId, defaultKennelId, defaultKennelName, defaultAffixFormat }: DogFormPanelProps) {
+export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId, defaultLitterId, defaultBreedId, defaultFatherId, defaultMotherId, defaultBirthDate, defaultKennelId, defaultKennelName, defaultAffixFormat }: DogFormPanelProps) {
   const router = useRouter()
   const t = useT()
   const isEdit = !!editDogId
@@ -232,7 +236,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
           }
         }
       } else {
-        setForm({ name: '', sex: 'male', birth_date: '', registration: '', microchip: '', weight: '', height: '', breed_id: defaultBreedId || '', color_id: '', kennel_id: defaultKennelId || '', father_id: defaultFatherId || '', mother_id: defaultMotherId || '', is_public: true })
+        setForm({ name: '', sex: 'male', birth_date: defaultBirthDate || '', registration: '', microchip: '', weight: '', height: '', breed_id: defaultBreedId || '', color_id: '', kennel_id: defaultKennelId || '', father_id: defaultFatherId || '', mother_id: defaultMotherId || '', is_public: true })
         setDeceasedAt(null); setThumbnailUrl(null); setShowInKennel(true); setIsReproductive(false); setExternalOwner(null)
         if (defaultBreedId) filterByBreed(defaultBreedId, cRes.data || [], mRes.data || [], fRes.data || [])
       }
@@ -402,7 +406,11 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field label={t('Nacimiento')} value={form.birth_date} onChange={v => set('birth_date', v)} type="date" />
+            {isFromLitter ? (
+              <LockedCard label={t('Nacimiento')} name={form.birth_date ? formatBirthDate(form.birth_date) : t('Sin fecha en la camada')} />
+            ) : (
+              <Field label={t('Nacimiento')} value={form.birth_date} onChange={v => set('birth_date', v)} type="date" />
+            )}
             <Field label={t('Microchip')} value={form.microchip} onChange={v => set('microchip', v)} placeholder={t('Número')} />
           </div>
           <Field label={t('Registro')} value={form.registration} onChange={v => set('registration', v)} placeholder="UKC, FCI, etc." />
@@ -418,8 +426,8 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
               <LockedCard label={t('Criadero')} name={selKennel?.name} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <LockedCard label={t('Padre')} name={selFather?.name} sexColor={BRAND.male} />
-              <LockedCard label={t('Madre')} name={selMother?.name} sexColor={BRAND.female} />
+              <LockedParentCard label={t('Padre')} dog={selFather} sexColor={BRAND.male} />
+              <LockedParentCard label={t('Madre')} dog={selMother} sexColor={BRAND.female} />
             </div>
             {form.breed_id && <DropdownSearch label={t('Color')} items={colors.map(c => ({ id: c.id, name: c.name, image: null }))} value={form.color_id} onChange={v => set('color_id', v)} placeholder={t('Buscar color...')} />}
           </div>
@@ -934,6 +942,14 @@ function DropdownSearch({ label, items, value, onChange, placeholder }: { label:
       )}
     </div>
   )
+}
+
+function formatBirthDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+  } catch {
+    return iso
+  }
 }
 
 function LockedCard({ label, name, sexColor }: { label: string; name?: string; sexColor?: string }) {

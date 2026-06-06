@@ -54,6 +54,7 @@ export default function LittersPageClient({
   const [addPuppyFatherId, setAddPuppyFatherId] = useState<string | null>(null)
   const [addPuppyMotherId, setAddPuppyMotherId] = useState<string | null>(null)
   const [addPuppyKennelId, setAddPuppyKennelId] = useState<string | null>(null)
+  const [addPuppyBirthDate, setAddPuppyBirthDate] = useState<string | null>(null)
   const router = useRouter()
 
   const [sortBy, setSortBy] = useSortPreference('litters-sort')
@@ -359,26 +360,28 @@ export default function LittersPageClient({
         onClose={closePanel}
         editLitterId={editLitterId}
         userId={userId}
-        onAddPuppy={(litterId, breedId, fatherId, motherId) => {
+        onAddPuppy={(litterId, breedId, fatherId, motherId, birthDate) => {
           closePanel()
           setAddPuppyLitterId(litterId)
           setAddPuppyBreedId(breedId)
           setAddPuppyFatherId(fatherId)
           setAddPuppyMotherId(motherId)
           setAddPuppyKennelId(userKennelId || null)
+          setAddPuppyBirthDate(birthDate)
           setDogPanelOpen(true)
         }}
       />
 
       <DogFormPanel
         open={dogPanelOpen}
-        onClose={() => { setDogPanelOpen(false); setAddPuppyLitterId(null); setAddPuppyFatherId(null); setAddPuppyMotherId(null); setAddPuppyKennelId(null) }}
+        onClose={() => { setDogPanelOpen(false); setAddPuppyLitterId(null); setAddPuppyFatherId(null); setAddPuppyMotherId(null); setAddPuppyKennelId(null); setAddPuppyBirthDate(null) }}
         editDogId={null}
         userId={userId}
         defaultLitterId={addPuppyLitterId}
         defaultBreedId={addPuppyBreedId}
         defaultFatherId={addPuppyFatherId}
         defaultMotherId={addPuppyMotherId}
+        defaultBirthDate={addPuppyBirthDate}
         defaultKennelId={addPuppyKennelId}
         defaultKennelName={userKennelName}
         defaultAffixFormat={userAffixFormat}

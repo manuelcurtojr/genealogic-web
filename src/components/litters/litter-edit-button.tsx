@@ -45,9 +45,9 @@ export default function LitterEditButton({ litterId, userId, userKennelId, userK
         onClose={() => { setShowPanel(false); router.refresh() }}
         editLitterId={litterId}
         userId={userId}
-        onAddPuppy={(lid, breedId, fatherId, motherId) => {
+        onAddPuppy={(lid, breedId, fatherId, motherId, birthDate) => {
           setShowPanel(false)
-          setPuppyData({ litterId: lid, breedId, fatherId, motherId })
+          setPuppyData({ litterId: lid, breedId, fatherId, motherId, birthDate })
           setDogPanelOpen(true)
         }}
       />
@@ -61,6 +61,7 @@ export default function LitterEditButton({ litterId, userId, userKennelId, userK
         defaultBreedId={puppyData.breedId}
         defaultFatherId={puppyData.fatherId}
         defaultMotherId={puppyData.motherId}
+        defaultBirthDate={puppyData.birthDate}
         defaultKennelId={userKennelId}
         defaultKennelName={userKennelName}
         defaultAffixFormat={userAffixFormat}
