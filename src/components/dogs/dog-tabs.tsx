@@ -13,6 +13,8 @@ interface DogTabsProps {
   dogId: string
   ownerId: string
   isOwner: boolean
+  /** Fase 1: insider (founder/criaderos de prueba) ve atajos a áreas reservadas (p.ej. /vet). */
+  insider?: boolean
   fatherId: string | null
   motherId: string | null
   dogSex: string | null
@@ -27,7 +29,7 @@ const TABS = [
 
 type TabKey = typeof TABS[number]['key']
 
-export default function DogTabs({ dogId, ownerId, isOwner, fatherId, motherId, dogSex }: DogTabsProps) {
+export default function DogTabs({ dogId, ownerId, isOwner, insider = false, fatherId, motherId, dogSex }: DogTabsProps) {
   const [active, setActive] = useState<TabKey>('offspring')
   const t = useT()
 
@@ -54,7 +56,7 @@ export default function DogTabs({ dogId, ownerId, isOwner, fatherId, motherId, d
       {/* Tab content */}
       {active === 'health' && (
         <>
-          {isOwner && <DogVetReminders dogId={dogId} isOwner={isOwner} />}
+          {isOwner && <DogVetReminders dogId={dogId} isOwner={isOwner} insider={insider} />}
           <VetRecords dogId={dogId} ownerId={ownerId} isOwner={isOwner} />
         </>
       )}

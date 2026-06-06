@@ -32,6 +32,13 @@ export interface Featurette {
   icon: ElementType
   title: string
   description: string
+  /**
+   * Fase 1 "carta reducida": la feature pertenece a un área CONSTRUIDA pero
+   * AÚN NO lanzada al público (salud, cruces, CRM/ventas, web del kennel,
+   * comunicación, analítica). El catálogo público /features la oculta hasta
+   * que se lance. Ver lib/features/launch.ts.
+   */
+  reserved?: boolean
 }
 
 export interface MajorFeature {
@@ -51,6 +58,14 @@ export interface MajorFeature {
   proOnly?: boolean
   /** Si la feature es una extensión aún no disponible, mostramos "Próximamente" */
   comingSoon?: boolean
+  /**
+   * Fase 1 "carta reducida": feature de un área CONSTRUIDA pero AÚN NO lanzada
+   * al público (salud, simulador de cruces, CRM/ventas, web del kennel,
+   * comunicación, analítica). El catálogo público /features la oculta hasta el
+   * lanzamiento; los nombres se anuncian en la sección "Llegando pronto".
+   * Ver lib/features/launch.ts.
+   */
+  reserved?: boolean
 }
 
 export interface Category {
@@ -119,7 +134,7 @@ export const CATEGORIES: Category[] = [
       },
     ],
     featurettes: [
-      { icon: Globe2, title: 'API pública', description: 'Endpoint REST para integrar tus perros con tu web externa o app móvil.' },
+      { icon: Globe2, title: 'API pública', description: 'Endpoint REST para integrar tus perros con tu web externa o app móvil.', reserved: true },
       { icon: Network, title: 'Conexión cross-kennel', description: 'Tu macho semental aparece como padre en perros de otros criaderos automáticamente.' },
       { icon: History, title: 'Histórico por perro', description: 'Quién subió qué foto, cuándo se transfirió, quién editó el peso. Auditoría completa.' },
       { icon: Lock, title: 'Perfiles privados', description: 'Tú decides qué perro es público y qué perro solo lo ves tú.' },
@@ -213,6 +228,7 @@ export const CATEGORIES: Category[] = [
         ],
         mockup: 'breeding-simulator',
         proOnly: true,
+        reserved: true,
       },
       {
         slug: 'reproduccion',
@@ -229,6 +245,7 @@ export const CATEGORIES: Category[] = [
         ],
         mockup: 'reproduction-gantt',
         proOnly: true,
+        reserved: true,
       },
       {
         slug: 'camadas',

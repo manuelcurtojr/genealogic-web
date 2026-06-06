@@ -26,6 +26,7 @@ import type { KennelDogOption } from '@/components/contracts/contract-fill-panel
 import FeedbackButton from '@/components/feedback/feedback-button'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
+import { isInsider } from '@/lib/features/launch'
 import { Img } from '@/components/ui/img'
 import {
   ArrowLeft, ScrollText, Wallet, MessageCircle, Dog, FileText, Calendar,
@@ -46,6 +47,8 @@ export default async function BreederReservationDetailPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
   const t = getTranslator(await getLocale())
+  // Fase 1: el embudo/contratos son áreas reservadas. Insider ve los atajos.
+  const insider = isInsider(user.id)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = createKennelAdminClient() as any
@@ -125,12 +128,14 @@ export default async function BreederReservationDetailPage({
     <div className="space-y-5 sm:space-y-7 pb-24 xl:pb-0">
       <FeedbackButton scope="reservation_form" pageLabel={t('Detalle de reserva')} />
 
-      {/* Breadcrumb */}
+      {/* Breadcrumb — el embudo (pipeline) es área reservada en Fase 1; un
+          criador no-insider llega aquí desde /reservas (su bandeja), así que
+          le devolvemos ahí. Los insiders sí vuelven al embudo. */}
       <Link
-        href="/embudo"
+        href={insider ? '/embudo' : '/reservas'}
         className="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wider text-muted hover:text-ink transition-colors"
       >
-        <ArrowLeft className="h-3.5 w-3.5" /> {t('Volver al embudo')}
+        <ArrowLeft className="h-3.5 w-3.5" /> {insider ? t('Volver al embudo') : t('Volver a reservas')}
       </Link>
 
       {/* ═══ HERO ═══ */}
