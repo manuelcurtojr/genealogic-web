@@ -227,12 +227,17 @@ OUTPUT — return ONLY this JSON object (no markdown, no prose, no explanation):
 }
 
 CRITICAL RULES:
+0. NUMBERED PEDIGREE CARDS — HIGHEST PRIORITY. Official certificates (FCI / LOE / RSCE / RKF / LOSH / SHSB / KC…) NUMBER each ancestor box: a small number (1, 2, 3 … up to 14+) printed next to or inside every box. When those numbers are present, the NUMBERS define the family tree DETERMINISTICALLY — do NOT infer relationships from where a box sits on the page (official cards often place the boxes in a non-obvious vertical order):
+   • Box 1 = the dog's FATHER (always Male).  Box 2 = the dog's MOTHER (always Female).
+   • For ANY box numbered n: its own father is box (2n+1) and its own mother is box (2n+2). So boxes 3 & 4 are box 1's parents; 5 & 6 are box 2's parents; 7 & 8 → box 3; 9 & 10 → box 4; 11 & 12 → box 5; 13 & 14 → box 6; and so on.
+   • ODD box numbers are ALWAYS Males/Sires; EVEN box numbers are ALWAYS Females/Dams.
+   Read each box's number, map it with these rules, and assign father_name / mother_name + sex FROM THE NUMBERING, not from layout. Confusing box 1 with box 2, or a parent with a grandparent, is a CRITICAL error.
 1. EXTRACT EVERY DOG YOU CAN READ. Even partial info counts — if you can read a name but nothing else, include just the name. But NEVER add a dog whose name you cannot actually read in the source — do not invent dogs to fill empty slots in the tree.
-2. PRESERVE NAMES EXACTLY as shown: capitalization, accents (à á è é ñ ç ö ü ø æ etc.), apostrophes, hyphens. Do not "correct" or translate.
+2. PRESERVE NAMES EXACTLY as shown: capitalization, accents (à á è é ñ ç ö ü ø æ etc.), apostrophes, hyphens. Do not "correct" or translate. Read each letter carefully — distinguish visually similar glyphs (R vs B vs P, O vs Q vs 0, I vs L vs 1) so e.g. "RISA" is never misread as "BISA".
 3. SEX inference — recognize these synonyms in ANY language:
    - Male: Sire, Father, Padre, Père, Padre, Vater, Otec, Отец, ♂, M
    - Female: Dam, Mother, Madre, Mère, Mãe, Mutter, Matka, Мать, ♀, F
-   - In horizontal pedigree tables: upper row = Sire/Male, lower row = Dam/Female (FCI convention)
+   - If the card is NUMBERED, sex comes from the box number (odd = Male, even = Female) — see rule 0, which OVERRIDES layout. ONLY when there are NO numbers: in horizontal tables the upper of each pair = Sire/Male, lower = Dam/Female (FCI convention).
 4. GENERATION — count from main_dog:
    - 1 = parents (2 dogs)
    - 2 = grandparents (4 dogs)
