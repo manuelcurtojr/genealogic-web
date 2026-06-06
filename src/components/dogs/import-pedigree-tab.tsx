@@ -13,6 +13,9 @@ interface ImportDog {
   photo_url: string | null; father_name: string | null; mother_name: string | null
   generation?: number; breeder?: string | null; owner?: string | null
   box_number?: number | null
+  /** Campos que la IA NO pudo leer con confianza (p.ej. ["name","registration"]).
+   *  Marca al perro para revisión humana en la preview. null/[] = todo legible. */
+  uncertain?: string[] | null
 }
 
 interface PedigreeData { main_dog: ImportDog; ancestors: ImportDog[] }
@@ -21,6 +24,16 @@ interface Props { userId: string; kennelId?: string | null; onImported?: () => v
 
 const CW = 190, CH = 58
 const L = 'var(--pedigree-line, rgba(17,17,17,0.18))'
+
+// Modelo de EXTRACCIÓN (1ª lectura). Equilibrio calidad/coste.
+const EXTRACT_MODEL = 'claude-sonnet-4-5'
+// Modelo de la PASADA DE VERIFICACIÓN (2ª lectura, crítica para la precisión).
+// Usamos el modelo más capaz YA presente en el repo (src/lib/ai/models.ts):
+// Opus 4.5. El proxy /api/import-pedigree manda siempre temperature:0, que Opus
+// 4.5 acepta (modelos posteriores la rechazarían), así que es un swap de una línea
+// sin tocar el endpoint. Si en el futuro se sube a un Opus que no acepte
+// temperature, habrá que dejar de mandarla en el proxy.
+const VERIFY_MODEL = 'claude-opus-4-5'
 
 /** Lee un File como base64 puro (sin el prefijo data:...;base64,). */
 function fileToBase64(file: File): Promise<string> {
@@ -215,7 +228,8 @@ OUTPUT — return ONLY this JSON object (no markdown, no prose, no explanation):
     "breed": "string or null", "color": "string or null", "birth_date": "YYYY-MM-DD or YYYY or null",
     "health": "string (HD/ED/DCM/PRA results, etc.) or null", "breeder": "string or null", "owner": "string or null",
     "photo_url": "string or null", "father_name": "exact name or null", "mother_name": "exact name or null",
-    "box_number": "number or null (the subject dog = 0 on numbered cards; null if the card has no numbers)"
+    "box_number": "number or null (the subject dog = 0 on numbered cards; null if the card has no numbers)",
+    "uncertain": "array of field names you are NOT confident you read correctly (e.g. [\"name\",\"registration\"]); [] or null if confident"
   },
   "ancestors": [
     {
@@ -224,7 +238,8 @@ OUTPUT — return ONLY this JSON object (no markdown, no prose, no explanation):
       "health": "string or null", "photo_url": "string or null",
       "father_name": "string or null", "mother_name": "string or null",
       "generation": number,
-      "box_number": "number or null (the printed box number on numbered cards; null if the card has no numbers)"
+      "box_number": "number or null (the printed box number on numbered cards; null if the card has no numbers)",
+      "uncertain": "array of field names you are NOT confident you read correctly (e.g. [\"name\",\"registration\"]); [] or null if confident"
     }
   ]
 }
@@ -254,6 +269,7 @@ CRITICAL RULES:
 8. BIRTH_DATE — extract any date you see. If only year: "1995". If full date: "1995-03-12". If month+year: "1995-03". If unknown: null.
 9. HEALTH — concatenate findings: "HD-A, ED-0, DCM clear" etc. Pick anything that looks like a health certification.
 10. TITLES — preserve championship prefixes in the name: "Ch.", "Int.Ch.", "Multi-Ch.", "JCh.", etc. (don't strip them)
+11. UNCERTAIN — in each dog's "uncertain" array, list the names of any fields whose value you are NOT confident you read correctly (most often "name" or "registration" when the print is faint, blurry, or has ambiguous glyphs). This flags the field for human review — being unsure is NOT an error, and listing a field there does NOT mean you should leave it null: still put your best reading in the field, just also flag it. Leave "uncertain" as [] or null when you read every field clearly.
 
 BEFORE RETURNING — verify yourself:
 - Every father_name in main_dog or ancestors[] appears as an actual entry somewhere
@@ -394,7 +410,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
     const res = await fetch('/api/import-pedigree', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: maxTokens, messages }),
+      body: JSON.stringify({ model: EXTRACT_MODEL, max_tokens: maxTokens, messages }),
     })
     if (!res.ok) {
       // Auto-retry on 529 (overloaded) — wait and try again up to 3 times
@@ -453,7 +469,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-5',
+          model: EXTRACT_MODEL,
           max_tokens: 8,
           messages: [{
             role: 'user',
@@ -504,6 +520,138 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
     checkLinks(data.main_dog)
     for (const a of data.ancestors || []) checkLinks(a)
     return { broken, orphanLinks }
+  }
+
+  /**
+   * Llamada genérica al proxy con un MODELO concreto, que devuelve el objeto JSON
+   * crudo (sin tipar como PedigreeData). La usa la pasada de verificación, que
+   * necesita elegir el modelo (Opus) y leer un objeto de correcciones arbitrario.
+   * No reintenta de forma recursiva: si falla o el JSON es basura, lanza, y quien
+   * llama (verifyExtraction) lo captura y conserva la extracción original.
+   */
+  async function callClaudeModel(messages: any[], model: string, maxTokens = 12000): Promise<any> {
+    const res = await fetch('/api/import-pedigree', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, max_tokens: maxTokens, messages }),
+    })
+    if (!res.ok) throw new Error(`verify ${res.status}`)
+    const data = await res.json()
+    const text = data.content?.[0]?.text || ''
+    if (!text) throw new Error('verify empty')
+    let jsonStr = text
+    const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (fence) jsonStr = fence[1]
+    const obj = jsonStr.match(/\{[\s\S]*\}/)
+    if (obj) jsonStr = obj[0]
+    return JSON.parse(jsonStr)
+  }
+
+  /**
+   * SELF-CHECK / 2ª PASADA DE VERIFICACIÓN (lo que más sube la precisión).
+   *
+   * Re-envía el MISMO contenido fuente (imagen/PDF/HTML) + lo que ya extrajimos
+   * (nombre + registro de cada perro) y pide al modelo que RELEA cada caja y
+   * devuelva la versión corregida. El modelo de OCR a veces confunde glifos
+   * ("RISA"→"BISA", "BORA"→"BORLA"); una segunda lectura los caza.
+   *
+   * Resiliente: si la llamada falla o el JSON es basura, devuelve la extracción
+   * ORIGINAL sin tocar nada (try/catch). NUNCA bloquea el import.
+   *
+   * Aplica SOLO correcciones de name / registration / birth_date / uncertain. NO
+   * toca father_name / mother_name / sex / generation: la ESTRUCTURA se queda tal
+   * como la dejó reconstructFromNumbering. Cuando corrige un NOMBRE, reescribe los
+   * father_name/mother_name que apuntaban al nombre viejo → el nuevo, para no
+   * romper los enlaces del árbol (la relación es la misma, solo cambia la etiqueta).
+   *
+   * @param sourceContent  El array `content` original (bloques de imagen/PDF) o un
+   *   string (HTML). Se reutiliza tal cual para que el verificador vea lo mismo.
+   */
+  async function verifyExtraction(sourceContent: any[] | string, data: PedigreeData): Promise<PedigreeData> {
+    try {
+      const summary = [data.main_dog, ...(data.ancestors || [])].map((d) => ({
+        box_number: typeof d.box_number === 'number' ? d.box_number : null,
+        name: d.name,
+        registration: d.registration ?? null,
+      }))
+      const instruction = `You are verifying a dog pedigree that was already extracted from THIS SAME source by OCR. Your ONLY job is to RE-READ each dog's NAME and REGISTRATION (and birth date) directly from the source and CORRECT any misreads — OCR commonly confuses similar glyphs (R↔B↔P, O↔Q↔0, I↔L↔1), e.g. reading "RISA" as "BISA" or "BORA" as "BORLA".
+
+Here is what was extracted (matched by box_number when present, else by name):
+${JSON.stringify(summary, null, 2)}
+
+Return ONLY a JSON object with this exact shape — the FULL corrected list:
+{
+  "main_dog": { "box_number": <number|null>, "name": "<corrected exact name>", "registration": "<corrected or null>", "birth_date": "<YYYY-MM-DD|YYYY|null>", "uncertain": ["<field>", ...] },
+  "ancestors": [ { "box_number": <number|null>, "name": "...", "registration": "...|null", "birth_date": "...|null", "uncertain": [...] }, ... ]
+}
+
+RULES:
+- Keep the SAME set of dogs and the SAME box_number for each (use box_number as the identity key; if a dog had none, keep its name as the key and echo box_number null).
+- PRESERVE capitalization, accents (à á è é ñ ç ö ü ø æ…), apostrophes, hyphens, and championship title prefixes (Ch., Int.Ch., …) exactly as printed.
+- If a value is genuinely correct, return it UNCHANGED. Do NOT "improve" or translate names.
+- If you cannot read a field confidently, keep the best reading AND add that field name to "uncertain" (it is NOT an error to be unsure).
+- Do NOT add or remove dogs. Do NOT include father_name / mother_name / sex / generation — those are out of scope. Return ONLY the JSON, no prose, no markdown fences.`
+
+      const content = typeof sourceContent === 'string'
+        ? `${instruction}\n\n--- SOURCE CONTENT ---\n${sourceContent}`
+        : [...sourceContent, { type: 'text', text: instruction }]
+
+      const corrected = await callClaudeModel([{ role: 'user', content }], VERIFY_MODEL, 12000)
+      if (!corrected || !corrected.main_dog) return data
+
+      // Índice de correcciones por caja (preferente) y por nombre normalizado (fallback).
+      const correctedList: any[] = [corrected.main_dog, ...(Array.isArray(corrected.ancestors) ? corrected.ancestors : [])]
+      const byBox = new Map<number, any>()
+      const byNameNorm = new Map<string, any>()
+      for (const c of correctedList) {
+        if (c && typeof c.box_number === 'number') byBox.set(c.box_number, c)
+        if (c && typeof c.name === 'string') byNameNorm.set(normName(c.name), c)
+      }
+
+      // Recolecta renombres (nombre viejo → nuevo) para reparar enlaces del árbol.
+      const renames = new Map<string, string>()
+
+      const applyTo = (dog: ImportDog) => {
+        let c: any = null
+        if (typeof dog.box_number === 'number' && byBox.has(dog.box_number)) c = byBox.get(dog.box_number)
+        // Fallback por nombre SOLO si la caja no casó (evita pisar el match por caja).
+        if (!c) c = byNameNorm.get(normName(dog.name)) || null
+        if (!c) return
+        // NAME: solo si es un cambio real y no vacío.
+        if (typeof c.name === 'string' && c.name.trim() && c.name !== dog.name) {
+          renames.set(dog.name, c.name)
+          dog.name = c.name
+        }
+        // REGISTRATION: acepta string (incluido vaciar a null si el verificador lo marca null).
+        if (Object.prototype.hasOwnProperty.call(c, 'registration')) {
+          if (typeof c.registration === 'string' && c.registration.trim()) dog.registration = c.registration
+          else if (c.registration === null) dog.registration = null
+        }
+        // BIRTH_DATE: solo si el verificador aporta un valor (no machaca con null).
+        if (typeof c.birth_date === 'string' && c.birth_date.trim()) dog.birth_date = c.birth_date
+        // UNCERTAIN: pasa la lista de campos a revisar (o limpia si viene vacía/null).
+        if (Array.isArray(c.uncertain)) dog.uncertain = c.uncertain.filter((x: any) => typeof x === 'string')
+        else if (c.uncertain === null) dog.uncertain = null
+      }
+
+      applyTo(data.main_dog)
+      for (const a of data.ancestors || []) applyTo(a)
+
+      // Reparar enlaces: si renombramos un perro, reescribir las referencias a él.
+      if (renames.size > 0) {
+        const fix = (dog: ImportDog) => {
+          if (dog.father_name && renames.has(dog.father_name)) dog.father_name = renames.get(dog.father_name)!
+          if (dog.mother_name && renames.has(dog.mother_name)) dog.mother_name = renames.get(dog.mother_name)!
+        }
+        fix(data.main_dog)
+        for (const a of data.ancestors || []) fix(a)
+      }
+
+      return data
+    } catch {
+      // Silencioso: cualquier fallo conserva la extracción original.
+      return data
+    }
   }
 
   /**
@@ -742,6 +890,13 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       // que no tiene numeración) → los datos del modelo se conservan tal cual.
       pedigreeData = reconstructFromNumbering(pedigreeData)
 
+      // 2ª PASADA: relee el texto fuente con el modelo más capaz para corregir
+      // nombres/registro. En HTML no hay OCR (texto literal), pero una 2ª lectura
+      // independiente aún caza nombres mal tecleados/omitidos. Resiliente: si falla
+      // o no aporta, conserva la extracción.
+      setScanPhase(t('Verificando nombres y registros...'))
+      pedigreeData = await verifyExtraction(html, pedigreeData)
+
       // Fallback: if main dog has no photo, find the largest photo from the page
       if (!pedigreeData.main_dog.photo_url) {
         const largePhoto = imgUrls.find(u => u.includes('350') || u.includes('photo')) || imgUrls[0]
@@ -857,6 +1012,9 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       }
 
       let pedigreeData = await callClaude([{ role: 'user', content }])
+      // Bloques de medios (imagen/PDF) que la verificación volverá a leer. Solo los
+      // de medios — la instrucción de verificación la añade verifyExtraction.
+      let sourceBlocks: any[] = content.filter((b: any) => b.type !== 'text')
 
       // Si la IA no pudo leer Y habíamos ROTADO la imagen, la detección de
       // orientación pudo equivocarse → reintenta UNA vez con la orientación
@@ -866,6 +1024,7 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
         const blocks0 = await buildImageBlocks(file, 0)
         if (blocks0 && blocks0.length) {
           pedigreeData = await callClaude([{ role: 'user', content: [...blocks0, { type: 'text', text: EXTRACTION_PROMPT }] }])
+          sourceBlocks = blocks0 // la verificación debe leer la MISMA imagen final
         }
       }
 
@@ -898,6 +1057,12 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
       // padre/abuelo, así que reconstruimos padre/madre/sexo/generación en código.
       // NO-OP si no hay cajas 1 y 2 (tarjeta sin numerar) → datos del modelo intactos.
       pedigreeData = reconstructFromNumbering(pedigreeData)
+
+      // 2ª PASADA: relee la MISMA imagen/PDF con el modelo más capaz para corregir
+      // OCR de nombres/registro (la estructura ya está fijada arriba). Resiliente:
+      // si falla, conserva la extracción. Aquí es donde ocurren los errores de OCR.
+      setScanPhase(t('Verificando nombres y registros...'))
+      pedigreeData = await verifyExtraction(sourceBlocks, pedigreeData)
 
       // Post-processing: find existing dogs in DB
       setScanPhase(t('Verificando perros existentes...'))
@@ -1069,6 +1234,10 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded border border-hairline bg-surface-card" />
             <span className="text-[10px] text-muted">{t('Nuevo — se creara como contribucion al importar')}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded border border-amber-500/50 ring-1 ring-amber-500/30 bg-surface-card" />
+            <span className="text-[10px] text-muted">{t('Revisar — la IA no leyó algún dato con seguridad; comprueba nombre/registro')}</span>
           </div>
           <span className="text-[10px] text-muted w-full sm:w-auto sm:ml-auto">{t('Toca cualquier perro para cambiarlo')}</span>
         </div>
@@ -1325,19 +1494,36 @@ function Card({ dog, swaps, isRoot, onSwap, onRemoveSwap }: { dog: ImportDog; sw
   const sc = dog.sex === 'Female' ? '#e84393' : '#017DFA'
   const isLinked = swap?.linked // Existing in DB — orange border + chain icon
   const isSwapped = !!swap && !isLinked // Manually swapped — blue border
+  // Campos que la IA marcó como dudosos (OCR). Solo aplica a perros NUEVOS: un perro
+  // registrado/cambiado usa datos de la BD, así que la duda de OCR ya no importa.
+  const uncertainFields = (!isLinked && !isSwapped && Array.isArray(dog.uncertain))
+    ? dog.uncertain.filter(Boolean) : []
+  const isUncertain = uncertainFields.length > 0
+  const fieldLabel = (f: string) => f === 'name' ? t('nombre') : f === 'registration' ? t('registro') : f === 'birth_date' ? t('fecha') : f
+  const uncertainTitle = isUncertain
+    ? `${t('Revisar — la IA no leyó con seguridad:')} ${uncertainFields.map(fieldLabel).join(', ')}`
+    : undefined
   const borderClass = isLinked
     ? 'border-2 border-ink bg-surface-soft'
     : isSwapped
       ? 'border-2 border-blue-400/60 bg-blue-400/5'
-      : isRoot
-        ? 'border-2 border-hairline bg-surface-card'
-        : 'border border-hairline bg-surface-card'
+      : isUncertain
+        ? 'border border-amber-500/50 ring-1 ring-amber-500/30 bg-surface-card'
+        : isRoot
+          ? 'border-2 border-hairline bg-surface-card'
+          : 'border border-hairline bg-surface-card'
   return (
     <div className="relative" style={{ width: CW, flexShrink: 0 }}>
       {/* Chain icon for linked dogs — outside the card, top-right */}
       {isLinked && (
         <div className="absolute -top-2 -right-2 z-10 w-5 h-5 rounded-full bg-ink flex items-center justify-center shadow-lg">
           <Link2 className="w-3 h-3 text-white" />
+        </div>
+      )}
+      {/* Punto ámbar "revisar" para perros nuevos con campos dudosos (OCR) */}
+      {isUncertain && (
+        <div title={uncertainTitle} className="absolute -top-2 -right-2 z-10 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center shadow-lg">
+          <AlertTriangle className="w-3 h-3 text-white" />
         </div>
       )}
       <div className={`relative group rounded-xl overflow-hidden transition ${borderClass}`} style={{ minHeight: CH }}>
@@ -1354,6 +1540,7 @@ function Card({ dog, swaps, isRoot, onSwap, onRemoveSwap }: { dog: ImportDog; sw
               <span className="text-[9px] font-bold text-blue-400 flex items-center gap-0.5 mt-0.5"><ArrowLeftRight className="w-2.5 h-2.5" /> {t('Cambiado')}</span>
             ) : (
               <div className="flex flex-wrap gap-0.5 mt-0.5">
+                {isUncertain && <span title={uncertainTitle} className="text-[8px] bg-amber-500/10 text-amber-600 px-1 py-0.5 rounded inline-flex items-center gap-0.5"><AlertTriangle className="w-2 h-2" /> {t('revisar')}</span>}
                 {dog.breed && <span className="text-[8px] bg-surface-card text-muted px-1 py-0.5 rounded">{dog.breed}</span>}
                 {dog.birth_date && <span className="text-[8px] bg-surface-card text-muted px-1 py-0.5 rounded">{dog.birth_date}</span>}
                 {dog.health && <span className="text-[8px] bg-green-500/10 text-green-400 px-1 py-0.5 rounded">{dog.health}</span>}
