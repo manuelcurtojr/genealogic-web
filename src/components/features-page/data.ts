@@ -147,20 +147,20 @@ export const CATEGORIES: Category[] = [
   {
     slug: 'genealogia',
     label: 'Genealogía',
-    tagline: 'El árbol más completo, calculado, navegable y exportable que hayas visto.',
+    tagline: 'El árbol más completo, navegable y exportable que hayas visto.',
     features: [
       {
         slug: 'pedigree',
         icon: GitBranch,
         problem: 'Tu genealogía está en PDF, en papel o se ha perdido',
         title: 'Árbol genealógico interactivo',
-        description: 'Generaciones ilimitadas: el árbol es dinámico, clicas cualquier antepasado y sigue hacia atrás sin tope. Cada ancestro es navegable, con su foto, palmarés y descendientes. Coeficiente de consanguinidad (COI) calculado en cliente con código de colores.',
+        description: 'Generaciones ilimitadas: el árbol es dinámico, clicas cualquier antepasado y sigue hacia atrás sin tope. Cada ancestro es navegable, con su foto, palmarés y descendientes.',
         bullets: [
           'Vista horizontal o vertical · zoom in/out · pan con drag',
-          'COI calculado con generaciones ilimitadas — semáforo verde/ámbar/rojo',
+          'Generaciones ilimitadas — sigue cualquier rama hacia atrás sin tope',
           'Click en cualquier ancestro para abrir su perfil completo',
-          'Detecta ancestros duplicados (Wright path coefficient)',
-          'Versión móvil con panel COI a pantalla completa',
+          'Foto, palmarés y registro oficial en cada nodo del árbol',
+          'Optimizado para móvil — navega el árbol con el pulgar',
         ],
         mockup: 'pedigree-tree',
       },
@@ -179,6 +179,8 @@ export const CATEGORIES: Category[] = [
           'Histórico: ve cómo evoluciona el COI medio de tu criadero año tras año',
         ],
         mockup: 'coi-detail',
+        proOnly: true,
+        reserved: true,
       },
       {
         slug: 'pdf-pedigree',
@@ -197,8 +199,8 @@ export const CATEGORIES: Category[] = [
     ],
     featurettes: [
       { icon: Upload, title: 'Importar genealogía', description: 'URL de Presadb, Dogsfiles, Working-dog, K9data → árbol completo en 30s.' },
-      { icon: Sparkles, title: 'Cálculo automático COI', description: 'Cada perro lo muestra al abrirlo, con la lista de ancestros duplicados.' },
-      { icon: TrendingUp, title: 'COI medio de tu criadero', description: 'Tendencia anual de cuánto sube o baja la consanguinidad media en tus camadas.' },
+      { icon: Sparkles, title: 'Cálculo automático COI', description: 'Cada perro lo muestra al abrirlo, con la lista de ancestros duplicados.', reserved: true },
+      { icon: TrendingUp, title: 'COI medio de tu criadero', description: 'Tendencia anual de cuánto sube o baja la consanguinidad media en tus camadas.', reserved: true },
       { icon: Network, title: 'Hermanos y descendientes', description: 'Auto-detectados al subir padres. No tienes que enlazarlos manualmente.' },
       { icon: Tag, title: 'Trazabilidad LOE / FCI', description: 'Registro oficial vinculado al perro como campo dedicado.' },
       { icon: FileBarChart, title: 'Exportable a PDF', description: 'Cualquier rama de la genealogía, descargable con tu logo.' },
