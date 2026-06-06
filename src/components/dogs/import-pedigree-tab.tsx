@@ -12,6 +12,7 @@ interface ImportDog {
   color: string | null; birth_date: string | null; health: string | null
   photo_url: string | null; father_name: string | null; mother_name: string | null
   generation?: number; breeder?: string | null; owner?: string | null
+  box_number?: number | null
 }
 
 interface PedigreeData { main_dog: ImportDog; ancestors: ImportDog[] }
@@ -213,7 +214,8 @@ OUTPUT — return ONLY this JSON object (no markdown, no prose, no explanation):
     "name": "string", "sex": "Male" or "Female", "registration": "string or null",
     "breed": "string or null", "color": "string or null", "birth_date": "YYYY-MM-DD or YYYY or null",
     "health": "string (HD/ED/DCM/PRA results, etc.) or null", "breeder": "string or null", "owner": "string or null",
-    "photo_url": "string or null", "father_name": "exact name or null", "mother_name": "exact name or null"
+    "photo_url": "string or null", "father_name": "exact name or null", "mother_name": "exact name or null",
+    "box_number": "number or null (the subject dog = 0 on numbered cards; null if the card has no numbers)"
   },
   "ancestors": [
     {
@@ -221,7 +223,8 @@ OUTPUT — return ONLY this JSON object (no markdown, no prose, no explanation):
       "breed": "string or null", "color": "string or null", "birth_date": "YYYY-MM-DD or YYYY or null",
       "health": "string or null", "photo_url": "string or null",
       "father_name": "string or null", "mother_name": "string or null",
-      "generation": number
+      "generation": number,
+      "box_number": "number or null (the printed box number on numbered cards; null if the card has no numbers)"
     }
   ]
 }
@@ -232,6 +235,7 @@ CRITICAL RULES:
    • For ANY box numbered n: its own father is box (2n+1) and its own mother is box (2n+2). So boxes 3 & 4 are box 1's parents; 5 & 6 are box 2's parents; 7 & 8 → box 3; 9 & 10 → box 4; 11 & 12 → box 5; 13 & 14 → box 6; and so on.
    • ODD box numbers are ALWAYS Males/Sires; EVEN box numbers are ALWAYS Females/Dams.
    Read each box's number, map it with these rules, and assign father_name / mother_name + sex FROM THE NUMBERING, not from layout. Confusing box 1 with box 2, or a parent with a grandparent, is a CRITICAL error.
+   On NUMBERED cards, set "box_number" to the printed number of that box (the main/subject dog = 0). Read each box's printed number carefully and report it — the tree is rebuilt from these numbers. If the card has no numbers, set box_number to null.
 1. EXTRACT EVERY DOG YOU CAN READ. Even partial info counts — if you can read a name but nothing else, include just the name. But NEVER add a dog whose name you cannot actually read in the source — do not invent dogs to fill empty slots in the tree.
 2. PRESERVE NAMES EXACTLY as shown: capitalization, accents (à á è é ñ ç ö ü ø æ etc.), apostrophes, hyphens. Do not "correct" or translate. Read each letter carefully — distinguish visually similar glyphs (R vs B vs P, O vs Q vs 0, I vs L vs 1) so e.g. "RISA" is never misread as "BISA".
 3. SEX inference — recognize these synonyms in ANY language:
@@ -502,6 +506,64 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
     return { broken, orphanLinks }
   }
 
+  /**
+   * Reconstrucción DETERMINISTA del árbol a partir de la numeración de las cajas
+   * de un pedigrí OFICIAL (FCI / LOE / RSCE / RKF / LOSH / SHSB / KC…).
+   *
+   * El modelo LEE los números de caja de forma fiable, pero RAZONA sobre la
+   * estructura del árbol de forma inconsistente (en un LOE real leyó bien la rama
+   * materna pero intercambió el padre con el abuelo). Solución: que el modelo nos
+   * devuelva el box_number de cada perro y reconstruimos padre/madre/sexo EN CÓDIGO
+   * con la aritmética FCI (padre de la caja n = 2n+1, madre = 2n+2; impar=macho,
+   * par=hembra). El perro principal es la caja 0.
+   *
+   * GATE: solo actuamos si EXISTEN a la vez las cajas 1 Y 2 (ambos padres
+   * numerados) → es una tarjeta numerada. Para importaciones por URL/HTML (sin
+   * numeración) devolvemos los datos TAL CUAL los produjo el modelo, sin tocar nada.
+   *
+   * Solo se derivan father_name, mother_name, sex y generation desde la numeración.
+   * NUNCA se tocan nombres / registro / fechas / fotos (las correcciones de OCR
+   * quedan fuera de alcance: los nombres se quedan exactamente como los leyó el
+   * modelo). Los perros sin box_number se conservan tal cual.
+   */
+  function reconstructFromNumbering(data: PedigreeData): PedigreeData {
+    const main = data.main_dog
+    const ancestors = data.ancestors || []
+
+    // Mapa caja → perro. El principal es la caja 0 (su box_number es 0, o null
+    // pero ES el sujeto → lo tratamos como caja 0). Los ancestros entran solo si
+    // tienen un box_number numérico.
+    const byBox = new Map<number, ImportDog>()
+    byBox.set(0, main)
+    for (const a of ancestors) {
+      if (typeof a.box_number === 'number' && Number.isFinite(a.box_number)) {
+        byBox.set(a.box_number, a)
+      }
+    }
+
+    // GATE: tarjeta numerada SOLO si están presentes las cajas 1 Y 2 (ambos
+    // padres numerados). Si no, no es una tarjeta numerada (p.ej. import por URL)
+    // → devolvemos los datos sin cambios.
+    if (!byBox.has(1) || !byBox.has(2)) return data
+
+    // Caja 0 (perro principal): padre = caja 1, madre = caja 2. Mantenemos su sexo
+    // tal cual lo extrajo el modelo (el sujeto no tiene número par/impar propio).
+    main.father_name = byBox.get(1)?.name ?? null
+    main.mother_name = byBox.get(2)?.name ?? null
+
+    // Para cada perro en la caja n (n ≥ 1): derivamos relaciones, sexo y generación
+    // desde la aritmética de la numeración.
+    for (const [n, dog] of byBox) {
+      if (n < 1) continue
+      dog.father_name = byBox.get(2 * n + 1)?.name ?? null
+      dog.mother_name = byBox.get(2 * n + 2)?.name ?? null
+      dog.sex = n % 2 === 1 ? 'Male' : 'Female' // impar = macho, par = hembra
+      dog.generation = Math.floor(Math.log2(n + 1))
+    }
+
+    return data
+  }
+
   function extractImageUrls(html: string): string[] {
     const urls: string[] = []
     const regex = /<img[^>]+src=["']([^"']+)["']/gi
@@ -675,6 +737,11 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
         } catch { /* silent — usamos la versión anterior */ }
       }
 
+      // Reconstrucción DETERMINISTA del árbol a partir de la numeración de cajas
+      // (FCI/LOE/RSCE…). NO-OP si no hay cajas 1 y 2 (p.ej. este import por URL,
+      // que no tiene numeración) → los datos del modelo se conservan tal cual.
+      pedigreeData = reconstructFromNumbering(pedigreeData)
+
       // Fallback: if main dog has no photo, find the largest photo from the page
       if (!pedigreeData.main_dog.photo_url) {
         const largePhoto = imgUrls.find(u => u.includes('350') || u.includes('photo')) || imgUrls[0]
@@ -825,6 +892,12 @@ Return ONLY the JSON object. No \`\`\`json\`\`\` wrapper, no commentary.`
           }
         } catch {}
       }
+
+      // Reconstrucción DETERMINISTA del árbol a partir de la numeración de cajas
+      // (FCI/LOE/RSCE…): el modelo lee bien los números pero a veces intercambia
+      // padre/abuelo, así que reconstruimos padre/madre/sexo/generación en código.
+      // NO-OP si no hay cajas 1 y 2 (tarjeta sin numerar) → datos del modelo intactos.
+      pedigreeData = reconstructFromNumbering(pedigreeData)
 
       // Post-processing: find existing dogs in DB
       setScanPhase(t('Verificando perros existentes...'))
