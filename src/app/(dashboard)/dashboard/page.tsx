@@ -13,7 +13,6 @@ import WelcomeOwner from '@/components/onboarding/welcome-owner'
 import { getOnboardingStatus } from '@/lib/onboarding/checklist'
 import { getOwnerOnboardingStatus } from '@/lib/onboarding/checklist-owner'
 import { hasProAccess } from '@/lib/permissions'
-import { isInsider } from '@/lib/features/launch'
 import { getEffectiveRoles } from '@/lib/auth/roles'
 import { allPosts } from '@/content/blog'
 import { getTranslator } from '@/lib/i18n'
@@ -99,12 +98,6 @@ export default async function DashboardPage() {
   // CON KENNEL: cargar estado de onboarding en paralelo al resto
   const userPlan = (profile as { plan?: string })?.plan || 'free'
   const isPro = hasProAccess(userPlan)
-  // Fase 1 "carta reducida": las áreas reservadas (salud/vet, calendario,
-  // cruces, embudo, etc.) NO se enseñan al público todavía. Los insiders
-  // (founder + criaderos de prueba) sí ven todo. Usamos esto para esconder
-  // KPIs/widgets/atajos del escritorio que apuntan a rutas reservadas — si no,
-  // un no-insider los pulsa y rebota a /dashboard (feo aunque seguro).
-  const insider = isInsider(user.id)
   // El checklist de onboarding de CRIADOR solo aplica si hay kennel. Un owner
   // con perros que cae aquí (sin kennel) no tiene checklist de criador.
   const onboardingStatus = kennel
@@ -187,9 +180,8 @@ export default async function DashboardPage() {
       </div>
 
       {/* Daily Check-In Cal — resumen diario solo para criadores. Agrega
-          recordatorios de vet + eventos del calendario (ambas áreas RESERVADAS
-          en Fase 1) y enlaza a /calendar, así que solo se enseña a insiders. */}
-      {isBreeder && insider && <DailyCheckIn userId={user.id} />}
+          recordatorios de vet + eventos del calendario y enlaza a /calendar. */}
+      {isBreeder && <DailyCheckIn userId={user.id} />}
 
       {/* KPIs Cal — icon arriba con label, número grande tabular */}
       {isBreeder ? (
@@ -199,12 +191,9 @@ export default async function DashboardPage() {
           <StatCard icon={Baby} label={t('Camadas')} value={littersRes.count || 0} accentColor="#8b5cf6" sub={t('totales registradas')} href="/litters" />
         </section>
       ) : (
-        <section className={`grid gap-4 ${insider ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+        <section className="grid gap-4 sm:grid-cols-3">
           <StatCard icon={Dog} label={t('Mis perros')} value={dogCount} accentColor="#fb923c" sub={t('en tu cuenta')} href="/dogs" />
-          {/* "Registros vet." vive en Salud (área reservada): solo insiders */}
-          {insider && (
-            <StatCard icon={Stethoscope} label={t('Registros vet.')} value={vetRes.count || 0} accentColor="#3b82f6" sub={t('historiales clínicos')} href="/vet" />
-          )}
+          <StatCard icon={Stethoscope} label={t('Registros vet.')} value={vetRes.count || 0} accentColor="#3b82f6" sub={t('historiales clínicos')} href="/vet" />
           <StatCard icon={Tag} label={t('En venta')} value={forSaleCount} accentColor="#34d399" sub={t('publicados')} href="/dogs?for_sale=1" />
         </section>
       )}
@@ -255,8 +244,7 @@ export default async function DashboardPage() {
             {[
               { icon: Dog, label: t('Mis perros'), desc: t('Gestiona el registro de tus perros y sus genealogías.'), color: '#fb923c', href: '/dogs' },
               { icon: Search, label: t('Buscar perros'), desc: t('Explora el registro público de perros con genealogía verificable.'), color: '#8b5cf6', href: '/search' },
-              // "Veterinario" pertenece a Salud (área reservada Fase 1): solo insiders.
-              ...(insider ? [{ icon: Stethoscope, label: t('Veterinario'), desc: t('Historial clínico y recordatorios de vacunas para cada perro.'), color: '#3b82f6', href: '/vet' }] : []),
+              { icon: Stethoscope, label: t('Veterinario'), desc: t('Historial clínico y recordatorios de vacunas para cada perro.'), color: '#3b82f6', href: '/vet' },
             ].map(item => (
               <Link
                 key={item.label}
@@ -286,9 +274,8 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      {/* Vet reminders widget — Salud es área reservada (Fase 1); enlaza a
-          /vet. Solo insiders lo ven hasta que se lance Salud al público. */}
-      {insider && (vetRemindersRes.data || []).length > 0 && (
+      {/* Vet reminders widget — próximos recordatorios de vacunas (Salud). */}
+      {(vetRemindersRes.data || []).length > 0 && (
         <section>
           <div className="mb-5 flex items-end justify-between">
             <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">

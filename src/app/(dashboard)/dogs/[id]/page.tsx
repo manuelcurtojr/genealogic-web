@@ -21,7 +21,6 @@ import { DogJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
-import { isInsider } from '@/lib/features/launch'
 import { Img } from '@/components/ui/img'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -424,7 +423,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         )}
 
         {/* Tabs */}
-        <DogTabs dogId={dog.id} ownerId={dog.owner_id} isOwner={isOwner} insider={isInsider(user?.id)} fatherId={dog.father_id} motherId={dog.mother_id} dogSex={dog.sex} />
+        <DogTabs dogId={dog.id} ownerId={dog.owner_id} isOwner={isOwner} fatherId={dog.father_id} motherId={dog.mother_id} dogSex={dog.sex} />
       </div>
 
       {/* Genealogía.

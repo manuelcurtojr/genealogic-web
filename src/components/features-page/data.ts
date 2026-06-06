@@ -276,7 +276,7 @@ export const CATEGORIES: Category[] = [
   {
     slug: 'salud',
     label: 'Salud y genética',
-    tagline: 'Cartilla veterinaria digital + genotipos + certificados, todo conectado al perro.',
+    tagline: 'Cartilla veterinaria digital + certificados de salud, todo conectado al perro.',
     features: [
       {
         slug: 'cartilla',
@@ -292,7 +292,6 @@ export const CATEGORIES: Category[] = [
           'Histórico exportable a PDF para llevar al vet',
         ],
         mockup: 'vet-records',
-        reserved: true,
       },
       {
         slug: 'genetica',
@@ -313,10 +312,10 @@ export const CATEGORIES: Category[] = [
       },
     ],
     featurettes: [
-      { icon: FlaskConical, title: 'OFA · PennHIP · BVA', description: 'Displasia y patelas con link al certificado oficial.', reserved: true },
-      { icon: Bell, title: 'Recordatorios de vacunas', description: 'Push + email cuando se acerca la fecha de la siguiente.', reserved: true },
-      { icon: ShieldCheck, title: 'Certificados verificables', description: 'Enlace público al PDF del laboratorio desde el perfil del perro.', reserved: true },
-      { icon: Camera, title: 'Foto del veterinario', description: 'Anejo gráfico para test físicos (ej. inspección de mordida).', reserved: true },
+      { icon: FlaskConical, title: 'OFA · PennHIP · BVA', description: 'Displasia y patelas con link al certificado oficial.' },
+      { icon: Bell, title: 'Recordatorios de vacunas', description: 'Push + email cuando se acerca la fecha de la siguiente.' },
+      { icon: ShieldCheck, title: 'Certificados verificables', description: 'Enlace público al PDF del laboratorio desde el perfil del perro.' },
+      { icon: Camera, title: 'Foto del veterinario', description: 'Anejo gráfico para test físicos (ej. inspección de mordida).' },
     ],
   },
 
@@ -605,6 +604,5 @@ export const COMING_SOON_NAMES: string[] = [
   'CRM de reservas',
   'Contratos',
   'Web del criadero',
-  'Salud y recordatorios',
   'Newsletter',
 ]

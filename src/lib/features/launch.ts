@@ -18,11 +18,12 @@ import { isEnterpriseUser } from '@/lib/permissions'
 /**
  * Rutas (features) construidas pero AÚN NO lanzadas al público. Se ocultan del
  * sidebar y se bloquean por ruta para los no-insiders. Orden ≈ orden de
- * lanzamiento sugerido (el primero, /calendar = Salud + recordatorios).
+ * lanzamiento sugerido (el primero: el simulador de cruces).
+ *
+ * NOTA: la salud del perro (cartilla, vacunas, recordatorios — /calendar, /vet)
+ * NO se reserva: es parte del registro del perro y el gancho del propietario.
  */
 export const RESERVED_PATHS: readonly string[] = [
-  // Salud + recordatorios (lanzamiento 1 — retención)
-  '/calendar', '/vet',
   // Cría / genética
   '/cruces',       // Simulador de cruces (COI proyectado)
   '/genetica',     // Genotipos / pruebas DNA
