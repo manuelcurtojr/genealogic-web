@@ -115,12 +115,18 @@ export default function ReservationChatPanel({
         }`}
       />
 
-      {/* ─── FAB MÓVIL/TABLET ─── */}
+      {/* ─── FAB MÓVIL/TABLET ───
+          Posición: bottom-24 right-4 → 96px de abajo para dejar libre el
+          FeedbackButton (bottom-4) en la misma columna. z-40: por debajo de
+          Genos panel (z-70) y de su backdrop (z-60), así no flota por encima
+          del chatbot cuando se despliega. Cuando el panel chat se abre como
+          overlay mobile (z-70), el botón "X" interno cierra, así que el FAB
+          puede quedarse en z-40 sin problema. */}
       <button
         type="button"
         onClick={() => setIsOpen((o) => !o)}
         aria-label={isOpen ? 'Cerrar chat' : `Abrir chat con ${otherSideName}`}
-        className={`xl:hidden fixed bottom-6 right-6 z-[80] h-14 w-14 rounded-full shadow-2xl transition-transform flex items-center justify-center ${
+        className={`xl:hidden fixed bottom-24 right-4 z-40 h-12 w-12 rounded-full shadow-2xl transition-transform flex items-center justify-center ${
           isOpen
             ? 'bg-canvas text-ink border border-hairline scale-90'
             : 'bg-ink text-on-primary hover:scale-105'

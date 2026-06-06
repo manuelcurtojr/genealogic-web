@@ -65,7 +65,7 @@ export default async function VisitasPage({
         <p className="text-xs font-semibold uppercase tracking-wider text-muted">
           Analytics
         </p>
-        <h1 className="mt-2 text-4xl font-bold tracking-tight text-ink">
+        <h1 className="mt-2 text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-ink">
           {t('Estadísticas web')}
         </h1>
         <p className="mt-3 text-body max-w-2xl">
@@ -122,12 +122,12 @@ function Dashboard({ data, range, t }: { data: AnalyticsData; range: AnalyticsRa
       </div>
 
       {/* Timeseries */}
-      <section className="rounded-2xl border border-hairline bg-canvas p-6">
-        <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-ink">{t('Visitas en el tiempo')}</h2>
+      <section className="rounded-2xl border border-hairline bg-canvas p-4 sm:p-6">
+        <h2 className="text-[16px] sm:text-[18px] font-semibold tracking-[-0.02em] text-ink">{t('Visitas en el tiempo')}</h2>
         <p className="mt-1 text-[12.5px] text-muted">
           {range === 'today' ? t('Por hora (UTC).') : range === 'year' ? t('Por mes.') : t('Por día.')}
         </p>
-        <div className="mt-8 flex h-48 items-end gap-1 border-b border-hairline pb-2">
+        <div className="mt-6 sm:mt-8 flex h-40 sm:h-48 items-end gap-px sm:gap-1 border-b border-hairline pb-2">
           {timeseries.map((ts, i) => {
             const h = (ts.visits / maxTs) * 100
             const minH = ts.visits > 0 ? 4 : 0
@@ -161,7 +161,7 @@ function Dashboard({ data, range, t }: { data: AnalyticsData; range: AnalyticsRa
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <ListSection title={t('Páginas más vistas')} empty={pages.length === 0} t={t}>
           {pages.map((p) => (
-            <li key={p.path} className="px-5 py-3">
+            <li key={p.path} className="px-4 sm:px-5 py-2.5 sm:py-3">
               <div className="flex items-center justify-between gap-3 text-sm">
                 <span className="truncate font-mono text-xs text-body">{p.path}</span>
                 <span className="shrink-0 tabular-nums text-body">
@@ -178,7 +178,7 @@ function Dashboard({ data, range, t }: { data: AnalyticsData; range: AnalyticsRa
 
         <ListSection title={t('Fuentes de tráfico')} empty={referrers.length === 0} t={t}>
           {referrers.map((r, i) => (
-            <li key={`${r.referrer ?? 'direct'}-${i}`} className="px-5 py-3">
+            <li key={`${r.referrer ?? 'direct'}-${i}`} className="px-4 sm:px-5 py-2.5 sm:py-3">
               <div className="flex items-center justify-between gap-3 text-sm">
                 <span className="truncate text-body">
                   {r.referrer ?? <span className="italic text-muted">{t('Directo / interno')}</span>}
@@ -197,7 +197,7 @@ function Dashboard({ data, range, t }: { data: AnalyticsData; range: AnalyticsRa
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <ListSection title={t('Países')} empty={countries.length === 0} t={t}>
           {countries.map((c, i) => (
-            <li key={`${c.country ?? 'unknown'}-${i}`} className="px-5 py-3">
+            <li key={`${c.country ?? 'unknown'}-${i}`} className="px-4 sm:px-5 py-2.5 sm:py-3">
               <div className="flex items-center justify-between gap-3 text-sm">
                 <span className="flex items-center gap-2 text-body">
                   <span aria-hidden className="text-lg leading-none">{countryFlag(c.country)}</span>
@@ -214,7 +214,7 @@ function Dashboard({ data, range, t }: { data: AnalyticsData; range: AnalyticsRa
 
         <ListSection title={t('Ciudades')} empty={cities.length === 0} t={t}>
           {cities.map((c, i) => (
-            <li key={`${c.city ?? 'unknown'}-${i}`} className="px-5 py-3">
+            <li key={`${c.city ?? 'unknown'}-${i}`} className="px-4 sm:px-5 py-2.5 sm:py-3">
               <div className="flex items-center justify-between gap-3 text-sm">
                 <span className="truncate text-body">
                   <strong className="text-ink">{c.city ?? '—'}</strong>
@@ -231,8 +231,8 @@ function Dashboard({ data, range, t }: { data: AnalyticsData; range: AnalyticsRa
       </div>
 
       {/* Devices */}
-      <section className="rounded-2xl border border-hairline bg-canvas p-6">
-        <h2 className="text-xl font-semibold text-ink">{t('Dispositivos')}</h2>
+      <section className="rounded-2xl border border-hairline bg-canvas p-4 sm:p-6">
+        <h2 className="text-[16px] sm:text-xl font-semibold text-ink">{t('Dispositivos')}</h2>
         <p className="mt-1 text-xs text-muted">{t('Detectado por User-Agent (no se guarda el UA raw).')}</p>
         {totalDevices === 0 ? (
           <EmptyState label={t('Sin datos todavía.')} />
@@ -274,8 +274,8 @@ function ListSection({
 }: { title: string; empty: boolean; children: React.ReactNode; t: (k: string) => string }) {
   return (
     <section className="overflow-hidden rounded-2xl bg-canvas ring-1 ring-hairline">
-      <div className="border-b border-hairline px-6 py-4">
-        <h2 className="text-lg font-semibold text-ink">{title}</h2>
+      <div className="border-b border-hairline px-4 sm:px-6 py-3 sm:py-4">
+        <h2 className="text-[15px] sm:text-lg font-semibold text-ink">{title}</h2>
       </div>
       {empty ? <EmptyState label={t('Sin datos todavía.')} /> : <ul className="divide-y divide-hairline">{children}</ul>}
     </section>
@@ -301,10 +301,10 @@ function Kpi({
         ? 'text-red-600'
         : 'text-muted'
   return (
-    <div className="rounded-2xl bg-canvas p-5 ring-1 ring-hairline">
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted">{label}</div>
-      <div className="mt-2 text-2xl font-bold tracking-tight text-ink tabular-nums md:text-3xl">{value}</div>
-      {hint && <div className={`mt-1 text-xs ${hintCls}`}>{hint}</div>}
+    <div className="rounded-2xl bg-canvas p-3.5 sm:p-5 ring-1 ring-hairline min-w-0">
+      <div className="text-[10.5px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted truncate">{label}</div>
+      <div className="mt-1.5 sm:mt-2 text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-ink tabular-nums">{value}</div>
+      {hint && <div className={`mt-1 text-[10.5px] sm:text-xs ${hintCls} leading-snug`}>{hint}</div>}
     </div>
   )
 }

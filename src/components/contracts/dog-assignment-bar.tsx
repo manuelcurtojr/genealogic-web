@@ -92,45 +92,51 @@ export default function DogAssignmentBar({
   // ── Estado: perro asignado ──
   if (assignedDog) {
     return (
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 px-4 py-3 min-w-0">
-        <div className="flex items-start gap-3 min-w-0">
-          {assignedDog.thumbnailUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={assignedDog.thumbnailUrl}
-              alt={assignedDog.name}
-              className="h-12 w-12 rounded-lg object-cover flex-shrink-0 border border-emerald-200"
-            />
-          ) : (
-            <div className="h-12 w-12 rounded-lg bg-emerald-100 flex-shrink-0 flex items-center justify-center text-emerald-700">
-              <Dog className="h-5 w-5" />
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 px-3 sm:px-4 py-3 min-w-0">
+        {/* En mobile: ficha del perro arriba, acciones full-width abajo
+            (los 2 enlaces "Cambiar/Quitar" cabían pero apretaban la ficha
+            del perro contra la imagen).
+            En sm+: layout horizontal foto + ficha + acciones a la derecha. */}
+        <div className="flex flex-col sm:flex-row sm:items-start gap-2.5 sm:gap-3 min-w-0">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            {assignedDog.thumbnailUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={assignedDog.thumbnailUrl}
+                alt={assignedDog.name}
+                className="h-12 w-12 rounded-lg object-cover flex-shrink-0 border border-emerald-200"
+              />
+            ) : (
+              <div className="h-12 w-12 rounded-lg bg-emerald-100 flex-shrink-0 flex items-center justify-center text-emerald-700">
+                <Dog className="h-5 w-5" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 leading-none">
+                Cachorro asignado
+              </p>
+              <p className="mt-0.5 text-[14px] font-semibold text-ink truncate">
+                {assignedDog.name}
+              </p>
+              <p className="text-[12px] text-body truncate">
+                {[
+                  assignedDog.breedName,
+                  assignedDog.sex === 'male' ? 'Macho' : assignedDog.sex === 'female' ? 'Hembra' : null,
+                  assignedDog.colorName,
+                  assignedDog.microchip ? `Chip ${assignedDog.microchip}` : null,
+                ].filter(Boolean).join(' · ')}
+              </p>
+              <p className="hidden sm:block text-[11px] text-muted mt-0.5">
+                Los datos del perro aparecen automáticamente en el contrato. Para cambiar nombre/raza/etc., edítalo en su ficha.
+              </p>
             </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 leading-none">
-              Cachorro asignado
-            </p>
-            <p className="mt-0.5 text-[14px] font-semibold text-ink truncate">
-              {assignedDog.name}
-            </p>
-            <p className="text-[12px] text-body truncate">
-              {[
-                assignedDog.breedName,
-                assignedDog.sex === 'male' ? 'Macho' : assignedDog.sex === 'female' ? 'Hembra' : null,
-                assignedDog.colorName,
-                assignedDog.microchip ? `Chip ${assignedDog.microchip}` : null,
-              ].filter(Boolean).join(' · ')}
-            </p>
-            <p className="text-[11px] text-muted mt-0.5">
-              Los datos del perro aparecen automáticamente en el contrato. Para cambiar nombre/raza/etc., edítalo en su ficha.
-            </p>
           </div>
-          <div className="flex flex-col gap-1 flex-shrink-0">
+          <div className="flex sm:flex-col items-center sm:items-end gap-4 sm:gap-1 justify-end pt-1 sm:pt-0 sm:pl-2 border-t sm:border-t-0 border-emerald-200/60 sm:border-0">
             <button
               type="button"
               onClick={() => setOpen(true)}
               disabled={disabled || pending}
-              className="text-[11.5px] font-semibold text-emerald-800 hover:text-emerald-900 underline disabled:opacity-50"
+              className="text-[12px] sm:text-[11.5px] font-semibold text-emerald-800 hover:text-emerald-900 underline disabled:opacity-50"
             >
               Cambiar
             </button>
@@ -138,7 +144,7 @@ export default function DogAssignmentBar({
               type="button"
               onClick={() => pickDog(null)}
               disabled={disabled || pending}
-              className="text-[11.5px] font-medium text-muted hover:text-rose-700 disabled:opacity-50"
+              className="text-[12px] sm:text-[11.5px] font-medium text-muted hover:text-rose-700 disabled:opacity-50"
             >
               Quitar
             </button>
@@ -171,23 +177,27 @@ export default function DogAssignmentBar({
 
   // ── Estado: SIN perro asignado ──
   return (
-    <div ref={wrapRef} className="rounded-xl border border-hairline bg-surface-soft/40 px-4 py-3 min-w-0">
-      <div className="flex items-start gap-3 min-w-0">
-        <div className="h-10 w-10 rounded-lg bg-canvas border border-hairline flex-shrink-0 flex items-center justify-center text-muted">
-          <Dog className="h-4 w-4" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-semibold text-ink">Cachorro asignado</p>
-          <p className="text-[11.5px] text-muted mt-0.5">
-            Asigna un cachorro de tu criadero para que sus datos aparezcan en el contrato (nombre, raza, microchip…). Si todavía no lo tienes, déjalo en blanco y rellena las preferencias orientativas abajo.
-          </p>
+    <div ref={wrapRef} className="rounded-xl border border-hairline bg-surface-soft/40 px-3 sm:px-4 py-3 min-w-0">
+      {/* En mobile: icono+texto arriba, botón abajo full-width.
+          En sm+: icono+texto y botón a la derecha en una sola fila. */}
+      <div className="flex flex-col sm:flex-row sm:items-start gap-2.5 sm:gap-3 min-w-0">
+        <div className="flex items-start gap-3 min-w-0 flex-1">
+          <div className="h-10 w-10 rounded-lg bg-canvas border border-hairline flex-shrink-0 flex items-center justify-center text-muted">
+            <Dog className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-semibold text-ink">Cachorro asignado</p>
+            <p className="text-[11.5px] text-muted mt-0.5 leading-snug">
+              Asigna un cachorro de tu criadero para que sus datos aparezcan en el contrato (nombre, raza, microchip…). Si todavía no lo tienes, déjalo en blanco.
+            </p>
+          </div>
         </div>
         {!open && (
           <button
             type="button"
             onClick={() => setOpen(true)}
             disabled={disabled || pending}
-            className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-md bg-ink text-on-primary px-3 py-1.5 text-[12px] font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="flex-shrink-0 w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md bg-ink text-on-primary px-3 py-2 sm:py-1.5 text-[12px] font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             <Search className="h-3.5 w-3.5" />
             Asignar perro
