@@ -264,9 +264,9 @@ export const CATEGORIES: Category[] = [
       },
     ],
     featurettes: [
-      { icon: Filter, title: 'Filtrar candidatos por COI', description: 'Busca padre para tu hembra filtrando por COI máximo del cruce.' },
-      { icon: Activity, title: 'Stud-book privado', description: 'Histórico de todas tus cubriciones, parido o no, año a año.' },
-      { icon: FilePlus, title: 'Certificado de monta', description: 'PDF firmado con propietario de macho/hembra y fecha.' },
+      { icon: Filter, title: 'Filtrar candidatos por COI', description: 'Busca padre para tu hembra filtrando por COI máximo del cruce.', reserved: true },
+      { icon: Activity, title: 'Stud-book privado', description: 'Histórico de todas tus cubriciones, parido o no, año a año.', reserved: true },
+      { icon: FilePlus, title: 'Certificado de monta', description: 'PDF firmado con propietario de macho/hembra y fecha.', reserved: true },
     ],
   },
 
@@ -292,6 +292,7 @@ export const CATEGORIES: Category[] = [
           'Histórico exportable a PDF para llevar al vet',
         ],
         mockup: 'vet-records',
+        reserved: true,
       },
       {
         slug: 'genetica',
@@ -308,13 +309,14 @@ export const CATEGORIES: Category[] = [
         ],
         mockup: 'genotypes',
         proOnly: true,
+        reserved: true,
       },
     ],
     featurettes: [
-      { icon: FlaskConical, title: 'OFA · PennHIP · BVA', description: 'Displasia y patelas con link al certificado oficial.' },
-      { icon: Bell, title: 'Recordatorios de vacunas', description: 'Push + email cuando se acerca la fecha de la siguiente.' },
-      { icon: ShieldCheck, title: 'Certificados verificables', description: 'Enlace público al PDF del laboratorio desde el perfil del perro.' },
-      { icon: Camera, title: 'Foto del veterinario', description: 'Anejo gráfico para test físicos (ej. inspección de mordida).' },
+      { icon: FlaskConical, title: 'OFA · PennHIP · BVA', description: 'Displasia y patelas con link al certificado oficial.', reserved: true },
+      { icon: Bell, title: 'Recordatorios de vacunas', description: 'Push + email cuando se acerca la fecha de la siguiente.', reserved: true },
+      { icon: ShieldCheck, title: 'Certificados verificables', description: 'Enlace público al PDF del laboratorio desde el perfil del perro.', reserved: true },
+      { icon: Camera, title: 'Foto del veterinario', description: 'Anejo gráfico para test físicos (ej. inspección de mordida).', reserved: true },
     ],
   },
 
@@ -390,6 +392,7 @@ export const CATEGORIES: Category[] = [
           'Solicitudes desde tu web pública entran directamente',
         ],
         mockup: 'reservations-table',
+        reserved: true,
       },
       {
         slug: 'contratos',
@@ -405,6 +408,7 @@ export const CATEGORIES: Category[] = [
           'PDF firmado guardado en el expediente del cliente',
         ],
         mockup: 'contract-editor',
+        reserved: true,
       },
       {
         slug: 'pagos',
@@ -421,13 +425,14 @@ export const CATEGORIES: Category[] = [
           'Reembolsos desde el panel sin entrar a Stripe',
         ],
         mockup: 'payments-timeline',
+        reserved: true,
       },
     ],
     featurettes: [
-      { icon: Inbox, title: 'Formulario de solicitud', description: 'Embebido en tu kennel pública, configurable y con anti-spam.' },
-      { icon: Users, title: 'CRM unificado', description: 'Contactos, leads y compradores en un único panel con tags.' },
-      { icon: Bell, title: 'Notificaciones', description: 'Email + push (iOS) cuando llega o cambia algo crítico.' },
-      { icon: FilePlus, title: 'Visitas registradas', description: 'Apunta visitas al kennel con fecha, contacto y notas.' },
+      { icon: Inbox, title: 'Formulario de solicitud', description: 'Embebido en tu kennel pública, configurable y con anti-spam.', reserved: true },
+      { icon: Users, title: 'CRM unificado', description: 'Contactos, leads y compradores en un único panel con tags.', reserved: true },
+      { icon: Bell, title: 'Notificaciones', description: 'Email + push (iOS) cuando llega o cambia algo crítico.', reserved: true },
+      { icon: FilePlus, title: 'Visitas registradas', description: 'Apunta visitas al kennel con fecha, contacto y notas.', reserved: true },
     ],
   },
 
@@ -456,6 +461,7 @@ export const CATEGORIES: Category[] = [
         mockup: 'kennel-web',
         proOnly: true,
         comingSoon: true,
+        reserved: true,
       },
       {
         slug: 'blog',
@@ -473,15 +479,16 @@ export const CATEGORIES: Category[] = [
         mockup: 'blog-list',
         proOnly: true,
         comingSoon: true,
+        reserved: true,
       },
     ],
     featurettes: [
-      { icon: MapPin, title: 'Ubicación en mapa', description: 'Embebido sin coste extra ni token de Google Maps.' },
-      { icon: Star, title: 'Reseñas verificadas', description: 'Solo clientes con reserva pueden dejar reseña.' },
-      { icon: Send, title: 'Formulario de contacto', description: 'Configurable, con anti-spam y rate-limit.' },
-      { icon: Lock, title: 'Sin anuncios de terceros', description: 'Tu marca, sin ruido.' },
-      { icon: Eye, title: 'Vista previa antes de publicar', description: 'Cambia, revisa, publica.' },
-      { icon: Languages, title: 'Multi-idioma', description: 'ES, EN, IT, FR — hreflang configurado.' },
+      { icon: MapPin, title: 'Ubicación en mapa', description: 'Embebido sin coste extra ni token de Google Maps.', reserved: true },
+      { icon: Star, title: 'Reseñas verificadas', description: 'Solo clientes con reserva pueden dejar reseña.', reserved: true },
+      { icon: Send, title: 'Formulario de contacto', description: 'Configurable, con anti-spam y rate-limit.', reserved: true },
+      { icon: Lock, title: 'Sin anuncios de terceros', description: 'Tu marca, sin ruido.', reserved: true },
+      { icon: Eye, title: 'Vista previa antes de publicar', description: 'Cambia, revisa, publica.', reserved: true },
+      { icon: Languages, title: 'Multi-idioma', description: 'ES, EN, IT, FR — hreflang configurado.', reserved: true },
     ],
   },
 
@@ -509,6 +516,7 @@ export const CATEGORIES: Category[] = [
           'Suite de tests para validar respuestas antes de activar',
         ],
         mockup: 'bot-conversation',
+        reserved: true,
       },
       {
         slug: 'newsletter',
@@ -526,12 +534,13 @@ export const CATEGORIES: Category[] = [
           'Auto-suscripción de solicitantes de una camada',
         ],
         mockup: 'newsletter-composer',
+        reserved: true,
       },
     ],
     featurettes: [
-      { icon: Inbox, title: 'Hilos de email', description: 'Todo el histórico con cada cliente en un único hilo.' },
-      { icon: BookOpen, title: 'Biblioteca de conocimiento', description: 'Lo que escribes una vez, el bot lo reutiliza siempre.' },
-      { icon: Zap, title: 'Respuesta en <1 min', description: 'El bot responde 24/7. Tú revisas cuando quieras.' },
+      { icon: Inbox, title: 'Hilos de email', description: 'Todo el histórico con cada cliente en un único hilo.', reserved: true },
+      { icon: BookOpen, title: 'Biblioteca de conocimiento', description: 'Lo que escribes una vez, el bot lo reutiliza siempre.', reserved: true },
+      { icon: Zap, title: 'Respuesta en <1 min', description: 'El bot responde 24/7. Tú revisas cuando quieras.', reserved: true },
     ],
   },
 
@@ -558,13 +567,44 @@ export const CATEGORIES: Category[] = [
           'Comparativa con período anterior',
         ],
         mockup: 'stats-dashboard',
+        reserved: true,
       },
     ],
     featurettes: [
-      { icon: TrendingUp, title: 'Funnel de conversión', description: 'Visita → ficha de perro → solicitud → seña → contrato → entrega.' },
-      { icon: Search, title: 'Búsqueda interna tracked', description: 'Sabes qué buscan los visitantes en tu web pública.' },
-      { icon: Eye, title: 'Heatmap básico', description: 'Páginas más vistas, profundidad de scroll, perros más clickados.' },
-      { icon: FileBarChart, title: 'Exportable a CSV', description: 'Cruza los datos con tu Excel o Looker Studio.' },
+      { icon: TrendingUp, title: 'Funnel de conversión', description: 'Visita → ficha de perro → solicitud → seña → contrato → entrega.', reserved: true },
+      { icon: Search, title: 'Búsqueda interna tracked', description: 'Sabes qué buscan los visitantes en tu web pública.', reserved: true },
+      { icon: Eye, title: 'Heatmap básico', description: 'Páginas más vistas, profundidad de scroll, perros más clickados.', reserved: true },
+      { icon: FileBarChart, title: 'Exportable a CSV', description: 'Cruza los datos con tu Excel o Looker Studio.', reserved: true },
     ],
   },
+]
+
+/**
+ * Fase 1 "carta reducida": el catálogo público solo muestra las features YA
+ * lanzadas. Filtramos cada categoría quitando sus features/featurettes
+ * `reserved` y descartamos las categorías que se quedan completamente vacías.
+ * Lo usan tanto el contenido (content.tsx) como el sidebar para que NUNCA se
+ * desincronicen. Al lanzar un área, basta con quitar `reserved` de sus items.
+ */
+export const visibleCategories: Category[] = CATEGORIES
+  .map((cat) => ({
+    ...cat,
+    features: cat.features.filter((f) => !f.reserved),
+    featurettes: cat.featurettes.filter((f) => !f.reserved),
+  }))
+  .filter((cat) => cat.features.length > 0 || cat.featurettes.length > 0)
+
+/**
+ * Nombres (solo nombres, sin detalle) de las áreas RESERVADAS para la sección
+ * "Llegando pronto" del final de /features. Señala profundidad sin saturar al
+ * recién llegado. Orden ≈ orden de lanzamiento previsto.
+ */
+export const COMING_SOON_NAMES: string[] = [
+  'Planificador de cruces',
+  'Genotipos',
+  'CRM de reservas',
+  'Contratos',
+  'Web del criadero',
+  'Salud y recordatorios',
+  'Newsletter',
 ]

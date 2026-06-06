@@ -239,6 +239,39 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         setForm({ name: '', sex: 'male', birth_date: defaultBirthDate || '', registration: '', microchip: '', weight: '', height: '', breed_id: defaultBreedId || '', color_id: '', kennel_id: defaultKennelId || '', father_id: defaultFatherId || '', mother_id: defaultMotherId || '', is_public: true })
         setDeceasedAt(null); setThumbnailUrl(null); setShowInKennel(true); setIsReproductive(false); setExternalOwner(null)
         if (defaultBreedId) filterByBreed(defaultBreedId, cRes.data || [], mRes.data || [], fRes.data || [])
+
+        // ── Asegurar que los padres heredados de la camada estén en las listas ──
+        // El SELECT de arriba carga máximo 500 machos/hembras ordenados por
+        // nombre. Si el padre o madre de la camada no entra en ese top-500,
+        // selFather/selMother salen undefined y el LockedParentCard pintaba
+        // "Sin asignar" aunque los IDs venían correctos. Hacemos un fetch
+        // específico de esos 1-2 perros y los mergeamos.
+        const missingIds: string[] = []
+        const have = new Set([
+          ...(mRes.data || []).map((d) => d.id),
+          ...(fRes.data || []).map((d) => d.id),
+        ])
+        if (defaultFatherId && !have.has(defaultFatherId)) missingIds.push(defaultFatherId)
+        if (defaultMotherId && !have.has(defaultMotherId)) missingIds.push(defaultMotherId)
+        if (missingIds.length > 0) {
+          const { data: missing } = await supabase
+            .from('dogs')
+            .select('id, name, sex, thumbnail_url, breed_id')
+            .in('id', missingIds)
+          if (missing?.length) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const merge = (arr: any[], add: any[]) => {
+              const seen = new Set(arr.map((x) => x.id))
+              return [...arr, ...add.filter((x) => !seen.has(x.id))]
+            }
+            const mp = missing.filter((d) => d.sex === 'male')
+            const fp = missing.filter((d) => d.sex === 'female')
+            setAllMaleDogs((prev) => merge(prev, mp))
+            setMaleDogs((prev) => merge(prev, mp))
+            setAllFemaleDogs((prev) => merge(prev, fp))
+            setFemaleDogs((prev) => merge(prev, fp))
+          }
+        }
       }
       setDataLoading(false)
     }

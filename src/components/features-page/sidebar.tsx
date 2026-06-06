@@ -12,7 +12,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { CATEGORIES } from './data'
+import { visibleCategories } from './data'
 import { ChevronDown } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 
@@ -42,7 +42,7 @@ export default function FeaturesSidebar({ activeSlug }: Props) {
       { rootMargin: '-40% 0px -50% 0px' }, // dispara cuando el bloque está en el centro de la viewport
     )
 
-    for (const cat of CATEGORIES) {
+    for (const cat of visibleCategories) {
       for (const f of cat.features) {
         const el = document.getElementById(f.slug)
         if (el) observer.observe(el)
@@ -71,7 +71,7 @@ export default function FeaturesSidebar({ activeSlug }: Props) {
         </button>
         {mobileOpen && (
           <nav className="pb-3 max-h-[60vh] overflow-y-auto">
-            {CATEGORIES.map(cat => (
+            {visibleCategories.map(cat => (
               <div key={cat.slug} className="mb-2">
                 <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-muted px-2 py-1">
                   {cat.label}
@@ -107,7 +107,7 @@ export default function FeaturesSidebar({ activeSlug }: Props) {
       {/* Desktop sidebar */}
       <aside className="hidden lg:block sticky top-20 self-start max-h-[calc(100vh-6rem)] overflow-y-auto pr-2">
         <nav className="space-y-5">
-          {CATEGORIES.map(cat => (
+          {visibleCategories.map(cat => (
             <div key={cat.slug}>
               <Link
                 href={`#cat-${cat.slug}`}

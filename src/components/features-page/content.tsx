@@ -12,7 +12,7 @@
  * sidebar y desde external landings.
  */
 import { Check } from 'lucide-react'
-import { CATEGORIES } from './data'
+import { visibleCategories, COMING_SOON_NAMES } from './data'
 import Mockup from './mockups'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -21,7 +21,7 @@ export default async function FeaturesContent() {
   const t = getTranslator(await getLocale())
   return (
     <div className="space-y-24 sm:space-y-32 pb-24">
-      {CATEGORIES.map((cat, catIndex) => (
+      {visibleCategories.map((cat, catIndex) => (
         <section key={cat.slug}>
           {/* Header de la categoría */}
           <div
@@ -121,6 +121,34 @@ export default async function FeaturesContent() {
           )}
         </section>
       ))}
+
+      {/* ─── Llegando pronto ───────────────────────────────────────────────
+          Fase 1: el catálogo de arriba solo enseña lo lanzado. Aquí
+          insinuamos la profundidad del producto con los NOMBRES de las áreas
+          reservadas (sin detalle), para no saturar pero sí señalar recorrido. */}
+      {COMING_SOON_NAMES.length > 0 && (
+        <section className="border-t border-hairline pt-12 sm:pt-16">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[color:var(--brand)]">
+            {t('Llegando pronto')}
+          </p>
+          <h2 className="mt-2 text-[22px] sm:text-[28px] font-semibold tracking-[-0.03em] text-ink leading-[1.2] max-w-2xl">
+            {t('Vamos soltando herramientas nuevas de una en una.')}
+          </h2>
+          <p className="mt-3 text-[14px] sm:text-[15px] text-body leading-[1.6] max-w-2xl">
+            {t('Construimos sobre la genealogía. Estas piezas ya están en camino — las anunciaremos cuando estén listas.')}
+          </p>
+          <ul className="mt-6 flex flex-wrap gap-2">
+            {COMING_SOON_NAMES.map((name) => (
+              <li
+                key={name}
+                className="inline-flex items-center rounded-full border border-hairline bg-canvas px-3.5 py-1.5 text-[12.5px] font-medium text-muted"
+              >
+                {t(name)}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   )
 }
