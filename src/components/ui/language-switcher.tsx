@@ -1,42 +1,63 @@
 'use client'
 
 /**
- * LanguageSwitcher — selector de idioma para visitantes (anónimos o no).
+ * LanguageSwitcher — selector de idioma para visitantes.
  *
- * Escribe la cookie `genealogic-lang` (la misma que lee getLocale server-side)
- * y recarga para que TODOS los server components (header, footer, landings)
- * se re-rendericen en el nuevo idioma. También sincroniza localStorage para
- * los componentes client que usan getTranslator desde ahí.
+ * APAÑO i18n (2026-06): mientras el diccionario propio no esté 100% traducido,
+ * la web se renderiza SIEMPRE en español (ver FORCE_SPANISH_ONLY en lib/locale.ts)
+ * y este selector dispara Google Translate en el cliente: escribe la cookie
+ * `googtrans=/es/<idioma>` y recarga; el widget (components/i18n/google-translate.tsx)
+ * la lee y traduce la página. Elegir "Español" borra la cookie (vuelve a la base).
  *
- * Para usuarios LOGUEADOS el ajuste definitivo vive en /settings
- * (profiles.language), que tiene prioridad sobre esta cookie. Este switcher
- * es sobre todo para el footer público / anónimos.
+ * Cuando completemos las traducciones propias, esto volverá a la cookie de locale.
  */
 import { useState, useRef, useEffect } from 'react'
 import { Globe, Check } from 'lucide-react'
 
-const LOCALE_COOKIE = 'genealogic-lang'
-
-// Idiomas ofrecidos en el switcher público. ES/EN son los activos hoy; el
-// resto del diccionario existe pero la web pública aún no está 100% traducida
-// a fr/de/pt/it, así que de momento ofrecemos solo los dos completos.
+// Idiomas ofrecidos. Google Translate los cubre todos; 'es' es la base (sin traducir).
 const LANGS: { code: string; label: string; flag: string }[] = [
   { code: 'es', label: 'Español', flag: '🇪🇸' },
   { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'it', label: 'Italiano', flag: '🇮🇹' },
+  { code: 'fr', label: 'Français', flag: '🇫🇷' },
+  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+  { code: 'pt', label: 'Português', flag: '🇵🇹' },
 ]
 
+/** Lee el idioma destino de la cookie googtrans (/es/en → 'en'); 'es' si no hay. */
+function currentGoogTrans(): string {
+  if (typeof document === 'undefined') return 'es'
+  const m = document.cookie.match(/googtrans=\/[a-z]{2}\/([a-z]{2})/i)
+  return m ? m[1].toLowerCase() : 'es'
+}
+
+/** Escribe (o borra) la cookie googtrans en todas las variantes de dominio. */
+function setGoogTransCookie(target: string) {
+  const host = window.location.hostname
+  const variants = ['', `;domain=${host}`, `;domain=.${host}`]
+  for (const d of variants) {
+    if (target === 'es') {
+      document.cookie = `googtrans=;path=/${d};expires=Thu, 01 Jan 1970 00:00:00 GMT`
+    } else {
+      document.cookie = `googtrans=/es/${target};path=/${d};max-age=${60 * 60 * 24 * 365}`
+    }
+  }
+}
+
 export default function LanguageSwitcher({
-  current,
   variant = 'dark',
 }: {
-  /** Locale actual resuelto en server (para marcar el activo). */
-  current: string
   /** 'dark' para footer oscuro, 'light' para fondos claros. */
   variant?: 'dark' | 'light'
 }) {
   const [open, setOpen] = useState(false)
+  const [active, setActive] = useState('es')
   const ref = useRef<HTMLDivElement>(null)
-  const active = LANGS.find((l) => l.code === current) || LANGS[0]
+
+  // El render server es siempre 'es' (apaño); el idioma real lo marca la cookie GT.
+  useEffect(() => {
+    setActive(currentGoogTrans())
+  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -47,22 +68,21 @@ export default function LanguageSwitcher({
     return () => document.removeEventListener('mousedown', onClick)
   }, [open])
 
+  const activeLang = LANGS.find((l) => l.code === active) || LANGS[0]
+
   function choose(code: string) {
-    if (code === current) { setOpen(false); return }
-    // Cookie de 1 año, accesible en server (no httpOnly) para que getLocale la lea.
-    document.cookie = `${LOCALE_COOKIE}=${code}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`
-    try { localStorage.setItem(LOCALE_COOKIE, code) } catch { /* ignore */ }
-    // Recarga para re-renderizar server components en el nuevo idioma.
+    setOpen(false)
+    if (code === active) return
+    setGoogTransCookie(code)
     window.location.reload()
   }
 
   const isDark = variant === 'dark'
-  const triggerCls = isDark
-    ? 'text-on-dark-soft hover:text-white'
-    : 'text-body hover:text-ink'
+  const triggerCls = isDark ? 'text-on-dark-soft hover:text-white' : 'text-body hover:text-ink'
 
   return (
-    <div className="relative" ref={ref}>
+    // translate="no": que GT no traduzca el propio selector (los idiomas van en su lengua).
+    <div className="relative" ref={ref} translate="no">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -70,17 +90,17 @@ export default function LanguageSwitcher({
         aria-label="Cambiar idioma / Change language"
       >
         <Globe className="h-3.5 w-3.5" />
-        <span>{active.flag} {active.label}</span>
+        <span>{activeLang.flag} {activeLang.label}</span>
       </button>
 
       {open && (
         <div
-          className={`absolute bottom-full mb-2 left-0 min-w-[150px] rounded-lg border shadow-lg overflow-hidden z-50 ${
+          className={`absolute bottom-full mb-2 left-0 min-w-[160px] rounded-lg border shadow-lg overflow-hidden z-50 ${
             isDark ? 'bg-surface-dark border-white/15' : 'bg-canvas border-hairline'
           }`}
         >
           {LANGS.map((l) => {
-            const isActive = l.code === current
+            const isActive = l.code === active
             return (
               <button
                 key={l.code}
@@ -97,6 +117,11 @@ export default function LanguageSwitcher({
               </button>
             )
           })}
+          {active !== 'es' && (
+            <p className="px-3 py-2 text-[10.5px] leading-tight text-muted border-t border-white/10">
+              Traducción automática (Google)
+            </p>
+          )}
         </div>
       )}
     </div>

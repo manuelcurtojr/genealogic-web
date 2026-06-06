@@ -14,11 +14,21 @@ import { Dog } from 'lucide-react'
 import { Wordmark } from '@/components/ui/wordmark'
 import { getTranslator } from '@/lib/i18n'
 import LanguageSwitcher from '@/components/ui/language-switcher'
+import GoogleTranslate from '@/components/i18n/google-translate'
 
 // URL de la ficha de la app en la App Store (sin región → redirige a la store de cada país).
 const APP_STORE_URL = 'https://apps.apple.com/app/genealogic/id6761951683'
 
-export default function MarketingFooter({ locale = 'es' }: { locale?: string }) {
+export default function MarketingFooter({
+  locale = 'es',
+  /** Solo true en contextos anónimos/estáticos (home, marketing, legal): muestra
+   *  el selector de idioma + monta el widget Google Translate. En el dashboard va
+   *  false (React interactivo + GT = riesgo de crash). */
+  enableTranslate = false,
+}: {
+  locale?: string
+  enableTranslate?: boolean
+}) {
   const t = getTranslator(locale)
   return (
     <footer className="bg-surface-dark text-on-dark">
@@ -134,10 +144,11 @@ export default function MarketingFooter({ locale = 'es' }: { locale?: string }) 
           <span>© {new Date().getFullYear()} <strong className="font-medium text-white/90">Manuel Curtó SL</strong> · B56932098 · Tenerife, España</span>
           <div className="flex items-center gap-5">
             <span className="hidden sm:inline">{t('La genealogía de tu perro, donde tiene que estar.')}</span>
-            <LanguageSwitcher current={locale} variant="dark" />
+            {enableTranslate && <LanguageSwitcher variant="dark" />}
           </div>
         </div>
       </div>
+      {enableTranslate && <GoogleTranslate />}
     </footer>
   )
 }

@@ -41,7 +41,7 @@ export default async function PublicLayout({ children }: { children: React.React
     <div className="min-h-screen bg-canvas text-[var(--foreground)] flex flex-col">
       <MarketingHeader locale={locale} />
       <main className="flex-1">{children}</main>
-      <MarketingFooter locale={locale} />
+      <MarketingFooter locale={locale} enableTranslate />
     </div>
   )
 }

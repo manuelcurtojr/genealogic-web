@@ -22,6 +22,16 @@ import { cache } from 'react'
 export const LOCALE_COOKIE = 'genealogic-lang'
 export const DEFAULT_LOCALE = 'es'
 
+/**
+ * APAÑO i18n (2026-06): mientras el diccionario propio no esté 100% traducido
+ * (el inglés está a medias → mezclaba es/en en marketing), renderizamos SIEMPRE
+ * en español —la base limpia, sin mezcla— y la traducción a otros idiomas la hace
+ * Google Translate en el cliente (components/i18n/google-translate.tsx + el
+ * LanguageSwitcher del footer). Para reactivar el i18n propio cuando esté
+ * completo: poner FORCE_SPANISH_ONLY = false.
+ */
+export const FORCE_SPANISH_ONLY: boolean = true
+
 /** Idiomas con traducción disponible. 'es' es la clave base (no necesita dict). */
 export const SUPPORTED_LOCALES = ['es', 'en', 'fr', 'de', 'pt', 'it'] as const
 export type Locale = (typeof SUPPORTED_LOCALES)[number]
@@ -83,6 +93,10 @@ const getLoggedInUserLanguage = cache(async (): Promise<string | null> => {
 })
 
 export async function getLocale(userLanguage?: string | null): Promise<Locale> {
+  // APAÑO: español forzado en todo el render mientras traducimos (ver
+  // FORCE_SPANISH_ONLY). La traducción a otros idiomas la hace Google Translate.
+  if (FORCE_SPANISH_ONLY) return DEFAULT_LOCALE
+
   // 1. Preferencia pasada explícitamente por el caller (evita la query extra)
   const fromUser = normalizeLocale(userLanguage)
   if (fromUser) return fromUser

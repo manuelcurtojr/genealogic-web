@@ -178,7 +178,7 @@ export default async function Home() {
           galgoDogs={galgoDogsRes.data || []}
         />
       </main>
-      <MarketingFooter locale={locale} />
+      <MarketingFooter locale={locale} enableTranslate />
     </div>
   )
 }

@@ -78,7 +78,7 @@ export default async function LegalLayout({ children }: { children: React.ReactN
     <div className="min-h-screen bg-canvas text-ink flex flex-col">
       <MarketingHeader locale={locale} />
       <main className="flex-1">{legalBody}</main>
-      <MarketingFooter locale={locale} />
+      <MarketingFooter locale={locale} enableTranslate />
     </div>
   )
 }
