@@ -45,12 +45,12 @@ interface DogFormPanelProps {
 
 const TABS = [
   { key: 'datos', label: 'Datos', icon: Dog },
+  { key: 'gestion', label: 'Gestión', icon: Settings2 },
   { key: 'salud', label: 'Salud', icon: Stethoscope },
   { key: 'reproduccion', label: 'Reproducción', icon: Heart, femaleOnly: true },
   { key: 'genetica', label: 'Genética', icon: Dna },
   { key: 'palmares', label: 'Palmarés', icon: Trophy },
   { key: 'historico', label: 'Histórico', icon: History },
-  { key: 'gestion', label: 'Gestión', icon: Settings2 },
 ] as const
 
 type TabKey = typeof TABS[number]['key']

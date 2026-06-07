@@ -429,7 +429,9 @@ export const content4Dogs: Record<string, Record<string, string>> = {
     // ── reproduccion-tab ──
     'Esta hembra': 'This female',
     'Error cargando datos': 'Error loading data',
+    'Estado reproductivo': 'Breeding status',
     'Estado actual': 'Current status',
+    'Intervalo medio': 'Average interval',
     'Parto previsto:': 'Expected whelping:',
     'en': 'in',
     'atrás': 'ago',

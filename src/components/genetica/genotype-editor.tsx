@@ -3,10 +3,18 @@
 import { useState } from 'react'
 import { Img } from '@/components/ui/img'
 import { createClient } from '@/lib/supabase/client'
-import { Dna, Save, Loader2, Check, Palette, Microscope } from 'lucide-react'
+import { Dna, Save, Loader2, Check, Palette, Microscope, AlertCircle } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import { LOCI } from '@/lib/genetics/loci'
 import ColorObservationForm from './color-observation-form'
+
+// Color del chip de categoría de cada locus (color / pattern / coat). Mantiene
+// el código de color con significado, en línea con los tipos de Salud.
+const CATEGORY_TONE: Record<string, string> = {
+  color: '#9b59b6',   // violeta — pigmento base
+  pattern: '#f39c12', // ámbar — patrón
+  coat: '#3498db',    // azul — pelo
+}
 
 interface Dog {
   id: string
@@ -65,49 +73,57 @@ export default function GenotypeEditor({ dog, initialGenotypes, breedColors, all
   const hasDnaData = initialGenotypes.length > 0
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Header del perro */}
-      <div className="flex items-center justify-between rounded-xl border border-hairline bg-canvas px-5 py-4">
-        <div className="flex items-center gap-3">
-          {dog.thumbnail_url ? (
-            <Img w={120} src={dog.thumbnail_url} alt={dog.name} className="h-12 w-12 rounded-full object-cover" />
-          ) : (
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-card">
-              <Dna className="h-5 w-5 text-muted" />
-            </div>
-          )}
-          <div>
-            <h2 className="text-[17px] font-semibold tracking-[-0.02em] text-ink">{dog.name}</h2>
-            <p className="text-[12px] text-muted">
+      <div className="flex items-center gap-3 rounded-2xl border border-hairline bg-canvas px-4 py-3.5">
+        {dog.thumbnail_url ? (
+          <Img w={120} src={dog.thumbnail_url} alt={dog.name} className="h-12 w-12 flex-shrink-0 rounded-full object-cover" />
+        ) : (
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: 'var(--brand-soft)' }}>
+            <Dna className="h-5 w-5" style={{ color: 'var(--brand)' }} />
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-[16px] font-semibold tracking-[-0.02em] text-ink">{dog.name}</h2>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            <span className="rounded-full bg-surface-card px-2 py-0.5 text-[10.5px] font-medium text-body">
               {dog.sex === 'male' ? t('Macho') : dog.sex === 'female' ? t('Hembra') : t('Sexo no definido')}
-              {hasColorData && ` · ${t('Color registrado')}`}
-              {hasDnaData && ` · ${initialGenotypes.length} ${t('loci DNA')}`}
-            </p>
+            </span>
+            {hasColorData && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10.5px] font-medium text-emerald-600">
+                <Palette className="h-2.5 w-2.5" /> {t('Color registrado')}
+              </span>
+            )}
+            {hasDnaData && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10.5px] font-medium text-emerald-600">
+                <Microscope className="h-2.5 w-2.5" /> {initialGenotypes.length} {t('loci DNA')}
+              </span>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 rounded-lg bg-surface-soft p-0.5">
+      {/* Tabs — segmented control on-brand */}
+      <div className="flex gap-1 rounded-xl border border-hairline bg-surface-soft p-1">
         <button
           onClick={() => setActiveTab('color')}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-[13px] font-medium transition-colors ${
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium transition ${
             activeTab === 'color' ? 'bg-canvas text-ink shadow-sm' : 'text-muted hover:text-ink'
           }`}
         >
           <Palette className="h-3.5 w-3.5" />
           {t('Color visible')}
-          {hasColorData && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+          {hasColorData && <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />}
         </button>
         <button
           onClick={() => setActiveTab('dna')}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-[13px] font-medium transition-colors ${
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium transition ${
             activeTab === 'dna' ? 'bg-canvas text-ink shadow-sm' : 'text-muted hover:text-ink'
           }`}
         >
           <Microscope className="h-3.5 w-3.5" />
           {t('Genotipo DNA (avanzado)')}
-          {hasDnaData && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+          {hasDnaData && <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />}
         </button>
       </div>
 
@@ -211,95 +227,122 @@ function DnaEditor({ dogId, initialGenotypes }: { dogId: string; initialGenotype
     }
   }
 
+  const filledCount = LOCI.filter((l) => {
+    const c = genotypes.get(l.code)
+    return !!c?.allele1 && !!c?.allele2
+  }).length
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between rounded-xl border border-hairline bg-canvas px-5 py-3">
-        <div>
-          <p className="text-[13px] font-medium text-ink">{t('Genotipo confirmado por DNA')}</p>
-          <p className="text-[11.5px] text-muted">
-            {t('Rellena solo si tienes resultados de Embark, Wisdom Panel u otro test genético.')}
-          </p>
+      {/* Cabecera de sección (estilo Salud: tile de icono + título) */}
+      <div className="rounded-2xl border border-hairline bg-surface-soft p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-2.5">
+            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: 'var(--brand-soft)' }}>
+              <Microscope className="h-4.5 w-4.5" style={{ color: 'var(--brand)' }} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[13.5px] font-semibold text-ink">{t('Genotipo confirmado por DNA')}</p>
+              <p className="mt-0.5 text-[11.5px] leading-snug text-muted">
+                {t('Rellena solo si tienes resultados de Embark, Wisdom Panel u otro test genético.')}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-ink px-3.5 py-2 text-[12.5px] font-semibold text-on-primary transition hover:opacity-90 disabled:opacity-50"
+          >
+            {saving ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : savedFlash ? (
+              <Check className="h-3.5 w-3.5" />
+            ) : (
+              <Save className="h-3.5 w-3.5" />
+            )}
+            {savedFlash ? t('Guardado') : t('Guardar')}
+          </button>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-on-primary transition-colors hover:opacity-90 disabled:opacity-50"
-        >
-          {saving ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : savedFlash ? (
-            <Check className="h-3.5 w-3.5" />
-          ) : (
-            <Save className="h-3.5 w-3.5" />
-          )}
-          {savedFlash ? t('Guardado') : t('Guardar')}
-        </button>
+        {filledCount > 0 && (
+          <p className="mt-3 text-[11px] font-medium text-muted tabular-nums">
+            {filledCount} / {LOCI.length} {t('loci con datos')}
+          </p>
+        )}
       </div>
 
       {error && (
-        <div className="rounded-lg bg-[color:var(--error)]/10 px-4 py-2 text-[13px] text-[color:var(--error)]">
+        <div className="flex items-center gap-2.5 rounded-xl border border-red-500/30 bg-red-500/[0.06] px-4 py-2.5 text-[13px] text-red-600">
+          <AlertCircle className="h-4 w-4 flex-shrink-0" />
           {error}
         </div>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {LOCI.map((locus) => {
           const current = genotypes.get(locus.code)
           const a1 = current?.allele1 || ''
           const a2 = current?.allele2 || ''
           const hasData = !!a1 && !!a2
+          const tone = CATEGORY_TONE[locus.category] || 'var(--brand)'
+          const isCritical = !!locus.notes && locus.notes.includes('⚠️')
 
           return (
             <div
               key={locus.code}
-              className={`rounded-xl border p-4 transition-colors ${
-                hasData ? 'border-hairline bg-canvas' : 'border-hairline-soft bg-surface-soft'
+              className={`rounded-2xl border p-3.5 transition ${
+                hasData ? 'border-hairline bg-canvas' : 'border-hairline-soft bg-surface-soft/60'
               }`}
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-[14.5px] font-semibold text-ink">{locus.name}</h3>
-                    <span className="rounded bg-surface-card px-1.5 py-0.5 text-[10.5px] font-medium uppercase tracking-wider text-muted">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-[14px] font-semibold leading-tight text-ink">{locus.name}</h3>
+                    <span
+                      className="rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                      style={{ backgroundColor: tone + '1a', color: tone }}
+                    >
                       {locus.category}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-[12.5px] text-body">{locus.description}</p>
+                  <p className="mt-1 text-[12.5px] leading-snug text-body">{locus.description}</p>
                   {locus.notes && (
-                    <p className="mt-1.5 text-[11.5px] text-muted italic">{locus.notes}</p>
+                    <p className={`mt-1.5 text-[11.5px] leading-snug ${isCritical ? 'font-medium text-red-600' : 'italic text-muted'}`}>{locus.notes}</p>
                   )}
                 </div>
 
+                {/* Selectores de alelos — par a1/a2 en una tarjetita compacta */}
                 <div className="flex items-center gap-1.5">
-                  <select
-                    value={a1}
-                    onChange={(e) => handleChange(locus.code, 1, e.target.value)}
-                    className="rounded-lg border border-hairline bg-canvas px-2 py-1.5 text-[13px] text-ink focus:border-ink focus:outline-none"
-                  >
-                    <option value="">—</option>
-                    {locus.alleles.map((al) => (
-                      <option key={al.code} value={al.code}>
-                        {al.code}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="text-muted">/</span>
-                  <select
-                    value={a2}
-                    onChange={(e) => handleChange(locus.code, 2, e.target.value)}
-                    className="rounded-lg border border-hairline bg-canvas px-2 py-1.5 text-[13px] text-ink focus:border-ink focus:outline-none"
-                  >
-                    <option value="">—</option>
-                    {locus.alleles.map((al) => (
-                      <option key={al.code} value={al.code}>
-                        {al.code}
-                      </option>
-                    ))}
-                  </select>
+                  <div className={`flex items-center gap-1 rounded-xl border px-1.5 py-1 ${hasData ? 'border-hairline bg-surface-soft' : 'border-hairline-soft bg-canvas'}`}>
+                    <select
+                      value={a1}
+                      onChange={(e) => handleChange(locus.code, 1, e.target.value)}
+                      className="rounded-lg border-0 bg-transparent px-1.5 py-1 text-[13px] font-medium text-ink focus:outline-none focus:ring-0"
+                    >
+                      <option value="">—</option>
+                      {locus.alleles.map((al) => (
+                        <option key={al.code} value={al.code}>
+                          {al.code}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="text-[12px] text-muted">/</span>
+                    <select
+                      value={a2}
+                      onChange={(e) => handleChange(locus.code, 2, e.target.value)}
+                      className="rounded-lg border-0 bg-transparent px-1.5 py-1 text-[13px] font-medium text-ink focus:outline-none focus:ring-0"
+                    >
+                      <option value="">—</option>
+                      {locus.alleles.map((al) => (
+                        <option key={al.code} value={al.code}>
+                          {al.code}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   {hasData && (
                     <button
                       onClick={() => handleClear(locus.code)}
-                      className="ml-1 text-[11px] text-muted hover:text-ink"
+                      className="text-[11px] text-muted transition hover:text-ink"
                     >
                       {t('Borrar')}
                     </button>
@@ -311,7 +354,7 @@ function DnaEditor({ dogId, initialGenotypes }: { dogId: string; initialGenotype
         })}
       </div>
 
-      <div className="rounded-lg border border-dashed border-hairline bg-surface-soft px-4 py-3 text-[12.5px] text-muted">
+      <div className="rounded-xl border border-dashed border-hairline bg-surface-soft/40 px-4 py-3 text-[12px] leading-snug text-muted">
         💡 {t('Los datos DNA tienen prioridad sobre la observación visual en el cálculo del forecast.')}
       </div>
     </div>

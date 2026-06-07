@@ -281,7 +281,7 @@ export default function LittersPageClient({
         <div className="space-y-2">
           <button
             onClick={openAdd}
-            className="group flex w-full cursor-pointer items-center gap-3 rounded-xl border border-dashed border-hairline bg-surface-soft p-3 transition-colors hover:bg-surface-card sm:p-4"
+            className="group flex w-full cursor-pointer items-center gap-3 rounded-xl border border-dashed border-hairline bg-surface-soft px-3 py-5 transition-colors hover:bg-surface-card sm:px-4"
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-hairline bg-canvas transition-colors group-hover:border-ink group-hover:bg-ink">
               <Plus className="h-5 w-5 text-muted transition-colors group-hover:text-on-primary" />

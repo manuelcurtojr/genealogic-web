@@ -180,6 +180,7 @@ export const content4Repro: Record<string, Record<string, string>> = {
     'Genotipo DNA (avanzado)': 'DNA genotype (advanced)',
     'Genotipo confirmado por DNA': 'DNA-confirmed genotype',
     'Rellena solo si tienes resultados de Embark, Wisdom Panel u otro test genético.': 'Only fill this in if you have results from Embark, Wisdom Panel or another genetic test.',
+    'loci con datos': 'loci with data',
     'Guardado': 'Saved',
     'Guardar': 'Save',
     'Error al guardar': 'Error saving',
@@ -188,6 +189,7 @@ export const content4Repro: Record<string, Record<string, string>> = {
 
     // ─── color-observation-form ───
     'Color y aspecto visible': 'Color and visible appearance',
+    'Lo más común. Indica lo que ves; inferimos los alelos automáticamente.': 'The most common option. Tell us what you see; we infer the alleles automatically.',
     'Color principal': 'Main color',
     '· estándar': '· standard',
     'Ver solo estándar': 'Show standard only',

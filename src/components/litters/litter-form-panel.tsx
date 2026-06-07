@@ -5,7 +5,7 @@ import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { kennelRosterOrFilter } from '@/lib/dogs/roster'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, Lock, Calendar, Heart, PawPrint, Plus, Dog } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, Lock, Calendar, Heart, PawPrint, Plus, Dog, Dna, GitBranch, Activity, Globe } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import { Portal } from '@/components/ui/portal'
 import Link from 'next/link'
@@ -21,9 +21,9 @@ interface LitterFormPanelProps {
 }
 
 const STATUSES = [
-  { value: 'planned', label: 'Solo Planificada', desc: 'Aun no se ha realizado el cruce.', icon: Calendar, color: '#3498db' },
-  { value: 'mated', label: 'Cruce Realizado', desc: 'A la espera de confirmacion / parto.', icon: Heart, color: '#f39c12' },
-  { value: 'born', label: 'Ya han nacido!', desc: 'Tengo la fecha y el numero de crias.', icon: PawPrint, color: '#27ae60' },
+  { value: 'planned', label: 'Solo Planificada', desc: 'Aun no se ha realizado el cruce.', icon: Calendar },
+  { value: 'mated', label: 'Cruce Realizado', desc: 'A la espera de confirmacion / parto.', icon: Heart },
+  { value: 'born', label: 'Ya han nacido!', desc: 'Tengo la fecha y el numero de crias.', icon: PawPrint },
 ]
 
 export default function LitterFormPanel({ open, onClose, editLitterId, userId, onAddPuppy }: LitterFormPanelProps) {
@@ -157,23 +157,28 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
       <div className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
 
       <div
-        className={`fixed top-0 right-0 h-dvh w-full sm:max-w-lg z-[70] bg-white border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
+        className={`fixed top-0 right-0 h-dvh w-full sm:max-w-lg z-[70] bg-canvas border-l border-hairline shadow-[-12px_0_32px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col overflow-x-hidden ${open ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}
         style={{ paddingTop: 'var(--safe-area-top)', paddingBottom: 'var(--safe-area-bottom)' }}
       >
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
-          <h2 className="text-base sm:text-lg font-semibold">{isEdit ? t('Editar camada') : t('Nueva camada')}</h2>
-          <button onClick={onClose} className="text-muted hover:text-ink transition"><X className="w-5 h-5" /></button>
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-hairline flex-shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="hidden sm:flex h-9 w-9 items-center justify-center rounded-xl bg-ink flex-shrink-0">
+              <PawPrint className="h-[18px] w-[18px] text-on-primary" />
+            </div>
+            <h2 className="truncate text-base sm:text-lg font-semibold tracking-[-0.01em] text-ink">{isEdit ? t('Editar camada') : t('Nueva camada')}</h2>
+          </div>
+          <button onClick={onClose} className="text-muted hover:text-ink transition p-1.5 -mr-1 rounded-lg hover:bg-surface-soft flex-shrink-0" aria-label={t('Cerrar')}><X className="w-5 h-5" /></button>
         </div>
 
         {dataLoading ? (
           <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-muted" /></div>
         ) : (
-          <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-5">
-            {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
+          <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden overscroll-contain p-4 sm:p-6 space-y-6">
+            {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-500">{error}</div>}
 
             {/* Breed — searchable like header */}
-            <div>
-              <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">{t('Raza')}</h3>
+            <Section icon={Dna} title={t('Raza')}>
               <DogSearch
                 label={t('Raza')}
                 items={breeds.map(b => ({ id: b.id, name: b.name, image: null }))}
@@ -181,20 +186,21 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                 onChange={v => { set('breed_id', v); set('father_id', ''); set('mother_id', '') }}
                 placeholder={t('Buscar raza...')}
               />
-            </div>
+            </Section>
 
             {/* Parents */}
-            <div>
-              <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">
-                {t('Padres')} {isEdit && <span className="text-muted normal-case">{t('(no editables)')}</span>}
-              </h3>
+            <Section
+              icon={GitBranch}
+              title={t('Padres')}
+              hint={isEdit ? t('(no editables)') : undefined}
+            >
               {isEdit ? (
-                <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <LockedField label={t('Padre')} dogs={maleDogs} value={form.father_id} sex="male" />
                   <LockedField label={t('Madre')} dogs={femaleDogs} value={form.mother_id} sex="female" />
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <DogSearch
                     label={t('Padre')}
                     items={filteredMales.map(d => ({ id: d.id, name: d.name, image: d.thumbnail_url }))}
@@ -213,11 +219,10 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                   />
                 </div>
               )}
-            </div>
+            </Section>
 
             {/* Status — 3 cards with inline fields */}
-            <div>
-              <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">{t('Estado actual')}</h3>
+            <Section icon={Activity} title={t('Estado actual')}>
               <div className="space-y-2">
                 {STATUSES.map(s => {
                   const Icon = s.icon
@@ -225,47 +230,38 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                   return (
                     <div key={s.value}>
                       <button type="button" onClick={() => set('status', s.value)}
-                        className={`w-full text-left flex items-center gap-3 p-3 rounded-lg border transition ${
-                          active ? 'border-ink bg-surface-soft' : 'border-hairline bg-canvas hover:bg-surface-soft'
+                        className={`w-full text-left flex items-center gap-3 rounded-xl border p-3 transition ${
+                          active ? 'border-[var(--brand)] bg-[var(--brand-soft)]' : 'border-hairline bg-canvas hover:border-ink/20 hover:bg-surface-soft'
                         }`}>
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? 'bg-surface-card' : 'bg-surface-card'}`}>
-                          <Icon className="w-5 h-5" style={{ color: active ? '#fb923c' : s.color }} />
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-lg flex-shrink-0 transition ${active ? 'bg-[var(--brand)] text-white' : 'bg-surface-card text-muted'}`}>
+                          <Icon className="h-4 w-4" />
                         </div>
-                        <div>
-                          <p className={`text-sm font-semibold ${active ? 'text-ink' : 'text-ink'}`}>{t(s.label)}</p>
-                          <p className="text-xs text-muted">{t(s.desc)}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[13.5px] font-semibold text-ink">{t(s.label)}</p>
+                          <p className="text-[11.5px] text-muted leading-snug">{t(s.desc)}</p>
                         </div>
+                        <span className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border transition ${active ? 'border-[var(--brand)] bg-[var(--brand)]' : 'border-hairline'}`}>
+                          {active && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                        </span>
                       </button>
 
                       {/* Mated fields — inline below its card */}
                       {active && s.value === 'mated' && (
                         <div className="mt-2 ml-4 pl-4 border-l-2 border-hairline space-y-3 pb-1">
-                          <div>
-                            <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Fecha del cruce')}</label>
-                            <input type="date" value={form.mating_date} onChange={e => set('mating_date', e.target.value)}
-                              className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition" />
-                          </div>
+                          <FieldDate label={t('Fecha del cruce')} value={form.mating_date} onChange={v => set('mating_date', v)} />
                         </div>
                       )}
 
                       {/* Born fields — inline below its card */}
                       {active && s.value === 'born' && (
                         <div className="mt-2 ml-4 pl-4 border-l-2 border-hairline space-y-3 pb-1">
-                          <div>
-                            <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Fecha del cruce')}</label>
-                            <input type="date" value={form.mating_date} onChange={e => set('mating_date', e.target.value)}
-                              className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
+                          <FieldDate label={t('Fecha del cruce')} value={form.mating_date} onChange={v => set('mating_date', v)} />
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <FieldDate label={t('Nacimiento')} value={form.birth_date} onChange={v => set('birth_date', v)} />
                             <div>
-                              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Nacimiento')}</label>
-                              <input type="date" value={form.birth_date} onChange={e => set('birth_date', e.target.value)}
-                                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition" />
-                            </div>
-                            <div>
-                              <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{t('Cachorros')}</label>
+                              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">{t('Cachorros')}</label>
                               <input type="number" min="0" value={form.puppy_count} onChange={e => set('puppy_count', e.target.value)}
-                                className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink focus:border-ink focus:outline-none transition" />
+                                className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-base sm:text-sm text-ink transition focus:border-ink focus:outline-none" />
                             </div>
                           </div>
                         </div>
@@ -274,60 +270,67 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
                   )
                 })}
               </div>
-            </div>
+            </Section>
 
             {/* Visibility */}
-            <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-lg p-3">
-              <div>
-                <p className="text-sm font-medium">{t('Camada publica')}</p>
-                <p className="text-xs text-muted">{t('Visible para otros usuarios')}</p>
+            <Section icon={Globe} title={t('Camada publica')}>
+              <div className={`flex items-center gap-3 rounded-xl border bg-canvas p-3.5 transition-colors ${form.is_public ? 'border-ink/15' : 'border-hairline'}`}>
+                <div className={`flex h-9 w-9 items-center justify-center rounded-full flex-shrink-0 ${form.is_public ? 'bg-emerald-50 text-emerald-600' : 'bg-surface-card text-muted'}`}>
+                  <Globe className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13.5px] font-medium text-ink">{t('Camada publica')}</p>
+                  <p className="text-[11.5px] text-muted leading-snug">{t('Visible para otros usuarios')}</p>
+                </div>
+                <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} color="bg-emerald-500" />
               </div>
-              <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
-            </div>
+            </Section>
 
             {/* Puppies section (edit mode only) */}
             {isEdit && (
-              <div>
-                <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">
-                  {t('Cachorros')} {puppies.length > 0 && <span className="text-muted">({puppies.length})</span>}
-                </h3>
+              <Section
+                icon={Dog}
+                title={t('Cachorros')}
+                hint={puppies.length > 0 ? `(${puppies.length})` : undefined}
+              >
                 {puppies.length > 0 ? (
                   <div className="space-y-1.5 mb-3">
                     {puppies.map((pup: any) => {
-                      const sexColor = pup.sex === 'male' ? '#017DFA' : '#e84393'
+                      const sexColor = pup.sex === 'male' ? BRAND.male : BRAND.female
                       return (
                         <Link key={pup.id} href={`/dogs/${pup.slug || pup.id}`}
-                          className="flex items-center gap-2.5 bg-surface-card border border-hairline rounded-lg px-3 py-2 hover:border-white/15 transition">
-                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-surface-card flex-shrink-0 border" style={{ borderColor: sexColor }}>
-                            {pup.thumbnail_url ? <Img w={200} src={pup.thumbnail_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Dog className="w-4 h-4 text-muted" /></div>}
+                          className="flex items-center gap-2.5 rounded-xl border border-hairline bg-canvas px-3 py-2 transition hover:border-ink/20 hover:bg-surface-soft">
+                          <div className="h-8 w-8 rounded-full overflow-hidden bg-surface-card flex-shrink-0 border-2" style={{ borderColor: sexColor }}>
+                            {pup.thumbnail_url ? <Img w={200} src={pup.thumbnail_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center"><Dog className="h-4 w-4 text-muted" /></div>}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold truncate">{pup.name}</p>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[13px] font-medium text-ink">{pup.name}</p>
                           </div>
-                          <span className="text-[10px]" style={{ color: sexColor }}>{pup.sex === 'male' ? '♂' : '♀'}</span>
+                          <span className="text-xs flex-shrink-0" style={{ color: sexColor }}>{pup.sex === 'male' ? '♂' : '♀'}</span>
                         </Link>
                       )
                     })}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted mb-3">{t('No hay cachorros asignados a esta camada')}</p>
+                  <p className="text-[12px] text-muted mb-3">{t('No hay cachorros asignados a esta camada')}</p>
                 )}
                 <button
                   type="button"
                   onClick={() => onAddPuppy?.(editLitterId!, form.breed_id || null, form.father_id || null, form.mother_id || null, form.birth_date || null)}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-hairline text-xs text-muted hover:text-ink hover:border-hairline transition"
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-hairline py-2.5 text-[12.5px] font-medium text-muted transition hover:border-ink/30 hover:text-ink hover:bg-surface-soft"
                 >
-                  <Plus className="w-3.5 h-3.5" /> {t('Añadir cachorro')}
+                  <Plus className="h-3.5 w-3.5" /> {t('Añadir cachorro')}
                 </button>
-              </div>
+              </Section>
             )}
           </div>
         )}
 
+        {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-hairline flex-shrink-0">
           <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-body hover:text-ink hover:bg-surface-card transition">{t('Cancelar')}</button>
           <button onClick={handleSubmit} disabled={loading || dataLoading}
-            className="bg-ink text-on-primary hover:opacity-90 font-semibold px-6 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
+            className="bg-ink text-on-primary hover:opacity-90 font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm">
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {loading ? t('Guardando...') : isEdit ? t('Guardar cambios') : t('Crear camada')}
           </button>
@@ -335,6 +338,33 @@ export default function LitterFormPanel({ open, onClose, editLitterId, userId, o
       </div>
       </>
     </Portal>
+  )
+}
+
+/* --- Section header (matches dog-form-panel) --- */
+function Section({ icon: Icon, title, hint, children }: { icon: React.ElementType; title: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="mb-3 flex items-center gap-2">
+        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-surface-card text-muted flex-shrink-0">
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted">{title}</h3>
+        {hint && <span className="text-[11px] font-normal normal-case text-muted">{hint}</span>}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+/* --- Date field (matches Field/Salud inputs) --- */
+function FieldDate({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">{label}</label>
+      <input type="date" value={value} onChange={e => onChange(e.target.value)}
+        className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-base sm:text-sm text-ink transition focus:border-ink focus:outline-none" />
+    </div>
   )
 }
 
@@ -358,25 +388,26 @@ function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
   useEffect(() => { if (open && inputRef.current) inputRef.current.focus() }, [open])
 
   return (
-    <div ref={ref} className="relative">
-      <label className="text-xs font-semibold text-body uppercase tracking-wider mb-1 block">{label}</label>
+    <div ref={ref} className="relative min-w-0">
+      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">{label}</label>
       <div onClick={() => { setOpen(!open); setSearch('') }}
-        className={`w-full bg-canvas border rounded-lg px-3 py-2.5 text-[14px] flex items-center gap-2 cursor-pointer transition-colors hover:bg-surface-soft ${open ? 'border-ink ring-1 ring-ink' : 'border-hairline'}`}>
+        className={`flex w-full cursor-pointer items-center gap-2 rounded-lg border bg-canvas px-3 py-2.5 text-[14px] transition hover:border-ink/30 ${open ? 'border-ink' : 'border-hairline'}`}>
         {selected ? (
           <>
             {selected.image && (
-              <div className="w-6 h-6 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor || BRAND.primary }}>
-                <Img w={96} src={selected.image} alt="" className="w-full h-full object-cover" />
+              <div className="h-6 w-6 flex-shrink-0 overflow-hidden rounded-full border-2 bg-surface-card" style={{ borderColor: sexColor || BRAND.primary }}>
+                <Img w={96} src={selected.image} alt="" className="h-full w-full object-cover" />
               </div>
             )}
+            {sexColor && !selected.image && <div className="h-6 w-1 flex-shrink-0 rounded-full" style={{ backgroundColor: sexColor }} />}
             <span className="flex-1 truncate text-ink">{selected.name}</span>
           </>
         ) : (
-          <span className="text-muted flex-1">{placeholder}</span>
+          <span className="flex-1 truncate text-muted">{placeholder}</span>
         )}
         <div className="flex items-center gap-1 flex-shrink-0">
-          {value && <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="text-muted hover:text-body"><X className="w-3.5 h-3.5" /></span>}
-          <ChevronDown className={`w-4 h-4 text-muted transition ${open ? 'rotate-180' : ''}`} />
+          {value && <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="text-muted hover:text-body"><X className="h-3.5 w-3.5" /></span>}
+          <ChevronDown className={`h-4 w-4 text-muted transition ${open ? 'rotate-180' : ''}`} />
         </div>
       </div>
       {open && (
@@ -389,7 +420,7 @@ function DogSearch({ label, items, value, onChange, placeholder, sexColor }: {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder={t('Buscar...')}
-                className="w-full rounded border border-hairline bg-canvas py-1.5 pl-8 pr-3 text-base sm:text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink"
+                className="w-full rounded-lg border border-hairline bg-canvas py-2 pl-8 pr-3 text-base sm:text-[13px] text-ink placeholder:text-muted focus:border-ink focus:outline-none"
               />
             </div>
           </div>
@@ -433,8 +464,8 @@ function LockedField({ label, dogs, value, sex }: { label: string; dogs: any[]; 
   const dog = dogs.find(d => d.id === value)
   const sexColor = sex === 'male' ? BRAND.male : BRAND.female
   return (
-    <div>
-      <label className="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{label}</label>
+    <div className="min-w-0">
+      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">{label}</label>
       <div className="flex w-full cursor-not-allowed items-center gap-2 rounded-lg border border-hairline bg-surface-soft px-3 py-2.5 text-[14px]">
         {dog ? (
           <>
@@ -444,10 +475,10 @@ function LockedField({ label, dogs, value, sex }: { label: string; dogs: any[]; 
                 : <div className="flex h-full w-full items-center justify-center text-[10px] text-muted">{sex === 'male' ? '♂' : '♀'}</div>
               }
             </div>
-            <span className="truncate text-ink">{dog.name}</span>
+            <span className="flex-1 truncate text-ink">{dog.name}</span>
           </>
         ) : (
-          <span className="text-muted">{t('No asignado')}</span>
+          <span className="flex-1 truncate text-muted">{t('No asignado')}</span>
         )}
         <Lock className="ml-auto h-3.5 w-3.5 flex-shrink-0 text-muted" />
       </div>

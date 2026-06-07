@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Save, Loader2, Check, Palette, Info } from 'lucide-react'
+import { Save, Loader2, Check, Palette, Info, Sparkles } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import { inferGenotype, type ColorObservation } from '@/lib/genetics/inference'
 
@@ -112,18 +112,25 @@ export default function ColorObservationForm({
 
   return (
     <div className="space-y-5">
-      <div className="rounded-xl border border-hairline bg-canvas p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Palette className="h-4 w-4 text-muted" />
-            <h3 className="text-[14.5px] font-semibold text-ink">
-              {t('Color y aspecto visible')}
-            </h3>
+      <div className="rounded-2xl border border-hairline bg-canvas p-4">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div className="flex items-start gap-2.5">
+            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: 'var(--brand-soft)' }}>
+              <Palette className="h-4.5 w-4.5" style={{ color: 'var(--brand)' }} />
+            </span>
+            <div className="min-w-0">
+              <h3 className="text-[13.5px] font-semibold text-ink">
+                {t('Color y aspecto visible')}
+              </h3>
+              <p className="mt-0.5 text-[11.5px] leading-snug text-muted">
+                {t('Lo más común. Indica lo que ves; inferimos los alelos automáticamente.')}
+              </p>
+            </div>
           </div>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-on-primary transition-colors hover:opacity-90 disabled:opacity-50"
+            className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-ink px-3.5 py-2 text-[12.5px] font-semibold text-on-primary transition hover:opacity-90 disabled:opacity-50"
           >
             {saving ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -284,9 +291,14 @@ export default function ColorObservationForm({
       </div>
 
       {/* Preview de inferencia */}
-      <div className="rounded-xl border border-hairline bg-surface-soft p-5">
-        <h4 className="mb-3 text-[13px] font-semibold text-ink">{t('Genotipo inferido (preview)')}</h4>
-        <p className="mb-4 text-[12px] text-muted">
+      <div className="rounded-2xl border border-hairline bg-surface-soft p-4">
+        <div className="mb-2.5 flex items-center gap-2.5">
+          <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-surface-card">
+            <Sparkles className="h-4.5 w-4.5 text-muted" />
+          </span>
+          <h4 className="text-[13.5px] font-semibold text-ink">{t('Genotipo inferido (preview)')}</h4>
+        </div>
+        <p className="mb-3.5 text-[12px] leading-snug text-muted">
           {t('A partir de lo que has indicado, estos son los alelos compatibles. "?" = desconocido. Si conoces el genotipo exacto desde un test DNA, edítalo en la pestaña "Genotipo DNA".')}
         </p>
         <div className="grid gap-2 sm:grid-cols-2">
@@ -296,25 +308,27 @@ export default function ColorObservationForm({
             return (
               <div
                 key={p.locus}
-                className="rounded-lg border border-hairline bg-canvas px-3 py-2"
+                className="rounded-xl border border-hairline bg-canvas px-3 py-2.5"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-[12px] font-medium text-muted">{t('Locus')} {p.locus}</span>
-                  <span className="font-mono text-[13.5px] font-semibold tabular-nums text-ink">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">{t('Locus')} {p.locus}</span>
+                  <span className="rounded-md bg-surface-card px-2 py-0.5 font-mono text-[13px] font-semibold tabular-nums text-ink">
                     {p.allele1.code}/{p.allele2.code}
                   </span>
                 </div>
                 {p.reasoning.length > 0 && (
-                  <p className="mt-1 text-[11px] italic text-muted">{p.reasoning[0]}</p>
+                  <p className="mt-1.5 text-[11px] italic leading-snug text-muted">{p.reasoning[0]}</p>
                 )}
               </div>
             )
           })}
         </div>
         {preview.every((p) => p.allele1.code === '?' && p.allele2.code === '?') && (
-          <p className="text-[12.5px] text-muted">
-            {t('Rellena el color principal y las características arriba para ver los alelos inferidos.')}
-          </p>
+          <div className="rounded-xl border border-dashed border-hairline bg-canvas px-4 py-6 text-center">
+            <p className="text-[12.5px] leading-snug text-muted">
+              {t('Rellena el color principal y las características arriba para ver los alelos inferidos.')}
+            </p>
+          </div>
         )}
       </div>
     </div>

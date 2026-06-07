@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { Loader2, AlertCircle } from 'lucide-react'
 import GenotypeEditor from '@/components/genetica/genotype-editor'
 import { useT } from '@/components/i18n/locale-provider'
 
@@ -125,7 +125,8 @@ export default function GeneticaTab({ dogId }: Props) {
 
   if (error) {
     return (
-      <div className="rounded-lg bg-[color:var(--error)]/10 px-4 py-3 text-[13px] text-[color:var(--error)]">
+      <div className="flex items-center gap-2.5 rounded-2xl border border-red-500/30 bg-red-500/[0.06] px-4 py-3.5 text-[13px] text-red-600">
+        <AlertCircle className="h-5 w-5 flex-shrink-0" />
         {error}
       </div>
     )
