@@ -5,7 +5,7 @@ import { Img } from '@/components/ui/img'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, ChevronRight, CreditCard, GitBranch, Weight, ImageIcon, Eye, EyeOff, Dog, Stethoscope, Trophy, Lock, Globe, Shield, Dna, Heart, History, ArrowRightLeft, Settings2, Sparkles, Info } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, ChevronRight, CreditCard, GitBranch, Weight, ImageIcon, Dog, Stethoscope, Trophy, Lock, Globe, Shield, Dna, Heart, History, ArrowRightLeft, Settings2, Sparkles, Info } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import { BRAND } from '@/lib/constants'
 import { formatDogName, extractPersonalName, type AffixFormat } from '@/lib/affix'
@@ -584,19 +584,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         )}
       </Section>
 
-      {/* Visibilidad — solo en creación (en edición se gestiona en "Gestión") */}
-      {!isEdit && (
-        <div className={`flex items-center gap-3 rounded-2xl border bg-canvas p-3.5 transition-colors ${form.is_public ? 'border-ink/15' : 'border-hairline'}`}>
-          <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${form.is_public ? 'bg-emerald-50 text-emerald-600' : 'bg-surface-card text-muted'}`}>
-            {form.is_public ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[13.5px] font-medium text-ink">{form.is_public ? t('Público') : t('Privado')}</p>
-            <p className="text-[11.5px] leading-snug text-muted">{form.is_public ? t('Visible para otros') : t('Solo tú')}</p>
-          </div>
-          <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} color="bg-emerald-500" />
-        </div>
-      )}
     </div>
   )
 
@@ -625,12 +612,9 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">{t('Visibilidad y estado')}</p>
         <div className="mt-3 space-y-2.5">
-          <ToggleCard icon={Globe} accent="emerald" title={t('Visible en tu criadero')}
-            desc={t('Aparece en la web pública de tu criadero.')} value={showInKennel}
+          <ToggleCard icon={Globe} accent="emerald" title={t('Mostrar en tu perfil de criadero')}
+            desc={t('La ficha del perro siempre es pública. Esto solo decide si aparece en TU perfil de criadero — útil si el propietario sube fotos que prefieres no mostrar.')} value={showInKennel}
             saving={savingField === 'show_in_kennel'} onChange={(v) => persistField('show_in_kennel', v)} />
-          <ToggleCard icon={Eye} accent="blue" title={t('Perfil público')}
-            desc={t('Visible en el directorio y el buscador de Genealogic.')} value={form.is_public}
-            saving={savingField === 'is_public'} onChange={(v) => persistField('is_public', v)} />
           <ToggleCard icon={Heart} accent="pink" title={t('Reproductor')} fill
             desc={t('Aparece en tu calendario reproductivo y en el catálogo de reproductores.')} value={isReproductive}
             saving={savingField === 'is_reproductive'} onChange={(v) => persistField('is_reproductive', v)} />
