@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { isIosUserAgent } from '@/lib/platform'
-import { Dog, Baby, PawPrint, Tag, Plus, Stethoscope, ArrowRight, Search, BookOpen, Store, Compass } from 'lucide-react'
+import { Dog, Baby, PawPrint, Tag, Plus, Stethoscope, ArrowRight, Search, BookOpen, Store, Compass, Bell, Syringe, Bug, Calendar, AlertCircle, Clock, CalendarClock } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import StatCard from '@/components/dashboard/stat-card'
 import DailyCheckIn from '@/components/dashboard/daily-checkin'
@@ -167,13 +167,21 @@ export default async function DashboardPage() {
           </h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Link href="/dogs" className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90">
-            <Plus className="h-4 w-4" /> {t('Perro')}
-          </Link>
-          {isBreeder && (
-            <Link href="/litters" className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft">
-              <Baby className="h-4 w-4" /> {t('Camada')}
-            </Link>
+          {isBreeder ? (
+            <>
+              <Link href="/dogs" className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90">
+                <Plus className="h-4 w-4" /> {t('Perro')}
+              </Link>
+              <Link href="/litters" className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft">
+                <Baby className="h-4 w-4" /> {t('Camada')}
+              </Link>
+            </>
+          ) : (
+            /* OWNER: CTA primario = abrir el popup de "Añadir perro" (no /dogs).
+               El AddDogButton se estiliza igual que el botón ink primario. */
+            <AddDogButton userId={user.id} className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-on-primary transition-colors hover:opacity-90">
+              <Plus className="h-4 w-4" /> {t('Añadir perro')}
+            </AddDogButton>
           )}
           <Link href="/search" className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft">
             <Search className="h-4 w-4" /> {t('Buscar')}
@@ -193,15 +201,17 @@ export default async function DashboardPage() {
           <StatCard icon={Baby} label={t('Camadas')} value={littersRes.count || 0} accentColor="#8b5cf6" sub={t('totales registradas')} href="/litters" />
         </section>
       ) : (
-        <section className="grid gap-4 sm:grid-cols-3">
+        /* OWNER KPIs — solo lo útil para un propietario: cuántos perros tiene y
+           cuántos recordatorios vet. tiene pendientes. Nada de métricas de cría
+           ("En venta", camadas) ni "Registros vet." (redundante con la agenda). */
+        <section className="grid gap-4 sm:grid-cols-2">
           <StatCard icon={Dog} label={t('Mis perros')} value={dogCount} accentColor="#fb923c" sub={t('en tu cuenta')} href="/dogs" />
-          <StatCard icon={Stethoscope} label={t('Registros vet.')} value={vetRes.count || 0} accentColor="#3b82f6" sub={t('historiales clínicos')} href="/calendar" />
-          <StatCard icon={Tag} label={t('En venta')} value={forSaleCount} accentColor="#34d399" sub={t('publicados')} href="/dogs?for_sale=1" />
+          <StatCard icon={Bell} label={t('Recordatorios pendientes')} value={(vetRemindersRes.data || []).length} accentColor="var(--brand)" sub={t('próximos 14 días')} href="/calendar" />
         </section>
       )}
 
       {/* Breeder: Active litters — Cal style con header h2 22px + lista en card canvas */}
-      {isBreeder ? (
+      {isBreeder && (
         <section>
           <div className="mb-5 flex items-end justify-between">
             <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">{t('Camadas activas')}</h2>
@@ -238,81 +248,70 @@ export default async function DashboardPage() {
             </div>
           )}
         </section>
-      ) : (
-        /* Owner view: feature cards Cal style con iconos pastel */
-        <section>
-          <h2 className="mb-5 text-[22px] font-semibold tracking-[-0.04em] text-ink">{t('Operativa')}</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              { icon: Dog, label: t('Mis perros'), desc: t('Gestiona el registro de tus perros y sus genealogías.'), color: '#fb923c', href: '/dogs' },
-              { icon: Search, label: t('Buscar perros'), desc: t('Explora el registro público de perros con genealogía verificable.'), color: '#8b5cf6', href: '/search' },
-              { icon: Stethoscope, label: t('Veterinario'), desc: t('Historial clínico y recordatorios de vacunas para cada perro.'), color: '#3b82f6', href: '/calendar' },
-            ].map(item => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="group block rounded-xl bg-surface-card p-6 transition-colors hover:bg-[#eaeaea]"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-canvas shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-                  <item.icon className="h-5 w-5" style={{ color: item.color }} />
-                </div>
-                <h3 className="mt-4 text-[16px] font-semibold tracking-[-0.02em] text-ink">{item.label}</h3>
-                <p className="mt-1.5 text-[13.5px] leading-[1.5] text-body">{item.desc}</p>
-              </Link>
-            ))}
-          </div>
-          {/* Rampa owner→criador SUTIL: una línea discreta, sin card grande
-              ni corona. No empuja a /pricing; presenta el producto B2B
-              (Genealogic Breeders) en /criadores para quien tenga criadero. */}
-          <p className="mt-5 text-[12.5px] text-muted">
-            {t('¿Tienes un criadero?')}{' '}
-            <Link
-              href="/criadores"
-              className="font-medium text-body hover:text-ink"
-            >
-              {t('Conoce Genealogic Breeders →')}
-            </Link>
-          </p>
-        </section>
       )}
 
-      {/* Vet reminders widget — próximos recordatorios de vacunas (Salud). */}
-      {(vetRemindersRes.data || []).length > 0 && (
-        <section>
-          <div className="mb-5 flex items-end justify-between">
-            <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">
-              {t('Próximos recordatorios vet.')}
-            </h2>
-            <Link href="/calendar" className="text-[13px] font-medium text-body hover:text-ink">
-              {t('Ver todos →')}
-            </Link>
-          </div>
-          <div className="overflow-hidden rounded-xl border border-hairline bg-canvas">
-            <ul className="divide-y divide-hairline-soft">
+      {/* Próximos recordatorios — agenda vet. con el MISMO lenguaje visual que la
+          pestaña Salud: icono+color por tipo, semáforo de estado (Vencido rojo /
+          Hoy·Pronto ámbar / futuro neutro) y fecha. Solo si hay recordatorios. */}
+      {(vetRemindersRes.data || []).length > 0 && (() => {
+        const todayISO = new Date().toISOString().split('T')[0]
+        const soonISO = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]
+        const reminderTypes: Record<string, { color: string; icon: React.ElementType }> = {
+          vaccine: { color: '#10B981', icon: Syringe },
+          deworming: { color: '#F59E0B', icon: Bug },
+          checkup: { color: '#3B82F6', icon: Stethoscope },
+          custom: { color: '#8B5CF6', icon: Calendar },
+        }
+        return (
+          <section>
+            <div className="mb-5 flex items-end justify-between">
+              <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">
+                {t('Próximos recordatorios')}
+              </h2>
+              <Link href="/calendar" className="text-[13px] font-medium text-body hover:text-ink">
+                {t('Ver todos →')}
+              </Link>
+            </div>
+            <div className="space-y-1.5">
               {(vetRemindersRes.data || []).map((r: any) => {
                 const dog = r.dog as any
-                const isOverdue = r.due_date < new Date().toISOString().split('T')[0]
-                const typeColors: Record<string, string> = { vaccine: '#34d399', deworming: '#f59e0b', checkup: '#3b82f6', custom: '#8b5cf6' }
-                const color = typeColors[r.type] || '#8b5cf6'
+                const conf = reminderTypes[r.type] || reminderTypes.custom
+                const Icon = conf.icon
+                const isOverdue = r.due_date < todayISO
+                const isDueToday = r.due_date === todayISO
+                const isSoon = !isOverdue && !isDueToday && r.due_date <= soonISO
+                // Semáforo: rojo (vencido), ámbar (hoy/pronto ≤14d), neutro (futuro).
+                const tone = isOverdue
+                  ? { box: 'border-red-500/30 bg-red-500/[0.06]', text: 'text-red-600', StateIcon: AlertCircle, state: t('Vencido') }
+                  : (isDueToday || isSoon)
+                    ? { box: 'border-amber-500/30 bg-amber-500/[0.07]', text: 'text-amber-700', StateIcon: Clock, state: isDueToday ? t('Hoy') : t('Pronto') }
+                    : { box: 'border-hairline bg-canvas', text: 'text-muted', StateIcon: CalendarClock, state: '' }
+                const StateIcon = tone.StateIcon
                 return (
-                  <li key={r.id} className="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-surface-soft">
-                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: color }}>
-                      <Stethoscope className="h-4 w-4 text-white" />
+                  <Link
+                    key={r.id}
+                    href="/calendar"
+                    className={`flex items-center gap-3 rounded-xl border p-3 transition hover:border-ink/20 ${tone.box}`}
+                  >
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg" style={{ background: conf.color + '15' }}>
+                      <Icon className="h-4 w-4" style={{ color: conf.color }} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[14px] font-medium text-ink truncate">{r.title}</p>
-                      <p className="text-[12.5px] text-muted">{dog?.name || '?'}</p>
+                      <p className={`flex items-center gap-1 text-[11.5px] ${tone.text}`}>
+                        <StateIcon className="h-2.5 w-2.5 flex-shrink-0" />
+                        {tone.state ? `${tone.state} · ` : ''}
+                        {dog?.name ? `${dog.name} · ` : ''}
+                        {new Date(r.due_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                      </p>
                     </div>
-                    <span className={`text-[12px] font-medium tabular-nums ${isOverdue ? 'text-[color:var(--error)]' : 'text-muted'}`}>
-                      {new Date(r.due_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
-                    </span>
-                  </li>
+                  </Link>
                 )
               })}
-            </ul>
-          </div>
-        </section>
-      )}
+            </div>
+          </section>
+        )
+      })()}
 
       {/* Explorar Genealogic — siempre visible. La idea es que el dashboard
           NO sea solo "tu data" sino también la puerta a todo el contenido
@@ -322,14 +321,14 @@ export default async function DashboardPage() {
       <section>
         <div className="mb-5 flex items-end justify-between">
           <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink flex items-center gap-2">
-            <Compass className="h-5 w-5 text-[#FE6620]" /> {t('Explorar')} Genealogic
+            <Compass className="h-5 w-5 text-[color:var(--brand)]" /> {t('Explorar')} Genealogic
           </h2>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <ExploreCard
             href="/razas"
             icon={Tag}
-            color="#FE6620"
+            color="#D74709"
             title={t('Razas')}
             desc={t('Estándares raciales con historia, foto y catálogo.')}
             count={breedsCount > 0 ? `${breedsCount.toLocaleString('es-ES')} razas` : t('Ver todas')}
@@ -361,10 +360,11 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {/* Recent dogs */}
+      {/* Mis perros (owner) / Perros recientes (breeder) — para el propietario
+          ESTE es el contenido principal: la rejilla de sus perros. */}
       <section>
         <div className="mb-5 flex items-end justify-between">
-          <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">{t('Perros recientes')}</h2>
+          <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">{isBreeder ? t('Perros recientes') : t('Mis perros')}</h2>
           <Link href="/dogs" className="text-[13px] font-medium text-body hover:text-ink">
             {t('Ver todos →')}
           </Link>
@@ -404,6 +404,18 @@ export default async function DashboardPage() {
           </div>
         )}
       </section>
+
+      {/* Rampa owner→criador SUTIL: una línea discreta al pie. No empuja a
+          /pricing; presenta el producto B2B (Genealogic Breeders) en /criadores
+          para quien tenga criadero. Solo para propietarios (un criador ya lo es). */}
+      {!isBreeder && (
+        <p className="border-t border-hairline pt-6 text-center text-[12.5px] text-muted">
+          {t('¿Tienes un criadero?')}{' '}
+          <Link href="/criadores" className="font-medium text-body hover:text-ink">
+            {t('Conoce Genealogic Breeders →')}
+          </Link>
+        </p>
+      )}
     </div>
   )
 }
