@@ -447,13 +447,13 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
               )}
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">{t('Sexo *')}</label>
-              <div className="flex gap-2">
+              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">{t('Sexo *')}</label>
+              <div className="grid grid-cols-2 gap-2">
                 {(['male', 'female'] as const).map(s => (
                   <button key={s} type="button" onClick={() => set('sex', s)}
-                    className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border transition ${form.sex === s
-                      ? (s === 'male' ? 'border-blue-400 bg-blue-400/10 text-blue-400' : 'border-pink-400 bg-pink-400/10 text-pink-400')
-                      : 'border-hairline bg-surface-card text-body hover:bg-surface-card'}`}>
+                    className={`rounded-lg border py-2.5 text-[12.5px] font-semibold transition ${form.sex === s
+                      ? (s === 'male' ? 'border-blue-400 bg-blue-400/10 text-blue-500' : 'border-pink-400 bg-pink-400/10 text-pink-500')
+                      : 'border-hairline bg-canvas text-body hover:border-ink/30 hover:text-ink'}`}>
                     {s === 'male' ? `♂ ${t('Macho')}` : `♀ ${t('Hembra')}`}
                   </button>
                 ))}
@@ -515,9 +515,9 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
                 elegirlo, el nombre se reescribe con SU afijo (de/del/di/von…),
                 quitando antes cualquier afijo previo para no apilar. */}
             <div>
-              <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1 block">{t('Criador original')}</label>
+              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">{t('Criador original')}</label>
               {selBreeder ? (
-                <div className="flex items-center gap-2 rounded-lg border border-hairline bg-surface-card px-3 py-2">
+                <div className="flex items-center gap-2.5 rounded-lg border border-hairline bg-canvas px-3 py-2.5">
                   {selBreeder.logo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <Img w={96} src={selBreeder.logo_url} alt="" className="h-7 w-7 rounded object-cover" />
@@ -580,15 +580,15 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
 
       {/* Visibilidad — solo en creación (en edición se gestiona en "Gestión") */}
       {!isEdit && (
-        <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            {form.is_public ? <Eye className="w-5 h-5 text-green-400" /> : <EyeOff className="w-5 h-5 text-muted" />}
-            <div>
-              <p className="text-sm font-medium">{form.is_public ? t('Público') : t('Privado')}</p>
-              <p className="text-xs text-muted">{form.is_public ? t('Visible para otros') : t('Solo tú')}</p>
-            </div>
+        <div className={`flex items-center gap-3 rounded-2xl border bg-canvas p-3.5 transition-colors ${form.is_public ? 'border-ink/15' : 'border-hairline'}`}>
+          <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${form.is_public ? 'bg-emerald-50 text-emerald-600' : 'bg-surface-card text-muted'}`}>
+            {form.is_public ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
           </div>
-          <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
+          <div className="min-w-0 flex-1">
+            <p className="text-[13.5px] font-medium text-ink">{form.is_public ? t('Público') : t('Privado')}</p>
+            <p className="text-[11.5px] leading-snug text-muted">{form.is_public ? t('Visible para otros') : t('Solo tú')}</p>
+          </div>
+          <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} color="bg-emerald-500" />
         </div>
       )}
     </div>
@@ -615,7 +615,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
 
       {/* Visibilidad y estado */}
       <div>
-        <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">{t('Visibilidad y estado')}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">{t('Visibilidad y estado')}</p>
         <div className="mt-3 space-y-2.5">
           <ToggleCard icon={Globe} accent="emerald" title={t('Visible en tu criadero')}
             desc={t('Aparece en la web pública de tu criadero.')} value={showInKennel}
@@ -631,7 +631,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
 
       {/* Acciones */}
       <div>
-        <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">{t('Acciones')}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">{t('Acciones')}</p>
         <div className="mt-3 space-y-2.5">
           <ActionCard icon={GitBranch} accent="violet" title={t('Editar genealogía')}
             desc={t('Añade o cambia padres y construye el árbol genealógico.')} cta={t('Abrir')}
@@ -995,9 +995,11 @@ function CreateModeCard({ active, icon: Icon, title, subtitle, onClick }: { acti
 function Section({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3">
-        <Icon className="w-4 h-4 text-ink" />
-        <h3 className="text-sm font-semibold">{title}</h3>
+      <div className="mb-3 flex items-center gap-2">
+        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-surface-card text-muted">
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted">{title}</h3>
       </div>
       {children}
     </div>
@@ -1007,9 +1009,9 @@ function Section({ icon: Icon, title, children }: { icon: React.ElementType; tit
 function Field({ label, value, onChange, type = 'text', placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
   return (
     <div>
-      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">{label}</label>
+      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none transition" />
+        className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted transition focus:border-ink focus:outline-none" />
     </div>
   )
 }
@@ -1026,17 +1028,17 @@ function SelectCard({ label, name, image, sexColor, onClear, selector, disabled 
 
   return (
     <div ref={ref} className="relative">
-      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">{label}</label>
+      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">{label}</label>
       <div onClick={() => { if (!disabled) setOpen(!open) }}
-        className={`w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 flex items-center gap-3 cursor-pointer transition ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:border-hairline'} ${open ? 'border-ink' : ''}`}>
+        className={`flex w-full cursor-pointer items-center gap-3 rounded-lg border bg-canvas px-3 py-2.5 transition ${disabled ? 'cursor-not-allowed opacity-40' : 'hover:border-ink/30'} ${open ? 'border-ink' : 'border-hairline'}`}>
         {image && (
-          <div className="w-8 h-8 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor || 'rgba(255,255,255,0.1)' }}>
-            <Img w={96} src={image} alt="" className="w-full h-full object-cover" />
+          <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full border-2 bg-surface-card" style={{ borderColor: sexColor || 'rgba(255,255,255,0.1)' }}>
+            <Img w={96} src={image} alt="" className="h-full w-full object-cover" />
           </div>
         )}
-        {sexColor && !image && <div className="w-1 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: sexColor }} />}
-        <span className={`flex-1 text-[14px] `}>{name || t('Seleccionar...')}</span>
-        <ChevronDown className={`w-4 h-4 text-muted transition ${open ? 'rotate-180' : ''}`} />
+        {sexColor && !image && <div className="h-6 w-1 flex-shrink-0 rounded-full" style={{ backgroundColor: sexColor }} />}
+        <span className={`flex-1 text-[14px] ${name ? 'text-ink' : 'text-muted'}`}>{name || t('Seleccionar...')}</span>
+        <ChevronDown className={`h-4 w-4 flex-shrink-0 text-muted transition ${open ? 'rotate-180' : ''}`} />
       </div>
       {open && !disabled && (
         <div className="absolute z-[80] top-full mt-1 left-0 right-0 bg-canvas border border-hairline rounded-lg shadow-lg max-h-56 overflow-hidden">
@@ -1061,7 +1063,7 @@ function SearchList({ items, value, onChange, placeholder, sexColor }: { items: 
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
           <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)} placeholder={placeholder || t('Buscar...')}
-            className="w-full bg-surface-card border border-hairline rounded-lg pl-8 pr-3 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
+            className="w-full rounded-lg border border-hairline bg-canvas pl-8 pr-3 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none" />
         </div>
       </div>
       <div className="overflow-y-auto max-h-44">
@@ -1095,9 +1097,9 @@ function DropdownSearch({ label, items, value, onChange, placeholder }: { label:
 
   return (
     <div ref={ref} className="relative">
-      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">{label}</label>
+      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">{label}</label>
       <div onClick={() => setOpen(!open)}
-        className={`w-full bg-surface-card border rounded-lg px-3 py-2.5 text-sm flex items-center gap-2 cursor-pointer transition hover:border-hairline ${open ? 'border-ink' : 'border-hairline'}`}>
+        className={`flex w-full cursor-pointer items-center gap-2 rounded-lg border bg-canvas px-3 py-2.5 text-sm transition hover:border-ink/30 ${open ? 'border-ink' : 'border-hairline'}`}>
         <span className={sel ? "text-ink" : "text-muted"}>{sel?.name || placeholder}</span>
         <div className="ml-auto flex items-center gap-1.5">
           {value && <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }} className="text-muted hover:text-body"><X className="w-3.5 h-3.5" /></span>}
@@ -1123,13 +1125,13 @@ function formatBirthDate(iso: string): string {
 
 function LockedCard({ label, name, sexColor }: { label: string; name?: string; sexColor?: string }) {
   return (
-    <div className="bg-surface-card border border-hairline rounded-lg px-3 py-2.5 flex items-center gap-2.5 opacity-60">
-      {sexColor && <div className="w-1 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: sexColor }} />}
+    <div className="flex items-center gap-2.5 rounded-lg border border-hairline bg-canvas px-3 py-2.5 opacity-70">
+      {sexColor && <div className="h-6 w-1 flex-shrink-0 rounded-full" style={{ backgroundColor: sexColor }} />}
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] text-muted uppercase font-semibold">{label}</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{label}</p>
         <p className="truncate text-[14px] font-medium text-ink">{name || '—'}</p>
       </div>
-      <Lock className="w-3.5 h-3.5 text-muted flex-shrink-0" />
+      <Lock className="h-3.5 w-3.5 flex-shrink-0 text-muted" />
     </div>
   )
 }
@@ -1142,17 +1144,17 @@ function LockedParentCard({ label, dog, sexColor }: {
   const t = useT()
   return (
     <div>
-      <label className="text-[11px] font-semibold text-body uppercase tracking-wider mb-1.5 block">{label}</label>
-      <div className="w-full bg-surface-card border border-hairline rounded-lg px-3 py-2.5 flex items-center gap-3 opacity-90">
+      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-body">{label}</label>
+      <div className="flex w-full items-center gap-3 rounded-lg border border-hairline bg-canvas px-3 py-2.5">
         {dog?.thumbnail_url ? (
-          <div className="w-8 h-8 rounded-full border-2 overflow-hidden flex-shrink-0 bg-surface-card" style={{ borderColor: sexColor || 'rgba(255,255,255,0.1)' }}>
-            <Img w={96} src={dog.thumbnail_url} alt="" className="w-full h-full object-cover" />
+          <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full border-2 bg-surface-card" style={{ borderColor: sexColor || 'rgba(255,255,255,0.1)' }}>
+            <Img w={96} src={dog.thumbnail_url} alt="" className="h-full w-full object-cover" />
           </div>
         ) : sexColor ? (
-          <div className="w-1 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: sexColor }} />
+          <div className="h-6 w-1 flex-shrink-0 rounded-full" style={{ backgroundColor: sexColor }} />
         ) : null}
-        <span className="flex-1 text-[14px] text-ink truncate">{dog?.name || t('Sin asignar')}</span>
-        <Lock className="w-3.5 h-3.5 text-muted flex-shrink-0" />
+        <span className={`flex-1 truncate text-[14px] ${dog?.name ? 'text-ink' : 'text-muted'}`}>{dog?.name || t('Sin asignar')}</span>
+        <Lock className="h-3.5 w-3.5 flex-shrink-0 text-muted" />
       </div>
     </div>
   )
