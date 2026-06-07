@@ -67,6 +67,9 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   // Pestañas pro (Genética, Reproducción): solo visibles para insider / plan de
   // pago / admin. Son features Kennel Pro, igual que el COI. Se carga al abrir.
   const [canPro, setCanPro] = useState(false)
+  // ¿El usuario es criador (tiene criadero)? La sección "Visibilidad y estado" de
+  // Gestión es de criador (visible en criadero, reproductor…); el propietario no la ve.
+  const [isBreeder, setIsBreeder] = useState(false)
 
   const [breeds, setBreeds] = useState<any[]>([])
   const [colors, setColors] = useState<any[]>([])
@@ -292,11 +295,14 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
   // o plan de pago. Si no, se ocultan (son Kennel Pro, como el COI).
   useEffect(() => {
     if (!open) return
-    if (isEnterpriseUser(userId)) { setCanPro(true); return }
+    if (isEnterpriseUser(userId)) { setCanPro(true); setIsBreeder(true); return }
     let cancelled = false
     ;(async () => {
       const { data } = await createClient().from('profiles').select('plan, role').eq('id', userId).maybeSingle()
-      if (!cancelled) setCanPro(data?.role === 'admin' || hasProFeatures((data?.plan as string | null) ?? null))
+      if (!cancelled) {
+        setCanPro(data?.role === 'admin' || hasProFeatures((data?.plan as string | null) ?? null))
+        setIsBreeder(data?.role === 'breeder' || data?.role === 'admin')
+      }
     })()
     return () => { cancelled = true }
   }, [open, userId])
@@ -613,7 +619,9 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         </div>
       )}
 
-      {/* Visibilidad y estado */}
+      {/* Visibilidad y estado — SOLO criadores. "Visible en tu criadero" y
+          "Reproductor" son features de criador; el propietario no las necesita. */}
+      {isBreeder && (
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">{t('Visibilidad y estado')}</p>
         <div className="mt-3 space-y-2.5">
@@ -628,6 +636,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
             saving={savingField === 'is_reproductive'} onChange={(v) => persistField('is_reproductive', v)} />
         </div>
       </div>
+      )}
 
       {/* Acciones */}
       <div>
