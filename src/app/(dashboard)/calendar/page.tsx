@@ -267,25 +267,29 @@ export default function CalendarPage() {
     setDayPanelOpen(false)
   }
 
-  // Desktop EventDot
-  const EventDot = ({ ev, compact }: { ev: CalendarEvent; compact?: boolean }) => (
-    <div
-      onClick={(e) => handleEventClick(ev, e)}
-      className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs bg-surface-card hover:bg-surface-soft transition cursor-pointer ${ev.is_completed ? 'opacity-50' : ''}`}
-    >
-      <button
-        onClick={(e) => { e.stopPropagation(); toggleCompleted(ev) }}
-        className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center transition ${ev.is_completed ? 'bg-green-500 border-green-500' : 'border border-hairline hover:border-white/40'}`}
+  // Desktop EventDot — chip con la barra de color del tipo de evento (mismo
+  // lenguaje visual que los chips de salud-tab) + check para completar.
+  const EventDot = ({ ev, compact }: { ev: CalendarEvent; compact?: boolean }) => {
+    const color = ev.color || '#3b82f6'
+    return (
+      <div
+        onClick={(e) => handleEventClick(ev, e)}
+        className={`group/ev flex items-center gap-1.5 px-1.5 py-1 rounded-md text-[11px] transition cursor-pointer hover:brightness-95 ${ev.is_completed ? 'opacity-50' : ''}`}
+        style={{ background: color + '1a', borderLeft: `3px solid ${color}` }}
       >
-        {ev.is_completed && <Check className="w-2.5 h-2.5 text-white" />}
-      </button>
-      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: ev.color || '#3b82f6' }} />
-      <span className={`truncate text-ink ${ev.is_completed ? 'line-through' : ''}`}>
-        {!compact && !ev.all_day && ev.start_date && <span className="text-muted mr-1">{new Date(ev.start_date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>}
-        {ev.title}
-      </span>
-    </div>
-  )
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleCompleted(ev) }}
+          className={`w-3.5 h-3.5 rounded-[4px] flex-shrink-0 flex items-center justify-center transition ${ev.is_completed ? 'bg-green-500' : 'border border-hairline bg-canvas hover:border-ink/40'}`}
+        >
+          {ev.is_completed && <Check className="w-2.5 h-2.5 text-white" />}
+        </button>
+        <span className={`truncate font-medium ${ev.is_completed ? 'line-through text-muted' : 'text-ink'}`}>
+          {!compact && !ev.all_day && ev.start_date && <span className="text-muted mr-1 tabular-nums">{new Date(ev.start_date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>}
+          {ev.title}
+        </span>
+      </div>
+    )
+  }
 
   const dayPanelLabel = useMemo(() => {
     const d = dayPanelDate
@@ -315,8 +319,8 @@ export default function CalendarPage() {
   )
 
   return (
-    <div>
-      <div className="mb-5">
+    <div className="lg:flex lg:flex-col" style={{ minHeight: 'calc(100vh - 134px)' }}>
+      <div className="mb-5 flex-shrink-0">
         <CalendarSubnav isBreeder={isBreeder} />
       </div>
 
@@ -413,7 +417,7 @@ export default function CalendarPage() {
                   <div
                     key={ev.id}
                     onClick={() => handleEventClick(ev)}
-                    className={`flex items-start gap-3 p-3 rounded-xl transition cursor-pointer ${ev.is_completed ? 'opacity-50' : ''} bg-canvas border border-hairline hover:border-hairline`}
+                    className={`flex items-start gap-3 p-3 rounded-xl transition cursor-pointer ${ev.is_completed ? 'opacity-50' : ''} bg-canvas border border-hairline hover:border-ink/20`}
                   >
                     <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ background: ev.color || '#3b82f6' }} />
                     <div className="flex-1 min-w-0">
@@ -448,76 +452,91 @@ export default function CalendarPage() {
       {/* ═══════════════════════════════════════════ */}
       {/* ═══  DESKTOP VIEW (lg+)  ═══════════════ */}
       {/* ═══════════════════════════════════════════ */}
-      <div className="hidden lg:block">
+      {/* Columna flex que ocupa el alto restante del viewport: el contenedor
+          padre fija minHeight calc(100vh - 134px) (top bar 74px + py 60px del
+          dashboard-shell). Aquí flex-1 + min-h-0 deja que la rejilla se estire
+          de arriba a abajo, igual que la vista móvil (estilo Google Calendar). */}
+      <div className="hidden lg:flex lg:flex-col lg:flex-1 lg:min-h-0">
         {/* Controls */}
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-2">
-            <button onClick={() => navigate(-1)} className="text-body hover:text-ink transition p-2"><ChevronLeft className="w-5 h-5" /></button>
-            <h2 className="text-lg font-semibold min-w-[240px] text-center">{headerTitle}</h2>
-            <button onClick={() => navigate(1)} className="text-body hover:text-ink transition p-2"><ChevronRight className="w-5 h-5" /></button>
-            <button onClick={goToday} className="text-xs text-muted hover:text-ink border border-hairline bg-canvas rounded-lg px-2.5 py-1.5 ml-2 transition">{t('Hoy')}</button>
+        <div className="flex items-center justify-between gap-3 mb-4 flex-shrink-0">
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center rounded-lg border border-hairline bg-canvas overflow-hidden">
+              <button onClick={() => navigate(-1)} aria-label={t('Anterior')} className="text-body hover:text-ink hover:bg-surface-soft transition p-2"><ChevronLeft className="w-4.5 h-4.5" /></button>
+              <div className="w-px self-stretch bg-hairline" />
+              <button onClick={() => navigate(1)} aria-label={t('Siguiente')} className="text-body hover:text-ink hover:bg-surface-soft transition p-2"><ChevronRight className="w-4.5 h-4.5" /></button>
+            </div>
+            <button onClick={goToday} className="text-[13px] font-medium text-body hover:text-ink border border-hairline bg-canvas hover:bg-surface-soft rounded-lg px-3 py-2 transition">{t('Hoy')}</button>
+            <h2 className="text-lg font-semibold text-ink ml-1.5">{headerTitle}</h2>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex border border-hairline bg-canvas rounded-lg overflow-hidden">
+            <div className="flex items-center gap-0.5 rounded-lg border border-hairline bg-surface-soft p-0.5">
               {(['month', 'week', 'day'] as ViewMode[]).map(v => (
-                <button key={v} onClick={() => setView(v)} className={`px-4 py-1.5 text-xs font-medium transition ${view === v ? 'bg-ink text-on-primary' : 'text-body hover:text-ink hover:bg-surface-soft'}`}>
+                <button key={v} onClick={() => setView(v)} className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition ${view === v ? 'bg-ink text-on-primary shadow-sm' : 'text-body hover:text-ink'}`}>
                   {v === 'month' ? t('Mes') : v === 'week' ? t('Semana') : t('Día')}
                 </button>
               ))}
             </div>
-            <button onClick={() => handleNewEvent()} className="bg-ink text-on-primary hover:opacity-90 px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
-              <Plus className="w-3.5 h-3.5" /> {t('Evento')}
+            <button onClick={() => handleNewEvent()} className="bg-ink text-on-primary hover:opacity-90 px-3.5 py-2 rounded-lg text-[13px] font-semibold flex items-center gap-1.5 transition">
+              <Plus className="w-4 h-4" /> {t('Evento')}
             </button>
           </div>
         </div>
 
         {/* MONTH VIEW */}
-        {view === 'month' && (
-          <div className="border border-hairline bg-canvas rounded-xl overflow-hidden">
-            <div className="grid grid-cols-7">
+        {view === 'month' && (() => {
+          const leadPad = (new Date(year, month, 1).getDay() + 6) % 7
+          const daysInMonth = new Date(year, month + 1, 0).getDate()
+          const monthWeeks = Math.ceil((leadPad + daysInMonth) / 7)
+          return (
+          <div className="flex-1 min-h-0 flex flex-col border border-hairline bg-canvas rounded-2xl overflow-hidden">
+            <div className="grid grid-cols-7 flex-shrink-0">
               {DAY_NAMES.map((d, i) => (
-                <div key={i} className="py-3 text-center text-xs font-semibold text-muted border-b border-hairline">{t(d)}</div>
+                <div key={i} className="py-2.5 text-center text-[11px] font-semibold uppercase tracking-wider text-muted border-b border-hairline">{t(d)}</div>
               ))}
             </div>
-            <div className="grid grid-cols-7">
-              {Array.from({ length: (new Date(year, month, 1).getDay() + 6) % 7 }).map((_, i) => (
-                <div key={`e-${i}`} className="min-h-[120px] border-b border-r border-hairline" />
+            {/* Rejilla de días: gridTemplateRows repeat(semanas, 1fr) estira las
+                filas para llenar el alto disponible (flex-1 + min-h-0). */}
+            <div className="flex-1 min-h-0 grid grid-cols-7" style={{ gridTemplateRows: `repeat(${monthWeeks}, minmax(0, 1fr))` }}>
+              {Array.from({ length: leadPad }).map((_, i) => (
+                <div key={`e-${i}`} className="border-b border-r border-hairline bg-surface-soft/30" />
               ))}
-              {Array.from({ length: new Date(year, month + 1, 0).getDate() }).map((_, i) => {
+              {Array.from({ length: daysInMonth }).map((_, i) => {
                 const day = i + 1
                 const dateStr = formatDateStr(new Date(year, month, day))
                 const dayEvents = getEventsForDate(dateStr)
+                const todayCell = isToday(new Date(year, month, day))
                 return (
-                  <div key={day} className="min-h-[120px] border-b border-r border-hairline p-1.5 cursor-pointer hover:bg-surface-soft transition" onClick={() => handleDesktopDayClick(dateStr)}>
-                    <span className={`inline-flex w-7 h-7 items-center justify-center rounded-full text-xs font-semibold ${isToday(new Date(year, month, day)) ? 'bg-ink text-on-primary' : 'text-body'}`}>{day}</span>
-                    <div className="mt-1 space-y-1">
+                  <div key={day} className="min-h-0 flex flex-col border-b border-r border-hairline p-1.5 cursor-pointer hover:bg-surface-soft transition" onClick={() => handleDesktopDayClick(dateStr)}>
+                    <span className={`inline-flex w-7 h-7 flex-shrink-0 items-center justify-center rounded-full text-[12.5px] font-semibold ${todayCell ? 'bg-ink text-on-primary' : 'text-body'}`}>{day}</span>
+                    <div className="mt-1 space-y-0.5 overflow-hidden flex-1 min-h-0">
                       {dayEvents.slice(0, 4).map(ev => <EventDot key={ev.id} ev={ev} compact />)}
-                      {dayEvents.length > 4 && <span className="text-[10px] text-muted pl-1">+{dayEvents.length - 4} {t('más')}</span>}
+                      {dayEvents.length > 4 && <span className="block text-[10px] font-medium text-muted pl-1.5 pt-0.5">+{dayEvents.length - 4} {t('más')}</span>}
                     </div>
                   </div>
                 )
               })}
             </div>
           </div>
-        )}
+          )
+        })()}
 
         {/* WEEK VIEW */}
         {view === 'week' && (
-          <div className="border border-hairline bg-canvas rounded-xl overflow-hidden">
-            <div className="grid grid-cols-[60px_repeat(7,1fr)]">
-              <div className="border-b border-r border-hairline py-3" />
+          <div className="flex-1 min-h-0 flex flex-col border border-hairline bg-canvas rounded-2xl overflow-hidden">
+            <div className="grid grid-cols-[60px_repeat(7,1fr)] flex-shrink-0">
+              <div className="border-b border-r border-hairline py-2.5" />
               {weekDays.map((d, i) => (
-                <div key={i} className={`py-3 text-center border-b border-hairline cursor-pointer ${isToday(d) ? 'bg-surface-card' : ''}`} onClick={() => { setCurrentDate(d); setView('day') }}>
-                  <p className="text-[10px] text-muted uppercase">{t(DAY_NAMES[i])}</p>
-                  <p className={`text-sm font-bold ${isToday(d) ? 'text-ink' : 'text-ink'}`}>{d.getDate()}</p>
+                <div key={i} className={`py-2.5 text-center border-b border-hairline cursor-pointer transition hover:bg-surface-soft ${isToday(d) ? 'bg-surface-card' : ''}`} onClick={() => { setCurrentDate(d); setView('day') }}>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t(DAY_NAMES[i])}</p>
+                  <p className={`mt-0.5 inline-flex w-7 h-7 items-center justify-center rounded-full text-sm font-semibold ${isToday(d) ? 'bg-ink text-on-primary' : 'text-ink'}`}>{d.getDate()}</p>
                 </div>
               ))}
             </div>
-            <div className="max-h-[65vh] overflow-y-auto">
+            <div className="flex-1 min-h-0 overflow-y-auto">
               {HOURS.map(h => (
                 <div key={h} className="grid grid-cols-[60px_repeat(7,1fr)] min-h-[56px]">
                   <div className="border-r border-b border-hairline pr-2 pt-1 text-right">
-                    <span className="text-[10px] text-muted">{String(h).padStart(2, '0')}:00</span>
+                    <span className="text-[10px] text-muted tabular-nums">{String(h).padStart(2, '0')}:00</span>
                   </div>
                   {weekDays.map((d, di) => {
                     const dateStr = formatDateStr(d)
@@ -527,10 +546,10 @@ export default function CalendarPage() {
                       return e.all_day ? h === 0 : eHour === h
                     })
                     return (
-                      <div key={di} className={`border-b border-r border-hairline p-0.5 cursor-pointer hover:bg-surface-soft transition ${isToday(d) ? 'bg-surface-soft' : ''}`} onClick={() => handleDesktopDayClick(dateStr)}>
+                      <div key={di} className={`border-b border-r border-hairline p-0.5 cursor-pointer hover:bg-surface-soft transition ${isToday(d) ? 'bg-surface-soft/60' : ''}`} onClick={() => handleDesktopDayClick(dateStr)}>
                         {hourEvents.map(ev => (
-                          <div key={ev.id} onClick={e => handleEventClick(ev, e)} className="text-xs px-1.5 py-1 rounded-md truncate cursor-pointer hover:opacity-80 mb-0.5"
-                            style={{ background: (ev.color || '#3b82f6') + '25', color: ev.color || '#3b82f6', borderLeft: `3px solid ${ev.color || '#3b82f6'}` }}>
+                          <div key={ev.id} onClick={e => handleEventClick(ev, e)} className="text-[11px] font-medium px-1.5 py-1 rounded-md truncate cursor-pointer hover:opacity-80 transition mb-0.5"
+                            style={{ background: (ev.color || '#3b82f6') + '22', color: ev.color || '#3b82f6', borderLeft: `3px solid ${ev.color || '#3b82f6'}` }}>
                             {ev.title}
                           </div>
                         ))}
@@ -545,15 +564,15 @@ export default function CalendarPage() {
 
         {/* DAY VIEW */}
         {view === 'day' && (
-          <div className="border border-hairline bg-canvas rounded-xl overflow-hidden">
-            <div className="max-h-[72vh] overflow-y-auto">
+          <div className="flex-1 min-h-0 flex flex-col border border-hairline bg-canvas rounded-2xl overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-y-auto">
               {(() => {
                 const dateStr = formatDateStr(currentDate)
                 const allDayEvs = events.filter(e => e.start_date?.startsWith(dateStr) && e.all_day)
                 if (allDayEvs.length === 0) return null
                 return (
-                  <div className="px-4 py-2 border-b border-hairline bg-canvas">
-                    <p className="text-[10px] text-muted mb-1">{t('TODO EL DIA')}</p>
+                  <div className="px-4 py-2.5 border-b border-hairline bg-surface-soft/40">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">{t('TODO EL DIA')}</p>
                     <div className="space-y-1">{allDayEvs.map(ev => <EventDot key={ev.id} ev={ev} />)}</div>
                   </div>
                 )
@@ -567,7 +586,7 @@ export default function CalendarPage() {
                 return (
                   <div key={h} className="flex min-h-[60px] border-b border-hairline">
                     <div className="w-16 flex-shrink-0 pr-3 pt-2 text-right border-r border-hairline">
-                      <span className="text-xs text-muted">{String(h).padStart(2, '0')}:00</span>
+                      <span className="text-xs text-muted tabular-nums">{String(h).padStart(2, '0')}:00</span>
                     </div>
                     <div className="flex-1 p-1 cursor-pointer hover:bg-surface-soft transition" onClick={() => handleDesktopDayClick(dateStr)}>
                       {hourEvents.map(ev => (
@@ -575,7 +594,7 @@ export default function CalendarPage() {
                           className="flex items-center gap-2 px-3 py-2 rounded-lg mb-1 cursor-pointer hover:opacity-80 transition"
                           style={{ background: (ev.color || '#3b82f6') + '15', borderLeft: `3px solid ${ev.color || '#3b82f6'}` }}>
                           <div className="min-w-0">
-                            <p className="text-sm font-medium truncate">{ev.title}</p>
+                            <p className="text-sm font-medium text-ink truncate">{ev.title}</p>
                             <p className="text-[11px] text-muted">
                               {new Date(ev.start_date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                               {ev.end_date && ` - ${new Date(ev.end_date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`}
@@ -591,7 +610,9 @@ export default function CalendarPage() {
           </div>
         )}
 
-        <Legend />
+        <div className="flex-shrink-0">
+          <Legend />
+        </div>
       </div>
 
       {/* ─── Shared forms ─── */}
