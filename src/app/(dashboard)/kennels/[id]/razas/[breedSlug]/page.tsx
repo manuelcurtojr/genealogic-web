@@ -104,7 +104,7 @@ export async function generateMetadata(
     title: `${breed.name} · ${kennel.name}`,
     description: promo.tagline || `${breed.name} en ${kennel.name}.`,
     alternates: {
-      canonical: `https://genealogic.io/kennels/${kennel.slug}/razas/${breed.slug}`,
+      canonical: `https://www.genealogic.io/kennels/${kennel.slug}/razas/${breed.slug}`,
     },
     openGraph: {
       title: `${breed.name} · ${kennel.name}`,

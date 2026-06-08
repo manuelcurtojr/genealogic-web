@@ -1,7 +1,7 @@
 export const metadata = {
   title: 'Política de Propiedad Intelectual y Notice-and-Action — Genealogic',
   description: 'Cómo reportar contenido infractor (copyright, datos personales, suplantación) y procedimiento de retirada en Genealogic.',
-  alternates: { canonical: 'https://genealogic.io/ip-policy' },
+  alternates: { canonical: 'https://www.genealogic.io/ip-policy' },
 }
 
 export default function IpPolicyPage() {

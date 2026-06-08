@@ -1,7 +1,7 @@
 export const metadata = {
   title: 'Política de Cookies',
   description: 'Información sobre las cookies y tecnologías similares que utiliza Genealogic.',
-  alternates: { canonical: 'https://genealogic.io/cookies' },
+  alternates: { canonical: 'https://www.genealogic.io/cookies' },
 }
 
 export default function CookiesPage() {

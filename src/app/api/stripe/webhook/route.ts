@@ -7,7 +7,7 @@
  *  - payment_intent.succeeded → idem (failsafe si llegó antes checkout)
  *
  * Configurar en dashboard.stripe.com/webhooks:
- *   URL: https://genealogic.io/api/stripe/webhook
+ *   URL: https://www.genealogic.io/api/stripe/webhook
  *   Events: account.updated, checkout.session.completed, payment_intent.succeeded
  *   Copiar Signing Secret → ENV STRIPE_WEBHOOK_SECRET
  */

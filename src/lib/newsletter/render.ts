@@ -21,7 +21,7 @@ export type NewsletterRenderInput = {
   unsubscribeUrl: string
   kennelName: string
   kennelLogoUrl?: string | null
-  /** URL base del kennel (ej: https://iremacurto.com o https://genealogic.io/c/<slug>) */
+  /** URL base del kennel (ej: https://iremacurto.com o https://www.genealogic.io/c/<slug>) */
   kennelSiteUrl?: string | null
 }
 

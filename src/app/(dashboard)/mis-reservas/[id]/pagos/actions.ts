@@ -44,7 +44,7 @@ export async function startCheckoutAction(paymentId: string): Promise<void> {
     throw new Error('kennel_stripe_not_active')
   }
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.genealogic.io'
   const { url, sessionId } = await createPaymentCheckoutSession({
     kennelStripeAccountId: kennel.stripe_account_id,
     amountCents: payment.amount_cents,

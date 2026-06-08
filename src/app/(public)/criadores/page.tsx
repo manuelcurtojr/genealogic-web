@@ -21,11 +21,11 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t(
       'Software gratis para criaderos: perfil público indexable en Google, genealogías con importador IA, camadas y salud. Crea tu criadero gratis — y más herramientas llegando.'
     ),
-    alternates: { canonical: 'https://genealogic.io/criadores' },
+    alternates: { canonical: 'https://www.genealogic.io/criadores' },
     openGraph: {
       title: t('Genealogic para criadores'),
       description: t('Gestiona tu criadero y vende más cachorros con menos esfuerzo.'),
-      url: 'https://genealogic.io/criadores',
+      url: 'https://www.genealogic.io/criadores',
       type: 'website',
       siteName: 'Genealogic',
       images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Genealogic' }],

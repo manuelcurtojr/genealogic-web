@@ -21,7 +21,7 @@ export async function generateMetadata({
   const post = getPostBySlug(slug)
   if (!post) return { title: 'Artículo no encontrado — Genealogic' }
   const { meta } = post
-  const url = `https://genealogic.io/blog/${meta.slug}`
+  const url = `https://www.genealogic.io/blog/${meta.slug}`
   return {
     title: `${meta.title} — Genealogic`,
     description: meta.excerpt,
@@ -70,8 +70,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     datePublished: meta.date,
     image: meta.heroImage,
     author: { '@type': 'Organization', name: meta.author.name },
-    publisher: { '@type': 'Organization', name: 'Genealogic', url: 'https://genealogic.io' },
-    mainEntityOfPage: `https://genealogic.io/blog/${meta.slug}`,
+    publisher: { '@type': 'Organization', name: 'Genealogic', url: 'https://www.genealogic.io' },
+    mainEntityOfPage: `https://www.genealogic.io/blog/${meta.slug}`,
   }
 
   return (

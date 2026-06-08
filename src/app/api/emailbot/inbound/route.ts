@@ -16,7 +16,7 @@ export const maxDuration = 60
  * Setup necesario (Phase B — depende del usuario):
  *   1. Configurar dominio inbound en Resend (ej. inbound.genealogic.io)
  *   2. Añadir MX records: 10 inbound-smtp.eu-west-1.amazonaws.com (o el endpoint de Resend)
- *   3. Crear una webhook que apunte a https://genealogic.io/api/emailbot/inbound
+ *   3. Crear una webhook que apunte a https://www.genealogic.io/api/emailbot/inbound
  *   4. Definir env var EMAILBOT_INBOUND_SECRET con un token aleatorio
  *   5. En emailbot_config.inbound_address de cada kennel guardar la dirección
  *      única que recibirá emails para ese kennel

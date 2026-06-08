@@ -58,7 +58,7 @@ export async function generateMetadata(
   const title = `${docRow?.title || 'Legal'} · ${kennel.name}`
   return {
     title,
-    alternates: { canonical: `https://genealogic.io/kennels/${kennel.slug}/legal/${doc}` },
+    alternates: { canonical: `https://www.genealogic.io/kennels/${kennel.slug}/legal/${doc}` },
     robots: { index: true, follow: true },
   }
 }

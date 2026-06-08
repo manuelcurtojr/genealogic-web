@@ -83,7 +83,7 @@ export default function OwnerFloatingNav({
 
   // Si el owner solo fue detectado client-side (custom domain), apuntamos
   // los links absolutos a genealogic.io para que abran el dashboard real.
-  const baseUrl = (!serverIsOwner && clientIsOwner) ? 'https://genealogic.io' : ''
+  const baseUrl = (!serverIsOwner && clientIsOwner) ? 'https://www.genealogic.io' : ''
 
   return (
     <div className="fixed left-4 top-4 z-50 hidden lg:block">

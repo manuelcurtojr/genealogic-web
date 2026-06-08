@@ -1,7 +1,7 @@
 export const metadata = {
   title: 'Aviso Legal',
   description: 'Información legal del titular de Genealogic conforme a la LSSI-CE.',
-  alternates: { canonical: 'https://genealogic.io/legal' },
+  alternates: { canonical: 'https://www.genealogic.io/legal' },
 }
 
 export default function LegalPage() {
@@ -22,7 +22,7 @@ export default function LegalPage() {
         <li><strong>Domicilio social:</strong> Camino Guillén s/n, 38290 La Esperanza, Tenerife (España)</li>
         <li><strong>Inscripción registral:</strong> Registro Mercantil de Santa Cruz de Tenerife</li>
         <li><strong>Email de contacto:</strong> hola@genealogic.io</li>
-        <li><strong>Sitio web:</strong> https://genealogic.io</li>
+        <li><strong>Sitio web:</strong> https://www.genealogic.io</li>
         <li><strong>Actividad:</strong> Servicios de la sociedad de la información — plataforma digital de gestión de crianza canina y registro genealógico.</li>
       </ul>
 

@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
           subject: `Nuevo plan activo: ${plan}`,
           body: `User ID: ${userId}\nPlan: ${plan}\nStatus: ${status}\nTrial: ${trialStart ? `desde ${trialStart} hasta ${trialEnd}` : 'sin trial'}\nSubscription: ${subscriptionId}`,
           dedupeKey: `billing:upgrade:${subscriptionId}`,
-          ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'}/admin/users/${userId}`,
+          ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.genealogic.io'}/admin/users/${userId}`,
           ctaLabel: 'Ver usuario',
         }).catch(() => {})
 
@@ -292,7 +292,7 @@ export async function POST(request: NextRequest) {
             subject: `Churn: ${churnedProfile.email}`,
             body: `User canceló su plan.\nEmail: ${churnedProfile.email}\nNombre: ${churnedProfile.display_name || '—'}\nPlan anterior: ${churnedProfile.plan || '?'}\nSubscription: ${sub.id}\n\nConsidera escribirle un email personal para entender el motivo.`,
             dedupeKey: `billing:churn:${sub.id}`,
-            ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'}/admin/users/${churnedProfile.id}`,
+            ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.genealogic.io'}/admin/users/${churnedProfile.id}`,
             ctaLabel: 'Ver usuario',
           }).catch(() => {})
         }

@@ -170,7 +170,7 @@ export async function KennelChromeFooter({
               <Globe className="h-3 w-3" />
               {t('Web creada con')}{' '}
               <Link
-                href={`https://genealogic.io/kennels/${kennelSlug}`}
+                href={`https://www.genealogic.io/kennels/${kennelSlug}`}
                 className="font-semibold text-body hover:text-[#FE6620] transition-colors uppercase tracking-[0.1em]"
               >
                 Genealogic

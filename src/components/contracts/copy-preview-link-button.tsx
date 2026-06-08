@@ -19,7 +19,7 @@ export default function CopyPreviewLinkButton({ token, label }: { token: string;
   const [copied, setCopied] = useState(false)
 
   async function copy() {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://genealogic.io'
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.genealogic.io'
     const url = `${origin}/contrato-preview/${token}`
     try {
       await navigator.clipboard.writeText(url)

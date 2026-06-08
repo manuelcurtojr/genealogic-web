@@ -17,7 +17,7 @@ export const revalidate = 3600
 
 const SHARD_SIZE = 40000
 const MAX_SHARDS = 10
-const BASE = 'https://genealogic.io'
+const BASE = 'https://www.genealogic.io'
 
 export async function GET() {
   let dogShards = 1

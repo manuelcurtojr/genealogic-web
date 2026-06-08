@@ -12,13 +12,13 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t(
       'Guías, tutoriales y artículos sobre cría canina, genética, salud, gestión de criadero y herramientas Genealogic.'
     ),
-    alternates: { canonical: 'https://genealogic.io/blog' },
+    alternates: { canonical: 'https://www.genealogic.io/blog' },
     openGraph: {
       title: t('Blog'),
       description: t(
         'Guías, tutoriales y artículos sobre cría canina, genética, salud, gestión de criadero y herramientas Genealogic.'
       ),
-      url: 'https://genealogic.io/blog',
+      url: 'https://www.genealogic.io/blog',
       siteName: 'Genealogic',
       images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Genealogic' }],
       type: 'website',

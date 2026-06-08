@@ -42,7 +42,7 @@ export async function generateMetadata(
   return {
     title: `Nuestras razas · ${kennel.name}`,
     description: `Las razas que cría ${kennel.name}: características, virtudes y consideraciones reales de cada una.`,
-    alternates: { canonical: `https://genealogic.io/kennels/${kennel.slug}/razas` },
+    alternates: { canonical: `https://www.genealogic.io/kennels/${kennel.slug}/razas` },
   }
 }
 

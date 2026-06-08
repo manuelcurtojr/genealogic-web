@@ -50,8 +50,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const description = kennel.description?.substring(0, 160)
     || `Criadero ${kennel.name}${location ? ' en ' + location : ''} | Genealogic`
-  const image = kennel.logo_url || 'https://genealogic.io/icon.svg'
-  const canonical = `https://genealogic.io/kennels/${kennel.slug || id}`
+  const image = kennel.logo_url || 'https://www.genealogic.io/icon.svg'
+  const canonical = `https://www.genealogic.io/kennels/${kennel.slug || id}`
 
   return {
     title: `${kennel.name} — Criadero | Genealogic`,
@@ -175,7 +175,7 @@ export default async function KennelDetailPage({
   const criados = dogs.filter((d: any) => !d.is_for_sale && !isReproOfThisKennel(d))
 
   const currencySymbol: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', MXN: '$', COP: '$', ARS: '$', CLP: '$' }
-  const canonicalUrl = `https://genealogic.io/kennels/${kennel.slug || id}`
+  const canonicalUrl = `https://www.genealogic.io/kennels/${kennel.slug || id}`
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const foundationYear = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null
 
@@ -250,8 +250,8 @@ export default async function KennelDetailPage({
       />
       <BreadcrumbJsonLd
         items={[
-          { name: 'Inicio', url: 'https://genealogic.io' },
-          { name: 'Criaderos', url: 'https://genealogic.io/kennels' },
+          { name: 'Inicio', url: 'https://www.genealogic.io' },
+          { name: 'Criaderos', url: 'https://www.genealogic.io/kennels' },
           { name: kennel.name, url: canonicalUrl },
         ]}
       />

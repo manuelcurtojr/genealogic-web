@@ -31,7 +31,7 @@ export async function generateMetadata(
   const year = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null
   const title = `Sobre ${kennel.name}`
   const description = `La historia de ${kennel.name}${loc ? ` en ${loc}` : ''}${year ? `, desde ${year}` : ''}: quiénes somos, desde cuándo criamos y qué nos diferencia.`
-  const canonical = `https://genealogic.io/kennels/${kennel.slug}/sobre`
+  const canonical = `https://www.genealogic.io/kennels/${kennel.slug}/sobre`
   return {
     title,
     description,

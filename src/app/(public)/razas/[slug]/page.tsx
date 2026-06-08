@@ -72,7 +72,7 @@ export async function generateMetadata(
   const desc = cleanDesc
     ? cleanDesc.slice(0, 200) + (cleanDesc.length > 200 ? '…' : '')
     : `Estándar oficial, características y ejemplares de la raza ${breed.name}. Origen, temperamento, apariencia y diferencias entre clubes.`
-  const url = `https://genealogic.io/razas/${slug}`
+  const url = `https://www.genealogic.io/razas/${slug}`
 
   // ─── OG image ───────────────────────────────────────────────────────────
   // Igual que en /dogs/[id]: usamos Supabase Image Transformations para
@@ -80,7 +80,7 @@ export async function generateMetadata(
   // muestren bien el preview al compartir el enlace.
   // Las 243 imágenes de razas ya están en Supabase Storage (no externas).
   // Fallback si la raza no tiene foto: opengraph-image global brandeado.
-  const FALLBACK_OG = 'https://genealogic.io/opengraph-image'
+  const FALLBACK_OG = 'https://www.genealogic.io/opengraph-image'
   let ogImageUrl = FALLBACK_OG
   let ogIsTransformed = false
   if (breed.image_url) {
@@ -204,7 +204,7 @@ export default async function BreedPage(
   const hasStandard = (gStandard.sections || []).length > 0
 
   // JSON-LD Schema.org — Article + Thing/breed + Breadcrumb
-  const pageUrl = `https://genealogic.io/razas/${slug}`
+  const pageUrl = `https://www.genealogic.io/razas/${slug}`
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -216,7 +216,7 @@ export default async function BreedPage(
         description: breed.description || `Estándar canónico de la raza ${breed.name}.`,
         image: breed.image_url || undefined,
         inLanguage: 'es',
-        isPartOf: { '@id': 'https://genealogic.io/#website' },
+        isPartOf: { '@id': 'https://www.genealogic.io/#website' },
         about: { '@id': `${pageUrl}#breed` },
       },
       {
@@ -235,7 +235,7 @@ export default async function BreedPage(
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Razas', item: 'https://genealogic.io/razas' },
+          { '@type': 'ListItem', position: 1, name: 'Razas', item: 'https://www.genealogic.io/razas' },
           { '@type': 'ListItem', position: 2, name: breed.name, item: pageUrl },
         ],
       },

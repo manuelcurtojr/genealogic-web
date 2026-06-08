@@ -59,11 +59,11 @@ export async function generateMetadata(): Promise<Metadata> {
     ],
     authors: [{ name: "Manuel Curtó SL" }],
     creator: "Genealogic",
-    metadataBase: new URL("https://genealogic.io"),
+    metadataBase: new URL("https://www.genealogic.io"),
     openGraph: {
       type: "website",
       locale: "es_ES",
-      url: "https://genealogic.io",
+      url: "https://www.genealogic.io",
       siteName: "Genealogic",
       title: t("Genealogic — Genealogías caninas verificables"),
       description: t(

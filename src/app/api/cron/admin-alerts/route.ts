@@ -32,7 +32,7 @@ interface Alert {
   dedupeKey: string
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.genealogic.io'
 
 export async function GET(request: NextRequest) {
   if (!isAuthorizedCron(request)) {

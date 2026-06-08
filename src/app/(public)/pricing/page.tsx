@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title: 'Precios',
   description:
     'Owner y Kennel Free, gratis para siempre y con perros ilimitados. Kennel Pro (49€/mes) con 14 días de prueba sin tarjeta, ampliable con extensiones à la carte (web del criadero, newsletter, emailbot). Pagas por las herramientas, no por el número de perros.',
-  alternates: { canonical: 'https://genealogic.io/pricing' },
+  alternates: { canonical: 'https://www.genealogic.io/pricing' },
 }
 
 export const dynamic = 'force-dynamic'

@@ -246,7 +246,7 @@ function buildAdminNotifyHtml(d: {
 </div>
 <p style="margin-top:24px;color:#999;font-size:12px;">
   Genealogic — Manuel Curtó SL · Plazo legal de respuesta: 72h<br>
-  Revisar en <a href="https://genealogic.io/admin/reports">/admin/reports</a>
+  Revisar en <a href="https://www.genealogic.io/admin/reports">/admin/reports</a>
 </p>
 </body></html>`.trim()
 }

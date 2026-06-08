@@ -317,7 +317,7 @@ export default function EmailbotConfigClient({
         <ol className="text-sm text-body space-y-1.5 list-decimal pl-5">
           <li>{t('Configura el dominio inbound en Resend (o el provider que prefieras) — p.ej.')} <code className="text-[12px] bg-canvas border border-hairline rounded px-1">inbound.genealogic.io</code>.</li>
           <li>{t('Añade los registros MX que indique Resend.')}</li>
-          <li>{t('En Resend crea una Inbound webhook apuntando a')} <code className="text-[12px] bg-canvas border border-hairline rounded px-1">https://genealogic.io/api/emailbot/inbound</code> {t('con header')} <code className="text-[12px] bg-canvas border border-hairline rounded px-1">X-Inbound-Secret: {'<EMAILBOT_INBOUND_SECRET>'}</code>.</li>
+          <li>{t('En Resend crea una Inbound webhook apuntando a')} <code className="text-[12px] bg-canvas border border-hairline rounded px-1">https://www.genealogic.io/api/emailbot/inbound</code> {t('con header')} <code className="text-[12px] bg-canvas border border-hairline rounded px-1">X-Inbound-Secret: {'<EMAILBOT_INBOUND_SECRET>'}</code>.</li>
           <li>{t('En Vercel define las env vars')} <code className="text-[12px] bg-canvas border border-hairline rounded px-1">EMAILBOT_INBOUND_SECRET</code> {t('y')} <code className="text-[12px] bg-canvas border border-hairline rounded px-1">RESEND_API_KEY</code>.</li>
           <li>{t('Confirma que la dirección de arriba aparece en el campo «to» del webhook de Resend.')}</li>
         </ol>

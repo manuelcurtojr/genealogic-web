@@ -26,11 +26,11 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t(
       'Todo lo que tu criadero necesita: pipeline de reservas, web pública, genealogía interactiva, emailbot, newsletter y analítica. Explora cada herramienta con mockups del producto real.'
     ),
-    alternates: { canonical: 'https://genealogic.io/features' },
+    alternates: { canonical: 'https://www.genealogic.io/features' },
     openGraph: {
       title: t('El producto Genealogic'),
       description: t('Pipeline · Web · Genealogía · Emailbot · Newsletter · Stats. Mira cómo se ven antes de probarlas.'),
-      url: 'https://genealogic.io/features',
+      url: 'https://www.genealogic.io/features',
       type: 'website',
       siteName: 'Genealogic',
       images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Genealogic' }],

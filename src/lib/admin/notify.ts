@@ -75,7 +75,7 @@ interface NotifyOpts {
   ctaLabel?: string
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.genealogic.io'
 
 const KIND_EMOJI: Record<AdminAlertKind, string> = {
   support_request: '🎫',

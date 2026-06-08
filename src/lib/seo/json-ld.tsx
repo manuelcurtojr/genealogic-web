@@ -154,8 +154,8 @@ export function WebSiteJsonLd() {
   const data = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    '@id': 'https://genealogic.io/#website',
-    url: 'https://genealogic.io',
+    '@id': 'https://www.genealogic.io/#website',
+    url: 'https://www.genealogic.io',
     name: 'Genealogic',
     alternateName: 'Genealogic — Genealogías caninas verificables',
     inLanguage: 'es',
@@ -165,16 +165,16 @@ export function WebSiteJsonLd() {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: 'https://genealogic.io/search?q={search_term_string}',
+        urlTemplate: 'https://www.genealogic.io/search?q={search_term_string}',
       },
       'query-input': 'required name=search_term_string',
     },
     publisher: {
       '@type': 'Organization',
-      '@id': 'https://genealogic.io/#organization',
+      '@id': 'https://www.genealogic.io/#organization',
       name: 'Genealogic',
-      url: 'https://genealogic.io',
-      logo: 'https://genealogic.io/icon.svg',
+      url: 'https://www.genealogic.io',
+      logo: 'https://www.genealogic.io/icon.svg',
     },
   }
   return <JsonLdScript data={data} />
@@ -193,12 +193,12 @@ export function WebSiteJsonLd() {
  */
 export function SiteNavigationJsonLd() {
   const items = [
-    { name: 'Inicio', url: 'https://genealogic.io' },
-    { name: 'Buscar perros', url: 'https://genealogic.io/search' },
-    { name: 'Razas caninas', url: 'https://genealogic.io/razas' },
-    { name: 'Criaderos', url: 'https://genealogic.io/kennels' },
-    { name: 'Blog', url: 'https://genealogic.io/blog' },
-    { name: 'Registrarse', url: 'https://genealogic.io/register' },
+    { name: 'Inicio', url: 'https://www.genealogic.io' },
+    { name: 'Buscar perros', url: 'https://www.genealogic.io/search' },
+    { name: 'Razas caninas', url: 'https://www.genealogic.io/razas' },
+    { name: 'Criaderos', url: 'https://www.genealogic.io/kennels' },
+    { name: 'Blog', url: 'https://www.genealogic.io/blog' },
+    { name: 'Registrarse', url: 'https://www.genealogic.io/register' },
   ]
   const data = {
     '@context': 'https://schema.org',

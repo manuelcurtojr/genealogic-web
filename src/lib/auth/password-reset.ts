@@ -16,7 +16,7 @@ import 'server-only'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { sendTransactionalEmail } from '@/lib/email/send'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.genealogic.io'
 
 export async function sendPasswordResetEmail(email: string, locale?: string): Promise<void> {
   const clean = email.trim().toLowerCase()

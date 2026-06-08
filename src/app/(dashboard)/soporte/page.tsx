@@ -31,11 +31,11 @@ export const metadata: Metadata = {
   title: 'Soporte',
   description:
     'Tus solicitudes, reclamaciones y soporte humano en un solo sitio. Abre un ticket y un humano del equipo te responderá en menos de 24h en horario laboral.',
-  alternates: { canonical: 'https://genealogic.io/soporte' },
+  alternates: { canonical: 'https://www.genealogic.io/soporte' },
   openGraph: {
     title: 'Soporte — Genealogic',
     description: 'Tus solicitudes y soporte humano. Respondemos en menos de 24h.',
-    url: 'https://genealogic.io/soporte',
+    url: 'https://www.genealogic.io/soporte',
     type: 'website',
     siteName: 'Genealogic',
     images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Genealogic' }],

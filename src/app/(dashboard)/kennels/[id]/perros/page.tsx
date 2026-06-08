@@ -27,7 +27,7 @@ export async function generateMetadata(
   const loc = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const title = `Nuestros perros · ${kennel.name}`
   const description = `Reproductores, cachorros disponibles y ejemplares criados por ${kennel.name}${loc ? ` en ${loc}` : ''}. Cada perro con su genealogía completa y verificable.`
-  const canonical = `https://genealogic.io/kennels/${kennel.slug}/perros`
+  const canonical = `https://www.genealogic.io/kennels/${kennel.slug}/perros`
   return {
     title,
     description,

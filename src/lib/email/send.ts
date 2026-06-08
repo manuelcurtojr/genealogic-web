@@ -12,7 +12,7 @@
  *
  * ENV vars:
  *   RESEND_API_KEY          (server-only)
- *   NEXT_PUBLIC_SITE_URL    (https://genealogic.io)
+ *   NEXT_PUBLIC_SITE_URL    (https://www.genealogic.io)
  */
 import 'server-only'
 import { Resend } from 'resend'

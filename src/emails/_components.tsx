@@ -18,7 +18,7 @@ import {
 } from '@react-email/components'
 import { getTranslator } from '@/lib/i18n'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.genealogic.io'
 const ICON_URL = `${SITE_URL}/icon.svg`
 
 // ─── Tokens compartidos ─────────────────────────────────────────────────────

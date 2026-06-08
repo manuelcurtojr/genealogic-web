@@ -73,7 +73,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
     // Blog posts
     for (const { meta } of allPosts) {
       entries.push({
-        url: `https://genealogic.io/blog/${meta.slug}`,
+        url: `https://www.genealogic.io/blog/${meta.slug}`,
         lastModified: new Date(meta.date),
         changeFrequency: 'monthly',
         priority: 0.6,
@@ -92,7 +92,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
       .limit(10000)
     for (const b of (breeds || [])) {
       entries.push({
-        url: `https://genealogic.io/razas/${b.slug}`,
+        url: `https://www.genealogic.io/razas/${b.slug}`,
         lastModified: b.updated_at ? new Date(b.updated_at) : new Date(),
         changeFrequency: 'weekly',
         priority: 0.7,
@@ -108,7 +108,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
       .limit(10000)
     for (const k of (kennels || [])) {
       entries.push({
-        url: `https://genealogic.io/kennels/${k.slug}`,
+        url: `https://www.genealogic.io/kennels/${k.slug}`,
         lastModified: k.updated_at ? new Date(k.updated_at) : new Date(),
         changeFrequency: 'weekly',
         priority: 0.6,
@@ -128,7 +128,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
 
   for (const dog of (dogs || [])) {
     entries.push({
-      url: `https://genealogic.io/dogs/${dog.slug}`,
+      url: `https://www.genealogic.io/dogs/${dog.slug}`,
       lastModified: dog.updated_at ? new Date(dog.updated_at) : new Date(),
       changeFrequency: 'weekly',
       priority: 0.7,
@@ -140,13 +140,13 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
 
 function staticEntries(): MetadataRoute.Sitemap {
   return [
-    { url: 'https://genealogic.io', lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
-    { url: 'https://genealogic.io/search', lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
-    { url: 'https://genealogic.io/kennels', lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
-    { url: 'https://genealogic.io/razas', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: 'https://genealogic.io/blog', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
-    { url: 'https://genealogic.io/privacy', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
-    { url: 'https://genealogic.io/terms', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
-    { url: 'https://genealogic.io/legal', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: 'https://www.genealogic.io', lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
+    { url: 'https://www.genealogic.io/search', lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
+    { url: 'https://www.genealogic.io/kennels', lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
+    { url: 'https://www.genealogic.io/razas', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    { url: 'https://www.genealogic.io/blog', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
+    { url: 'https://www.genealogic.io/privacy', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: 'https://www.genealogic.io/terms', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: 'https://www.genealogic.io/legal', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
   ]
 }

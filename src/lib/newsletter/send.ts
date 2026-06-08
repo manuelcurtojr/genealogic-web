@@ -9,7 +9,7 @@
  *
  * ENV vars necesarias:
  *   RESEND_API_KEY            (server-only)
- *   NEXT_PUBLIC_SITE_URL      (https://genealogic.io)
+ *   NEXT_PUBLIC_SITE_URL      (https://www.genealogic.io)
  *
  * From: `newsletter@genealogic.io` (separado del transaccional para
  * mejorar entregabilidad y permitir bloquear marketing sin perder avisos).
@@ -43,7 +43,7 @@ function firstName(fullName: string | null | undefined): string | null {
 }
 
 function unsubscribeUrl(token: string, campaignId: string): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.genealogic.io'
   return `${base}/newsletter/unsubscribe?token=${encodeURIComponent(token)}&campaign=${encodeURIComponent(campaignId)}`
 }
 
@@ -70,12 +70,12 @@ export async function sendCampaignTest(args: {
     heroImageUrl: c.hero_image_url,
     ctaLabel: c.cta_label,
     ctaUrl: c.cta_url,
-    unsubscribeUrl: 'https://genealogic.io/newsletter/unsubscribe?token=TEST&campaign=TEST',
+    unsubscribeUrl: 'https://www.genealogic.io/newsletter/unsubscribe?token=TEST&campaign=TEST',
     kennelName: k.name,
     kennelLogoUrl: k.logo_url,
     kennelSiteUrl: k.custom_domain
       ? `https://${k.custom_domain}`
-      : k.slug ? `https://genealogic.io/c/${k.slug}` : null,
+      : k.slug ? `https://www.genealogic.io/c/${k.slug}` : null,
   })
 
   try {
@@ -141,7 +141,7 @@ export async function sendCampaignNow(args: {
 
   const kennelSiteUrl = k.custom_domain
     ? `https://${k.custom_domain}`
-    : k.slug ? `https://genealogic.io/c/${k.slug}` : null
+    : k.slug ? `https://www.genealogic.io/c/${k.slug}` : null
   const replyTo = c.reply_to || undefined
 
   let sent = 0, failed = 0

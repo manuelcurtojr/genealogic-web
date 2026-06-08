@@ -21,13 +21,13 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t(
       'Catálogo completo de razas con sus estándares oficiales (FCI, RSCE, AKC, KC), colores admitidos y miles de ejemplares con genealogía verificable.'
     ),
-    alternates: { canonical: 'https://genealogic.io/razas' },
+    alternates: { canonical: 'https://www.genealogic.io/razas' },
     openGraph: {
       title: t('Razas caninas — Genealogic'),
       description: t(
         'Estándares oficiales, colores admitidos y miles de ejemplares de cada raza, con genealogías verificables.'
       ),
-      url: 'https://genealogic.io/razas',
+      url: 'https://www.genealogic.io/razas',
       siteName: 'Genealogic',
       type: 'website',
       images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: t('Razas — Genealogic') }],

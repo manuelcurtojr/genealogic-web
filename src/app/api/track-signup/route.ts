@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       subject: `Nuevo usuario registrado`,
       body: `Email: ${profile?.email || user.email || 'sin email'}\nNombre: ${profile?.display_name || '—'}\nFuente: ${source}\nLanding: ${landing}\nDispositivo: ${meta.signup_device}`,
       dedupeKey: `admin_alert:signup:${user.id}`,
-      ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'}/admin/users`,
+      ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.genealogic.io'}/admin/users`,
       ctaLabel: 'Ver usuarios',
     }).catch(() => {})
   }

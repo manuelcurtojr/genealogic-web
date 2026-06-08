@@ -12,7 +12,7 @@
 import 'server-only'
 import * as cheerio from 'cheerio'
 
-const USER_AGENT = 'Mozilla/5.0 (compatible; GenealogicBot/1.0; +https://genealogic.io/bot)'
+const USER_AGENT = 'Mozilla/5.0 (compatible; GenealogicBot/1.0; +https://www.genealogic.io/bot)'
 const MAX_HTML_BYTES = 5_000_000  // 5MB de margen
 
 export type ScrapeResult = {

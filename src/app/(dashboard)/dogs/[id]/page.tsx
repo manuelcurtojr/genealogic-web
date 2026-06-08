@@ -102,7 +102,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   // Google trunca alrededor de 160 chars; intentamos que la primera frase quede entera y completa <= 320
   if (description.length > 320) description = description.slice(0, 317) + '…'
 
-  const url = `https://genealogic.io/dogs/${dog.slug || id}`
+  const url = `https://www.genealogic.io/dogs/${dog.slug || id}`
 
   // ─── OG image ───────────────────────────────────────────────────────────
   // WhatsApp / Facebook / Twitter / LinkedIn esperan:
@@ -116,7 +116,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   // Esto garantiza 1200x630 exactos, ~30-50 KB JPEG, y cache CDN.
   //
   // Fallback si no hay foto: el opengraph-image.tsx de la raíz (1200x630 brandeado).
-  const FALLBACK_OG = 'https://genealogic.io/opengraph-image'
+  const FALLBACK_OG = 'https://www.genealogic.io/opengraph-image'
   let ogImage = FALLBACK_OG
   let ogIsTransformed = false
   if (dog.thumbnail_url) {
@@ -257,7 +257,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
     galleryMedia.unshift({ url: dog.thumbnail_url, type: 'photo' })
   }
 
-  const canonicalUrl = `https://genealogic.io/dogs/${dog.slug || dog.id}`
+  const canonicalUrl = `https://www.genealogic.io/dogs/${dog.slug || dog.id}`
   const dogDescription = `${dog.name}${breedName ? `, ${breedName}` : ''}${
     kennel?.name ? ` de ${kennel.name}` : ''
   }. Genealogic — Plataforma de Crianza Canina.`
@@ -273,14 +273,14 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         color={colorName}
         sex={dog.sex}
         birthDate={dog.birth_date}
-        kennel={kennel ? { name: kennel.name, slug: kennel.slug, url: kennel.slug ? `https://genealogic.io/kennels/${kennel.slug}` : undefined } : null}
+        kennel={kennel ? { name: kennel.name, slug: kennel.slug, url: kennel.slug ? `https://www.genealogic.io/kennels/${kennel.slug}` : undefined } : null}
         sireName={father?.name}
         damName={mother?.name}
       />
       <BreadcrumbJsonLd
         items={[
-          { name: 'Inicio', url: 'https://genealogic.io' },
-          ...(kennel ? [{ name: kennel.name, url: `https://genealogic.io/kennels/${kennel.slug || kennel.id}` }] : []),
+          { name: 'Inicio', url: 'https://www.genealogic.io' },
+          ...(kennel ? [{ name: kennel.name, url: `https://www.genealogic.io/kennels/${kennel.slug || kennel.id}` }] : []),
           { name: dog.name, url: canonicalUrl },
         ]}
       />

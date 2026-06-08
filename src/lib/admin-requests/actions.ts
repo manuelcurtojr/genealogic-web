@@ -32,7 +32,7 @@ import { FEEDBACK_SCOPE_LABELS } from './types'
 // en los primeros meses post-launch.
 const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || 'gestion@manuelcurto.com'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.genealogic.io'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -116,7 +116,7 @@ export async function createSupportRequestAction(input: {
     subject: `Soporte: ${subject}`,
     body: `De: ${profile?.display_name || profile?.email || 'usuario'} (${profile?.email || 'sin email'})\n\n${message}`,
     dedupeKey: `admin_alert:support:${data.id}`,
-    ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'}/admin/solicitudes/${data.id}`,
+    ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.genealogic.io'}/admin/solicitudes/${data.id}`,
     ctaLabel: 'Ver ticket',
   }).catch(() => {})
 
@@ -327,7 +327,7 @@ export async function createClaimRequestAction(input: {
       : `Nuevo claim de criadero`,
     body: `De: ${profile?.display_name || profile?.email || 'usuario'} (${profile?.email})\n\n${message}\n\nEvidencias adjuntas: ${input.evidence.length}`,
     dedupeKey: `admin_alert:claim:${data.id}`,
-    ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'}/admin/solicitudes/${data.id}`,
+    ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.genealogic.io'}/admin/solicitudes/${data.id}`,
     ctaLabel: 'Revisar claim',
   }).catch(() => {})
 

@@ -441,7 +441,7 @@ function SaleDogCard({ dog, currencySymbol, dogsToGenealogic }: { dog: DogRow; c
   const symbol = currencySymbol[dog.sale_currency || 'EUR'] || '€'
   return (
     <Link
-      href={dogsToGenealogic ? `https://genealogic.io/dogs/${dog.slug || dog.id}` : `/dogs/${dog.slug || dog.id}`}
+      href={dogsToGenealogic ? `https://www.genealogic.io/dogs/${dog.slug || dog.id}` : `/dogs/${dog.slug || dog.id}`}
       target={dogsToGenealogic ? '_blank' : undefined}
       rel={dogsToGenealogic ? 'noopener noreferrer' : undefined}
       className="group relative overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft"
@@ -483,7 +483,7 @@ function PublicDogCard({ dog, dogsToGenealogic }: { dog: DogRow; dogsToGenealogi
   const sexColor = dog.sex === 'male' ? BRAND.male : BRAND.female
   return (
     <Link
-      href={dogsToGenealogic ? `https://genealogic.io/dogs/${dog.slug || dog.id}` : `/dogs/${dog.slug || dog.id}`}
+      href={dogsToGenealogic ? `https://www.genealogic.io/dogs/${dog.slug || dog.id}` : `/dogs/${dog.slug || dog.id}`}
       target={dogsToGenealogic ? '_blank' : undefined}
       rel={dogsToGenealogic ? 'noopener noreferrer' : undefined}
       className="group overflow-hidden rounded-xl border border-hairline bg-canvas transition-colors hover:bg-surface-soft"

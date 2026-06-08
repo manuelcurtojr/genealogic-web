@@ -27,7 +27,7 @@ export async function generateMetadata(
   const loc = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const title = `Contacto · ${kennel.name}`
   const description = `Contacta con ${kennel.name}${loc ? ` en ${loc}` : ''} para resolver dudas, planificar una visita o informarte sobre próximas camadas.`
-  const canonical = `https://genealogic.io/kennels/${kennel.slug}/contacto`
+  const canonical = `https://www.genealogic.io/kennels/${kennel.slug}/contacto`
   return {
     title,
     description,

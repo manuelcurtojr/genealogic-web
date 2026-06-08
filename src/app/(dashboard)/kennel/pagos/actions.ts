@@ -44,7 +44,7 @@ export async function startStripeOnboardingAction(): Promise<void> {
       .eq('id', kennel.id)
   }
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://genealogic.io'
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.genealogic.io'
   const url = await createAccountLink({
     accountId,
     returnUrl: `${origin}/kennel/pagos?refresh=1`,
