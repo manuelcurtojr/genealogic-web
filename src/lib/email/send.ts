@@ -47,6 +47,7 @@ import ReproNextHeatEmail, { type ReproNextHeatProps } from '@/emails/repro-next
 import ReproConfirmPregnancyEmail, { type ReproConfirmPregnancyProps } from '@/emails/repro-confirm-pregnancy'
 import ReproBirthSoonEmail, { type ReproBirthSoonProps } from '@/emails/repro-birth-soon'
 import OwnerCheckinEmail, { type OwnerCheckinProps } from '@/emails/owner-checkin'
+import OwnerActivationEmail, { type OwnerActivationProps } from '@/emails/owner-activation'
 
 const FROM_TRANSACTIONAL = 'Genealogic <hola@genealogic.io>'
 const REPLY_TO = 'hola@genealogic.io'
@@ -80,6 +81,7 @@ export type EmailTemplate =
   | { template: 'repro_confirm_pregnancy'; props: ReproConfirmPregnancyProps }
   | { template: 'repro_birth_soon';       props: ReproBirthSoonProps }
   | { template: 'owner_checkin';          props: OwnerCheckinProps }
+  | { template: 'owner_activation';       props: OwnerActivationProps }
 
 /** Categoría → si el user puede hacer opt-out. */
 type Category = 'auth' | 'reservations' | 'messages' | 'vet_reminders' | 'weekly_digest' | 'marketing' | 'critical'
@@ -231,6 +233,15 @@ const TEMPLATE_META: Record<EmailTemplate['template'], {
     subject: (_p, t) => t('¿Qué tal tus primeros días en Genealogic?'),
     replyTo: REPLY_TO_FOUNDER, // las respuestas van directas a Manuel
   },
+  owner_activation: {
+    // 'marketing' → respeta opt-out. Founder voice, reply-to directo a Manuel.
+    category: 'marketing',
+    subject: (p: OwnerActivationProps, t) => {
+      const name = p.displayName?.split(' ')[0]
+      return name ? `${t('Bienvenido a Genealogic')}, ${name} 🐾` : `${t('Bienvenido a Genealogic')} 🐾`
+    },
+    replyTo: REPLY_TO_FOUNDER,
+  },
 }
 
 let _resend: Resend | null = null
@@ -281,6 +292,7 @@ function renderTemplate(t: EmailTemplate, locale: Locale): Promise<string> {
     case 'repro_confirm_pregnancy': return render(ReproConfirmPregnancyEmail(p))
     case 'repro_birth_soon':       return render(ReproBirthSoonEmail(p))
     case 'owner_checkin':          return render(OwnerCheckinEmail(p))
+    case 'owner_activation':       return render(OwnerActivationEmail(p))
   }
 }
 

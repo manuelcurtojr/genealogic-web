@@ -41,7 +41,9 @@ export async function GET(req: Request) {
   const { data: owners } = await admin
     .from('profiles')
     .select('id, display_name, email, created_at')
-    .eq('onboarding_intent', 'owner')
+    // Filtra por role='owner', NO onboarding_intent: la mayoría de altas tienen
+    // intent=NULL pero role='owner'. Filtrar por intent dejaba fuera ~84%.
+    .eq('role', 'owner')
     .gte('created_at', iso3d)
     .lt('created_at', iso2d)
     .not('email', 'is', null)

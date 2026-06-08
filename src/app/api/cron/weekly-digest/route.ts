@@ -107,10 +107,12 @@ export async function GET(req: Request) {
   }
 
   // ─── OWNERS ────────────────────────────────────────────────────────────
+  // Filtra por role='owner', NO onboarding_intent: casi todas las altas tienen
+  // intent=NULL pero role='owner'. Filtrar por intent dejaba fuera ~84%.
   const { data: owners } = await admin
     .from('profiles')
     .select('id, display_name, email')
-    .eq('onboarding_intent', 'owner')
+    .eq('role', 'owner')
 
   const in14ISO = new Date(now.getTime() + 14 * 86400000).toISOString().slice(0, 10)
   const todayISO = now.toISOString().slice(0, 10)
