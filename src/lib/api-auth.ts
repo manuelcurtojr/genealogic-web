@@ -10,7 +10,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { isKennelPro } from '@/lib/permissions'
+import { hasEnterpriseFeatures } from '@/lib/permissions'
 
 const KEY_PREFIX = 'gnl_'
 
@@ -114,7 +114,10 @@ export async function authenticateRequest(
     .eq('id', ownerId)
     .maybeSingle()
 
-  if (!isKennelPro(ownerProfile?.plan)) {
+  // Acceso a la API: plan Enterprise (kennel_pro) O usuario enterprise
+  // (founder/Irema). Tras pasar a "Pro + addons", el founder tiene plan
+  // `kennel` pero está en ENTERPRISE_USERS, así que sigue teniendo API.
+  if (!hasEnterpriseFeatures(ownerProfile?.plan, ownerId)) {
     return {
       ok: false,
       response: NextResponse.json(
