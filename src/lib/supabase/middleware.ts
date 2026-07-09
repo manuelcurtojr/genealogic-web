@@ -68,48 +68,9 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // ─── Custom domain rewrite ─────────────────────────────────────────────
-  // Si el host no es genealogic.io ni vercel.app ni localhost, buscar si es
-  // un custom_domain de algún kennel y servir su web pública via /c/[slug].
-  const host = request.headers.get('host')?.toLowerCase() || ''
-  const isGenealogicHost =
-    host === '' ||
-    host.endsWith('genealogic.io') ||
-    host.endsWith('vercel.app') ||
-    host.startsWith('localhost') ||
-    host.startsWith('127.0.0.1')
-
-  if (!isGenealogicHost && !pathname.startsWith('/api/') && !pathname.startsWith('/_next/')) {
-    const { data: kennel } = await supabase
-      .from('kennels')
-      .select('slug')
-      .eq('custom_domain', host)
-      .eq('custom_domain_verified', true)
-      .single()
-    if (kennel?.slug) {
-      // Todo custom domain verificado se sirve con la WEB DINÁMICA
-      // /kennels/[slug]/* (auto-generada). El constructor /c/[slug] fue
-      // retirado. Los layouts suprimen el chrome de Genealogic.
-      // Passthrough para rutas que YA son absolutas de la app (links internos
-      // no migrados a URL corta: /dogs/…, /litters/…, o el propio /kennels/…).
-      // Sin esto, prefijarlas daría /kennels/slug/kennels/slug/… → 404.
-      const isAppAbsolute =
-        pathname.startsWith('/kennels/') ||
-        pathname.startsWith('/dogs/') ||
-        pathname.startsWith('/litters/')
-      if (!isAppAbsolute) {
-        const url = request.nextUrl.clone()
-        // URL corta (/perros, /sobre, …) → /kennels/[slug]/perros. Raíz → /kennels/[slug].
-        url.pathname = pathname === '/' ? `/kennels/${kennel.slug}` : `/kennels/${kennel.slug}${pathname}`
-        return NextResponse.rewrite(url)
-      }
-      // isAppAbsolute: no reescribir, servir tal cual (cae abajo).
-    }
-  }
-
   // Public dog detail pages (e.g. /dogs/uuid) and public kennel pages.
-  // Para kennels: TODO `/kennels/[slug]/*` es público (home + sobre + perros
-  // + galería + instalaciones + blog + blog/[postSlug] + contacto). El
+  // Para kennels: TODO `/kennels/[slug]/*` es público (home + perros
+  // + contacto). El
   // middleware tenía aquí una regex que solo dejaba el detail level-1
   // (`/kennels/[slug]`) y mandaba a login en cualquier subpágina —
   // rompía la navegación de la web Pro para visitantes no logueados.
@@ -125,16 +86,14 @@ export async function updateSession(request: NextRequest) {
   // sus solicitudes. La vista Free es simplificada (bandeja); Pro desbloquea
   // pipeline avanzado, contactos y contratos (que sí siguen Pro).
   const proRoutePrefixes = [
-    '/clientes', '/contactos', '/contratos', '/emailbot', '/conocimiento',
-    '/estadisticas', '/visitas', '/newsletter', '/cuenta',
+    '/clientes', '/contactos', '/contratos',
+    '/estadisticas', '/visitas', '/cuenta',
   ]
   // EXCEPCIONES dentro de las rutas Pro:
-  //  - /newsletter/unsubscribe — público (links en emails a no-usuarios)
   //  - /cuenta/suscripcion — accesible para FREE (entrada al upgrade desde
   //    el flujo signup→register?plan=pro→kennel/new→activar plan)
-  const isPublicNewsletterPath = pathname.startsWith('/newsletter/unsubscribe')
   const isUpgradeEntryPath = pathname === '/cuenta/suscripcion' || pathname.startsWith('/cuenta/suscripcion/')
-  const isProException = isPublicNewsletterPath || isUpgradeEntryPath
+  const isProException = isUpgradeEntryPath
   const isProRoute = !isProException && proRoutePrefixes.some(p => pathname === p || pathname.startsWith(p + '/'))
 
   // Protected routes — redirect to login if not authenticated

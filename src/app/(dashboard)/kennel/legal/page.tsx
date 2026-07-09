@@ -1,23 +1,18 @@
 /**
  * /kennel/legal — datos legales del criadero.
  *
- * Accesible a CUALQUIER dueño de kennel (no requiere extensión Web).
+ * Accesible a CUALQUIER dueño de kennel.
  * Su finalidad principal es alimentar los contratos de reserva / entrega
  * con razón social, CIF, domicilio, representante, etc. — sin esto los
  * contratos se generan con huecos en blanco.
- *
- * El editor más completo (con overrides de documentos públicos como
- * privacidad/T&Cs) vive en /kennel/contenido/legal y SÍ requiere la
- * extensión Web (esos documentos solo aplican a la web pública).
  */
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ShieldCheck, ExternalLink } from 'lucide-react'
+import { ArrowLeft, ShieldCheck } from 'lucide-react'
 import KennelLegalDataForm from '@/components/kennel/kennel-legal-data-form'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
-import { kennelHasAddon } from '@/lib/kennel/addons'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Datos legales · Genealogic' }
@@ -29,13 +24,12 @@ export default async function KennelLegalPage() {
 
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, name, addons, owner_id, legal_name, legal_id, legal_address, legal_email, legal_representative, legal_representative_id, sign_city, jurisdiction')
+    .select('id, slug, name, owner_id, legal_name, legal_id, legal_address, legal_email, legal_representative, legal_representative_id, sign_city, jurisdiction')
     .eq('owner_id', user.id)
     .maybeSingle()
   if (!kennel) redirect('/kennel/new')
 
   const t = getTranslator(await getLocale())
-  const hasWeb = kennelHasAddon(kennel, 'web', user.id)
 
   // Cuántos campos están rellenos — barra de progreso visual arriba
   const requiredFields = [
@@ -111,25 +105,6 @@ export default async function KennelLegalPage() {
         }}
       />
 
-      {/* Link al editor avanzado si tiene Web addon */}
-      {hasWeb && (
-        <div className="rounded-xl border border-hairline bg-surface-soft/40 p-4 flex items-start gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-[13.5px] font-semibold text-ink">
-              {t('Documentos legales de tu web pública')}
-            </p>
-            <p className="mt-0.5 text-[12.5px] text-muted leading-snug">
-              {t('Aviso legal, política de privacidad, cookies y T&Cs. Las plantillas se rellenan con los datos de arriba — solo personalízalas si necesitas algo específico.')}
-            </p>
-          </div>
-          <Link
-            href="/kennel/contenido/legal"
-            className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-ink hover:text-[#FE6620] transition whitespace-nowrap"
-          >
-            {t('Editar documentos')} <ExternalLink className="h-3 w-3" />
-          </Link>
-        </div>
-      )}
     </div>
   )
 }

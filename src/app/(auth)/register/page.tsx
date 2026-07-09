@@ -256,8 +256,7 @@ function intentBranding(data: SignupIntentData | null, t: (key: string) => strin
   // 'free' | 'kennel' | 'pro' (los legacy kennel_pro/premium/enterprise se
   // normalizan a Pro al parsear la URL en signup-intent.ts).
   // Modelo actual (sin Enterprise): cualquier plan de pago de criador es
-  // Kennel Pro. Las extensiones (Web 19€, Newsletter 9€) se contratan luego
-  // desde la cuenta, no en el registro.
+  // Kennel Pro.
   //   pro / kennel / kennel_pro / premium / enterprise → Kennel Pro (49€/mes · 14 días gratis sin tarjeta)
   //   free                                             → Kennel Free (5 perros · gratis)
   // El plan Owner (3 perros) llega por intent === 'owner', no por data.plan.

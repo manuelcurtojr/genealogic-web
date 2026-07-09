@@ -8,7 +8,7 @@ import { X, Loader2, Globe, ExternalLink, MessageCircle, MapPin, ChevronDown } f
 import { Portal } from '@/components/ui/portal'
 import { AFFIX_FORMATS, getAffixPreview, type AffixFormat } from '@/lib/affix'
 import { getLocalizedCountries, searchCities } from '@/lib/countries'
-import { revalidateKennelHomeAction } from '@/lib/kennel/content-actions'
+import { revalidateKennelHomeAction } from '@/lib/kennel/revalidate-home-action'
 import { useT } from '@/components/i18n/locale-provider'
 
 interface Props {

@@ -18,7 +18,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getEffectiveRoles } from '@/lib/auth/roles'
 import { isEnterpriseUser } from '@/lib/permissions'
-import { activeAddons } from '@/lib/kennel/addons'
 
 export interface ShellContext {
   userId: string
@@ -30,7 +29,7 @@ export interface ShellContext {
     role: string
     avatar_url: string | null
   }
-  kennel: { name: string; logo_url: string | null; addons: string[] } | null
+  kennel: { name: string; logo_url: string | null } | null
   plan: string
   planIsFounder: boolean
   isClient: boolean
@@ -49,7 +48,7 @@ export async function loadShellContext(): Promise<ShellContext | null> {
       .single(),
     supabase
       .from('kennels')
-      .select('name, logo_url, addons')
+      .select('name, logo_url')
       .eq('owner_id', user.id)
       .limit(1),
     getEffectiveRoles(user.id),
@@ -65,19 +64,11 @@ export async function loadShellContext(): Promise<ShellContext | null> {
   } | null
 
   const kennelRaw = kennelRes.data?.[0] || null
-  // Resolvemos las extensiones EFECTIVAS aquí (incluye el override de founder vía
-  // ENTERPRISE_USERS — NO el genérico plan_is_founder). Así el sidebar/consumidores
-  // usan kennel.addons directamente sin re-aplicar overrides.
   const kennel = kennelRaw
-    ? {
-        name: kennelRaw.name,
-        logo_url: kennelRaw.logo_url,
-        addons: Array.from(activeAddons(kennelRaw as { addons?: string[] | null }, user.id)),
-      }
+    ? { name: kennelRaw.name, logo_url: kennelRaw.logo_url }
     : null
   const rawPlan = profile?.plan || 'free'
-  // Enterprise se retiró: el founder es Pro (`kennel`) + todas las extensiones
-  // (estas últimas vía el override de ENTERPRISE_USERS en kennelHasAddon).
+  // Enterprise se retiró: el founder es Pro (`kennel`).
   const plan = isEnterpriseUser(user.id) ? 'kennel' : rawPlan
   const planIsFounder = isEnterpriseUser(user.id) || Boolean(profile?.plan_is_founder)
 

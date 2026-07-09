@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { ArrowLeft, Loader2, Plus, Copy, Check, Trash2, Key, AlertTriangle, ExternalLink } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 
@@ -17,12 +16,9 @@ interface ApiKey {
 }
 
 export default function KennelApiKeysPage() {
-  // La API REST pública está retirada del producto por ahora. Ocultamos la
-  // gestión de API keys redirigiendo a /kennel. La página y /api-docs se
-  // conservan para reactivarlas en el futuro. redirect() lanza, así que
-  // ningún hook de abajo llega a ejecutarse (orden de hooks consistente).
-  redirect('/kennel')
-
+  // La API pública v1 sigue operativa pero NO se publicita: esta página está
+  // en RESERVED_PATHS (lib/features/launch.ts), así que el middleware solo
+  // deja entrar a insiders (founder + cuentas enterprise). Sin marketing.
   const t = useT()
   const [kennelId, setKennelId] = useState<string>('')
   const [kennelName, setKennelName] = useState<string>('')
@@ -129,9 +125,6 @@ export default function KennelApiKeysPage() {
         <p className="text-xs text-body mb-2">
           {t('Permiten a tus')} <strong>{t('automatizaciones y herramientas externas')}</strong> {t('(Make, Zapier, scripts propios…) consultar tus perros, camadas y datos del criadero en tiempo real, vía API.')}
         </p>
-        <Link href="/api-docs" className="text-xs text-blue-300 hover:text-blue-200 flex items-center gap-1">
-          {t('Ver documentación de la API')} <ExternalLink className="w-3 h-3" />
-        </Link>
       </div>
 
       {/* Newly created key (shown once) */}

@@ -630,37 +630,11 @@ function ConversacionTab({ r, isPro }: { r: Reservation; isPro: boolean }) {
         </a>
       )}
 
-      {/* Placeholder de hilos */}
-      <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft px-5 py-10 text-center">
-        <MessageSquare className="mx-auto h-8 w-8 text-muted" />
-        <p className="mt-3 text-[14px] font-semibold text-ink">{t('Hilo de conversación')}</p>
-        <p className="mt-1 text-[12.5px] text-body">
-          {isPro
-            ? t('Aquí aparecerán los emails enviados y recibidos cuando actives el Emailbot.')
-            : t('Con Pro: el Emailbot puede responder automáticamente y derivar a humano cuando corresponda.')}
-        </p>
-        {isPro ? (
-          <Link
-            href="/emailbot"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-1.5 text-[12.5px] font-medium text-on-primary hover:opacity-90"
-          >
-            <Bot className="h-3.5 w-3.5" /> {t('Configurar Emailbot')}
-          </Link>
-        ) : (
-          <Link
-            href="/cuenta/suscripcion"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-3.5 py-1.5 text-[12.5px] font-medium text-white hover:opacity-90"
-          >
-            <Crown className="h-3.5 w-3.5" /> {t('Ver planes Pro')}
-          </Link>
-        )}
-      </div>
-
       {/* Composer manual placeholder */}
       <div className="rounded-xl border border-hairline bg-canvas p-3">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">{t('Composer manual')}</p>
         <p className="mt-1 text-[12px] text-body">
-          {t('Disponible cuando se enchufe el envío de emails outbound (Resend + emailbot). De momento usa el botón "Responder por email" de arriba que abre tu cliente de correo.')}
+          {t('Disponible cuando se enchufe el envío de emails outbound (Resend). De momento usa el botón "Responder por email" de arriba que abre tu cliente de correo.')}
         </p>
       </div>
     </div>

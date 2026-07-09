@@ -6,7 +6,6 @@ import { ArrowLeft, Globe, Calendar, MapPin, ExternalLink, Sparkles, BadgeCheck 
 import { isUUID } from '@/lib/slug'
 import { pastelByName } from '@/lib/avatars'
 import KennelPublicTabs from '@/components/kennel/kennel-public-tabs'
-import KennelProHome from '@/components/kennel/pro-home'
 import PageTracker from '@/components/track/page-tracker'
 import RecordView from '@/components/track/record-view'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
@@ -17,7 +16,6 @@ import { HIDDEN_REASON_LABELS, type HiddenReason } from '@/lib/moderation/types'
 import { EyeOff } from 'lucide-react'
 import { sortDogsByPhotoQuality } from '@/lib/dogs/sort-quality'
 import { KennelJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
-import { kennelHasAddon } from '@/lib/kennel/addons'
 import { getKennelReproductiveBreedNames } from '@/lib/kennel/breeds'
 import { getKennelHomeData } from '@/lib/kennel/kennel-home-cache'
 import type { Metadata } from 'next'
@@ -27,13 +25,7 @@ import { getLocale } from '@/lib/locale'
 /**
  * Home pública del criadero.
  *
- * - Free / Kennel: perfil simple (hero rediseñado + tabs de perros + contacto).
- * - Kennel Pro / enterprise: landing Pro completa (KennelProHome) — el chrome
- *   con menú lo añade el layout superior. Las páginas secundarias (sobre,
- *   instalaciones, galería, blog, contacto, perros) viven en subdirectorios
- *   y comparten ese mismo chrome.
- *
- * /c/[slug] sigue funcionando tal cual — Irema sigue accesible por ambos.
+ * Perfil simple (hero rediseñado + tabs de perros + contacto).
  */
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -127,27 +119,10 @@ export default async function KennelDetailPage({
   const allDogs = homeData.allDogs
   const allLitters = homeData.allLitters
   const breedNames = homeData.breedNames
-  const faqEntries = homeData.faqEntries
-  const reviewsRaw = homeData.reviewsRaw
-  const recentPosts = homeData.recentPosts
-  const clientUserIds = new Set(homeData.clientUserIds)
-
   // Razas de los reproductores para el selector del formulario de contacto
   // (si hay >=2, el criador sabrá por qué raza preguntan los leads).
   const reproBreedNames = await getKennelReproductiveBreedNames(supabase, kennel.id)
 
-  const reviews = reviewsRaw.map(r => ({
-    id: r.id,
-    author_name: r.author_name,
-    body: r.body,
-    rating: r.rating,
-    author_avatar_url: r.author_avatar_url,
-    badge: r.is_manual
-      ? null
-      : (r.submitted_by_user_id && clientUserIds.has(r.submitted_by_user_id) ? 'client' as const : 'user' as const),
-  }))
-
-  const isPro = kennelHasAddon(kennel, 'web', kennel.owner_id)
 
   // Sort 3-tier (count fotos): perros con galería rica primero, después
   // los que solo tienen thumbnail, al final los sin foto. El photoCount
@@ -298,173 +273,6 @@ export default async function KennelDetailPage({
       )}
     </>
   )
-
-  // ═══════════════════════════════════════════════════════════════════
-  // KENNEL PRO — landing Pro completa
-  // ═══════════════════════════════════════════════════════════════════
-  if (isPro) {
-    // Para perros destacados de la home Pro:
-    // 1) Si el criador ha marcado perros con featured_in_home=true, esos son
-    //    los que se muestran (en el orden que vinieron del fetch).
-    // 2) Si no, fallback al orden automático por calidad de fotos (los 6
-    //    primeros del array `dogs` que ya está sorteado).
-    type RawDog = {
-      id: string; slug: string | null; name: string;
-      thumbnail_url: string | null;
-      featured_in_home?: boolean;
-      breed?: { name?: string } | { name?: string }[] | null
-    }
-    const all = dogs as RawDog[]
-    const manualFeatured = all.filter(d => d.featured_in_home).slice(0, 6)
-    const featuredSource = manualFeatured.length > 0
-      ? manualFeatured
-      : all.filter(d => d.thumbnail_url).slice(0, 6)
-    const featured = featuredSource.map(d => {
-      const breedRel = d.breed
-      const breed = Array.isArray(breedRel) ? breedRel[0] : breedRel
-      return {
-        id: d.id,
-        slug: d.slug,
-        name: d.name,
-        thumbnail_url: d.thumbnail_url,
-        breed: breed || null,
-      }
-    })
-
-    // ─── Section teasers (3 filas alternadas: Sobre · Perros · Galería) ──
-    // Cada fila tiene foto + texto + CTA y solo se renderiza si tiene
-    // contenido real disponible. Sustituye al antiguo bloque "Trayectoria
-    // en números".
-    //
-    // Imágenes: cogemos de kennel_photos (kind='gallery' para Sobre y
-    // Galería; un perro con foto para Nuestros perros). Sin trampas de
-    // imágenes externas, todo del catálogo del propio criadero.
-    // kennel_photos ya viene cacheado en homeData (solo kind='gallery')
-    const galleryPhotos = homeData.kennelPhotos
-    // Las 3 fotos de los teasers son SIEMPRE perros distintos del criadero
-    // (los 3 primeros con foto, que ya están ordenados por calidad). Si hay
-    // menos de 3 perros con foto, las filas que no tengan imagen se descartan.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dogsWithPhoto = (dogs as any[]).filter(d => d.thumbnail_url) as Array<{ thumbnail_url: string; name: string }>
-    const aboutImage = dogsWithPhoto[0]?.thumbnail_url || kennel.logo_url || null
-    const aboutImageAlt = dogsWithPhoto[0]?.name || `${kennel.name} — ${t('sobre nosotros')}`
-    const perrosImage = dogsWithPhoto[1]?.thumbnail_url || dogsWithPhoto[0]?.thumbnail_url || null
-    const perrosImageAlt = dogsWithPhoto[1]?.name || dogsWithPhoto[0]?.name || t('Nuestros perros')
-    const galleryImage = dogsWithPhoto[2]?.thumbnail_url || dogsWithPhoto[0]?.thumbnail_url || null
-    const galleryImageAlt = dogsWithPhoto[2]?.name || `${kennel.name} — ${t('galería')}`
-
-    const teasers: Array<{
-      id: string
-      eyebrow: string
-      title: string
-      body: string
-      ctaLabel: string
-      ctaHref: string
-      imageUrl: string | null
-      imageAlt: string
-    }> = []
-
-    // 1) Sobre nosotros (si hay about_md ≥50 chars)
-    if (kennel.about_md && kennel.about_md.trim().length >= 50 && aboutImage) {
-      teasers.push({
-        id: 'sobre',
-        eyebrow: t('Quiénes somos'),
-        title: `${kennel.name}, ${foundationYear ? `${t('desde')} ${foundationYear}` : t('criadero familiar')}`,
-        body: kennel.about_md.split(/\n\n+/)[0].replace(/\*\*([^*]+)\*\*/g, '$1').slice(0, 220).trim(),
-        ctaLabel: t('Conoce nuestra historia'),
-        ctaHref: `/kennels/${kennel.slug}/sobre`,
-        imageUrl: aboutImage,
-        imageAlt: aboutImageAlt,
-      })
-    }
-
-    // 2) Nuestros perros (si hay perros con foto)
-    if (perrosImage) {
-      const breedHint = breedNames[0] ? ` ${t('especializado en')} ${breedNames[0]}` : ''
-      teasers.push({
-        id: 'perros',
-        eyebrow: t('Nuestros perros'),
-        title: t('Conoce a los protagonistas'),
-        body: `${t('Catálogo completo de reproductores, cachorros en venta, camadas y producidos por el criadero')}${breedHint}. ${t('Cada perro con su genealogía completa documentada en Genealogic.')}`,
-        ctaLabel: t('Ver todos los perros'),
-        ctaHref: `/kennels/${kennel.slug}/perros`,
-        imageUrl: perrosImage,
-        imageAlt: perrosImageAlt,
-      })
-    }
-
-    // 3) Galería (si la página está enabled y tiene ≥3 fotos)
-    const galleryEnabled =
-      (kennel.enabled_pages as Record<string, unknown> | null)?.galeria === true
-    if (galleryEnabled && galleryImage && galleryPhotos.length >= 3) {
-      teasers.push({
-        id: 'galeria',
-        eyebrow: t('Imágenes'),
-        title: t('Cinco décadas en imágenes'),
-        body: `${t('Fotos del día a día del criadero, eventos, familias que ya tienen su cachorro y los perros que han marcado la trayectoria de')} ${kennel.name}.`,
-        ctaLabel: t('Ver galería'),
-        ctaHref: `/kennels/${kennel.slug}/galeria`,
-        imageUrl: galleryImage,
-        imageAlt: galleryImageAlt,
-      })
-    }
-
-    // ─── Disponibilidad (próxima camada + cachorros en venta) ────────
-    // Próxima camada: priorizamos status 'mated/confirmed/pending' (en
-    // gestación) > 'planned' (planificada) > 'born' (nacida reciente).
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const lits = allLitters as any[]
-    const priority = { mated: 1, confirmed: 1, pending: 1, planned: 2, born: 3, delivered: 99 } as Record<string, number>
-    const upcomingLitter = lits
-      .filter(l => l.status !== 'delivered')
-      .sort((a, b) => (priority[a.status] ?? 50) - (priority[b.status] ?? 50))[0] || null
-
-    const availablePuppiesCount = forSale.length
-    const availability = {
-      nextLitter: upcomingLitter ? {
-        id: upcomingLitter.id as string,
-        father: Array.isArray(upcomingLitter.father) ? upcomingLitter.father[0] : upcomingLitter.father,
-        mother: Array.isArray(upcomingLitter.mother) ? upcomingLitter.mother[0] : upcomingLitter.mother,
-        breedName: (Array.isArray(upcomingLitter.breed) ? upcomingLitter.breed[0]?.name : upcomingLitter.breed?.name) || null,
-        expectedDate: upcomingLitter.birth_date || upcomingLitter.mating_date || null,
-        status: upcomingLitter.status as string,
-      } : null,
-      availablePuppiesCount,
-    }
-    return (
-      <div className="space-y-0">
-        {seo}
-        <KennelProHome
-          kennel={{
-            id: kennel.id,
-            name: kennel.name,
-            slug: kennel.slug,
-            logo_url: kennel.logo_url,
-            description: kennel.description,
-            about_md: kennel.about_md,
-            hero_image_url: kennel.hero_image_url,
-            foundation_date: kennel.foundation_date,
-            city: kennel.city,
-            country: kennel.country,
-            website: kennel.website,
-            social_instagram: kennel.social_instagram,
-            social_facebook: kennel.social_facebook,
-            contact_form_config: kennel.contact_form_config,
-            owner_id: kennel.owner_id,
-          }}
-          featuredDogs={featured}
-          faqEntries={faqEntries}
-          reviews={reviews}
-          recentPosts={recentPosts}
-          breedNames={breedNames}
-          reproBreedNames={reproBreedNames}
-          stats={stats}
-          teasers={teasers}
-          availability={availability}
-        />
-      </div>
-    )
-  }
 
   // ═══════════════════════════════════════════════════════════════════
   // FREE / KENNEL — perfil básico (1 landing)

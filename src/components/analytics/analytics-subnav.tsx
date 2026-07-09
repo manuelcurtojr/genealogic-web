@@ -28,7 +28,7 @@ export default function AnalyticsSubnav() {
     {
       href: '/estadisticas',
       label: t('Operativa'),
-      hint: t('Reservas, clientes, biblioteca, newsletter — resumen ejecutivo'),
+      hint: t('Reservas, clientes y visitas — resumen ejecutivo'),
       icon: TrendingUp,
       active: pathname === '/estadisticas' || pathname.startsWith('/estadisticas/'),
     },

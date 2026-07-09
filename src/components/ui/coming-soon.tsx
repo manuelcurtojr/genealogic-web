@@ -14,8 +14,8 @@ interface ComingSoonProps {
 
 /**
  * Pantalla placeholder para features Pro aún no implementadas.
- * Usado por las páginas del sidebar Pro (Emailbot, Web, Newsletter,
- * Estadísticas, Cuenta) hasta que se porten desde el monorepo Pawdoq.
+ * Usado por las páginas del sidebar Pro (Estadísticas, Cuenta) hasta que
+ * se porten desde el monorepo Pawdoq.
  */
 export default async function ComingSoon({
   title,

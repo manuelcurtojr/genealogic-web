@@ -30,7 +30,7 @@ const iconMap: Record<string, React.ElementType> = {
 
 interface SidebarProps {
   user: { display_name: string; email: string; role: string; avatar_url: string | null } | null
-  kennel: { name: string; logo_url: string | null; addons?: string[] | null } | null
+  kennel: { name: string; logo_url: string | null } | null
   plan: string
   planIsFounder?: boolean
   /** profiles.id — para el gate de features reservadas (insider = ve todo). */
@@ -53,9 +53,6 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, userId, isC
   const userIsAdmin = isAdmin(userRole)
   // `plan` llega ya efectivo (loadShellContext: founder → kennel/Pro).
   const userHasPro = hasProFeatures(plan)
-  // Extensiones EFECTIVAS (loadShellContext ya aplicó el override de founder).
-  // Gatean los items del modelo "Pro + extensiones": Emailbot, Newsletter, Web.
-  const userAddons = new Set<string>(kennel?.addons ?? [])
   // Insider (Irema, El Nieto) ve las features RESERVADAS (aún no lanzadas); el
   // resto solo ve la carta de Fase 1 (ver lib/features/launch.ts).
   const insider = isInsider(userId)
@@ -74,7 +71,6 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, userId, isC
       if (section.requiresAdmin && !userIsAdmin) return false
       if (section.requiresKennel && !isBreeder) return false
       if (section.requiresPro && !userHasPro) return false
-      if (section.requiresAddon && !userAddons.has(section.requiresAddon)) return false
       if (section.requiresClient && !isClient) return false
       if (section.hideOnIos && isIos) return false
       return true
@@ -85,7 +81,6 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, userId, isC
         if (item.requiresAdmin && !userIsAdmin) return false
         if (item.requiresKennel && !isBreeder) return false
         if (item.requiresPro && !userHasPro) return false
-        if (item.requiresAddon && !userAddons.has(item.requiresAddon)) return false
         if (item.requiresClient && !isClient) return false
         if (item.hideIfPro && userHasPro) return false
         if (item.hideOnIos && isIos) return false

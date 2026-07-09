@@ -134,7 +134,6 @@ export const CATEGORIES: Category[] = [
       },
     ],
     featurettes: [
-      { icon: Globe2, title: 'API pública', description: 'Endpoint REST para integrar tus perros con tu web externa o app móvil.', reserved: true },
       { icon: Network, title: 'Conexión cross-kennel', description: 'Tu macho semental aparece como padre en perros de otros criaderos automáticamente.' },
       { icon: History, title: 'Histórico por perro', description: 'Quién subió qué foto, cuándo se transfirió, quién editó el peso. Auditoría completa.' },
       { icon: Lock, title: 'Perfiles privados', description: 'Tú decides qué perro es público y qué perro solo lo ves tú.' },
@@ -180,13 +179,12 @@ export const CATEGORIES: Category[] = [
         ],
         mockup: 'coi-detail',
         proOnly: true,
-        reserved: true,
       },
     ],
     featurettes: [
       { icon: Upload, title: 'Importar genealogía', description: 'URL de Presadb, Dogsfiles, Working-dog, K9data → árbol completo en 30s.' },
-      { icon: Sparkles, title: 'Cálculo automático COI', description: 'Cada perro lo muestra al abrirlo, con la lista de ancestros duplicados.', reserved: true },
-      { icon: TrendingUp, title: 'COI medio de tu criadero', description: 'Tendencia anual de cuánto sube o baja la consanguinidad media en tus camadas.', reserved: true },
+      { icon: Sparkles, title: 'Cálculo automático COI', description: 'Cada perro lo muestra al abrirlo, con la lista de ancestros duplicados.' },
+      { icon: TrendingUp, title: 'COI medio de tu criadero', description: 'Tendencia anual de cuánto sube o baja la consanguinidad media en tus camadas.' },
       { icon: Network, title: 'Hermanos y descendientes', description: 'Auto-detectados al subir padres. No tienes que enlazarlos manualmente.' },
       { icon: Tag, title: 'Trazabilidad LOE / FCI', description: 'Registro oficial vinculado al perro como campo dedicado.' },
       { icon: FileBarChart, title: 'Exportable a PDF', description: 'Cualquier rama de la genealogía, descargable con tu logo.' },
@@ -216,7 +214,6 @@ export const CATEGORIES: Category[] = [
         ],
         mockup: 'breeding-simulator',
         proOnly: true,
-        reserved: true,
       },
       {
         slug: 'reproduccion',
@@ -232,8 +229,6 @@ export const CATEGORIES: Category[] = [
           'Recordatorios push 7 días antes del parto previsto',
         ],
         mockup: 'reproduction-gantt',
-        proOnly: true,
-        reserved: true,
       },
       {
         slug: 'camadas',
@@ -246,15 +241,13 @@ export const CATEGORIES: Category[] = [
           'Generador de nombre con afijo: "Bermudo de Tu Criadero"',
           'Estado: disponible / reservado / entregado',
           'Galería conjunta de la camada + fichas individuales',
-          'Auto-suscribe a los solicitantes a la newsletter de la camada',
         ],
         mockup: 'litter-detail',
       },
     ],
     featurettes: [
       { icon: Filter, title: 'Filtrar candidatos por COI', description: 'Busca padre para tu hembra filtrando por COI máximo del cruce.', reserved: true },
-      { icon: Activity, title: 'Stud-book privado', description: 'Histórico de todas tus cubriciones, parido o no, año a año.', reserved: true },
-      { icon: FilePlus, title: 'Certificado de monta', description: 'PDF firmado con propietario de macho/hembra y fecha.', reserved: true },
+      { icon: Activity, title: 'Stud-book privado', description: 'Histórico de todas tus cubriciones, parido o no, año a año.' },
     ],
   },
 
@@ -296,7 +289,6 @@ export const CATEGORIES: Category[] = [
         ],
         mockup: 'genotypes',
         proOnly: true,
-        reserved: true,
       },
     ],
     featurettes: [
@@ -379,7 +371,6 @@ export const CATEGORIES: Category[] = [
           'Solicitudes desde tu web pública entran directamente',
         ],
         mockup: 'reservations-table',
-        reserved: true,
       },
       {
         slug: 'contratos',
@@ -395,7 +386,6 @@ export const CATEGORIES: Category[] = [
           'PDF firmado guardado en el expediente del cliente',
         ],
         mockup: 'contract-editor',
-        reserved: true,
       },
       {
         slug: 'pagos',
@@ -412,122 +402,12 @@ export const CATEGORIES: Category[] = [
           'Reembolsos desde el panel sin entrar a Stripe',
         ],
         mockup: 'payments-timeline',
-        reserved: true,
       },
     ],
     featurettes: [
-      { icon: Inbox, title: 'Formulario de solicitud', description: 'Embebido en tu kennel pública, configurable y con anti-spam.', reserved: true },
-      { icon: Users, title: 'CRM unificado', description: 'Contactos, leads y compradores en un único panel con tags.', reserved: true },
-      { icon: Bell, title: 'Notificaciones', description: 'Email + push (iOS) cuando llega o cambia algo crítico.', reserved: true },
+      { icon: Users, title: 'CRM unificado', description: 'Contactos, leads y compradores en un único panel con tags.' },
+      { icon: Bell, title: 'Notificaciones', description: 'Email + push (iOS) cuando llega o cambia algo crítico.' },
       { icon: FilePlus, title: 'Visitas registradas', description: 'Apunta visitas al kennel con fecha, contacto y notas.', reserved: true },
-    ],
-  },
-
-  // ─────────────────────────────────────────────────────────────────
-  // 7. WEB — kennel public, blog, reseñas
-  // ─────────────────────────────────────────────────────────────────
-  {
-    slug: 'web',
-    label: 'Web pública del kennel',
-    tagline: 'Una web de criadero seria, sin pelearte con WordPress.',
-    features: [
-      {
-        slug: 'pages',
-        icon: Globe,
-        problem: 'Tu web actual es de 2010 — o directamente no la tienes',
-        title: 'Web profesional sin tocar código',
-        description: 'Cada kennel Pro recibe una web pública completa: home con hero, sobre nosotros, perros, camadas, blog, contacto. Editor visual, dominio propio y SEO incluido.',
-        bullets: [
-          'Plantilla minimal pulida — diseño tipo Cal.com / Linear',
-          'Editor de secciones con preview en vivo',
-          'Dominio personalizado (criadero.com → tu kennel en Genealogic)',
-          'SEO técnico: sitemap, schema.org, Open Graph, hreflang',
-          'Móvil perfecto — no tienes que hacer nada',
-          'Tema personalizable: colores primarios, tipografía, hero image',
-        ],
-        mockup: 'kennel-web',
-        proOnly: true,
-        comingSoon: true,
-        reserved: true,
-      },
-      {
-        slug: 'blog',
-        icon: BookOpen,
-        problem: 'No tienes tiempo de escribir y posicionar contenido',
-        title: 'Blog integrado con SEO',
-        description: 'Publica artículos sobre tu raza, tu filosofía, eventos. Cada post tiene su URL propia, meta tags, schema.org Article y se indexa automáticamente en Google.',
-        bullets: [
-          'Editor MDX simple con previsualización',
-          'Imágenes con galería automática y lazy-load',
-          'Categorías, tags, autor, lectura estimada',
-          'Schema.org Article + sitemap.xml + RSS',
-          'Compartir en redes con OG tags optimizados',
-        ],
-        mockup: 'blog-list',
-        proOnly: true,
-        comingSoon: true,
-        reserved: true,
-      },
-    ],
-    featurettes: [
-      { icon: MapPin, title: 'Ubicación en mapa', description: 'Embebido sin coste extra ni token de Google Maps.', reserved: true },
-      { icon: Star, title: 'Reseñas verificadas', description: 'Solo clientes con reserva pueden dejar reseña.', reserved: true },
-      { icon: Send, title: 'Formulario de contacto', description: 'Configurable, con anti-spam y rate-limit.', reserved: true },
-      { icon: Lock, title: 'Sin anuncios de terceros', description: 'Tu marca, sin ruido.', reserved: true },
-      { icon: Eye, title: 'Vista previa antes de publicar', description: 'Cambia, revisa, publica.', reserved: true },
-      { icon: Languages, title: 'Multi-idioma', description: 'ES, EN, IT, FR — hreflang configurado.', reserved: true },
-    ],
-  },
-
-  // ─────────────────────────────────────────────────────────────────
-  // 8. COMUNICACIÓN — emailbot, newsletter
-  // ─────────────────────────────────────────────────────────────────
-  {
-    slug: 'comunicacion',
-    label: 'Comunicación',
-    tagline: 'Atiende mejor con menos esfuerzo.',
-    features: [
-      {
-        slug: 'emailbot',
-        icon: Mail,
-        problem: 'Respondes las mismas preguntas 10 veces al día',
-        title: 'Emailbot que responde solo',
-        description: 'Conecta tu email del kennel (Gmail/IMAP) y el bot responde las preguntas frecuentes con tu tono. Cuando detecta que necesita un humano, te lo escala. Tú apruebas cada respuesta antes de enviar (modo seguro).',
-        proOnly: true,
-        comingSoon: true,
-        bullets: [
-          'Aprende de tus FAQs, tu web y tu histórico de emails',
-          'Multilingüe: ES, EN, IT, FR, DE',
-          'Modo seguro: cada respuesta requiere tu OK antes de enviarse',
-          'Escala a humano si no puede o si el cliente lo pide',
-          'Suite de tests para validar respuestas antes de activar',
-        ],
-        mockup: 'bot-conversation',
-        reserved: true,
-      },
-      {
-        slug: 'newsletter',
-        icon: Send,
-        problem: 'No tienes forma de mantener a los interesados al día',
-        title: 'Newsletter con un click',
-        description: 'Construye una lista de suscriptores desde tu web y mándales novedades cuando hay camada, evento o noticia. Sin Mailchimp, sin coste extra, sin límite de suscriptores.',
-        proOnly: true,
-        comingSoon: true,
-        bullets: [
-          'Composer drag-and-drop',
-          'Plantillas: nueva camada, próximo evento, novedades',
-          'Tasa de apertura y clicks por campaña',
-          'GDPR-friendly: unsubscribe con un link en cada email',
-          'Auto-suscripción de solicitantes de una camada',
-        ],
-        mockup: 'newsletter-composer',
-        reserved: true,
-      },
-    ],
-    featurettes: [
-      { icon: Inbox, title: 'Hilos de email', description: 'Todo el histórico con cada cliente en un único hilo.', reserved: true },
-      { icon: BookOpen, title: 'Biblioteca de conocimiento', description: 'Lo que escribes una vez, el bot lo reutiliza siempre.', reserved: true },
-      { icon: Zap, title: 'Respuesta en <1 min', description: 'El bot responde 24/7. Tú revisas cuando quieras.', reserved: true },
     ],
   },
 
@@ -559,8 +439,6 @@ export const CATEGORIES: Category[] = [
     ],
     featurettes: [
       { icon: TrendingUp, title: 'Funnel de conversión', description: 'Visita → ficha de perro → solicitud → seña → contrato → entrega.', reserved: true },
-      { icon: Search, title: 'Búsqueda interna tracked', description: 'Sabes qué buscan los visitantes en tu web pública.', reserved: true },
-      { icon: Eye, title: 'Heatmap básico', description: 'Páginas más vistas, profundidad de scroll, perros más clickados.', reserved: true },
       { icon: FileBarChart, title: 'Exportable a CSV', description: 'Cruza los datos con tu Excel o Looker Studio.', reserved: true },
     ],
   },

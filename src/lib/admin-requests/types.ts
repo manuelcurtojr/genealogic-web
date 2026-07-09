@@ -14,8 +14,6 @@ export type FeedbackScope =
   | 'transfer'           // flujo de transferencia de propiedad
   | 'reservation_form'   // formulario de reservas
   | 'kennel_form'        // formulario crear/editar criadero
-  | 'web_builder'        // editor de web pública (Kennel Pro)
-  | 'emailbot'           // configuración emailbot (Kennel Pro)
   | 'billing'            // checkout / facturación
   | 'other'
 
@@ -98,8 +96,6 @@ export const FEEDBACK_SCOPE_LABELS: Record<FeedbackScope, string> = {
   transfer:         'Transferencia de propiedad',
   reservation_form: 'Reservas',
   kennel_form:      'Datos del criadero',
-  web_builder:      'Web pública',
-  emailbot:         'Emailbot',
   billing:          'Facturación / pagos',
   other:            'Otro',
 }

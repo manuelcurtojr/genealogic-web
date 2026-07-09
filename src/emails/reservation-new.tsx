@@ -105,7 +105,7 @@ export default function ReservationNewEmail({
       <Divider />
 
       <Small>
-        {t('Responde rápido — los criadores que contactan en menos de 1h convierten 3× más. Si tienes el Emailbot activo, ya está respondiendo por ti mientras lees esto.')}
+        {t('Responde rápido — los criadores que contactan en menos de 1h convierten 3× más.')}
       </Small>
     </EmailLayout>
   )

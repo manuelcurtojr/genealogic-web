@@ -20,8 +20,7 @@ import Link from 'next/link'
 import { isStripeConfigured } from '@/lib/stripe/server'
 import { startStripeOnboardingAction, syncStripeStatusAction } from './actions'
 import { CheckCircle2, AlertTriangle, ExternalLink } from 'lucide-react'
-import { hasEnterpriseFeatures } from '@/lib/permissions'
-import ComingSoon from '@/components/early-access/coming-soon'
+import { hasProFeatures, normalizePlan, isEnterpriseUser } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 
@@ -51,11 +50,28 @@ export default async function KennelPagosPage({
     supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
   ])
 
-  // Pagos online (Stripe Connect) están «Próximamente» y ocultos en producto
-  // hasta terminar la configuración. De momento solo accesible a Enterprise
-  // (alta manual) para pruebas internas.
-  if (!hasEnterpriseFeatures(profile?.plan, user.id)) {
-    return <ComingSoon featureId="stripe_payments" backHref="/kennel" backLabel={`← ${t('Volver a Mi criadero')}`} />
+  // Pagos online (Stripe Connect) — feature de Kennel Pro desde el go-live
+  // 2026-07-09 (se vende como highlight del plan). Free ve el upsell a Pro.
+  if (!hasProFeatures(normalizePlan(profile?.plan)) && !isEnterpriseUser(user.id)) {
+    return (
+      <div className="max-w-2xl mx-auto py-12">
+        <div className="rounded-2xl border-2 border-dashed border-hairline bg-canvas p-10 text-center">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 text-[#FE6620] px-3 py-1 text-[11px] font-bold uppercase tracking-wider mb-3">
+            {t('Kennel Pro')}
+          </div>
+          <h1 className="text-2xl font-bold text-ink tracking-tight">{t('Pagos online (Stripe)')}</h1>
+          <p className="mt-3 text-body max-w-md mx-auto">
+            {t('Cobra señas, pagos parciales y entregas a tus clientes con tarjeta, directo a tu IBAN. Incluido en Kennel Pro — pruébalo 14 días gratis, sin tarjeta.')}
+          </p>
+          <Link
+            href="/pricing"
+            className="mt-6 inline-flex items-center justify-center rounded-lg bg-[#FE6620] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+          >
+            {t('Prueba Kennel Pro 14 días gratis')}
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   // Si vuelven del onboarding (?refresh=1), sincronizamos status

@@ -67,22 +67,11 @@ const SCOPE_HINTS: Partial<Record<FeedbackScope, string>> = {
 - País requerido para mostrar bandera.
 - Logo no sube → probablemente >5MB o formato no soportado (usa JPG/PNG/WebP).`,
 
-  web_builder: `El user está editando su WEB PÚBLICA (Kennel Pro · Early Access).
-- Esta feature está en Early Access, solo Irema Curtó tiene acceso por ahora.
-- Cambios tardan ~1 min en propagarse al dominio.
-- Dominio propio: necesita configurar 2 DNS records en su proveedor.`,
-
-  emailbot: `El user está configurando el EMAILBOT (Kennel Pro · Early Access).
-- El bot necesita biblioteca de conocimiento cargada para responder bien.
-- "No responde un email" → puede que el filtro lo haya marcado como no-prioritario; revisa /emailbot/hilos.
-- Cuota agotada → es Free, sin emailbot, o ya gastó las del mes.`,
-
   billing: `El user está en FACTURACIÓN o CHECKOUT. Causas frecuentes:
 - "Error iniciando pago" → suele ser env var de Stripe ausente; el user no puede arreglarlo, escala.
 - Planes vigentes: Owner 0€/mes (ilimitado), Kennel Free 0€/mes (ilimitado), Kennel Pro 49€/mes ó 499€/año (ilimitado, panel completo). Todos los planes con perros ilimitados.
-- Extensiones de pago à la carte sobre Kennel Pro: Web del criadero (dominio propio) 19€/mes, Newsletter 9€/mes. Emailbot IA próximamente. Cada una se factura por separado.
-- Trial: 14 días gratis SIN tarjeta para Kennel Pro. Antes de terminar la prueba se pide método de pago para continuar; sin él, baja a Kennel Free. Las extensiones no tienen prueba.
-- No existe Kennel Enterprise ni plan de 149€, y no ofrecemos API pública: ya no se ofrecen.
+- Trial: 14 días gratis SIN tarjeta para Kennel Pro. Antes de terminar la prueba se pide método de pago para continuar; sin él, baja a Kennel Free.
+- No existe Kennel Enterprise ni plan de 149€, y no ofrecemos API pública, ni web con dominio propio, ni newsletter, ni emailbot: ya no se ofrecen.
 - Cancelar: portal de Stripe desde /cuenta/facturacion.
 - Factura no llega → revisar email registrado y carpeta spam.`,
 }

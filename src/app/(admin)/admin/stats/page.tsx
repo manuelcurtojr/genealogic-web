@@ -53,7 +53,7 @@ type Snapshot = {
     genos_convs: number; genos_user_msgs: number; genos_assistant_msgs: number
     genos_escalated: number; genos_total_tokens: number
     page_views_30: number; notifications_30: number; notifications_unread: number
-    vet_records_total: number; emailbot_threads: number
+    vet_records_total: number
     dau: number; wau: number; mau: number
   }
   funnel: { signup: number; chose_role: number; has_kennel_or_dog: number; paid: number }
@@ -208,7 +208,6 @@ export default async function AdminStatsPage() {
         notifications30: s.engagement.notifications_30,
         notificationsUnread: s.engagement.notifications_unread,
         vetRecordsTotal: s.engagement.vet_records_total,
-        emailbotThreads: s.engagement.emailbot_threads,
         dau: s.engagement.dau,
         wau: s.engagement.wau,
         mau: s.engagement.mau,

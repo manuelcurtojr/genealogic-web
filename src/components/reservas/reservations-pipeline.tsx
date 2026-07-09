@@ -47,7 +47,6 @@ const STATUS_TONE: Record<Status, string> = {
 const SOURCE_LABEL: Record<string, string> = {
   manual: 'Manual',
   public_form: 'Web pública',
-  emailbot: 'Emailbot',
   api: 'API',
 }
 
@@ -169,7 +168,7 @@ export default function ReservationsPipeline({ kennelId, kennelName, reservation
               {t('Pipeline completo de Ventas + Clientes con Pro')}
             </p>
             <p className="mt-0.5 text-[12.5px] text-purple-800">
-              {t('Gestiona depósitos, contratos, asignación a cachorros y emailbot automático.')}{' '}
+              {t('Gestiona depósitos, contratos y asignación a cachorros.')}{' '}
               <Link href="/cuenta/suscripcion" className="font-semibold underline">
                 {t('Ver planes →')}
               </Link>

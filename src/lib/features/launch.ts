@@ -24,15 +24,14 @@ import { isEnterpriseUser } from '@/lib/permissions'
  * NO se reserva: es parte del registro del perro y el gancho del propietario.
  */
 export const RESERVED_PATHS: readonly string[] = [
-  // Cría / genética
-  '/cruces',       // Simulador de cruces (COI proyectado)
-  '/genetica',     // Genotipos / pruebas DNA
-  // Ventas / CRM
-  '/embudo', '/contactos', '/contratos', '/clientes',
-  // Analítica web
-  '/estadisticas', '/visitas', '/analytics',
-  // Comunicación (extensiones)
-  '/emailbot', '/conocimiento', '/newsletter',
+  // Go-live 2026-07-09: cruces, genética, embudo, contactos, contratos,
+  // clientes y estadísticas se LANZARON — son lo que vende Kennel Pro
+  // (49€/mes, trial 14 días). Su acceso lo gobierna el gate de plan
+  // server-side de cada ruta, no esta lista.
+  // Analítica web — congelada (dependía de la web del criadero, retirada)
+  '/visitas', '/analytics',
+  // API pública v1 — funcional pero no publicitada (uso interno founder)
+  '/kennel/api',
 ]
 
 /** ¿Esta ruta está reservada (no lanzada al público todavía)? */

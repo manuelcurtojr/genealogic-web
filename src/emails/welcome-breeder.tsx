@@ -47,9 +47,6 @@ export default function WelcomeBreederEmail({ displayName, locale }: WelcomeBree
         {t('o pregunta a Genos (el chat de la esquina). Te respondemos en menos de 24h.')}
       </P>
 
-      <Small>
-        {t('Pro-tip: el emailbot puede responder a leads cuando estés desconectado. Lo configuras desde /emailbot cuando tengas tu criadero listo.')}
-      </Small>
     </EmailLayout>
   )
 }

@@ -95,7 +95,6 @@ interface Props {
     notifications30: number
     notificationsUnread: number
     vetRecordsTotal: number
-    emailbotThreads: number
     dau: number
     wau: number
     mau: number
@@ -270,7 +269,6 @@ export default function AdminStatsClient({
           <OpsCard icon={MessageSquare} label="Escaladas a humano" value={engagement.genosEscalated} color="#ef4444" />
           <OpsCard icon={Bell} label="Notifs 30d" value={engagement.notifications30} color="#3b82f6" sub={`${engagement.notificationsUnread} sin leer`} />
           <OpsCard icon={Stethoscope} label="Vet records" value={engagement.vetRecordsTotal} color="#06b6d4" />
-          <OpsCard icon={Mail} label="Emailbot threads" value={engagement.emailbotThreads} color="#8b5cf6" />
           <OpsCard icon={Sparkles} label="Tokens Genos" value={engagement.genosTotalTokens} color="#9ca3af" formatter={fmt} />
         </div>
       </section>

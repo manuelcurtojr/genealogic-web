@@ -17,14 +17,12 @@ import type { OnboardingStep, OnboardingStatus, StepImportance } from './types'
 
 export type { OnboardingStep, OnboardingStatus, StepImportance }
 
-// IDs de pasos puramente B2B (web pública, formulario, emailbot, knowledge
-// base). En el WebView iOS no se muestran porque exponen flujos pricing/CRM
-// que disparan Guideline 3.1.1 de App Store.
+// IDs de pasos puramente B2B (web pública, formulario). En el WebView iOS
+// no se muestran porque exponen flujos pricing/CRM que disparan la
+// Guideline 3.1.1 de App Store.
 const IOS_HIDDEN_STEP_IDS = new Set([
   'public_web',
   'contact_form',
-  'knowledge_base',
-  'activate_bot',
 ])
 
 export async function getOnboardingStatus(args: {
@@ -41,9 +39,7 @@ export async function getOnboardingStatus(args: {
     kennelRes,
     dogsCountRes,
     dogsPhotoCountRes,
-    knowledgeCountRes,
     formConfigRes,
-    emailbotConfigRes,
   ] = await Promise.all([
     admin.from('kennels')
       .select('id, logo_url, description, custom_domain, contact_form_config')
@@ -52,22 +48,16 @@ export async function getOnboardingStatus(args: {
       .eq('kennel_id', args.kennelId),
     admin.from('dogs').select('id', { count: 'exact', head: true })
       .eq('kennel_id', args.kennelId).not('thumbnail_url', 'is', null),
-    admin.from('knowledge_entries').select('id', { count: 'exact', head: true })
-      .eq('kennel_id', args.kennelId).eq('is_active', true),
     admin.from('kennels').select('contact_form_config')
       .eq('id', args.kennelId).maybeSingle(),
-    admin.from('emailbot_config').select('is_enabled')
-      .eq('kennel_id', args.kennelId).maybeSingle(),
   ])
 
   const kennel = kennelRes.data
   const dogsCount = dogsCountRes.count || 0
   const dogsWithPhotoCount = dogsPhotoCountRes.count || 0
-  const knowledgeCount = knowledgeCountRes.count || 0
   const hasFormConfig =
     formConfigRes.data?.contact_form_config &&
     Object.keys(formConfigRes.data.contact_form_config).length > 0
-  const botEnabled = !!emailbotConfigRes.data?.is_enabled
 
   // 2) Definir pasos. Orden importa — primero los más críticos.
   const steps: OnboardingStep[] = [
@@ -122,30 +112,6 @@ export async function getOnboardingStatus(args: {
       importance: 'recommended',
     },
   ]
-
-  // Pasos Pro: solo se muestran si el plan los incluye
-  if (args.isPro) {
-    steps.push({
-      id: 'knowledge_base',
-      label: 'Carga la biblioteca del bot',
-      description: 'El emailbot responde a leads usando lo que tú le digas. Mínimo 5 entradas (precio, política, garantía).',
-      done: knowledgeCount >= 3,
-      href: '/conocimiento',
-      ctaLabel: 'Añadir conocimiento',
-      icon: 'BookOpen',
-      importance: 'recommended',
-    })
-    steps.push({
-      id: 'activate_bot',
-      label: 'Activa el Emailbot',
-      description: 'Responde automáticamente a leads en segundos. Solo se activa cuando tu biblioteca tiene info útil.',
-      done: botEnabled,
-      href: '/emailbot',
-      ctaLabel: 'Activar bot',
-      icon: 'Mail',
-      importance: 'optional',
-    })
-  }
 
   // 3) Filtro iOS: ocultar pasos que llevan a rutas B2B (web/form/bot/kb).
   const visibleSteps = args.isIos

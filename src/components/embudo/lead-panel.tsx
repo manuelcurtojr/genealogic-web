@@ -13,7 +13,6 @@ import type { FunnelEntry, Pipeline, Stage } from '@/lib/pipelines/types'
 const SOURCE_LABEL: Record<string, string> = {
   public_form: 'Formulario web',
   manual: 'Alta manual',
-  emailbot: 'Emailbot',
   api: 'API',
 }
 

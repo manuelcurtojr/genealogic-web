@@ -13,7 +13,7 @@ import KennelEditPanel from './kennel-edit-panel'
 import ContactFormBuilder from './contact-form-builder'
 import { Img } from '@/components/ui/img'
 import { useT } from '@/components/i18n/locale-provider'
-import { kennelHasAddon } from '@/lib/kennel/addons'
+import { isInsider } from '@/lib/features/launch'
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,8 +48,6 @@ interface Props {
 export default function KennelConfigView({ kennel, stats, isPro = false, userId }: Props) {
   const t = useT()
   const router = useRouter()
-  // La web pública RICA (editor de contenido + dominio) es la EXTENSIÓN "web".
-  const hasWeb = kennelHasAddon(kennel, 'web', userId)
   const [showEdit, setShowEdit] = useState(false)
   const [showFormBuilder, setShowFormBuilder] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -117,18 +115,13 @@ export default function KennelConfigView({ kennel, stats, isPro = false, userId 
       icon: TrendingUp,
       href: '/visitas',
     },
-    {
-      label: t('Dominio personalizado'),
-      desc: t('Conecta tu dominio propio (tucriadero.com).'),
-      icon: Link2,
-      href: '/cuenta/dominio',
-    },
-    {
+    // API keys: uso interno (founder / insiders) — no publicitado.
+    ...(isInsider(userId) ? [{
       label: t('API keys'),
       desc: t('Tokens para integrar datos con servicios externos.'),
       icon: Key,
       href: '/kennel/api',
-    },
+    }] : []),
   ]
 
   return (
@@ -189,53 +182,8 @@ export default function KennelConfigView({ kennel, stats, isPro = false, userId 
         </button>
       </section>
 
-      {/* ═══ Tu web pública ═══ — sección protagonista (extensión "web") */}
-      {hasWeb && (
-        <section className="rounded-2xl border border-hairline bg-gradient-to-br from-orange-50/50 via-canvas to-blue-50/50 p-5 sm:p-6 relative overflow-hidden">
-          {/* Glow decorativo sutil */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-20 -right-20 h-[240px] w-[240px] rounded-full blur-3xl opacity-50"
-            style={{
-              background: 'radial-gradient(circle at 50% 50%, rgba(254,102,32,0.25) 0%, transparent 70%)',
-            }}
-          />
-          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="min-w-0">
-              <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FE6620]">
-                <Sparkles className="h-3 w-3" /> {t('Tu web pública')}
-              </div>
-              <h3 className="mt-1.5 text-[18px] sm:text-[20px] font-semibold tracking-[-0.02em] text-ink">
-                {t('Edita lo que ven tus clientes')}
-              </h3>
-              <p className="mt-1 text-[13px] text-body max-w-prose leading-snug">
-                {t('Sobre nosotros, galería, instalaciones y blog. Sin escribir HTML — se rellena solo con tu contenido.')}
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
-              <Link
-                href="/kennel/contenido/sobre"
-                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-ink px-4 py-2.5 text-[13px] font-bold text-on-primary hover:opacity-90 transition"
-              >
-                <Pencil className="h-3.5 w-3.5" /> {t('Editar contenido')}
-              </Link>
-              {publicUrl && (
-                <Link
-                  href={publicUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2.5 text-[13px] font-semibold text-body hover:border-ink/30 hover:text-ink transition"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" /> {t('Ver mi web')}
-                </Link>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Sin extensión web: enlace simple a ver el perfil público (sin glow) */}
-      {!hasWeb && publicUrl && (
+      {/* Enlace simple a ver el perfil público */}
+      {publicUrl && (
         <Link
           href={publicUrl}
           target="_blank"
@@ -281,7 +229,7 @@ export default function KennelConfigView({ kennel, stats, isPro = false, userId 
           <div className="text-left">
             <p className="text-[14px] font-semibold text-ink">{t('Herramientas avanzadas')}</p>
             <p className="text-[12px] text-muted">
-              {t('Formulario, dominio propio, pagos online, API keys, analíticas.')}
+              {t('Formulario de contacto, datos legales y analíticas.')}
             </p>
           </div>
           <ChevronDown

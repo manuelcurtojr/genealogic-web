@@ -185,7 +185,7 @@ export async function PostCta({ variant = 'register' }: { variant?: 'register' |
     },
     pro: {
       title: t('¿Listo para profesionalizar tu criadero?'),
-      body: t('Pipeline de reservas, CRM de clientes, web pública con dominio propio y emailbot. Precio Founder por vida si te subes ahora.'),
+      body: t('Pipeline de reservas, CRM de clientes, contratos y estadísticas. Precio Founder por vida si te subes ahora.'),
       cta: t('Ver tier Pro'),
       href: '/#precios',
     },

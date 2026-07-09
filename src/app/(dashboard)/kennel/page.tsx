@@ -1,18 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import KennelConfigView from '@/components/kennel/kennel-config-view'
-import PagesToggles from '@/components/kennel/pages-toggles'
 import { hasProAccess } from '@/lib/permissions'
-import { kennelHasAddon } from '@/lib/kennel/addons'
 
 export const dynamic = 'force-dynamic'
 
 /**
- * "Mi criadero" → CONFIGURACIÓN + KPIs + toggles de páginas de la web Pro.
- *
- * Las páginas Pro (Sobre, Galería, Instalaciones, Blog) se gestionan aquí.
- * El editor de CONTENIDO (about_md, fotos, posts) vendrá en una iteración
- * próxima — por ahora solo el toggle de visibilidad.
+ * "Mi criadero" → CONFIGURACIÓN + KPIs.
  */
 export default async function KennelPage() {
   const supabase = await createClient()
@@ -38,9 +32,6 @@ export default async function KennelPage() {
     reproductiveCountRes,
     littersCountRes,
     profileRes,
-    galleryRes,
-    facilitiesRes,
-    postsRes,
   ] = await Promise.all([
     supabase.from('dogs').select('id', { count: 'exact', head: true })
       .eq('kennel_id', kennel.id),
@@ -51,26 +42,9 @@ export default async function KennelPage() {
     supabase.from('litters').select('id', { count: 'exact', head: true })
       .eq('owner_id', user.id),
     supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
-    supabase.from('kennel_photos').select('id', { count: 'exact', head: true })
-      .eq('kennel_id', kennel.id).eq('kind', 'gallery'),
-    supabase.from('kennel_photos').select('id', { count: 'exact', head: true })
-      .eq('kennel_id', kennel.id).eq('kind', 'facilities'),
-    supabase.from('kennel_posts').select('id', { count: 'exact', head: true })
-      .eq('kennel_id', kennel.id).eq('status', 'published'),
   ])
 
   const isPro = hasProAccess(profileRes.data?.plan)
-  // Las páginas extra (sobre/galería/instalaciones/blog) son parte de la web →
-  // requieren la EXTENSIÓN "web". Sin ella, los toggles salen "Próximamente".
-  const canUsePro = kennelHasAddon(kennel, 'web', user.id)
-
-  // Status del contenido para los badges "Pendiente: contenido" en toggles
-  const contentStatus = {
-    aboutOk: !!(kennel.about_md && kennel.about_md.trim().length >= 50),
-    galleryOk: (galleryRes.count || 0) >= 3,
-    facilitiesOk: (facilitiesRes.count || 0) >= 3,
-    blogOk: (postsRes.count || 0) >= 1,
-  }
 
   return (
     <div className="space-y-6">
@@ -84,12 +58,6 @@ export default async function KennelPage() {
         }}
         isPro={isPro}
         userId={user.id}
-      />
-      <PagesToggles
-        kennelId={kennel.id}
-        enabledPages={kennel.enabled_pages || null}
-        canUsePro={canUsePro}
-        contentStatus={contentStatus}
       />
     </div>
   )

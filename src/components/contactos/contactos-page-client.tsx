@@ -1,12 +1,11 @@
 /**
- * Vista cliente de Contactos con 3 tabs (Suscriptores / Leads / Clientes).
+ * Vista cliente de Contactos con 2 tabs (Leads / Clientes).
  *
  * Cada tab tiene su propia tabla con columnas relevantes + búsqueda
  * compartida. El contador junto al tab muestra el total actual; el
  * subtítulo muestra cuántos coinciden con la búsqueda.
  *
  * Las filas son clicables → llevan a la entidad relevante:
- *   - Suscriptor: link a /newsletter (gestión global)
  *   - Lead:       link a /reservas/[id] (detalle reserva)
  *   - Cliente:    link a /reservas/[id] si viene de reserva
  *                 o panel edit del CRM si viene de owners
@@ -16,24 +15,13 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
-  Plus, Search, Mail, Phone, MapPin, Tag, Inbox, UserPlus, Users,
+  Plus, Search, Mail, Phone, MapPin, Inbox, UserPlus, Users,
   PartyPopper, Dog, Calendar,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useT } from '@/components/i18n/locale-provider'
 import OwnerFormPanel from '@/components/clientes/owner-form-panel'
 import { Img } from '@/components/ui/img'
-
-export type Subscriber = {
-  id: string
-  email: string
-  full_name: string | null
-  source: string | null
-  tags: string[] | null
-  is_active: boolean
-  subscribed_at: string
-  unsubscribed_at: string | null
-}
 
 export type Lead = {
   id: string
@@ -67,10 +55,9 @@ export type Client = {
   crm_owner_id: string | null
 }
 
-type Tab = 'subscribers' | 'leads' | 'clients'
+type Tab = 'leads' | 'clients'
 
 const TABS: { id: Tab; label: string; icon: typeof Mail }[] = [
-  { id: 'subscribers', label: 'Suscriptores', icon: Mail },
   { id: 'leads',       label: 'Leads',        icon: UserPlus },
   { id: 'clients',     label: 'Clientes',     icon: Users },
 ]
@@ -94,16 +81,15 @@ function fmtPrice(cents: number | null, currency: string | null): string {
 }
 
 export default function ContactosPageClient({
-  kennelId, kennelName, subscribers, leads, clients,
+  kennelId, kennelName, leads, clients,
 }: {
   kennelId: string
   kennelName: string
-  subscribers: Subscriber[]
   leads: Lead[]
   clients: Client[]
 }) {
   const t = useT()
-  const [tab, setTab] = useState<Tab>('subscribers')
+  const [tab, setTab] = useState<Tab>('leads')
   const [query, setQuery] = useState('')
 
   // Panel del CRM (crear cliente manual)
@@ -113,15 +99,6 @@ export default function ContactosPageClient({
 
   // Filtered counts según query y tab activa
   const q = query.trim().toLowerCase()
-
-  const filteredSubs = useMemo(() => {
-    if (!q) return subscribers
-    return subscribers.filter(s =>
-      s.email.toLowerCase().includes(q) ||
-      s.full_name?.toLowerCase().includes(q) ||
-      s.tags?.some(tg => tg.toLowerCase().includes(q))
-    )
-  }, [subscribers, q])
 
   const filteredLeads = useMemo(() => {
     if (!q) return leads
@@ -145,14 +122,11 @@ export default function ContactosPageClient({
   }, [clients, q])
 
   const counts: Record<Tab, number> = {
-    subscribers: subscribers.length,
-    leads:       leads.length,
-    clients:     clients.length,
+    leads:   leads.length,
+    clients: clients.length,
   }
   const filteredCount =
-    tab === 'subscribers' ? filteredSubs.length :
-    tab === 'leads'       ? filteredLeads.length :
-                            filteredClients.length
+    tab === 'leads' ? filteredLeads.length : filteredClients.length
 
   return (
     <div>
@@ -164,7 +138,7 @@ export default function ContactosPageClient({
           </p>
           <h1 className="mt-1 text-3xl font-bold text-ink tracking-tight">{t('Contactos')}</h1>
           <p className="text-sm text-muted mt-1">
-            {t('Suscriptores del newsletter, leads de solicitudes y clientes que cerraron.')}
+            {t('Leads de solicitudes y clientes que cerraron.')}
           </p>
         </div>
         {tab === 'clients' && (
@@ -222,12 +196,11 @@ export default function ContactosPageClient({
 
       {q && (
         <p className="text-xs text-muted mb-3">
-          {filteredCount} {t('de')} {counts[tab]} {tab === 'subscribers' ? t('suscriptores') : tab === 'leads' ? t('leads') : t('clientes')} {t('coinciden con')} &ldquo;{query}&rdquo;
+          {filteredCount} {t('de')} {counts[tab]} {tab === 'leads' ? t('leads') : t('clientes')} {t('coinciden con')} &ldquo;{query}&rdquo;
         </p>
       )}
 
       {/* Tab content */}
-      {tab === 'subscribers' && <SubscribersTable rows={filteredSubs} total={counts.subscribers} />}
       {tab === 'leads'       && <LeadsTable rows={filteredLeads} total={counts.leads} />}
       {tab === 'clients'     && (
         <ClientsTable
@@ -246,94 +219,6 @@ export default function ContactosPageClient({
         editing={editingOwner}
         kennelId={kennelId}
       />
-    </div>
-  )
-}
-
-// ─── Tabla SUSCRIPTORES ─────────────────────────────────────────────────────
-function SubscribersTable({ rows, total }: { rows: Subscriber[]; total: number }) {
-  const t = useT()
-  if (rows.length === 0) {
-    return (
-      <EmptyState
-        icon={Mail}
-        title={total === 0 ? t('Sin suscriptores') : t('Ningún suscriptor coincide')}
-        description={
-          total === 0
-            ? t('Cuando alguien se suscriba a tu newsletter desde tu web, aparecerá aquí.')
-            : undefined
-        }
-      />
-    )
-  }
-  return (
-    <div className="border border-hairline rounded-xl bg-canvas overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="border-b border-hairline bg-surface-soft/50">
-          <tr className="text-left">
-            <Th>{t('Email')}</Th>
-            <Th hideOn="sm">{t('Nombre')}</Th>
-            <Th hideOn="md">{t('Origen')}</Th>
-            <Th hideOn="lg">{t('Tags')}</Th>
-            <Th align="right">{t('Estado')}</Th>
-            <Th align="right">{t('Fecha')}</Th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((s, idx) => (
-            <tr
-              key={s.id}
-              className={`hover:bg-surface-soft transition ${idx > 0 ? 'border-t border-hairline' : ''}`}
-            >
-              <td className="px-4 py-3">
-                <span className="text-ink font-medium">{s.email}</span>
-              </td>
-              <Td hideOn="sm">{s.full_name || <span className="text-muted">—</span>}</Td>
-              <Td hideOn="md">
-                {s.source ? (
-                  <span className="text-[11px] uppercase tracking-wider text-muted">{s.source}</span>
-                ) : (
-                  <span className="text-muted">—</span>
-                )}
-              </Td>
-              <Td hideOn="lg">
-                {s.tags && s.tags.length > 0 ? (
-                  <div className="flex flex-wrap gap-1">
-                    {s.tags.slice(0, 3).map((tg) => (
-                      <span key={tg} className="inline-flex items-center gap-0.5 rounded bg-surface-card px-1.5 py-0.5 text-[10px] text-body">
-                        <Tag className="w-2.5 h-2.5" />
-                        {tg}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-muted">—</span>
-                )}
-              </Td>
-              <td className="px-4 py-3 text-right">
-                {s.is_active ? (
-                  <span className="text-[11px] font-semibold bg-emerald-50 text-emerald-800 rounded-full px-2 py-0.5">
-                    {t('Activo')}
-                  </span>
-                ) : (
-                  <span className="text-[11px] font-semibold bg-red-50 text-red-700 rounded-full px-2 py-0.5">
-                    {t('Baja')}
-                  </span>
-                )}
-              </td>
-              <td className="px-4 py-3 text-right text-[12px] text-muted">
-                {fmtDate(s.subscribed_at)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="px-4 py-3 border-t border-hairline bg-surface-soft/30 text-[11px] text-muted text-right">
-        {t('Gestionar campañas en')}{' '}
-        <Link href="/newsletter" className="font-semibold text-ink hover:underline">
-          /newsletter →
-        </Link>
-      </div>
     </div>
   )
 }

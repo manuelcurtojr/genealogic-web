@@ -8,7 +8,7 @@
 // Plans (en profiles.plan) — desde 25 may 2026:
 //   - 'free'       = gratis para siempre (default, owners y criadores en modo gratis)
 //   - 'kennel'     = criador profesional (49€/mes o 290€/año)
-//   - 'kennel_pro' = criador pro con web, emailbot, newsletter (49€/mes Founder)
+//   - 'kennel_pro' = criador pro (49€/mes Founder)
 //
 // Legacy compat (NUNCA mostrar en UI, solo para datos antiguos):
 //   - 'starter' / 'pro' / 'premium' → mapean internamente a kennel/kennel_pro
@@ -122,8 +122,7 @@ export function hasProFeatures(plan: string | null | undefined): boolean {
 }
 
 /**
- * Features de Kennel ENTERPRISE (149€, alta MANUAL): web pública con
- * dominio, blog, emailbot, newsletter, API REST, multi-usuario, etc.
+ * Features de Kennel ENTERPRISE (149€, alta MANUAL, retirado).
  *
  * Enterprise = plan `kennel_pro` en BBDD O estar en ENTERPRISE_USERS.
  * Como el plan se pasa ya "efectivo" (loadShellContext resuelve a
@@ -177,7 +176,7 @@ export function roleAtLeast(_role: string | null | undefined, _minRole: string):
 /**
  * Límite de perros por plan. Decisión de producto 2026-06-04: **perros
  * ilimitados para TODOS** (owner, free, pro, enterprise). El criador paga por
- * las HERRAMIENTAS (embudo, contratos, web, emailbot), no por número de perros;
+ * las HERRAMIENTAS (embudo, contratos, estadísticas), no por número de perros;
  * el propietario es gratis para siempre y sin límite.
  *
  * Se mantiene la firma (plan, hasKennel) por compatibilidad con los callers,

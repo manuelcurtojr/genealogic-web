@@ -27,8 +27,6 @@ export interface NavItem {
   requiresKennel?: boolean
   /** Plan Kennel Pro+ (kennel o kennel_pro) */
   requiresPro?: boolean
-  /** Requiere la extensión (add-on) indicada activa en el criadero. */
-  requiresAddon?: 'web' | 'emailbot' | 'newsletter'
   requiresAdmin?: boolean
   /** Si el usuario ES pro, este item se oculta (porque hay uno mejor) */
   hideIfPro?: boolean
@@ -43,8 +41,6 @@ export interface NavSection {
   label: string
   requiresKennel?: boolean
   requiresPro?: boolean
-  /** Requiere la extensión (add-on) indicada activa en el criadero. */
-  requiresAddon?: 'web' | 'emailbot' | 'newsletter'
   requiresAdmin?: boolean
   /** Solo visible si el user es cliente (tiene reservas/perros recibidos) */
   requiresClient?: boolean
@@ -55,10 +51,6 @@ export interface NavSection {
 
 // Sidebar consolidado tras la refactor 2026-05-24 #2:
 //
-//  - Comunicación: solo Emailbot + Newsletter (Hilos/Test/Conocimiento
-//    viven como tabs dentro de Emailbot)
-//  - Web pública: ELIMINADA, sus items son extensión natural del criadero
-//    y viven en la sección Criadero (Páginas, Visitas, Estadísticas, Dominio)
 //  - Analíticas eliminada del sidebar (confunde con Estadísticas;
 //    accesible vía ⌘K y desde fichas individuales)
 //  - Comunidad eliminada (criaderos se descubren desde /search)
@@ -126,23 +118,6 @@ export const NAV_SECTIONS: NavSection[] = [
       // (IOS_HIDDEN_PATH_PREFIXES), así que lo ocultamos también del nav.
       { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresKennel: true, requiresPro: true, hideOnIos: true },
       { label: 'Contratos', href: '/contratos', icon: 'FileText', requiresKennel: true, requiresPro: true },
-    ],
-  },
-
-  // ── Comunicación (Enterprise) — emailbot + newsletter ───────────────
-  // Son features de Kennel Enterprise (149€, alta manual) según /pricing.
-  // Hilos del bot, Test del bot y Conocimiento viven como tabs dentro
-  // de /emailbot; no se duplican aquí.
-  {
-    id: 'comms',
-    label: 'Comunicación',
-    requiresKennel: true,
-    items: [
-      // Emailbot y Newsletter = EXTENSIONES (add-ons) sobre Pro. Se muestran
-      // solo si el criadero tiene la extensión activa (el founder, todas).
-      // Comms B2B: el middleware los redirige a /dashboard en iOS; hideOnIos.
-      { label: 'Emailbot', href: '/emailbot', icon: 'Mail', requiresAddon: 'emailbot', hideOnIos: true },
-      { label: 'Newsletter', href: '/newsletter', icon: 'Send', requiresAddon: 'newsletter', hideOnIos: true },
     ],
   },
 

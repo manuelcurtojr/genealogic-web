@@ -324,7 +324,7 @@ export default function GenosPanel({
                   </div>
                   <h3 className="text-lg font-bold text-ink">{t('Hola, soy Genos')}</h3>
                   <p className="text-sm text-body max-w-xs mt-1.5">
-                    {t('Te ayudo con todo lo de Genealogic: criadero, perros, genealogía, web, emailbot…')}
+                    {t('Te ayudo con todo lo de Genealogic: criadero, perros, genealogía, reservas…')}
                   </p>
                   <div className="mt-5 space-y-1.5 w-full max-w-xs">
                     <SuggestionChip
@@ -412,7 +412,7 @@ export default function GenosPanel({
                     value={escalateSummary}
                     onChange={(e) => setEscalateSummary(e.target.value)}
                     rows={3}
-                    placeholder={t('Ej: el emailbot no responde a leads desde ayer…')}
+                    placeholder={t('Ej: no puedo subir fotos a un perro desde ayer…')}
                     className="w-full bg-canvas border border-hairline rounded-lg px-3 py-2 text-xs text-ink focus:border-ink focus:outline-none resize-none"
                   />
                   <div className="mt-2 flex gap-2">

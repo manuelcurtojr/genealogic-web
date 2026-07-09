@@ -1,6 +1,6 @@
 /**
  * Layout para rutas públicas dentro del grupo (public):
- *   /blog, /pricing, /api-docs, /criadores, /propietarios, /razas, /soporte
+ *   /blog, /pricing, /criadores, /propietarios, /razas, /soporte
  *
  * Si el usuario está LOGUEADO, renderea el chrome completo (sidebar +
  * header logueado). Si NO, renderea el marketing header como antes.

@@ -27,7 +27,7 @@ export const IOS_APP_UA_MARKER = 'GenealogicIOSApp'
 /**
  * Prefijos de ruta que deben redirigir a `/dashboard` cuando la sesión viene
  * del WebView iOS. Cubre pricing, billing, kennel-as-business management,
- * CRM, comms (newsletter/emailbot), pagos de reservas y contratos.
+ * CRM, pagos de reservas y contratos.
  */
 export const IOS_HIDDEN_PATH_PREFIXES = [
   '/pricing',
@@ -37,8 +37,6 @@ export const IOS_HIDDEN_PATH_PREFIXES = [
   '/kennel/new',
   '/contactos',
   '/clientes',
-  '/newsletter',
-  '/emailbot',
   '/web',
   '/visitas',
 ] as const
@@ -87,9 +85,8 @@ export function matchesIosHiddenPath(pathname: string): boolean {
 
 /**
  * Sub-paths reservados: rutas dentro de un prefijo oculto que sí queremos
- * permitir aunque la cookie esté activa. Ahora mismo no hay ninguno
- * (newsletter/unsubscribe ya es público y no requiere login), pero deja el
- * hueco listo para añadir excepciones si en el futuro surgen.
+ * permitir aunque la cookie esté activa. Ahora mismo no hay ninguno, pero
+ * deja el hueco listo para añadir excepciones si en el futuro surgen.
  */
 export function isIosAllowedException(_pathname: string): boolean {
   return false

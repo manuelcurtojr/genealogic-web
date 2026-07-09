@@ -88,10 +88,7 @@ export default function SubscriptionActivatedEmail({
       <P>{t('Esto es lo que te recomendamos hacer ahora:')}</P>
       <ol style={{ paddingLeft: '20px', margin: '0 0 18px 0' }}>
         <li style={{ marginBottom: '6px', color: COLORS.body, fontSize: '14.5px', lineHeight: 1.6 }}>
-          <strong style={{ color: COLORS.ink }}>{t('Activa tu web pública')}</strong> {t('con dominio personalizado.')}
-        </li>
-        <li style={{ marginBottom: '6px', color: COLORS.body, fontSize: '14.5px', lineHeight: 1.6 }}>
-          <strong style={{ color: COLORS.ink }}>{t('Configura el Emailbot')}</strong> {t('para que responda a leads 24/7.')}
+          <strong style={{ color: COLORS.ink }}>{t('Revisa tu perfil público')}</strong> {t('con tu logo, perros y contacto.')}
         </li>
         <li style={{ marginBottom: '6px', color: COLORS.body, fontSize: '14.5px', lineHeight: 1.6 }}>
           <strong style={{ color: COLORS.ink }}>{t('Importa tu lista de espera')}</strong> {t('y empieza tu pipeline de reservas.')}

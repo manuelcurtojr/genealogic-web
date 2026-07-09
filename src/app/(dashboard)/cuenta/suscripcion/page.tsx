@@ -172,25 +172,6 @@ export default async function SuscripcionPage({
         </div>
       </div>
 
-      {/* Extensiones à la carte sobre Kennel Pro — alta manual */}
-      <div className="rounded-2xl border border-hairline bg-canvas p-6 lg:p-8">
-        <div className="flex items-baseline gap-3 mb-1 flex-wrap">
-          <h3 className="text-lg font-bold text-ink">{t('Extensiones')}</h3>
-          <span className="inline-flex items-center rounded-full bg-blue-100 text-blue-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
-            {t('Alta manual')}
-          </span>
-        </div>
-        <p className="text-sm text-body mb-3">
-          {t('Sobre Kennel Pro puedes añadir extensiones à la carte: Web pública del criadero, Newsletter y Emailbot IA (próximamente). Por ahora se activan de forma manual: escríbenos y te coordinamos el alta.')}
-        </p>
-        <Button
-          variant="secondary" size="md"
-          href="mailto:hola@genealogic.io?subject=Activar%20extensiones%20Kennel%20Pro"
-        >
-          <MailIcon className="w-4 h-4" />
-          {t('Hablar con soporte')}
-        </Button>
-      </div>
     </div>
   )
 }

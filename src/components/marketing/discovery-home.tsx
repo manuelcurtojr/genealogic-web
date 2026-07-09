@@ -708,7 +708,7 @@ export default function DiscoveryHome({
             </div>
             <div className="space-y-2">
               <FaqItem q={t('¿Es realmente gratis?')}>
-                {t('Sí. Para propietarios es gratis para siempre y sin límite de perros: ficha con galería, genealogía, cartilla veterinaria con recordatorios y reservas con tu criador. No pedimos tarjeta. Y si tienes criadero, ahora también es gratis: perfil público, genealogías y camadas. Las herramientas pro (pipeline de reservas, contratos, web propia) las iremos lanzando poco a poco y te avisaremos.')}
+                {t('Sí. Para propietarios es gratis para siempre y sin límite de perros: ficha con galería, genealogía, cartilla veterinaria con recordatorios y reservas con tu criador. No pedimos tarjeta. Y si tienes criadero, el registro también es gratis: perfil público, genealogías, camadas y contratos. Las herramientas profesionales (COI, simulador de cruces, CRM) van en Kennel Pro, con 14 días de prueba gratis.')}
               </FaqItem>
               <FaqItem q={t('¿Es público o privado?')}>
                 {t('La ficha y la genealogía de tu perro son públicas — esa es la gracia: juntas forman el mayor catálogo de genealogías caninas, y las compartes con un link. Tú las gestionas y editas. Lo sensible (cartilla veterinaria, contratos, documentos) es privado, solo para ti. Servidores en la UE, RGPD, y exportas o borras tus datos cuando quieras.')}

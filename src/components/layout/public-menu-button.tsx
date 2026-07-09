@@ -64,7 +64,6 @@ export default function PublicMenuButton({ className }: { className?: string }) 
               <Section label={t('Producto')}>
                 <Item href="/" icon={Dog} onClick={() => setOpen(false)}>{t('Para criadores')}</Item>
                 <Item href="/pricing" icon={Tag} onClick={() => setOpen(false)}>{t('Precios')}</Item>
-                <Item href="/api-docs" icon={Zap} onClick={() => setOpen(false)}>{t('API pública')}</Item>
               </Section>
               <Section label={t('Recursos')}>
                 <Item href="/blog" icon={BookOpen} onClick={() => setOpen(false)}>{t('Blog')}</Item>

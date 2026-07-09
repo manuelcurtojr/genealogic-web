@@ -26,7 +26,7 @@ export default function SubscriptionCancelledEmail({
       </P>
 
       <P>
-        <strong style={{ color: COLORS.ink }}>{t('Qué pierdes:')}</strong> {t('el pipeline de reservas, la web pública con dominio, el emailbot y los contratos digitales. Los datos no se borran — vuelven a estar disponibles si reactivas el plan.')}
+        <strong style={{ color: COLORS.ink }}>{t('Qué pierdes:')}</strong> {t('el pipeline de reservas, las estadísticas y los contratos digitales. Los datos no se borran — vuelven a estar disponibles si reactivas el plan.')}
       </P>
 
       <Btn href={`${SITE_URL}/pricing`}>{t('Reactivar plan')}</Btn>

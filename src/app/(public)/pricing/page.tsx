@@ -1,6 +1,5 @@
 /**
- * /pricing — 3 planes (Owner / Kennel Free / Kennel Pro) + extensiones
- * à la carte sobre Pro (Web del criadero, Newsletter, Emailbot).
+ * /pricing — 3 planes (Owner / Kennel Free / Kennel Pro).
  *
  * Vistas:
  *   · Simple (default) — 3 cards con highlights, "en cristiano"
@@ -20,7 +19,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Precios',
   description:
-    'Owner y Kennel Free, gratis para siempre y con perros ilimitados. Kennel Pro (49€/mes) con 14 días de prueba sin tarjeta, ampliable con extensiones à la carte (web del criadero, newsletter, emailbot). Pagas por las herramientas, no por el número de perros.',
+    'Owner y Kennel Free, gratis para siempre y con perros ilimitados. Kennel Pro (49€/mes) con 14 días de prueba sin tarjeta. Pagas por las herramientas, no por el número de perros.',
   alternates: { canonical: 'https://www.genealogic.io/pricing' },
 }
 

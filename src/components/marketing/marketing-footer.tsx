@@ -2,7 +2,7 @@
  * MarketingFooter — footer único de TODAS las páginas marketing/públicas.
  *
  * Montado por (public)/layout.tsx, así que aplica a:
- *   /, /criadores, /propietarios, /blog, /pricing, /api-docs
+ *   /, /criadores, /propietarios, /blog, /pricing
  *   + páginas públicas de perro/criadero (cuando no logueado).
  *
  * Diseño dark con 4 columnas: brand · Producto · Cuenta · Legal.

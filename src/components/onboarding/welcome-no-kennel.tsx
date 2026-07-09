@@ -36,7 +36,7 @@ export default async function WelcomeNoKennel({
           {t('Hola')}{displayName ? `, ${displayName}` : ''}.
         </h1>
         <p className="mt-3 text-body text-base max-w-xl mx-auto">
-          {t('Genealogic es la plataforma para criadores serios de perros de raza. Genealogía, web pública, gestión de clientes, emailbot — todo en un sitio.')}
+          {t('Genealogic es la plataforma para criadores serios de perros de raza. Genealogía, perfil público, gestión de clientes y contratos — todo en un sitio.')}
         </p>
       </div>
 

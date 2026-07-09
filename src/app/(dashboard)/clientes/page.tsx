@@ -3,7 +3,6 @@
  *
  * El antiguo módulo "Clientes" (que solo mostraba la tabla owners del CRM)
  * fue absorbido por /contactos, que unifica:
- *   - Suscriptores del newsletter
  *   - Leads (solicitudes en estado temprano)
  *   - Clientes (owners + reservas avanzadas)
  *

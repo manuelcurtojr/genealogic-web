@@ -42,14 +42,9 @@ export const COMMANDS: Command[] = [
 
   // ── PIPELINE (Pro) ─────────────────────────────────────────────────────
   { id: 'reservas', label: 'Reservas (pipeline)', href: '/reservas', icon: 'KanbanSquare', section: 'Pipeline', requiresPro: true, requiresKennel: true, keywords: ['kanban', 'pedidos', 'depósito', 'reserva cachorro'] },
-  { id: 'contactos', label: 'Contactos', href: '/contactos', icon: 'UsersRound', section: 'Pipeline', requiresPro: true, requiresKennel: true, keywords: ['clientes', 'compradores', 'familias', 'lista espera', 'crm', 'suscriptores', 'leads', 'newsletter'] },
+  { id: 'contactos', label: 'Contactos', href: '/contactos', icon: 'UsersRound', section: 'Pipeline', requiresPro: true, requiresKennel: true, keywords: ['clientes', 'compradores', 'familias', 'lista espera', 'crm', 'suscriptores', 'leads'] },
 
   // ── COMUNICACIÓN (Pro) ─────────────────────────────────────────────────
-  { id: 'emailbot', label: 'Emailbot', href: '/emailbot', icon: 'Mail', section: 'Comunicación', requiresPro: true, keywords: ['bot', 'auto-reply', 'ia', 'chat', 'emails'] },
-  { id: 'emailbot-test', label: 'Test del Emailbot', href: '/emailbot/test', icon: 'Beaker', section: 'Comunicación', requiresPro: true, keywords: ['playground', 'probar bot'] },
-  { id: 'emailbot-hilos', label: 'Hilos del Emailbot', href: '/emailbot/hilos', icon: 'MessageSquare', section: 'Comunicación', requiresPro: true, keywords: ['conversaciones', 'historial bot', 'derivados'] },
-  { id: 'conocimiento', label: 'Biblioteca de conocimiento', href: '/conocimiento', icon: 'BookOpen', section: 'Comunicación', requiresPro: true, keywords: ['faq', 'precio', 'política reserva', 'condiciones'] },
-  { id: 'newsletter', label: 'Newsletter (suscriptores)', href: '/newsletter', icon: 'Send', section: 'Comunicación', requiresPro: true, keywords: ['email marketing', 'campañas', 'suscriptores'] },
 
   // ── WEB PÚBLICA (Pro) ──────────────────────────────────────────────────
   { id: 'web', label: 'Páginas de la web', href: '/web', icon: 'Globe', section: 'Web pública', requiresPro: true, keywords: ['sitio', 'site', 'web builder', 'editor'] },
@@ -66,7 +61,6 @@ export const COMMANDS: Command[] = [
   // ── CUENTA (Pro) ───────────────────────────────────────────────────────
   { id: 'suscripcion', label: 'Suscripción y plan', href: '/cuenta/suscripcion', icon: 'Sparkles', section: 'Cuenta', requiresPro: true, keywords: ['plan', 'upgrade', 'pro', 'premium', 'billing'] },
   { id: 'facturacion', label: 'Facturación e historial', href: '/cuenta/facturacion', icon: 'Receipt', section: 'Cuenta', requiresPro: true, keywords: ['invoices', 'facturas', 'stripe portal'] },
-  { id: 'dominio', label: 'Dominio personalizado', href: '/cuenta/dominio', icon: 'Link2', section: 'Cuenta', requiresPro: true, keywords: ['custom domain', 'dns', 'vercel'] },
 
   // ── AJUSTES ────────────────────────────────────────────────────────────
   { id: 'settings', label: 'Ajustes de la cuenta', href: '/settings', icon: 'Settings', section: 'Ajustes', keywords: ['perfil', 'avatar', 'password', 'preferencias'] },

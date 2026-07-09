@@ -65,7 +65,6 @@ export default function TermsPage() {
         <li><strong>Owner (gratuito, para siempre):</strong> perros ilimitados con ficha completa, genealogía sin límite de generaciones, importador IA, cartilla veterinaria, galería ilimitada y búsqueda pública. Sin tarjeta. Pensado para propietarios que documentan su mascota.</li>
         <li><strong>Kennel Free (gratuito, para siempre):</strong> perros ilimitados. Todo lo de Owner + perfil de criadero (página pública básica), camadas y marcar reproductores. Recibe solicitudes a través de su perfil (visualización del embudo limitada al número de solicitudes recibidas). Sin tarjeta. Pensado para el criador casero.</li>
         <li><strong>Kennel Pro (49 €/mes o 499 €/año, ahorro del 15%):</strong> perros ilimitados. Todo lo de Kennel Free + el panel completo de gestión: embudo de ventas completo, simulador de cruces, predicción de color por genotipos, estadísticas web y visitas del criadero, contactos (CRM), contratos con firma electrónica y soporte prioritario. <strong>14 días de prueba sin tarjeta</strong>; al finalizar la prueba se solicita método de pago para continuar.</li>
-        <li><strong>Extensiones de pago sobre Kennel Pro:</strong> de forma opcional, los suscriptores de Kennel Pro pueden contratar módulos adicionales por separado, como la <strong>Web del criadero</strong> (web pública con dominio propio, 19 €/mes) o la <strong>Newsletter</strong> (9 €/mes). Cada extensión se contrata, factura y cancela de forma independiente desde la cuenta. La disponibilidad de extensiones puede variar.</li>
       </ul>
       <p>
         Los precios se muestran con IVA cuando aplicable. La disponibilidad y características
@@ -203,7 +202,6 @@ export default function TermsPage() {
         <li>Genos es un asistente basado en inteligencia artificial (Anthropic Claude) que proporciona información sobre la Plataforma, la cría canina y los datos del Usuario.</li>
         <li>Las respuestas de Genos son orientativas. <strong>No constituyen asesoramiento veterinario, jurídico, fiscal ni profesional</strong>. Para decisiones importantes consulta a un profesional cualificado.</li>
         <li>Los mensajes enviados a Genos se procesan por Anthropic PBC bajo las condiciones de su API (sin uso para entrenamiento).</li>
-        <li>El emailbot (plan Pro) sugiere respuestas a emails entrantes. El Usuario aprueba cada respuesta antes de enviarla.</li>
       </ul>
 
       <h2>11. Uso Aceptable y Conductas Prohibidas</h2>

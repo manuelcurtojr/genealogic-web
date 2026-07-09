@@ -1,10 +1,7 @@
-import { loadProPage } from '@/lib/kennel/pro-page-loader'
-import { ProPageShell } from '@/components/kennel/pro-page-shell'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 import { MapPin, Calendar, Globe, ExternalLink, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { kennelHasAddon } from '@/lib/kennel/addons'
+import { notFound } from 'next/navigation'
 import { isUUID } from '@/lib/slug'
 import type { Metadata } from 'next'
 import { getTranslator } from '@/lib/i18n'
@@ -39,21 +36,30 @@ export async function generateMetadata(
 export default async function KennelContactoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const t = getTranslator(await getLocale())
-  const { kennel } = await loadProPage({ kennelId: id, pageId: null })
-
-  // Extensión Web — sin ella, redirect a la home del kennel
-  if (!kennelHasAddon(kennel, 'web', kennel.owner_id)) redirect(`/kennels/${kennel.slug || kennel.id}`)
+  const supabase = await createClient()
+  const field = isUUID(id) ? 'id' : 'slug'
+  const { data: kennel } = await supabase
+    .from('kennels')
+    .select('id, slug, name, owner_id, city, country, foundation_date, website, social_instagram, social_facebook, whatsapp_enabled, whatsapp_phone, contact_form_config')
+    .eq(field, id)
+    .single()
+  if (!kennel) notFound()
 
   const location = [kennel.city, kennel.country].filter(Boolean).join(', ')
   const foundationYear = kennel.foundation_date ? new Date(kennel.foundation_date).getFullYear() : null
   const hasOwner = !!kennel.owner_id
 
   return (
-    <ProPageShell
-      eyebrow={t('Hablemos')}
-      title={`${t('Contacta con')} ${kennel.name}`}
-      description={t('Estamos aquí para responder dudas, planificar visitas y mantenerte al día sobre próximas camadas. Sin compromiso.')}
-    >
+    <div className="space-y-6 py-6 sm:py-8">
+      <header>
+        <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{t('Hablemos')}</p>
+        <h1 className="mt-1 text-[26px] sm:text-[32px] font-semibold leading-[1.1] tracking-[-0.03em] text-ink">
+          {`${t('Contacta con')} ${kennel.name}`}
+        </h1>
+        <p className="mt-2 text-[14.5px] sm:text-[15.5px] text-body leading-[1.55] max-w-prose">
+          {t('Estamos aquí para responder dudas, planificar visitas y mantenerte al día sobre próximas camadas. Sin compromiso.')}
+        </p>
+      </header>
       <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6 lg:gap-8">
         {/* Form CTA */}
         <div className="rounded-2xl border border-hairline bg-canvas p-6 sm:p-8">
@@ -132,6 +138,6 @@ export default async function KennelContactoPage({ params }: { params: Promise<{
           </dl>
         </aside>
       </div>
-    </ProPageShell>
+    </div>
   )
 }

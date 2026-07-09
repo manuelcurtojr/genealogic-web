@@ -2,7 +2,7 @@
  * Header para visitantes no logueados.
  *
  * Se monta en:
- *   - (public)/layout.tsx (blog, pricing, api-docs)
+ *   - (public)/layout.tsx (blog, pricing)
  *   - (dashboard)/layout.tsx cuando el user es NO logueado (dog/kennel public)
  *
  * Estructura:
@@ -126,9 +126,6 @@ export default function PublicHeader() {
                 </DrawerLink>
                 <DrawerLink href="/pricing" icon={Tag} onClick={() => setDrawerOpen(false)}>
                   {t('Precios')}
-                </DrawerLink>
-                <DrawerLink href="/api-docs" icon={Zap} onClick={() => setDrawerOpen(false)}>
-                  {t('API pública')}
                 </DrawerLink>
               </DrawerSection>
 

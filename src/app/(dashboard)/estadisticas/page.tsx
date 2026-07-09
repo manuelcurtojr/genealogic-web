@@ -43,15 +43,13 @@ export default async function EstadisticasPage() {
 
   // Cargar contadores en paralelo
   const since30d = new Date(Date.now() - 30 * 86400000).toISOString()
-  const [dogsRes, littersRes, activeReservasRes, totalReservasRes, ownersRes, knowledgeRes, subsRes, pageviewsRes, pageviews30Res] = await Promise.all([
+  const [dogsRes, littersRes, activeReservasRes, totalReservasRes, ownersRes, pageviewsRes, pageviews30Res] = await Promise.all([
     supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id),
     supabase.from('litters').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
     supabase.from('puppy_reservations').select('id', { count: 'exact', head: true })
       .eq('kennel_id', kennel.id).not('status', 'in', '("delivered","cancelled")'),
     supabase.from('puppy_reservations').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id),
     supabase.from('owners').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id),
-    supabase.from('knowledge_entries').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id).eq('is_active', true),
-    supabase.from('newsletter_subscribers').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id).eq('is_active', true),
     supabase.from('page_views').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id),
     supabase.from('page_views').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id).gte('created_at', since30d),
   ])
@@ -62,8 +60,6 @@ export default async function EstadisticasPage() {
     activeReservas: activeReservasRes.count || 0,
     totalReservas: totalReservasRes.count || 0,
     owners: ownersRes.count || 0,
-    knowledge: knowledgeRes.count || 0,
-    subs: subsRes.count || 0,
     pageviewsTotal: pageviewsRes.count || 0,
     pageviews30d: pageviews30Res.count || 0,
   }
@@ -109,10 +105,6 @@ export default async function EstadisticasPage() {
         <StatCard icon={KanbanSquare} label={t('Reservas activas')} value={stats.activeReservas}
                   sub={`${stats.totalReservas} ${t('totales')}`} href="/reservas" />
         <StatCard icon={UsersRound} label={t('Contactos')} value={stats.owners} href="/contactos" />
-        <StatCard icon={BookOpen} label={t('Biblioteca')} value={stats.knowledge}
-                  sub={t('entradas activas')} href="/conocimiento" />
-        <StatCard icon={Mail} label={t('Newsletter')} value={stats.subs}
-                  sub={t('suscriptores')} href="/newsletter" />
         <StatCard icon={TrendingUp} label={t('Visitas 30d')} value={stats.pageviews30d}
                   sub={`${stats.pageviewsTotal} ${t('histórico')}`} />
         <StatCard icon={TrendingUp} label={t('Visitas totales')} value={stats.pageviewsTotal} />

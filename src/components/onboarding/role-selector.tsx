@@ -65,9 +65,9 @@ export default function RoleSelector({ displayName }: { displayName: string | nu
           tagline={t('Tengo (o quiero tener) un criadero registrado.')}
           benefits={[
             t('Crea tu afijo y publica tus perros'),
-            t('Web pública con tu dominio'),
+            t('Perfil público de tu criadero'),
             t('Pipeline de reservas y clientes'),
-            t('Emailbot que responde a leads'),
+            t('Contratos con firma electrónica'),
           ]}
           onClick={() => choose('breeder')}
           loading={pending && selecting === 'breeder'}

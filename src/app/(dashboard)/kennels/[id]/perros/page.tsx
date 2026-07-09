@@ -1,11 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { isUUID } from '@/lib/slug'
-import { kennelHasAddon } from '@/lib/kennel/addons'
 import { sortDogsByPhotoQuality } from '@/lib/dogs/sort-quality'
 import PerrosCatalog from '@/components/kennel/perros-catalog'
-import { headers } from 'next/headers'
-import { isDynamicSiteHost } from '@/lib/kennel/custom-site'
 import type { Metadata } from 'next'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
@@ -44,15 +41,13 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
   const field = isUUID(id) ? 'id' : 'slug'
   const { data: kennel } = await supabase
     .from('kennels')
-    .select('id, slug, owner_id, name, contact_form_config, addons')
+    .select('id, slug, owner_id, name, contact_form_config')
     .eq(field, id)
     .single()
   if (!kennel) notFound()
   if (field === 'id' && kennel.slug && kennel.slug !== id) {
     redirect(`/kennels/${kennel.slug}/perros`)
   }
-
-  if (!kennelHasAddon(kennel, 'web', kennel.owner_id)) redirect(`/kennels/${kennel.slug || kennel.id}`)
 
   const [dogsRes, littersRes] = await Promise.all([
     supabase
@@ -130,12 +125,6 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
   const criados = dogs.filter((d: any) => !d.is_for_sale && !isReproOfThisKennel(d))
   const currencySymbol: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', MXN: '$', COP: '$', ARS: '$', CLP: '$' }
 
-  // Bajo el dominio propio del criadero (web dinámica, p.ej. iremacurto.com),
-  // las fichas de perro abren el perfil en genealogic.io en una pestaña nueva:
-  // allí está toda la herramienta (genealogía, salud, palmarés). En
-  // genealogic.io la navegación es interna (/dogs/[slug]).
-  const dogsToGenealogic = isDynamicSiteHost((await headers()).get('host'))
-
   return (
     // pt para separar el hero "Nuestros perros" del header del kennel. Va en la
     // página (no en el layout) porque la home tiene hero full-bleed que SÍ debe
@@ -160,7 +149,7 @@ export default async function KennelPerrosPage({ params }: { params: Promise<{ i
         litters={litters}
         criados={criados}
         currencySymbol={currencySymbol}
-        dogsToGenealogic={dogsToGenealogic}
+        dogsToGenealogic={false}
       />
     </div>
   )

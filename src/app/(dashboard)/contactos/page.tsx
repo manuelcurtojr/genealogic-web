@@ -1,8 +1,7 @@
 /**
  * Contactos — vista unificada de todos los "personas que rodean al criadero".
  *
- * 3 tabs:
- *  - Suscriptores: newsletter_subscribers (gente suscrita al newsletter)
+ * 2 tabs:
  *  - Leads:        puppy_reservations en estados tempranos
  *                  ('interested', 'deposit_paid') — interesados sin cerrar
  *  - Clientes:     owners (CRM) + puppy_reservations con status avanzados
@@ -17,7 +16,6 @@ import { redirect } from 'next/navigation'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import ContactosPageClient, {
-  type Subscriber,
   type Lead,
   type Client,
 } from '@/components/contactos/contactos-page-client'
@@ -53,13 +51,7 @@ export default async function ContactosPage() {
   }
 
   // Carga paralela — todo público (RLS lo limita al kennel del user)
-  const [subsRes, leadsRes, clientReservationsRes, ownersRes] = await Promise.all([
-    supabase
-      .from('newsletter_subscribers')
-      .select('id, email, full_name, source, tags, is_active, subscribed_at, unsubscribed_at')
-      .eq('kennel_id', kennel.id)
-      .order('subscribed_at', { ascending: false })
-      .limit(500),
+  const [leadsRes, clientReservationsRes, ownersRes] = await Promise.all([
     supabase
       .from('puppy_reservations')
       .select(
@@ -86,7 +78,6 @@ export default async function ContactosPage() {
       .limit(500),
   ])
 
-  const subscribers: Subscriber[] = (subsRes.data || []) as Subscriber[]
   const leads: Lead[] = (leadsRes.data || []) as Lead[]
 
   // Clientes = owners + reservas avanzadas, deduplicadas por email
@@ -169,7 +160,6 @@ export default async function ContactosPage() {
     <ContactosPageClient
       kennelId={kennel.id}
       kennelName={kennel.name}
-      subscribers={subscribers}
       leads={leads}
       clients={clients}
     />

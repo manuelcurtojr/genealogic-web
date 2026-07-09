@@ -600,8 +600,8 @@ function PedCard({
 // ─── Features grid ───────────────────────────────────────────────────────
 // Fase 1 ("carta reducida"): solo vendemos lo LANZADO (genealogías + IA,
 // camadas + salud, perfil público indexable). Las herramientas construidas
-// pero aún no lanzadas (cruces/COI, CRM de reservas, web propia, newsletter,
-// emailbot, contratos) se insinúan en un único bloque "Llegando pronto" —
+// pero aún no lanzadas (cruces/COI, CRM de reservas, contratos) se
+// insinúan en un único bloque "Llegando pronto" —
 // nombres, sin mockups ni detalle. Cuando se lanza una, se mueve aquí arriba.
 function FeaturesGrid() {
   const t = useT()
@@ -659,21 +659,19 @@ function FeaturesGrid() {
             que el teaser de /features). */}
         <div className="mt-12 sm:mt-16 border-t border-hairline pt-10 sm:pt-12">
           <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[color:var(--brand)]">
-            {t('Llegando pronto')}
+            {t('Ya disponible')}
           </p>
           <h3 className="mt-2 max-w-2xl text-[22px] sm:text-[28px] font-semibold leading-[1.2] tracking-[-0.03em] text-ink">
-            {t('Vamos soltando herramientas nuevas de una en una.')}
+            {t('Las herramientas profesionales ya están aquí.')}
           </h3>
           <p className="mt-3 max-w-2xl text-[14px] sm:text-[15px] leading-[1.6] text-body">
-            {t('Estas piezas ya están en camino. Te avisaremos por email en cuanto cada una esté lista — sin coste extra mientras siga todo gratis.')}
+            {t('Todo esto viene incluido en Kennel Pro. Pruébalo 14 días gratis, sin tarjeta.')}
           </p>
           <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <ComingSoonRow title={t('Planificador de cruces')} desc={t('Simula el COI de la camada antes de criar.')} />
-            <ComingSoonRow title={t('Genotipos y DNA')} desc={t('Predicción de color y pruebas raciales.')} />
-            <ComingSoonRow title={t('CRM de reservas')} desc={t('Pipeline de leads y clientes, sin Excel.')} />
-            <ComingSoonRow title={t('Contratos')} desc={t('Plantillas con firma electrónica.')} />
-            <ComingSoonRow title={t('Web del criadero')} desc={t('Tu web pública con dominio propio.')} />
-            <ComingSoonRow title={t('Newsletter y emailbot')} desc={t('Campañas y asistente IA para tus leads.')} />
+            <LaunchedRow title={t('Planificador de cruces')} desc={t('Simula el COI de la camada antes de criar.')} />
+            <LaunchedRow title={t('Genotipos y DNA')} desc={t('Predicción de color y pruebas raciales.')} />
+            <LaunchedRow title={t('CRM de reservas')} desc={t('Pipeline de leads y clientes, sin Excel.')} />
+            <LaunchedRow title={t('Contratos')} desc={t('Plantillas con firma electrónica. Incluidos también en el plan gratis.')} />
           </ul>
         </div>
       </div>
@@ -681,16 +679,15 @@ function FeaturesGrid() {
   )
 }
 
-// Fila compacta para el bloque "Llegando pronto": nombre + una línea, con
-// chip "Próximamente". Sin mockups ni CTA (no es vendible aún).
-function ComingSoonRow({ title, desc }: { title: string; desc: string }) {
-  const t = useT()
+// Fila compacta para el bloque "Ya disponible": nombre + una línea, con
+// chip "Kennel Pro" (lanzado en el go-live 2026-07-09).
+function LaunchedRow({ title, desc }: { title: string; desc: string }) {
   return (
     <li className="rounded-[12px] border border-hairline bg-canvas/60 p-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[14.5px] font-semibold text-ink">{title}</span>
-        <span className="inline-flex items-center rounded-full border border-hairline bg-surface-soft px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted">
-          {t('Próximamente')}
+        <span className="inline-flex items-center rounded-full border border-[color:var(--brand)]/30 bg-orange-50 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.06em] text-[color:var(--brand)]">
+          Kennel Pro
         </span>
       </div>
       <p className="mt-1.5 text-[13px] leading-[1.5] text-muted">{desc}</p>
@@ -699,7 +696,7 @@ function ComingSoonRow({ title, desc }: { title: string; desc: string }) {
 }
 
 // ─── Kennel showcase (perfil público del criadero) ───────────────────────
-// Reemplaza la sección del emailbot (aún no shippeado). Muestra el perfil
+// Muestra el perfil
 // público GRATUITO: reproductores + perros producidos, cada uno con su
 // genealogía. El motor de reputación del criador.
 function KennelDogCard({ dog, sex, fallbackName }: { dog: any; sex: '♂' | '♀'; fallbackName: string }) {
@@ -866,11 +863,8 @@ function Step({
 }
 
 // ─── Pricing ─────────────────────────────────────────────────────────────
-// Fase 1 (lanzamiento GRATIS): todo es gratis ahora mismo, para propietarios
-// y criadores, con perros ilimitados y sin tarjeta. Los planes de pago
-// (Kennel Pro + extensiones) siguen VISIBLES como visión, pero etiquetados
-// "Próximamente" — aún no se venden. Cuando se activen, avisaremos a los
-// usuarios gratuitos por email.
+// Go-live 2026-07-09: Kennel Pro (49€/mes) A LA VENTA con trial de 14 días
+// sin tarjeta. El plan Criadero gratis se mantiene (perros ilimitados).
 function Pricing() {
   const t = useT()
   return (
@@ -883,13 +877,13 @@ function Pricing() {
           className="mt-3 max-w-[18ch] font-semibold text-ink"
           style={{ fontSize: 'clamp(26px, 5vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}
         >
-          {t('Gratis para criar. Sin tarjeta.')}
+          {t('Empieza gratis. Profesionalízate cuando quieras.')}
         </h2>
         <p className="mt-5 sm:mt-6 max-w-[560px] text-[16px] leading-[1.55] text-body sm:text-[17px]">
-          {t('Ahora mismo Genealogic es gratis para propietarios y criadores, con perros ilimitados y sin tarjeta. La genealogía es siempre completa, sin límite de generaciones. Estamos preparando herramientas profesionales de pago para el criadero — las verás abajo como visión, y te avisaremos cuando lleguen.')}
+          {t('El registro de tu criadero es gratis para siempre: perros ilimitados, genealogía completa sin límite de generaciones y sin tarjeta. Cuando quieras las herramientas profesionales —COI, simulador de cruces, CRM, estadísticas—, Kennel Pro tiene 14 días de prueba gratis.')}
         </p>
 
-        <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 sm:mt-14 grid gap-4 sm:gap-6 sm:grid-cols-2">
           {/* Gratis — todo lo lanzado, ahora mismo, sin coste */}
           <div className="relative rounded-[16px] border-2 bg-gradient-to-br from-emerald-50 via-canvas to-green-50 p-6 flex flex-col shadow-[0_12px_48px_rgba(16,185,129,0.12)]" style={{ borderColor: '#10b981' }}>
             <span className="absolute -top-3 left-5 rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
@@ -911,69 +905,31 @@ function Pricing() {
             </Button>
           </div>
 
-          {/* Kennel Pro — visión, aún NO vendible (Próximamente) */}
-          <div className="relative rounded-[16px] border border-hairline bg-gradient-to-br from-orange-50 via-canvas to-amber-50 p-6 flex flex-col">
-            <span className="absolute -top-3 left-5 rounded-full bg-ink/85 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-              {t('Próximamente')}
+          {/* Kennel Pro — A LA VENTA (go-live 2026-07-09, trial 14 días) */}
+          <div className="relative rounded-[16px] border-2 bg-gradient-to-br from-orange-50 via-canvas to-amber-50 p-6 flex flex-col shadow-[0_12px_48px_rgba(254,102,32,0.12)]" style={{ borderColor: '#FE6620' }}>
+            <span className="absolute -top-3 left-5 rounded-full bg-[#FE6620] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+              {t('14 días gratis')}
             </span>
             <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-[#FE6620]">Kennel Pro</p>
             <p className="mt-3 text-[32px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
               49 € <span className="text-[13px] font-normal text-muted">/ {t('mes')}</span>
             </p>
-            <p className="mt-1 text-[13px] text-body">{t('Las herramientas pro del criadero')}</p>
+            <p className="mt-1 text-[13px] text-body">{t('Las herramientas pro del criadero · prueba sin tarjeta')}</p>
             <ul className="mt-5 space-y-2 text-[13.5px] flex-1">
               <PricingRow>{t('COI + simulador de cruces')}</PricingRow>
               <PricingRow>{t('Genotipos y DNA')}</PricingRow>
-              <PricingRow>{t('CRM de reservas + contratos')}</PricingRow>
-              <PricingRow>{t('Estadísticas del criadero')}</PricingRow>
+              <PricingRow>{t('CRM de reservas + embudo de ventas')}</PricingRow>
+              <PricingRow>{t('Estadísticas del criadero + pagos online')}</PricingRow>
             </ul>
-            <button
-              type="button"
-              disabled
-              aria-disabled="true"
-              className="mt-6 w-full cursor-not-allowed rounded-xl border border-hairline bg-surface-soft px-5 py-3 text-sm font-semibold text-muted"
-            >
-              {t('Próximamente')}
-            </button>
+            <Button href="/pricing" variant="primary" className="mt-6 w-full">
+              {t('Prueba 14 días gratis')}
+            </Button>
           </div>
 
-          {/* Extensiones — visión, aún NO vendibles (Próximamente) */}
-          <div className="relative rounded-[16px] border border-hairline bg-gradient-to-br from-violet-50 via-canvas to-purple-50 p-6 flex flex-col">
-            <span className="absolute -top-3 left-5 rounded-full bg-ink/85 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-              {t('Próximamente')}
-            </span>
-            <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-violet-600">{t('Extensiones')}</p>
-            <p className="mt-3 text-[22px] font-semibold text-ink" style={{ letterSpacing: '-0.02em' }}>
-              {t('Amplía tu criadero')}
-            </p>
-            <p className="mt-1 text-[13px] text-body">{t('À la carte · activa solo lo que uses')}</p>
-            <ul className="mt-5 space-y-3 text-[13.5px] flex-1">
-              <li className="flex items-baseline justify-between gap-3">
-                <span className="text-body">{t('Web del criadero + dominio propio')}</span>
-                <span className="whitespace-nowrap text-[12.5px] font-semibold text-muted">19 € · {t('Próximamente')}</span>
-              </li>
-              <li className="flex items-baseline justify-between gap-3">
-                <span className="text-body">{t('Newsletter')}</span>
-                <span className="whitespace-nowrap text-[12.5px] font-semibold text-muted">9 € · {t('Próximamente')}</span>
-              </li>
-              <li className="flex items-baseline justify-between gap-3">
-                <span className="text-body">{t('Emailbot IA')}</span>
-                <span className="whitespace-nowrap text-[12.5px] font-semibold text-muted">19 € · {t('Próximamente')}</span>
-              </li>
-            </ul>
-            <button
-              type="button"
-              disabled
-              aria-disabled="true"
-              className="mt-6 w-full cursor-not-allowed rounded-xl border border-hairline bg-surface-soft px-5 py-3 text-sm font-semibold text-muted"
-            >
-              {t('Próximamente')}
-            </button>
-          </div>
         </div>
 
         <p className="mt-10 text-center text-[13px] text-muted">
-          {t('Las herramientas de pago llegarán poco a poco. Mientras tanto, todo es gratis — y avisaremos a los usuarios gratuitos por email en cuanto cada novedad esté lista.')}
+          {t('Sin permanencia: cancela cuando quieras. El trial no pide tarjeta y al terminar decides — si no haces nada, vuelves al plan gratis con todos tus datos intactos.')}
         </p>
       </div>
     </section>
@@ -1006,12 +962,12 @@ function FAQ() {
       a: t('Genealogías ilimitadas con importador IA, perfil público del criadero indexable en Google (con tus reproductores y los perros que has criado), camadas con un click, calendario reproductivo, cartilla sanitaria con recordatorios de vacunas, galería de fotos y el buscador con más de 250.000 perros. Todo gratis.'),
     },
     {
-      q: t('¿Qué son las herramientas que llegarán próximamente?'),
-      a: t('Estamos puliendo herramientas profesionales para el criadero —simulador de cruces con COI proyectado, genotipos y DNA, CRM de reservas, contratos, web del criadero con dominio propio, newsletter y emailbot— que iremos lanzando poco a poco. Las verás en la web como visión; cuando cada una esté lista te avisaremos por email.'),
+      q: t('¿Qué incluye Kennel Pro?'),
+      a: t('Las herramientas profesionales del criadero: COI de Wright con comparativa de raza, simulador de cruces con COI proyectado, genotipos y pruebas DNA, embudo de ventas con CRM de reservas, estadísticas del criadero y cobros online a tus clientes con Stripe. 49€/mes o 499€/año (2 meses gratis), con 14 días de prueba sin tarjeta.'),
     },
     {
-      q: t('¿Tendré que pagar más adelante?'),
-      a: t('Lo que usas hoy seguirá siendo gratis. Algunas herramientas pro del criadero serán de pago cuando se lancen, pero nunca te cobraremos por sorpresa: si algo pasa a ser de pago, te lo decimos con antelación y tú decides. Sin tarjeta para empezar.'),
+      q: t('¿Y si dejo de pagar Kennel Pro?'),
+      a: t('Vuelves al plan gratis y no pierdes nada: tus perros, genealogías, camadas y contratos siguen ahí. Solo dejas de usar las herramientas Pro. Lo gratis es gratis para siempre — nunca te cobraremos por sorpresa.'),
     },
     {
       q: t('¿Mis datos son míos? ¿Puedo exportarlos?'),

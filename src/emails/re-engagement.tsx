@@ -45,7 +45,7 @@ export default function ReEngagementEmail({
               {t('Pipeline de reservas con kanban visual')}
             </li>
             <li style={{ marginBottom: '6px', color: COLORS.body, fontSize: '14.5px', lineHeight: 1.6 }}>
-              {t('Emailbot que responde a leads 24/7')}
+              {t('Contratos digitales con firma electrónica')}
             </li>
             <li style={{ marginBottom: '6px', color: COLORS.body, fontSize: '14.5px', lineHeight: 1.6 }}>
               {t('Importer IA: tu genealogía en 12 segundos')}

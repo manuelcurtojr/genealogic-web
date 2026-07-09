@@ -78,8 +78,7 @@ export default function PrivacyPage() {
           <tr><td>Notificaciones push</td><td>Consentimiento (art. 6.1.a)</td></tr>
           <tr><td>Asistente de IA (Genos)</td><td>Ejecución del contrato (art. 6.1.b)</td></tr>
           <tr><td>Mensajería entre usuarios</td><td>Ejecución del contrato (art. 6.1.b)</td></tr>
-          <tr><td>Newsletter y marketing directo a usuarios existentes</td><td>Interés legítimo (art. 6.1.f) con opt-out</td></tr>
-          <tr><td>Newsletter a no usuarios</td><td>Consentimiento (art. 6.1.a)</td></tr>
+          <tr><td>Comunicaciones y marketing directo a usuarios existentes</td><td>Interés legítimo (art. 6.1.f) con opt-out</td></tr>
           <tr><td>Detección de fraude, seguridad y prevención de abuso</td><td>Interés legítimo (art. 6.1.f)</td></tr>
           <tr><td>Resolución de reportes (notice-and-action)</td><td>Obligación legal (art. 6.1.c) + interés legítimo</td></tr>
           <tr><td>Estadísticas agregadas y mejora del producto</td><td>Interés legítimo (art. 6.1.f)</td></tr>
@@ -124,7 +123,6 @@ export default function PrivacyPage() {
         <li><strong>Comunicaciones contractuales (emails, facturas):</strong> 5 años desde la última transacción.</li>
         <li><strong>Logs de seguridad y accesos:</strong> 12 meses.</li>
         <li><strong>Reportes de contenido:</strong> 3 años desde su resolución, para acreditar diligencia ante posibles reclamaciones.</li>
-        <li><strong>Datos de marketing (newsletter no usuarios):</strong> hasta que retires el consentimiento.</li>
       </ul>
 
       <h2>6. Tus Derechos</h2>
@@ -205,7 +203,6 @@ export default function PrivacyPage() {
       <ul>
         <li><strong>Genos (asistente IA):</strong> usa modelos de Anthropic (Claude) para responder preguntas. Las conversaciones se procesan en servidores de Anthropic en EE.UU. bajo cláusulas SCC. Anthropic no utiliza las consultas para entrenar modelos.</li>
         <li><strong>Importador de genealogías:</strong> usa IA para extraer datos estructurados de páginas públicas o documentos que tú aportas. Tú confirmas siempre el resultado antes de guardarlo.</li>
-        <li><strong>Emailbot (Pro):</strong> los emails entrantes pueden ser parseados por modelos de Anthropic/OpenAI/Google para sugerir respuestas. Tú revisas y apruebas cada respuesta antes de enviarla.</li>
         <li><strong>Antifraude y rate-limit:</strong> tratamiento automatizado para detectar abuso. No produce efectos jurídicos sobre el usuario más allá de ralentizar o bloquear acciones técnicas.</li>
       </ul>
       <p>

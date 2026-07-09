@@ -208,83 +208,6 @@ function PaymentsTimeline() {
   )
 }
 
-// ─── 4. Kennel web ──────────────────────────────────────────────────────
-function KennelWeb() {
-  return (
-    <MockupFrame topBar="iremacurto.com">
-      <div className="relative bg-gradient-to-br from-orange-50 via-canvas to-blue-50 px-4 pt-3 pb-4">
-        {/* Header del kennel */}
-        <div className="flex items-center justify-between mb-3 border-b border-hairline pb-2">
-          <div className="flex items-center gap-1.5">
-            <div className="h-5 w-5 rounded-full bg-ink text-white text-[8px] font-bold flex items-center justify-center">IC</div>
-            <span className="text-[10px] font-bold text-ink">Irema Curtó</span>
-          </div>
-          <nav className="flex gap-2 text-[8.5px] text-body">
-            <span>Sobre</span>
-            <span>Perros</span>
-            <span>Galería</span>
-            <span>Blog</span>
-            <span className="text-ink font-semibold">Contacto</span>
-          </nav>
-        </div>
-        {/* Hero del kennel */}
-        <div className="mb-3">
-          <p className="text-[8px] font-semibold uppercase tracking-wider text-[#FE6620]">Criadero · desde 1975</p>
-          <p className="text-[14px] font-bold text-ink leading-tight mt-0.5">Presa Canario · 50 años</p>
-          <p className="text-[9px] text-body mt-1 leading-snug">Te contamos una historia de creación, preservación y defensa de una raza que marcaría un antes y un después en los perros funcionales.</p>
-          <div className="flex gap-1.5 mt-2">
-            <span className="text-[8.5px] px-2 py-0.5 rounded bg-ink text-on-primary font-semibold">Pedir info</span>
-            <span className="text-[8.5px] px-2 py-0.5 rounded border border-hairline text-body">Ver perros</span>
-          </div>
-        </div>
-        {/* Mini chips trayectoria */}
-        <div className="grid grid-cols-3 gap-1.5 text-[8px]">
-          <div className="rounded border border-hairline bg-canvas px-1.5 py-1">
-            <p className="text-muted">Años</p>
-            <p className="font-bold text-ink">50+</p>
-          </div>
-          <div className="rounded border border-hairline bg-canvas px-1.5 py-1">
-            <p className="text-muted">Perros</p>
-            <p className="font-bold text-ink">443</p>
-          </div>
-          <div className="rounded border border-hairline bg-canvas px-1.5 py-1">
-            <p className="text-muted">Hitos</p>
-            <p className="font-bold text-ink">13</p>
-          </div>
-        </div>
-      </div>
-    </MockupFrame>
-  )
-}
-
-// ─── 5. Blog list ───────────────────────────────────────────────────────
-function BlogList() {
-  const posts = [
-    { title: 'El verdadero origen del nombre Canarias', date: '8 Abr', mins: 6 },
-    { title: 'Por qué las hembras importan más en la cría', date: '2 Abr', mins: 4 },
-    { title: 'Cómo distinguir un Presa Canario auténtico', date: '24 Mar', mins: 7 },
-  ]
-  return (
-    <MockupFrame topBar="iremacurto.com/blog">
-      <div className="p-4">
-        <p className="text-[8px] font-semibold uppercase tracking-wider text-[#FE6620] mb-1">Blog</p>
-        <p className="text-[13px] font-bold text-ink mb-3">Últimas notas</p>
-        <div className="space-y-1.5">
-          {posts.map((p, i) => (
-            <div key={i} className="flex items-center gap-2 rounded border border-hairline bg-canvas p-2">
-              <div className="h-10 w-14 rounded bg-gradient-to-br from-orange-100 to-blue-100 flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold text-ink truncate">{p.title}</p>
-                <p className="text-[8.5px] text-muted">{p.date} · {p.mins} min lectura</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </MockupFrame>
-  )
-}
-
 // ─── 6. Pedigree tree ───────────────────────────────────────────────────
 function PedigreeTreeMockup() {
   return (
@@ -440,86 +363,6 @@ function BreedingSimulator() {
   )
 }
 
-// ─── 9. Bot conversation ────────────────────────────────────────────────
-function BotConversation() {
-  return (
-    <MockupFrame topBar="genealogic.io/emailbot">
-      <div className="p-4 space-y-2">
-        <div className="flex gap-2">
-          <div className="h-6 w-6 rounded-full bg-amber-100 flex items-center justify-center text-[10px]">👤</div>
-          <div className="flex-1 rounded-lg rounded-tl-none bg-surface-soft p-2">
-            <p className="text-[9.5px] text-ink">Hola, ¿tenéis cachorros de Presa Canario para junio?</p>
-            <p className="text-[8px] text-muted mt-1">10:23 AM · de Lucía F.</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <div className="h-6 w-6 rounded-full bg-ink flex items-center justify-center text-[8px] text-on-primary font-bold">🤖</div>
-          <div className="flex-1 rounded-lg rounded-tl-none border border-hairline bg-canvas p-2">
-            <p className="text-[9.5px] text-ink">¡Hola Lucía! Sí, tenemos la camada de Mayo que estará lista para entrega a principios de junio. Son hijos de Xían × Yula, con genealogía completa y revisión veterinaria. Puedes ver disponibilidad aquí: iremacurto.com/perros</p>
-            <div className="flex items-center justify-between mt-1.5">
-              <p className="text-[8px] text-muted">10:23 AM · Emailbot</p>
-              <span className="text-[7.5px] inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold">
-                <Check className="h-2 w-2" /> Auto
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <div className="h-6 w-6 rounded-full bg-amber-100 flex items-center justify-center text-[10px]">👤</div>
-          <div className="flex-1 rounded-lg rounded-tl-none bg-surface-soft p-2">
-            <p className="text-[9.5px] text-ink">¿Y puedo visitar el criadero antes de reservar?</p>
-            <p className="text-[8px] text-muted mt-1">10:24 AM</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 mt-2 rounded-md bg-amber-50 border border-amber-200 px-2 py-1.5">
-          <span className="text-[9px] text-amber-800 font-semibold">⚠ Escalado a humano:</span>
-          <span className="text-[9px] text-amber-800">Requiere agenda</span>
-        </div>
-      </div>
-    </MockupFrame>
-  )
-}
-
-// ─── 10. Newsletter composer ────────────────────────────────────────────
-function NewsletterComposer() {
-  return (
-    <MockupFrame topBar="genealogic.io/newsletter/new">
-      <div className="grid grid-cols-[1fr_140px]">
-        <div className="p-4">
-          <p className="text-[8px] font-semibold uppercase tracking-wider text-muted">Para 248 suscriptores</p>
-          <p className="text-[13px] font-bold text-ink mt-1">📢 Camada de Mayo disponible</p>
-          <div className="mt-3 space-y-1.5 text-[9.5px] text-body">
-            <p>Hola {'{{nombre}}'},</p>
-            <p>Os escribo para contaros que la <strong>camada de Mayo</strong> (Xían × Yula) ya está reservando. 6 cachorros disponibles para entrega a principios de junio.</p>
-            <p className="text-muted text-[8.5px]">📷 [imagen camada]</p>
-            <p>Si os interesa, contestadme a este email o reservad directamente desde la web.</p>
-            <p className="mt-2 text-[9px]">Un abrazo,<br/>Manuel</p>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5">
-            <span className="text-[9px] px-2 py-1 rounded bg-ink text-on-primary font-semibold">Enviar ahora</span>
-            <span className="text-[9px] px-2 py-1 rounded border border-hairline text-body">Programar</span>
-            <span className="text-[9px] px-2 py-1 rounded border border-hairline text-body">Vista previa</span>
-          </div>
-        </div>
-        <div className="border-l border-hairline bg-surface-soft p-3 space-y-2">
-          <div>
-            <p className="text-[7.5px] text-muted">Última campaña</p>
-            <p className="text-[10px] font-bold text-ink">68% apertura</p>
-          </div>
-          <div>
-            <p className="text-[7.5px] text-muted">Media</p>
-            <p className="text-[10px] font-bold text-ink">42% apertura</p>
-          </div>
-          <div>
-            <p className="text-[7.5px] text-muted">Plantilla</p>
-            <p className="text-[9px] font-semibold text-ink">📦 Nueva camada</p>
-          </div>
-        </div>
-      </div>
-    </MockupFrame>
-  )
-}
-
 // ─── 11. Stats dashboard ────────────────────────────────────────────────
 function StatsDashboard() {
   return (
@@ -581,7 +424,7 @@ function PublicDirectory() {
             <Database className="h-3.5 w-3.5 text-[#FE6620]" />
             <p className="text-[12px] font-semibold text-ink">Directorio internacional</p>
           </div>
-          <span className="text-[9.5px] text-muted tabular-nums">257.788 perros · 180+ razas</span>
+          <span className="text-[9.5px] text-muted tabular-nums">257.000+ perros · 245 razas</span>
         </div>
         <div className="flex items-center gap-1.5 mb-3">
           <div className="flex items-center flex-1 rounded border border-hairline bg-canvas px-2 py-1">
@@ -854,7 +697,6 @@ function LitterDetail() {
           <span className="text-[9px] px-2 py-1 rounded bg-ink text-on-primary font-semibold inline-flex items-center gap-1">
             <Plus className="h-3 w-3" /> Añadir cachorro
           </span>
-          <span className="text-[9px] px-2 py-1 rounded border border-hairline text-body">Newsletter camada (12 suscritos)</span>
         </div>
       </div>
     </MockupFrame>
@@ -1130,13 +972,9 @@ const MOCKUPS: Record<string, () => React.ReactElement> = {
   'pipeline-kanban': PipelineKanban,
   'contract-editor': ContractEditor,
   'payments-timeline': PaymentsTimeline,
-  'kennel-web': KennelWeb,
-  'blog-list': BlogList,
   'pedigree-tree': PedigreeTreeMockup,
   'dogs-grid': DogsGrid,
   'breeding-simulator': BreedingSimulator,
-  'bot-conversation': BotConversation,
-  'newsletter-composer': NewsletterComposer,
   'stats-dashboard': StatsDashboard,
   // Nuevos
   'public-directory': PublicDirectory,
