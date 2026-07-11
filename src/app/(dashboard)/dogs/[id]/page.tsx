@@ -281,6 +281,9 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
       <BreadcrumbJsonLd
         items={[
           { name: 'Inicio', url: 'https://www.genealogic.io' },
+          // La raza en el breadcrumb refuerza /razas/[slug] como hub SEO
+          // ("criadores de X", "pedigree X") con un enlace desde cada perro.
+          ...(breedName && breedSlug ? [{ name: breedName, url: `https://www.genealogic.io/razas/${breedSlug}` }] : []),
           ...(kennel ? [{ name: kennel.name, url: `https://www.genealogic.io/kennels/${kennel.slug || kennel.id}` }] : []),
           { name: dog.name, url: canonicalUrl },
         ]}

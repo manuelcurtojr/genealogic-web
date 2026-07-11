@@ -168,7 +168,7 @@ export default async function BreedPage(
   const gStandard: GenealogicStandard = breed.genealogic_standard || {}
   const diffs: ClubDifferences = breed.club_differences || {}
 
-  const [{ data: colorsLink }, { data: sampleDogs }, dogCountResult] = await Promise.all([
+  const [{ data: colorsLink }, { data: sampleDogs }, dogCountResult, { data: breedKennels }, kennelCountResult] = await Promise.all([
     supabase
       .from('breed_colors')
       .select('color:colors(id, name)')
@@ -189,6 +189,19 @@ export default async function BreedPage(
       .from('dogs')
       .select('id', { count: 'exact', head: true })
       .eq('breed_id', breed.id),
+    // Criaderos de la raza — el activo SEO para "criadores de [raza]".
+    // Con logo primero (suelen ser los reclamados/activos), luego el resto.
+    supabase
+      .from('kennels')
+      .select('id, name, slug, logo_url, city, country, owner_id')
+      .contains('breed_ids', [breed.id])
+      .order('logo_url', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false })
+      .limit(12),
+    supabase
+      .from('kennels')
+      .select('id', { count: 'exact', head: true })
+      .contains('breed_ids', [breed.id]),
   ])
 
   const colors = (colorsLink as any[] || [])
@@ -196,6 +209,7 @@ export default async function BreedPage(
     .filter(Boolean)
     .sort((a: any, b: any) => a.name.localeCompare(b.name, 'es'))
   const totalDogs = dogCountResult.count || 0
+  const totalKennels = kennelCountResult.count || 0
   const synonyms = (breed.synonyms as string[] | null) || []
 
   // Lookup sections by key for ordered render
@@ -522,6 +536,59 @@ export default async function BreedPage(
                   </Link>
                 )
               })}
+            </div>
+          </section>
+        )}
+
+        {/* Criaderos de la raza — landing para "criadores de [raza]".
+            Los no reclamados llevan al perfil con ClaimBanner: cada visita
+            de un criador buscándose a sí mismo es una captación. */}
+        {breedKennels && breedKennels.length > 0 && (
+          <section className="mt-16 pt-12 border-t border-hairline">
+            <div className="flex items-baseline justify-between gap-4 flex-wrap">
+              <div>
+                <h2
+                  className="font-semibold text-ink"
+                  style={{ fontSize: 'clamp(22px, 2.5vw, 28px)', lineHeight: 1.15, letterSpacing: '-0.025em' }}
+                >
+                  {t('Criaderos de')} {breed.name}
+                </h2>
+                <p className="mt-2 text-[14px] text-muted">
+                  {t('Criaderos con perros de esta raza registrados en Genealogic.')}
+                </p>
+              </div>
+              {totalKennels > breedKennels.length && (
+                <Link
+                  href="/kennels"
+                  className="text-[13.5px] font-medium text-ink underline underline-offset-4 hover:no-underline"
+                >
+                  {t('Ver los')} {totalKennels.toLocaleString('es-ES')} →
+                </Link>
+              )}
+            </div>
+            <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {breedKennels.map((k) => (
+                <Link
+                  key={k.id}
+                  href={`/kennels/${k.slug || k.id}`}
+                  className="group flex items-center gap-3 rounded-[10px] border border-hairline bg-canvas p-3.5 transition-colors hover:bg-surface-soft"
+                >
+                  <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-surface-card">
+                    {k.logo_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={k.logo_url} alt={k.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-[15px] font-semibold text-muted">{k.name.charAt(0)}</span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-[13.5px] font-semibold text-ink">{k.name}</p>
+                    <p className="truncate text-[11.5px] text-muted">
+                      {[k.city, k.country].filter(Boolean).join(', ') || t('Ver perfil y perros')}
+                    </p>
+                  </div>
+                </Link>
+              ))}
             </div>
           </section>
         )}
