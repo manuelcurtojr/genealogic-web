@@ -671,7 +671,7 @@ function FeaturesGrid() {
             <LaunchedRow title={t('Planificador de cruces')} desc={t('Simula el COI de la camada antes de criar.')} />
             <LaunchedRow title={t('Genotipos y DNA')} desc={t('Predicción de color y pruebas raciales.')} />
             <LaunchedRow title={t('CRM de reservas')} desc={t('Pipeline de leads y clientes, sin Excel.')} />
-            <LaunchedRow title={t('Contratos')} desc={t('Plantillas con firma electrónica. Incluidos también en el plan gratis.')} />
+            <LaunchedRow title={t('Contratos')} desc={t('Plantillas con firma electrónica, listas en cada reserva.')} />
           </ul>
         </div>
       </div>

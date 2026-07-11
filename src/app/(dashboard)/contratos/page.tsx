@@ -14,6 +14,7 @@
  */
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { hasProFeatures, normalizePlan, isEnterpriseUser } from '@/lib/permissions'
 import { listContractTemplatesForUser, seedDefaultContractTemplates } from '@/lib/contracts/templates-actions'
 import ContractTemplatesList from '@/components/contracts/templates-list'
 import { getTranslator } from '@/lib/i18n'
@@ -27,6 +28,13 @@ export default async function ContratosPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
   const t = getTranslator(await getLocale())
+
+  // Gate REAL de plan (go-live 2026-07-11, decisión "Free austero"): los
+  // contratos/CRM/leads son el gancho de Kennel Pro. Sin plan de pago → /pricing.
+  {
+    const { data: prof } = await supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle()
+    if (!isEnterpriseUser(user.id) && !hasProFeatures(normalizePlan(prof?.plan))) redirect('/pricing')
+  }
 
   // Necesitamos el kennel del owner para el CTA "crear plantilla"
   const { data: kennel } = await supabase

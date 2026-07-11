@@ -5,7 +5,7 @@
  * Modelo (perros ILIMITADOS en todos los planes — ya no se monetiza por
  * número de perros, sino por las HERRAMIENTAS de criadero):
  *   · Owner — Perros ilimitados · Gratis
- *   · Kennel Free — Perros ilimitados · Gratis (embudo de ventas LIMITADO)
+ *   · Kennel Free — Perros ilimitados · Gratis (recibe solicitudes, verlas/trabajarlas es Pro)
  *   · Kennel Pro — Perros ilimitados · 49€/mes (o 499€/año) · A LA VENTA
  *     (go-live 2026-07-09: trial 14 días sin tarjeta vía CheckoutButton).
  *
@@ -112,10 +112,10 @@ const CATEGORIES: CategoryDef[] = [
       // En Free el embudo se ve LIMITADO (solo el número de solicitudes,
       // borroso). El detalle completo del pipeline es de Pro.
       { name: 'Embudo de ventas completo (tabla + tabs por estado)', marks: 'P' },
-      { name: 'Plantillas de contrato reutilizables', marks: 'FP' },
-      { name: 'Firma electrónica básica', marks: 'FP' },
-      { name: 'Pagos integrados con Stripe Connect (próximamente)', marks: 'P' },
-      { name: 'Calendario de pagos (seña + parcial + final, manual)', marks: 'FP' },
+      { name: 'Plantillas de contrato reutilizables', marks: 'P' },
+      { name: 'Firma electrónica básica', marks: 'P' },
+      { name: 'Pagos integrados con Stripe Connect', marks: 'P' },
+      { name: 'Calendario de pagos (seña + parcial + final)', marks: 'P' },
       { name: 'CRM unificado de clientes', marks: 'P' },
       { name: 'Reseñas verificadas de clientes', marks: 'P' },
       { name: 'Formulario de contacto configurable', marks: 'P' },
@@ -230,7 +230,7 @@ const PLANS: PlanDef[] = [
     period: 'Gratis siempre',
     maxDogs: 'Perros ilimitados',
     forWho: 'Para el criador casero',
-    description: 'Todo Owner + camadas + contratos. Ves cuántas solicitudes recibes (el embudo completo es de Pro). Sin tarjeta.',
+    description: 'Todo Owner + tu criadero con camadas y perfil público. Ves cuántas solicitudes recibes (trabajarlas es de Pro). Sin tarjeta.',
     icon: Store,
     accent: '#10b981',
     accentBg: 'from-emerald-50 via-canvas to-green-50',
@@ -238,7 +238,7 @@ const PLANS: PlanDef[] = [
       'Perros ilimitados, gratis para siempre',
       'Perfil de criadero + afijo + marcar reproductores',
       'Camadas con un click + calendario reproductivo',
-      'Contratos con firma electrónica',
+      'Perfil público con formulario de contacto',
       'Stud-book privado + estados de cachorros',
       'Ves el número de solicitudes que recibes',
     ],
@@ -260,11 +260,11 @@ const PLANS: PlanDef[] = [
     valueAnchor: 'Sustituye tu Excel, tu CRM y al diseñador que te hace los PDFs de genealogía. Pruébalo 14 días gratis, sin tarjeta.',
     highlights: [
       'Embudo de ventas completo + CRM + contactos',
+      'Contratos con firma electrónica + pagos online (Stripe)',
       'COI Wright + ancestros duplicados + comparativa con la raza',
       'Simulador de cruces (COI proyectado, color, riesgos)',
       'Genotipos y pruebas DNA',
-      'Estadísticas del criadero + pagos online (Stripe)',
-      'Soporte prioritario <24h',
+      'Estadísticas del criadero + soporte prioritario <24h',
     ],
     ctaLabel: 'Prueba 14 días gratis',
   },
@@ -697,7 +697,7 @@ function FAQ() {
           {t('Sí, sube o baja cuando quieras. Si subes, el cobro es prorrateado. Si bajas, los cambios se aplican al final del periodo facturado. Tus datos siguen siempre seguros — solo cambian las features disponibles.')}
         </FaqItem>
         <FaqItem q={t('¿Owner vs Kennel Free — cuál elegir?')}>
-          {t('Ambos son gratis y con perros ilimitados — la diferencia son las herramientas de criadero. Owner es para el particular que documenta a sus perros: ficha, genealogía, cartilla y galería. Kennel Free es para el criador casero que además gestiona camadas, reservas y contratos (afijo, pipeline, CRM y stud-book privado). Si tienes un macho semental y una hembra y os llega una camada, Free.')}
+          {t('Ambos son gratis y con perros ilimitados — la diferencia son las herramientas de criadero. Owner es para el particular que documenta a sus perros: ficha, genealogía, cartilla y galería. Kennel Free es para el criador casero: añade afijo, camadas con calendario reproductivo, stud-book privado y perfil público de criadero con formulario de contacto. Si tienes un macho semental y una hembra y os llega una camada, Free.')}
         </FaqItem>
         <FaqItem q={t('¿Cancelo cuando quiero?')}>
           {t('Sí, sin penalizaciones, sin permanencia. Cancelas desde tu panel y sigues con Pro hasta el final del periodo pagado. Después bajas a Kennel Free automáticamente (no pierdes datos).')}

@@ -14,6 +14,7 @@
  */
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
+import { hasProFeatures, normalizePlan, isEnterpriseUser } from '@/lib/permissions'
 import Link from 'next/link'
 import { listReservationMessages, markThreadRead } from '@/lib/reservations/messages'
 import ReservationThread from '@/components/reservations/reservation-thread'
@@ -62,6 +63,13 @@ export default async function BreederReservationDetailPage({
     .maybeSingle()
   if (!reservation) notFound()
   if (reservation.kennel?.owner_id !== user.id) redirect('/reservas')
+
+  // Gate de plan: el detalle del lead (PII del solicitante) es de Kennel Pro.
+  // Un Free que llega por el link del email de notificación ve el teaser.
+  {
+    const { data: prof } = await supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle()
+    if (!isEnterpriseUser(user.id) && !hasProFeatures(normalizePlan(prof?.plan))) redirect('/embudo')
+  }
 
   // Cargar contratos para mostrar estado en acciones rápidas
   const { data: contracts } = await admin

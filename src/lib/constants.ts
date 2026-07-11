@@ -112,8 +112,9 @@ export const NAV_SECTIONS: NavSection[] = [
     requiresKennel: true,
     items: [
       { label: 'Embudo', href: '/embudo', icon: 'KanbanSquare', requiresKennel: true },
-      // Contactos (CRM) y Contratos están incluidos desde Kennel Free según
-      // /pricing (marks FPE). Antes pedían Pro — incongruencia corregida.
+      // DECISIÓN 2026-07-11 (Free austero): Contactos (CRM) y Contratos son
+      // Pro — junto al embudo son EL gancho de conversión ("tienes clientes
+      // esperando"). /pricing y las páginas (gate server-side) lo reflejan.
       // Contactos = CRM B2B: el middleware lo redirige a /dashboard en iOS
       // (IOS_HIDDEN_PATH_PREFIXES), así que lo ocultamos también del nav.
       { label: 'Contactos', href: '/contactos', icon: 'UsersRound', requiresKennel: true, requiresPro: true, hideOnIos: true },

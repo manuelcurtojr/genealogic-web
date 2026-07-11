@@ -13,6 +13,7 @@
  */
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { hasProFeatures, normalizePlan, isEnterpriseUser } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 import { getLocale } from '@/lib/locale'
 import ContactosPageClient, {
@@ -30,6 +31,13 @@ export default async function ContactosPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  // Gate REAL de plan (go-live 2026-07-11, decisión "Free austero"): los
+  // contratos/CRM/leads son el gancho de Kennel Pro. Sin plan de pago → /pricing.
+  {
+    const { data: prof } = await supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle()
+    if (!isEnterpriseUser(user.id) && !hasProFeatures(normalizePlan(prof?.plan))) redirect('/pricing')
+  }
 
   const { data: kennelArr } = await supabase
     .from('kennels')

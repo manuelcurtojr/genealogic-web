@@ -371,6 +371,7 @@ export const CATEGORIES: Category[] = [
           'Solicitudes desde tu web pública entran directamente',
         ],
         mockup: 'reservations-table',
+        proOnly: true,
       },
       {
         slug: 'contratos',
@@ -386,6 +387,7 @@ export const CATEGORIES: Category[] = [
           'PDF firmado guardado en el expediente del cliente',
         ],
         mockup: 'contract-editor',
+        proOnly: true,
       },
       {
         slug: 'pagos',
