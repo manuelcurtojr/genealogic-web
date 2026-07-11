@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import "./globals.css";
 import CookieBanner from "@/components/ui/cookie-banner";
 import { PlatformProvider } from "@/components/platform/platform-provider";
+import HashSessionHandler from "@/components/auth/hash-session-handler";
 import { LocaleProvider } from "@/components/i18n/locale-provider";
 import { isIosUserAgent } from "@/lib/platform";
 import { getLocale } from "@/lib/locale";
@@ -104,6 +105,7 @@ export default async function RootLayout({
       <body className="font-sans min-h-full flex flex-col bg-white text-ink">
         <LocaleProvider locale={locale}>
           <PlatformProvider isIos={isIos}>
+            <HashSessionHandler />
             {children}
             {!isIos && <CookieBanner />}
           </PlatformProvider>

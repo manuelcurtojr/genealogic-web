@@ -18,6 +18,8 @@ import { ArrowLeft, Loader2, Sparkles } from 'lucide-react'
 import { readIntentClient, clearIntentClient } from '@/lib/signup-intent'
 import FeedbackButton from '@/components/feedback/feedback-button'
 import { useT } from '@/components/i18n/locale-provider'
+import { generateSlug } from '@/lib/slug'
+import { friendlyDbError } from '@/lib/supabase/friendly-error'
 
 function NewKennelInner() {
   const t = useT()
@@ -59,11 +61,21 @@ function NewKennelInner() {
       return
     }
 
-    const { error: err } = await supabase
+    // Slug automático desde el nombre (QA 2026-07-11: los criaderos nacían
+    // con slug null y su perfil público no tenía URL). Si choca con uno
+    // existente, reintenta con sufijo aleatorio corto.
+    const baseSlug = generateSlug(name.trim())
+    let { error: err } = await supabase
       .from('kennels')
-      .insert({ owner_id: user.id, name: name.trim() })
+      .insert({ owner_id: user.id, name: name.trim(), slug: baseSlug })
+    if (err && (err.message || '').toLowerCase().includes('duplicate')) {
+      const retry = await supabase
+        .from('kennels')
+        .insert({ owner_id: user.id, name: name.trim(), slug: `${baseSlug}-${Math.random().toString(36).slice(2, 6)}` })
+      err = retry.error
+    }
     if (err) {
-      setError(err.message)
+      setError(friendlyDbError(err.message))
       setLoading(false)
       return
     }

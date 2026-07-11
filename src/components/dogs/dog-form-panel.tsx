@@ -23,6 +23,7 @@ import TransferPanel from '@/components/kennel/transfer-panel'
 import { useT } from '@/components/i18n/locale-provider'
 import { getDogParents } from '@/lib/dogs/get-dog-parents'
 import { hasProFeatures, isEnterpriseUser } from '@/lib/permissions'
+import { friendlyDbError } from '@/lib/supabase/friendly-error'
 
 interface DogFormPanelProps {
   open: boolean
@@ -394,7 +395,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       const { data: newDog, error: err } = await supabase.from('dogs').insert(insertData).select('id, slug').single()
       setLoading(false)
       if (err) {
-        setError(err.message)
+        setError(friendlyDbError(err.message))
         return
       }
       if (onSaved) onSaved(newDog?.id)

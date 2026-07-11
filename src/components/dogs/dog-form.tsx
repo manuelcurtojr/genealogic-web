@@ -8,6 +8,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import SearchableSelect from '@/components/ui/searchable-select'
 import { useT } from '@/components/i18n/locale-provider'
+import { friendlyDbError } from '@/lib/supabase/friendly-error'
 
 interface DogFormProps {
   initialData?: any
@@ -69,7 +70,7 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
 
     if (isEdit) {
       const { error: err } = await supabase.from('dogs').update(payload).eq('id', initialData.id)
-      if (err) { setError(err.message); setLoading(false); return }
+      if (err) { setError(friendlyDbError(err.message)); setLoading(false); return }
       router.push(`/dogs/${initialData.id}`)
       router.refresh()
     } else {
@@ -77,7 +78,7 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
       if (err) {
         setError(err.message?.includes('DOG_LIMIT_REACHED')
           ? t('Has alcanzado el límite de perros de tu plan. Marca uno como "en venta" o fallecido, o pásate a Kennel Pro para perros ilimitados.')
-          : err.message)
+          : friendlyDbError(err.message))
         setLoading(false); return
       }
       router.push(`/dogs/${data.id}`)
