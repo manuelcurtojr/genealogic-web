@@ -12,6 +12,7 @@ import DogEditButton from '@/components/dogs/dog-edit-button'
 import ShareButton from '@/components/dogs/share-button'
 import ReportButton from '@/components/legal/report-dialog'
 import ClaimBanner from '@/components/admin-requests/claim-banner'
+import JoinBanner from '@/components/marketing/join-banner'
 import ModerateButton from '@/components/moderation/moderate-button'
 import { HIDDEN_REASON_LABELS, type HiddenReason } from '@/lib/moderation/types'
 import { EyeOff, Heart } from 'lucide-react'
@@ -363,6 +364,10 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         {!dog.owner_id && !isHidden && (
           <ClaimBanner type="dog" targetId={dog.slug || dog.id} targetName={dog.name} />
         )}
+
+        {/* Join banner — visitante anónimo en perro CON dueño: el punto de
+            captación real (el grueso del tráfico SEO aterriza aquí) */}
+        {!user && dog.owner_id && !isHidden && <JoinBanner type="dog" />}
 
         {/* In Memoriam — franja conmemorativa si el perro ha fallecido */}
         {dog.deceased_at && (

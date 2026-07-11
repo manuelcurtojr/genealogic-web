@@ -10,6 +10,7 @@ import PageTracker from '@/components/track/page-tracker'
 import RecordView from '@/components/track/record-view'
 import ContactKennelButton from '@/components/kennel/contact-kennel-button'
 import ClaimBanner from '@/components/admin-requests/claim-banner'
+import JoinBanner from '@/components/marketing/join-banner'
 import ReportButton from '@/components/legal/report-dialog'
 import ModerateButton from '@/components/moderation/moderate-button'
 import { HIDDEN_REASON_LABELS, type HiddenReason } from '@/lib/moderation/types'
@@ -271,6 +272,9 @@ export default async function KennelDetailPage({
       {!kennel.owner_id && !isHidden && (
         <ClaimBanner type="kennel" targetId={kennel.slug || kennel.id} targetName={kennel.name} />
       )}
+
+      {/* Join banner — visitante anónimo en criadero YA reclamado */}
+      {!user && kennel.owner_id && !isHidden && <JoinBanner type="kennel" />}
     </>
   )
 
