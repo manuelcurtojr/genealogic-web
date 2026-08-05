@@ -9,6 +9,7 @@ import { AuthShell, Field, AuthSubmit, AuthError, GoogleButton, OAuthDivider } f
 import { usePlatform } from '@/components/platform/platform-provider'
 import { useT } from '@/components/i18n/locale-provider'
 import { safeInternalPath } from '@/lib/safe-redirect'
+import Turnstile, { isTurnstileEnabled } from '@/components/auth/turnstile'
 
 function LoginInner() {
   const t = useT()
@@ -25,6 +26,8 @@ function LoginInner() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [oauthLoading, setOauthLoading] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState('')
+  const [captchaKey, setCaptchaKey] = useState(0)
   const router = useRouter()
   const { isIos } = usePlatform()
   // Google OAuth no funciona dentro de WKWebView (Google bloquea su
@@ -52,8 +55,18 @@ function LoginInner() {
     setError('')
     setLoading(true)
 
+    if (isTurnstileEnabled() && !captchaToken) {
+      setError(t('Completa la verificación anti-robot e inténtalo de nuevo.'))
+      setLoading(false)
+      return
+    }
+
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken: captchaToken || undefined },
+    })
 
     if (error) {
       setError(
@@ -62,6 +75,7 @@ function LoginInner() {
           : error.message,
       )
       setLoading(false)
+      setCaptchaToken(''); setCaptchaKey((k) => k + 1)
       return
     }
 
@@ -127,8 +141,14 @@ function LoginInner() {
           }
         />
 
+        {isTurnstileEnabled() && (
+          <div className="flex justify-center pt-1">
+            <Turnstile key={captchaKey} onVerify={setCaptchaToken} onExpire={() => setCaptchaToken('')} />
+          </div>
+        )}
+
         <div className="pt-2">
-          <AuthSubmit loading={loading} loadingLabel={t('Entrando…')}>
+          <AuthSubmit loading={loading} loadingLabel={t('Entrando…')} disabled={isTurnstileEnabled() && !captchaToken}>
             {t('Iniciar sesión')}
           </AuthSubmit>
         </div>

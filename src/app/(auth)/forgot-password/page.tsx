@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Mail, CheckCircle2 } from 'lucide-react'
 import { AuthShell, Field, AuthSubmit, AuthError } from '@/components/auth/auth-shell'
 import { useT } from '@/components/i18n/locale-provider'
+import Turnstile, { isTurnstileEnabled } from '@/components/auth/turnstile'
 
 export default function ForgotPasswordPage() {
   const t = useT()
@@ -13,16 +14,24 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState('')
+  const [captchaKey, setCaptchaKey] = useState(0)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
+    if (isTurnstileEnabled() && !captchaToken) {
+      setError(t('Completa la verificación anti-robot e inténtalo de nuevo.'))
+      setLoading(false)
+      return
+    }
+
     // Manda el email con nuestra plantilla Resend (remitente Genealogic) +
     // enlace token_hash. La action siempre devuelve ok (no revela si el email
     // existe), así que mostramos el estado "enviado" igualmente.
-    await sendPasswordResetAction(email)
+    await sendPasswordResetAction(email, captchaToken || undefined)
 
     setSent(true)
     setLoading(false)
@@ -81,8 +90,14 @@ export default function ForgotPasswordPage() {
           autoComplete="email"
         />
 
+        {isTurnstileEnabled() && (
+          <div className="flex justify-center pt-1">
+            <Turnstile key={captchaKey} onVerify={setCaptchaToken} onExpire={() => setCaptchaToken('')} />
+          </div>
+        )}
+
         <div className="pt-2">
-          <AuthSubmit loading={loading} loadingLabel={t('Enviando…')}>
+          <AuthSubmit loading={loading} loadingLabel={t('Enviando…')} disabled={isTurnstileEnabled() && !captchaToken}>
             {t('Enviar enlace')}
           </AuthSubmit>
         </div>

@@ -6,8 +6,14 @@
  */
 import { sendPasswordResetEmail } from '@/lib/auth/password-reset'
 import { getLocale } from '@/lib/locale'
+import { verifyTurnstile } from '@/lib/auth/turnstile-verify'
 
-export async function sendPasswordResetAction(email: string): Promise<{ ok: true }> {
+export async function sendPasswordResetAction(email: string, captchaToken?: string): Promise<{ ok: true }> {
+  // Anti-bot: si el CAPTCHA está activo y el token no valida, no mandamos nada.
+  // Devolvemos ok igual (anti-enumeración: no revelamos el motivo).
+  if (!(await verifyTurnstile(captchaToken))) {
+    return { ok: true }
+  }
   try {
     await sendPasswordResetEmail(email, await getLocale())
   } catch {

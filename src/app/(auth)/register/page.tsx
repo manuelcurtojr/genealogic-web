@@ -16,6 +16,7 @@ import {
   type SignupIntentData,
 } from '@/lib/signup-intent'
 import { safeInternalPath } from '@/lib/safe-redirect'
+import Turnstile, { isTurnstileEnabled } from '@/components/auth/turnstile'
 
 function RegisterInner() {
   const t = useT()
@@ -32,6 +33,8 @@ function RegisterInner() {
   const [loading, setLoading] = useState(false)
   const [oauthLoading, setOauthLoading] = useState(false)
   const [acceptTerms, setAcceptTerms] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState('')
+  const [captchaKey, setCaptchaKey] = useState(0)
   const router = useRouter()
   const { isIos } = usePlatform()
   // Mismo motivo que en /login: Google OAuth no funciona en WKWebView.
@@ -71,16 +74,24 @@ function RegisterInner() {
     setError('')
     setLoading(true)
 
+    if (isTurnstileEnabled() && !captchaToken) {
+      setError(t('Completa la verificación anti-robot e inténtalo de nuevo.'))
+      setLoading(false)
+      return
+    }
+
     const supabase = createClient()
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: name } },
+      options: { data: { display_name: name }, captchaToken: captchaToken || undefined },
     })
 
     if (error) {
       setError(error.message)
       setLoading(false)
+      // El token de Turnstile es de un solo uso: lo regeneramos para reintentar.
+      setCaptchaToken(''); setCaptchaKey((k) => k + 1)
       return
     }
 
@@ -213,8 +224,14 @@ function RegisterInner() {
           </span>
         </label>
 
+        {isTurnstileEnabled() && (
+          <div className="flex justify-center pt-1">
+            <Turnstile key={captchaKey} onVerify={setCaptchaToken} onExpire={() => setCaptchaToken('')} />
+          </div>
+        )}
+
         <div className="pt-2">
-          <AuthSubmit loading={loading} loadingLabel={t('Creando cuenta…')} disabled={!acceptTerms}>
+          <AuthSubmit loading={loading} loadingLabel={t('Creando cuenta…')} disabled={!acceptTerms || (isTurnstileEnabled() && !captchaToken)}>
             {shellProps.submitLabel}
           </AuthSubmit>
         </div>
