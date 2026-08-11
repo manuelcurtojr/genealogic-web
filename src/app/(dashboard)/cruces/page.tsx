@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Heart, Mars, Venus, Dna } from 'lucide-react'
+import { Heart, Mars, Venus, Dna, Ruler } from 'lucide-react'
 import SearchableSelect from '@/components/ui/searchable-select'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import GeneticsForecast from '@/components/planner/genetics-forecast'
+import MeasurementsForecast from '@/components/planner/measurements-forecast'
 import { BRAND } from '@/lib/constants'
 import { useT } from '@/components/i18n/locale-provider'
+import { canUseMeasurements } from '@/lib/permissions'
 
 export default function PlannerPage() {
   const t = useT()
@@ -17,12 +19,14 @@ export default function PlannerPage() {
   const [damId, setDamId] = useState('')
   const [pedigreeData, setPedigreeData] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [canMeasure, setCanMeasure] = useState(false)
 
   useEffect(() => {
     async function load() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+      setCanMeasure(canUseMeasurements(user.id))
 
       const { data: allDogs } = await supabase
         .from('dogs')
@@ -127,6 +131,17 @@ export default function PlannerPage() {
             {t('Predicción genética')}
           </h2>
           <GeneticsForecast sireId={sireId} damId={damId} />
+        </section>
+      )}
+
+      {/* Morfología proyectada — media (mid-parent). Beta exclusiva (solo Irema). */}
+      {sireId && damId && canMeasure && (
+        <section>
+          <h2 className="mb-4 flex items-center gap-2 text-[22px] font-semibold tracking-[-0.04em] text-ink">
+            <Ruler className="h-5 w-5" />
+            {t('Morfología proyectada')}
+          </h2>
+          <MeasurementsForecast sireId={sireId} damId={damId} />
         </section>
       )}
 

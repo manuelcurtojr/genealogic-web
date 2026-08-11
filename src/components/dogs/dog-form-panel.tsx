@@ -5,7 +5,7 @@ import { Img } from '@/components/ui/img'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, ChevronRight, CreditCard, GitBranch, Weight, ImageIcon, Dog, Stethoscope, Trophy, Lock, Globe, Shield, Dna, Heart, History, ArrowRightLeft, Settings2, Sparkles, Info } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, ChevronRight, CreditCard, GitBranch, Weight, ImageIcon, Dog, Stethoscope, Trophy, Lock, Globe, Shield, Dna, Heart, History, ArrowRightLeft, Settings2, Sparkles, Info, Ruler } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import { BRAND } from '@/lib/constants'
 import { formatDogName, extractPersonalName, type AffixFormat } from '@/lib/affix'
@@ -18,11 +18,12 @@ import ReproduccionTab from './edit-tabs/reproduccion-tab'
 import ImportPedigreeTab from './import-pedigree-tab'
 import FeedbackButton from '@/components/feedback/feedback-button'
 import HistoricoTab from './edit-tabs/historico-tab'
+import MedidasTab from './edit-tabs/medidas-tab'
 import PedigreeEditor from '@/components/pedigree/pedigree-editor'
 import TransferPanel from '@/components/kennel/transfer-panel'
 import { useT } from '@/components/i18n/locale-provider'
 import { getDogParents } from '@/lib/dogs/get-dog-parents'
-import { hasProFeatures, isEnterpriseUser } from '@/lib/permissions'
+import { hasProFeatures, isEnterpriseUser, canUseMeasurements } from '@/lib/permissions'
 import { friendlyDbError } from '@/lib/supabase/friendly-error'
 
 interface DogFormPanelProps {
@@ -50,6 +51,7 @@ const TABS = [
   { key: 'salud', label: 'Salud', icon: Stethoscope },
   { key: 'reproduccion', label: 'Reproducción', icon: Heart, femaleOnly: true },
   { key: 'genetica', label: 'Genética', icon: Dna },
+  { key: 'medidas', label: 'Medidas', icon: Ruler },
   { key: 'palmares', label: 'Palmarés', icon: Trophy },
   { key: 'historico', label: 'Histórico', icon: History },
 ] as const
@@ -437,6 +439,8 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     if ('femaleOnly' in tab && tab.femaleOnly && form.sex !== 'female') return false
     // Genética y Reproducción son features Kennel Pro: ocultas para no-pro.
     if ((tab.key === 'genetica' || tab.key === 'reproduccion') && !canPro) return false
+    // Medidas morfológicas: feature exclusiva en beta (por ahora solo Irema Curtó).
+    if (tab.key === 'medidas' && !canUseMeasurements(userId)) return false
     return true
   })
 
@@ -664,6 +668,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       {activeTab === 'salud' && editDogId && <SaludTab dogId={editDogId} userId={userId} />}
       {activeTab === 'reproduccion' && editDogId && form.sex === 'female' && canPro && <ReproduccionTab dogId={editDogId} userId={userId} />}
       {activeTab === 'genetica' && editDogId && canPro && <GeneticaTab dogId={editDogId} userId={userId} />}
+      {activeTab === 'medidas' && editDogId && canUseMeasurements(userId) && <MedidasTab dogId={editDogId} userId={userId} />}
       {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
       {activeTab === 'historico' && editDogId && <HistoricoTab dogId={editDogId} />}
       {activeTab === 'gestion' && editDogId && gestionContent}

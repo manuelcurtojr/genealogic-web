@@ -42,6 +42,20 @@ export function isEnterpriseUser(userId: string | null | undefined): boolean {
   return ENTERPRISE_USERS.has(userId)
 }
 
+// ─── Feature flag: Medidas morfológicas + predicción de cruce (BETA) ─────────
+// Exclusiva mientras se valida con un criadero real: por ahora SOLO Irema Curtó
+// (ni siquiera el resto de ENTERPRISE_USERS). Para abrirla a más criaderos añade
+// su user_id aquí; cuando esté lista para todos los Kennel Pro, sustituir estos
+// gates por hasProFeatures(plan) en la ficha y el planificador.
+const MEASUREMENTS_BETA_USERS = new Set<string>([
+  '89d97ded-1043-4e59-939e-00edecd679b1', // Irema Curtó
+])
+
+export function canUseMeasurements(userId: string | null | undefined): boolean {
+  if (!userId) return false
+  return MEASUREMENTS_BETA_USERS.has(userId)
+}
+
 /**
  * Devuelve el plan efectivo de un usuario:
  *  - Si está en ENTERPRISE_USERS → siempre 'kennel_pro' (todo desbloqueado).
