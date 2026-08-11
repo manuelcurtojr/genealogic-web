@@ -2,14 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Heart, Mars, Venus, Dna, Ruler } from 'lucide-react'
+import { Heart, Mars, Venus, Dna, Ruler, Network, Sparkles, type LucideIcon } from 'lucide-react'
 import SearchableSelect from '@/components/ui/searchable-select'
 import PedigreeTree from '@/components/pedigree/pedigree-tree'
 import GeneticsForecast from '@/components/planner/genetics-forecast'
 import MeasurementsForecast from '@/components/planner/measurements-forecast'
+import CrossStandardEval from '@/components/planner/cross-standard-eval'
 import { BRAND } from '@/lib/constants'
 import { useT } from '@/components/i18n/locale-provider'
 import { canUseMeasurements } from '@/lib/permissions'
+
+type TabKey = 'pedigree' | 'morphology' | 'ai'
 
 export default function PlannerPage() {
   const t = useT()
@@ -20,6 +23,7 @@ export default function PlannerPage() {
   const [pedigreeData, setPedigreeData] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [canMeasure, setCanMeasure] = useState(false)
+  const [activeTab, setActiveTab] = useState<TabKey>('pedigree')
 
   useEffect(() => {
     async function load() {
@@ -79,6 +83,18 @@ export default function PlannerPage() {
     loadPedigree()
   }, [sireId, damId])
 
+  // Pestañas del planificador. Morfología y Evaluación IA son beta exclusiva
+  // (solo Irema, canMeasure); para el resto solo se ve "Genealogía".
+  const tabs: { key: TabKey; label: string; icon: LucideIcon }[] = [
+    { key: 'pedigree', label: t('Genealogía'), icon: Network },
+    ...(canMeasure
+      ? [
+          { key: 'morphology' as TabKey, label: t('Morfología'), icon: Ruler },
+          { key: 'ai' as TabKey, label: t('Evaluación IA'), icon: Sparkles },
+        ]
+      : []),
+  ]
+
   return (
     <div className="space-y-6 sm:space-y-8">
       <div>
@@ -123,44 +139,73 @@ export default function PlannerPage() {
         </div>
       </div>
 
-      {/* Genetics Forecast — solo cuando ambos padres están seleccionados */}
-      {sireId && damId && (
-        <section>
-          <h2 className="mb-4 flex items-center gap-2 text-[22px] font-semibold tracking-[-0.04em] text-ink">
-            <Dna className="h-5 w-5" />
-            {t('Predicción genética')}
-          </h2>
-          <GeneticsForecast sireId={sireId} damId={damId} />
-        </section>
-      )}
+      {/* Contenido: pestañas cuando ambos padres están seleccionados */}
+      {sireId && damId ? (
+        <div className="space-y-5">
+          {/* Barra de pestañas (oculta si solo hay una) */}
+          {tabs.length > 1 && (
+            <div className="flex gap-1 overflow-x-auto border-b border-hairline">
+              {tabs.map((tab) => {
+                const Icon = tab.icon
+                const active = activeTab === tab.key
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`-mb-px flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-4 py-2.5 text-[13.5px] font-medium transition-colors ${
+                      active
+                        ? 'border-[color:var(--brand)] text-ink'
+                        : 'border-transparent text-muted hover:text-body'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
 
-      {/* Morfología proyectada — media (mid-parent). Beta exclusiva (solo Irema). */}
-      {sireId && damId && canMeasure && (
-        <section>
-          <h2 className="mb-4 flex items-center gap-2 text-[22px] font-semibold tracking-[-0.04em] text-ink">
-            <Ruler className="h-5 w-5" />
-            {t('Morfología proyectada')}
-          </h2>
-          <MeasurementsForecast sireId={sireId} damId={damId} />
-        </section>
-      )}
+          {/* Genealogía: predicción genética + árbol combinado */}
+          {activeTab === 'pedigree' && (
+            <div className="space-y-6">
+              <section>
+                <h2 className="mb-4 flex items-center gap-2 text-[22px] font-semibold tracking-[-0.04em] text-ink">
+                  <Dna className="h-5 w-5" />
+                  {t('Predicción genética')}
+                </h2>
+                <GeneticsForecast sireId={sireId} damId={damId} />
+              </section>
 
-      {/* Combined pedigree */}
-      {loading ? (
-        <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center text-[14px] text-muted">
-          {t('Cargando genealogía combinada...')}
-        </div>
-      ) : pedigreeData.length > 1 ? (
-        <section className="-mx-4 lg:mx-0">
-          <h2 className="mb-4 px-4 text-[22px] font-semibold tracking-[-0.04em] text-ink lg:px-0">
-            {t('Genealogía combinada')}
-          </h2>
-          {/* Ruta reservada (solo insiders vía middleware) → siempre Pro. */}
-          <PedigreeTree data={pedigreeData} rootId="virtual-litter" showCoi={true} />
-        </section>
-      ) : sireId && damId ? (
-        <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
-          <p className="text-[14px] text-body">{t('No hay datos de genealogía disponibles para este cruce.')}</p>
+              {loading ? (
+                <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center text-[14px] text-muted">
+                  {t('Cargando genealogía combinada...')}
+                </div>
+              ) : pedigreeData.length > 1 ? (
+                <section className="-mx-4 lg:mx-0">
+                  <h2 className="mb-4 px-4 text-[22px] font-semibold tracking-[-0.04em] text-ink lg:px-0">
+                    {t('Genealogía combinada')}
+                  </h2>
+                  {/* Ruta reservada (solo insiders vía middleware) → siempre Pro. */}
+                  <PedigreeTree data={pedigreeData} rootId="virtual-litter" showCoi={true} />
+                </section>
+              ) : (
+                <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center">
+                  <p className="text-[14px] text-body">{t('No hay datos de genealogía disponibles para este cruce.')}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Morfología proyectada (mid-parent). Solo Irema. */}
+          {activeTab === 'morphology' && canMeasure && (
+            <MeasurementsForecast sireId={sireId} damId={damId} />
+          )}
+
+          {/* Evaluación IA vs estándar de la raza. Solo Irema. */}
+          {activeTab === 'ai' && canMeasure && (
+            <CrossStandardEval sireId={sireId} damId={damId} />
+          )}
         </div>
       ) : (
         <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-20 text-center">

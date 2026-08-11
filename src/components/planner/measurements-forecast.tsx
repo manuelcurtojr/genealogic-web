@@ -20,6 +20,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Ruler, Loader2, Mars, Venus } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import { BRAND } from '@/lib/constants'
+import { NUMERIC_SECTIONS, QUALITATIVE_FIELDS } from '@/lib/measurements-fields'
 
 interface Props {
   sireId: string
@@ -33,89 +34,6 @@ interface ParentMeasure {
   name: string | null
   batch: MeasureBatch | null
 }
-
-// ── Numéricas (se promedian) agrupadas por sección morfológica ──────────────
-const NUMERIC_SECTIONS: { title: string; fields: { col: string; label: string }[] }[] = [
-  {
-    title: 'Generales',
-    fields: [
-      { col: 'weight_kg', label: 'Peso (kg)' },
-      { col: 'height_withers_cm', label: 'Altura a la cruz (cm)' },
-      { col: 'height_rump_cm', label: 'Altura a la grupa (cm)' },
-    ],
-  },
-  {
-    title: 'Cabeza',
-    fields: [
-      { col: 'skull_circumference_cm', label: 'Perímetro craneal (cm)' },
-      { col: 'head_length_cm', label: 'Longitud total de cabeza (cm)' },
-      { col: 'skull_length_cm', label: 'Longitud de cráneo (cm)' },
-      { col: 'muzzle_length_cm', label: 'Longitud de morro (cm)' },
-      { col: 'skull_width_cm', label: 'Ancho de cráneo (cm)' },
-      { col: 'muzzle_width_cm', label: 'Ancho de morro (cm)' },
-      { col: 'inner_canthi_distance_cm', label: 'Distancia entre lagrimales (cm)' },
-      { col: 'ear_length_cm', label: 'Longitud de oreja (cm)' },
-    ],
-  },
-  {
-    title: 'Cuello',
-    fields: [
-      { col: 'neck_length_cm', label: 'Longitud de cuello (cm)' },
-      { col: 'neck_circumference_cm', label: 'Perímetro de cuello (cm)' },
-    ],
-  },
-  {
-    title: 'Tronco',
-    fields: [
-      { col: 'body_length_cm', label: 'Longitud de tronco (cm)' },
-      { col: 'chest_girth_cm', label: 'Perímetro torácico (cm)' },
-      { col: 'abdominal_girth_cm', label: 'Perímetro estomacal (cm)' },
-      { col: 'chest_width_cm', label: 'Ancho de pecho (cm)' },
-      { col: 'shoulder_width_cm', label: 'Ancho de hombros (cm)' },
-    ],
-  },
-  {
-    title: 'Grupa',
-    fields: [
-      { col: 'rump_width_cm', label: 'Ancho de grupa (cm)' },
-      { col: 'rump_length_cm', label: 'Longitud de grupa (cm)' },
-    ],
-  },
-  {
-    title: 'Miembro anterior',
-    fields: [
-      { col: 'elbow_to_wrist_cm', label: 'Codo a muñeca (cm)' },
-      { col: 'wrist_to_ground_cm', label: 'Muñeca al suelo (cm)' },
-    ],
-  },
-  {
-    title: 'Miembro posterior',
-    fields: [
-      { col: 'thigh_length_cm', label: 'Longitud de muslo (cm)' },
-      { col: 'hock_to_ground_cm', label: 'Corvejón al suelo (cm)' },
-    ],
-  },
-  {
-    title: 'Rabo',
-    fields: [{ col: 'tail_length_cm', label: 'Longitud de rabo (cm)' }],
-  },
-]
-
-// ── Cualitativas (no se promedian; se comparan lado a lado) ──────────────────
-const QUALITATIVE_FIELDS: { col: string; label: string }[] = [
-  { col: 'dentition', label: 'Boca' },
-  { col: 'bite', label: 'Mordida' },
-  { col: 'hip_grade', label: 'Grado de cadera' },
-  { col: 'elbow_grade', label: 'Grado de codos' },
-  { col: 'laboklin', label: 'Laboklin' },
-  { col: 'stop', label: 'Stop' },
-  { col: 'aplomb', label: 'Aplomos' },
-  { col: 'hocks', label: 'Corvejones' },
-  { col: 'eyes', label: 'Ojos' },
-  { col: 'nose', label: 'Trufa' },
-  { col: 'lips', label: 'Belfos' },
-  { col: 'angulations', label: 'Angulaciones' },
-]
 
 function num(v: unknown): number | null {
   if (v === null || v === undefined || v === '') return null
