@@ -12,7 +12,7 @@ import { BRAND } from '@/lib/constants'
 import { useT } from '@/components/i18n/locale-provider'
 import { canUseMeasurements } from '@/lib/permissions'
 
-type TabKey = 'pedigree' | 'morphology' | 'ai'
+type TabKey = 'pedigree' | 'genetics' | 'morphology' | 'ai'
 
 export default function PlannerPage() {
   const t = useT()
@@ -87,6 +87,7 @@ export default function PlannerPage() {
   // (solo Irema, canMeasure); para el resto solo se ve "Genealogía".
   const tabs: { key: TabKey; label: string; icon: LucideIcon }[] = [
     { key: 'pedigree', label: t('Genealogía'), icon: Network },
+    { key: 'genetics', label: t('Genética'), icon: Dna },
     ...(canMeasure
       ? [
           { key: 'morphology' as TabKey, label: t('Morfología'), icon: Ruler },
@@ -169,14 +170,6 @@ export default function PlannerPage() {
           {/* Genealogía: predicción genética + árbol combinado */}
           {activeTab === 'pedigree' && (
             <div className="space-y-6">
-              <section>
-                <h2 className="mb-4 flex items-center gap-2 text-[22px] font-semibold tracking-[-0.04em] text-ink">
-                  <Dna className="h-5 w-5" />
-                  {t('Predicción genética')}
-                </h2>
-                <GeneticsForecast sireId={sireId} damId={damId} />
-              </section>
-
               {loading ? (
                 <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-16 text-center text-[14px] text-muted">
                   {t('Cargando genealogía combinada...')}
@@ -195,6 +188,20 @@ export default function PlannerPage() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* Genética: colores y loci probables de la camada (para todos) */}
+          {activeTab === 'genetics' && (
+            <section>
+              <h2 className="mb-1 flex items-center gap-2 text-[22px] font-semibold tracking-[-0.04em] text-ink">
+                <Dna className="h-5 w-5" />
+                {t('Predicción genética')}
+              </h2>
+              <p className="mb-4 text-[13px] text-body">
+                {t('Colores y rasgos probables de la camada según la genética de los padres, con avisos de combinaciones de riesgo.')}
+              </p>
+              <GeneticsForecast sireId={sireId} damId={damId} />
+            </section>
           )}
 
           {/* Morfología proyectada (mid-parent). Solo Irema. */}
