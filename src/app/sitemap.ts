@@ -39,10 +39,15 @@ export async function generateSitemaps() {
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
   )
+  // Solo perros indexables: públicos y no ocultos por moderación. Un privado
+  // (por regla, sin descendientes) hace 404 al anónimo, así que no lo anunciamos
+  // a Google. Debe coincidir con el filtro de la query de URLs de abajo.
   const { count } = await supabase
     .from('dogs')
     .select('*', { count: 'exact', head: true })
     .not('slug', 'is', null)
+    .eq('is_public', true)
+    .is('hidden_at', null)
   const total = count ?? 0
   // Shard 0 = static + blog + kennels + breeds + first SHARD_SIZE dogs.
   // Shards 1..N = remaining dogs in chunks of SHARD_SIZE.
@@ -123,6 +128,8 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
     .from('dogs')
     .select('slug, updated_at')
     .not('slug', 'is', null)
+    .eq('is_public', true)
+    .is('hidden_at', null)
     .order('updated_at', { ascending: false })
     .range(from, to)
 

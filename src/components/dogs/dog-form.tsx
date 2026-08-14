@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Lock } from 'lucide-react'
 import Link from 'next/link'
 import SearchableSelect from '@/components/ui/searchable-select'
 import { useT } from '@/components/i18n/locale-provider'
@@ -44,6 +44,20 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
   })
 
   const set = (field: string, value: any) => setForm({ ...form, [field]: value })
+
+  // Regla: un perro con descendientes debe ser público (la BD lo fuerza con un
+  // trigger). Aquí bloqueamos el toggle y lo explicamos, para no confundir.
+  const [hasDescendants, setHasDescendants] = useState(false)
+  useEffect(() => {
+    if (!isEdit || !initialData?.id) return
+    const supabase = createClient()
+    supabase.rpc('dog_has_descendants', { dog_id: initialData.id }).then(({ data }) => {
+      if (data === true) {
+        setHasDescendants(true)
+        setForm((p) => ({ ...p, is_public: true }))
+      }
+    })
+  }, [isEdit, initialData?.id])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -170,9 +184,20 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
         <div className="flex items-center justify-between bg-surface-card border border-hairline rounded-lg p-4">
           <div>
             <p className="text-sm font-medium">{t('Perfil publico')}</p>
-            <p className="text-xs text-muted mt-0.5">{t('Otros usuarios podran ver este perro')}</p>
+            <p className="text-xs text-muted mt-0.5">
+              {hasDescendants
+                ? t('Tiene descendientes, así que debe ser público: las genealogías de sus hijos lo referencian.')
+                : t('Otros usuarios podran ver este perro')}
+            </p>
           </div>
-          <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
+          {hasDescendants ? (
+            <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-emerald-600">
+              <Lock className="h-3.5 w-3.5" />
+              {t('Público')}
+            </span>
+          ) : (
+            <ToggleSwitch value={form.is_public} onChange={(v) => set('is_public', v)} />
+          )}
         </div>
 
         <button type="submit" disabled={loading || !form.name.trim()}
