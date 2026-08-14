@@ -17,6 +17,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
+  HelpCircle,
+  AlertOctagon,
   Plus,
   Minus,
 } from 'lucide-react'
@@ -30,37 +32,37 @@ interface Props {
 
 interface EvalSection {
   titulo: string
-  estado: 'bien' | 'atencion' | 'desvia'
+  relevancia: 'esencial' | 'secundario' | 'menor'
+  estado: 'bien' | 'atencion' | 'desvia' | 'sin_datos'
   comentario: string
 }
 interface EvalResult {
   breedName?: string
   score?: number
+  calificacion?: string
   resumen?: string
+  gate?: { motivo: string } | null
   secciones?: EvalSection[]
   fortalezas?: string[]
   mejoras?: string[]
   raw?: string
 }
 
-function scoreMeta(s: number): { pill: string; ring: string; label: string } {
-  if (s >= 7.5)
-    return {
-      pill: 'bg-emerald-500/12 text-emerald-600',
-      ring: 'border-emerald-500/40 text-emerald-600',
-      label: 'Excelente',
-    }
-  if (s >= 5)
-    return {
-      pill: 'bg-amber-500/12 text-amber-600',
-      ring: 'border-amber-500/40 text-amber-600',
-      label: 'Correcto con reservas',
-    }
-  return {
-    pill: 'bg-red-500/12 text-red-600',
-    ring: 'border-red-500/40 text-red-600',
-    label: 'Se desvía del estándar',
-  }
+// Bandas de color ancladas a las calificaciones cinológicas (ver prompt del backend).
+function scoreMeta(s: number): { pill: string; ring: string } {
+  if (s >= 7) return { pill: 'bg-emerald-500/12 text-emerald-600', ring: 'border-emerald-500/40 text-emerald-600' }
+  if (s >= 5) return { pill: 'bg-sky-500/12 text-sky-600', ring: 'border-sky-500/40 text-sky-600' }
+  if (s >= 3.5) return { pill: 'bg-amber-500/12 text-amber-600', ring: 'border-amber-500/40 text-amber-600' }
+  return { pill: 'bg-red-500/12 text-red-600', ring: 'border-red-500/40 text-red-600' }
+}
+
+/** Palabra de calificación (fallback si el modelo no devuelve `calificacion`). */
+function gradeFor(s: number): string {
+  if (s >= 9) return 'Excelente'
+  if (s >= 7) return 'Muy Bueno'
+  if (s >= 5) return 'Bueno'
+  if (s >= 3.5) return 'Suficiente'
+  return 'Insuficiente'
 }
 
 const ESTADO_META: Record<
@@ -70,6 +72,14 @@ const ESTADO_META: Record<
   bien: { Icon: CheckCircle2, cls: 'text-emerald-600', label: 'Bien' },
   atencion: { Icon: AlertTriangle, cls: 'text-amber-600', label: 'Atención' },
   desvia: { Icon: XCircle, cls: 'text-red-600', label: 'Se desvía' },
+  sin_datos: { Icon: HelpCircle, cls: 'text-muted', label: 'Sin datos' },
+}
+
+// Etiqueta de peso que el estándar da a cada sección (esencial > secundario > menor).
+const RELEVANCIA_META: Record<EvalSection['relevancia'], { cls: string; label: string }> = {
+  esencial: { cls: 'bg-[color:var(--brand)]/12 text-[color:var(--brand)]', label: 'Esencial' },
+  secundario: { cls: 'bg-surface-card text-muted', label: 'Secundario' },
+  menor: { cls: 'bg-surface-card text-muted/60', label: 'Menor' },
 }
 
 export default function CrossStandardEval({ sireId, damId }: Props) {
@@ -224,6 +234,18 @@ export default function CrossStandardEval({ sireId, damId }: Props) {
       {/* Resultado */}
       {result && (
         <div className="space-y-4">
+          {/* Factor limitante (gate): topa la nota pase lo que pase el resto */}
+          {result.gate && (
+            <div className="flex items-start gap-2.5 rounded-xl border border-red-500/30 bg-red-500/[0.06] px-4 py-3">
+              <AlertOctagon className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+              <p className="text-[12.5px] leading-relaxed text-body">
+                <span className="font-semibold text-red-600">{t('Factor limitante:')}</span>{' '}
+                {result.gate.motivo}{' '}
+                <span className="text-muted">{t('— la nota está topada por esto.')}</span>
+              </p>
+            </div>
+          )}
+
           {/* Nota + resumen */}
           {hasScore && (
             <div className="rounded-xl border border-hairline bg-canvas p-5">
@@ -242,7 +264,7 @@ export default function CrossStandardEval({ sireId, damId }: Props) {
                   <span
                     className={`inline-block rounded-full px-2.5 py-0.5 text-[11.5px] font-semibold ${scoreMeta(result.score!).pill}`}
                   >
-                    {t(scoreMeta(result.score!).label)}
+                    {result.calificacion || gradeFor(result.score!)}
                   </span>
                   {result.breedName && (
                     <p className="mt-1.5 text-[11.5px] text-muted">
@@ -275,7 +297,14 @@ export default function CrossStandardEval({ sireId, damId }: Props) {
                     >
                       <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${meta.cls}`} />
                       <div className="min-w-0">
-                        <p className="text-[13px] font-medium text-ink">{sec.titulo}</p>
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <p className="text-[13px] font-medium text-ink">{sec.titulo}</p>
+                          <span
+                            className={`rounded px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide ${RELEVANCIA_META[sec.relevancia].cls}`}
+                          >
+                            {t(RELEVANCIA_META[sec.relevancia].label)}
+                          </span>
+                        </div>
                         {sec.comentario && (
                           <p className="mt-0.5 text-[12.5px] leading-relaxed text-body">
                             {sec.comentario}
