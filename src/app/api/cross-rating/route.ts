@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { chat } from '@/lib/ai/client'
 import { canUseMeasurements } from '@/lib/permissions'
 import { NUMERIC_SECTIONS, QUALITATIVE_FIELDS } from '@/lib/measurements-fields'
+import { sexStandardFor, projectBySex } from '@/lib/breed-sex-standards'
 
 export const maxDuration = 60
 
@@ -213,19 +214,31 @@ export async function POST(request: Request) {
       )
     }
 
-    // 3) Datos del cruce: numéricas (mid-parent) + cualitativas (lado a lado).
-    const numericBlocks: string[] = []
+    // 3) Datos del cruce: talla/peso proyectados POR SEXO (dimorfismo) + resto
+    //    como media familiar + cualitativas lado a lado.
+    const sexRef = sexStandardFor(breedId)
+    const sexLines: string[] = [] // talla y peso, macho/hembra proyectados
+    const familyBlocks: string[] = [] // resto, media de los progenitores
+
     for (const section of NUMERIC_SECTIONS) {
       const rows: string[] = []
       for (const f of section.fields) {
         const s = num(sire.batch[f.col])
         const d = num(dam.batch[f.col])
         if (s === null && d === null) continue
+        const ref = sexRef?.[f.col]
+        if (ref && s !== null && d !== null) {
+          const p = projectBySex(s, d, ref)
+          sexLines.push(
+            `  - ${f.label}: macho proyectado ${fmt(p.male)} (rango machos ${fmt(ref.m.min)}–${fmt(ref.m.max)}) · hembra proyectada ${fmt(p.female)} (rango hembras ${fmt(ref.f.min)}–${fmt(ref.f.max)})`,
+          )
+          continue
+        }
         const parts = [`padre ${s !== null ? fmt(s) : '—'}`, `madre ${d !== null ? fmt(d) : '—'}`]
-        if (s !== null && d !== null) parts.push(`MEDIA proyectada ${fmt((s + d) / 2)}`)
+        if (s !== null && d !== null) parts.push(`media ${fmt((s + d) / 2)}`)
         rows.push(`  - ${f.label}: ${parts.join(', ')}`)
       }
-      if (rows.length) numericBlocks.push(`${section.title}:\n${rows.join('\n')}`)
+      if (rows.length) familyBlocks.push(`${section.title}:\n${rows.join('\n')}`)
     }
     const qualRows: string[] = []
     for (const f of QUALITATIVE_FIELDS) {
@@ -251,7 +264,7 @@ export async function POST(request: Request) {
       `Eres un juez internacional de conformación canina, especialista en la raza ${breed.name}, y también seleccionador de cría. Evalúas cómo de bien encajaría con el estándar racial la descendencia PROYECTADA de un cruce.`,
       '',
       'Cómo trabajas:',
-      '- Para cada medida numérica recibes la media de ambos progenitores (mid-parent), que aproxima la media esperada de la camada, no un cachorro concreto. Los rasgos cualitativos (caderas, mordida, boca…) son los de cada progenitor y valoran salud y estructura heredables.',
+      '- Talla y peso: recibes la proyección POR SEXO (macho y hembra proyectados por separado), porque el dimorfismo sexual hace que la media simple no represente a ninguno de los dos. Resto de medidas: la media de los progenitores (mid-parent), que aproxima la media de la camada, no un cachorro concreto. Los rasgos cualitativos (caderas, mordida, boca…) son los de cada progenitor y valoran salud y estructura heredables.',
       '- NO todo pesa igual. Pondera cada aspecto según la importancia que le dé ESTE estándar: lo que define el TIPO racial (apariencia general, proporciones importantes, cabeza cuando es el sello de la raza, talla y sustancia) manda; los detalles (longitud de cola, un premolar ausente…) apenas mueven la nota. La ponderación la deduces del propio estándar, no de una regla fija.',
       '- Jerarquía de faltas: distingue faltas menores, faltas graves y faltas DESCALIFICANTES/eliminatorias. Un factor descalificante (p. ej. talla proyectada claramente fuera de rango, mordida descalificante) TOPA la nota por muy bueno que sea el resto: no se promedia. Cuando eso ocurra, márcalo en "gate".',
       '- Sé honesto y no infles. Si una medida se sale del rango del estándar, dilo y explica hacia dónde se desvía. Si NO puedes valorar un aspecto porque faltan medidas, dilo ("sin_datos") en vez de inventar una nota. Distingue "se desvía" de "no lo puedo evaluar".',
@@ -271,8 +284,11 @@ export async function POST(request: Request) {
       '',
       `CRUCE A EVALUAR — ${sireName} (macho) × ${damName} (hembra)`,
       '',
-      'Medidas proyectadas de la camada (media de ambos progenitores):',
-      numericBlocks.length ? numericBlocks.join('\n') : '  (sin medidas numéricas comunes)',
+      'TALLA Y PESO — proyección POR SEXO. Por el dimorfismo sexual la media simple no representa ni a un macho ni a una hembra, así que te doy el macho proyectado y la hembra proyectada por separado (ya calculados). Juzga el macho proyectado contra el rango de machos y la hembra proyectada contra el de hembras:',
+      sexLines.length ? sexLines.join('\n') : '  (sin proyección por sexo para esta raza/datos)',
+      '',
+      'RESTO DE MEDIDAS — media de los progenitores (NO distingue sexo; no penalices a un macho por una media que incluye a la madre, ni al revés):',
+      familyBlocks.length ? familyBlocks.join('\n') : '  (sin más medidas comunes)',
       '',
       'Rasgos cualitativos de los progenitores (no se promedian):',
       qualRows.length ? qualRows.join('\n') : '  (sin rasgos cualitativos registrados)',

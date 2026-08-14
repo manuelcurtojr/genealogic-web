@@ -21,6 +21,7 @@ import { Ruler, Loader2, Mars, Venus } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import { BRAND } from '@/lib/constants'
 import { NUMERIC_SECTIONS, QUALITATIVE_FIELDS } from '@/lib/measurements-fields'
+import { sexStandardFor, projectBySex } from '@/lib/breed-sex-standards'
 
 interface Props {
   sireId: string
@@ -32,6 +33,7 @@ type MeasureBatch = Record<string, any>
 
 interface ParentMeasure {
   name: string | null
+  breedId: string | null
   batch: MeasureBatch | null
 }
 
@@ -75,12 +77,16 @@ export default function MeasurementsForecast({ sireId, damId }: Props) {
               .eq('dog_id', dogId)
               .order('measured_at', { ascending: false })
               .limit(1),
-            supabase.from('dogs').select('name').eq('id', dogId).maybeSingle(),
+            supabase.from('dogs').select('name, breed_id').eq('id', dogId).maybeSingle(),
           ])
 
           const batch: MeasureBatch | null =
             measRes.data && measRes.data.length > 0 ? measRes.data[0] : null
-          return { name: dogRes.data?.name ?? null, batch }
+          return {
+            name: dogRes.data?.name ?? null,
+            breedId: dogRes.data?.breed_id ?? null,
+            batch,
+          }
         }
 
         const [sireData, damData] = await Promise.all([loadParent(sireId), loadParent(damId)])
@@ -119,12 +125,17 @@ export default function MeasurementsForecast({ sireId, damId }: Props) {
   const damName = dam.name || t('la madre')
   const bothMeasured = !!sire.batch && !!dam.batch
 
+  // Referencias por sexo de la raza (para proyectar talla/peso por sexo). Si la
+  // raza no está en el catálogo, sexRef = null → todo se muestra como media.
+  const sexRef = sexStandardFor(sire.breedId)
+
   // Numéricas: por sección, solo filas donde al menos un progenitor tiene dato.
   const sections = bothMeasured
     ? NUMERIC_SECTIONS.map((section) => ({
         title: section.title,
         rows: section.fields
           .map((f) => ({
+            col: f.col,
             label: f.label,
             s: num(sire.batch![f.col]),
             d: num(dam.batch![f.col]),
@@ -153,7 +164,9 @@ export default function MeasurementsForecast({ sireId, damId }: Props) {
           {t('Morfología proyectada de la camada')}
         </h3>
         <p className="mt-1 text-[12.5px] leading-relaxed text-muted">
-          {t('Media de las medidas de ambos progenitores (mid-parent), a partir de la última tanda registrada de cada uno. Es una estimación orientativa, no una garantía.')}
+          {sexRef
+            ? t('Estimación a partir de la última tanda de cada progenitor. En talla y peso se proyecta por sexo (♂ y ♀ por separado, por el dimorfismo sexual); el resto es la media de los padres. Orientativo, no una garantía.')
+            : t('Media de las medidas de ambos progenitores (mid-parent), a partir de la última tanda registrada de cada uno. Es una estimación orientativa, no una garantía.')}
         </p>
       </div>
 
@@ -188,6 +201,9 @@ export default function MeasurementsForecast({ sireId, damId }: Props) {
                   <div>
                     {section.rows.map((r) => {
                       const both = r.s !== null && r.d !== null
+                      const ref = sexRef?.[r.col]
+                      const proj =
+                        both && ref ? projectBySex(r.s as number, r.d as number, ref) : null
                       return (
                         <div
                           key={r.label}
@@ -203,14 +219,29 @@ export default function MeasurementsForecast({ sireId, damId }: Props) {
                               {t('Madre')}{' '}
                               <span className="font-medium text-ink">{r.d !== null ? fmt(r.d) : '—'}</span>
                             </span>
-                            {both ? (
+                            {proj ? (
+                              <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-muted">
+                                <span className="inline-flex items-center gap-1" title={t('Macho proyectado')}>
+                                  <Mars className="h-3 w-3" style={{ color: BRAND.male }} />
+                                  <span className="rounded-md bg-[color:var(--brand)]/10 px-1.5 py-0.5 text-[12.5px] font-semibold text-[color:var(--brand)]">
+                                    {fmt(proj.male)}
+                                  </span>
+                                </span>
+                                <span className="inline-flex items-center gap-1" title={t('Hembra proyectada')}>
+                                  <Venus className="h-3 w-3" style={{ color: BRAND.female }} />
+                                  <span className="rounded-md bg-[color:var(--brand)]/10 px-1.5 py-0.5 text-[12.5px] font-semibold text-[color:var(--brand)]">
+                                    {fmt(proj.female)}
+                                  </span>
+                                </span>
+                              </span>
+                            ) : both ? (
                               <span className="inline-flex items-center gap-1 text-[12px] text-muted">
                                 {t('Media')}
                                 <span
                                   className="rounded-md bg-[color:var(--brand)]/10 px-2 py-0.5 text-[12.5px] font-semibold text-[color:var(--brand)]"
                                   title={t('Media proyectada')}
                                 >
-                                  {(((r.s as number) + (r.d as number)) / 2).toFixed(1)}
+                                  {fmt(((r.s as number) + (r.d as number)) / 2)}
                                 </span>
                               </span>
                             ) : (
