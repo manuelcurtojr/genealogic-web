@@ -246,7 +246,7 @@ export const COMPARE_SCHEMA_LINES: string[] = [
   '  "diferencias": [                    // dónde difieren DE VERDAD (no listes lo que es prácticamente igual)',
   '    { "aspecto": string, "detalle": string, "ventaja": "a" | "b" | "igual" }  // ventaja = quién se acerca más al estándar en ese aspecto',
   '  ],',
-  '  "veredicto": string                 // 1-2 frases: cuál se ajusta mejor al estándar y en qué se complementan',
+  '  "veredicto": string                 // 1-2 frases: cuál es MEJOR EJEMPLAR según el estándar y la diferencia clave. Es una COMPARACIÓN, no un cruce: NO hables de complementarse/compensarse ni de criar.',
   '}',
 ]
 
