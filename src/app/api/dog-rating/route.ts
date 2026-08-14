@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { canUseMeasurements } from '@/lib/permissions'
 import {
   standardTextFrom, dogMeasurementsText, runStandardEval,
-  JUDGE_RULES, SCALE_LINES, SCHEMA_LINES,
+  JUDGE_RULES, BREEDER_CRITERIA, SCALE_LINES, SCHEMA_LINES,
 } from '@/lib/cross-eval'
 
 export const maxDuration = 60
@@ -95,6 +95,8 @@ export async function POST(request: Request) {
       'Cómo trabajas:',
       `- Recibes las medidas REALES del perro (las tomadas por su dueño). En talla y peso te doy además el rango de SU sexo (${sexWord}s) para compararlas directamente. No hay proyección ni estimación: son sus medidas. Los rasgos cualitativos (caderas, mordida, boca…) son los suyos y valoran salud y estructura.`,
       ...JUDGE_RULES,
+      '',
+      ...BREEDER_CRITERIA,
       '',
       ...SCALE_LINES,
     ].join('\n')

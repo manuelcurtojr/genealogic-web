@@ -19,6 +19,7 @@ import { useT } from '@/components/i18n/locale-provider'
 
 export interface EvalSection {
   titulo: string
+  nota?: number | null
   relevancia: 'esencial' | 'secundario' | 'menor'
   estado: 'bien' | 'atencion' | 'desvia' | 'sin_datos'
   comentario: string
@@ -139,6 +140,13 @@ export default function StandardEvalResult({ result }: { result: EvalResult }) {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       <p className="text-[13px] font-medium text-ink">{sec.titulo}</p>
+                      {typeof sec.nota === 'number' && (
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-[11px] font-bold tabular-nums ${scoreMeta(sec.nota).pill}`}
+                        >
+                          {sec.nota.toFixed(1)}
+                        </span>
+                      )}
                       <span
                         className={`rounded px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide ${RELEVANCIA_META[sec.relevancia].cls}`}
                       >

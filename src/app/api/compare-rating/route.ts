@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { canUseMeasurements } from '@/lib/permissions'
 import {
   standardTextFrom, dogMeasurementsText, runCompareEval,
-  JUDGE_RULES, SCALE_LINES, COMPARE_SCHEMA_LINES,
+  JUDGE_RULES, BREEDER_CRITERIA, SCALE_LINES, COMPARE_SCHEMA_LINES,
 } from '@/lib/cross-eval'
 
 export const maxDuration = 60
@@ -105,7 +105,8 @@ export async function POST(request: Request) {
       '- ESTO ES UNA COMPARACIÓN de dos ejemplares, NO un cruce. Los dos perros pueden ser del mismo sexo (dos hembras, dos machos). NUNCA hables de si "se complementan", "se compensan" o de aparearlos/criar: eso no aplica aquí. Juzga cada perro por separado contra el estándar y di cuál es MEJOR EJEMPLAR y en qué difieren.',
       '- Recibes las medidas REALES de cada perro (en talla y peso, con el rango de su sexo). No hay proyección: son sus medidas. Juzga a CADA uno contra el rango de SU sexo (aunque ambos sean del mismo sexo). Los rasgos cualitativos (caderas, mordida, boca…) son los de cada perro.',
       ...JUDGE_RULES,
-      '- Da a cada perro su nota 0-10 vs el estándar y, sobre todo, señala en qué se DIFERENCIAN de verdad y quién se acerca más al estándar en cada aspecto. (En el comparador no hay campo "gate": un factor descalificante se refleja en una nota baja y se explica en el resumen del perro.)',
+      ...BREEDER_CRITERIA,
+      '- Da a cada perro su nota global 0-10 vs el estándar y, en cada aspecto en que DIFIERAN de verdad, puntúa a CADA uno por separado (nota_a/nota_b, 0-10) y di quién se acerca más al estándar. (En el comparador no hay campo "gate": un factor descalificante se refleja en una nota baja y se explica en el resumen del perro.)',
       '',
       ...SCALE_LINES,
     ].join('\n')

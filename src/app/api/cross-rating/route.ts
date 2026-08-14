@@ -5,7 +5,7 @@ import { NUMERIC_SECTIONS, QUALITATIVE_FIELDS } from '@/lib/measurements-fields'
 import { sexStandardFor, projectBySex } from '@/lib/breed-sex-standards'
 import {
   num, qual, fmt, standardTextFrom, runStandardEval,
-  JUDGE_RULES, SCALE_LINES, SCHEMA_LINES,
+  JUDGE_RULES, BREEDER_CRITERIA, SCALE_LINES, SCHEMA_LINES,
 } from '@/lib/cross-eval'
 
 export const maxDuration = 60
@@ -142,6 +142,8 @@ export async function POST(request: Request) {
       'Cómo trabajas:',
       '- Talla y peso: recibes la proyección POR SEXO (macho y hembra proyectados por separado), porque el dimorfismo sexual hace que la media simple no represente a ninguno de los dos. Resto de medidas: la media de los progenitores (mid-parent), que aproxima la media de la camada, no un cachorro concreto. Los rasgos cualitativos (caderas, mordida, boca…) son los de cada progenitor y valoran salud y estructura heredables.',
       ...JUDGE_RULES,
+      '',
+      ...BREEDER_CRITERIA,
       '',
       ...SCALE_LINES,
     ].join('\n')

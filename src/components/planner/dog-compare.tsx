@@ -18,7 +18,7 @@ type DogOpt = { value: string; label: string; breedId: string | null }
 type MeasRow = Record<string, any> | null
 
 interface CompareDog { score?: number; calificacion?: string; resumen?: string }
-interface CompareDiff { aspecto: string; detalle: string; ventaja: 'a' | 'b' | 'igual' }
+interface CompareDiff { aspecto: string; notaA?: number | null; notaB?: number | null; detalle: string; ventaja: 'a' | 'b' | 'igual' }
 interface CompareResult {
   breedName?: string
   nameA?: string
@@ -347,6 +347,13 @@ function CompareResultView({ result, labelA, labelB }: { result: CompareResult; 
                       {t('Ventaja')}: {badge.txt}
                     </span>
                   </div>
+                  {typeof d.notaA === 'number' && typeof d.notaB === 'number' && (
+                    <p className="mt-1 text-[11.5px] tabular-nums text-muted">
+                      {nameA}: <span className={`font-semibold ${scoreCls(d.notaA)}`}>{d.notaA.toFixed(1)}</span>
+                      {'   ·   '}
+                      {nameB}: <span className={`font-semibold ${scoreCls(d.notaB)}`}>{d.notaB.toFixed(1)}</span>
+                    </p>
+                  )}
                   {d.detalle && <p className="mt-0.5 text-[12.5px] leading-relaxed text-body">{d.detalle}</p>}
                 </div>
               )

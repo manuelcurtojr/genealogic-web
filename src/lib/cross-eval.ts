@@ -18,6 +18,7 @@ export type StandardSection = { key?: string; title?: string; content?: string }
 
 export type EvalSection = {
   titulo: string
+  nota: number | null // 0-10 de ESA característica sola (null = no valorable / sin dato)
   relevancia: 'esencial' | 'secundario' | 'menor'
   estado: 'bien' | 'atencion' | 'desvia' | 'sin_datos'
   comentario: string
@@ -65,6 +66,20 @@ export const JUDGE_RULES: string[] = [
   '- Jerarquía de faltas: distingue faltas menores, faltas graves y faltas DESCALIFICANTES/eliminatorias. Un factor descalificante (p. ej. talla claramente fuera de rango, mordida descalificante) TOPA la nota por muy bueno que sea el resto: no se promedia. Cuando eso ocurra, márcalo en "gate".',
   '- Sé honesto y no infles. Si una medida se sale del rango del estándar, dilo y explica hacia dónde se desvía. Si NO puedes valorar un aspecto porque faltan medidas, dilo ("sin_datos") en vez de inventar una nota. Distingue "se desvía" de "no lo puedo evaluar".',
   '- Usa solo cifras del estándar que te doy; no inventes rangos que no aparezcan en el texto.',
+  '- Puntúa CADA característica/área por separado con su propia nota 0-10 (esa característica sola, con la misma escala). La nota GLOBAL no es la media de esas notas: es el conjunto ponderado por la importancia de cada área en el estándar (un fallo en algo esencial baja mucho; en algo menor, poco).',
+]
+
+/**
+ * Criterios de cría del propietario (Presa Canario), que se aplican ADEMÁS del
+ * estándar (no en su contra). Hoy la feature es exclusiva de Irema; si se abre a
+ * más criaderos, habría que hacerlos configurables por criadero/raza.
+ */
+export const BREEDER_CRITERIA: string[] = [
+  'CRITERIOS DEL CRIADOR (aplícalos ADEMÁS del estándar, nunca en su contra):',
+  '- Talla: el criador busca la parte ALTA del rango (talla máxima del estándar), en AMBOS sexos, porque es lo más típico y lo que más valor tiene en esta raza. Por tanto: la SUBTALLA (por debajo del mínimo) es una falta real, no la minimices; dentro del rango, cuanto más cerca del máximo mejor, y considera "pequeño"/mejorable lo que caiga en la parte baja del rango aunque sea válido; NO premies lo pequeño. Pasarse del máximo sí es falta (fuera de estándar).',
+  '- Dimorfismo sexual NO simétrico: un MACHO afeminado (poca sustancia, hueso ligero, cabeza pobre) es falta; una HEMBRA sustanciosa, potente y de buen hueso NO es una falta, es DESEABLE — nunca la penalices por "masculina" ni por tener sustancia. La falta en la hembra es lo contrario: débil, fina, sin sustancia ni hueso.',
+  '- Sustancia (hueso, potencia, masa, cabeza acorde) se valora ALTO en ambos sexos: es sello de tipo, no un extra.',
+  '- No dejes que la talla eclipse el resto: cabeza, tipo racial, proporciones y sustancia pesan tanto o más que la talla, aunque solo los puedas juzgar por el texto del estándar y los rasgos cualitativos, no con un número.',
 ]
 
 /** Escala 0-10 anclada a las calificaciones cinológicas. */
@@ -79,15 +94,17 @@ export const SCALE_LINES: string[] = [
 
 /** Instrucciones del JSON de salida (idénticas para cruce y perro). */
 export const SCHEMA_LINES: string[] = [
+  'Cada sección lleva su propia nota 0-10 de ESA característica. La nota GLOBAL "score" NO es la media aritmética de las secciones: es el conjunto ponderado por la importancia de cada área en el estándar.',
   'Responde ÚNICAMENTE con un objeto JSON válido, sin texto antes ni después y sin markdown, con esta forma exacta:',
   '{',
-  '  "score": number,                    // 0 a 10, un decimal, según la escala',
+  '  "score": number,                    // 0 a 10, un decimal, GLOBAL ponderado (no la media de secciones)',
   '  "calificacion": string,             // "Excelente" | "Muy Bueno" | "Bueno" | "Suficiente" | "Insuficiente"',
   '  "resumen": string,                  // veredicto en 1-2 frases',
   '  "gate": null,                       // { "motivo": string } SOLO si un factor descalificante topa la nota; si no, null',
   '  "secciones": [                      // una entrada por área relevante del estándar',
   '    {',
   '      "titulo": string,',
+  '      "nota": number,                                          // 0-10 de ESTA característica sola (un decimal, misma escala); null si no valorable',
   '      "relevancia": "esencial" | "secundario" | "menor",       // peso que le da ESTE estándar',
   '      "estado": "bien" | "atencion" | "desvia" | "sin_datos",  // sin_datos = no valorable por falta de datos',
   '      "comentario": string',
@@ -120,6 +137,11 @@ function gradeFor(s: number): string {
   if (s >= 3.5) return 'Suficiente'
   return 'Insuficiente'
 }
+/** Nota 0-10 (un decimal) o null si no es un número válido. Para notas por sección/aspecto. */
+function clampScore(v: unknown): number | null {
+  const n = typeof v === 'number' ? v : Number(v)
+  return Number.isFinite(n) ? Math.max(0, Math.min(10, Math.round(n * 10) / 10)) : null
+}
 /** Extrae el primer objeto JSON de la respuesta del modelo (tolera fences/texto extra). */
 function extractJsonObject(text: string): any | null {
   if (!text) return null
@@ -147,6 +169,7 @@ function parseEval(text: string): EvalResult | null {
         .filter((s: any) => s && (s.titulo || s.comentario))
         .map((s: any) => ({
           titulo: String(s.titulo ?? ''),
+          nota: clampScore(s.nota),
           relevancia: normRelevancia(s.relevancia),
           estado: normEstado(s.estado),
           comentario: String(s.comentario ?? ''),
@@ -229,7 +252,13 @@ export function dogMeasurementsText(batch: Record<string, any>, sex: string, bre
 
 // ── Comparador de dos perros vs estándar ────────────────────────────────────
 export type CompareDog = { score: number; calificacion: string; resumen: string }
-export type CompareDiff = { aspecto: string; detalle: string; ventaja: 'a' | 'b' | 'igual' }
+export type CompareDiff = {
+  aspecto: string
+  notaA: number | null // 0-10 del perro A en ese aspecto
+  notaB: number | null // 0-10 del perro B en ese aspecto
+  detalle: string
+  ventaja: 'a' | 'b' | 'igual'
+}
 export type CompareResult = {
   perroA: CompareDog
   perroB: CompareDog
@@ -244,7 +273,7 @@ export const COMPARE_SCHEMA_LINES: string[] = [
   '  "perro_a": { "score": number, "calificacion": string, "resumen": string },  // A vs estándar (0-10 y escala)',
   '  "perro_b": { "score": number, "calificacion": string, "resumen": string },  // B vs estándar',
   '  "diferencias": [                    // dónde difieren DE VERDAD (no listes lo que es prácticamente igual)',
-  '    { "aspecto": string, "detalle": string, "ventaja": "a" | "b" | "igual" }  // ventaja = quién se acerca más al estándar en ese aspecto',
+  '    { "aspecto": string, "nota_a": number, "nota_b": number, "detalle": string, "ventaja": "a" | "b" | "igual" }  // nota_a/nota_b = 0-10 de cada perro en ese aspecto; ventaja = quién se acerca más al estándar',
   '  ],',
   '  "veredicto": string                 // 1-2 frases: cuál es MEJOR EJEMPLAR según el estándar y la diferencia clave. Es una COMPARACIÓN, no un cruce: NO hables de complementarse/compensarse ni de criar.',
   '}',
@@ -273,6 +302,8 @@ function parseCompareEval(text: string): CompareResult | null {
         .filter((d: any) => d && (d.aspecto || d.detalle))
         .map((d: any) => ({
           aspecto: String(d.aspecto ?? ''),
+          notaA: clampScore(d.nota_a),
+          notaB: clampScore(d.nota_b),
           detalle: String(d.detalle ?? ''),
           ventaja: normVentaja(d.ventaja),
         }))
