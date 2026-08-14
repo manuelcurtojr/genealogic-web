@@ -27,6 +27,8 @@ export interface NavItem {
   requiresKennel?: boolean
   /** Plan Kennel Pro+ (kennel o kennel_pro) */
   requiresPro?: boolean
+  /** Beta de medidas/evaluación IA (canUseMeasurements — hoy solo Irema) */
+  requiresMeasurements?: boolean
   requiresAdmin?: boolean
   /** Si el usuario ES pro, este item se oculta (porque hay uno mejor) */
   hideIfPro?: boolean
@@ -94,6 +96,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Camadas', href: '/litters', icon: 'Baby', requiresKennel: true },
       // Simulador y Genotipos son features de Kennel Pro (49€) según /pricing.
       { label: 'Simulador de cruces', href: '/cruces', icon: 'GitCompareArrows', requiresKennel: true, requiresPro: true },
+      { label: 'Comparador', href: '/comparar', icon: 'GitCompareArrows', requiresMeasurements: true },
       { label: 'Genotipos', href: '/genetica', icon: 'Dna', requiresKennel: true, requiresPro: true },
     ],
   },

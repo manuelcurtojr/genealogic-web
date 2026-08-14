@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { canUseMeasurements } from '@/lib/permissions'
-import { NUMERIC_SECTIONS, QUALITATIVE_FIELDS } from '@/lib/measurements-fields'
-import { sexStandardFor } from '@/lib/breed-sex-standards'
 import {
-  num, qual, fmt, standardTextFrom, runStandardEval,
+  standardTextFrom, dogMeasurementsText, runStandardEval,
   JUDGE_RULES, SCALE_LINES, SCHEMA_LINES,
 } from '@/lib/cross-eval'
 
@@ -12,9 +10,8 @@ export const maxDuration = 60
 
 /**
  * POST /api/dog-rating — evalúa con IA cómo encaja UN PERRO con el estándar de una
- * raza, a partir de sus medidas reales (la última tanda). A diferencia del cruce
- * no hay proyección: se comparan sus medidas contra el rango de SU sexo. Juez
- * compartido (@/lib/cross-eval).
+ * raza, a partir de sus medidas reales (la última tanda). Sin proyección: se
+ * comparan sus medidas contra el rango de SU sexo. Juez compartido (@/lib/cross-eval).
  *
  * Body: { dogId, breedId }. Gate: exclusiva de Irema (canUseMeasurements) + dueño.
  */
@@ -64,7 +61,6 @@ export async function POST(request: Request) {
     const dog = dogRes.data
     const batch = measRes.data && measRes.data.length > 0 ? measRes.data[0] : null
 
-    // Propiedad: solo el dueño puede evaluar su perro.
     if (!dog || (dog.owner_id as string) !== user.id) {
       return NextResponse.json({ error: 'No eres el propietario de este perro.' }, { status: 403 })
     }
@@ -88,38 +84,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'La raza seleccionada no tiene estándar cargado.' }, { status: 404 })
     }
 
-    // 3) Datos del perro: medidas reales; en talla/peso, con el rango de su sexo.
-    const sexRef = sexStandardFor(breedId)
-    const sexKey: 'm' | 'f' = dog.sex === 'female' ? 'f' : 'm'
+    // 3) Prompt (juez compartido + medidas del perro).
     const sexWord = dog.sex === 'female' ? 'hembra' : 'macho'
-
-    const numBlocks: string[] = []
-    for (const section of NUMERIC_SECTIONS) {
-      const rows: string[] = []
-      for (const f of section.fields) {
-        const v = num(batch[f.col])
-        if (v === null) continue
-        const ref = sexRef?.[f.col]
-        if (ref) {
-          const r = ref[sexKey]
-          rows.push(`  - ${f.label}: ${fmt(v)} (rango ${sexWord}s ${fmt(r.min)}–${fmt(r.max)})`)
-        } else {
-          rows.push(`  - ${f.label}: ${fmt(v)}`)
-        }
-      }
-      if (rows.length) numBlocks.push(`${section.title}:\n${rows.join('\n')}`)
-    }
-    const qualRows: string[] = []
-    for (const f of QUALITATIVE_FIELDS) {
-      const v = qual(batch[f.col])
-      if (!v) continue
-      qualRows.push(`  - ${f.label}: ${v}`)
-    }
-
     const standardText = standardTextFrom(breed.genealogic_standard)
     const dogName = (dog.name as string) || 'el perro'
 
-    // 4) Prompt (juez compartido + parte específica del perro).
     const system = [
       `Eres un juez internacional de conformación canina, especialista en la raza ${breed.name}, y también seleccionador de cría. Evalúas cómo de bien encaja UN PERRO concreto con el estándar racial.`,
       '',
@@ -136,11 +105,7 @@ export async function POST(request: Request) {
       '',
       `PERRO A EVALUAR — ${dogName} (${sexWord})`,
       '',
-      'Medidas del perro (en talla y peso, con el rango de su sexo para comparar):',
-      numBlocks.length ? numBlocks.join('\n') : '  (sin medidas numéricas registradas)',
-      '',
-      'Rasgos cualitativos del perro:',
-      qualRows.length ? qualRows.join('\n') : '  (sin rasgos cualitativos registrados)',
+      dogMeasurementsText(batch, dog.sex as string, breedId),
       '',
       'Evalúa este perro frente al estándar y puntúalo con la escala cinológica descrita (Insuficiente → Excelente), ponderando cada área por su peso en ESTE estándar.',
       '',

@@ -15,7 +15,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { NAV_SECTIONS, BRAND } from '@/lib/constants'
 import { isReservedPath, isInsider } from '@/lib/features/launch'
-import { isAdmin, hasProFeatures } from '@/lib/permissions'
+import { isAdmin, hasProFeatures, canUseMeasurements } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 import { Wordmark } from '@/components/ui/wordmark'
 
@@ -81,6 +81,7 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, userId, isC
         if (item.requiresAdmin && !userIsAdmin) return false
         if (item.requiresKennel && !isBreeder) return false
         if (item.requiresPro && !userHasPro) return false
+        if (item.requiresMeasurements && !canUseMeasurements(userId)) return false
         if (item.requiresClient && !isClient) return false
         if (item.hideIfPro && userHasPro) return false
         if (item.hideOnIos && isIos) return false

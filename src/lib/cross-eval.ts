@@ -1,5 +1,7 @@
 import 'server-only'
 import { chat } from '@/lib/ai/client'
+import { NUMERIC_SECTIONS, QUALITATIVE_FIELDS } from '@/lib/measurements-fields'
+import { sexStandardFor } from '@/lib/breed-sex-standards'
 
 /**
  * Motor compartido del "juez de conformación" con IA. Lo usan por igual:
@@ -118,8 +120,8 @@ function gradeFor(s: number): string {
   if (s >= 3.5) return 'Suficiente'
   return 'Insuficiente'
 }
-/** Extrae el JSON de la respuesta del modelo, tolerando fences y texto extra. */
-function parseEval(text: string): EvalResult | null {
+/** Extrae el primer objeto JSON de la respuesta del modelo (tolera fences/texto extra). */
+function extractJsonObject(text: string): any | null {
   if (!text) return null
   let t = text.trim()
   const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/)
@@ -127,12 +129,16 @@ function parseEval(text: string): EvalResult | null {
   const start = t.indexOf('{')
   const end = t.lastIndexOf('}')
   if (start === -1 || end === -1 || end <= start) return null
-  let obj: any
   try {
-    obj = JSON.parse(t.slice(start, end + 1))
+    return JSON.parse(t.slice(start, end + 1))
   } catch {
     return null
   }
+}
+
+function parseEval(text: string): EvalResult | null {
+  const obj = extractJsonObject(text)
+  if (!obj) return null
   const rawScore = typeof obj.score === 'number' ? obj.score : Number(obj.score)
   if (!Number.isFinite(rawScore)) return null
   const score = Math.max(0, Math.min(10, Math.round(rawScore * 10) / 10))
@@ -180,4 +186,110 @@ export async function runStandardEval(
     temperature: 0.4,
   })
   return { result: parseEval(res.text), raw: res.text }
+}
+
+/**
+ * Texto de las medidas de UN perro para el prompt: numéricas (en talla/peso con el
+ * rango de su sexo) + cualitativas. Se usa en /api/dog-rating y /api/compare-rating.
+ */
+export function dogMeasurementsText(batch: Record<string, any>, sex: string, breedId: string): string {
+  const sexRef = sexStandardFor(breedId)
+  const sexKey: 'm' | 'f' = sex === 'female' ? 'f' : 'm'
+  const sexWord = sex === 'female' ? 'hembra' : 'macho'
+  const numBlocks: string[] = []
+  for (const section of NUMERIC_SECTIONS) {
+    const rows: string[] = []
+    for (const f of section.fields) {
+      const v = num(batch[f.col])
+      if (v === null) continue
+      const ref = sexRef?.[f.col]
+      if (ref) {
+        const r = ref[sexKey]
+        rows.push(`  - ${f.label}: ${fmt(v)} (rango ${sexWord}s ${fmt(r.min)}–${fmt(r.max)})`)
+      } else {
+        rows.push(`  - ${f.label}: ${fmt(v)}`)
+      }
+    }
+    if (rows.length) numBlocks.push(`${section.title}:\n${rows.join('\n')}`)
+  }
+  const qualRows: string[] = []
+  for (const f of QUALITATIVE_FIELDS) {
+    const v = qual(batch[f.col])
+    if (!v) continue
+    qualRows.push(`  - ${f.label}: ${v}`)
+  }
+  return [
+    'Medidas (en talla y peso, con el rango de su sexo):',
+    numBlocks.length ? numBlocks.join('\n') : '  (sin medidas numéricas)',
+    '',
+    'Rasgos cualitativos:',
+    qualRows.length ? qualRows.join('\n') : '  (sin rasgos cualitativos)',
+  ].join('\n')
+}
+
+// ── Comparador de dos perros vs estándar ────────────────────────────────────
+export type CompareDog = { score: number; calificacion: string; resumen: string }
+export type CompareDiff = { aspecto: string; detalle: string; ventaja: 'a' | 'b' | 'igual' }
+export type CompareResult = {
+  perroA: CompareDog
+  perroB: CompareDog
+  diferencias: CompareDiff[]
+  veredicto: string
+}
+
+/** Esquema JSON del comparador (nota a cada perro + diferencias + veredicto). */
+export const COMPARE_SCHEMA_LINES: string[] = [
+  'Responde ÚNICAMENTE con un objeto JSON válido, sin texto antes ni después y sin markdown, con esta forma exacta:',
+  '{',
+  '  "perro_a": { "score": number, "calificacion": string, "resumen": string },  // A vs estándar (0-10 y escala)',
+  '  "perro_b": { "score": number, "calificacion": string, "resumen": string },  // B vs estándar',
+  '  "diferencias": [                    // dónde difieren DE VERDAD (no listes lo que es prácticamente igual)',
+  '    { "aspecto": string, "detalle": string, "ventaja": "a" | "b" | "igual" }  // ventaja = quién se acerca más al estándar en ese aspecto',
+  '  ],',
+  '  "veredicto": string                 // 1-2 frases: cuál se ajusta mejor al estándar y en qué se complementan',
+  '}',
+]
+
+function normVentaja(v: unknown): CompareDiff['ventaja'] {
+  const s = String(v ?? '').toLowerCase()
+  if (s === 'a') return 'a'
+  if (s === 'b') return 'b'
+  return 'igual'
+}
+function parseCompareDog(o: any): CompareDog | null {
+  const raw = typeof o?.score === 'number' ? o.score : Number(o?.score)
+  if (!Number.isFinite(raw)) return null
+  const score = Math.max(0, Math.min(10, Math.round(raw * 10) / 10))
+  return { score, calificacion: String(o?.calificacion ?? '').trim() || gradeFor(score), resumen: String(o?.resumen ?? '') }
+}
+function parseCompareEval(text: string): CompareResult | null {
+  const obj = extractJsonObject(text)
+  if (!obj) return null
+  const a = parseCompareDog(obj.perro_a)
+  const b = parseCompareDog(obj.perro_b)
+  if (!a || !b) return null
+  const diferencias: CompareDiff[] = Array.isArray(obj.diferencias)
+    ? obj.diferencias
+        .filter((d: any) => d && (d.aspecto || d.detalle))
+        .map((d: any) => ({
+          aspecto: String(d.aspecto ?? ''),
+          detalle: String(d.detalle ?? ''),
+          ventaja: normVentaja(d.ventaja),
+        }))
+    : []
+  return { perroA: a, perroB: b, diferencias, veredicto: String(obj.veredicto ?? '') }
+}
+
+export async function runCompareEval(
+  system: string,
+  userMsg: string,
+): Promise<{ result: CompareResult | null; raw: string }> {
+  const res = await chat({
+    modelId: 'claude-opus-4-5',
+    system,
+    messages: [{ role: 'user', content: userMsg }],
+    maxTokens: 2500,
+    temperature: 0.4,
+  })
+  return { result: parseCompareEval(res.text), raw: res.text }
 }
