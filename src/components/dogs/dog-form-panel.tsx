@@ -19,6 +19,7 @@ import ImportPedigreeTab from './import-pedigree-tab'
 import FeedbackButton from '@/components/feedback/feedback-button'
 import HistoricoTab from './edit-tabs/historico-tab'
 import MedidasTab from './edit-tabs/medidas-tab'
+import DogStandardEval from './edit-tabs/dog-standard-eval'
 import PedigreeEditor from '@/components/pedigree/pedigree-editor'
 import TransferPanel from '@/components/kennel/transfer-panel'
 import { useT } from '@/components/i18n/locale-provider'
@@ -52,6 +53,7 @@ const TABS = [
   { key: 'reproduccion', label: 'Reproducción', icon: Heart, femaleOnly: true },
   { key: 'genetica', label: 'Genética', icon: Dna },
   { key: 'medidas', label: 'Medidas', icon: Ruler },
+  { key: 'evaluacion', label: 'Evaluación IA', icon: Sparkles },
   { key: 'palmares', label: 'Palmarés', icon: Trophy },
   { key: 'historico', label: 'Histórico', icon: History },
 ] as const
@@ -441,6 +443,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     if ((tab.key === 'genetica' || tab.key === 'reproduccion') && !canPro) return false
     // Medidas morfológicas: feature exclusiva en beta (por ahora solo Irema Curtó).
     if (tab.key === 'medidas' && !canUseMeasurements(userId)) return false
+    if (tab.key === 'evaluacion' && !canUseMeasurements(userId)) return false
     return true
   })
 
@@ -669,6 +672,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       {activeTab === 'reproduccion' && editDogId && form.sex === 'female' && canPro && <ReproduccionTab dogId={editDogId} userId={userId} />}
       {activeTab === 'genetica' && editDogId && canPro && <GeneticaTab dogId={editDogId} userId={userId} />}
       {activeTab === 'medidas' && editDogId && canUseMeasurements(userId) && <MedidasTab dogId={editDogId} userId={userId} />}
+      {activeTab === 'evaluacion' && editDogId && canUseMeasurements(userId) && <DogStandardEval dogId={editDogId} />}
       {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
       {activeTab === 'historico' && editDogId && <HistoricoTab dogId={editDogId} />}
       {activeTab === 'gestion' && editDogId && gestionContent}

@@ -1,11 +1,12 @@
 'use client'
 
 /**
- * CrossStandardEval — evaluación con IA del CRUCE frente al estándar racial.
+ * DogStandardEval — evaluación con IA de UN PERRO frente al estándar racial.
  *
- * Selector de raza (por defecto la de los progenitores) + botón. Llama a
- * /api/cross-rating (proyección por sexo de la camada vs estándar) y muestra el
- * resultado con la vista compartida StandardEvalResult. Exclusiva de Irema.
+ * Selector de raza (por defecto la del perro) + botón. Llama a /api/dog-rating
+ * (medidas reales del perro vs el rango de su sexo) y muestra el resultado con la
+ * vista compartida StandardEvalResult. Exclusiva de Irema (misma feature-flag que
+ * las medidas); el endpoint además valida propiedad.
  */
 
 import { useEffect, useState } from 'react'
@@ -15,12 +16,7 @@ import SearchableSelect from '@/components/ui/searchable-select'
 import { useT } from '@/components/i18n/locale-provider'
 import StandardEvalResult, { type EvalResult } from '@/components/planner/standard-eval-result'
 
-interface Props {
-  sireId: string
-  damId: string
-}
-
-export default function CrossStandardEval({ sireId, damId }: Props) {
+export default function DogStandardEval({ dogId }: { dogId: string }) {
   const t = useT()
   const [breeds, setBreeds] = useState<{ value: string; label: string }[]>([])
   const [breedId, setBreedId] = useState('')
@@ -29,9 +25,8 @@ export default function CrossStandardEval({ sireId, damId }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<EvalResult | null>(null)
 
-  // Cargar razas con estándar + raza por defecto (la del padre) al cambiar el cruce.
   useEffect(() => {
-    if (!sireId || !damId) return
+    if (!dogId) return
     let cancel = false
 
     async function load() {
@@ -40,23 +35,25 @@ export default function CrossStandardEval({ sireId, damId }: Props) {
       setError(null)
       const supabase = createClient()
 
-      const [breedsRes, sireRes] = await Promise.all([
+      const [breedsRes, dogRes] = await Promise.all([
         supabase
           .from('breeds')
           .select('id, name')
           .not('genealogic_standard', 'is', null)
           .order('name'),
-        supabase.from('dogs').select('breed_id').eq('id', sireId).maybeSingle(),
+        supabase.from('dogs').select('breed_id').eq('id', dogId).maybeSingle(),
       ])
       if (cancel) return
 
       const list = (breedsRes.data || []).map((b: any) => ({ value: b.id, label: b.name }))
       setBreeds(list)
 
-      const sireBreed = sireRes.data?.breed_id as string | undefined
+      // Por defecto: la raza del perro si tiene estándar; si no, Presa Canario; si
+      // no, la primera de la lista.
+      const dogBreed = dogRes.data?.breed_id as string | undefined
       const inList = (id?: string) => !!id && list.some((o) => o.value === id)
       let def = ''
-      if (inList(sireBreed)) def = sireBreed!
+      if (inList(dogBreed)) def = dogBreed!
       else {
         const presa = list.find((o) => /presa/i.test(o.label) && /canario/i.test(o.label))
         def = presa?.value || list[0]?.value || ''
@@ -69,7 +66,7 @@ export default function CrossStandardEval({ sireId, damId }: Props) {
     return () => {
       cancel = true
     }
-  }, [sireId, damId])
+  }, [dogId])
 
   async function evaluate() {
     if (!breedId) return
@@ -77,19 +74,19 @@ export default function CrossStandardEval({ sireId, damId }: Props) {
     setError(null)
     setResult(null)
     try {
-      const res = await fetch('/api/cross-rating', {
+      const res = await fetch('/api/dog-rating', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sireId, damId, breedId }),
+        body: JSON.stringify({ dogId, breedId }),
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data?.message || data?.error || t('No se pudo evaluar el cruce.'))
+        setError(data?.message || data?.error || t('No se pudo evaluar el perro.'))
         return
       }
       setResult(data)
     } catch (e: any) {
-      setError(e?.message || t('Error de red al evaluar el cruce.'))
+      setError(e?.message || t('Error de red al evaluar el perro.'))
     } finally {
       setEvaluating(false)
     }
@@ -100,10 +97,10 @@ export default function CrossStandardEval({ sireId, damId }: Props) {
       <div>
         <h3 className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.01em] text-ink">
           <Sparkles className="h-4 w-4 text-[color:var(--brand)]" />
-          {t('Evaluación del cruce vs estándar (IA)')}
+          {t('Evaluación del perro vs estándar (IA)')}
         </h3>
         <p className="mt-1 text-[12.5px] leading-relaxed text-muted">
-          {t('Compara las medidas proyectadas de la camada con el estándar de la raza que elijas y le da una nota del 0 al 10. Es una valoración orientativa generada por IA, no un dictamen oficial.')}
+          {t('Compara las medidas reales del perro (su última tanda) con el estándar de la raza que elijas y le da una nota del 0 al 10. Es una valoración orientativa generada por IA, no un dictamen oficial.')}
         </p>
       </div>
 
@@ -156,7 +153,7 @@ export default function CrossStandardEval({ sireId, damId }: Props) {
         <div className="rounded-xl border border-hairline bg-canvas px-5 py-8 text-center">
           <Loader2 className="mx-auto h-5 w-5 animate-spin text-muted" />
           <p className="mt-2 text-[12.5px] text-muted">
-            {t('La IA está comparando el cruce con el estándar...')}
+            {t('La IA está comparando el perro con el estándar...')}
           </p>
         </div>
       )}
