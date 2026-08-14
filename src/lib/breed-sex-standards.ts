@@ -24,14 +24,73 @@ export type SexTraitRef = { m: SexRange; f: SexRange }
 export const BREED_SEX_STANDARDS: Record<string, Record<string, SexTraitRef>> = {
   // ── Presa Canario (FCI 346) ──────────────────────────────────────────────
   '3cc9ea09-fd89-442f-ae8c-03ace2fc2b2d': {
-    // Alzada a la cruz: rangos exactos del estándar FCI.
-    height_withers_cm: { m: { min: 60, max: 66 }, f: { min: 56, max: 62 } },
-    // Alzada a la grupa: el estándar no la acota; grupa ≈ cruz +1 (práctica de cría).
-    height_rump_cm: { m: { min: 61, max: 67 }, f: { min: 57, max: 63 } },
-    // Peso: el FCI solo fija mínimo (machos 50, hembras 40). Banda práctica para
-    // tener un centro con el que proyectar; el mínimo del estándar sigue siendo el suelo.
-    weight_kg: { m: { min: 50, max: 65 }, f: { min: 40, max: 55 } },
+    // Alzada a la cruz: rango exacto del estándar cargado (♂ 61-66, ♀ 57-62).
+    height_withers_cm: { m: { min: 61, max: 66 }, f: { min: 57, max: 62 } },
+    // Alzada a la grupa: el estándar la sitúa ~1,5 cm por encima de la cruz
+    // (igualdad grupa-cruz = falta leve).
+    height_rump_cm: { m: { min: 62.5, max: 67.5 }, f: { min: 58.5, max: 63.5 } },
+    // Peso: "media" del estándar (♂ 45-57, ♀ 40-50). Es una media orientativa, no un
+    // tope rígido: la masa/sustancia por encima, si es proporcionada, es deseable
+    // (ver BREEDER_CRITERIA en cross-eval.ts).
+    weight_kg: { m: { min: 45, max: 57 }, f: { min: 40, max: 50 } },
   },
+}
+
+// ── Índices morfológicos (proporciones del estándar) ─────────────────────────
+/**
+ * Rasgos que el estándar define como PROPORCIÓN, no en cm absolutos. Se juzgan
+ * como cociente numCol/denCol contra un objetivo. Ej.: el perímetro torácico del
+ * Presa = alzada + 1/3 (≈1,33×), deseablemente superior → índice torácico. Juzgar
+ * el tórax en cm sueltos es un error: depende de la alzada del perro.
+ */
+export type BreedIndex = {
+  key: string
+  label: string
+  numCol: string
+  denCol: string
+  min?: number
+  max?: number
+  moreIsBetter?: boolean // "deseablemente superior": pasarse del objetivo es bueno
+  note: string
+}
+
+export const BREED_INDICES: Record<string, BreedIndex[]> = {
+  // ── Presa Canario ─────────────────────────────────────────────────────────
+  '3cc9ea09-fd89-442f-ae8c-03ace2fc2b2d': [
+    {
+      key: 'thorax',
+      label: 'Índice torácico (perímetro torácico ÷ alzada a la cruz)',
+      numCol: 'chest_girth_cm',
+      denCol: 'height_withers_cm',
+      min: 1.33,
+      moreIsBetter: true,
+      note: 'El estándar pide perímetro torácico = alzada + 1/3 (≈1,33×), deseablemente SUPERIOR. Un tórax amplio y profundo es sustancia deseable, no un exceso a penalizar.',
+    },
+    {
+      key: 'body',
+      label: 'Índice corporal (longitud de tronco ÷ alzada a la cruz)',
+      numCol: 'body_length_cm',
+      denCol: 'height_withers_cm',
+      min: 1.1,
+      max: 1.12,
+      note: 'Mesomorfo: tronco 10-12% más largo que la alzada. Por debajo = aspecto agalgado (falta grave); muy por encima = bajo y largo.',
+    },
+    {
+      key: 'skull_face',
+      label: 'Proporción de la cara (longitud de morro ÷ longitud total de cabeza)',
+      numCol: 'muzzle_length_cm',
+      denCol: 'head_length_cm',
+      min: 0.38,
+      max: 0.42,
+      note: 'Cráneo-cara 6:4 → la cara ≈40% de la cabeza; el morro es más corto que el cráneo.',
+    },
+  ],
+}
+
+/** Índices morfológicos definidos para una raza, o null si no hay. */
+export function indicesFor(breedId?: string | null): BreedIndex[] | null {
+  if (!breedId) return null
+  return BREED_INDICES[breedId] ?? null
 }
 
 /** Devuelve las referencias por sexo de una raza, o null si no las tenemos. */

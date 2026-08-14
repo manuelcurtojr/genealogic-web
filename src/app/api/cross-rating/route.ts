@@ -4,7 +4,7 @@ import { canUseMeasurements } from '@/lib/permissions'
 import { NUMERIC_SECTIONS, QUALITATIVE_FIELDS } from '@/lib/measurements-fields'
 import { sexStandardFor, projectBySex } from '@/lib/breed-sex-standards'
 import {
-  num, qual, fmt, standardTextFrom, runStandardEval,
+  num, qual, fmt, standardTextFrom, runStandardEval, crossIndicesText,
   JUDGE_RULES, BREEDER_CRITERIA, SCALE_LINES, SCHEMA_LINES,
 } from '@/lib/cross-eval'
 
@@ -132,6 +132,7 @@ export async function POST(request: Request) {
     }
 
     const standardText = standardTextFrom(breed.genealogic_standard)
+    const crossIdx = crossIndicesText(sire.batch, dam.batch, breedId)
     const sireName = sire.name || 'el padre'
     const damName = dam.name || 'la madre'
 
@@ -160,6 +161,13 @@ export async function POST(request: Request) {
       'RESTO DE MEDIDAS — media de los progenitores (NO distingue sexo; no penalices a un macho por una media que incluye a la madre, ni al revés):',
       familyBlocks.length ? familyBlocks.join('\n') : '  (sin más medidas comunes)',
       '',
+      ...(crossIdx
+        ? [
+            'ÍNDICES MORFOLÓGICOS PROYECTADOS (proporciones del estándar, media de los progenitores) — júzgalos por su objetivo, NO en cm absolutos:',
+            crossIdx,
+            '',
+          ]
+        : []),
       'Rasgos cualitativos de los progenitores (no se promedian):',
       qualRows.length ? qualRows.join('\n') : '  (sin rasgos cualitativos registrados)',
       '',

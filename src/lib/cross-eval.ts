@@ -1,7 +1,7 @@
 import 'server-only'
 import { chat } from '@/lib/ai/client'
 import { NUMERIC_SECTIONS, QUALITATIVE_FIELDS } from '@/lib/measurements-fields'
-import { sexStandardFor } from '@/lib/breed-sex-standards'
+import { sexStandardFor, indicesFor } from '@/lib/breed-sex-standards'
 
 /**
  * Motor compartido del "juez de conformación" con IA. Lo usan por igual:
@@ -66,6 +66,7 @@ export const JUDGE_RULES: string[] = [
   '- Jerarquía de faltas: distingue faltas menores, faltas graves y faltas DESCALIFICANTES/eliminatorias. Un factor descalificante (p. ej. talla claramente fuera de rango, mordida descalificante) TOPA la nota por muy bueno que sea el resto: no se promedia. Cuando eso ocurra, márcalo en "gate".',
   '- Sé honesto y no infles. Si una medida se sale del rango del estándar, dilo y explica hacia dónde se desvía. Si NO puedes valorar un aspecto porque faltan medidas, dilo ("sin_datos") en vez de inventar una nota. Distingue "se desvía" de "no lo puedo evaluar".',
   '- Usa solo cifras del estándar que te doy; no inventes rangos que no aparezcan en el texto.',
+  '- Si te doy ÍNDICES morfológicos (proporciones, p. ej. perímetro torácico sobre alzada), júzgalos por su OBJETIVO indicado, NO en cifras absolutas: una proporción define el tipo mejor que una medida suelta. Donde diga "más es mejor" (tórax amplio = sustancia), premia el exceso en vez de penalizarlo.',
   '- Puntúa CADA característica/área por separado con su propia nota 0-10 (esa característica sola, con la misma escala). La nota GLOBAL no es la media de esas notas: es el conjunto ponderado por la importancia de cada área en el estándar (un fallo en algo esencial baja mucho; en algo menor, poco).',
 ]
 
@@ -76,7 +77,8 @@ export const JUDGE_RULES: string[] = [
  */
 export const BREEDER_CRITERIA: string[] = [
   'CRITERIOS DEL CRIADOR (aplícalos ADEMÁS del estándar, nunca en su contra):',
-  '- Talla: el criador busca la parte ALTA del rango (talla máxima del estándar), en AMBOS sexos, porque es lo más típico y lo que más valor tiene en esta raza. Por tanto: la SUBTALLA (por debajo del mínimo) es una falta real, no la minimices; dentro del rango, cuanto más cerca del máximo mejor, y considera "pequeño"/mejorable lo que caiga en la parte baja del rango aunque sea válido; NO premies lo pequeño. Pasarse del máximo sí es falta (fuera de estándar).',
+  '- Talla: el criador busca la parte ALTA del rango (talla máxima del estándar), en AMBOS sexos, porque es lo más típico y lo que más valor tiene en esta raza. Por tanto: la SUBTALLA (por debajo del mínimo) es una falta real, no la minimices; dentro del rango, cuanto más cerca del máximo mejor, y considera "pequeño"/mejorable lo que caiga en la parte baja del rango aunque sea válido; NO premies lo pequeño. Rebasar el máximo de alzada NO descalifica si el perro mantiene la proporción correcta entre extremidades y volumen de tronco; solo penaliza si pierde esa proporción.',
+  '- Peso: el estándar da una "media", no un tope rígido. La masa y la sustancia por encima de esa media, si son proporcionadas, son DESEABLES (no una falta): en un molosón de presa se busca perro macizo y potente.',
   '- Dimorfismo sexual NO simétrico: un MACHO afeminado (poca sustancia, hueso ligero, cabeza pobre) es falta; una HEMBRA sustanciosa, potente y de buen hueso NO es una falta, es DESEABLE — nunca la penalices por "masculina" ni por tener sustancia. La falta en la hembra es lo contrario: débil, fina, sin sustancia ni hueso.',
   '- Sustancia (hueso, potencia, masa, cabeza acorde) se valora ALTO en ambos sexos: es sello de tipo, no un extra.',
   '- No dejes que la talla eclipse el resto: cabeza, tipo racial, proporciones y sustancia pesan tanto o más que la talla, aunque solo los puedas juzgar por el texto del estándar y los rasgos cualitativos, no con un número.',
@@ -212,8 +214,49 @@ export async function runStandardEval(
 }
 
 /**
+ * Formatea los índices morfológicos (proporciones del estándar) a partir de una
+ * función que da el valor de cada columna: para un perro, su medida; para un
+ * cruce, la media de los progenitores. Devuelve las filas o null si no hay datos.
+ */
+function indicesTextGeneric(getVal: (col: string) => number | null, breedId: string): string | null {
+  const defs = indicesFor(breedId)
+  if (!defs) return null
+  const rows: string[] = []
+  for (const d of defs) {
+    const n = getVal(d.numCol)
+    const den = getVal(d.denCol)
+    if (n === null || den === null || den === 0) continue
+    const v = n / den
+    const tgt =
+      d.max !== undefined
+        ? `objetivo ${d.min}–${d.max}`
+        : `objetivo ≥ ${d.min}${d.moreIsBetter ? ', más es mejor' : ''}`
+    rows.push(`  - ${d.label}: ${v.toFixed(2)} (${tgt}). ${d.note}`)
+  }
+  return rows.length ? rows.join('\n') : null
+}
+
+/** Índices morfológicos proyectados de un cruce (media de ambos progenitores). */
+export function crossIndicesText(
+  sireBatch: Record<string, any>,
+  damBatch: Record<string, any>,
+  breedId: string,
+): string | null {
+  const avg = (c: string): number | null => {
+    const s = num(sireBatch[c])
+    const d = num(damBatch[c])
+    if (s === null && d === null) return null
+    if (s === null) return d
+    if (d === null) return s
+    return (s + d) / 2
+  }
+  return indicesTextGeneric(avg, breedId)
+}
+
+/**
  * Texto de las medidas de UN perro para el prompt: numéricas (en talla/peso con el
- * rango de su sexo) + cualitativas. Se usa en /api/dog-rating y /api/compare-rating.
+ * rango de su sexo) + índices morfológicos (proporciones) + cualitativas. Se usa
+ * en /api/dog-rating y /api/compare-rating.
  */
 export function dogMeasurementsText(batch: Record<string, any>, sex: string, breedId: string): string {
   const sexRef = sexStandardFor(breedId)
@@ -241,9 +284,11 @@ export function dogMeasurementsText(batch: Record<string, any>, sex: string, bre
     if (!v) continue
     qualRows.push(`  - ${f.label}: ${v}`)
   }
+  const idx = indicesTextGeneric((c) => num(batch[c]), breedId)
   return [
     'Medidas (en talla y peso, con el rango de su sexo):',
     numBlocks.length ? numBlocks.join('\n') : '  (sin medidas numéricas)',
+    ...(idx ? ['', 'Índices morfológicos (proporciones del estándar; júzgalos por su objetivo, no en cm absolutos):', idx] : []),
     '',
     'Rasgos cualitativos:',
     qualRows.length ? qualRows.join('\n') : '  (sin rasgos cualitativos)',
