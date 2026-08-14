@@ -141,6 +141,15 @@ function emptyForm(): Record<string, string> {
   return f
 }
 
+// Valores del formulario (DATA_COLS como string) a partir de una tanda existente.
+// Se usa para precargar la última tanda al crear una nueva y como línea base con
+// la que comparar qué celdas ha cambiado el usuario.
+function formValuesFromSet(s: any): Record<string, string> {
+  const f: Record<string, string> = {}
+  for (const c of DATA_COLS) f[c] = hasVal(s[c]) ? String(s[c]) : ''
+  return f
+}
+
 export default function MedidasTab({ dogId, userId }: { dogId: string; userId: string }) {
   const [sets, setSets] = useState<any[]>([])
   const [showForm, setShowForm] = useState(false)
@@ -148,6 +157,8 @@ export default function MedidasTab({ dogId, userId }: { dogId: string; userId: s
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState<Record<string, string>>(emptyForm())
+  // Línea base (valores precargados) para resaltar las celdas que cambian.
+  const [baseline, setBaseline] = useState<Record<string, string>>({})
   const supabase = createClient()
   const t = useT()
 
@@ -164,16 +175,25 @@ export default function MedidasTab({ dogId, userId }: { dogId: string; userId: s
   const setField = (col: string, val: string) => setForm(p => ({ ...p, [col]: val }))
 
   function openAdd() {
-    setEditSet(null); setError(null); setForm(emptyForm()); setShowForm(true)
+    setEditSet(null); setError(null)
+    // Precarga la última tanda (si la hay): en un histórico la mayoría de medidas
+    // no cambian, así que el usuario solo ajusta las que evolucionan. La fecha
+    // vuelve a hoy y la edad se limpia (son propias de la nueva tanda).
+    const last = sets[0] // ordenadas desc → la más reciente
+    const base = last ? formValuesFromSet(last) : {}
+    const f: Record<string, string> = { measured_at: todayISO(), age_months: '' }
+    for (const c of DATA_COLS) f[c] = base[c] ?? ''
+    setForm(f); setBaseline(base); setShowForm(true)
   }
   function openEdit(s: any) {
     setEditSet(s); setError(null)
-    const f: Record<string, string> = {
+    const base = formValuesFromSet(s)
+    setForm({
       measured_at: s.measured_at || todayISO(),
       age_months: s.age_months == null ? '' : String(s.age_months),
-    }
-    for (const c of DATA_COLS) f[c] = hasVal(s[c]) ? String(s[c]) : ''
-    setForm(f)
+      ...base,
+    })
+    setBaseline(base) // resalta lo que cambies respecto a lo guardado
     setShowForm(true)
   }
 
@@ -219,7 +239,13 @@ export default function MedidasTab({ dogId, userId }: { dogId: string; userId: s
   }
   const countFilled = (s: any) => DATA_COLS.reduce((acc, c) => acc + (hasVal(s[c]) ? 1 : 0), 0)
 
-  const inputBase = 'w-full rounded-lg border border-hairline bg-canvas px-2.5 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none'
+  const inputBase = 'w-full rounded-lg border bg-canvas px-2.5 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:outline-none'
+  // Una celda "cambiada" respecto a la tanda precargada se resalta con el borde
+  // de marca, para que se vea de un vistazo qué se está modificando.
+  const isChanged = (col: string) => (form[col] ?? '') !== (baseline[col] ?? '')
+  const cellBorder = (col: string) => isChanged(col)
+    ? 'border-[color:var(--brand)] ring-1 ring-[color:var(--brand)]/30'
+    : 'border-hairline focus:border-ink'
 
   // Campo numérico: type=number step=0.1, valor '' cuando null.
   const numField = (f: Field) => (
@@ -227,7 +253,7 @@ export default function MedidasTab({ dogId, userId }: { dogId: string; userId: s
       <label className="mb-1 block text-[11px] font-medium text-body">{t(f.label)}</label>
       <input type="number" step="0.1" inputMode="decimal" value={form[f.col] ?? ''}
         onChange={e => setField(f.col, e.target.value)}
-        className={`${inputBase} tabular-nums`} />
+        className={`${inputBase} tabular-nums ${cellBorder(f.col)}`} />
     </div>
   )
   // Campo cualitativo: texto libre.
@@ -236,7 +262,7 @@ export default function MedidasTab({ dogId, userId }: { dogId: string; userId: s
       <label className="mb-1 block text-[11px] font-medium text-body">{t(f.label)}</label>
       <input type="text" value={form[f.col] ?? ''}
         onChange={e => setField(f.col, e.target.value)}
-        className={inputBase} />
+        className={`${inputBase} ${cellBorder(f.col)}`} />
     </div>
   )
 
@@ -256,6 +282,15 @@ export default function MedidasTab({ dogId, userId }: { dogId: string; userId: s
             </div>
             <button onClick={() => setShowForm(false)} className="text-muted hover:text-ink transition p-1"><X className="h-4 w-4" /></button>
           </div>
+
+          {/* Aviso: se precargaron las últimas medidas (solo al crear una nueva tanda) */}
+          {!editSet && sets.length > 0 && (
+            <p className="rounded-lg px-3 py-2 text-[12px] leading-snug text-body" style={{ backgroundColor: 'var(--brand-soft)' }}>
+              {t('Cargadas las medidas del')}{' '}
+              <span className="font-semibold text-ink">{fmtDate(sets[0].measured_at)}</span>.{' '}
+              {t('Ajusta solo lo que haya cambiado — las celdas modificadas se resaltan.')}
+            </p>
+          )}
 
           {/* Meta: fecha + edad al medir */}
           <div className="rounded-xl border border-hairline bg-canvas p-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -295,7 +330,7 @@ export default function MedidasTab({ dogId, userId }: { dogId: string; userId: s
               <FileText className="h-3.5 w-3.5" style={{ color: 'var(--brand)' }} /> {t('Notas')}
             </div>
             <textarea value={form.notes} onChange={e => setField('notes', e.target.value)} rows={3} placeholder={t('Opcional')}
-              className="w-full rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none resize-none" />
+              className={`w-full rounded-lg border bg-canvas px-3 py-2.5 text-base sm:text-sm text-ink placeholder:text-muted focus:outline-none resize-none ${cellBorder('notes')}`} />
           </div>
 
           {error && <p className="rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-[12px] text-red-600">{error}</p>}
