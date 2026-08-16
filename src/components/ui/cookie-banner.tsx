@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useT } from '@/components/i18n/locale-provider'
+import { setConsent } from '@/lib/analytics/consent'
 
 export default function CookieBanner() {
   const t = useT()
@@ -12,6 +13,9 @@ export default function CookieBanner() {
   // criadero; el middleware la reescribe a /kennels/<slug>/legal/cookies).
   // Sin esto, bajo iremacurto.com el enlace iría a /cookies → 404.
   const [cookiesHref, setCookiesHref] = useState('/cookies')
+  // Solo declaramos cookies de analítica si GA está realmente configurado
+  // (NEXT_PUBLIC_GA_ID en Vercel). Sin GA, el banner mantiene "sin seguimiento".
+  const analyticsEnabled = !!process.env.NEXT_PUBLIC_GA_ID
 
   useEffect(() => {
     const consent = localStorage.getItem('cookie-consent')
@@ -30,12 +34,12 @@ export default function CookieBanner() {
   }, [])
 
   function accept() {
-    localStorage.setItem('cookie-consent', 'accepted')
+    setConsent('accepted')
     setShow(false)
   }
 
   function reject() {
-    localStorage.setItem('cookie-consent', 'rejected')
+    setConsent('rejected')
     setShow(false)
   }
 
@@ -45,7 +49,9 @@ export default function CookieBanner() {
     <div className="fixed bottom-0 left-0 right-0 z-[300] bg-surface-card border-t border-hairline px-4 py-4 sm:px-6">
       <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <p className="text-sm text-body flex-1">
-          {t('Usamos cookies esenciales para el funcionamiento de la plataforma. No usamos cookies de seguimiento ni publicidad.')}{' '}
+          {analyticsEnabled
+            ? t('Usamos cookies esenciales para el funcionamiento de la plataforma y, si lo aceptas, cookies de analítica (Google Analytics) para entender el uso y mejorar. No usamos cookies de publicidad.')
+            : t('Usamos cookies esenciales para el funcionamiento de la plataforma. No usamos cookies de seguimiento ni publicidad.')}{' '}
           <Link href={cookiesHref} className="text-ink hover:underline">{t('Más información')}</Link>
         </p>
         <div className="flex items-center gap-2 flex-shrink-0">
