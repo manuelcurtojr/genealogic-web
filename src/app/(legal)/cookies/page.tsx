@@ -5,6 +5,10 @@ export const metadata = {
 }
 
 export default function CookiesPage() {
+  // La sección analítica SOLO aparece si GA está realmente activo
+  // (NEXT_PUBLIC_GA_ID en Vercel), para que la política nunca contradiga al
+  // sitio. DRAFT del texto de GA pendiente de revisión legal antes de activarlo.
+  const analyticsEnabled = !!process.env.NEXT_PUBLIC_GA_ID
   return (
     <>
       <h1>Política de Cookies</h1>
@@ -77,12 +81,40 @@ export default function CookiesPage() {
       </table>
 
       <h3>2.3 Cookies analíticas, de marketing o publicidad</h3>
-      <p>
-        <strong>No utilizamos cookies de analítica de terceros (Google Analytics, Meta
-        Pixel, etc.), ni cookies publicitarias ni de seguimiento</strong>. Las únicas
-        métricas que recopilamos son agregadas y se generan en nuestro propio servidor,
-        sin perfilado individual ni envío a terceros.
-      </p>
+      {analyticsEnabled ? (
+        <>
+          <p>
+            Con tu <strong>consentimiento previo</strong> (banner de cookies), utilizamos{' '}
+            <strong>Google Analytics 4</strong> (Google Ireland Ltd.) para obtener
+            estadísticas <strong>agregadas</strong> de uso que nos ayudan a mejorar el sitio.
+            Estas cookies <strong>no se instalan</strong> si rechazas el banner o si no lo
+            aceptas, y anonimizamos la dirección IP. No usamos cookies publicitarias ni de
+            marketing.
+          </p>
+          <table>
+            <thead>
+              <tr><th>Cookie</th><th>Proveedor</th><th>Finalidad</th><th>Duración</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>_ga</td><td>Google Ireland Ltd.</td><td>Distinguir usuarios (analítica agregada)</td><td>2 años</td></tr>
+              <tr><td>_ga_*</td><td>Google Ireland Ltd.</td><td>Mantener el estado de sesión de analítica</td><td>2 años</td></tr>
+            </tbody>
+          </table>
+          <p>
+            Estas cookies implican una transferencia de datos a Google, amparada en el marco{' '}
+            <em>EU-US Data Privacy Framework</em> y en cláusulas contractuales tipo. Puedes
+            revocar tu consentimiento en cualquier momento borrando las cookies de tu
+            navegador.
+          </p>
+        </>
+      ) : (
+        <p>
+          <strong>No utilizamos cookies de analítica de terceros (Google Analytics, Meta
+          Pixel, etc.), ni cookies publicitarias ni de seguimiento</strong>. Las únicas
+          métricas que recopilamos son agregadas y se generan en nuestro propio servidor,
+          sin perfilado individual ni envío a terceros.
+        </p>
+      )}
 
       <h3>2.4 Cookies de Stripe (pasarela de pago)</h3>
       <p>
@@ -98,6 +130,9 @@ export default function CookiesPage() {
       <h2>3. Base Legal del Uso de Cookies</h2>
       <ul>
         <li><strong>Cookies estrictamente necesarias:</strong> art. 22.2 LSSI (exentas de consentimiento).</li>
+        {analyticsEnabled && (
+          <li><strong>Cookies analíticas (Google Analytics):</strong> consentimiento del Usuario (art. 6.1.a RGPD y art. 22.2 LSSI), revocable en cualquier momento.</li>
+        )}
         <li><strong>Cookies de Stripe:</strong> ejecución del contrato cuando el Usuario inicia el pago.</li>
       </ul>
       <p>
