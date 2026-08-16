@@ -53,12 +53,6 @@ export default function CookiesPage() {
             <td>Mitigación de bots y seguridad anti-abuso</td>
             <td>30 minutos / 30 días</td>
           </tr>
-          <tr>
-            <td>genealogic-cookies-accepted</td>
-            <td>Manuel Curtó SL</td>
-            <td>Recordar la elección del usuario sobre el banner de cookies</td>
-            <td>6 meses</td>
-          </tr>
         </tbody>
       </table>
 
@@ -71,6 +65,7 @@ export default function CookiesPage() {
       <table>
         <thead><tr><th>Clave</th><th>Finalidad</th></tr></thead>
         <tbody>
+          <tr><td>cookie-consent</td><td>Recordar tu elección sobre el banner de cookies (aceptar / rechazar)</td></tr>
           <tr><td>theme</td><td>Preferencia de tema claro/oscuro</td></tr>
           <tr><td>sidebar-collapsed</td><td>Estado del menú lateral</td></tr>
           <tr><td>dogs-sort, litters-sort, kennel-sort</td><td>Preferencias de ordenación</td></tr>
