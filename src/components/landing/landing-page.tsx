@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Img } from '@/components/ui/img'
+import { FaqJsonLd } from '@/lib/seo/json-ld'
 import {
   ArrowRight,
   GitBranch,
@@ -981,6 +982,7 @@ function FAQ() {
 
   return (
     <section id="faq" className="border-b border-hairline bg-surface-soft">
+      <FaqJsonLd items={faqs.map((f) => ({ question: f.q, answer: f.a }))} />
       <div className="mx-auto max-w-[860px] px-5 py-16 sm:px-6 sm:py-24 lg:px-12 lg:py-[120px]">
         <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">{t('06 · FAQ')}</p>
         <h2

@@ -81,6 +81,12 @@ export async function generateMetadata(): Promise<Metadata> {
       // Igual que con openGraph: la twitter:image se hereda del opengraph-image.tsx
     },
     robots: { index: true, follow: true },
+    // Verificación de Google Search Console por meta-tag. Se activa en cuanto
+    // definas GOOGLE_SITE_VERIFICATION en Vercel (método "Etiqueta HTML" de GSC).
+    // Alternativa sin código: verificar por DNS en el proveedor del dominio.
+    ...(process.env.GOOGLE_SITE_VERIFICATION
+      ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
+      : {}),
   };
 }
 

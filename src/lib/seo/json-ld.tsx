@@ -214,6 +214,30 @@ export function SiteNavigationJsonLd() {
   return <JsonLdScript data={data} />
 }
 
+type FaqEntry = { question: string; answer: string }
+
+/**
+ * <FaqJsonLd /> — schema:FAQPage. Emite el Q&A para que Google pueda mostrar el
+ * rich result de FAQ y los LLMs (ChatGPT, etc.) ingieran las preguntas.
+ *
+ * IMPORTANTE (regla de Google): el texto DEBE coincidir con la FAQ visible en la
+ * página. Por eso se alimenta del mismo array que renderiza la sección.
+ */
+export function FaqJsonLd({ items }: { items: FaqEntry[] }) {
+  const clean = items.filter((it) => it.question?.trim() && it.answer?.trim())
+  if (clean.length === 0) return null
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: clean.map((it) => ({
+      '@type': 'Question',
+      name: it.question,
+      acceptedAnswer: { '@type': 'Answer', text: it.answer },
+    })),
+  }
+  return <JsonLdScript data={data} />
+}
+
 /** Componente base — inserta el JSON-LD como <script type="application/ld+json">. */
 function JsonLdScript({ data }: { data: unknown }) {
   return (

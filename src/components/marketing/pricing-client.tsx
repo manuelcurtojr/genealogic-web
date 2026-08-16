@@ -31,6 +31,7 @@ import {
 import { Button } from '@/components/ui/button'
 import CheckoutButton from '@/components/billing/checkout-button'
 import { useT } from '@/components/i18n/locale-provider'
+import { FaqJsonLd } from '@/lib/seo/json-ld'
 
 type PlanId = 'owner' | 'free' | 'pro'
 
@@ -675,8 +676,39 @@ function CategorySection({ cat }: { cat: CategoryDef }) {
 // ──────────────────────────────────────────────────────────────────────
 function FAQ() {
   const t = useT()
+  const faqs = [
+    {
+      q: t('¿De verdad Owner y Free son gratis para siempre?'),
+      a: t('Sí. Owner y Kennel Free no caducan ni piden tarjeta. La diferencia entre planes está en las herramientas (embudo de ventas completo, simulador, genotipos, estadísticas…), no en cuántos perros tienes — eso es ilimitado en todos. Cuando necesites más herramientas, te ofrecemos subir, pero nunca te empujamos.'),
+    },
+    {
+      q: t('¿Y los perros fallecidos?'),
+      a: t('Cuando marcas un perro como fallecido (In Memoriam), Genealogic conserva su ficha con toda su genealogía, fotos y palmarés, y la oculta del directorio público. No hay ningún límite del que descontar: tienes perros ilimitados en todos los planes. Útil para propietarios que han tenido varios perros a lo largo de su vida y quieren documentarlos a todos. Los perros con más de 20 años se marcan automáticamente como fallecidos (puedes contradecirlo en los 30 días siguientes).'),
+    },
+    {
+      q: t('¿Cómo funciona la prueba de Kennel Pro?'),
+      a: t('14 días con todo desbloqueado, sin meter tarjeta. Antes de que acabe te avisamos por email: si quieres seguir, añades tu método de pago; si no haces nada, vuelves a Kennel Free automáticamente sin perder ningún dato. Sin sorpresas y sin permanencia.'),
+    },
+    {
+      q: t('¿Puedo cambiar de plan en cualquier momento?'),
+      a: t('Sí, sube o baja cuando quieras. Si subes, el cobro es prorrateado. Si bajas, los cambios se aplican al final del periodo facturado. Tus datos siguen siempre seguros — solo cambian las features disponibles.'),
+    },
+    {
+      q: t('¿Owner vs Kennel Free — cuál elegir?'),
+      a: t('Ambos son gratis y con perros ilimitados — la diferencia son las herramientas de criadero. Owner es para el particular que documenta a sus perros: ficha, genealogía, cartilla y galería. Kennel Free es para el criador casero: añade afijo, camadas con calendario reproductivo, stud-book privado y perfil público de criadero con formulario de contacto. Si tienes un macho semental y una hembra y os llega una camada, Free.'),
+    },
+    {
+      q: t('¿Cancelo cuando quiero?'),
+      a: t('Sí, sin penalizaciones, sin permanencia. Cancelas desde tu panel y sigues con Pro hasta el final del periodo pagado. Después bajas a Kennel Free automáticamente (no pierdes datos).'),
+    },
+    {
+      q: t('¿Mis datos son míos? ¿Puedo exportarlos?'),
+      a: t('Sí. Cualquier perro, genealogía, contrato o cliente lo exportas a PDF/CSV en un click. Servidores en EU, RGPD por defecto. Si te vas de Genealogic, te llevas tus datos.'),
+    },
+  ]
   return (
     <section className="mt-14 sm:mt-20 max-w-3xl mx-auto">
+      <FaqJsonLd items={faqs.map((f) => ({ question: f.q, answer: f.a }))} />
       <div className="text-center mb-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#FE6620]">{t('FAQ')}</p>
         <h2 className="mt-3 font-semibold text-ink" style={{ fontSize: 'clamp(22px, 3vw, 32px)', lineHeight: 1.05, letterSpacing: '-0.03em' }}>
@@ -684,27 +716,11 @@ function FAQ() {
         </h2>
       </div>
       <div className="space-y-2">
-        <FaqItem q={t('¿De verdad Owner y Free son gratis para siempre?')}>
-          {t('Sí. Owner y Kennel Free no caducan ni piden tarjeta. La diferencia entre planes está en las herramientas (embudo de ventas completo, simulador, genotipos, estadísticas…), no en cuántos perros tienes — eso es ilimitado en todos. Cuando necesites más herramientas, te ofrecemos subir, pero nunca te empujamos.')}
-        </FaqItem>
-        <FaqItem q={t('¿Y los perros fallecidos?')}>
-          {t('Cuando marcas un perro como fallecido (In Memoriam), Genealogic conserva su ficha con toda su genealogía, fotos y palmarés, y la oculta del directorio público. No hay ningún límite del que descontar: tienes perros ilimitados en todos los planes. Útil para propietarios que han tenido varios perros a lo largo de su vida y quieren documentarlos a todos. Los perros con más de 20 años se marcan automáticamente como fallecidos (puedes contradecirlo en los 30 días siguientes).')}
-        </FaqItem>
-        <FaqItem q={t('¿Cómo funciona la prueba de Kennel Pro?')}>
-          {t('14 días con todo desbloqueado, sin meter tarjeta. Antes de que acabe te avisamos por email: si quieres seguir, añades tu método de pago; si no haces nada, vuelves a Kennel Free automáticamente sin perder ningún dato. Sin sorpresas y sin permanencia.')}
-        </FaqItem>
-        <FaqItem q={t('¿Puedo cambiar de plan en cualquier momento?')}>
-          {t('Sí, sube o baja cuando quieras. Si subes, el cobro es prorrateado. Si bajas, los cambios se aplican al final del periodo facturado. Tus datos siguen siempre seguros — solo cambian las features disponibles.')}
-        </FaqItem>
-        <FaqItem q={t('¿Owner vs Kennel Free — cuál elegir?')}>
-          {t('Ambos son gratis y con perros ilimitados — la diferencia son las herramientas de criadero. Owner es para el particular que documenta a sus perros: ficha, genealogía, cartilla y galería. Kennel Free es para el criador casero: añade afijo, camadas con calendario reproductivo, stud-book privado y perfil público de criadero con formulario de contacto. Si tienes un macho semental y una hembra y os llega una camada, Free.')}
-        </FaqItem>
-        <FaqItem q={t('¿Cancelo cuando quiero?')}>
-          {t('Sí, sin penalizaciones, sin permanencia. Cancelas desde tu panel y sigues con Pro hasta el final del periodo pagado. Después bajas a Kennel Free automáticamente (no pierdes datos).')}
-        </FaqItem>
-        <FaqItem q={t('¿Mis datos son míos? ¿Puedo exportarlos?')}>
-          {t('Sí. Cualquier perro, genealogía, contrato o cliente lo exportas a PDF/CSV en un click. Servidores en EU, RGPD por defecto. Si te vas de Genealogic, te llevas tus datos.')}
-        </FaqItem>
+        {faqs.map((f, i) => (
+          <FaqItem key={i} q={f.q}>
+            {f.a}
+          </FaqItem>
+        ))}
       </div>
     </section>
   )
