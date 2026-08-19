@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 
 /**
  * Widget de Cloudflare Turnstile (CAPTCHA invisible/"managed").
@@ -40,21 +40,20 @@ export default function Turnstile({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const widgetId = useRef<string | null>(null)
-
-  const render = useCallback(() => {
-    if (!SITE_KEY || !ref.current || !window.turnstile || widgetId.current) return
-    widgetId.current = window.turnstile.render(ref.current, {
-      sitekey: SITE_KEY,
-      callback: (token: string) => onVerify(token),
-      'expired-callback': () => onExpire?.(),
-      'error-callback': () => onExpire?.(),
-      theme: 'auto',
-    })
-  }, [onVerify, onExpire])
+  // Callbacks en refs para que el widget se monte UNA sola vez y NO se recree
+  // cuando el padre re-renderiza. El bug anterior: `onExpire` (y por tanto el
+  // `render` con deps [onVerify, onExpire]) cambiaba en cada render del padre,
+  // el useEffect se reejecutaba, y destruía+recreaba el widget con cada tecla
+  // que el usuario escribía en email/contraseña → crash 300031 + pérdida del
+  // token → botón deshabilitado → nadie podía entrar por email.
+  const onVerifyRef = useRef(onVerify)
+  const onExpireRef = useRef(onExpire)
+  onVerifyRef.current = onVerify
+  onExpireRef.current = onExpire
 
   useEffect(() => {
     if (!SITE_KEY) return
-    // Carga el script de Turnstile una sola vez; luego renderiza el widget.
+    // Carga el script de Turnstile una sola vez.
     if (!document.querySelector('script[data-turnstile]')) {
       const s = document.createElement('script')
       s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
@@ -63,17 +62,32 @@ export default function Turnstile({
       s.setAttribute('data-turnstile', '1')
       document.head.appendChild(s)
     }
+    let cancelled = false
+    const tryRender = () => {
+      if (cancelled || !window.turnstile || !ref.current || widgetId.current) return
+      widgetId.current = window.turnstile.render(ref.current, {
+        sitekey: SITE_KEY,
+        callback: (token: string) => onVerifyRef.current(token),
+        'expired-callback': () => onExpireRef.current?.(),
+        'error-callback': () => onExpireRef.current?.(),
+        theme: 'auto',
+      })
+    }
     const iv = setInterval(() => {
-      if (window.turnstile) { clearInterval(iv); render() }
+      if (window.turnstile) { clearInterval(iv); tryRender() }
     }, 150)
     return () => {
+      cancelled = true
       clearInterval(iv)
       if (widgetId.current && window.turnstile?.remove) {
         try { window.turnstile.remove(widgetId.current) } catch { /* noop */ }
         widgetId.current = null
       }
     }
-  }, [render])
+    // Deps vacías a propósito: montar una vez, limpiar al desmontar. Los
+    // callbacks se leen siempre frescos vía refs, así que no hacen falta aquí.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   if (!SITE_KEY) return null
   return <div ref={ref} className="flex justify-center" />
