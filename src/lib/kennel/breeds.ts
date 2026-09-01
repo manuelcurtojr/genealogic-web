@@ -118,6 +118,44 @@ export async function getKennelReproductiveBreedNames(
 }
 
 /**
+ * Devuelve los NOMBRES de las razas que el criador declara criar EN SU
+ * CONFIGURACIÓN (kennels.breed_ids — lo que marca en Ajustes del criadero),
+ * ordenados alfabéticamente. Es la fuente que puebla el selector "Razas de
+ * interés" del formulario de contacto público (withBreedField).
+ *
+ * Fallback: si el kennel aún NO ha configurado breed_ids, cae a las razas
+ * inferidas de sus reproductores públicos (getKennelReproductiveBreedNames),
+ * para no dejar sin selector a criadores que ya lo tenían por esa vía.
+ */
+export async function getKennelBreedNames(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: SupabaseClient<any, any, any>,
+  kennelId: string,
+): Promise<string[]> {
+  const { data: kennel } = await supabase
+    .from('kennels')
+    .select('breed_ids')
+    .eq('id', kennelId)
+    .maybeSingle()
+
+  const breedIds = Array.isArray(kennel?.breed_ids) ? (kennel!.breed_ids as string[]) : []
+  if (breedIds.length === 0) {
+    // Sin razas configuradas → fallback a las de los reproductores.
+    return getKennelReproductiveBreedNames(supabase, kennelId)
+  }
+
+  const { data: breeds } = await supabase
+    .from('breeds')
+    .select('name')
+    .in('id', breedIds)
+    .order('name', { ascending: true })
+
+  return (breeds || [])
+    .map((b) => b.name as string | null)
+    .filter((n): n is string => !!n)
+}
+
+/**
  * Devuelve la foto que debe representar a esta raza para este kennel.
  *
  * Orden de prioridad:

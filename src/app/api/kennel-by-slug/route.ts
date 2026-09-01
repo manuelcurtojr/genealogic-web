@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { getKennelReproductiveBreedNames } from '@/lib/kennel/breeds'
+import { getKennelBreedNames } from '@/lib/kennel/breeds'
 
 /**
  * GET /api/kennel-by-slug?slug=...
@@ -51,7 +51,9 @@ export async function GET(request: NextRequest) {
 
   // Razas de los reproductores → el form embebido (contact-form-inner) inyecta
   // el selector "Raza de interés" si hay >=2. Reusamos el cliente admin.
-  const reproBreedNames = await getKennelReproductiveBreedNames(admin, data.id)
+  // Poblado desde las razas configuradas del kennel (breed_ids), con fallback
+  // a reproductores. Se mantiene el nombre `reproBreedNames` por compat del JSON.
+  const reproBreedNames = await getKennelBreedNames(admin, data.id)
 
   return NextResponse.json({ kennel: data, reproBreedNames })
 }

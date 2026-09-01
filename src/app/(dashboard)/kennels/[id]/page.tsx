@@ -17,7 +17,7 @@ import { HIDDEN_REASON_LABELS, type HiddenReason } from '@/lib/moderation/types'
 import { EyeOff } from 'lucide-react'
 import { sortDogsByPhotoQuality } from '@/lib/dogs/sort-quality'
 import { KennelJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld'
-import { getKennelReproductiveBreedNames } from '@/lib/kennel/breeds'
+import { getKennelBreedNames } from '@/lib/kennel/breeds'
 import { getKennelHomeData } from '@/lib/kennel/kennel-home-cache'
 import type { Metadata } from 'next'
 import { getTranslator } from '@/lib/i18n'
@@ -122,7 +122,7 @@ export default async function KennelDetailPage({
   const breedNames = homeData.breedNames
   // Razas de los reproductores para el selector del formulario de contacto
   // (si hay >=2, el criador sabrá por qué raza preguntan los leads).
-  const reproBreedNames = await getKennelReproductiveBreedNames(supabase, kennel.id)
+  const reproBreedNames = await getKennelBreedNames(supabase, kennel.id)
 
 
   // Sort 3-tier (count fotos): perros con galería rica primero, después

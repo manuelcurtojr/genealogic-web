@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createKennelAdminClient } from '@/lib/supabase/server'
 import { validateForm, splitFormValues, withBreedField } from '@/lib/kennel/contact-form'
-import { getKennelReproductiveBreedNames } from '@/lib/kennel/breeds'
+import { getKennelBreedNames } from '@/lib/kennel/breeds'
 import { sendTransactionalEmail } from '@/lib/email/send'
 import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rate-limit'
 
@@ -71,13 +71,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Este criadero todavía no está reclamado por su criador.' }, { status: 409 })
   }
 
-  // Reconstruimos la MISMA config que vio el visitante: si el kennel tiene
-  // >=2 razas de reproductores, el formulario público inyectó el selector
-  // "Raza de interés" (sin map_to). splitFormValues itera config.fields para
-  // decidir canónico vs extra, así que el endpoint también necesita conocer
-  // ese campo o el valor enviado se descartaría. Cae en applicant_extra_data.
-  const reproBreedNames = await getKennelReproductiveBreedNames(admin, kennel.id)
-  const config = withBreedField(kennel.contact_form_config, reproBreedNames)
+  // Reconstruimos la MISMA config que vio el visitante: si el kennel declara
+  // >=2 razas en su configuración, el formulario público inyectó el grupo de
+  // casillas "Razas de interés" (sin map_to). splitFormValues itera
+  // config.fields para decidir canónico vs extra, así que el endpoint también
+  // necesita conocer ese campo o el valor enviado se descartaría. Cae en
+  // applicant_extra_data como array de razas.
+  const breedNames = await getKennelBreedNames(admin, kennel.id)
+  const config = withBreedField(kennel.contact_form_config, breedNames)
 
   // Soporte legacy: si llegan campos planos en body en vez de { values }, mapearlos
   const values: Record<string, any> = rawValues && typeof rawValues === 'object'
@@ -217,6 +218,14 @@ export async function POST(request: NextRequest) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: b } = await (admin as any).from('breeds').select('name').eq('id', breedId).single()
       preferredBreed = b?.name || null
+    }
+    // Fallback: si el visitante marcó el selector multi "Razas de interés"
+    // (withBreedField, sin preference_breed_id), usar esas razas en el email.
+    if (!preferredBreed) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pb = (extra as any)?.preference_breed?.value
+      if (Array.isArray(pb) && pb.length) preferredBreed = pb.join(', ')
+      else if (typeof pb === 'string' && pb) preferredBreed = pb
     }
 
     // ─── Email 1: al criador (notificación de solicitud nueva) ───────────

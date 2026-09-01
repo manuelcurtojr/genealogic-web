@@ -111,19 +111,19 @@ export function getEffectiveConfig(raw: unknown): ContactFormConfig {
 }
 
 /**
- * Inyecta un selector de "Raza de interés" en el formulario, poblado con las
- * razas que el criador tiene marcadas como reproductor. Así el criador sabe
- * por qué raza preguntan los leads.
+ * Inyecta un grupo de casillas "Razas de interés" en el formulario, poblado
+ * con las razas que el criador declara criar en su configuración
+ * (kennels.breed_ids; ver getKennelBreedNames). El interesado puede marcar
+ * UNA O VARIAS. Así el criador sabe por qué raza(s) preguntan los leads.
  *
  * Reglas:
- *  - Solo añade el campo si hay >= 2 razas (con 1 sola el selector no aporta).
- *  - El campo NO lleva `map_to` → su valor cae en applicant_extra_data como
- *    { preference_breed: { label, value } } sin tocar endpoint ni esquema.
- *  - Se coloca tras el primer campo (normalmente "Nombre") para que quede
- *    natural arriba del form.
+ *  - Solo añade el campo si hay >= 2 razas (con 1 sola no hay nada que elegir).
+ *  - Campo tipo 'checkbox' → su valor es un ARRAY de nombres de raza.
+ *  - NO lleva `map_to` → cae en applicant_extra_data como
+ *    { preference_breed: { label, value: string[] } } sin tocar el esquema.
+ *  - Se coloca tras el primer campo (normalmente "Nombre").
  *  - Idempotente: si ya existe un campo con id 'preference_breed' (porque el
- *    criador lo añadió a mano, o por doble aplicación), devuelve la config
- *    sin duplicar.
+ *    criador lo añadió a mano, o por doble aplicación), no lo duplica.
  *
  * Devuelve siempre una config "efectiva" (pasa por getEffectiveConfig).
  */
@@ -141,10 +141,11 @@ export function withBreedField(
 
   const breedField: FormField = {
     id: 'preference_breed',
-    type: 'select',
-    label: 'Raza de interés',
+    type: 'checkbox', // multi-selección: el interesado marca una o varias
+    label: 'Razas de interés',
     required: false,
-    options: [...breedNames, 'Todas las razas'],
+    options: [...breedNames],
+    helper: 'Marca una o varias razas que te interesan.',
   }
 
   // Insertar tras el primer campo (o al principio si está vacío).
@@ -168,6 +169,7 @@ export function splitFormValues(
   for (const field of config.fields) {
     const v = values[field.id]
     if (v === undefined || v === null || v === '') continue
+    if (Array.isArray(v) && v.length === 0) continue // checkbox sin marcar nada
     if (field.map_to) {
       canonical[field.map_to] = v
     } else {
@@ -185,7 +187,7 @@ export function validateForm(
   const errors: Record<string, string> = {}
   for (const field of config.fields) {
     const v = values[field.id]
-    if (field.required && (v === undefined || v === null || v === '')) {
+    if (field.required && (v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0))) {
       errors[field.id] = 'Este campo es obligatorio.'
       continue
     }
