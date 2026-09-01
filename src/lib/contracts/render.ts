@@ -24,7 +24,11 @@ export function buildContractVars(
   const isDelivery = kind === 'delivery'
   const extra = r.applicant_extra_data && typeof r.applicant_extra_data === 'object' ? r.applicant_extra_data : {}
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const prefBreed = (extra.preference_breed as any)?.value || extra.preference_breed || undefined
+  // preference_breed llega como { label, value }; value puede ser array
+  // (checkbox multi "Razas de interés") o string. Normalizamos a texto.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prefBreedRaw = (extra.preference_breed as any)?.value ?? extra.preference_breed
+  const prefBreed = Array.isArray(prefBreedRaw) ? prefBreedRaw.join(', ') : (prefBreedRaw || undefined)
   const fmtPrice = (cents: number | null | undefined, currency = 'EUR') =>
     cents != null ? `${(cents / 100).toFixed(2)} ${currency}` : undefined
   const fmtDate = (d: string | null | undefined) => (d ? new Date(d).toLocaleDateString('es-ES') : undefined)

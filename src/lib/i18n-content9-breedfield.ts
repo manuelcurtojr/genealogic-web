@@ -7,6 +7,8 @@
 export const content9BreedField: Record<string, Record<string, string>> = {
   en: {
     'Raza de interés': 'Breed of interest',
+    'Razas de interés': 'Breeds of interest',
+    'Marca una o varias razas que te interesan.': 'Select one or more breeds you are interested in.',
     'Todas las razas': 'All breeds',
   },
 }

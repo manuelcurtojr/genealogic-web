@@ -40,7 +40,17 @@ export default function LeadPanel({
     ...(entry.preference_sex
       ? [{ label: t('Preferencia de sexo'), value: entry.preference_sex === 'male' ? t('Macho') : t('Hembra') }]
       : []),
-    ...extra.map(([k, v]) => ({ label: k.replace(/_/g, ' '), value: String(v) })),
+    ...extra.map(([k, v]) => {
+      // Los campos extra se guardan como { label, value } (splitFormValues);
+      // value puede ser string o array (checkbox multi, p.ej. "Razas de interés").
+      const wrapped = v != null && typeof v === 'object' && 'value' in (v as Record<string, unknown>)
+      const rawVal = wrapped ? (v as { value: unknown }).value : v
+      const label = wrapped && (v as { label?: string }).label
+        ? String((v as { label: string }).label)
+        : k.replace(/_/g, ' ')
+      const value = Array.isArray(rawVal) ? rawVal.join(', ') : String(rawVal)
+      return { label, value }
+    }),
   ]
 
   return (
