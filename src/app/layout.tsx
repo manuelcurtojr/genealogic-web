@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import "./globals.css";
 import CookieBanner from "@/components/ui/cookie-banner";
 import GoogleAnalytics from "@/components/analytics/google-analytics";
+import PostHogAnalytics from "@/components/analytics/posthog-provider";
 import { PlatformProvider } from "@/components/platform/platform-provider";
 import HashSessionHandler from "@/components/auth/hash-session-handler";
 import { LocaleProvider } from "@/components/i18n/locale-provider";
@@ -116,6 +117,7 @@ export default async function RootLayout({
             {children}
             {!isIos && <CookieBanner />}
             {!isIos && <GoogleAnalytics />}
+            {!isIos && <PostHogAnalytics />}
           </PlatformProvider>
         </LocaleProvider>
       </body>

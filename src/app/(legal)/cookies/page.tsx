@@ -79,12 +79,15 @@ export default function CookiesPage() {
       {analyticsEnabled ? (
         <>
           <p>
-            Con tu <strong>consentimiento previo</strong> (banner de cookies), utilizamos{' '}
-            <strong>Google Analytics 4</strong> (Google Ireland Ltd.) para obtener
-            estadísticas <strong>agregadas</strong> de uso que nos ayudan a mejorar el sitio.
-            Estas cookies <strong>no se instalan</strong> si rechazas el banner o si no lo
-            aceptas, y anonimizamos la dirección IP. No usamos cookies publicitarias ni de
-            marketing.
+            Con tu <strong>consentimiento previo</strong> (banner de cookies), utilizamos
+            herramientas de <strong>analítica</strong> y de <strong>grabación de sesión</strong>{' '}
+            para entender cómo se usa la plataforma y mejorarla. Estas cookies y tecnologías{' '}
+            <strong>no se activan</strong> si rechazas el banner o si no lo aceptas. No usamos
+            cookies publicitarias ni de marketing.
+          </p>
+          <p>
+            <strong>Google Analytics 4</strong> (Google Ireland Ltd.), para estadísticas{' '}
+            <strong>agregadas</strong> de uso, con la dirección IP anonimizada.
           </p>
           <table>
             <thead>
@@ -96,8 +99,25 @@ export default function CookiesPage() {
             </tbody>
           </table>
           <p>
-            Estas cookies implican una transferencia de datos a Google, amparada en el marco{' '}
-            <em>EU-US Data Privacy Framework</em> y en cláusulas contractuales tipo. Puedes
+            <strong>PostHog</strong> (PostHog, Inc., datos alojados en la región de la{' '}
+            <strong>Unión Europea</strong>), para analítica de producto, mapas de calor y{' '}
+            <strong>grabación de la sesión</strong> de navegación, que nos permite ver cómo se
+            interactúa con la interfaz para detectar errores y puntos de fricción. En las
+            grabaciones <strong>se enmascara todo lo que se teclea</strong> en los formularios:
+            contraseñas, correos y demás datos introducidos <strong>no se capturan</strong>.
+          </p>
+          <table>
+            <thead>
+              <tr><th>Cookie</th><th>Proveedor</th><th>Finalidad</th><th>Duración</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>ph_*_posthog</td><td>PostHog, Inc.</td><td>Identificar el dispositivo/sesión para analítica de producto y grabación de sesión</td><td>1 año</td></tr>
+            </tbody>
+          </table>
+          <p>
+            Google Analytics puede implicar una transferencia de datos a Google amparada en el
+            marco <em>EU-US Data Privacy Framework</em> y en cláusulas contractuales tipo;{' '}
+            <strong>PostHog aloja los datos en servidores de la Unión Europea</strong>. Puedes
             revocar tu consentimiento en cualquier momento borrando las cookies de tu
             navegador.
           </p>
@@ -126,7 +146,7 @@ export default function CookiesPage() {
       <ul>
         <li><strong>Cookies estrictamente necesarias:</strong> art. 22.2 LSSI (exentas de consentimiento).</li>
         {analyticsEnabled && (
-          <li><strong>Cookies analíticas (Google Analytics):</strong> consentimiento del Usuario (art. 6.1.a RGPD y art. 22.2 LSSI), revocable en cualquier momento.</li>
+          <li><strong>Cookies analíticas y de grabación de sesión (Google Analytics, PostHog):</strong> consentimiento del Usuario (art. 6.1.a RGPD y art. 22.2 LSSI), revocable en cualquier momento.</li>
         )}
         <li><strong>Cookies de Stripe:</strong> ejecución del contrato cuando el Usuario inicia el pago.</li>
       </ul>

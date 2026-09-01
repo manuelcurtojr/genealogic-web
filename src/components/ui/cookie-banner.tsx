@@ -13,9 +13,11 @@ export default function CookieBanner() {
   // criadero; el middleware la reescribe a /kennels/<slug>/legal/cookies).
   // Sin esto, bajo iremacurto.com el enlace iría a /cookies → 404.
   const [cookiesHref, setCookiesHref] = useState('/cookies')
-  // Solo declaramos cookies de analítica si GA está realmente configurado
-  // (NEXT_PUBLIC_GA_ID en Vercel). Sin GA, el banner mantiene "sin seguimiento".
-  const analyticsEnabled = !!process.env.NEXT_PUBLIC_GA_ID
+  // Solo declaramos cookies de analítica si hay alguna herramienta realmente
+  // configurada en Vercel (GA o PostHog). Sin ninguna, el banner mantiene el
+  // mensaje "sin seguimiento".
+  const analyticsEnabled =
+    !!process.env.NEXT_PUBLIC_GA_ID || !!process.env.NEXT_PUBLIC_POSTHOG_KEY
 
   useEffect(() => {
     const consent = localStorage.getItem('cookie-consent')
@@ -50,7 +52,7 @@ export default function CookieBanner() {
       <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <p className="text-sm text-body flex-1">
           {analyticsEnabled
-            ? t('Usamos cookies esenciales para el funcionamiento de la plataforma y, si lo aceptas, cookies de analítica (Google Analytics) para entender el uso y mejorar. No usamos cookies de publicidad.')
+            ? t('Usamos cookies esenciales para el funcionamiento de la plataforma y, si lo aceptas, cookies de analítica y de grabación de sesión (Google Analytics y PostHog) para entender cómo se usa y mejorarla. No usamos cookies de publicidad.')
             : t('Usamos cookies esenciales para el funcionamiento de la plataforma. No usamos cookies de seguimiento ni publicidad.')}{' '}
           <Link href={cookiesHref} className="text-ink hover:underline">{t('Más información')}</Link>
         </p>
