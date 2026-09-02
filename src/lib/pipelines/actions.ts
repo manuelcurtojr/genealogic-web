@@ -223,3 +223,35 @@ export async function markEntrySeen(entryId: string): Promise<{ ok: boolean }> {
     return { ok: false }
   }
 }
+
+/**
+ * Devuelve una solicitud al estado "no leída" (seen_by_breeder_at = null), para
+ * que vuelva a resaltarse como pendiente en el embudo. Inverso de markEntrySeen.
+ */
+export async function markEntryUnseen(entryId: string): Promise<{ ok: boolean }> {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createKennelAdminClient() as any
+    const { data: entry } = await admin
+      .from('puppy_reservations')
+      .select('id, kennel:kennels(owner_id)')
+      .eq('id', entryId)
+      .maybeSingle()
+    if (!entry || entry.kennel?.owner_id !== user.id) return { ok: false }
+
+    await admin
+      .from('puppy_reservations')
+      .update({ seen_by_breeder_at: null })
+      .eq('id', entryId)
+    revalidatePath('/embudo')
+    return { ok: true }
+  } catch {
+    return { ok: false }
+  }
+}
