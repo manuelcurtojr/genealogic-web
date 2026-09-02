@@ -4,9 +4,9 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Mail, Phone, MapPin, Clock, ArrowUpRight, MessageSquare, Tag, StickyNote, Trash2 } from 'lucide-react'
+import { Mail, Phone, MapPin, Clock, ArrowUpRight, MessageSquare, Tag, StickyNote, Trash2, EyeOff } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
-import { setInternalNote, deleteEntry } from '@/lib/pipelines/actions'
+import { setInternalNote, deleteEntry, markEntryUnseen } from '@/lib/pipelines/actions'
 import Drawer from './drawer'
 import type { FunnelEntry, Pipeline, Stage } from '@/lib/pipelines/types'
 
@@ -125,7 +125,8 @@ export default function LeadPanel({
 
       <NoteEditor entryId={entry.id} initial={entry.internal_note} />
 
-      <div className="mt-6 pt-4 border-t border-hairline">
+      <div className="mt-6 pt-4 border-t border-hairline flex items-center justify-between gap-3">
+        <MarkUnseenButton entryId={entry.id} onDone={onClose} />
         <DeleteButton entryId={entry.id} onDeleted={onClose} />
       </div>
 
@@ -232,6 +233,32 @@ function DeleteButton({ entryId, onDeleted }: { entryId: string; onDeleted: () =
       className="inline-flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 disabled:opacity-50"
     >
       <Trash2 className="w-3.5 h-3.5" /> {t('Eliminar lead')}
+    </button>
+  )
+}
+
+/** Devuelve el lead a "no leída" → vuelve a resaltarse como pendiente en el embudo. */
+function MarkUnseenButton({ entryId, onDone }: { entryId: string; onDone: () => void }) {
+  const t = useT()
+  const router = useRouter()
+  const [pending, start] = useTransition()
+  return (
+    <button
+      onClick={() => {
+        start(async () => {
+          const r = await markEntryUnseen(entryId)
+          if (!r.ok) {
+            alert(t('No se pudo marcar como no leída'))
+            return
+          }
+          onDone()
+          router.refresh()
+        })
+      }}
+      disabled={pending}
+      className="inline-flex items-center gap-1 text-xs text-body hover:text-ink disabled:opacity-50"
+    >
+      <EyeOff className="w-3.5 h-3.5" /> {t('Marcar como no leída')}
     </button>
   )
 }
