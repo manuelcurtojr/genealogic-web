@@ -18,6 +18,7 @@ import {
 import { useT } from '@/components/i18n/locale-provider'
 import { moveEntryToStage, markEntrySeen } from '@/lib/pipelines/actions'
 import type { Pipeline, Stage, FunnelEntry } from '@/lib/pipelines/types'
+import { scoreLead } from '@/lib/pipelines/lead-score'
 import LeadPanel from './lead-panel'
 import ConfigPanel from './config-panel'
 
@@ -532,6 +533,25 @@ function LeadCard({
             </p>
           )}
         </div>
+        {(() => {
+          const q = scoreLead(entry)
+          const tone =
+            q.score >= 4 ? 'text-emerald-600' : q.score === 3 ? 'text-amber-500' : 'text-rose-400'
+          return (
+            <div
+              className={`flex flex-col items-center flex-shrink-0 w-12 ${tone}`}
+              title={`${t('Calidad')}: ${t(q.label)} — ${q.reasons.map((r) => t(r)).join(' · ')}`}
+              aria-label={`${t('Calidad')} ${t(q.label)}`}
+            >
+              <div className="text-[10px] leading-none tracking-[-1px]">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <span key={i} className={i <= q.score ? '' : 'opacity-25'}>★</span>
+                ))}
+              </div>
+              <span className="text-[8.5px] font-bold uppercase tracking-wide mt-1">{t(q.label)}</span>
+            </div>
+          )
+        })()}
         <ChevronRight className="h-4 w-4 text-muted group-hover:text-ink group-hover:translate-x-0.5 transition-all flex-shrink-0" />
       </button>
     </li>
