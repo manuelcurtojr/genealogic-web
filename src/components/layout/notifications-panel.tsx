@@ -107,6 +107,17 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
       .limit(50)
     setNotifications(data || [])
     setLoading(false)
+
+    // Al ABRIR el panel, las no leídas pasan a leídas en BD para limpiar el
+    // badge de la campana del header (que cuenta is_read=false). Mantenemos el
+    // estado LOCAL sin tocar (is_read=false) para que el usuario siga viendo
+    // resaltado qué era nuevo durante ESTA apertura; al reabrir ya vendrán como
+    // leídas. Notificar al header (por si el realtime tarda).
+    const unreadIds = (data || []).filter((n) => !n.is_read).map((n) => n.id)
+    if (unreadIds.length > 0) {
+      await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds)
+      window.dispatchEvent(new Event('notifs:changed'))
+    }
   }
 
   async function markAsRead(id: string) {
