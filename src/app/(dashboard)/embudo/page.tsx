@@ -1,6 +1,7 @@
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ensureDefaultPipelines, getKennelPipelines } from '@/lib/pipelines/queries'
+import { getKennelBreedNames } from '@/lib/kennel/breeds'
 import FunnelBoard from '@/components/embudo/funnel-board'
 import EmbudoTeaser from '@/components/embudo/embudo-teaser'
 import { hasPaidPlan, isEnterpriseUser } from '@/lib/permissions'
@@ -83,6 +84,9 @@ export default async function EmbudoPage() {
     paidByEntry[p.reservation_id] = (paidByEntry[p.reservation_id] || 0) + (p.amount_cents || 0)
   }
 
+  // Razas del criadero → pueblan el selector de "raza de interés" del panel.
+  const kennelBreeds = await getKennelBreedNames(supabase, kennel.id)
+
   return (
     <FunnelBoard
       kennelName={kennel.name}
@@ -90,6 +94,7 @@ export default async function EmbudoPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       entries={(entries || []) as any}
       paidByEntry={paidByEntry}
+      kennelBreeds={kennelBreeds}
     />
   )
 }

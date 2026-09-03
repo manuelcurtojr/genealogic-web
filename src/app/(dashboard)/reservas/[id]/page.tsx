@@ -22,6 +22,9 @@ import ReservationChatPanel from '@/components/reservations/reservation-chat-pan
 import { sendBreederMessageAction } from './actions'
 import { assignDogToReservationAction } from './contrato/actions'
 import ReservationPaymentsCard from '@/components/embudo/reservation-payments-card'
+import ReservationNotes, { type ReservationNote } from '@/components/embudo/reservation-notes'
+import ReservationBreedPicker from '@/components/embudo/reservation-breed-picker'
+import { getKennelBreedNames } from '@/lib/kennel/breeds'
 import DogAssignmentBar from '@/components/contracts/dog-assignment-bar'
 import type { KennelDogOption } from '@/components/contracts/contract-fill-panel'
 import FeedbackButton from '@/components/feedback/feedback-button'
@@ -87,6 +90,14 @@ export default async function BreederReservationDetailPage({
 
   // Perros del criadero para el selector
   const kennelDogs = await loadKennelDogs(admin, reservation.kennel?.id)
+  // Razas del criadero + notas/raza guardadas en applicant_extra_data.
+  const kennelBreeds = await getKennelBreedNames(admin, reservation.kennel?.id || '')
+  const rawExtra = (reservation.applicant_extra_data && typeof reservation.applicant_extra_data === 'object')
+    ? (reservation.applicant_extra_data as Record<string, unknown>)
+    : {}
+  const notes: ReservationNote[] = Array.isArray(rawExtra._notes) ? (rawExtra._notes as ReservationNote[]) : []
+  const pbVal = (rawExtra.preference_breed as { value?: unknown } | undefined)?.value
+  const breeds = Array.isArray(pbVal) ? (pbVal as string[]) : (typeof pbVal === 'string' && pbVal ? [pbVal] : [])
 
   const messages = await listReservationMessages(reservation.id)
   // Importante: el conteo de unread tiene que calcularse ANTES de marcar
@@ -318,16 +329,6 @@ export default async function BreederReservationDetailPage({
                   </p>
                 </div>
               )}
-              {reservation.internal_note && (
-                <div className="mt-4 pt-4 border-t border-hairline">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700 mb-2">
-                    🗒 {t('Nota interna (solo tú la ves)')}
-                  </p>
-                  <p className="text-[13px] text-body leading-snug whitespace-pre-line bg-amber-50/40 rounded-lg p-3 border border-amber-200">
-                    {reservation.internal_note}
-                  </p>
-                </div>
-              )}
             </>
           ) : (
             <EmptyState
@@ -337,8 +338,17 @@ export default async function BreederReservationDetailPage({
           )}
         </Card>
 
-        {/* RIGHT — Cobros + (si dog asignado) ficha rápida del perro */}
+        {/* RIGHT — Raza + Cobros + Notas + (si dog asignado) ficha del perro */}
         <div className="space-y-5">
+          {/* Raza de interés — misma clave (preference_breed) que el formulario
+              de contacto, así queda sincronizada con lo que elige el cliente. */}
+          <ReservationBreedPicker
+            reservationId={reservation.id}
+            options={kennelBreeds}
+            initial={breeds}
+            variant="card"
+          />
+
           {/* Cobros — MISMA fuente (reservation_payments) y componente que el
               panel lateral del embudo, para que ambas vistas estén siempre
               sincronizadas y soporten N pagos (no solo señal + final). */}
@@ -346,6 +356,15 @@ export default async function BreederReservationDetailPage({
             reservationId={reservation.id}
             currency={reservation.currency || 'EUR'}
             totalPriceCents={reservation.total_price_cents}
+            variant="card"
+          />
+
+          {/* Notas internas — independientes con fecha, mismo componente y
+              fuente (_notes) que el panel lateral del embudo. */}
+          <ReservationNotes
+            reservationId={reservation.id}
+            initialNotes={notes}
+            legacyNote={reservation.internal_note}
             variant="card"
           />
 

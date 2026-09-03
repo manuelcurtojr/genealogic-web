@@ -1,13 +1,15 @@
 'use client'
 
 /** Panel lateral con el detalle completo de un lead/ficha del embudo. */
-import { useState, useTransition } from 'react'
+import { useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Mail, Phone, MapPin, Clock, ArrowUpRight, MessageSquare, Tag, StickyNote, Trash2, EyeOff } from 'lucide-react'
+import { Mail, Phone, MapPin, Clock, ArrowUpRight, MessageSquare, Tag, Trash2, EyeOff } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
-import { setInternalNote, deleteEntry, markEntryUnseen } from '@/lib/pipelines/actions'
+import { deleteEntry, markEntryUnseen } from '@/lib/pipelines/actions'
 import ReservationPaymentsCard from './reservation-payments-card'
+import ReservationNotes, { type ReservationNote } from './reservation-notes'
+import ReservationBreedPicker from './reservation-breed-picker'
 import Drawer from './drawer'
 import type { FunnelEntry, Pipeline, Stage } from '@/lib/pipelines/types'
 
@@ -23,19 +25,30 @@ export default function LeadPanel({
   pending,
   onMove,
   onClose,
+  kennelBreeds = [],
 }: {
   entry: FunnelEntry
   pipeline: Pipeline
   pending: boolean
   onMove: (target: Stage) => void
   onClose: () => void
+  /** Razas que cría el criadero, para el selector de raza de interés. */
+  kennelBreeds?: string[]
 }) {
   const t = useT()
   const current = pipeline.stages.find((s) => s.id === entry.stage_id)
   const location = [entry.applicant_city, entry.applicant_country].filter(Boolean).join(', ')
-  const extra = entry.applicant_extra_data && typeof entry.applicant_extra_data === 'object'
-    ? Object.entries(entry.applicant_extra_data).filter(([, v]) => v != null && v !== '')
-    : []
+  const rawExtra = entry.applicant_extra_data && typeof entry.applicant_extra_data === 'object'
+    ? (entry.applicant_extra_data as Record<string, unknown>)
+    : {}
+  // Ocultamos de "Respuestas del formulario" las claves internas (_notes) y la
+  // raza (preference_breed): tienen su propio editor dedicado más abajo.
+  const extra = Object.entries(rawExtra).filter(
+    ([k, v]) => v != null && v !== '' && k !== 'preference_breed' && !k.startsWith('_'),
+  )
+  const notes: ReservationNote[] = Array.isArray(rawExtra._notes) ? (rawExtra._notes as ReservationNote[]) : []
+  const pbVal = (rawExtra.preference_breed as { value?: unknown } | undefined)?.value
+  const breeds = Array.isArray(pbVal) ? (pbVal as string[]) : (typeof pbVal === 'string' && pbVal ? [pbVal] : [])
   const formAnswers: { label: string; value: string }[] = [
     ...(entry.applicant_purpose ? [{ label: t('Propósito'), value: String(entry.applicant_purpose) }] : []),
     ...(entry.preference_sex
@@ -124,13 +137,15 @@ export default function LeadPanel({
         </div>
       )}
 
+      <ReservationBreedPicker reservationId={entry.id} options={kennelBreeds} initial={breeds} />
+
       <ReservationPaymentsCard
         reservationId={entry.id}
         currency={entry.currency || 'EUR'}
         totalPriceCents={entry.total_price_cents}
       />
 
-      <NoteEditor entryId={entry.id} initial={entry.internal_note} />
+      <ReservationNotes reservationId={entry.id} initialNotes={notes} legacyNote={entry.internal_note} />
 
       <div className="mt-6 pt-4 border-t border-hairline flex items-center justify-between gap-3">
         <MarkUnseenButton entryId={entry.id} onDone={onClose} />
@@ -172,48 +187,6 @@ export default function LeadPanel({
         </div>
       </div>
     </Drawer>
-  )
-}
-
-/** Editor de nota interna del criador (privada, no la ve el cliente). */
-function NoteEditor({ entryId, initial }: { entryId: string; initial: string | null }) {
-  const t = useT()
-  const router = useRouter()
-  const [note, setNote] = useState(initial || '')
-  const [pending, start] = useTransition()
-  const [saved, setSaved] = useState(false)
-  const dirty = note.trim() !== (initial || '').trim()
-  return (
-    <div className="mt-4">
-      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted mb-1.5">
-        <StickyNote className="w-3.5 h-3.5" /> {t('Nota interna')}
-      </div>
-      <textarea
-        value={note}
-        onChange={(e) => {
-          setNote(e.target.value)
-          setSaved(false)
-        }}
-        rows={2}
-        placeholder={t('Nota privada sobre este lead…')}
-        className="w-full rounded-lg border border-hairline bg-amber-50/40 px-3 py-2 text-base sm:text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-ink/10"
-      />
-      <div className="flex justify-end mt-1.5">
-        <button
-          onClick={() =>
-            start(async () => {
-              await setInternalNote(entryId, note)
-              setSaved(true)
-              router.refresh()
-            })
-          }
-          disabled={pending || !dirty}
-          className="text-xs font-semibold text-ink hover:opacity-80 disabled:opacity-40"
-        >
-          {saved && !dirty ? t('Guardada') : t('Guardar nota')}
-        </button>
-      </div>
-    </div>
   )
 }
 
