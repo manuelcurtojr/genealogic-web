@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { Mail, Phone, MapPin, Clock, ArrowUpRight, MessageSquare, Tag, StickyNote, Trash2, EyeOff } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import { setInternalNote, deleteEntry, markEntryUnseen } from '@/lib/pipelines/actions'
+import ReservationPaymentsCard from './reservation-payments-card'
 import Drawer from './drawer'
 import type { FunnelEntry, Pipeline, Stage } from '@/lib/pipelines/types'
 
@@ -122,6 +123,12 @@ export default function LeadPanel({
           </dl>
         </div>
       )}
+
+      <ReservationPaymentsCard
+        reservationId={entry.id}
+        currency={entry.currency || 'EUR'}
+        totalPriceCents={entry.total_price_cents}
+      />
 
       <NoteEditor entryId={entry.id} initial={entry.internal_note} />
 
