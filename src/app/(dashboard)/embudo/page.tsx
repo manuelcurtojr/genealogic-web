@@ -70,12 +70,26 @@ export default async function EmbudoPage() {
     .order('created_at', { ascending: false })
     .limit(1000)
 
+  // Cobrado real por reserva (suma de pagos PAGADOS). Es la fuente de verdad
+  // para las métricas de dinero del embudo (el chip "Pagado" de la tarjeta usa
+  // deposit_amount_cents, pero aquí queremos lo efectivamente cobrado).
+  const { data: pays } = await admin
+    .from('reservation_payments')
+    .select('reservation_id, amount_cents')
+    .eq('kennel_id', kennel.id)
+    .eq('status', 'paid')
+  const paidByEntry: Record<string, number> = {}
+  for (const p of pays || []) {
+    paidByEntry[p.reservation_id] = (paidByEntry[p.reservation_id] || 0) + (p.amount_cents || 0)
+  }
+
   return (
     <FunnelBoard
       kennelName={kennel.name}
       pipelines={pipelines}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       entries={(entries || []) as any}
+      paidByEntry={paidByEntry}
     />
   )
 }

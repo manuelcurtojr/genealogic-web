@@ -14,7 +14,7 @@ import confetti from 'canvas-confetti'
 import {
   Sparkles, X, Plus, Settings, Mail, Phone, Clock, AlertTriangle,
   ChevronDown, ChevronUp, TrendingUp, Trophy, XCircle, Inbox, ChevronRight,
-  MapPin, Coins,
+  MapPin, Coins, Wallet, Hourglass,
 } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import { moveEntryToStage, markEntrySeen } from '@/lib/pipelines/actions'
@@ -40,10 +40,13 @@ export default function FunnelBoard({
   kennelName,
   pipelines,
   entries,
+  paidByEntry = {},
 }: {
   kennelName: string
   pipelines: Pipeline[]
   entries: FunnelEntry[]
+  /** Cobrado real por reserva (Σ pagos pagados), calculado en el servidor. */
+  paidByEntry?: Record<string, number>
 }) {
   const t = useT()
   const router = useRouter()
@@ -88,6 +91,29 @@ export default function FunnelBoard({
     }
     return m
   }, [entries])
+
+  // ─── Métricas de dinero del pipeline ACTIVO ───
+  // Valor total = Σ total acordado; Cobrado = Σ pagos pagados (fuente real);
+  // Pendiente = Σ (total − cobrado) sin bajar de 0. Excluye pasos "perdidos".
+  const money = useMemo(() => {
+    const empty = { total: 0, paid: 0, pending: 0, count: 0, currency: 'EUR' as string }
+    if (!pipeline) return empty
+    const lostSet = new Set(pipeline.stages.filter((s) => s.type === 'lost').map((s) => s.id))
+    let total = 0, paid = 0, pending = 0, count = 0
+    let currency: string | null = null
+    for (const e of entries) {
+      if (e.pipeline_id !== pipeline.id || !e.stage_id || lostSet.has(e.stage_id)) continue
+      count++
+      const p = paidByEntry[e.id] || 0
+      paid += p
+      if (e.total_price_cents != null) {
+        total += e.total_price_cents
+        pending += Math.max(0, e.total_price_cents - p)
+      }
+      if (!currency && e.currency) currency = e.currency
+    }
+    return { total, paid, pending, count, currency: currency || 'EUR' }
+  }, [entries, pipeline, paidByEntry])
 
   function selectPipeline(p: Pipeline) {
     setPipelineId(p.id)
@@ -308,6 +334,9 @@ export default function FunnelBoard({
           })}
         </div>
 
+        {/* Banda de dinero del pipeline activo */}
+        <MoneyBand money={money} slug={pipeline.slug} t={t} />
+
         {/* Separador */}
         <div className="border-t border-hairline -mx-3 sm:-mx-4" />
 
@@ -474,6 +503,78 @@ function fmtMoney(cents: number, currency: string | null): string {
   } catch {
     return `${Math.round(cents / 100).toLocaleString('es-ES')} ${cur}`
   }
+}
+
+/** Banda de métricas de dinero del pipeline activo (valor / cobrado / pendiente / nº). */
+function MoneyBand({
+  money, slug, t,
+}: {
+  money: { total: number; paid: number; pending: number; count: number; currency: string }
+  slug: string | null
+  t: (k: string) => string
+}) {
+  if (money.count === 0) return null
+  const isReservas = slug === 'reservas'
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+      <MoneyChip
+        icon={Coins}
+        label={isReservas ? t('Valor total') : t('Valor potencial')}
+        value={fmtMoney(money.total, money.currency)}
+        tone="ink"
+      />
+      <MoneyChip icon={Wallet} label={t('Cobrado')} value={fmtMoney(money.paid, money.currency)} tone="emerald" />
+      <MoneyChip
+        icon={Hourglass}
+        label={t('Pendiente de cobro')}
+        value={fmtMoney(money.pending, money.currency)}
+        tone="amber"
+      />
+      <MoneyChip
+        icon={Inbox}
+        label={isReservas ? t('Reservas') : t('Fichas')}
+        value={String(money.count)}
+        tone="neutral"
+      />
+    </div>
+  )
+}
+
+function MoneyChip({
+  icon: Icon, label, value, tone,
+}: {
+  icon: React.ElementType
+  label: string
+  value: string
+  tone: 'ink' | 'emerald' | 'amber' | 'neutral'
+}) {
+  const toneClass =
+    tone === 'emerald'
+      ? 'border-emerald-200 bg-emerald-50/60'
+      : tone === 'amber'
+      ? 'border-amber-200 bg-amber-50/60'
+      : tone === 'ink'
+      ? 'border-hairline bg-ink/[0.03]'
+      : 'border-hairline bg-surface-soft/40'
+  const iconClass =
+    tone === 'emerald'
+      ? 'bg-emerald-100 text-emerald-700'
+      : tone === 'amber'
+      ? 'bg-amber-100 text-amber-700'
+      : tone === 'ink'
+      ? 'bg-ink text-on-primary'
+      : 'bg-canvas text-muted border border-hairline'
+  return (
+    <div className={`rounded-xl border px-3 py-2.5 flex items-center gap-2.5 min-w-0 ${toneClass}`}>
+      <div className={`flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0 ${iconClass}`}>
+        <Icon className="h-3.5 w-3.5" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10.5px] font-bold uppercase tracking-wider text-muted leading-none truncate">{label}</p>
+        <p className="mt-0.5 text-[16px] font-bold text-ink leading-none tabular-nums truncate">{value}</p>
+      </div>
+    </div>
+  )
 }
 
 function LeadCard({
