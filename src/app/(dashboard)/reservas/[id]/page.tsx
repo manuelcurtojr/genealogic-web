@@ -19,9 +19,9 @@ import Link from 'next/link'
 import { listReservationMessages, markThreadRead } from '@/lib/reservations/messages'
 import ReservationThread from '@/components/reservations/reservation-thread'
 import ReservationChatPanel from '@/components/reservations/reservation-chat-panel'
-import { sendBreederMessageAction, quickMarkPaymentReceivedAction } from './actions'
+import { sendBreederMessageAction } from './actions'
 import { assignDogToReservationAction } from './contrato/actions'
-import PaymentMilestonesCard from '@/components/reservations/payment-milestones-card'
+import ReservationPaymentsCard from '@/components/embudo/reservation-payments-card'
 import DogAssignmentBar from '@/components/contracts/dog-assignment-bar'
 import type { KennelDogOption } from '@/components/contracts/contract-fill-panel'
 import FeedbackButton from '@/components/feedback/feedback-button'
@@ -339,30 +339,14 @@ export default async function BreederReservationDetailPage({
 
         {/* RIGHT — Cobros + (si dog asignado) ficha rápida del perro */}
         <div className="space-y-5">
-          <PaymentMilestonesCard
+          {/* Cobros — MISMA fuente (reservation_payments) y componente que el
+              panel lateral del embudo, para que ambas vistas estén siempre
+              sincronizadas y soporten N pagos (no solo señal + final). */}
+          <ReservationPaymentsCard
             reservationId={reservation.id}
             currency={reservation.currency || 'EUR'}
-            deposit={{
-              kind: 'deposit',
-              label: t('Señal recibida'),
-              description: t('Al confirmar la reserva'),
-              doneAt: reservation.deposit_paid_at,
-              amountCents: reservation.deposit_amount_cents,
-              suggestedAmount: reservation.deposit_amount_cents,
-            }}
-            finalPayment={{
-              kind: 'final',
-              label: t('Pago final recibido'),
-              description: t('Al entregar el cachorro'),
-              doneAt: reservation.paid_in_full_at,
-              amountCents: reservation.total_price_cents != null && reservation.deposit_amount_cents != null
-                ? reservation.total_price_cents - reservation.deposit_amount_cents
-                : reservation.total_price_cents,
-              suggestedAmount: reservation.total_price_cents != null && reservation.deposit_amount_cents != null
-                ? reservation.total_price_cents - reservation.deposit_amount_cents
-                : null,
-            }}
-            onMark={quickMarkPaymentReceivedAction}
+            totalPriceCents={reservation.total_price_cents}
+            variant="card"
           />
 
           {/* Ficha rápida del perro si está asignado */}

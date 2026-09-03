@@ -61,6 +61,7 @@ export async function logManualPayment(
     })
     await markPaymentPaid({ paymentId: payment.id, paidVia, paidBy: userId })
     revalidatePath('/embudo')
+    revalidatePath(`/reservas/${reservationId}`)
     return { ok: true }
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'error' }
@@ -84,6 +85,7 @@ export async function setReservationTotal(
       .update({ total_price_cents: totalCents })
       .eq('id', reservationId)
     revalidatePath('/embudo')
+    revalidatePath(`/reservas/${reservationId}`)
     return { ok: true }
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'error' }
@@ -135,6 +137,7 @@ export async function voidReservationPayment(
     await assertOwner(row.reservation_id)
     await cancelPayment(paymentId)
     revalidatePath('/embudo')
+    revalidatePath(`/reservas/${row.reservation_id}`)
     return { ok: true }
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'error' }

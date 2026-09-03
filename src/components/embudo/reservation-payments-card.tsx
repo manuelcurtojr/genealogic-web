@@ -46,11 +46,13 @@ function money(cents: number, currency: string): string {
 }
 
 export default function ReservationPaymentsCard({
-  reservationId, currency = 'EUR', totalPriceCents,
+  reservationId, currency = 'EUR', totalPriceCents, variant = 'panel',
 }: {
   reservationId: string
   currency?: string
   totalPriceCents: number | null
+  /** 'panel' = dentro del drawer del embudo (separador arriba); 'card' = tarjeta suelta (ficha completa). */
+  variant?: 'panel' | 'card'
 }) {
   const [payments, setPayments] = useState<Payment[] | null>(null)
   const [total, setTotal] = useState<number | null>(totalPriceCents)
@@ -66,7 +68,7 @@ export default function ReservationPaymentsCard({
   const pct = total && total > 0 ? Math.min(100, Math.round((paidCents / total) * 100)) : 0
 
   return (
-    <section className="mt-6 pt-4 border-t border-hairline">
+    <section className={variant === 'card' ? 'rounded-2xl border border-hairline bg-canvas p-4 sm:p-6' : 'mt-6 pt-4 border-t border-hairline'}>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-[11px] font-semibold uppercase tracking-wide text-muted inline-flex items-center gap-1.5">
           <Wallet className="w-3.5 h-3.5" /> Cobros

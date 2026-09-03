@@ -115,6 +115,32 @@ export default function FunnelBoard({
     return { total, paid, pending, count, currency: currency || 'EUR' }
   }, [entries, pipeline, paidByEntry])
 
+  // ─── Conteos del pipeline ACTIVO (NO se mezclan pipelines) ───
+  // Las etiquetas de ganado/perdido usan el nombre real del paso cuando hay
+  // uno solo (p.ej. "Entregado"/"Reserva cancelada" en Reservas), evitando
+  // mezclar "ventas ganadas" con "cachorros entregados".
+  const counts = useMemo(() => {
+    const empty = { inProgress: 0, won: 0, lost: 0, unseen: 0, wonLabel: 'Ganadas', lostLabel: 'Perdidas' }
+    if (!pipeline) return empty
+    const wonStages = pipeline.stages.filter((s) => s.type === 'won')
+    const lostStages = pipeline.stages.filter((s) => s.type === 'lost')
+    const wonSet = new Set(wonStages.map((s) => s.id))
+    const lostSet = new Set(lostStages.map((s) => s.id))
+    let inProgress = 0, won = 0, lost = 0, unseen = 0
+    for (const e of entries) {
+      if (e.pipeline_id !== pipeline.id || !e.stage_id) continue
+      if (wonSet.has(e.stage_id)) won++
+      else if (lostSet.has(e.stage_id)) lost++
+      else inProgress++
+      if (!e.seen_by_breeder_at) unseen++
+    }
+    return {
+      inProgress, won, lost, unseen,
+      wonLabel: wonStages.length === 1 ? wonStages[0].name : 'Ganadas',
+      lostLabel: lostStages.length === 1 ? lostStages[0].name : 'Perdidas',
+    }
+  }, [entries, pipeline])
+
   function selectPipeline(p: Pipeline) {
     setPipelineId(p.id)
     const entry = p.stages.find((s) => s.is_entry) ?? p.stages[0]
@@ -179,23 +205,6 @@ export default function FunnelBoard({
 
   const stageEntries = byStage.get(stageId) || []
 
-  // ─── Stats globales para el hero ───
-  // Solo cuenta entries CON stage (orphans van por separado).
-  const allActiveEntries = entries.filter((e) => e.stage_id)
-  const wonStages = new Set(
-    pipelines.flatMap((p) => p.stages.filter((s) => s.type === 'won').map((s) => s.id)),
-  )
-  const lostStages = new Set(
-    pipelines.flatMap((p) => p.stages.filter((s) => s.type === 'lost').map((s) => s.id)),
-  )
-  const wonCount = allActiveEntries.filter((e) => wonStages.has(e.stage_id!)).length
-  const lostCount = allActiveEntries.filter((e) => lostStages.has(e.stage_id!)).length
-  const inProgressCount = allActiveEntries.length - wonCount - lostCount
-  const totalUnseenAll = pipelines.reduce(
-    (n, p) => n + p.stages.reduce((m, s) => m + (unseenByStage.get(s.id) || 0), 0),
-    0,
-  )
-
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-7 space-y-6 sm:space-y-7">
       {/* ═══ HERO HEADER ═══ */}
@@ -234,34 +243,6 @@ export default function FunnelBoard({
               {t('Nuevo embudo')}
             </button>
           </div>
-        </div>
-
-        {/* Stats compactas */}
-        <div className="relative mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          <StatChip
-            icon={Inbox}
-            label={t('En curso')}
-            value={inProgressCount}
-            tone="neutral"
-          />
-          <StatChip
-            icon={Trophy}
-            label={t('Ganadas')}
-            value={wonCount}
-            tone="emerald"
-          />
-          <StatChip
-            icon={XCircle}
-            label={t('Perdidas')}
-            value={lostCount}
-            tone="rose"
-          />
-          <StatChip
-            icon={Sparkles}
-            label={t('Sin leer')}
-            value={totalUnseenAll}
-            tone={totalUnseenAll > 0 ? 'amber' : 'neutral'}
-          />
         </div>
       </section>
 
@@ -334,8 +315,8 @@ export default function FunnelBoard({
           })}
         </div>
 
-        {/* Banda de dinero del pipeline activo */}
-        <MoneyBand money={money} slug={pipeline.slug} t={t} />
+        {/* Panel de métricas del pipeline activo: dinero + conteos (sin mezclar pipelines) */}
+        <PipelineStats money={money} counts={counts} slug={pipeline.slug} t={t} />
 
         {/* Separador */}
         <div className="border-t border-hairline -mx-3 sm:-mx-4" />
@@ -505,37 +486,46 @@ function fmtMoney(cents: number, currency: string | null): string {
   }
 }
 
-/** Banda de métricas de dinero del pipeline activo (valor / cobrado / pendiente / nº). */
-function MoneyBand({
-  money, slug, t,
+/**
+ * Panel de métricas del pipeline ACTIVO. Fusiona el dinero (valor / cobrado /
+ * pendiente) con los conteos del estado (en curso / ganadas / perdidas / sin
+ * leer). Todo es del pipeline activo — no se suman pipelines distintos.
+ */
+function PipelineStats({
+  money, counts, slug, t,
 }: {
   money: { total: number; paid: number; pending: number; count: number; currency: string }
+  counts: { inProgress: number; won: number; lost: number; unseen: number; wonLabel: string; lostLabel: string }
   slug: string | null
   t: (k: string) => string
 }) {
-  if (money.count === 0) return null
+  if (money.count === 0 && counts.inProgress === 0 && counts.won === 0 && counts.lost === 0) return null
   const isReservas = slug === 'reservas'
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-      <MoneyChip
-        icon={Coins}
-        label={isReservas ? t('Valor total') : t('Valor potencial')}
-        value={fmtMoney(money.total, money.currency)}
-        tone="ink"
-      />
-      <MoneyChip icon={Wallet} label={t('Cobrado')} value={fmtMoney(money.paid, money.currency)} tone="emerald" />
-      <MoneyChip
-        icon={Hourglass}
-        label={t('Pendiente de cobro')}
-        value={fmtMoney(money.pending, money.currency)}
-        tone="amber"
-      />
-      <MoneyChip
-        icon={Inbox}
-        label={isReservas ? t('Reservas') : t('Fichas')}
-        value={String(money.count)}
-        tone="neutral"
-      />
+    <div className="space-y-2.5">
+      {/* Dinero */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        <MoneyChip
+          icon={Coins}
+          label={isReservas ? t('Valor total') : t('Valor potencial')}
+          value={fmtMoney(money.total, money.currency)}
+          tone="ink"
+        />
+        <MoneyChip icon={Wallet} label={t('Cobrado')} value={fmtMoney(money.paid, money.currency)} tone="emerald" />
+        <MoneyChip
+          icon={Hourglass}
+          label={t('Pendiente de cobro')}
+          value={fmtMoney(money.pending, money.currency)}
+          tone="amber"
+        />
+      </div>
+      {/* Conteos por estado */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <StatChip icon={Inbox} label={t('En curso')} value={counts.inProgress} tone="neutral" />
+        <StatChip icon={Trophy} label={t(counts.wonLabel)} value={counts.won} tone="emerald" />
+        <StatChip icon={XCircle} label={t(counts.lostLabel)} value={counts.lost} tone="rose" />
+        <StatChip icon={Sparkles} label={t('Sin leer')} value={counts.unseen} tone={counts.unseen > 0 ? 'amber' : 'neutral'} />
+      </div>
     </div>
   )
 }
