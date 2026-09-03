@@ -267,7 +267,7 @@ export default function FunnelBoard({
           {showOrphans && (
             <ul className="mt-4 space-y-2">
               {orphanEntries.map((e) => (
-                <LeadCard key={e.id} entry={e} onClick={() => openLead(e)} t={t} />
+                <LeadCard key={e.id} entry={e} onClick={() => openLead(e)} t={t} showScore={pipeline.slug !== 'reservas'} />
               ))}
             </ul>
           )}
@@ -367,7 +367,7 @@ export default function FunnelBoard({
           </p>
           <ul className="space-y-2">
             {stageEntries.map((e) => (
-              <LeadCard key={e.id} entry={e} onClick={() => openLead(e)} t={t} showLossReason />
+              <LeadCard key={e.id} entry={e} onClick={() => openLead(e)} t={t} showLossReason showScore={pipeline.slug !== 'reservas'} />
             ))}
           </ul>
         </div>
@@ -467,12 +467,13 @@ function StatChip({
 }
 
 function LeadCard({
-  entry, onClick, t, showLossReason = false,
+  entry, onClick, t, showLossReason = false, showScore = true,
 }: {
   entry: FunnelEntry
   onClick: () => void
   t: (k: string) => string
   showLossReason?: boolean
+  showScore?: boolean
 }) {
   const isNew = !entry.seen_by_breeder_at
   const initial = (entry.applicant_name || entry.applicant_email || '?')[0]?.toUpperCase() || '?'
@@ -533,7 +534,7 @@ function LeadCard({
             </p>
           )}
         </div>
-        {(() => {
+        {showScore && (() => {
           const q = scoreLead(entry)
           const tone =
             q.score >= 4 ? 'text-emerald-600' : q.score === 3 ? 'text-amber-500' : 'text-rose-400'
