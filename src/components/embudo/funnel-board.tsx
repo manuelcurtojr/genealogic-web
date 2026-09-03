@@ -14,6 +14,7 @@ import confetti from 'canvas-confetti'
 import {
   Sparkles, X, Plus, Settings, Mail, Phone, Clock, AlertTriangle,
   ChevronDown, ChevronUp, TrendingUp, Trophy, XCircle, Inbox, ChevronRight,
+  MapPin, Coins,
 } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import { moveEntryToStage, markEntrySeen } from '@/lib/pipelines/actions'
@@ -466,6 +467,15 @@ function StatChip({
   )
 }
 
+function fmtMoney(cents: number, currency: string | null): string {
+  const cur = currency || 'EUR'
+  try {
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: cur, maximumFractionDigits: 0 }).format(cents / 100)
+  } catch {
+    return `${Math.round(cents / 100).toLocaleString('es-ES')} ${cur}`
+  }
+}
+
 function LeadCard({
   entry, onClick, t, showLossReason = false, showScore = true,
 }: {
@@ -492,6 +502,7 @@ function LeadCard({
           {initial}
         </div>
         <div className="flex-1 min-w-0">
+          {/* Nombre + estado + qué reserva (sexo/color) */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-ink truncate min-w-0 text-[14px]">
               {entry.applicant_name || t('Sin nombre')}
@@ -501,13 +512,22 @@ function LeadCard({
                 {t('Nueva')}
               </span>
             )}
-            {entry.preference_sex && (
-              <span className="flex-shrink-0 text-[11px] text-muted">
-                · {entry.preference_sex === 'male' ? t('Macho') : t('Hembra')}
+            {(entry.preference_sex || entry.preference_color) && (
+              <span className="flex-shrink-0 inline-flex items-center rounded-md bg-surface-soft text-body text-[10.5px] font-medium px-1.5 py-0.5">
+                {[
+                  entry.preference_sex ? (entry.preference_sex === 'male' ? t('Macho') : t('Hembra')) : null,
+                  entry.preference_color || null,
+                ].filter(Boolean).join(' · ')}
               </span>
             )}
           </div>
+          {/* Meta: país · email · teléfono · fecha */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11.5px] text-muted mt-0.5">
+            {entry.applicant_country && (
+              <span className="inline-flex items-center gap-1 flex-shrink-0 min-w-0 max-w-full truncate">
+                <MapPin className="w-3 h-3 flex-shrink-0" /> <span className="truncate">{entry.applicant_country}</span>
+              </span>
+            )}
             {entry.applicant_email && (
               <span className="inline-flex items-center gap-1 min-w-0 max-w-full truncate">
                 <Mail className="w-3 h-3 flex-shrink-0" /> <span className="truncate">{entry.applicant_email}</span>
@@ -522,11 +542,26 @@ function LeadCard({
               <Clock className="w-3 h-3" /> {new Date(entry.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
             </span>
           </div>
-          {entry.applicant_message && (
+          {/* Dinero (reservas) o mensaje (leads) */}
+          {entry.deposit_amount_cents != null ? (
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px]">
+              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 text-emerald-700 font-semibold px-1.5 py-0.5">
+                <Coins className="w-3 h-3" /> {t('Pagado')} {fmtMoney(entry.deposit_amount_cents, entry.currency)}
+              </span>
+              {entry.total_price_cents != null && entry.total_price_cents > entry.deposit_amount_cents && (
+                <>
+                  <span className="text-muted">{t('de')} {fmtMoney(entry.total_price_cents, entry.currency)}</span>
+                  <span className="inline-flex items-center rounded-md bg-amber-50 text-amber-700 font-semibold px-1.5 py-0.5">
+                    {t('Faltan')} {fmtMoney(entry.total_price_cents - entry.deposit_amount_cents, entry.currency)}
+                  </span>
+                </>
+              )}
+            </div>
+          ) : entry.applicant_message ? (
             <p className="mt-1.5 text-[12.5px] text-body line-clamp-1 leading-snug">
               &ldquo;{entry.applicant_message}&rdquo;
             </p>
-          )}
+          ) : null}
           {showLossReason && entry.lost_reason && (
             <p className="mt-1 text-[11.5px] text-rose-600 font-medium inline-flex items-center gap-1">
               <XCircle className="w-3 h-3" />
