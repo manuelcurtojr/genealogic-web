@@ -51,6 +51,10 @@ export type FunnelEntry = {
   applicant_extra_data: Record<string, any> | null
   source: string | null
   internal_note: string | null
+  preference_color: string | null
+  deposit_amount_cents: number | null
+  total_price_cents: number | null
+  currency: string | null
 }
 
 export type MoveResult =
