@@ -47,17 +47,42 @@ function revalidate(reservationId: string) {
   revalidatePath(`/reservas/${reservationId}`)
 }
 
-/** Añade una nota independiente con su fecha. */
+type NoteRow = { id: string; at: string; body: string; editedAt?: string }
+
+/** Añade una nota independiente con su fecha. Devuelve la nota creada (id real). */
 export async function addReservationNote(
   reservationId: string,
+  body: string,
+): Promise<{ ok: true; note: NoteRow } | { ok: false; error: string }> {
+  try {
+    const text = (body || '').trim()
+    if (!text) return { ok: false, error: 'Nota vacía' }
+    const { admin, extra } = await assertOwner(reservationId)
+    const note: NoteRow = { id: randomUUID(), at: new Date().toISOString(), body: text }
+    const notes = Array.isArray(extra._notes) ? [...(extra._notes as unknown[])] : []
+    notes.push(note)
+    await admin.from('puppy_reservations')
+      .update({ applicant_extra_data: { ...extra, _notes: notes } })
+      .eq('id', reservationId)
+    revalidate(reservationId)
+    return { ok: true, note }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'error' }
+  }
+}
+
+/** Edita el texto de una nota existente (marca editedAt). */
+export async function editReservationNote(
+  reservationId: string,
+  noteId: string,
   body: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   try {
     const text = (body || '').trim()
     if (!text) return { ok: false, error: 'Nota vacía' }
     const { admin, extra } = await assertOwner(reservationId)
-    const notes = Array.isArray(extra._notes) ? [...(extra._notes as unknown[])] : []
-    notes.push({ id: randomUUID(), at: new Date().toISOString(), body: text })
+    const notes = (Array.isArray(extra._notes) ? (extra._notes as NoteRow[]) : [])
+      .map((n) => (n.id === noteId ? { ...n, body: text, editedAt: new Date().toISOString() } : n))
     await admin.from('puppy_reservations')
       .update({ applicant_extra_data: { ...extra, _notes: notes } })
       .eq('id', reservationId)
