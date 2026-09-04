@@ -18,6 +18,7 @@ import { isReservedPath, isInsider } from '@/lib/features/launch'
 import { isAdmin, hasProFeatures, canUseMeasurements } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 import { Wordmark } from '@/components/ui/wordmark'
+import AccountSwitcher from './account-switcher'
 
 const iconMap: Record<string, React.ElementType> = {
   Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings,
@@ -200,6 +201,16 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, userId, isC
             )
           })}
         </nav>
+
+        {/* Cambiador de cuentas (solo móvil; en desktop está en la barra superior) */}
+        {user && (
+          <div className="lg:hidden border-t border-hairline p-2 flex-shrink-0">
+            <AccountSwitcher
+              current={{ userId: userId || '', name: user.display_name, email: user.email, avatarUrl: user.avatar_url }}
+              variant="mobile"
+            />
+          </div>
+        )}
 
         {/* Bottom: Settings + Logout — fijo abajo (flex-shrink-0), nunca scrollea */}
         <div className="border-t border-hairline p-2 flex-shrink-0">
