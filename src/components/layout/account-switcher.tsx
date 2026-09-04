@@ -59,17 +59,34 @@ export default function AccountSwitcher({
         supabase.auth.getUser(),
       ])
       if (!active || !session || !authUser) return
+      // La identidad de la cuenta es la SESIÓN real (authUser). El nombre/email/
+      // avatar deben ser de ESA cuenta. El prop `current` viene del render del
+      // servidor y, durante un cambio de cuenta, puede pertenecer TODAVÍA a la
+      // cuenta anterior; mezclarlo con authUser.id guardaba una entrada corrupta
+      // (una cuenta con el nombre/email de otra → duplicados en la lista). Solo
+      // usamos `current` cuando corresponde a authUser; si no, leemos su perfil.
+      let name = current.name
+      let email = current.email || authUser.email || ''
+      let avatarUrl = current.avatarUrl
+      if (current.userId !== authUser.id) {
+        const { data: prof } = await supabase
+          .from('profiles').select('display_name, avatar_url').eq('id', authUser.id).maybeSingle()
+        name = (prof?.display_name as string | null) || authUser.email || ''
+        email = authUser.email || ''
+        avatarUrl = (prof?.avatar_url as string | null) || null
+      }
+      if (!active) return
       setActiveId(authUser.id)
       upsertAccount({
         userId: authUser.id,
-        email: current.email || authUser.email || '',
-        name: current.name || current.email || authUser.email || '',
-        avatarUrl: current.avatarUrl,
+        email,
+        name: name || email,
+        avatarUrl,
         access_token: session.access_token,
         refresh_token: session.refresh_token,
         savedAt: Date.now(),
       })
-      if (active) setAccounts(getSavedAccounts())
+      setAccounts(getSavedAccounts())
     }
     saveCurrent()
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
