@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Grid3X3, List, Search, Plus, EyeOff, Edit, ArrowRightLeft, GitBranch, Globe, Heart, Undo2, ExternalLink, Loader2, ArrowRight, Store } from 'lucide-react'
+import { Grid3X3, List, Search, Plus, EyeOff, Edit, ArrowRightLeft, GitBranch, Globe, Heart, Undo2, ExternalLink, Loader2, ArrowRight, Store, Trash2 } from 'lucide-react'
 import DogCard from './dog-card'
 import DogFormPanel from './dog-form-panel'
 import TransferPanel from '../kennel/transfer-panel'
@@ -131,6 +131,25 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
   }
   const handleToggleReproductive = (dogId: string, current: boolean) => toggleDogField(dogId, 'is_reproductive', !current)
   const handleToggleVisible = (dogId: string, current: boolean) => toggleDogField(dogId, 'show_in_kennel', !current)
+
+  // Eliminar un perro. El servidor solo lo permite si NO tiene descendencia
+  // (ningún perro/camada lo referencia como padre/madre); si la tiene, devuelve
+  // un mensaje claro y revertimos el borrado optimista.
+  const handleDelete = async (dog: Dog) => {
+    if (!window.confirm(`${t('¿Eliminar a')} ${dog.name}? ${t('Esta acción no se puede deshacer.')}`)) return
+    const before = dogs
+    setDogs((prev) => prev.filter((d) => d.id !== dog.id))
+    const res = await fetch('/api/delete-dog', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dogId: dog.id }),
+    }).catch(() => null)
+    if (!res || !res.ok) {
+      setDogs(before)
+      let msg = t('No se pudo eliminar el perro.')
+      if (res) { const r = await res.json().catch(() => null); if (r?.error) msg = r.error }
+      alert(msg)
+    }
+  }
 
   const openAdd = () => { setEditDogId(null); setPanelOpen(true) }
   const openEdit = (dogId: string) => { setEditDogId(dogId); setPanelOpen(true) }
@@ -454,6 +473,7 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
               onTransfer={() => setTransferDog({ id: dog.id, name: dog.name, thumbnail_url: dog.thumbnail_url, breed_name: Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name })}
               onToggleReproductive={isBreeder ? () => handleToggleReproductive(dog.id, !!dog.is_reproductive) : undefined}
               onToggleVisible={isBreeder ? () => handleToggleVisible(dog.id, dog.show_in_kennel !== false) : undefined}
+              onDelete={() => handleDelete(dog)}
             />
           ))}
         </div>
@@ -559,6 +579,13 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
                     className="inline-flex items-center gap-1 rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-[11px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink"
                   >
                     <ArrowRightLeft className="h-3.5 w-3.5" /> <span className="hidden md:inline">{t('Transferir')}</span>
+                  </button>
+                  <button
+                    onClick={e => { e.stopPropagation(); handleDelete(dog) }}
+                    title={t('Eliminar perro')}
+                    className="inline-flex items-center gap-1 rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-[11px] font-medium text-body transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> <span className="hidden md:inline">{t('Eliminar')}</span>
                   </button>
                 </div>
               </div>
