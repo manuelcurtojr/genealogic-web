@@ -188,7 +188,7 @@ export default async function NegocioPanel({
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <MoneyCard icon={Globe} label={t('Visitas (30 días)')} value={String(analytics.kpi.visits)} accent="#3b82f6" sub={`${analytics.kpi.uniqueVisitors} ${t('visitantes únicos')}`} href="/visitas" />
-            <MoneyCard icon={Eye} label={t('Páginas por visita')} value={analytics.kpi.pagesPerVisitor.toFixed(1)} accent="#8b5cf6" sub={`${analytics.kpi.bouncePct}% ${t('rebote')}`} href="/visitas" />
+            <MoneyCard icon={Eye} label={t('Páginas por visita')} value={analytics.kpi.pagesPerVisitor.toFixed(1)} accent="#8b5cf6" sub={`${Math.round(analytics.kpi.bouncePct * 100)}% ${t('rebote')}`} href="/visitas" />
             <MoneyCard icon={MapPin} label={t('Top país')} value={analytics.countries[0]?.country || '—'} accent="#059669" sub={analytics.countries[0] ? `${analytics.countries[0].visits} ${t('visitas')}` : t('sin datos')} href="/visitas" />
           </div>
         </section>
