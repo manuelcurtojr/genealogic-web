@@ -49,6 +49,7 @@ export function isEnterpriseUser(userId: string | null | undefined): boolean {
 // gates por hasProFeatures(plan) en la ficha y el planificador.
 const MEASUREMENTS_BETA_USERS = new Set<string>([
   '89d97ded-1043-4e59-939e-00edecd679b1', // Irema Curtó
+  'a0884cf3-389e-44c6-a0a3-003e0dd80a3d', // El Nieto
 ])
 
 export function canUseMeasurements(userId: string | null | undefined): boolean {
