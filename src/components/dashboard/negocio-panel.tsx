@@ -9,8 +9,9 @@
  * los datos del embudo. Todo enlaza a /embudo, /contratos, etc.
  */
 import { createKennelAdminClient } from '@/lib/supabase/server'
+import { getAnalytics } from '@/lib/analytics'
 import Link from 'next/link'
-import { Coins, Wallet, Hourglass, Inbox, Truck, ScrollText, ArrowRight, TrendingUp } from 'lucide-react'
+import { Coins, Wallet, Hourglass, Inbox, Truck, ScrollText, ArrowRight, TrendingUp, MessageSquare, AlertCircle, Globe, Eye, MapPin } from 'lucide-react'
 
 function money(cents: number, currency = 'EUR'): string {
   try {
@@ -46,7 +47,9 @@ export default async function NegocioPanel({
   const stages: Stage[] = ((reservasPipe?.pipeline_stages || []) as Stage[]).sort((a, b) => a.position - b.position)
   const stageById = new Map(stages.map((s) => [s.id, s]))
 
-  const [resRes, paysRes, newCountRes] = await Promise.all([
+  // eslint-disable-next-line react-hooks/purity
+  const todayISO = new Date().toISOString().split('T')[0]
+  const [resRes, paysRes, newCountRes, unreadMsgRes, overduePayRes] = await Promise.all([
     reservasPipe
       ? admin.from('puppy_reservations')
           .select('id, stage_id, seen_by_breeder_at, total_price_cents, currency, applicant_name')
@@ -55,7 +58,15 @@ export default async function NegocioPanel({
     admin.from('reservation_payments').select('reservation_id, amount_cents').eq('kennel_id', kennelId).eq('status', 'paid'),
     // Solicitudes NUEVAS sin leer (cualquier pipeline del kennel).
     admin.from('puppy_reservations').select('id', { count: 'exact', head: true }).eq('kennel_id', kennelId).is('seen_by_breeder_at', null),
+    // Mensajes de clientes SIN responder (esperando al criador).
+    admin.from('reservation_messages').select('id', { count: 'exact', head: true }).eq('kennel_id', kennelId).eq('sender_role', 'client').is('read_at_breeder', null),
+    // Pagos ATRASADOS: vencidos y no cobrados.
+    admin.from('reservation_payments').select('id', { count: 'exact', head: true }).eq('kennel_id', kennelId).lt('due_date', todayISO).in('status', ['pending', 'requested']),
   ])
+  const unreadMessages = unreadMsgRes.count || 0
+  const overduePayments = overduePayRes.count || 0
+  // Tráfico de la web pública del criadero (últimos 30 días).
+  const analytics = await getAnalytics({ kennelId, range: 'month' }).catch(() => null)
 
   const reservations: Reservation[] = (resRes.data || []) as Reservation[]
   const paidByRes: Record<string, number> = {}
@@ -143,19 +154,12 @@ export default async function NegocioPanel({
       {/* ── Requiere tu atención ── */}
       <section>
         <h2 className="mb-4 text-[22px] font-semibold tracking-[-0.04em] text-ink">{t('Requiere tu atención')}</h2>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <AttentionCard
-            icon={Inbox} color="#f59e0b" href="/embudo"
-            value={newCount} title={t('Solicitudes nuevas')} sub={newCount === 1 ? t('sin leer') : t('sin leer')}
-          />
-          <AttentionCard
-            icon={Truck} color="#3b82f6" href="/embudo"
-            value={deliveryStage ? upcomingDeliveries.length : 0} title={t('Próximas entregas')} sub={t('pendientes de entregar')}
-          />
-          <AttentionCard
-            icon={ScrollText} color="#8b5cf6" href="/contratos"
-            value={pendingContracts} title={t('Contratos por firmar')} sub={t('esperando firma')}
-          />
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+          <AttentionCard icon={Inbox} color="#f59e0b" href="/embudo" value={newCount} title={t('Solicitudes nuevas')} sub={t('sin leer')} />
+          <AttentionCard icon={MessageSquare} color="#0ea5e9" href="/embudo" value={unreadMessages} title={t('Mensajes')} sub={t('sin responder')} />
+          <AttentionCard icon={AlertCircle} color="#ef4444" href="/embudo" value={overduePayments} title={t('Pagos atrasados')} sub={t('vencidos sin cobrar')} />
+          <AttentionCard icon={Truck} color="#3b82f6" href="/embudo" value={deliveryStage ? upcomingDeliveries.length : 0} title={t('Próximas entregas')} sub={t('pendientes de entregar')} />
+          <AttentionCard icon={ScrollText} color="#8b5cf6" href="/contratos" value={pendingContracts} title={t('Contratos por firmar')} sub={t('esperando firma')} />
         </div>
         {upcomingDeliveries.length > 0 && (
           <ul className="mt-3 overflow-hidden rounded-xl border border-hairline bg-canvas divide-y divide-hairline-soft">
@@ -174,6 +178,21 @@ export default async function NegocioPanel({
           </ul>
         )}
       </section>
+
+      {/* Tu web pública — demanda entrante (últimos 30 días) */}
+      {analytics && analytics.kpi.visits > 0 && (
+        <section>
+          <div className="mb-4 flex items-end justify-between">
+            <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">{t('Tu web pública')}</h2>
+            <Link href="/visitas" className="text-[13px] font-medium text-body hover:text-ink">{t('Ver estadísticas →')}</Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <MoneyCard icon={Globe} label={t('Visitas (30 días)')} value={String(analytics.kpi.visits)} accent="#3b82f6" sub={`${analytics.kpi.uniqueVisitors} ${t('visitantes únicos')}`} href="/visitas" />
+            <MoneyCard icon={Eye} label={t('Páginas por visita')} value={analytics.kpi.pagesPerVisitor.toFixed(1)} accent="#8b5cf6" sub={`${analytics.kpi.bouncePct}% ${t('rebote')}`} href="/visitas" />
+            <MoneyCard icon={MapPin} label={t('Top país')} value={analytics.countries[0]?.country || '—'} accent="#059669" sub={analytics.countries[0] ? `${analytics.countries[0].visits} ${t('visitas')}` : t('sin datos')} href="/visitas" />
+          </div>
+        </section>
+      )}
     </div>
   )
 }

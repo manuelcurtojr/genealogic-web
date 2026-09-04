@@ -2,12 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { headers, cookies } from 'next/headers'
 import { isIosUserAgent } from '@/lib/platform'
-import { Dog, Baby, PawPrint, Tag, Plus, Stethoscope, ArrowRight, Search, BookOpen, Store, Compass, Bell, Syringe, Bug, Calendar, AlertCircle, Clock, CalendarClock, GitCompareArrows } from 'lucide-react'
+import { Dog, Baby, PawPrint, Tag, Plus, Stethoscope, ArrowRight, Search, BookOpen, Store, Compass, Bell, Syringe, Bug, Calendar, AlertCircle, Clock, CalendarClock, ImageOff, GitBranch, Heart } from 'lucide-react'
+import { getReproSignals, type ReproSignals } from '@/lib/dashboard/repro-signals'
 import { BRAND } from '@/lib/constants'
 import StatCard from '@/components/dashboard/stat-card'
 import DailyCheckIn from '@/components/dashboard/daily-checkin'
 import DashboardModeSwitcher from '@/components/dashboard/mode-switcher'
 import NegocioPanel from '@/components/dashboard/negocio-panel'
+import CriaPanel from '@/components/dashboard/cria-panel'
 import OnboardingCard from '@/components/onboarding/onboarding-card'
 import OnboardingCardOwner from '@/components/onboarding/onboarding-card-owner'
 import WelcomeNoKennel from '@/components/onboarding/welcome-no-kennel'
@@ -105,91 +107,38 @@ export default async function DashboardPage() {
   // Datos que alimentan los modos Cría / Ejemplares / Agenda y el escritorio
   // de propietario. (El modo Negocio carga sus propios datos del embudo.)
   const [
-    dogsRes, littersRes, recentDogsRes,
-    activeLittersRes, forSaleRes, vetRemindersRes, breedsCountRes,
+    dogsRes, recentDogsRes, forSaleRes, vetRemindersRes, breedsCountRes, noPhotoRes, noPedigreeRes,
   ] = await Promise.all([
     supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
-    supabase.from('litters').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
     supabase.from('dogs').select('id, name, sex, thumbnail_url, slug, breed:breeds(name)').eq('owner_id', user.id).not('thumbnail_url', 'is', null).order('created_at', { ascending: false }).limit(6),
-    supabase.from('litters').select('id, status, birth_date, mating_date, father:dogs!litters_father_id_fkey(name), mother:dogs!litters_mother_id_fkey(name)').eq('owner_id', user.id).in('status', ['planned', 'mated']).order('created_at', { ascending: false }).limit(3),
     supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('owner_id', user.id).eq('is_for_sale', true),
     supabase.from('vet_reminders').select('id, title, type, due_date, dog:dogs(name, sex)').eq('owner_id', user.id).is('completed_date', null).lte('due_date', reminderMaxDate).order('due_date').limit(5),
     supabase.from('breeds').select('id', { count: 'exact', head: true }),
+    supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('owner_id', user.id).is('thumbnail_url', null),
+    supabase.from('dogs').select('id', { count: 'exact', head: true }).eq('owner_id', user.id).or('father_id.is.null,mother_id.is.null'),
   ])
 
   const breedsCount = breedsCountRes.count || 0
   const blogPostsCount = allPosts.length
   const dogCount = dogsRes.count || 0
   const forSaleCount = forSaleRes.count || 0
+  const noPhoto = noPhotoRes.count || 0
+  const noPedigree = noPedigreeRes.count || 0
   const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
+  // Señales reproductivas para el modo Agenda (solo criador). RLS: el owner lee
+  // sus propios heat_cycles/litters/dogs.
+  const agendaRepro = (isBreeder && kennel && mode === 'agenda')
+    ? await getReproSignals(supabase, user.id, kennel.id)
+    : null
+
   // ─── Secciones reutilizables (compuestas por modo) ─────────────────────────
-  const kpisCria = (
-    <section className="grid gap-4 sm:grid-cols-2">
-      <StatCard icon={Baby} label={t('Camadas')} value={littersRes.count || 0} accentColor="#8b5cf6" sub={t('totales registradas')} href="/litters" />
-      <StatCard icon={Dog} label={t('Perros')} value={dogCount} accentColor="#fb923c" sub={t('en tu criadero')} href="/dogs" />
-    </section>
-  )
-
-  const camadasActivas = (
-    <section>
-      <div className="mb-5 flex items-end justify-between">
-        <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">{t('Camadas activas')}</h2>
-        <Link href="/litters" className="text-[13px] font-medium text-body hover:text-ink">{t('Ver todas →')}</Link>
-      </div>
-      {(activeLittersRes.data || []).length === 0 ? (
-        <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-12 text-center">
-          <Baby className="mx-auto h-8 w-8 text-muted" />
-          <p className="mt-3 text-[14px] text-body">{t('Sin camadas activas. Cuando planifiques o cruces, aparecerán aquí.')}</p>
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-xl border border-hairline bg-canvas">
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <ul className="divide-y divide-hairline-soft">
-            {(activeLittersRes.data || []).map((litter: any) => (
-              <li key={litter.id}>
-                <Link href={`/litters/${litter.id}`} className="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-surface-soft">
-                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: '#8b5cf6' }}>
-                    <Baby className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[14px] font-medium text-ink truncate">{(litter.father as any)?.name || '?'} × {(litter.mother as any)?.name || '?'}</p>
-                    <p className="text-[12.5px] text-muted">{litter.status === 'mated' ? t('En gestación') : t('Planificada')}</p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </section>
-  )
-
-  const criaShortcuts = (
-    <section className="grid gap-3 sm:grid-cols-2">
-      <Link href="/cruces" className="group rounded-xl border border-hairline bg-canvas p-5 transition-all hover:border-ink/30 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
-        <div className="flex items-center justify-between">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: '#8b5cf615', color: '#8b5cf6' }}><GitCompareArrows className="h-5 w-5" /></span>
-          <ArrowRight className="h-4 w-4 text-muted group-hover:text-ink group-hover:translate-x-0.5 transition-all" />
-        </div>
-        <h3 className="mt-4 text-[16px] font-semibold text-ink">{t('Simulador de cruces')}</h3>
-        <p className="mt-1 text-[13px] text-body">{t('Predice genética, morfología y consanguinidad de un cruce.')}</p>
-      </Link>
-      <Link href="/litters" className="group rounded-xl border border-hairline bg-canvas p-5 transition-all hover:border-ink/30 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
-        <div className="flex items-center justify-between">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: '#fb923c15', color: '#fb923c' }}><Baby className="h-5 w-5" /></span>
-          <ArrowRight className="h-4 w-4 text-muted group-hover:text-ink group-hover:translate-x-0.5 transition-all" />
-        </div>
-        <h3 className="mt-4 text-[16px] font-semibold text-ink">{t('Camadas')}</h3>
-        <p className="mt-1 text-[13px] text-body">{t('Planifica y registra tus camadas y sus cachorros.')}</p>
-      </Link>
-    </section>
-  )
-
   const kpisEjemplares = (
-    <section className="grid gap-4 sm:grid-cols-2">
+    <section className="grid gap-4 grid-cols-2 lg:grid-cols-4">
       <StatCard icon={Dog} label={t('Perros')} value={dogCount} accentColor="#fb923c" sub={t('en tu criadero')} href="/dogs" />
       <StatCard icon={Tag} label={t('En venta')} value={forSaleCount} accentColor="#34d399" sub={t('cachorros publicados')} href="/dogs?for_sale=1" />
+      <StatCard icon={ImageOff} label={t('Sin foto')} value={noPhoto} accentColor="#f59e0b" sub={t('perros a completar')} href="/dogs" />
+      <StatCard icon={GitBranch} label={t('Sin genealogía')} value={noPedigree} accentColor="#8b5cf6" sub={t('sin padres registrados')} href="/dogs" />
     </section>
   )
 
@@ -332,13 +281,7 @@ export default async function DashboardPage() {
 
           {mode === 'negocio' && kennel && <NegocioPanel kennelId={kennel.id} t={t} />}
 
-          {mode === 'cria' && (
-            <>
-              {kpisCria}
-              {camadasActivas}
-              {criaShortcuts}
-            </>
-          )}
+          {mode === 'cria' && kennel && <CriaPanel kennelId={kennel.id} ownerId={user.id} t={t} />}
 
           {mode === 'ejemplares' && (
             <>
@@ -351,6 +294,7 @@ export default async function DashboardPage() {
           {mode === 'agenda' && (
             <>
               <DailyCheckIn userId={user.id} />
+              {agendaRepro && <AgendaReproBlock signals={agendaRepro} t={t} />}
               {recordatorios || (
                 <div className="rounded-xl border border-dashed border-hairline bg-surface-soft px-6 py-12 text-center">
                   <CalendarClock className="mx-auto h-8 w-8 text-muted" />
@@ -377,6 +321,39 @@ export default async function DashboardPage() {
         </>
       )}
     </div>
+  )
+}
+
+/** Hitos reproductivos próximos para el modo Agenda (partos, celos, confirmaciones). */
+function AgendaReproBlock({ signals, t }: { signals: ReproSignals; t: (k: string) => string }) {
+  const events: { label: string; when: string; days: number; icon: React.ElementType; color: string }[] = []
+  for (const b of signals.upcomingBirths) events.push({ label: `${t('Parto de')} ${b.femaleName}`, when: b.when, days: b.daysLeft, icon: Baby, color: '#8b5cf6' })
+  for (const h of signals.inHeat) events.push({ label: `${h.femaleName} · ${t('en celo')}`, when: h.when, days: 0, icon: Heart, color: '#ef4444' })
+  for (const c of signals.toConfirm) events.push({ label: `${t('Confirmar preñez de')} ${c.femaleName}`, when: c.when, days: c.overdue ? -1 : 1, icon: Stethoscope, color: '#3b82f6' })
+  for (const h of signals.upcomingHeats) events.push({ label: `${t('Celo previsto de')} ${h.femaleName}`, when: h.when, days: h.daysLeft, icon: CalendarClock, color: '#059669' })
+  if (events.length === 0) return null
+  events.sort((a, b) => a.days - b.days)
+  return (
+    <section>
+      <div className="mb-5 flex items-end justify-between">
+        <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-ink">{t('Reproducción próxima')}</h2>
+        <Link href="/reproduccion" className="text-[13px] font-medium text-body hover:text-ink">{t('Ver calendario →')}</Link>
+      </div>
+      <div className="space-y-1.5">
+        {events.slice(0, 8).map((e, i) => {
+          const Icon = e.icon
+          return (
+            <Link key={i} href="/reproduccion" className="flex items-center gap-3 rounded-xl border border-hairline bg-canvas p-3 transition hover:border-ink/20">
+              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg" style={{ background: e.color + '15' }}><Icon className="h-4 w-4" style={{ color: e.color }} /></div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-medium text-ink truncate">{e.label}</p>
+                <p className="text-[11.5px] text-muted">{e.when}</p>
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+    </section>
   )
 }
 
