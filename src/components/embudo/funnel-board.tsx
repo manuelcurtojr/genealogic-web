@@ -14,7 +14,7 @@ import confetti from 'canvas-confetti'
 import {
   Sparkles, X, Plus, Settings, Mail, Phone, Clock, AlertTriangle,
   ChevronDown, ChevronUp, TrendingUp, Trophy, XCircle, Inbox, ChevronRight,
-  MapPin, Coins, Wallet, Hourglass,
+  MapPin, Coins, Wallet, Hourglass, List, Table2,
 } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import { moveEntryToStage, markEntrySeen } from '@/lib/pipelines/actions'
@@ -65,6 +65,7 @@ export default function FunnelBoard({
   const [loss, setLoss] = useState<{ entryId: string; stageId: string; reasons: string[] } | null>(null)
   const [party, setParty] = useState<{ title: string; subtitle: string } | null>(null)
   const [showOrphans, setShowOrphans] = useState(false)
+  const [view, setView] = useState<'list' | 'table'>('list')
 
   // Leads HUÉRFANOS (stage_id=null) — entraron en BBDD pero no se les asignó
   // un paso del embudo. Causa: pipeline_stages sin is_entry=true (criador
@@ -207,6 +208,8 @@ export default function FunnelBoard({
   }
 
   const stageEntries = byStage.get(stageId) || []
+  // Vista tabla: TODAS las fichas del pipeline (todos los pasos) en celdas.
+  const pipelineEntries = entries.filter((e) => e.pipeline_id === pipeline.id && e.stage_id)
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-7 space-y-5 sm:space-y-6">
@@ -306,47 +309,64 @@ export default function FunnelBoard({
         {/* Separador */}
         <div className="border-t border-hairline -mx-3 sm:-mx-4" />
 
-        {/* Stage chips */}
-        <div className="flex flex-wrap gap-1.5 pt-0.5">
-          {pipeline.stages.map((s) => {
-            const active = s.id === stageId
-            const count = (byStage.get(s.id) || []).length
-            const unseen = unseenByStage.get(s.id) || 0
-            const StageIcon = s.type === 'won' ? Trophy : s.type === 'lost' ? XCircle : Inbox
-            const baseTone =
-              s.type === 'won'
-                ? active
-                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                  : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
-                : s.type === 'lost'
-                ? active
-                  ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
-                  : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
-                : active
-                ? 'bg-ink text-on-primary border-ink shadow-sm'
-                : 'bg-canvas text-body border-hairline hover:bg-surface-soft hover:border-ink/30'
-            return (
-              <button
-                key={s.id}
-                onClick={() => setStageId(s.id)}
-                className={`relative inline-flex items-center gap-1.5 rounded-full px-3 h-8 text-[12.5px] font-semibold transition-all border ${baseTone}`}
-              >
-                <StageIcon className="h-3 w-3" />
-                {t(s.name)}
-                <span className={`text-[10.5px] tabular-nums ${active ? 'opacity-80' : 'opacity-70'}`}>
-                  {count}
-                </span>
-                {unseen > 0 && (
-                  <span className="ml-0.5 w-1.5 h-1.5 rounded-full bg-amber-400" aria-hidden />
-                )}
-              </button>
-            )
-          })}
+        {/* Stage chips (solo en vista lista) + toggle Lista/Tabla */}
+        <div className="flex items-start justify-between gap-3 pt-0.5">
+          <div className="flex flex-wrap gap-1.5 min-w-0">
+            {view === 'list' ? (
+              pipeline.stages.map((s) => {
+                const active = s.id === stageId
+                const count = (byStage.get(s.id) || []).length
+                const unseen = unseenByStage.get(s.id) || 0
+                const StageIcon = s.type === 'won' ? Trophy : s.type === 'lost' ? XCircle : Inbox
+                const baseTone =
+                  s.type === 'won'
+                    ? active
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                      : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                    : s.type === 'lost'
+                    ? active
+                      ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
+                      : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                    : active
+                    ? 'bg-ink text-on-primary border-ink shadow-sm'
+                    : 'bg-canvas text-body border-hairline hover:bg-surface-soft hover:border-ink/30'
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => setStageId(s.id)}
+                    className={`relative inline-flex items-center gap-1.5 rounded-full px-3 h-8 text-[12.5px] font-semibold transition-all border ${baseTone}`}
+                  >
+                    <StageIcon className="h-3 w-3" />
+                    {t(s.name)}
+                    <span className={`text-[10.5px] tabular-nums ${active ? 'opacity-80' : 'opacity-70'}`}>
+                      {count}
+                    </span>
+                    {unseen > 0 && (
+                      <span className="ml-0.5 w-1.5 h-1.5 rounded-full bg-amber-400" aria-hidden />
+                    )}
+                  </button>
+                )
+              })
+            ) : (
+              <span className="inline-flex items-center h-8 text-[12.5px] text-muted">
+                {pipelineEntries.length} {pipelineEntries.length === 1 ? t('ficha') : t('fichas')} · {t('todos los pasos')}
+              </span>
+            )}
+          </div>
+          <ViewToggle view={view} onChange={setView} t={t} />
         </div>
       </div>
 
-      {/* ─── Lista de fichas del stage activo ─── */}
-      {stageEntries.length === 0 ? (
+      {/* ─── Fichas: vista TABLA (todo el pipeline) o LISTA (paso activo) ─── */}
+      {view === 'table' ? (
+        <FunnelTable
+          entries={pipelineEntries}
+          stages={pipeline.stages}
+          paidByEntry={paidByEntry}
+          onRowClick={openLead}
+          t={t}
+        />
+      ) : stageEntries.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-hairline bg-surface-soft/30 px-6 py-16 text-center">
           <div className="mx-auto h-12 w-12 rounded-2xl bg-canvas border border-hairline flex items-center justify-center text-muted">
             <Inbox className="h-5 w-5" />
@@ -461,6 +481,145 @@ function StatChip({
       </div>
     </div>
   )
+}
+
+/** Conmutador Lista / Tabla (vista tipo hoja de cálculo). */
+function ViewToggle({
+  view, onChange, t,
+}: {
+  view: 'list' | 'table'
+  onChange: (v: 'list' | 'table') => void
+  t: (k: string) => string
+}) {
+  return (
+    <div className="inline-flex items-center rounded-lg border border-hairline bg-canvas p-0.5 flex-shrink-0">
+      <button
+        type="button"
+        onClick={() => onChange('list')}
+        title={t('Vista lista')}
+        className={`inline-flex items-center gap-1.5 rounded-md px-2.5 h-7 text-[12px] font-semibold transition-colors ${view === 'list' ? 'bg-ink text-on-primary' : 'text-body hover:text-ink'}`}
+      >
+        <List className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t('Lista')}</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange('table')}
+        title={t('Vista tabla')}
+        className={`inline-flex items-center gap-1.5 rounded-md px-2.5 h-7 text-[12px] font-semibold transition-colors ${view === 'table' ? 'bg-ink text-on-primary' : 'text-body hover:text-ink'}`}
+      >
+        <Table2 className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t('Tabla')}</span>
+      </button>
+    </div>
+  )
+}
+
+/** Raza(s) de interés guardadas en applicant_extra_data.preference_breed. */
+function breedOf(entry: FunnelEntry): string {
+  const extra = entry.applicant_extra_data
+  if (!extra || typeof extra !== 'object') return ''
+  const pb = (extra as Record<string, unknown>).preference_breed as { value?: unknown } | undefined
+  const v = pb?.value
+  return Array.isArray(v) ? v.join(', ') : typeof v === 'string' ? v : ''
+}
+
+/**
+ * Vista TABLA (tipo hoja de cálculo) de todas las fichas del pipeline. Filas
+ * densas y escaneables; clic en una fila abre el panel de detalle (igual que
+ * la lista). Scroll horizontal propio para no romper el ancho de la página.
+ */
+function FunnelTable({
+  entries, stages, paidByEntry, onRowClick, t,
+}: {
+  entries: FunnelEntry[]
+  stages: Stage[]
+  paidByEntry: Record<string, number>
+  onRowClick: (e: FunnelEntry) => void
+  t: (k: string) => string
+}) {
+  if (entries.length === 0) {
+    return (
+      <div className="rounded-2xl border-2 border-dashed border-hairline bg-surface-soft/30 px-6 py-16 text-center">
+        <div className="mx-auto h-12 w-12 rounded-2xl bg-canvas border border-hairline flex items-center justify-center text-muted">
+          <Inbox className="h-5 w-5" />
+        </div>
+        <p className="mt-4 text-[14px] font-semibold text-ink">{t('No hay fichas en este embudo.')}</p>
+      </div>
+    )
+  }
+  const stageById = new Map(stages.map((s) => [s.id, s]))
+  const sexLabel = (s: string | null | undefined) =>
+    s === 'male' ? t('Macho') : s === 'female' ? t('Hembra') : s ? t('Indiferente') : '—'
+  return (
+    <div className="rounded-2xl border border-hairline bg-canvas overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-[12.5px] border-collapse">
+          <thead>
+            <tr className="bg-surface-soft/60 text-muted text-[10px] uppercase tracking-wider">
+              <Th>{t('Nombre')}</Th>
+              <Th>{t('Sexo')}</Th>
+              <Th>{t('Color')}</Th>
+              <Th>{t('Raza')}</Th>
+              <Th>{t('País')}</Th>
+              <Th>{t('Paso')}</Th>
+              <Th right>{t('Total')}</Th>
+              <Th right>{t('Pagado')}</Th>
+              <Th right>{t('Falta')}</Th>
+              <Th>{t('Fecha')}</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((e) => {
+              const stage = stageById.get(e.stage_id!)
+              const paid = paidByEntry[e.id] || 0
+              const total = e.total_price_cents
+              const falta = total != null ? Math.max(0, total - paid) : null
+              const isNew = !e.seen_by_breeder_at
+              const stageTone =
+                stage?.type === 'won'
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : stage?.type === 'lost'
+                  ? 'bg-rose-50 text-rose-700'
+                  : 'bg-surface-soft text-body'
+              return (
+                <tr
+                  key={e.id}
+                  onClick={() => onRowClick(e)}
+                  className={`border-t border-hairline cursor-pointer hover:bg-surface-soft/50 ${isNew ? 'bg-amber-50/40' : ''}`}
+                >
+                  <Td>
+                    <span className="font-semibold text-ink">{e.applicant_name || t('Sin nombre')}</span>
+                    {isNew && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-amber-400 align-middle" aria-label={t('Nueva')} />}
+                  </Td>
+                  <Td>{sexLabel(e.preference_sex)}</Td>
+                  <Td>{e.preference_color || '—'}</Td>
+                  <Td>{breedOf(e) || '—'}</Td>
+                  <Td>{e.applicant_country || '—'}</Td>
+                  <Td>
+                    {stage
+                      ? <span className={`inline-block rounded px-1.5 py-0.5 text-[10.5px] font-medium ${stageTone}`}>{t(stage.name)}</span>
+                      : '—'}
+                  </Td>
+                  <Td right>{total != null ? fmtMoney(total, e.currency) : '—'}</Td>
+                  <Td right>{paid > 0 ? <span className="text-emerald-700 font-semibold">{fmtMoney(paid, e.currency)}</span> : '—'}</Td>
+                  <Td right>
+                    {falta == null ? '—' : falta === 0 ? <span className="text-emerald-700 font-semibold">✓</span> : <span className="text-amber-700 font-semibold">{fmtMoney(falta, e.currency)}</span>}
+                  </Td>
+                  <Td>{new Date(e.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: '2-digit' })}</Td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function Th({ children, right }: { children: React.ReactNode; right?: boolean }) {
+  return <th className={`px-3 py-2 font-semibold whitespace-nowrap ${right ? 'text-right' : 'text-left'}`}>{children}</th>
+}
+function Td({ children, right }: { children: React.ReactNode; right?: boolean }) {
+  return <td className={`px-3 py-2 whitespace-nowrap ${right ? 'text-right tabular-nums' : 'text-left'} text-ink`}>{children}</td>
 }
 
 function fmtMoney(cents: number, currency: string | null): string {
