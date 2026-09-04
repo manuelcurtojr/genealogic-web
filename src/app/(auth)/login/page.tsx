@@ -20,6 +20,7 @@ function LoginInner() {
   const destination = redirectParam || '/dashboard'
   const intent = searchParams.get('intent')
   const plan = searchParams.get('plan')
+  const isAddingAccount = searchParams.get('add') === '1'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -109,6 +110,11 @@ function LoginInner() {
       )}
 
       <form onSubmit={handleLogin} className="space-y-4">
+        {isAddingAccount && (
+          <div className="rounded-lg border border-hairline bg-surface-soft/50 px-3 py-2.5 text-[12.5px] text-body">
+            {t('Estás añadiendo otra cuenta. Tu sesión actual se mantiene: luego podrás cambiar entre cuentas desde tu avatar.')}
+          </div>
+        )}
         {error && <AuthError>{error}</AuthError>}
 
         <Field

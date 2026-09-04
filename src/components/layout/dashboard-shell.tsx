@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Sidebar from './sidebar'
+import AccountSwitcher from './account-switcher'
 import SearchBar from './search-bar'
 import NotificationsPanel from './notifications-panel'
 import GenosPanel from '@/components/genos/genos-panel'
@@ -282,15 +283,16 @@ export default function DashboardShell({ user, kennel, plan, planIsFounder, user
               </span>
             )}
           </button>
-          <Link href="/settings" className={`w-9 h-9 rounded-full overflow-hidden border-2 ${avatarBg} cursor-pointer block`}>
-            {user?.avatar_url ? (
-              <Img src={user.avatar_url} w={120} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-surface-card flex items-center justify-center text-ink text-xs font-bold">
-                {(user?.display_name || '?')[0].toUpperCase()}
-              </div>
-            )}
-          </Link>
+          {user ? (
+            <AccountSwitcher
+              current={{ userId: userId || '', name: user.display_name, email: user.email, avatarUrl: user.avatar_url }}
+              variant="desktop"
+            />
+          ) : (
+            <Link href="/settings" className={`w-9 h-9 rounded-full overflow-hidden border-2 ${avatarBg} cursor-pointer block`}>
+              <div className="w-full h-full bg-surface-card flex items-center justify-center text-ink text-xs font-bold">?</div>
+            </Link>
+          )}
         </div>
       </div>
 

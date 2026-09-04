@@ -133,8 +133,11 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Auth routes — redirect logged-in users (admins → /admin, others → /dashboard)
+  // Excepción multi-cuenta: ?add=1 ("añadir otra cuenta") deja ver el login
+  // aunque ya haya sesión, para iniciar con otra cuenta sin cerrar la actual.
   const isAuthRoute = pathname === '/login' || pathname === '/register'
-  if (isAuthRoute && user) {
+  const isAddingAccount = request.nextUrl.searchParams.get('add') === '1'
+  if (isAuthRoute && user && !isAddingAccount) {
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
     const url = request.nextUrl.clone()
     url.pathname = profile?.role === 'admin' ? '/admin' : '/dashboard'
