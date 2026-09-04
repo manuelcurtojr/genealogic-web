@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Edit, ArrowRightLeft, GitBranch, Globe, EyeOff, Heart } from 'lucide-react'
+import { Edit, ArrowRightLeft, GitBranch, Globe, EyeOff, Heart, Trash2 } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
 import { DogImage } from '@/components/ui/dog-image'
 import { useT } from '@/components/i18n/locale-provider'
@@ -32,6 +32,8 @@ interface DogCardProps {
   onToggleVisible?: () => void
   /** Solo para criadores: toggle "es reproductor" */
   onToggleReproductive?: () => void
+  /** Eliminar el perro (solo permitido si no tiene descendencia; lo valida el server). */
+  onDelete?: () => void
 }
 
 /**
@@ -57,6 +59,7 @@ export default function DogCard({
   onEditPedigree,
   onToggleVisible,
   onToggleReproductive,
+  onDelete,
 }: DogCardProps) {
   const t = useT()
   const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#888'
@@ -139,6 +142,17 @@ export default function DogCard({
           className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:bg-surface-card hover:text-ink"
         >
           <ArrowRightLeft className="h-4 w-4" />
+        </button>
+      )}
+      {onDelete && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onDelete() }}
+          title={t('Eliminar perro')}
+          aria-label={t('Eliminar perro')}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-hairline bg-canvas text-muted transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600"
+        >
+          <Trash2 className="h-4 w-4" />
         </button>
       )}
     </>
