@@ -20,9 +20,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { Img } from '@/components/ui/img'
-import { Check, Plus, LogOut, Settings, ChevronsUpDown, Loader2 } from 'lucide-react'
+import { Check, Plus, LogOut, Settings, ChevronsUpDown, Loader2, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { getSavedAccounts, upsertAccount, removeAccount, clearAccounts, type SavedAccount } from '@/lib/auth/accounts'
+import { getSavedAccounts, upsertAccount, removeAccount, type SavedAccount } from '@/lib/auth/accounts'
 import { useT } from '@/components/i18n/locale-provider'
 
 function Avatar({ url, name, size = 36 }: { url: string | null; name: string; size?: number }) {
@@ -117,14 +117,36 @@ export default function AccountSwitcher({
     window.location.href = '/login?add=1'
   }, [])
 
+  // Cerrar sesión SOLO de la cuenta actual. Las demás quedan enlazadas: si hay
+  // otra, saltamos a ella; si no, al login. (No borra el resto de cuentas.)
   const logout = useCallback(async () => {
     if (busy) return
     setBusy(true)
     const supabase = createClient()
-    clearAccounts()
-    await supabase.auth.signOut()
-    window.location.href = '/login'
-  }, [busy])
+    removeAccount(activeId)
+    await supabase.auth.signOut({ scope: 'local' })
+    const rest = getSavedAccounts()
+    if (rest.length > 0) {
+      const { error } = await supabase.auth.setSession({
+        access_token: rest[0].access_token,
+        refresh_token: rest[0].refresh_token,
+      })
+      if (error) { removeAccount(rest[0].userId) }
+      window.location.href = error ? '/login' : '/dashboard'
+    } else {
+      window.location.href = '/login'
+    }
+  }, [busy, activeId])
+
+  // Desconectar una cuenta del navegador (desvincularla). Si es la activa,
+  // equivale a cerrar su sesión; si es otra, solo se quita de la lista y su
+  // sesión en Supabase sigue viva (habría que volver a iniciar para re-añadirla).
+  const disconnect = useCallback((acc: SavedAccount) => {
+    if (busy) return
+    if (acc.userId === activeId) { logout(); return }
+    removeAccount(acc.userId)
+    setAccounts(getSavedAccounts())
+  }, [busy, activeId, logout])
 
   // ─── Contenido del menú (compartido) ───
   const menu = (
@@ -153,19 +175,30 @@ export default function AccountSwitcher({
 
       {/* Otras cuentas */}
       {others.map((a) => (
-        <button
-          key={a.userId}
-          type="button"
-          onClick={() => switchTo(a)}
-          disabled={busy}
-          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left hover:bg-surface-soft disabled:opacity-50"
-        >
-          <Avatar url={a.avatarUrl} name={a.name} size={32} />
-          <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-semibold text-ink truncate">{a.name || t('Cuenta')}</p>
-            <p className="text-[11px] text-muted truncate">{a.email}</p>
-          </div>
-        </button>
+        <div key={a.userId} className="flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-lg hover:bg-surface-soft">
+          <button
+            type="button"
+            onClick={() => switchTo(a)}
+            disabled={busy}
+            className="flex items-center gap-2.5 flex-1 min-w-0 text-left py-1 disabled:opacity-50"
+          >
+            <Avatar url={a.avatarUrl} name={a.name} size={32} />
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-semibold text-ink truncate">{a.name || t('Cuenta')}</p>
+              <p className="text-[11px] text-muted truncate">{a.email}</p>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => disconnect(a)}
+            disabled={busy}
+            title={t('Desconectar cuenta')}
+            aria-label={t('Desconectar cuenta')}
+            className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center text-muted/60 hover:text-rose-600 hover:bg-surface-card transition disabled:opacity-40"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
       ))}
 
       <button

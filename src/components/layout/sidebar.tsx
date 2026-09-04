@@ -19,6 +19,7 @@ import { isAdmin, hasProFeatures, canUseMeasurements } from '@/lib/permissions'
 import { getTranslator } from '@/lib/i18n'
 import { Wordmark } from '@/components/ui/wordmark'
 import AccountSwitcher from './account-switcher'
+import { getSavedAccounts, removeAccount } from '@/lib/auth/accounts'
 
 const iconMap: Record<string, React.ElementType> = {
   Dog, Baby, Calendar, FileInput, Heart, Users, HandCoins, Settings,
@@ -60,10 +61,23 @@ export default function Sidebar({ user, kennel, plan, planIsFounder, userId, isC
   const lang = typeof window !== 'undefined' ? localStorage.getItem('genealogic-lang') || 'es' : 'es'
   const t = getTranslator(lang)
 
+  // Cerrar sesión de la cuenta ACTUAL manteniendo las demás enlazadas (igual
+  // que el cambiador de cuentas): si queda otra, saltamos a ella.
   const handleLogout = async () => {
     const supabase = createClient()
-    await supabase.auth.signOut()
-    window.location.href = '/login'
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    if (authUser) removeAccount(authUser.id)
+    await supabase.auth.signOut({ scope: 'local' })
+    const rest = getSavedAccounts()
+    if (rest.length > 0) {
+      const { error } = await supabase.auth.setSession({
+        access_token: rest[0].access_token,
+        refresh_token: rest[0].refresh_token,
+      })
+      window.location.href = error ? '/login' : '/dashboard'
+    } else {
+      window.location.href = '/login'
+    }
   }
 
   // Filter sections + items by user permissions
