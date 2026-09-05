@@ -51,6 +51,11 @@ import * as p19 from './posts/planificar-camada-consanguinidad-morfologia'
 import * as p20 from './posts/genealogia-verificable-sube-precio'
 import * as p21 from './posts/profesionalizar-criadero-2026'
 
+// Serie del simulador de cruces
+import * as p22 from './posts/simulador-de-cruces-genealogic'
+import * as p23 from './posts/coi-consanguinidad-camada'
+import * as p24 from './posts/prediccion-genetica-color-camada'
+
 const posts: BlogPost[] = [
   { meta: p01.metadata, Content: p01.default },
   { meta: p02.metadata, Content: p02.default },
@@ -73,6 +78,9 @@ const posts: BlogPost[] = [
   { meta: p19.metadata, Content: p19.default },
   { meta: p20.metadata, Content: p20.default },
   { meta: p21.metadata, Content: p21.default },
+  { meta: p22.metadata, Content: p22.default },
+  { meta: p23.metadata, Content: p23.default },
+  { meta: p24.metadata, Content: p24.default },
 ]
 
 // Ordenado descendente por fecha (más reciente primero)
