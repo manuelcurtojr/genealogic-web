@@ -56,6 +56,12 @@ import * as p22 from './posts/simulador-de-cruces-genealogic'
 import * as p23 from './posts/coi-consanguinidad-camada'
 import * as p24 from './posts/prediccion-genetica-color-camada'
 
+// Serie de producto
+import * as p25 from './posts/importar-genealogia-con-ia'
+import * as p26 from './posts/tu-criadero-en-google'
+import * as p27 from './posts/calendario-reproductivo-celos-partos'
+import * as p28 from './posts/genotipos-adn-criadero'
+
 const posts: BlogPost[] = [
   { meta: p01.metadata, Content: p01.default },
   { meta: p02.metadata, Content: p02.default },
@@ -81,6 +87,10 @@ const posts: BlogPost[] = [
   { meta: p22.metadata, Content: p22.default },
   { meta: p23.metadata, Content: p23.default },
   { meta: p24.metadata, Content: p24.default },
+  { meta: p25.metadata, Content: p25.default },
+  { meta: p26.metadata, Content: p26.default },
+  { meta: p27.metadata, Content: p27.default },
+  { meta: p28.metadata, Content: p28.default },
 ]
 
 // Ordenado descendente por fecha (más reciente primero)
