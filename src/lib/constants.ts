@@ -157,6 +157,7 @@ export const NAV_SECTIONS: NavSection[] = [
     id: 'support',
     label: '',
     items: [
+      { label: 'Blog', href: '/blog', icon: 'BookOpen' },
       { label: 'Soporte', href: '/soporte', icon: 'LifeBuoy' },
     ],
   },
