@@ -43,6 +43,14 @@ import * as p13 from './posts/muhlbauers-flocki-fundador-boxer'
 import * as p14 from './posts/trump-pug-william-hogarth'
 import * as p15 from './posts/warren-remedy-primer-best-in-show-westminster'
 
+// Posts de gestión de criaderos (multi-raza)
+import * as p16 from './posts/vender-cachorros-con-confianza'
+import * as p17 from './posts/contrato-compraventa-cachorro'
+import * as p18 from './posts/gestionar-reservas-camada'
+import * as p19 from './posts/planificar-camada-consanguinidad-morfologia'
+import * as p20 from './posts/genealogia-verificable-sube-precio'
+import * as p21 from './posts/profesionalizar-criadero-2026'
+
 const posts: BlogPost[] = [
   { meta: p01.metadata, Content: p01.default },
   { meta: p02.metadata, Content: p02.default },
@@ -59,6 +67,12 @@ const posts: BlogPost[] = [
   { meta: p13.metadata, Content: p13.default },
   { meta: p14.metadata, Content: p14.default },
   { meta: p15.metadata, Content: p15.default },
+  { meta: p16.metadata, Content: p16.default },
+  { meta: p17.metadata, Content: p17.default },
+  { meta: p18.metadata, Content: p18.default },
+  { meta: p19.metadata, Content: p19.default },
+  { meta: p20.metadata, Content: p20.default },
+  { meta: p21.metadata, Content: p21.default },
 ]
 
 // Ordenado descendente por fecha (más reciente primero)
