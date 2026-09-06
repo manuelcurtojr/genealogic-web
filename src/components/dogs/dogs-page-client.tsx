@@ -7,6 +7,7 @@ import DogCard from './dog-card'
 import DogFormPanel from './dog-form-panel'
 import TransferPanel from '../kennel/transfer-panel'
 import PedigreeEditor from '../pedigree/pedigree-editor'
+import Drawer from '../embudo/drawer'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 import SortSelect, { useSortPreference, sortItems } from '@/components/ui/sort-select'
@@ -72,6 +73,8 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
   const [transferDog, setTransferDog] = useState<any>(null)
   const [pedigreeOpen, setPedigreeOpen] = useState(false)
   const [pedigreeDogId, setPedigreeDogId] = useState('')
+  // Perro cuyo panel derecho de opciones está abierto (vista tabla).
+  const [optionsDogId, setOptionsDogId] = useState<string | null>(null)
 
   // Tab activo (solo aplica si isBreeder); también lee/escribe ?tab= para deeplink
   const [activeTab, setActiveTab] = useState<DogTab>(() => {
@@ -237,6 +240,8 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
   const sorted = sortItems(filtered, sortBy)
   const paged = sorted.slice(0, visibleCount)
   const hasMore = visibleCount < filtered.length
+  // Perro activo del panel de opciones (se resuelve en vivo para reflejar toggles).
+  const optionsDog = optionsDogId ? (dogs.find((d) => d.id === optionsDogId) ?? null) : null
 
   const handleSearchChange = (v: string) => { setSearch(v); setVisibleCount(PAGE_SIZE) }
 
@@ -485,7 +490,7 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
           ))}
         </div>
       ) : viewMode === 'table' ? (
-        <DogsTable dogs={paged} isBreeder={isBreeder} t={t} />
+        <DogsTable dogs={paged} isBreeder={isBreeder} onOpenOptions={(dog) => setOptionsDogId(dog.id)} t={t} />
       ) : (
         <div className="space-y-2">
           <button
@@ -641,6 +646,31 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
       />
 
       <PedigreeEditor open={pedigreeOpen} onClose={() => setPedigreeOpen(false)} dogId={pedigreeDogId} userId={userId} />
+
+      {/* Panel derecho de opciones del perro (vista tabla) */}
+      {optionsDog && (
+        <DogOptionsPanel
+          dog={optionsDog}
+          isBreeder={isBreeder}
+          t={t}
+          onClose={() => setOptionsDogId(null)}
+          onViewProfile={() => { window.location.href = `/dogs/${optionsDog.slug || optionsDog.id}` }}
+          onEdit={() => { setOptionsDogId(null); openEdit(optionsDog.id) }}
+          onPedigree={() => { setOptionsDogId(null); openPedigree(optionsDog.id) }}
+          onTransfer={() => {
+            setOptionsDogId(null)
+            setTransferDog({
+              id: optionsDog.id,
+              name: optionsDog.name,
+              thumbnail_url: optionsDog.thumbnail_url,
+              breed_name: Array.isArray(optionsDog.breed) ? optionsDog.breed[0]?.name : optionsDog.breed?.name,
+            })
+          }}
+          onToggleVisible={() => handleToggleVisible(optionsDog.id, optionsDog.show_in_kennel !== false)}
+          onToggleReproductive={() => handleToggleReproductive(optionsDog.id, !!optionsDog.is_reproductive)}
+          onDelete={() => handleDelete(optionsDog)}
+        />
+      )}
     </div>
   )
 }
@@ -650,7 +680,7 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
  * Filas densas y escaneables; clic en la fila abre el perfil del perro (igual
  * que la vista lista). Scroll horizontal propio para no romper el ancho.
  */
-function DogsTable({ dogs, isBreeder, t }: { dogs: Dog[]; isBreeder: boolean; t: (k: string) => string }) {
+function DogsTable({ dogs, isBreeder, onOpenOptions, t }: { dogs: Dog[]; isBreeder: boolean; onOpenOptions: (dog: Dog) => void; t: (k: string) => string }) {
   if (dogs.length === 0) return null
   const fmtDate = (d: string | null) =>
     d ? new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
@@ -676,10 +706,15 @@ function DogsTable({ dogs, isBreeder, t }: { dogs: Dog[]; isBreeder: boolean; t:
               return (
                 <tr
                   key={dog.id}
-                  onClick={() => { window.location.href = `/dogs/${dog.slug || dog.id}` }}
+                  onClick={() => onOpenOptions(dog)}
+                  title={t('Ver opciones')}
                   className="cursor-pointer border-t border-hairline hover:bg-surface-soft/50"
                 >
-                  <td className="whitespace-nowrap px-3 py-2">
+                  <td
+                    className="group/name whitespace-nowrap px-3 py-2"
+                    onClick={(e) => { e.stopPropagation(); window.location.href = `/dogs/${dog.slug || dog.id}` }}
+                    title={t('Ver perfil')}
+                  >
                     <span className="flex items-center gap-2">
                       <span
                         className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full border-2 bg-surface-card"
@@ -689,7 +724,7 @@ function DogsTable({ dogs, isBreeder, t }: { dogs: Dog[]; isBreeder: boolean; t:
                           ? <Img w={80} src={dog.thumbnail_url} alt="" className="h-full w-full object-cover" />
                           : <span className="flex h-full w-full items-center justify-center text-[11px] text-muted">{dog.sex === 'male' ? '♂' : '♀'}</span>}
                       </span>
-                      <span className="font-semibold text-ink">{dog.name}</span>
+                      <span className="font-semibold text-ink group-hover/name:underline">{dog.name}</span>
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 text-ink">
@@ -715,6 +750,97 @@ function DogsTable({ dogs, isBreeder, t }: { dogs: Dog[]; isBreeder: boolean; t:
         </table>
       </div>
     </div>
+  )
+}
+
+/**
+ * DogOptionsPanel — panel lateral derecho con las opciones de un perro (ver
+ * perfil, editar, genealogía, visibilidad, reproductor, transferir, eliminar).
+ * Se abre desde la vista tabla al pinchar una fila fuera del nombre/foto.
+ */
+function DogOptionsPanel({
+  dog, isBreeder, t, onClose, onViewProfile, onEdit, onPedigree, onTransfer, onToggleVisible, onToggleReproductive, onDelete,
+}: {
+  dog: Dog
+  isBreeder: boolean
+  t: (k: string) => string
+  onClose: () => void
+  onViewProfile: () => void
+  onEdit: () => void
+  onPedigree: () => void
+  onTransfer: () => void
+  onToggleVisible: () => void
+  onToggleReproductive: () => void
+  onDelete: () => void
+}) {
+  const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#888'
+  const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
+  const colorName = Array.isArray(dog.color) ? dog.color[0]?.name : dog.color?.name
+  const visible = dog.show_in_kennel !== false
+  const repro = !!dog.is_reproductive
+  const actionCls = 'inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink'
+  return (
+    <Drawer title={dog.name} subtitle={[breedName, colorName].filter(Boolean).join(' · ') || undefined} onClose={onClose}>
+      <div className="space-y-4">
+        {/* Resumen */}
+        <div className="flex items-center gap-3 rounded-xl border border-hairline bg-surface-soft/40 p-3">
+          <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-full border-2 bg-surface-card" style={{ borderColor: sexColor }}>
+            {dog.thumbnail_url
+              ? <Img w={140} src={dog.thumbnail_url} alt="" className="h-full w-full object-cover" />
+              : <div className="flex h-full w-full items-center justify-center text-lg text-muted">{dog.sex === 'male' ? '♂' : '♀'}</div>}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-[15px] font-semibold text-ink">{dog.name}</p>
+            <p className="mt-0.5 text-[12.5px] text-muted">
+              {[
+                dog.sex === 'male' ? t('Macho') : dog.sex === 'female' ? t('Hembra') : null,
+                breedName,
+                dog.birth_date ? new Date(dog.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : null,
+              ].filter(Boolean).join(' · ')}
+            </p>
+          </div>
+        </div>
+
+        {/* Ver perfil (acción primaria) */}
+        <button
+          onClick={onViewProfile}
+          className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-ink px-4 py-2.5 text-[13px] font-bold text-on-primary transition-opacity hover:opacity-90"
+        >
+          <ExternalLink className="h-4 w-4" /> {t('Ver perfil')}
+        </button>
+
+        {/* Acciones */}
+        <div className="grid grid-cols-2 gap-2">
+          <button onClick={onEdit} className={actionCls}><Edit className="h-3.5 w-3.5" /> {t('Editar')}</button>
+          <button onClick={onPedigree} className={actionCls}><GitBranch className="h-3.5 w-3.5" /> {t('Genealogía')}</button>
+          {isBreeder && (
+            <button
+              onClick={onToggleVisible}
+              aria-pressed={visible}
+              className={`inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-[13px] font-medium transition-colors ${visible ? 'border-emerald-400/60 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border-hairline bg-canvas text-muted hover:bg-surface-soft hover:text-ink'}`}
+            >
+              {visible ? <Globe className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />} {visible ? t('Visible') : t('Oculto')}
+            </button>
+          )}
+          {isBreeder && (
+            <button
+              onClick={onToggleReproductive}
+              aria-pressed={repro}
+              className={`inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-[13px] font-medium transition-colors ${repro ? 'border-pink-400/60 bg-pink-50 text-pink-700 hover:bg-pink-100' : 'border-hairline bg-canvas text-muted hover:bg-surface-soft hover:text-ink'}`}
+            >
+              <Heart className={`h-3.5 w-3.5 ${repro ? 'fill-current' : ''}`} /> {repro ? t('Reproductor') : t('No reproductor')}
+            </button>
+          )}
+          <button onClick={onTransfer} className={actionCls}><ArrowRightLeft className="h-3.5 w-3.5" /> {t('Transferir')}</button>
+          <button
+            onClick={onDelete}
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-[13px] font-medium text-body transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600"
+          >
+            <Trash2 className="h-3.5 w-3.5" /> {t('Eliminar')}
+          </button>
+        </div>
+      </div>
+    </Drawer>
   )
 }
 

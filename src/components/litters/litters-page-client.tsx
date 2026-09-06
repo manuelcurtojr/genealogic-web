@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
 import LitterFormPanel from './litter-form-panel'
 import DogFormPanel from '@/components/dogs/dog-form-panel'
+import Drawer from '@/components/embudo/drawer'
 import { Img } from '@/components/ui/img'
 
 interface Litter {
@@ -56,6 +57,8 @@ export default function LittersPageClient({
   const [addPuppyKennelId, setAddPuppyKennelId] = useState<string | null>(null)
   const [addPuppyBirthDate, setAddPuppyBirthDate] = useState<string | null>(null)
   const router = useRouter()
+  // Camada cuyo panel derecho de opciones está abierto (vista tabla).
+  const [optionsLitterId, setOptionsLitterId] = useState<string | null>(null)
 
   const [sortBy, setSortBy] = useSortPreference('litters-sort')
   const openAdd = () => { setEditLitterId(null); setPanelOpen(true) }
@@ -88,6 +91,9 @@ export default function LittersPageClient({
   const sorted = sortBy === 'alpha'
     ? [...filtered].sort((a, b) => ((a.father as any)?.name || '').localeCompare((b.father as any)?.name || '', 'es', { sensitivity: 'base' }))
     : sortItems(filtered, sortBy)
+
+  // Camada activa del panel de opciones (se resuelve en vivo para reflejar cambios).
+  const optionsLitter = optionsLitterId ? (litters.find((l) => l.id === optionsLitterId) ?? null) : null
 
   async function handleDelete() {
     if (!deleteId) return
@@ -284,7 +290,7 @@ export default function LittersPageClient({
           })}
         </div>
       ) : viewMode === 'table' ? (
-        <LittersTable litters={sorted} t={t} />
+        <LittersTable litters={sorted} onOpenOptions={(litter) => setOptionsLitterId(litter.id)} t={t} />
       ) : (
         /* List view */
         <div className="space-y-2">
@@ -405,6 +411,19 @@ export default function LittersPageClient({
         confirmLabel={t('Eliminar')}
         destructive
       />
+
+      {/* Panel derecho de opciones de la camada (vista tabla) */}
+      {optionsLitter && (
+        <LitterOptionsPanel
+          litter={optionsLitter}
+          t={t}
+          onClose={() => setOptionsLitterId(null)}
+          onView={() => { window.location.href = `/litters/${optionsLitter.id}` }}
+          onEdit={() => { setOptionsLitterId(null); openEdit(optionsLitter.id) }}
+          onToggleVisibility={() => toggleVisibility(optionsLitter)}
+          onDelete={() => { setOptionsLitterId(null); setDeleteError(''); setDeleteId(optionsLitter.id) }}
+        />
+      )}
     </div>
   )
 }
@@ -414,7 +433,7 @@ export default function LittersPageClient({
  * densas y escaneables; clic en la fila abre la camada. Scroll horizontal
  * propio para no romper el ancho de la página.
  */
-function LittersTable({ litters, t }: { litters: Litter[]; t: (k: string) => string }) {
+function LittersTable({ litters, onOpenOptions, t }: { litters: Litter[]; onOpenOptions: (litter: Litter) => void; t: (k: string) => string }) {
   if (litters.length === 0) return null
   const fmt = (d: string | null, withYear = true) =>
     d ? new Date(d).toLocaleDateString('es-ES', withYear ? { day: '2-digit', month: 'short', year: 'numeric' } : { day: '2-digit', month: 'short' }) : '—'
@@ -442,10 +461,17 @@ function LittersTable({ litters, t }: { litters: Litter[]; t: (k: string) => str
               return (
                 <tr
                   key={litter.id}
-                  onClick={() => { window.location.href = `/litters/${litter.id}` }}
+                  onClick={() => onOpenOptions(litter)}
+                  title={t('Ver opciones')}
                   className="cursor-pointer border-t border-hairline hover:bg-surface-soft/50"
                 >
-                  <td className="whitespace-nowrap px-3 py-2 font-semibold text-ink">{father?.name || '?'} × {mother?.name || '?'}</td>
+                  <td
+                    className="group/cruce whitespace-nowrap px-3 py-2 font-semibold text-ink"
+                    onClick={(e) => { e.stopPropagation(); window.location.href = `/litters/${litter.id}` }}
+                    title={t('Ver camada')}
+                  >
+                    <span className="group-hover/cruce:underline">{father?.name || '?'} × {mother?.name || '?'}</span>
+                  </td>
                   <td className="whitespace-nowrap px-3 py-2 text-ink">{breed?.name || '—'}</td>
                   <td className="whitespace-nowrap px-3 py-2">
                     <span className="inline-block rounded-full px-2 py-0.5 text-[10.5px] font-medium text-white" style={{ backgroundColor: status.color }}>{t(status.label)}</span>
@@ -465,5 +491,84 @@ function LittersTable({ litters, t }: { litters: Litter[]; t: (k: string) => str
         </table>
       </div>
     </div>
+  )
+}
+
+/**
+ * LitterOptionsPanel — panel lateral derecho con las opciones de una camada
+ * (ver, editar, visibilidad, eliminar). Se abre desde la vista tabla al
+ * pinchar una fila fuera de la columna Cruce.
+ */
+function LitterOptionsPanel({
+  litter, t, onClose, onView, onEdit, onToggleVisibility, onDelete,
+}: {
+  litter: Litter
+  t: (k: string) => string
+  onClose: () => void
+  onView: () => void
+  onEdit: () => void
+  onToggleVisibility: () => void
+  onDelete: () => void
+}) {
+  const father = litter.father as any
+  const mother = litter.mother as any
+  const breed = Array.isArray(litter.breed) ? litter.breed[0] : litter.breed
+  const status = statusConfig[litter.status] || statusConfig.planned
+  const hasPuppies = !!(litter.puppy_count && litter.puppy_count > 0)
+  const actionCls = 'inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-[13px] font-medium text-body transition-colors hover:bg-surface-soft hover:text-ink'
+  return (
+    <Drawer title={`${father?.name || '?'} × ${mother?.name || '?'}`} subtitle={breed?.name || undefined} onClose={onClose}>
+      <div className="space-y-4">
+        {/* Resumen */}
+        <div className="flex items-center gap-3 rounded-xl border border-hairline bg-surface-soft/40 p-3">
+          <div className="flex flex-shrink-0 items-center gap-1">
+            <div className="h-11 w-11 overflow-hidden rounded-full border-2 bg-surface-card" style={{ borderColor: BRAND.male }}>
+              {father?.thumbnail_url ? <Img w={120} src={father.thumbnail_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-xs text-muted">♂</div>}
+            </div>
+            <span className="text-[12px] text-muted">×</span>
+            <div className="h-11 w-11 overflow-hidden rounded-full border-2 bg-surface-card" style={{ borderColor: BRAND.female }}>
+              {mother?.thumbnail_url ? <Img w={120} src={mother.thumbnail_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-xs text-muted">♀</div>}
+            </div>
+          </div>
+          <div className="min-w-0">
+            <span className="inline-block rounded-full px-2 py-0.5 text-[10.5px] font-medium text-white" style={{ backgroundColor: status.color }}>{t(status.label)}</span>
+            <p className="mt-1 text-[12.5px] text-muted">
+              {[
+                litter.birth_date ? new Date(litter.birth_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : null,
+                hasPuppies ? `${litter.puppy_count} ${t('cachorros')}` : null,
+              ].filter(Boolean).join(' · ') || '—'}
+            </p>
+          </div>
+        </div>
+
+        {/* Ver (acción primaria) */}
+        <button onClick={onView} className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-ink px-4 py-2.5 text-[13px] font-bold text-on-primary transition-opacity hover:opacity-90">
+          <Eye className="h-4 w-4" /> {t('Ver camada')}
+        </button>
+
+        {/* Acciones */}
+        <div className="grid grid-cols-2 gap-2">
+          <button onClick={onEdit} className={actionCls}><Edit className="h-3.5 w-3.5" /> {t('Editar')}</button>
+          <button
+            onClick={onToggleVisibility}
+            aria-pressed={litter.is_public}
+            className={`inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-[13px] font-medium transition-colors ${litter.is_public ? 'border-emerald-400/60 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border-hairline bg-canvas text-muted hover:bg-surface-soft hover:text-ink'}`}
+          >
+            {litter.is_public ? <Globe className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />} {litter.is_public ? t('Pública') : t('Privada')}
+          </button>
+          <button
+            onClick={onDelete}
+            disabled={hasPuppies}
+            title={hasPuppies ? t('No se puede eliminar una camada con cachorros asignados.') : undefined}
+            className="col-span-2 inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-[13px] font-medium text-body transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-hairline disabled:hover:bg-canvas disabled:hover:text-body"
+          >
+            <Trash2 className="h-3.5 w-3.5" /> {t('Eliminar')}
+          </button>
+        </div>
+        {hasPuppies && (
+          <p className="text-[11.5px] leading-snug text-muted">{t('No se puede eliminar una camada con cachorros asignados.')}</p>
+        )}
+      </div>
+    </Drawer>
   )
 }
