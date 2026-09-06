@@ -5,7 +5,7 @@ import { Img } from '@/components/ui/img'
 import ToggleSwitch from '@/components/ui/toggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Search, ChevronDown, ChevronRight, CreditCard, GitBranch, Weight, ImageIcon, Dog, Stethoscope, Trophy, Lock, Globe, Shield, Dna, Heart, History, ArrowRightLeft, Settings2, Sparkles, Info, Ruler } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown, ChevronRight, CreditCard, GitBranch, ImageIcon, Dog, Stethoscope, Trophy, Lock, Globe, Shield, Dna, Heart, History, ArrowRightLeft, Settings2, Sparkles, Info, Ruler } from 'lucide-react'
 import { Portal } from '@/components/ui/portal'
 import { BRAND } from '@/lib/constants'
 import { formatDogName, extractPersonalName, type AffixFormat } from '@/lib/affix'
@@ -441,8 +441,8 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
     if ('femaleOnly' in tab && tab.femaleOnly && form.sex !== 'female') return false
     // Genética y Reproducción son features Kennel Pro: ocultas para no-pro.
     if ((tab.key === 'genetica' || tab.key === 'reproduccion') && !canPro) return false
-    // Medidas morfológicas: feature exclusiva en beta (por ahora solo Irema Curtó).
-    if (tab.key === 'medidas' && !canUseMeasurements(userId)) return false
+    // Medidas: abiertas a todos (sustituyen al peso/altura básicos). La
+    // Evaluación IA de la morfología sigue siendo beta (Irema / El Nieto).
     if (tab.key === 'evaluacion' && !canUseMeasurements(userId)) return false
     return true
   })
@@ -571,16 +571,6 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
         )}
       </Section>
 
-      {/* Measurements */}
-      {!isFromLitter && (
-        <Section icon={Weight} title={t('Medidas')}>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label={t('Peso (kg)')} value={form.weight} onChange={v => set('weight', v)} type="number" />
-            <Field label={t('Altura (cm)')} value={form.height} onChange={v => set('height', v)} type="number" />
-          </div>
-        </Section>
-      )}
-
       {/* Gallery */}
       <Section icon={ImageIcon} title={t('Galería')}>
         {editDogId ? (
@@ -671,7 +661,7 @@ export default function DogFormPanel({ open, onClose, onSaved, editDogId, userId
       {activeTab === 'salud' && editDogId && <SaludTab dogId={editDogId} userId={userId} />}
       {activeTab === 'reproduccion' && editDogId && form.sex === 'female' && canPro && <ReproduccionTab dogId={editDogId} userId={userId} />}
       {activeTab === 'genetica' && editDogId && canPro && <GeneticaTab dogId={editDogId} userId={userId} />}
-      {activeTab === 'medidas' && editDogId && canUseMeasurements(userId) && <MedidasTab dogId={editDogId} userId={userId} />}
+      {activeTab === 'medidas' && editDogId && <MedidasTab dogId={editDogId} userId={userId} />}
       {activeTab === 'evaluacion' && editDogId && canUseMeasurements(userId) && <DogStandardEval dogId={editDogId} />}
       {activeTab === 'palmares' && editDogId && <PalmaresTab dogId={editDogId} userId={userId} />}
       {activeTab === 'historico' && editDogId && <HistoricoTab dogId={editDogId} />}

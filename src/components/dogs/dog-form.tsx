@@ -162,15 +162,6 @@ export default function DogForm({ initialData, breeds, colors, kennels, maleDogs
           </div>
         </section>
 
-        {/* Measurements */}
-        <section>
-          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">{t('Medidas')}</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label={t('Peso (kg)')} value={form.weight} onChange={(v) => set('weight', v)} type="number" />
-            <Field label={t('Altura (cm)')} value={form.height} onChange={(v) => set('height', v)} type="number" />
-          </div>
-        </section>
-
         {/* Parents */}
         <section>
           <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">{t('Padres')}</h2>
