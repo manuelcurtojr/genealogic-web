@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import {
   Ruler, Plus, Pencil, Trash2, X, Loader2, Calendar,
   Scale, Dog, MoveVertical, Heart, Bone, PawPrint, Footprints, Spline, Smile, Stethoscope, Dna, FileText,
+  Globe, Lock,
 } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 
@@ -159,18 +160,34 @@ export default function MedidasTab({ dogId, userId }: { dogId: string; userId: s
   const [form, setForm] = useState<Record<string, string>>(emptyForm())
   // Línea base (valores precargados) para resaltar las celdas que cambian.
   const [baseline, setBaseline] = useState<Record<string, string>>({})
+  // ¿Medidas visibles en el perfil público? (dogs.measurements_public)
+  const [isPublic, setIsPublic] = useState(false)
+  const [togglingPublic, setTogglingPublic] = useState(false)
   const supabase = createClient()
   const t = useT()
 
   async function load() {
-    const { data } = await supabase
-      .from('dog_measurements')
-      .select('*')
-      .eq('dog_id', dogId)
-      .order('measured_at', { ascending: false })
+    const [{ data }, { data: d }] = await Promise.all([
+      supabase.from('dog_measurements').select('*').eq('dog_id', dogId).order('measured_at', { ascending: false }),
+      supabase.from('dogs').select('measurements_public').eq('id', dogId).maybeSingle(),
+    ])
     setSets(data || [])
+    setIsPublic(!!d?.measurements_public)
   }
   useEffect(() => { load() }, [dogId])
+
+  // Publica/oculta la ficha morfométrica en el perfil público. Vía /api/update-dog
+  // (service-role + autoriza por dueño o criador), igual que los toggles de la card.
+  async function togglePublic() {
+    const next = !isPublic
+    setIsPublic(next); setTogglingPublic(true)
+    const res = await fetch('/api/update-dog', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dogId, updates: { measurements_public: next } }),
+    }).catch(() => null)
+    setTogglingPublic(false)
+    if (!res || !res.ok) setIsPublic(!next) // rollback
+  }
 
   const setField = (col: string, val: string) => setForm(p => ({ ...p, [col]: val }))
 
@@ -270,6 +287,42 @@ export default function MedidasTab({ dogId, userId }: { dogId: string; userId: s
 
   return (
     <div className="space-y-5">
+      {/* Visibilidad de las medidas en el perfil público */}
+      {!showForm && (
+        <div className="flex items-center justify-between gap-3 rounded-2xl border border-hairline bg-canvas p-3.5">
+          <div className="flex min-w-0 items-start gap-2.5">
+            <span
+              className={`mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${isPublic ? '' : 'bg-surface-card'}`}
+              style={isPublic ? { backgroundColor: 'var(--brand-soft)' } : undefined}
+            >
+              {isPublic ? <Globe className="h-4 w-4" style={{ color: 'var(--brand)' }} /> : <Lock className="h-4 w-4 text-muted" />}
+            </span>
+            <div className="min-w-0">
+              <p className="text-[13.5px] font-semibold text-ink">{isPublic ? t('Medidas públicas') : t('Medidas privadas')}</p>
+              <p className="mt-0.5 text-[12px] leading-snug text-muted">
+                {isPublic
+                  ? t('Se muestran en el perfil público del perro, en la pestaña «Medidas».')
+                  : t('Solo tú las ves. Actívalo para mostrarlas en el perfil, junto a descendientes y salud.')}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={isPublic}
+            onClick={togglePublic}
+            disabled={togglingPublic}
+            title={isPublic ? t('Hacer privadas') : t('Hacer públicas')}
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-60 ${isPublic ? 'bg-[color:var(--brand)]' : 'border border-hairline bg-surface-card'}`}
+          >
+            <span
+              className={`inline-block transform rounded-full bg-canvas shadow transition-transform ${isPublic ? 'translate-x-5' : 'translate-x-1'}`}
+              style={{ height: '18px', width: '18px' }}
+            />
+          </button>
+        </div>
+      )}
+
       {showForm ? (
         /* ── Formulario (alta / edición de una tanda) ── */
         <div className="rounded-2xl border border-hairline bg-surface-soft p-4 space-y-4">

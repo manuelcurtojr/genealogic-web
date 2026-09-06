@@ -18,6 +18,7 @@ const ALLOWED = [
   'name', 'sex', 'birth_date', 'registration', 'microchip', 'weight', 'height',
   'breed_id', 'color_id', 'kennel_id', 'father_id', 'mother_id', 'is_public',
   'is_reproductive', 'show_in_kennel', // toggles reproductor/visibilidad (corazón + panel)
+  'measurements_public', // publicar/ocultar la ficha morfométrica en el perfil
   'thumbnail_url', // portada — la galería la cambia al reordenar/borrar fotos
 ] as const
 

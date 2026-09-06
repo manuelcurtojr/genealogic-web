@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette } from 'lucide-react'
@@ -258,6 +258,22 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
     galleryMedia.unshift({ url: dog.thumbnail_url, type: 'photo' })
   }
 
+  // Ficha morfométrica (dog_measurements): se muestra en el perfil SOLO si el
+  // dueño la ha hecho pública, o si el que mira es el dueño. La RLS de la tabla
+  // es owner-only, así que un anónimo no puede leerla con el cliente normal;
+  // aquí la leemos con service-role, pero SOLO tras pasar el gate — nunca se
+  // expone nada que no sea público.
+  const measurementsPublic = !!dog.measurements_public
+  let measurements: any[] = []
+  if (measurementsPublic || isOwner) {
+    const { data: ms } = await createKennelAdminClient()
+      .from('dog_measurements')
+      .select('*')
+      .eq('dog_id', dog.id)
+      .order('measured_at', { ascending: false })
+    measurements = ms || []
+  }
+
   const canonicalUrl = `https://www.genealogic.io/dogs/${dog.slug || dog.id}`
   const dogDescription = `${dog.name}${breedName ? `, ${breedName}` : ''}${
     kennel?.name ? ` de ${kennel.name}` : ''
@@ -436,7 +452,7 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
         )}
 
         {/* Tabs */}
-        <DogTabs dogId={dog.id} ownerId={dog.owner_id} isOwner={isOwner} fatherId={dog.father_id} motherId={dog.mother_id} dogSex={dog.sex} />
+        <DogTabs dogId={dog.id} ownerId={dog.owner_id} isOwner={isOwner} fatherId={dog.father_id} motherId={dog.mother_id} dogSex={dog.sex} measurements={measurements} measurementsPublic={measurementsPublic} />
       </div>
 
       {/* Genealogía.
