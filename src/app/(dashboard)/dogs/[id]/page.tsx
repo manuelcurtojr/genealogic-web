@@ -1,7 +1,7 @@
 import { createClient, createKennelAdminClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Mars, Venus, Calendar, Hash, Weight, Ruler, Microchip, Palette } from 'lucide-react'
+import { Mars, Venus, Calendar, Hash, Microchip, Palette } from 'lucide-react'
 import BackButton from '@/components/ui/back-button'
 import { BRAND } from '@/lib/constants'
 import { isUUID } from '@/lib/slug'
@@ -439,8 +439,6 @@ export default async function DogDetailPage({ params }: { params: Promise<{ id: 
           <Chip icon={dog.sex === 'male' ? Mars : Venus} label={t('Sexo')} value={dog.sex === 'male' ? t('Macho') : t('Hembra')} color={sexColor} />
           {colorName && <Chip icon={Palette} label={t('Color')} value={colorName} />}
           {dog.birth_date && <Chip icon={Calendar} label={t('Nacimiento')} value={new Date(dog.birth_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })} />}
-          {dog.weight && <Chip icon={Weight} label={t('Peso')} value={`${dog.weight} kg`} />}
-          {dog.height && <Chip icon={Ruler} label={t('Altura')} value={`${dog.height} cm`} />}
         </div>
 
         {/* Parents */}
