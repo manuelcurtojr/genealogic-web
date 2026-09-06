@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Plus, Grid3X3, List, Trash2, Edit, Eye, Lock, Globe } from 'lucide-react'
+import { Search, Plus, Grid3X3, List, Table2, Trash2, Edit, Eye, Lock, Globe } from 'lucide-react'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 import { useT } from '@/components/i18n/locale-provider'
@@ -39,11 +39,11 @@ export default function LittersPageClient({
 }: { litters: Litter[]; userId: string; userKennelId?: string | null; userKennelName?: string | null; userAffixFormat?: string | null }) {
   const t = useT()
   const [search, setSearch] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
-    if (typeof window !== 'undefined') return (localStorage.getItem('litters-view') as 'grid' | 'list') || 'grid'
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>(() => {
+    if (typeof window !== 'undefined') return (localStorage.getItem('litters-view') as 'grid' | 'list' | 'table') || 'grid'
     return 'grid'
   })
-  const changeView = (v: 'grid' | 'list') => { setViewMode(v); localStorage.setItem('litters-view', v) }
+  const changeView = (v: 'grid' | 'list' | 'table') => { setViewMode(v); localStorage.setItem('litters-view', v) }
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState('')
   const [panelOpen, setPanelOpen] = useState(false)
@@ -155,6 +155,13 @@ export default function LittersPageClient({
             title={t('Vista lista')}
           >
             <List className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => changeView('table')}
+            className={`p-2.5 transition-colors ${viewMode === 'table' ? 'bg-ink text-on-primary' : 'bg-canvas text-muted hover:bg-surface-soft hover:text-ink'}`}
+            title={t('Vista tabla')}
+          >
+            <Table2 className="h-4 w-4" />
           </button>
         </div>
       </div>
@@ -276,6 +283,8 @@ export default function LittersPageClient({
             )
           })}
         </div>
+      ) : viewMode === 'table' ? (
+        <LittersTable litters={sorted} t={t} />
       ) : (
         /* List view */
         <div className="space-y-2">
@@ -396,6 +405,65 @@ export default function LittersPageClient({
         confirmLabel={t('Eliminar')}
         destructive
       />
+    </div>
+  )
+}
+
+/**
+ * LittersTable — vista TABLA (tipo hoja de cálculo) de las camadas. Filas
+ * densas y escaneables; clic en la fila abre la camada. Scroll horizontal
+ * propio para no romper el ancho de la página.
+ */
+function LittersTable({ litters, t }: { litters: Litter[]; t: (k: string) => string }) {
+  if (litters.length === 0) return null
+  const fmt = (d: string | null, withYear = true) =>
+    d ? new Date(d).toLocaleDateString('es-ES', withYear ? { day: '2-digit', month: 'short', year: 'numeric' } : { day: '2-digit', month: 'short' }) : '—'
+  return (
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-canvas">
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-[12.5px]">
+          <thead>
+            <tr className="bg-surface-soft/60 text-[10px] uppercase tracking-wider text-muted">
+              <th className="whitespace-nowrap px-3 py-2 text-left font-semibold">{t('Cruce')}</th>
+              <th className="whitespace-nowrap px-3 py-2 text-left font-semibold">{t('Raza')}</th>
+              <th className="whitespace-nowrap px-3 py-2 text-left font-semibold">{t('Estado')}</th>
+              <th className="whitespace-nowrap px-3 py-2 text-left font-semibold">{t('Nacimiento')}</th>
+              <th className="whitespace-nowrap px-3 py-2 text-left font-semibold">{t('Cubrición')}</th>
+              <th className="whitespace-nowrap px-3 py-2 text-right font-semibold">{t('Cachorros')}</th>
+              <th className="whitespace-nowrap px-3 py-2 text-left font-semibold">{t('Visibilidad')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {litters.map((litter) => {
+              const father = litter.father as any
+              const mother = litter.mother as any
+              const breed = Array.isArray(litter.breed) ? litter.breed[0] : litter.breed
+              const status = statusConfig[litter.status] || statusConfig.planned
+              return (
+                <tr
+                  key={litter.id}
+                  onClick={() => { window.location.href = `/litters/${litter.id}` }}
+                  className="cursor-pointer border-t border-hairline hover:bg-surface-soft/50"
+                >
+                  <td className="whitespace-nowrap px-3 py-2 font-semibold text-ink">{father?.name || '?'} × {mother?.name || '?'}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-ink">{breed?.name || '—'}</td>
+                  <td className="whitespace-nowrap px-3 py-2">
+                    <span className="inline-block rounded-full px-2 py-0.5 text-[10.5px] font-medium text-white" style={{ backgroundColor: status.color }}>{t(status.label)}</span>
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2 text-ink">{fmt(litter.birth_date)}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-ink">{fmt(litter.mating_date, false)}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-ink">{litter.puppy_count ?? '—'}</td>
+                  <td className="whitespace-nowrap px-3 py-2">
+                    {litter.is_public
+                      ? <span className="inline-flex items-center gap-1 text-[color:var(--success)]"><Globe className="h-3 w-3" /> {t('Pública')}</span>
+                      : <span className="inline-flex items-center gap-1 text-muted"><Lock className="h-3 w-3" /> {t('Privada')}</span>}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

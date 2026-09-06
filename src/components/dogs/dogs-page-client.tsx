@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Grid3X3, List, Search, Plus, EyeOff, Edit, ArrowRightLeft, GitBranch, Globe, Heart, Undo2, ExternalLink, Loader2, ArrowRight, Store, Trash2 } from 'lucide-react'
+import { Grid3X3, List, Table2, Search, Plus, EyeOff, Edit, ArrowRightLeft, GitBranch, Globe, Heart, Undo2, ExternalLink, Loader2, ArrowRight, Store, Trash2 } from 'lucide-react'
 import DogCard from './dog-card'
 import DogFormPanel from './dog-form-panel'
 import TransferPanel from '../kennel/transfer-panel'
@@ -177,14 +177,14 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
   const [sexFilter, setSexFilter] = useState('')
   const [breedFilter, setBreedFilter] = useState('')
   const [sortBy, setSortBy] = useSortPreference('dogs-sort')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
-    if (typeof window !== 'undefined') return (localStorage.getItem('dogs-view') as 'grid' | 'list') || 'grid'
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>(() => {
+    if (typeof window !== 'undefined') return (localStorage.getItem('dogs-view') as 'grid' | 'list' | 'table') || 'grid'
     return 'grid'
   })
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
-  const changeView = (v: 'grid' | 'list') => { setViewMode(v); localStorage.setItem('dogs-view', v) }
+  const changeView = (v: 'grid' | 'list' | 'table') => { setViewMode(v); localStorage.setItem('dogs-view', v) }
 
   // Helpers para clasificar perros según tab
   const isPuppy = (dog: Dog): boolean => {
@@ -418,6 +418,13 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
             >
               <List className="h-4 w-4" />
             </button>
+            <button
+              onClick={() => changeView('table')}
+              className={`p-2.5 transition-colors ${viewMode === 'table' ? 'bg-ink text-on-primary' : 'bg-canvas text-muted hover:bg-surface-soft hover:text-ink'}`}
+              title={t('Vista tabla')}
+            >
+              <Table2 className="h-4 w-4" />
+            </button>
           </div>
         </div>
         {/* Mobile filters */}
@@ -477,6 +484,8 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
             />
           ))}
         </div>
+      ) : viewMode === 'table' ? (
+        <DogsTable dogs={paged} isBreeder={isBreeder} t={t} />
       ) : (
         <div className="space-y-2">
           <button
@@ -632,6 +641,79 @@ export default function DogsPageClient({ dogs: initialDogs, breeds, userId, isBr
       />
 
       <PedigreeEditor open={pedigreeOpen} onClose={() => setPedigreeOpen(false)} dogId={pedigreeDogId} userId={userId} />
+    </div>
+  )
+}
+
+/**
+ * DogsTable — vista TABLA (tipo hoja de cálculo) del catálogo de perros.
+ * Filas densas y escaneables; clic en la fila abre el perfil del perro (igual
+ * que la vista lista). Scroll horizontal propio para no romper el ancho.
+ */
+function DogsTable({ dogs, isBreeder, t }: { dogs: Dog[]; isBreeder: boolean; t: (k: string) => string }) {
+  if (dogs.length === 0) return null
+  const fmtDate = (d: string | null) =>
+    d ? new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+  return (
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-canvas">
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-[12.5px]">
+          <thead>
+            <tr className="bg-surface-soft/60 text-[10px] uppercase tracking-wider text-muted">
+              <th className="whitespace-nowrap px-3 py-2 text-left font-semibold">{t('Nombre')}</th>
+              <th className="whitespace-nowrap px-3 py-2 text-left font-semibold">{t('Sexo')}</th>
+              <th className="whitespace-nowrap px-3 py-2 text-left font-semibold">{t('Raza')}</th>
+              <th className="whitespace-nowrap px-3 py-2 text-left font-semibold">{t('Color')}</th>
+              <th className="whitespace-nowrap px-3 py-2 text-left font-semibold">{t('Nacimiento')}</th>
+              {isBreeder && <th className="whitespace-nowrap px-3 py-2 text-left font-semibold">{t('Estado')}</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {dogs.map((dog) => {
+              const sexColor = dog.sex === 'male' ? BRAND.male : dog.sex === 'female' ? BRAND.female : '#888'
+              const breedName = Array.isArray(dog.breed) ? dog.breed[0]?.name : dog.breed?.name
+              const colorName = Array.isArray(dog.color) ? dog.color[0]?.name : dog.color?.name
+              return (
+                <tr
+                  key={dog.id}
+                  onClick={() => { window.location.href = `/dogs/${dog.slug || dog.id}` }}
+                  className="cursor-pointer border-t border-hairline hover:bg-surface-soft/50"
+                >
+                  <td className="whitespace-nowrap px-3 py-2">
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full border-2 bg-surface-card"
+                        style={{ borderColor: sexColor }}
+                      >
+                        {dog.thumbnail_url
+                          ? <Img w={80} src={dog.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                          : <span className="flex h-full w-full items-center justify-center text-[11px] text-muted">{dog.sex === 'male' ? '♂' : '♀'}</span>}
+                      </span>
+                      <span className="font-semibold text-ink">{dog.name}</span>
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2 text-ink">
+                    {dog.sex === 'male' ? t('Macho') : dog.sex === 'female' ? t('Hembra') : '—'}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2 text-ink">{breedName || '—'}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-ink">{colorName || '—'}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-ink">{fmtDate(dog.birth_date)}</td>
+                  {isBreeder && (
+                    <td className="whitespace-nowrap px-3 py-2">
+                      <span className="flex flex-wrap items-center gap-1">
+                        {dog.is_reproductive && <span className="rounded bg-pink-50 px-1.5 py-0.5 text-[10.5px] font-medium text-pink-700">{t('Reproductor')}</span>}
+                        {dog.is_for_sale && <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10.5px] font-medium text-emerald-700">{t('En venta')}</span>}
+                        {dog.show_in_kennel === false && <span className="rounded bg-surface-soft px-1.5 py-0.5 text-[10.5px] font-medium text-muted">{t('Oculto')}</span>}
+                        {!dog.is_reproductive && !dog.is_for_sale && dog.show_in_kennel !== false && <span className="text-muted">—</span>}
+                      </span>
+                    </td>
+                  )}
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
