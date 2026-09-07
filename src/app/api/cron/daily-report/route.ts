@@ -1,10 +1,12 @@
 /**
  * GET /api/cron/daily-report
  *
- * Informe diario para el fundador (Manuel). Cada mañana a las 06:00 UTC
- * (≈ 8:00 hora peninsular en verano / 7:00 en invierno) resume las últimas
- * 24 h de Genealogic: visitas, visitantes únicos, de dónde vienen, países,
- * páginas top, nuevos registros y actividad, más los totales de la plataforma.
+ * Informe diario para el fundador (Manuel). Se envía a las 8:00 Europe/Madrid
+ * TODO EL AÑO: hay dos crons en vercel.json (06:00 y 07:00 UTC) y este handler
+ * solo manda si la hora local de Madrid es 8 → el firing que no cuadra por el
+ * cambio de hora (DST) se salta. Resume las últimas 24 h de Genealogic: visitas,
+ * visitantes únicos, de dónde vienen, países, páginas top, nuevos registros y
+ * actividad, más los totales de la plataforma.
  *
  * Se envía por Resend directo (no usa sendTransactionalEmail: esto NO es un
  * email de usuario con preferencias/opt-out, es un informe interno). Destino
@@ -45,6 +47,22 @@ export async function GET(req: Request) {
   const admin = createKennelAdminClient() as any
 
   const now = new Date()
+
+  // Gate a las 8:00 Europe/Madrid. Los dos crons (06:00 y 07:00 UTC) cubren
+  // verano (CEST, 8=06:00 UTC) e invierno (CET, 8=07:00 UTC); el firing cuya
+  // hora local NO es 8 se salta → 8:00 clavadas todo el año pese al DST. Nunca
+  // coinciden ambos (van a 1 h de distancia), así que no hay doble envío.
+  // ?preview=1 y ?force=1 se saltan el gate (para revisar diseño / probar a mano).
+  const params = new URL(req.url).searchParams
+  const isPreview = params.get('preview') === '1'
+  const isForce = params.get('force') === '1'
+  const madridHour = Number(
+    new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', hour: '2-digit', hourCycle: 'h23' }).format(now),
+  )
+  if (!isPreview && !isForce && madridHour !== 8) {
+    return NextResponse.json({ ok: true, skipped: true, reason: `hora Madrid ${madridHour} ≠ 8` })
+  }
+
   const from = new Date(now.getTime() - 24 * 3600_000)
   const prevFrom = new Date(now.getTime() - 48 * 3600_000)
   const fromISO = from.toISOString()
@@ -104,7 +122,7 @@ export async function GET(req: Request) {
   const subject = `Genealogic · ${views} visitas, ${uniques} únicos${signals.users ? `, ${signals.users} registros` : ''} — ${now.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', timeZone: 'Europe/Madrid' })}`
 
   // ?preview=1 → devuelve el HTML sin enviar (para revisar el diseño).
-  if (new URL(req.url).searchParams.get('preview') === '1') {
+  if (isPreview) {
     return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
   }
 
