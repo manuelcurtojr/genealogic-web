@@ -8,11 +8,8 @@ import { setConsent } from '@/lib/analytics/consent'
 export default function CookieBanner() {
   const t = useT()
   const [show, setShow] = useState(false)
-  // Link a la política de cookies según el host: en la plataforma → /cookies
-  // (la global); bajo un dominio propio de criadero → /legal/cookies (la del
-  // criadero; el middleware la reescribe a /kennels/<slug>/legal/cookies).
-  // Sin esto, bajo iremacurto.com el enlace iría a /cookies → 404.
-  const [cookiesHref, setCookiesHref] = useState('/cookies')
+  // Política de cookies de la plataforma.
+  const cookiesHref = '/cookies'
   // Solo declaramos cookies de analítica si hay alguna herramienta realmente
   // configurada en Vercel (GA o PostHog). Sin ninguna, el banner mantiene el
   // mensaje "sin seguimiento".
@@ -22,17 +19,6 @@ export default function CookieBanner() {
   useEffect(() => {
     const consent = localStorage.getItem('cookie-consent')
     if (!consent) setShow(true)
-    try {
-      const host = window.location.host.toLowerCase()
-      const isPlatform =
-        host.endsWith('genealogic.io') ||
-        host.startsWith('localhost') ||
-        host.startsWith('127.0.0.1') ||
-        host.endsWith('vercel.app')
-      if (!isPlatform) setCookiesHref('/legal/cookies')
-    } catch {
-      // sin window (no debería en 'use client') → default /cookies
-    }
   }, [])
 
   function accept() {
