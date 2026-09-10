@@ -26,8 +26,15 @@ export const metadata = { title: 'Contactos · Genealogic' }
 
 const LEAD_STATUSES = ['interested', 'deposit_paid'] as const
 const CLIENT_STATUSES = ['assigned', 'contract_signed', 'paid_in_full', 'delivered'] as const
+const PAGE_SIZE = 100
 
-export default async function ContactosPage() {
+type SP = Record<string, string | string[] | undefined>
+
+export default async function ContactosPage({
+  searchParams,
+}: {
+  searchParams?: Promise<SP> | SP
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -58,33 +65,81 @@ export default async function ContactosPage() {
     )
   }
 
-  // Carga paralela — todo público (RLS lo limita al kennel del user)
-  const [leadsRes, clientReservationsRes, ownersRes] = await Promise.all([
-    supabase
-      .from('puppy_reservations')
-      .select(
-        'id, applicant_name, applicant_email, applicant_phone, applicant_city, status, created_at, preference_sex, preference_color, deposit_amount_cents, currency, dog_id',
-      )
-      .eq('kennel_id', kennel.id)
-      .in('status', LEAD_STATUSES as unknown as string[])
-      .order('created_at', { ascending: false })
-      .limit(500),
-    supabase
-      .from('puppy_reservations')
-      .select(
-        'id, applicant_name, applicant_email, applicant_phone, applicant_city, status, delivered_at, created_at, updated_at, dog_id, total_price_cents, currency, dog:dogs!dog_id(id, name, slug, thumbnail_url)',
-      )
-      .eq('kennel_id', kennel.id)
-      .in('status', CLIENT_STATUSES as unknown as string[])
-      .order('updated_at', { ascending: false })
-      .limit(500),
-    supabase
-      .from('owners')
-      .select('id, full_name, email, phone, city, country, created_at, updated_at')
-      .eq('kennel_id', kennel.id)
-      .order('full_name')
-      .limit(500),
-  ])
+  // ─── Filtros de servidor ───
+  // La agenda pasa a tener miles de contactos (histórico importado), así que
+  // buscar/filtrar/paginar se hace en el SERVIDOR: Supabase devuelve como mucho
+  // 1000 filas por petición, no vale con filtrar en el navegador.
+  const sp = (await searchParams) || {}
+  const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || ''
+  // Sanea la búsqueda: coma y paréntesis rompen la sintaxis `or=` de PostgREST.
+  const q = one(sp.q).trim().replace(/[,()*]/g, '').slice(0, 60)
+  const seg = one(sp.seg) || 'activos'
+  const page = Math.max(1, parseInt(one(sp.page) || '1', 10) || 1)
+  const from = (page - 1) * PAGE_SIZE
+
+  let ownersQuery = supabase
+    .from('owners')
+    .select('id, full_name, email, phone, city, country, segment, source, created_at, updated_at',
+      { count: 'exact' })
+    .eq('kennel_id', kennel.id)
+
+  // 'activos' (por defecto) = todo MENOS los suscriptores de newsletter, que
+  // son ruido para el día a día pero siguen buscables eligiendo su pestaña.
+  if (seg === 'activos') ownersQuery = ownersQuery.or('segment.is.null,segment.neq.subscriber')
+  else if (seg !== 'todos') ownersQuery = ownersQuery.eq('segment', seg)
+
+  if (q) {
+    ownersQuery = ownersQuery.or(
+      `full_name.ilike.*${q}*,email.ilike.*${q}*,phone.ilike.*${q}*,city.ilike.*${q}*`,
+    )
+  }
+
+  const segCount = async (s: string | null) => {
+    let c = supabase.from('owners').select('id', { count: 'exact', head: true }).eq('kennel_id', kennel.id)
+    if (s) c = c.eq('segment', s)
+    const { count } = await c
+    return count || 0
+  }
+
+  let leadsQuery = supabase
+    .from('puppy_reservations')
+    .select(
+      'id, applicant_name, applicant_email, applicant_phone, applicant_city, status, created_at, preference_sex, preference_color, deposit_amount_cents, currency, dog_id',
+    )
+    .eq('kennel_id', kennel.id)
+    .in('status', LEAD_STATUSES as unknown as string[])
+  if (q) {
+    leadsQuery = leadsQuery.or(
+      `applicant_name.ilike.*${q}*,applicant_email.ilike.*${q}*,applicant_phone.ilike.*${q}*`,
+    )
+  }
+
+  // Los clientes derivados de RESERVAS se siguen cargando siempre: hay criadores
+  // con reservas y la agenda `owners` vacía, y si dependiéramos solo de `owners`
+  // se les quedaría la pestaña en blanco.
+  let clientResQuery = supabase
+    .from('puppy_reservations')
+    .select(
+      'id, applicant_name, applicant_email, applicant_phone, applicant_city, status, delivered_at, created_at, updated_at, dog_id, total_price_cents, currency, dog:dogs!dog_id(id, name, slug, thumbnail_url)',
+    )
+    .eq('kennel_id', kennel.id)
+    .in('status', CLIENT_STATUSES as unknown as string[])
+  if (q) {
+    clientResQuery = clientResQuery.or(
+      `applicant_name.ilike.*${q}*,applicant_email.ilike.*${q}*,applicant_phone.ilike.*${q}*`,
+    )
+  }
+
+  const [leadsRes, ownersRes, clientReservationsRes, cBuyer, cInterested, cSubscriber, cTotal] =
+    await Promise.all([
+      leadsQuery.order('created_at', { ascending: false }).limit(500),
+      ownersQuery.order('full_name').range(from, from + PAGE_SIZE - 1),
+      clientResQuery.order('updated_at', { ascending: false }).limit(500),
+      segCount('buyer'),
+      segCount('interested'),
+      segCount('subscriber'),
+      segCount(null),
+    ])
 
   const leads: Lead[] = (leadsRes.data || []) as Lead[]
 
@@ -109,6 +164,7 @@ export default async function ContactosPage() {
       delivered_count: 0,
       last_dog: null,
       crm_owner_id: o.id,
+      segment: o.segment ?? null,
     })
   }
 
@@ -170,6 +226,17 @@ export default async function ContactosPage() {
       kennelName={kennel.name}
       leads={leads}
       clients={clients}
+      q={q}
+      seg={seg}
+      page={page}
+      pageSize={PAGE_SIZE}
+      ownersTotal={ownersRes.count || 0}
+      segCounts={{
+        buyer: cBuyer,
+        interested: cInterested,
+        subscriber: cSubscriber,
+        total: cTotal,
+      }}
     />
   )
 }
