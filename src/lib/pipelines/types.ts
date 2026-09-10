@@ -39,6 +39,7 @@ export type FunnelEntry = {
   pipeline_id: string | null
   stage_id: string | null
   seen_by_breeder_at: string | null
+  closed_at: string | null
   lost_reason: string | null
   client_user_id: string | null
   origin_entry_id: string | null

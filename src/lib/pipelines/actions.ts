@@ -75,6 +75,10 @@ export async function moveEntryToStage(
       stage_id: stage.id,
       pipeline_id: stage.pipeline_id,
       seen_by_breeder_at: now,
+      // Cierre del deal: al entrar en una etapa terminal (won/lost) se marca
+      // closed_at → sale del tablero (tras la gracia) y pasa al histórico. Al
+      // volver a una etapa normal se reabre (closed_at = null).
+      closed_at: stage.type === 'won' || stage.type === 'lost' ? now : null,
     }
 
     // Paso perdido → exige motivo si el paso tiene motivos configurados
