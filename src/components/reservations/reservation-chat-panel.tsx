@@ -39,6 +39,16 @@ interface ReservationChatPanelProps {
   unreadCount?: number
 }
 
+/**
+ * Feature flag — chat en directo criador↔cliente dentro de la reserva.
+ * Desactivado 2026-09-10 a petición del usuario ("de momento, que no sea
+ * público"). Con `false`: el componente solo renderiza `children` (la página),
+ * sin drawer, FAB ni pestaña, y NO monta ningún efecto lateral. Los tiles de
+ * acción rápida "Mensajes" de ambas vistas se ocultan importando esta misma
+ * constante. Poner en `true` para reactivarlo en todo (una sola línea).
+ */
+export const RESERVATION_CHAT_ENABLED: boolean = false
+
 const LS_KEY = 'genealogic.reservationChatOpen'
 
 export default function ReservationChatPanel({
@@ -49,6 +59,7 @@ export default function ReservationChatPanel({
 
   useEffect(() => {
     setHasMounted(true)
+    if (!RESERVATION_CHAT_ENABLED) return
     const stored = typeof window !== 'undefined' ? localStorage.getItem(LS_KEY) : null
     if (stored === 'true') setIsOpen(true)
     else if (stored === 'false') setIsOpen(false)
@@ -62,7 +73,7 @@ export default function ReservationChatPanel({
 
   // Block body scroll cuando el overlay mobile está abierto
   useEffect(() => {
-    if (!hasMounted) return
+    if (!hasMounted || !RESERVATION_CHAT_ENABLED) return
     if (isOpen && window.innerWidth < 1280) {
       document.body.style.overflow = 'hidden'
       return () => { document.body.style.overflow = '' }
@@ -100,12 +111,14 @@ export default function ReservationChatPanel({
           detecta con regex). */}
       <div
         className={`transition-[margin] duration-300 ease-out ${
-          hasMounted && isOpen ? 'xl:mr-[420px]' : 'xl:mr-0'
+          RESERVATION_CHAT_ENABLED && hasMounted && isOpen ? 'xl:mr-[420px]' : 'xl:mr-0'
         }`}
       >
         {children}
       </div>
 
+      {RESERVATION_CHAT_ENABLED && (
+      <>
       {/* ─── BACKDROP (solo overlay mobile) ─── */}
       <div
         onClick={() => setIsOpen(false)}
@@ -217,6 +230,8 @@ export default function ReservationChatPanel({
             </span>
           )}
         </button>
+      )}
+      </>
       )}
     </>
   )
