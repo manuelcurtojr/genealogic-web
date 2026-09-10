@@ -292,7 +292,7 @@ export default async function BreederReservationDetailPage({
         />
         <ReservationContracts
           reservationId={reservation.id}
-          kennelId={reservation.kennel?.id || ''}
+          ownerId={reservation.kennel?.owner_id || ''}
           contracts={contractItems}
         />
       </Card>

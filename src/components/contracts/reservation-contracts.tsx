@@ -111,10 +111,11 @@ async function buildContractPdfBlob(c: ContractItem): Promise<Blob> {
 }
 
 export default function ReservationContracts({
-  reservationId, kennelId, contracts,
+  reservationId, ownerId, contracts,
 }: {
   reservationId: string
-  kennelId: string
+  /** id del dueño del criadero = uid; primer segmento del path (RLS de storage). */
+  ownerId: string
   contracts: ContractItem[]
 }) {
   const t = useT()
@@ -132,7 +133,7 @@ export default function ReservationContracts({
     setError(null)
     try {
       const blob = await buildContractPdfBlob(c)
-      const path = `${kennelId}/${reservationId}/${c.id}.pdf`
+      const path = `${ownerId}/${reservationId}/${c.id}.pdf`
       const { error: upErr } = await supabase().storage.from('contracts').upload(path, blob, {
         contentType: 'application/pdf', upsert: true,
       })
@@ -172,7 +173,7 @@ export default function ReservationContracts({
     if (file.size > 15 * 1024 * 1024) { setError(t('El PDF supera los 15 MB')); return }
     setUploading(true); setError(null)
     try {
-      const path = `${kennelId}/${reservationId}/${crypto.randomUUID()}.pdf`
+      const path = `${ownerId}/${reservationId}/${crypto.randomUUID()}.pdf`
       const { error: upErr } = await supabase().storage.from('contracts').upload(path, file, {
         contentType: 'application/pdf', upsert: false,
       })

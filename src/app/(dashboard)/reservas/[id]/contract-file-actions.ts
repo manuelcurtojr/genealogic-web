@@ -29,9 +29,10 @@ async function assertOwner(reservationId: string) {
   return { ok: true as const, user, admin, reservation: r as { id: string; kennel_id: string } }
 }
 
-/** El path debe caer bajo contracts/<kennel_id>/<reservation_id>/ (anti-abuso). */
-function pathOk(path: string, kennelId: string, reservationId: string): boolean {
-  return typeof path === 'string' && path.startsWith(`${kennelId}/${reservationId}/`)
+/** El path debe caer bajo contracts/<owner_uid>/<reservation_id>/ (RLS de storage
+ *  = carpeta por uid del dueño; anti-abuso). */
+function pathOk(path: string, ownerUid: string, reservationId: string): boolean {
+  return typeof path === 'string' && path.startsWith(`${ownerUid}/${reservationId}/`)
 }
 
 export async function addUploadedContractAction(input: {
@@ -42,7 +43,7 @@ export async function addUploadedContractAction(input: {
   const ctx = await assertOwner(input.reservationId)
   if (!ctx.ok) return { ok: false, error: ctx.error }
   const { admin, user, reservation } = ctx
-  if (!pathOk(input.path, reservation.kennel_id, reservation.id)) return { ok: false, error: 'Ruta inválida' }
+  if (!pathOk(input.path, user.id, reservation.id)) return { ok: false, error: 'Ruta inválida' }
 
   const title = (input.filename || '').replace(/\.pdf$/i, '').trim() || 'Contrato firmado'
   const { error } = await admin.from('reservation_contracts').insert({
@@ -70,8 +71,8 @@ export async function setContractPdfAction(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const ctx = await assertOwner(reservationId)
   if (!ctx.ok) return { ok: false, error: ctx.error }
-  const { admin, reservation } = ctx
-  if (!pathOk(path, reservation.kennel_id, reservation.id)) return { ok: false, error: 'Ruta inválida' }
+  const { admin, user, reservation } = ctx
+  if (!pathOk(path, user.id, reservation.id)) return { ok: false, error: 'Ruta inválida' }
 
   const { error } = await admin
     .from('reservation_contracts')
