@@ -14,7 +14,7 @@ import confetti from 'canvas-confetti'
 import {
   Sparkles, X, Plus, Settings, Mail, Phone, Clock, AlertTriangle,
   ChevronDown, ChevronUp, TrendingUp, Trophy, XCircle, Inbox, ChevronRight,
-  MapPin, Coins, Wallet, Hourglass, List, Table2, Archive,
+  MapPin, Coins, Wallet, Hourglass, List, Table2, Archive, History,
 } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import { moveEntryToStage, markEntrySeen } from '@/lib/pipelines/actions'
@@ -867,6 +867,30 @@ function LeadCard({
                 {t('Nueva')}
               </span>
             )}
+            {/* Contacto RECURRENTE: este email ya estaba en la agenda o ya
+                había escrito antes. Se marca en el intake (contact-kennel). */}
+            {(() => {
+              const r = entry.applicant_extra_data?.returning as
+                | { prior_requests?: number; since?: string | null }
+                | undefined
+              if (!r) return null
+              const n = r.prior_requests || 0
+              const desde = r.since ? new Date(r.since).getFullYear() : null
+              return (
+                <span
+                  title={
+                    n > 0
+                      ? `${n} ${n === 1 ? t('solicitud anterior') : t('solicitudes anteriores')}${desde ? ` · ${t('desde')} ${desde}` : ''}`
+                      : t('Ya estaba en tu agenda de contactos')
+                  }
+                  className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-violet-100 text-violet-800 text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wide"
+                >
+                  <History className="w-2.5 h-2.5" />
+                  {t('Ya contactó')}
+                  {n > 0 && <span className="tabular-nums">{n}</span>}
+                </span>
+              )
+            })()}
             {(entry.preference_sex || entry.preference_color) && (
               <span className="flex-shrink-0 inline-flex items-center rounded-md bg-surface-soft text-body text-[10.5px] font-medium px-1.5 py-0.5">
                 {[
