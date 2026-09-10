@@ -143,6 +143,12 @@ export default async function ContactosPage({
 
   const leads: Lead[] = (leadsRes.data || []) as Lead[]
 
+  // ¿El criadero usa la agenda? Si tiene contactos, la pestaña Clientes ES la
+  // agenda (paginada/filtrable) y las reservas solo la ENRIQUECEN. Si no, se
+  // mantiene el comportamiento antiguo (clientes derivados de reservas), para
+  // no dejar la pestaña en blanco a quien no ha creado contactos.
+  const hasAgenda = cTotal > 0
+
   // Clientes = owners + reservas avanzadas, deduplicadas por email
   // (un mismo cliente que cerró 2 perros sale solo una vez, pero con
   // contador de reservas y la más reciente como "última actividad").
@@ -198,7 +204,7 @@ export default async function ContactosPage({
         existing.last_activity = ts
         if (dogData) existing.last_dog = dogData
       }
-    } else {
+    } else if (!hasAgenda) {
       clientsByEmail.set(key, {
         key,
         source: 'reservation',
@@ -216,8 +222,12 @@ export default async function ContactosPage({
     }
   }
 
+  // Con agenda el servidor ya devuelve los contactos por nombre (y paginados),
+  // así que respetamos ese orden; sin agenda, lo más reciente primero.
   const clients: Client[] = Array.from(clientsByEmail.values()).sort((a, b) =>
-    (b.last_activity || '').localeCompare(a.last_activity || ''),
+    hasAgenda
+      ? a.full_name.localeCompare(b.full_name)
+      : (b.last_activity || '').localeCompare(a.last_activity || ''),
   )
 
   return (
