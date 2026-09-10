@@ -20,7 +20,8 @@ import {
   formatPrice,
 } from '@/lib/owner/reservations'
 import ReservationTimeline from '@/components/reservations/reservation-timeline'
-import ReservationChatPanel, { RESERVATION_CHAT_ENABLED } from '@/components/reservations/reservation-chat-panel'
+import ReservationChatPanel from '@/components/reservations/reservation-chat-panel'
+import { RESERVATION_CHAT_ENABLED } from '@/components/reservations/chat-flag'
 import { listReservationMessages, markThreadRead } from '@/lib/reservations/messages'
 import { listDogDocumentsForOwner } from '@/lib/dogs/documents'
 import { labelForType } from '@/lib/dogs/documents-shared'

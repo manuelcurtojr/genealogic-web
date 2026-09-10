@@ -21,6 +21,7 @@
 
 import { useState, useEffect, type ReactNode } from 'react'
 import { MessageCircle, X, ChevronLeft, Building2 } from 'lucide-react'
+import { RESERVATION_CHAT_ENABLED } from './chat-flag'
 
 interface ReservationChatPanelProps {
   /** Contenido principal de la página — adapta margin-right cuando el
@@ -38,16 +39,6 @@ interface ReservationChatPanelProps {
   /** Número de mensajes sin leer — badge en la tab/FAB cuando está cerrado. */
   unreadCount?: number
 }
-
-/**
- * Feature flag — chat en directo criador↔cliente dentro de la reserva.
- * Desactivado 2026-09-10 a petición del usuario ("de momento, que no sea
- * público"). Con `false`: el componente solo renderiza `children` (la página),
- * sin drawer, FAB ni pestaña, y NO monta ningún efecto lateral. Los tiles de
- * acción rápida "Mensajes" de ambas vistas se ocultan importando esta misma
- * constante. Poner en `true` para reactivarlo en todo (una sola línea).
- */
-export const RESERVATION_CHAT_ENABLED: boolean = false
 
 const LS_KEY = 'genealogic.reservationChatOpen'
 
