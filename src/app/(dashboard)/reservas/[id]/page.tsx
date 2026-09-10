@@ -18,7 +18,7 @@ import { hasProFeatures, normalizePlan, isEnterpriseUser } from '@/lib/permissio
 import Link from 'next/link'
 import { listReservationMessages, markThreadRead } from '@/lib/reservations/messages'
 import ReservationThread from '@/components/reservations/reservation-thread'
-import ReservationChatPanel from '@/components/reservations/reservation-chat-panel'
+import ReservationChatPanel, { RESERVATION_CHAT_ENABLED } from '@/components/reservations/reservation-chat-panel'
 import { sendBreederMessageAction } from './actions'
 import { assignDogToReservationAction } from './contrato/actions'
 import ReservationPaymentsCard from '@/components/embudo/reservation-payments-card'
@@ -252,19 +252,21 @@ export default async function BreederReservationDetailPage({
           }
           tone={reservation.deposit_paid_at && !reservation.paid_in_full_at ? 'amber' : 'neutral'}
         />
-        <QuickAction
-          href="#mensajes"
-          icon={MessageCircle}
-          title={t('Mensajes')}
-          subtitle={
-            !hasClientAccount
-              ? t('Sin cuenta del cliente')
-              : messages.length === 0
-                ? t('Empezar conversación')
-                : `${messages.length} ${messages.length === 1 ? t('mensaje') : t('mensajes')}`
-          }
-          tone="neutral"
-        />
+        {RESERVATION_CHAT_ENABLED && (
+          <QuickAction
+            href="#mensajes"
+            icon={MessageCircle}
+            title={t('Mensajes')}
+            subtitle={
+              !hasClientAccount
+                ? t('Sin cuenta del cliente')
+                : messages.length === 0
+                  ? t('Empezar conversación')
+                  : `${messages.length} ${messages.length === 1 ? t('mensaje') : t('mensajes')}`
+            }
+            tone="neutral"
+          />
+        )}
       </section>
 
       {/* ═══ Asignar cachorro ═══ */}

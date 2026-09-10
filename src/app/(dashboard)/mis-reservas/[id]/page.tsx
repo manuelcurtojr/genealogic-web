@@ -20,7 +20,7 @@ import {
   formatPrice,
 } from '@/lib/owner/reservations'
 import ReservationTimeline from '@/components/reservations/reservation-timeline'
-import ReservationChatPanel from '@/components/reservations/reservation-chat-panel'
+import ReservationChatPanel, { RESERVATION_CHAT_ENABLED } from '@/components/reservations/reservation-chat-panel'
 import { listReservationMessages, markThreadRead } from '@/lib/reservations/messages'
 import { listDogDocumentsForOwner } from '@/lib/dogs/documents'
 import { labelForType } from '@/lib/dogs/documents-shared'
@@ -220,13 +220,15 @@ export default async function MyReservationDetailPage({
           }
           tone={totalPending != null && totalPending > 0 ? 'amber' : 'neutral'}
         />
-        <QuickAction
-          href={`#mensajes`}
-          icon={MessageCircle}
-          title={t('Mensajes')}
-          subtitle={messages.length === 0 ? t('Sin mensajes todavía') : `${messages.length} ${messages.length === 1 ? t('mensaje') : t('mensajes')}`}
-          tone="neutral"
-        />
+        {RESERVATION_CHAT_ENABLED && (
+          <QuickAction
+            href={`#mensajes`}
+            icon={MessageCircle}
+            title={t('Mensajes')}
+            subtitle={messages.length === 0 ? t('Sin mensajes todavía') : `${messages.length} ${messages.length === 1 ? t('mensaje') : t('mensajes')}`}
+            tone="neutral"
+          />
+        )}
       </section>
 
       {/* ═══ GRID PRINCIPAL: Timeline + Sidebar Económico ═══
