@@ -62,14 +62,30 @@ export default async function EmbudoPage() {
   await ensureDefaultPipelines(admin, kennel.id)
   const pipelines = await getKennelPipelines(supabase, kennel.id)
 
+  const FUNNEL_SELECT =
+    'id, applicant_name, applicant_email, applicant_phone, applicant_message, preference_sex, preference_color, deposit_amount_cents, total_price_cents, currency, created_at, status, pipeline_id, stage_id, seen_by_breeder_at, closed_at, lost_reason, client_user_id, origin_entry_id, applicant_purpose, applicant_country, applicant_city, applicant_address, applicant_postal_code, applicant_extra_data, source, internal_note'
+
+  // El TABLERO muestra solo deals ABIERTOS (closed_at null) + los recién cerrados
+  // dentro de una gracia de 7 días (para ver la venta reciente antes de que se
+  // archive). Los cerrados hace más tiempo (incluido el histórico importado con
+  // fecha vieja) NO cargan aquí: viven en la pestaña "Cerradas".
+  const graceCutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
   const { data: entries } = await supabase
     .from('puppy_reservations')
-    .select(
-      'id, applicant_name, applicant_email, applicant_phone, applicant_message, preference_sex, preference_color, deposit_amount_cents, total_price_cents, currency, created_at, status, pipeline_id, stage_id, seen_by_breeder_at, lost_reason, client_user_id, origin_entry_id, applicant_purpose, applicant_country, applicant_city, applicant_address, applicant_postal_code, applicant_extra_data, source, internal_note',
-    )
+    .select(FUNNEL_SELECT)
     .eq('kennel_id', kennel.id)
+    .or(`closed_at.is.null,closed_at.gt.${graceCutoff}`)
     .order('created_at', { ascending: false })
     .limit(1000)
+
+  // HISTÓRICO — deals cerrados (won/lost) para la pestaña "Cerradas".
+  const { data: closedEntries } = await supabase
+    .from('puppy_reservations')
+    .select(FUNNEL_SELECT)
+    .eq('kennel_id', kennel.id)
+    .not('closed_at', 'is', null)
+    .order('closed_at', { ascending: false })
+    .limit(500)
 
   // Cobrado real por reserva (suma de pagos PAGADOS). Es la fuente de verdad
   // para las métricas de dinero del embudo (el chip "Pagado" de la tarjeta usa
@@ -93,6 +109,8 @@ export default async function EmbudoPage() {
       pipelines={pipelines}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       entries={(entries || []) as any}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      closedEntries={(closedEntries || []) as any}
       paidByEntry={paidByEntry}
       kennelBreeds={kennelBreeds}
     />

@@ -14,7 +14,7 @@ import confetti from 'canvas-confetti'
 import {
   Sparkles, X, Plus, Settings, Mail, Phone, Clock, AlertTriangle,
   ChevronDown, ChevronUp, TrendingUp, Trophy, XCircle, Inbox, ChevronRight,
-  MapPin, Coins, Wallet, Hourglass, List, Table2,
+  MapPin, Coins, Wallet, Hourglass, List, Table2, Archive,
 } from 'lucide-react'
 import { useT } from '@/components/i18n/locale-provider'
 import { moveEntryToStage, markEntrySeen } from '@/lib/pipelines/actions'
@@ -40,12 +40,16 @@ export default function FunnelBoard({
   kennelName,
   pipelines,
   entries,
+  closedEntries = [],
   paidByEntry = {},
   kennelBreeds = [],
 }: {
   kennelName: string
   pipelines: Pipeline[]
   entries: FunnelEntry[]
+  /** Deals CERRADOS (histórico): won/lost fuera de la gracia. Solo se ven en la
+   *  pestaña "Cerradas", nunca en el tablero de deals abiertos. */
+  closedEntries?: FunnelEntry[]
   /** Cobrado real por reserva (Σ pagos pagados), calculado en el servidor. */
   paidByEntry?: Record<string, number>
   /** Razas que cría el criadero (para el selector de raza de interés del panel). */
@@ -66,6 +70,8 @@ export default function FunnelBoard({
   const [party, setParty] = useState<{ title: string; subtitle: string } | null>(null)
   const [showOrphans, setShowOrphans] = useState(false)
   const [view, setView] = useState<'list' | 'table'>('list')
+  // Pestaña "Cerradas": histórico de deals won/lost (fuera del tablero activo).
+  const [closedView, setClosedView] = useState(false)
 
   // Leads HUÉRFANOS (stage_id=null) — entraron en BBDD pero no se les asignó
   // un paso del embudo. Causa: pipeline_stages sin is_entry=true (criador
@@ -146,6 +152,7 @@ export default function FunnelBoard({
   }, [entries, pipeline])
 
   function selectPipeline(p: Pipeline) {
+    setClosedView(false)
     setPipelineId(p.id)
     const entry = p.stages.find((s) => s.is_entry) ?? p.stages[0]
     setStageId(entry?.id ?? '')
@@ -255,7 +262,7 @@ export default function FunnelBoard({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden -mx-1 px-1 min-w-0">
           {pipelines.map((p) => {
-            const active = p.id === pipeline.id
+            const active = p.id === pipeline.id && !closedView
             const unseen = p.stages.reduce((n, s) => n + (unseenByStage.get(s.id) || 0), 0)
             const totalInPipeline = entries.filter((e) => e.pipeline_id === p.id).length
             return (
@@ -281,6 +288,20 @@ export default function FunnelBoard({
               </button>
             )
           })}
+          {/* Pestaña "Cerradas" — histórico de deals ganados/perdidos */}
+          <button
+            onClick={() => setClosedView(true)}
+            title={t('Deals cerrados (histórico)')}
+            className={`relative shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13px] font-bold whitespace-nowrap transition-all ${
+              closedView ? 'bg-ink text-on-primary shadow-sm' : 'text-body hover:bg-surface-soft hover:text-ink'
+            }`}
+          >
+            <Archive className={`h-3.5 w-3.5 ${closedView ? 'opacity-90' : 'opacity-60'}`} />
+            {t('Cerradas')}
+            <span className={`text-[10.5px] font-bold ${closedView ? 'opacity-80' : 'text-muted'} tabular-nums`}>
+              {closedEntries.length}
+            </span>
+          </button>
           </div>
           {/* Acciones del embudo (movidas desde el hero) */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -303,6 +324,8 @@ export default function FunnelBoard({
           </div>
         </div>
 
+        {!closedView && (
+        <>
         {/* Panel de métricas del pipeline activo: dinero + conteos (sin mezclar pipelines) */}
         <PipelineStats money={money} counts={counts} slug={pipeline.slug} t={t} />
 
@@ -355,10 +378,20 @@ export default function FunnelBoard({
           </div>
           <ViewToggle view={view} onChange={setView} t={t} />
         </div>
+        </>
+        )}
       </div>
 
-      {/* ─── Fichas: vista TABLA (todo el pipeline) o LISTA (paso activo) ─── */}
-      {view === 'table' ? (
+      {/* ─── Fichas: Cerradas (histórico) · TABLA (pipeline) · LISTA (paso activo) ─── */}
+      {closedView ? (
+        <ClosedView
+          entries={closedEntries}
+          pipelines={pipelines}
+          paidByEntry={paidByEntry}
+          onRowClick={openLead}
+          t={t}
+        />
+      ) : view === 'table' ? (
         <FunnelTable
           entries={pipelineEntries}
           stages={pipeline.stages}
@@ -605,6 +638,92 @@ function FunnelTable({
                     {falta == null ? '—' : falta === 0 ? <span className="text-emerald-700 font-semibold">✓</span> : <span className="text-amber-700 font-semibold">{fmtMoney(falta, e.currency)}</span>}
                   </Td>
                   <Td>{new Date(e.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: '2-digit' })}</Td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Vista "Cerradas" — histórico de deals ganados/perdidos de TODOS los pipelines
+ * (fuera del tablero activo). Tabla escaneable; clic en fila abre el detalle.
+ */
+function ClosedView({
+  entries, pipelines, paidByEntry, onRowClick, t,
+}: {
+  entries: FunnelEntry[]
+  pipelines: Pipeline[]
+  paidByEntry: Record<string, number>
+  onRowClick: (e: FunnelEntry) => void
+  t: (k: string) => string
+}) {
+  const stageById = new Map<string, Stage>()
+  const pipelineById = new Map<string, Pipeline>()
+  for (const p of pipelines) {
+    pipelineById.set(p.id, p)
+    for (const s of p.stages) stageById.set(s.id, s)
+  }
+  if (entries.length === 0) {
+    return (
+      <div className="rounded-2xl border-2 border-dashed border-hairline bg-surface-soft/30 px-6 py-16 text-center">
+        <div className="mx-auto h-12 w-12 rounded-2xl bg-canvas border border-hairline flex items-center justify-center text-muted">
+          <Archive className="h-5 w-5" />
+        </div>
+        <p className="mt-4 text-[14px] font-semibold text-ink">{t('Todavía no hay deals cerrados.')}</p>
+        <p className="mt-1 text-[12.5px] text-muted max-w-sm mx-auto leading-snug">
+          {t('Cuando ganes o pierdas un deal, se archiva aquí y sale del tablero.')}
+        </p>
+      </div>
+    )
+  }
+  return (
+    <div className="rounded-2xl border border-hairline bg-canvas overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-[12.5px] border-collapse">
+          <thead>
+            <tr className="bg-surface-soft/60 text-muted text-[10px] uppercase tracking-wider">
+              <Th>{t('Nombre')}</Th>
+              <Th>{t('Embudo')}</Th>
+              <Th>{t('Resultado')}</Th>
+              <Th>{t('País')}</Th>
+              <Th right>{t('Total')}</Th>
+              <Th right>{t('Pagado')}</Th>
+              <Th>{t('Cerrada')}</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((e) => {
+              const stage = e.stage_id ? stageById.get(e.stage_id) : undefined
+              const pipeline = e.pipeline_id ? pipelineById.get(e.pipeline_id) : undefined
+              const paid = paidByEntry[e.id] || 0
+              const total = e.total_price_cents
+              const tone =
+                stage?.type === 'won'
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : stage?.type === 'lost'
+                  ? 'bg-rose-50 text-rose-700'
+                  : 'bg-surface-soft text-body'
+              return (
+                <tr
+                  key={e.id}
+                  onClick={() => onRowClick(e)}
+                  className="border-t border-hairline cursor-pointer hover:bg-surface-soft/50"
+                >
+                  <Td><span className="font-semibold text-ink">{e.applicant_name || t('Sin nombre')}</span></Td>
+                  <Td>{pipeline ? t(pipeline.name) : '—'}</Td>
+                  <Td>
+                    {stage
+                      ? <span className={`inline-block rounded px-1.5 py-0.5 text-[10.5px] font-medium ${tone}`}>{t(stage.name)}</span>
+                      : '—'}
+                  </Td>
+                  <Td>{e.applicant_country || '—'}</Td>
+                  <Td right>{total != null ? fmtMoney(total, e.currency) : '—'}</Td>
+                  <Td right>{paid > 0 ? <span className="text-emerald-700 font-semibold">{fmtMoney(paid, e.currency)}</span> : '—'}</Td>
+                  <Td>{e.closed_at ? new Date(e.closed_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: '2-digit' }) : '—'}</Td>
                 </tr>
               )
             })}
