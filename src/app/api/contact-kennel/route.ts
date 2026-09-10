@@ -156,6 +156,66 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  // ─── Contacto recurrente ────────────────────────────────────────────────
+  // Si el email ya está en la agenda del criadero (o ya escribió antes), el
+  // lead se ATA a ese contacto y se marca como recurrente, para que el criador
+  // lo vea de un vistazo en el embudo en vez de tratarlo como desconocido.
+  // Si el email es nuevo se CREA el contacto: así la agenda se mantiene sola.
+  const leadEmail = canonical.applicant_email ? String(canonical.applicant_email) : ''
+  let ownerId: string | null = null
+  let returning: { prior_requests: number; since: string | null } | null = null
+
+  if (leadEmail) {
+    try {
+      const [ownerRes, priorRes] = await Promise.all([
+        admin.from('owners').select('id, created_at, first_contact_at')
+          .eq('kennel_id', kennel.id).eq('email', leadEmail).limit(1),
+        admin.from('puppy_reservations').select('id, created_at')
+          .eq('kennel_id', kennel.id).eq('applicant_email', leadEmail)
+          .order('created_at', { ascending: true }).limit(50),
+      ])
+      const owner = ownerRes.data?.[0]
+      const priorCount = priorRes.data?.length || 0
+      if (owner) ownerId = owner.id
+      if (owner || priorCount > 0) {
+        returning = {
+          prior_requests: priorCount,
+          since: owner?.first_contact_at || priorRes.data?.[0]?.created_at || owner?.created_at || null,
+        }
+      }
+      if (!owner) {
+        const { data: created, error: ownerErr } = await admin.from('owners').insert({
+          kennel_id: kennel.id,
+          full_name: canonical.applicant_name || leadEmail.split('@')[0],
+          email: leadEmail,
+          phone: canonical.applicant_phone || null,
+          city: canonical.applicant_city || null,
+          country: canonical.applicant_country || null,
+          segment: 'interested',
+          source: 'public_form',
+          first_contact_at: new Date().toISOString().slice(0, 10),
+        }).select('id').single()
+        if (ownerErr) {
+          // Choque con el índice único (kennel_id, lower(email)): el contacto
+          // existe con otro case. Lo recuperamos sin distinguir mayúsculas.
+          const { data: again } = await admin.from('owners').select('id')
+            .eq('kennel_id', kennel.id)
+            .ilike('email', leadEmail.replace(/[%_]/g, (m: string) => `\\${m}`))
+            .limit(1)
+          ownerId = again?.[0]?.id ?? null
+          if (ownerId) returning = returning || { prior_requests: priorCount, since: null }
+        } else {
+          ownerId = created?.id ?? null
+        }
+      }
+    } catch (e) {
+      // Nunca bloquea la solicitud: si esto falla, el lead entra igual.
+      console.error('contact-kennel: enlace con la agenda falló', e)
+    }
+  }
+
+  const extraWithFlags = { ...extra, ...(returning ? { returning } : {}) }
+
   const insertPayload: Record<string, any> = {
     kennel_id: kennel.id,
     status: 'interested',
@@ -163,7 +223,8 @@ export async function POST(request: NextRequest) {
     pipeline_id: entryPipelineId,
     stage_id: entryStageId,
     ...canonical,
-    applicant_extra_data: Object.keys(extra).length > 0 ? extra : null,
+    owner_id: ownerId,
+    applicant_extra_data: Object.keys(extraWithFlags).length > 0 ? extraWithFlags : null,
   }
 
   const { data: insertedRes, error: insertErr } = await admin
