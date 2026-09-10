@@ -12,7 +12,8 @@
  */
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
   Plus, Search, Mail, Phone, MapPin, Inbox, UserPlus, Users,
@@ -53,6 +54,25 @@ export type Client = {
   last_dog: any
   /** Solo si el cliente vino de la tabla owners (CRM) */
   crm_owner_id: string | null
+  /** buyer | interested | subscriber | other (solo contactos de la agenda) */
+  segment?: string | null
+}
+
+/** Segmentos de la agenda. 'activos' oculta los suscriptores de newsletter,
+ *  que son ruido para el día a día pero siguen buscables en su pestaña. */
+const SEGMENTS: { id: string; label: string }[] = [
+  { id: 'activos',    label: 'Activos' },
+  { id: 'buyer',      label: 'Compradores' },
+  { id: 'interested', label: 'Interesados' },
+  { id: 'subscriber', label: 'Suscriptores' },
+  { id: 'todos',      label: 'Todos' },
+]
+
+const SEGMENT_BADGE: Record<string, { label: string; cls: string }> = {
+  buyer:      { label: 'Comprador',  cls: 'bg-emerald-50 text-emerald-700' },
+  interested: { label: 'Interesado', cls: 'bg-amber-50 text-amber-700' },
+  subscriber: { label: 'Suscriptor', cls: 'bg-surface-soft text-muted' },
+  other:      { label: 'Otro',       cls: 'bg-surface-soft text-muted' },
 }
 
 type Tab = 'leads' | 'clients'
@@ -82,51 +102,53 @@ function fmtPrice(cents: number | null, currency: string | null): string {
 
 export default function ContactosPageClient({
   kennelId, kennelName, leads, clients,
+  q: serverQ = '', seg = 'activos', page = 1, pageSize = 100,
+  ownersTotal = 0, segCounts,
 }: {
   kennelId: string
   kennelName: string
   leads: Lead[]
   clients: Client[]
+  /** Búsqueda YA aplicada en servidor (la agenda tiene miles de contactos). */
+  q?: string
+  seg?: string
+  page?: number
+  pageSize?: number
+  /** Contactos de la agenda que casan con filtro+búsqueda (no solo esta página). */
+  ownersTotal?: number
+  segCounts?: { buyer: number; interested: number; subscriber: number; total: number }
 }) {
   const t = useT()
+  const router = useRouter()
+  const pathname = usePathname()
   const [tab, setTab] = useState<Tab>('leads')
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(serverQ)
 
   // Panel del CRM (crear cliente manual)
   const [panelOpen, setPanelOpen] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editingOwner, setEditingOwner] = useState<any>(null)
 
-  // Filtered counts según query y tab activa
-  const q = query.trim().toLowerCase()
-
-  const filteredLeads = useMemo(() => {
-    if (!q) return leads
-    return leads.filter(l =>
-      l.applicant_name?.toLowerCase().includes(q) ||
-      l.applicant_email?.toLowerCase().includes(q) ||
-      l.applicant_phone?.includes(q) ||
-      l.applicant_city?.toLowerCase().includes(q) ||
-      l.preference_color?.toLowerCase().includes(q)
-    )
-  }, [leads, q])
-
-  const filteredClients = useMemo(() => {
-    if (!q) return clients
-    return clients.filter(c =>
-      c.full_name.toLowerCase().includes(q) ||
-      c.email?.toLowerCase().includes(q) ||
-      c.phone?.includes(q) ||
-      c.city?.toLowerCase().includes(q)
-    )
-  }, [clients, q])
+  /** Búsqueda, segmento y página viajan en la URL y se resuelven en el
+   *  SERVIDOR: filtrar en el navegador no vale porque Supabase devuelve como
+   *  mucho 1000 filas por petición y la agenda tiene miles. */
+  const navigate = (next: { q?: string; seg?: string; page?: number }) => {
+    const p = new URLSearchParams()
+    const nq = next.q !== undefined ? next.q : query
+    const nseg = next.seg !== undefined ? next.seg : seg
+    const npage = next.page !== undefined ? next.page : page
+    if (nq.trim()) p.set('q', nq.trim())
+    if (nseg && nseg !== 'activos') p.set('seg', nseg)
+    if (npage > 1) p.set('page', String(npage))
+    const qs = p.toString()
+    router.push(qs ? `${pathname}?${qs}` : pathname)
+  }
 
   const counts: Record<Tab, number> = {
     leads:   leads.length,
-    clients: clients.length,
+    clients: ownersTotal || clients.length,
   }
-  const filteredCount =
-    tab === 'leads' ? filteredLeads.length : filteredClients.length
+  const totalPages = Math.max(1, Math.ceil((ownersTotal || 0) / pageSize))
 
   return (
     <div>
@@ -182,32 +204,104 @@ export default function ContactosPageClient({
         })}
       </div>
 
-      {/* Search */}
-      <div className="relative mb-4 max-w-md">
+      {/* Búsqueda — se resuelve en el SERVIDOR (Enter o botón) */}
+      <form
+        onSubmit={(e) => { e.preventDefault(); navigate({ q: query, page: 1 }) }}
+        className="relative mb-3 max-w-md"
+      >
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
         <input
-          type="text"
+          type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('Buscar por nombre, email, teléfono…')}
-          className="w-full pl-9 pr-3 py-2 text-sm border border-hairline rounded-lg bg-canvas text-ink placeholder:text-muted focus:outline-none focus:border-ink transition"
+          className="w-full pl-9 pr-20 py-2 text-base sm:text-sm border border-hairline rounded-lg bg-canvas text-ink placeholder:text-muted focus:outline-none focus:border-ink transition"
         />
-      </div>
+        {query.trim() !== serverQ && (
+          <button
+            type="submit"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-ink text-on-primary px-2.5 py-1 text-[11px] font-bold"
+          >
+            {t('Buscar')}
+          </button>
+        )}
+      </form>
 
-      {q && (
+      {/* Segmentos de la agenda (solo en Clientes) */}
+      {tab === 'clients' && segCounts && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {SEGMENTS.map((s) => {
+            const active = seg === s.id
+            const n =
+              s.id === 'todos' ? segCounts.total
+              : s.id === 'activos' ? segCounts.buyer + segCounts.interested
+              : segCounts[s.id as 'buyer' | 'interested' | 'subscriber']
+            return (
+              <button
+                key={s.id}
+                onClick={() => navigate({ seg: s.id, page: 1 })}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 h-8 text-[12.5px] font-semibold border transition ${
+                  active
+                    ? 'bg-ink text-on-primary border-ink'
+                    : 'bg-canvas text-body border-hairline hover:bg-surface-soft'
+                }`}
+              >
+                {t(s.label)}
+                <span className={`text-[10.5px] tabular-nums ${active ? 'opacity-80' : 'text-muted'}`}>
+                  {n}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {serverQ && (
         <p className="text-xs text-muted mb-3">
-          {filteredCount} {t('de')} {counts[tab]} {tab === 'leads' ? t('leads') : t('clientes')} {t('coinciden con')} &ldquo;{query}&rdquo;
+          {counts[tab]} {tab === 'leads' ? t('leads') : t('contactos')} {t('coinciden con')} &ldquo;{serverQ}&rdquo;
+          {' · '}
+          <button
+            onClick={() => { setQuery(''); navigate({ q: '', page: 1 }) }}
+            className="underline hover:text-ink"
+          >
+            {t('limpiar')}
+          </button>
         </p>
       )}
 
       {/* Tab content */}
-      {tab === 'leads'       && <LeadsTable rows={filteredLeads} total={counts.leads} />}
-      {tab === 'clients'     && (
-        <ClientsTable
-          rows={filteredClients}
-          total={counts.clients}
-          onEditOwner={(owner) => { setEditingOwner(owner); setPanelOpen(true) }}
-        />
+      {tab === 'leads' && <LeadsTable rows={leads} total={counts.leads} />}
+      {tab === 'clients' && (
+        <>
+          <ClientsTable
+            rows={clients}
+            total={counts.clients}
+            onEditOwner={(owner) => { setEditingOwner(owner); setPanelOpen(true) }}
+          />
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between gap-3 mt-4">
+              <p className="text-xs text-muted">
+                {t('Página')} {page} {t('de')} {totalPages} · {ownersTotal} {t('contactos')}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  disabled={page <= 1}
+                  onClick={() => navigate({ page: page - 1 })}
+                  className="rounded-lg border border-hairline px-3 py-1.5 text-[12.5px] font-semibold text-body disabled:opacity-40 hover:bg-surface-soft"
+                >
+                  {t('Anterior')}
+                </button>
+                <button
+                  disabled={page >= totalPages}
+                  onClick={() => navigate({ page: page + 1 })}
+                  className="rounded-lg border border-hairline px-3 py-1.5 text-[12.5px] font-semibold text-body disabled:opacity-40 hover:bg-surface-soft"
+                >
+                  {t('Siguiente')}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* CRM panel para crear/editar owner manual */}
@@ -383,8 +477,15 @@ function ClientsTable({
                 className={`${c.source === 'crm' ? 'cursor-pointer' : ''} hover:bg-surface-soft transition ${idx > 0 ? 'border-t border-hairline' : ''}`}
               >
                 <td className="px-4 py-3">
-                  <p className="text-ink font-medium">
+                  <p className="text-ink font-medium flex items-center gap-2 flex-wrap">
                     {c.full_name || <span className="text-muted">{t('Sin nombre')}</span>}
+                    {c.segment && SEGMENT_BADGE[c.segment] && (
+                      <span
+                        className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold ${SEGMENT_BADGE[c.segment].cls}`}
+                      >
+                        {t(SEGMENT_BADGE[c.segment].label)}
+                      </span>
+                    )}
                   </p>
                   {c.delivered_count > 0 && (
                     <p className="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider inline-flex items-center gap-1 mt-0.5">
