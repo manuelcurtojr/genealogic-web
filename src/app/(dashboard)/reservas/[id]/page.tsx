@@ -26,6 +26,7 @@ import ReservationNotes, { type ReservationNote } from '@/components/embudo/rese
 import ReservationBreedPicker from '@/components/embudo/reservation-breed-picker'
 import { getKennelBreedNames } from '@/lib/kennel/breeds'
 import DogAssignmentBar from '@/components/contracts/dog-assignment-bar'
+import ReservationContracts, { type ContractItem } from '@/components/contracts/reservation-contracts'
 import type { KennelDogOption } from '@/components/contracts/contract-fill-panel'
 import FeedbackButton from '@/components/feedback/feedback-button'
 import { getTranslator } from '@/lib/i18n'
@@ -74,13 +75,15 @@ export default async function BreederReservationDetailPage({
     if (!isEnterpriseUser(user.id) && !hasProFeatures(normalizePlan(prof?.plan))) redirect('/embudo')
   }
 
-  // Cargar contratos para mostrar estado en acciones rápidas
+  // Cargar contratos (estado en acciones rápidas + sección PDF unificada)
   const { data: contracts } = await admin
     .from('reservation_contracts')
-    .select('kind, status, signed_at_breeder, signed_at_client')
+    .select('id, kind, title, status, is_uploaded, original_filename, pdf_url, pdf_generated_at, body_html, signature_breeder_name, signature_client_name, signature_breeder_ip, signature_client_ip, signed_at_breeder, signed_at_client, created_at')
     .eq('reservation_id', reservation.id)
-  const contractsList = (contracts || []) as Array<{
-    kind: 'reservation' | 'delivery'
+    .order('created_at', { ascending: true })
+  const contractItems = (contracts || []) as ContractItem[]
+  const contractsList = contractItems as Array<{
+    kind: string
     status: string
     signed_at_breeder: string | null
     signed_at_client: string | null
@@ -277,6 +280,20 @@ export default async function BreederReservationDetailPage({
           kennelDogs={kennelDogs}
           disabled={false}
           onAssignDogAction={assignDogToReservationAction}
+        />
+      </Card>
+
+      {/* ═══ Contratos (PDF unificado) ═══ */}
+      <Card>
+        <CardHeader
+          title={t('Contratos')}
+          subtitle={t('Todos los contratos como PDF en un sitio: los firmados en Genealogic se guardan solos, y puedes subir los firmados en papel (escaneo).')}
+          icon={ScrollText}
+        />
+        <ReservationContracts
+          reservationId={reservation.id}
+          kennelId={reservation.kennel?.id || ''}
+          contracts={contractItems}
         />
       </Card>
 
